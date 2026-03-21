@@ -33,7 +33,7 @@ export function ReisFormIsland({ nextTrip, userSignup, canSignUp, registrationSt
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [isCommitteeMember] = useState(false); // To be extracted from session ideally
+
 
     // Prefill form when Better Auth session is present
     useEffect(() => {
@@ -114,7 +114,7 @@ export function ReisFormIsland({ nextTrip, userSignup, canSignUp, registrationSt
                 ...form
             };
 
-            const result = await createTripSignup(formData, nextTrip.id, isCommitteeMember);
+            const result = await createTripSignup(formData, nextTrip.id);
             if (!result.success) {
                 setError(result.message || 'Fout bij inschrijven.');
             } else {
