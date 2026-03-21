@@ -80,7 +80,7 @@ async function HeaderWrapper() {
     const [disabledRoutes, session] = await Promise.all([
         getDisabledRoutes(),
         auth.api.getSession({
-            headers: h
+            headers: new Headers(h)
         })
     ]);
 

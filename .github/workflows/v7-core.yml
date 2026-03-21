@@ -73,7 +73,14 @@ jobs:
             echo "CORS_ORIGIN=${DOMAIN_URL}" >> .env
             echo "INTERNAL_DIRECTUS_URL=${INTERNAL_DIRECTUS_URL}" >> .env
 
-            env | grep -E '^(INTERNAL_SERVER_IP|DB_USER|DB_PASSWORD|DB_NAME|DIRECTUS_KEY|DIRECTUS_SECRET|AZURE_WEBSITEV7_[A-Z_]+|DIRECTUS_ALLOWED_REDIRECTS|DIRECTUS_STATIC_TOKEN)=' >> .env
+            VARIABLES="INTERNAL_SERVER_IP DB_USER DB_PASSWORD DB_NAME DIRECTUS_KEY DIRECTUS_SECRET AZURE_WEBSITEV7_TENANT_ID AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET DIRECTUS_ALLOWED_REDIRECTS DIRECTUS_STATIC_TOKEN"
+            for var in $VARIABLES; do
+              val=$(eval echo \$$var)
+              if [ ! -z "$val" ]; then
+                clean_val=$(echo "$val" | tr -d '\n\r')
+                echo "$var=$clean_val" >> .env
+              fi
+            done
 
             # 3. Start de infra
             docker network create salve-mundi-v7-shared || true
