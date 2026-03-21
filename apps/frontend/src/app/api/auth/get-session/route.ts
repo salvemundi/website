@@ -1,19 +1,12 @@
 import { auth } from "@/server/auth/auth";
-import { headers } from "next/headers";
-import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
-        const h = await headers();
-        console.log(`[DEBUG - route.ts] Headers check for getSession: ${h ? 'Present' : 'MISSING'}`);
-        console.log(`[DEBUG - route.ts] Cookie header: ${h.get('cookie') ? 'Found' : 'Missing'}`);
-        
-        const session = await auth.api.getSession({
-            headers: new Headers(h)
-        });
-        return NextResponse.json(session);
+        console.log(`[DEBUG - route.ts] Handling get-session request with full context`);
+        return await auth.handler(request);
     } catch (error) {
         console.error("[api/auth/get-session] Error:", error);
-        return new NextResponse(null, { status: 500 });
+        return new Response(null, { status: 500 });
     }
 }
