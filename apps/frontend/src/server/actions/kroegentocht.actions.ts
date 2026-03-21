@@ -107,7 +107,7 @@ export async function initiateKroegentochtPayment(formData: any) {
     try {
         // 2. Dynamische prijs en limiet ophalen
         const event = await directusRequest(readItems('pub_crawl_events', {
-            filter: { id: { _eq: parsed.data.pub_crawl_event_id } },
+            filter: { id: { _eq: parsed.data.pub_crawl_event_id as any } },
             limit: 1
         }));
         
@@ -136,8 +136,10 @@ export async function initiateKroegentochtPayment(formData: any) {
         }
 
         // 4. Signup aanmaken
+        const { id: _, ...signupData } = parsed.data;
         const signup = await directusRequest(createItem('pub_crawl_signups', {
-            ...parsed.data,
+            ...signupData,
+            pub_crawl_event_id: parsed.data.pub_crawl_event_id as any,
             payment_status: 'open'
         }));
         
@@ -188,7 +190,7 @@ export async function getKroegentochtStatus(signupId: string) {
         if (!signup) return { status: 'error' };
 
         if (signup.payment_status === 'paid') {
-            revalidateTag(`tickets-${signup.email}`);
+            revalidateTag(`tickets-${signup.email}`, 'default');
             return { status: 'paid', signup };
         } else if (['failed', 'canceled', 'expired'].includes(signup.payment_status)) {
             return { status: 'failed' };

@@ -73,16 +73,31 @@ export interface PubCrawlSignup {
     pub_crawl_event_id: number | PubCrawlEvent;
     name: string;
     email: string;
+    association?: string | null;
+    amount_tickets?: number | null;
+    name_initials?: string | null;
     payment_status?: string | null;
     approval_status?: 'pending' | 'approved' | 'rejected' | null;
     date_created?: any | null;
-    tickets?: any[] | null;
+    tickets?: any[] | PubCrawlTicket[] | null;
 }
 
 export interface PubCrawlEvent {
     id: number;
     name: string;
     date: any;
+    price?: number | null;
+    max_tickets_per_person?: number | null;
+}
+
+export interface PubCrawlTicket {
+    id: string | number;
+    signup_id: string | number | PubCrawlSignup;
+    name: string;
+    initial: string;
+    qr_token: string;
+    checked_in: boolean;
+    checked_in_at?: any | null;
 }
 
 export interface Trip {
@@ -176,6 +191,12 @@ export interface AppSettings {
     manual_approval?: boolean | null;
 }
 
+export interface SiteSetting {
+    id: string;
+    show: boolean;
+    disabled_message?: string | null;
+}
+
 export interface IntroSignup {
     id: number;
     date_created?: any | null;
@@ -211,6 +232,8 @@ export interface DirectusSchema {
     hero_banners: HeroBanner[];
     sponsors: Sponsor[];
     app_settings: AppSettings;
+    site_settings: SiteSetting[];
+    pub_crawl_tickets: PubCrawlTicket[];
     intro_signups: IntroSignup[];
     coupons: Coupon[];
     system_logs: SystemLog[];
