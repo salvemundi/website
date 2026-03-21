@@ -1,5 +1,46 @@
 services:
+  # 1. De Frontend (Next.js)
+  frontend:
+    container_name: ${COMPOSE_PROJECT_NAME}-app
+    image: ghcr.io/salvemundi/v7-app:${IMAGE_TAG:-latest}
+    restart: always
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      # URLs
+      - PUBLIC_URL=${PUBLIC_URL}
+      - BETTER_AUTH_URL=${BETTER_AUTH_URL}
+      - BETTER_AUTH_TRUSTED_ORIGINS=${BETTER_AUTH_URL}
+      - INTERNAL_DIRECTUS_URL=${INTERNAL_DIRECTUS_URL}
+      - INTERNAL_FINANCE_URL=http://finance-service:3001
+      - INTERNAL_SYNC_URL=http://sync-service:3002
+      - INTERNAL_MAIL_URL=http://mail-service:3003
+      # Secrets
+      - DIRECTUS_STATIC_TOKEN=${DIRECTUS_STATIC_TOKEN}
+      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
+      - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
+      # Azure Auth
+      - AZURE_WEBSITEV7_TENANT_ID=${AZURE_WEBSITEV7_TENANT_ID}
+      - AZURE_WEBSITEV7_AUTH_CLIENT_ID=${AZURE_WEBSITEV7_AUTH_CLIENT_ID}
+      - AZURE_WEBSITEV7_AUTH_CLIENT_SECRET=${AZURE_WEBSITEV7_AUTH_CLIENT_SECRET}
+      - AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID=${AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID}
+      # Database & Infra
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_HOST=v7-core-db
+      - REDIS_URL=redis://v7-core-redis:6379
+      - TRUST_PROXY=true
+      - HOSTNAME=0.0.0.0
+    volumes:
+      - v7_next_cache:/app/apps/frontend/.next/cache
+    networks:
+      - salve-mundi-v7-shared
+      - proxy-network
+
+  # 2. Finance Service (Mollie)
   finance-service:
+    container_name: ${COMPOSE_PROJECT_NAME}-finance
     image: ghcr.io/salvemundi/v7-finance:${IMAGE_TAG:-latest}
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
@@ -7,9 +48,12 @@ services:
       - DB_URL=postgresql://${DB_USER}:${DB_PASSWORD}@v7-core-db:5432/${DB_NAME}
       - DIRECTUS_STATIC_TOKEN=${DIRECTUS_STATIC_TOKEN}
       - INTERNAL_DIRECTUS_URL=${INTERNAL_DIRECTUS_URL}
-      - NEXT_APP_INTERNAL_URL=${NEXT_APP_INTERNAL_URL}
+    networks:
+      - salve-mundi-v7-shared
 
+  # 3. Sync Service (Azure AD Sync)
   sync-service:
+    container_name: ${COMPOSE_PROJECT_NAME}-sync
     image: ghcr.io/salvemundi/v7-sync:${IMAGE_TAG:-latest}
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
@@ -18,23 +62,29 @@ services:
       - AZURE_SYNC_CLIENT_SECRET=${AZURE_WEBSITEV7_SYNC_CLIENT_SECRET}
       - DIRECTUS_STATIC_TOKEN=${DIRECTUS_STATIC_TOKEN}
       - INTERNAL_DIRECTUS_URL=${INTERNAL_DIRECTUS_URL}
-      - NEXT_APP_INTERNAL_URL=${NEXT_APP_INTERNAL_URL}
       - REDIS_URL=redis://v7-core-redis:6379
+    networks:
+      - salve-mundi-v7-shared
 
+  # 4. Mail Service (Microsoft Graph)
   mail-service:
+    container_name: ${COMPOSE_PROJECT_NAME}-mail
     image: ghcr.io/salvemundi/v7-mail:${IMAGE_TAG:-latest}
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - AZURE_MAIL_CLIENT_ID=${AZURE_WEBSITEV7_MAIL_CLIENT_ID}
       - AZURE_MAIL_CLIENT_SECRET=${AZURE_WEBSITEV7_MAIL_CLIENT_SECRET}
-      - AZURE_WEBSITEV7_TENANT_ID=${AZURE_WEBSITEV7_TENANT_ID}
+      - AZURE_TENANT_ID=${AZURE_WEBSITEV7_TENANT_ID}
       - AZURE_MAIL_SENDER=${AZURE_MAIL_SENDER}
       - DIRECTUS_STATIC_TOKEN=${DIRECTUS_STATIC_TOKEN}
       - INTERNAL_DIRECTUS_URL=${INTERNAL_DIRECTUS_URL}
-      - NEXT_APP_INTERNAL_URL=${NEXT_APP_INTERNAL_URL}
       - REDIS_URL=redis://v7-core-redis:6379
+    networks:
+      - salve-mundi-v7-shared
 
+  # 5. Management Service
   management-service:
+    container_name: ${COMPOSE_PROJECT_NAME}-management
     image: ghcr.io/salvemundi/v7-management:${IMAGE_TAG:-latest}
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
@@ -43,49 +93,11 @@ services:
       - AZURE_PROVISIONING_CLIENT_SECRET=${AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET}
       - DIRECTUS_STATIC_TOKEN=${DIRECTUS_STATIC_TOKEN}
       - INTERNAL_DIRECTUS_URL=${INTERNAL_DIRECTUS_URL}
-      - NEXT_APP_INTERNAL_URL=${NEXT_APP_INTERNAL_URL}
-
-  frontend:
-    image: ghcr.io/salvemundi/v7-app:${IMAGE_TAG:-latest}
-    restart: always
-    ports:
-      - "${FRONTEND_PORT:-3000}:3000"
-    environment:
-      - PUBLIC_URL=${PUBLIC_URL:-http://localhost:3000}
-      - INTERNAL_FINANCE_URL=http://finance-service:3001
-      - INTERNAL_SYNC_URL=http://sync-service:3002
-      - INTERNAL_MAIL_URL=http://mail-service:3003
-      - INTERNAL_DIRECTUS_URL=${INTERNAL_DIRECTUS_URL}
-      - DIRECTUS_STATIC_TOKEN=${DIRECTUS_STATIC_TOKEN}
-      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
-      - AZURE_WEBSITEV7_TENANT_ID=${AZURE_WEBSITEV7_TENANT_ID}
-      - AZURE_WEBSITEV7_AUTH_CLIENT_ID=${AZURE_WEBSITEV7_AUTH_CLIENT_ID}
-      - AZURE_WEBSITEV7_AUTH_CLIENT_SECRET=${AZURE_WEBSITEV7_AUTH_CLIENT_SECRET}
-      - AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID=${AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID}
-      - BETTER_AUTH_URL=${PUBLIC_URL}
-      - BETTER_AUTH_TRUSTED_ORIGINS=${PUBLIC_URL}
-      - TRUST_PROXY=true
-      - NEXT_PUBLIC_BETTER_AUTH_URL=${PUBLIC_URL}
-      - PUBLIC_URL=${PUBLIC_URL}
-      - NEXT_PUBLIC_APP_URL=${PUBLIC_URL}
-      - NEXT_APP_INTERNAL_URL=http://127.0.0.1:3000
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=${DB_NAME}
-      - INTERNAL_DB_HOST=${INTERNAL_DB_HOST}
-      - REDIS_URL=redis://v7-core-redis:6379
-      - HOSTNAME=0.0.0.0
-    volumes:
-      - v7_next_cache:/app/apps/frontend/.next/cache
     networks:
-      - default
-      - proxy-network
-    depends_on:
-      - finance-service
+      - salve-mundi-v7-shared
 
 networks:
-  default:
-    name: salve-mundi-v7-shared
+  salve-mundi-v7-shared:
     external: true
   proxy-network:
     external: true
