@@ -107,6 +107,17 @@ export async function proxy(request: NextRequest) {
                 console.log(`[Proxy] No session for ${pathname}, redirecting to Microsoft.`);
                 return NextResponse.redirect(microsoftAuthUrl);
             }
+
+            // Sessie is geldig! 
+            // V7 FIX: Om de sessie-rotatie werkend te houden, moeten we Set-Cookie headers doorgeven
+            const response = NextResponse.next();
+            sessionRes.headers.forEach((value, key) => {
+                if (key.toLowerCase() === 'set-cookie') {
+                    // Gebruik append om meerdere cookies (indien nodig) te ondersteunen
+                    response.headers.append('set-cookie', value);
+                }
+            });
+            return response;
         } catch (error) {
             console.error('[Proxy] Auth gating critical error:', error);
             return NextResponse.rewrite(new URL('/404', request.url));
