@@ -1,5 +1,6 @@
 import { createClient } from 'redis';
 import { ProvisionWorkerService } from './provision-worker.js';
+import { PaymentSuccessEventSchema } from '@salvemundi/validations'; // Belangrijk: gebruik het gedeelde contract!
 
 export class EventListenerService {
     private static readonly STREAM_KEY = 'v7:events';
@@ -44,14 +45,19 @@ export class EventListenerService {
 
     private static async handleEvent(redis: ReturnType<typeof createClient>, message: any) {
         try {
-            const data = JSON.parse(message.data.payload);
-            console.log(`[AzureEventListener] Received event: ${data.event}`);
+            const rawData = JSON.parse(message.data.payload);
+            console.log(`[AzureEventListener] Received event: ${rawData.event}`);
 
-            if (data.event === 'PAYMENT_SUCCESS') {
-                const { userId, paymentId } = data;
-                if (userId) {
-                    await ProvisionWorkerService.queueProvisioning(redis, userId, paymentId);
-                    console.log(`[AzureEventListener] Queued provisioning for user ${userId}`);
+            if (rawData.event === 'PAYMENT_SUCCESS') {
+                // Valideer de inkomende payload met Zod
+                const data = PaymentSuccessEventSchema.parse(rawData);
+                
+                // DE FIX: Alleen provisionen als het daadwerkelijk een lidmaatschap is!
+                if (data.registrationType === 'membership' && data.userId) {
+                    await ProvisionWorkerService.queueProvisioning(redis, data.userId, data.paymentId);
+                    console.log(`[AzureEventListener] Queued membership provisioning for user ${data.userId}`);
+                } else {
+                    console.log(`[AzureEventListener] Ignored PAYMENT_SUCCESS for non-membership type: ${data.registrationType}`);
                 }
             }
         } catch (err: any) {
