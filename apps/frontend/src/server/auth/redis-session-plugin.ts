@@ -78,8 +78,12 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                 }
                                 return session;
                             }
+                            // FIX: Return original context/response when no valid user session is found
+                            return session;
                         } catch (error) {
                             console.error("[AUTH-PLUGIN] Session enrichment error:", error);
+                            // FIX: Return original context/response when an error occurs
+                            return (ctx as any)?.context?.returned || ctx;
                         }
                     }
                 }
