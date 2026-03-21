@@ -4,8 +4,12 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
     try {
+        const h = await headers();
+        console.log(`[DEBUG - route.ts] Headers check for getSession: ${h ? 'Present' : 'MISSING'}`);
+        console.log(`[DEBUG - route.ts] Cookie header: ${h.get('cookie') ? 'Found' : 'Missing'}`);
+        
         const session = await auth.api.getSession({
-            headers: await headers()
+            headers: h
         });
         return NextResponse.json(session);
     } catch (error) {

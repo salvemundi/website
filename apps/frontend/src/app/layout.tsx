@@ -73,10 +73,14 @@ export default function RootLayout({
 
 async function HeaderWrapper() {
     await connection();
+    const h = await headers();
+    console.log(`[DEBUG - layout.tsx] Headers check for getSession: ${h ? 'Present' : 'MISSING'}`);
+    console.log(`[DEBUG - layout.tsx] Cookie header: ${h.get('cookie') ? 'Found' : 'Missing'}`);
+    
     const [disabledRoutes, session] = await Promise.all([
         getDisabledRoutes(),
         auth.api.getSession({
-            headers: await headers()
+            headers: h
         })
     ]);
 
