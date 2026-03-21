@@ -182,9 +182,9 @@ jobs:
             for var in $VARIABLES; do
               val=$(eval echo \$$var)
               if [ ! -z "$val" ]; then
-                # Strip eventuele extra newlines/carriage returns
+                # Strip eventuele extra newlines/carriage returns en omhul met quotes voor spaties
                 clean_val=$(echo "$val" | tr -d '\n\r')
-                echo "$var=$clean_val" >> .env
+                echo "$var=\"$clean_val\"" >> .env
               fi
             done
 
