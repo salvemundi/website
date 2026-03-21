@@ -141,38 +141,42 @@ jobs:
             # Omgevingsdetectie
             ENV_NAME="acc"
             FRONTEND_PORT="3000"
-            if [ "$IMAGE_TAG" = "main" ]; then 
+            if [ "${{ needs.prepare.outputs.tag }}" = "main" ]; then 
               ENV_NAME="prod"
               FRONTEND_PORT="4000"
             fi
 
-            # .env genereren via loop
+            # Expliciete .env generatie (hufterproof)
             echo "# Auto-generated V7 App Environment" > .env
-            VAR_LIST=(
-              "MOLLIE_API_KEY" "DB_USER" "DB_PASSWORD" "DB_NAME" 
-              "DIRECTUS_KEY" "DIRECTUS_SECRET" "INTERNAL_SERVICE_TOKEN" 
-              "AZURE_WEBSITEV7_TENANT_ID" "AZURE_WEBSITEV7_SYNC_CLIENT_ID" 
-              "AZURE_WEBSITEV7_SYNC_CLIENT_SECRET" "AZURE_WEBSITEV7_MAIL_CLIENT_ID" 
-              "AZURE_WEBSITEV7_MAIL_CLIENT_SECRET" "AZURE_MAIL_SENDER" 
-              "AZURE_WEBSITEV7_AUTH_CLIENT_ID" "AZURE_WEBSITEV7_AUTH_CLIENT_SECRET" 
-              "AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID" "AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET" 
-              "BETTER_AUTH_SECRET" "DIRECTUS_STATIC_TOKEN" "BETTER_AUTH_URL" "PUBLIC_URL"
-            )
-
-            for var in "${VAR_LIST[@]}"; do
-              val=$(echo "${!var}" | tr -d '\n\r')
-              printf "%s=\"%s\"\n" "$var" "$val" >> .env
-            done
-
-            # Systeem variabelen
-            printf "IMAGE_TAG=\"%s\"\n" "$IMAGE_TAG" >> .env
+            printf "MOLLIE_API_KEY=\"%s\"\n" "$(echo "$MOLLIE_API_KEY" | tr -d '\n\r')" >> .env
+            printf "DB_USER=\"%s\"\n" "$(echo "$DB_USER" | tr -d '\n\r')" >> .env
+            printf "DB_PASSWORD=\"%s\"\n" "$(echo "$DB_PASSWORD" | tr -d '\n\r')" >> .env
+            printf "DB_NAME=\"%s\"\n" "$(echo "$DB_NAME" | tr -d '\n\r')" >> .env
+            printf "DIRECTUS_KEY=\"%s\"\n" "$(echo "$DIRECTUS_KEY" | tr -d '\n\r')" >> .env
+            printf "DIRECTUS_SECRET=\"%s\"\n" "$(echo "$DIRECTUS_SECRET" | tr -d '\n\r')" >> .env
+            printf "INTERNAL_SERVICE_TOKEN=\"%s\"\n" "$(echo "$INTERNAL_SERVICE_TOKEN" | tr -d '\n\r')" >> .env
+            printf "AZURE_WEBSITEV7_TENANT_ID=\"%s\"\n" "$(echo "$AZURE_WEBSITEV7_TENANT_ID" | tr -d '\n\r')" >> .env
+            printf "AZURE_WEBSITEV7_SYNC_CLIENT_ID=\"%s\"\n" "$(echo "$AZURE_WEBSITEV7_SYNC_CLIENT_ID" | tr -d '\n\r')" >> .env
+            printf "AZURE_WEBSITEV7_SYNC_CLIENT_SECRET=\"%s\"\n" "$(echo "$AZURE_WEBSITEV7_SYNC_CLIENT_SECRET" | tr -d '\n\r')" >> .env
+            printf "AZURE_WEBSITEV7_MAIL_CLIENT_ID=\"%s\"\n" "$(echo "$AZURE_WEBSITEV7_MAIL_CLIENT_ID" | tr -d '\n\r')" >> .env
+            printf "AZURE_WEBSITEV7_MAIL_CLIENT_SECRET=\"%s\"\n" "$(echo "$AZURE_WEBSITEV7_MAIL_CLIENT_SECRET" | tr -d '\n\r')" >> .env
+            printf "AZURE_MAIL_SENDER=\"%s\"\n" "$(echo "$AZURE_MAIL_SENDER" | tr -d '\n\r')" >> .env
+            printf "AZURE_WEBSITEV7_AUTH_CLIENT_ID=\"%s\"\n" "$(echo "$AZURE_WEBSITEV7_AUTH_CLIENT_ID" | tr -d '\n\r')" >> .env
+            printf "AZURE_WEBSITEV7_AUTH_CLIENT_SECRET=\"%s\"\n" "$(echo "$AZURE_WEBSITEV7_AUTH_CLIENT_SECRET" | tr -d '\n\r')" >> .env
+            printf "AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID=\"%s\"\n" "$(echo "$AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID" | tr -d '\n\r')" >> .env
+            printf "AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET=\"%s\"\n" "$(echo "$AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET" | tr -d '\n\r')" >> .env
+            printf "BETTER_AUTH_SECRET=\"%s\"\n" "$(echo "$BETTER_AUTH_SECRET" | tr -d '\n\r')" >> .env
+            printf "DIRECTUS_STATIC_TOKEN=\"%s\"\n" "$(echo "$DIRECTUS_STATIC_TOKEN" | tr -d '\n\r')" >> .env
+            printf "BETTER_AUTH_URL=\"%s\"\n" "$BETTER_AUTH_URL" >> .env
+            printf "PUBLIC_URL=\"%s\"\n" "$PUBLIC_URL" >> .env
+            printf "IMAGE_TAG=\"%s\"\n" "${{ needs.prepare.outputs.tag }}" >> .env
             printf "FRONTEND_PORT=\"%s\"\n" "$FRONTEND_PORT" >> .env
             printf "COMPOSE_PROJECT_NAME=\"v7-$ENV_NAME\"\n" >> .env
             printf "TRUST_PROXY=\"true\"\n" >> .env
             printf "REDIS_URL=\"redis://v7-core-redis:6379\"\n" >> .env
             printf "INTERNAL_DIRECTUS_URL=\"http://v7-core-directus:8055\"\n" >> .env
 
-            # Deploy
+            # Login en start
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker compose pull
             docker compose up -d --remove-orphans
