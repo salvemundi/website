@@ -10,24 +10,15 @@ import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { revalidateTag } from 'next/cache';
 import { rateLimit } from '../utils/ratelimit';
+import { directus, directusRequest } from '@/lib/directus';
+import { readItem } from '@directus/sdk';
 
 
 const getFinanceServiceUrl = () =>
     process.env.INTERNAL_FINANCE_URL;
 
-const getDirectusUrl = () =>
-    process.env.INTERNAL_DIRECTUS_URL;
-
 const getInternalHeaders = () => {
     const token = process.env.INTERNAL_SERVICE_TOKEN;
-    return {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-    };
-};
-
-const getDirectusHeaders = () => {
-    const token = process.env.DIRECTUS_STATIC_TOKEN;
     return {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
@@ -149,30 +140,23 @@ export async function getTransactionStatusAction(transactionId: string) {
         return { status: 'error' };
     }
 
-    const url = `${getDirectusUrl()}/items/transactions/${parsed.data.id}`;
-
     try {
-        const response = await fetch(url, {
-            headers: getDirectusHeaders(),
-            next: { revalidate: 0 } // Don't cache status checks
-        });
-
-        const json = await response.json();
-        const transaction = json?.data;
+        const transaction = await directusRequest<any>(readItem('transactions', parsed.data.id));
 
         if (transaction?.payment_status === 'paid') {
             // Revalidate user data if payment was successful
             if (transaction.user_id) {
-                revalidateTag(`user-${transaction.user_id}`, 'default');
+                const userId = typeof transaction.user_id === 'object' ? transaction.user_id.id : transaction.user_id;
+                revalidateTag(`user-${userId}`, 'default');
             }
             return { status: 'paid' };
-        } else if (['failed', 'canceled', 'expired'].includes(transaction?.payment_status)) {
+        } else if (['failed', 'canceled', 'expired'].includes(transaction?.payment_status ?? '')) {
             return { status: 'failed' };
         }
 
         return { status: 'open' };
     } catch (error) {
-        console.error('[membership.actions#getStatus] Error:', error);
+        console.error('[membership.actions#getTransactionStatusAction] Error:', error);
         return { status: 'error' };
     }
 }

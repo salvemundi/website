@@ -1,6 +1,7 @@
 import type { BetterAuthPlugin } from "better-auth";
 import { Pool } from "pg";
 import { getRedis } from "./redis-client";
+import { getPermissions } from "@/shared/lib/permissions";
 
 /**
  * Better Auth plugin die sessies cached in Redis (TTL: 5 minuten).
@@ -70,7 +71,9 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                     [sessionWithUser.user.id]
                                 );
 
+                                // Inject committees and derived permissions
                                 sessionWithUser.user.committees = rows;
+                                Object.assign(sessionWithUser.user, getPermissions(rows));
 
                                 if (token) {
                                     const redis = await getRedis();

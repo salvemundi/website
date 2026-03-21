@@ -16,6 +16,8 @@ interface EventSignupIslandProps {
     isPast: boolean;
     eventName: string;
     initialUser?: any;
+    verifiedPaymentStatus?: 'paid' | null;
+    initialQrToken?: string;
 }
 
 export default function EventSignupIsland({
@@ -25,7 +27,9 @@ export default function EventSignupIsland({
     description,
     isPast,
     eventName,
-    initialUser
+    initialUser,
+    verifiedPaymentStatus,
+    initialQrToken
 }: EventSignupIslandProps) {
     const { user: clientUser } = useAuth();
     
@@ -34,7 +38,7 @@ export default function EventSignupIsland({
 
     const [isPending, startTransition] = useTransition();
     const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(verifiedPaymentStatus === 'paid' ? 'Betaling geslaagd! Je bent nu ingeschreven.' : null);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
     
     // Status tracking (Legacy alignment)
@@ -42,7 +46,11 @@ export default function EventSignupIsland({
         isSignedUp: boolean;
         paymentStatus?: 'paid' | 'open' | 'failed' | 'canceled';
         qrToken?: string;
-    }>({ isSignedUp: false });
+    }>({ 
+        isSignedUp: verifiedPaymentStatus === 'paid',
+        paymentStatus: verifiedPaymentStatus || undefined,
+        qrToken: initialQrToken
+    });
 
     const [form, setForm] = useState({
         name: user?.name || (user as any)?.first_name ? `${(user as any).first_name} ${(user as any).last_name || ''}`.trim() : '',
@@ -52,20 +60,6 @@ export default function EventSignupIsland({
     });
 
     const isPaid = price > 0;
-
-    // Check for payment status in URL (Legacy alignment)
-    useEffect(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const status = urlParams.get('status');
-        if (status === 'paid') {
-            setSignupStatus({
-                isSignedUp: true,
-                paymentStatus: 'paid',
-                qrToken: urlParams.get('token') || 'status-verified'
-            });
-            setSuccess('Betaling geslaagd! Je bent nu ingeschreven.');
-        }
-    }, []);
 
     // Sync form with user
     useEffect(() => {

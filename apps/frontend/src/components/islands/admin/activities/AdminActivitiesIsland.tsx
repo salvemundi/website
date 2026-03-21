@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useTransition } from 'react';
+import { useState, useMemo, useTransition, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Calendar, Users, Edit, Trash2, Eye, Plus, Search, Bell, Send, MapPin, Mail, Euro, X, Loader2 } from 'lucide-react';
@@ -8,6 +8,7 @@ import { deleteActivity, sendActivityReminder, sendActivityCustomNotification } 
 import PageHeader from '@/components/ui/layout/PageHeader';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
+import { isSuperAdmin } from '@/lib/auth-utils';
 
 interface AdminActivity {
     id: number;
@@ -28,54 +29,67 @@ interface AdminActivity {
     signup_count?: number;
 }
 
-export default function AdminActivitiesIsland({ 
-    initialEvents, 
+export default function AdminActivitiesIsland({
+    initialEvents,
     userId,
-    userCommittees = []
-}: { 
-    initialEvents: AdminActivity[], 
+    userCommittees = [],
+    initialSearch = '',
+    initialFilter = 'all'
+}: {
+    initialEvents: AdminActivity[],
     userId?: string,
-    userCommittees?: any[]
+    userCommittees?: any[],
+    initialSearch?: string,
+    initialFilter?: 'all' | 'upcoming' | 'past'
 }) {
     const router = useRouter();
     const [events, setEvents] = useState(initialEvents);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>('all');
+    const [searchQuery, setSearchQuery] = useState(initialSearch);
+    const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>(initialFilter);
     const [pageSize, setPageSize] = useState<number | -1>(10);
-    
+
     // Notification states
     const [showModal, setShowModal] = useState(false);
     const [customNotification, setCustomNotification] = useState({ title: '', body: '', eventId: 0 });
     const [isSending, setIsSending] = useState(false);
-    
+
     const [isPending, startTransition] = useTransition();
 
-    const filteredEvents = useMemo(() => {
-        const now = new Date();
-        const matchesSearch = (ev: AdminActivity) => {
-            if (!searchQuery) return true;
-            const q = searchQuery.toLowerCase();
-            return (
-                ev.name.toLowerCase().includes(q) || 
-                ev.description?.toLowerCase().includes(q) || 
-                ev.location?.toLowerCase().includes(q)
-            );
-        };
-        const sortDesc = (a: AdminActivity, b: AdminActivity) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime();
+    // URL Sync logic
+    const updateUrl = (q: string, f: string) => {
+        const params = new URLSearchParams();
+        if (q) params.set('q', q);
+        if (f && f !== 'all') params.set('filter', f);
 
-        let result = [...events];
-        if (filter === 'upcoming') {
-            result = result.filter(e => new Date(e.event_date) >= now);
-        } else if (filter === 'past') {
-            const upcoming = result.filter(e => new Date(e.event_date) >= now).sort(sortDesc);
-            const past = result.filter(e => new Date(e.event_date) < now).sort(sortDesc);
-            return [...upcoming, ...past].filter(matchesSearch);
-        }
-        
-        return result.filter(matchesSearch).sort(sortDesc);
-    }, [events, searchQuery, filter]);
+        const queryString = params.toString();
+        router.push(`/beheer/activiteiten${queryString ? `?${queryString}` : ''}`);
+    };
 
-    const displayedEvents = pageSize === -1 ? filteredEvents : filteredEvents.slice(0, pageSize);
+    // Sync state with props when they change (e.g. from router.push)
+    useEffect(() => {
+        setEvents(initialEvents);
+        setSearchQuery(initialSearch);
+        setFilter(initialFilter);
+    }, [initialEvents, initialSearch, initialFilter]);
+
+    // Search debounce
+    useEffect(() => {
+        if (searchQuery === initialSearch) return;
+
+        const timer = setTimeout(() => {
+            updateUrl(searchQuery, filter);
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    const handleFilterChange = (newFilter: 'all' | 'upcoming' | 'past') => {
+        if (newFilter === filter) return;
+        setFilter(newFilter);
+        updateUrl(searchQuery, newFilter);
+    };
+
+    const displayedEvents = pageSize === -1 ? events : events.slice(0, pageSize);
 
     const handleDelete = async (eventId: number, eventName: string) => {
         if (!confirm(`Weet je zeker dat je "${eventName}" wilt verwijderen?`)) return;
@@ -125,10 +139,7 @@ export default function AdminActivitiesIsland({
     };
 
     // Global admin privileges
-    const isSuperAdmin = userCommittees.some(c => {
-        const name = (c?.name || '').toLowerCase();
-        return name.includes('bestuur') || name.includes('ict') || name.includes('kandi');
-    });
+    const superAdmin = useMemo(() => isSuperAdmin(userCommittees), [userCommittees]);
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -136,18 +147,18 @@ export default function AdminActivitiesIsland({
             <div className="mb-8 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                 <div className="w-full flex items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
-                        <button 
-                            onClick={() => router.push('/beheer/activiteiten/nieuw')} 
+                        <button
+                            onClick={() => router.push('/beheer/activiteiten/nieuw')}
                             className="bg-purple-600 dark:bg-purple-500 text-white px-6 py-3 rounded-full font-bold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex items-center gap-2 cursor-pointer"
                         >
-                            <Plus className="h-5 w-5" /> 
+                            <Plus className="h-5 w-5" />
                             <span>Nieuwe Activiteit</span>
                         </button>
                         <div className="flex items-center gap-3">
                             <label className="text-sm font-bold text-slate-500 sr-only sm:not-sr-only">Toon</label>
-                            <select 
-                                value={pageSize === -1 ? 'all' : pageSize} 
-                                onChange={(e) => setPageSize(e.target.value === 'all' ? -1 : parseInt(e.target.value, 10))} 
+                            <select
+                                value={pageSize === -1 ? 'all' : pageSize}
+                                onChange={(e) => setPageSize(e.target.value === 'all' ? -1 : parseInt(e.target.value, 10))}
                                 className="rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-sm px-4 py-2 outline-none cursor-pointer font-medium"
                             >
                                 <option value="10">10</option>
@@ -158,9 +169,9 @@ export default function AdminActivitiesIsland({
                     </div>
                     <div className="hidden sm:flex gap-2">
                         {['all', 'upcoming', 'past'].map(f => (
-                            <button 
-                                key={f} 
-                                onClick={() => setFilter(f as any)} 
+                            <button
+                                key={f}
+                                onClick={() => handleFilterChange(f as any)}
                                 className={`px-5 py-2 rounded-full font-bold transition-all cursor-pointer ${filter === f ? 'bg-purple-600 text-white shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
                             >
                                 {f === 'all' ? 'Alle' : f === 'upcoming' ? 'Aankomend' : 'Verleden'}
@@ -173,12 +184,12 @@ export default function AdminActivitiesIsland({
             {/* Search Bar */}
             <div className="mb-8 relative max-w-md group">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-purple-500 transition-colors pointer-events-none z-20" />
-                <input 
-                    type="text" 
-                    placeholder="Zoek activiteiten..." 
-                    value={searchQuery} 
-                    onChange={(e) => setSearchQuery(e.target.value)} 
-                    className="w-full pl-12 pr-4 py-4 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 outline-none transition-all shadow-sm" 
+                <input
+                    type="text"
+                    placeholder="Zoek activiteiten..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-12 pr-4 py-4 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 outline-none transition-all shadow-sm"
                 />
             </div>
 
@@ -189,11 +200,11 @@ export default function AdminActivitiesIsland({
                     const isPast = eventDate < new Date();
                     const isDraft = event.status === 'draft';
                     const isScheduled = event.status === 'published' && event.publish_date && new Date(event.publish_date) > new Date();
-                    const canEdit = isSuperAdmin || (event.committee_id && userCommittees.some(c => String(c.id) === String(event.committee_id)));
+                    const canEdit = superAdmin || (event.committee_id && userCommittees.some(c => String(c.id) === String(event.committee_id)));
 
                     return (
-                        <div 
-                            key={event.id} 
+                        <div
+                            key={event.id}
                             className={`bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-4 sm:p-6 transition-all border border-slate-100 dark:border-slate-700/50 hover:shadow-2xl hover:scale-[1.005] group/card ${isPast ? 'opacity-80' : ''}`}
                         >
                             <div className="flex flex-col md:flex-row gap-6">
@@ -202,12 +213,12 @@ export default function AdminActivitiesIsland({
                                     <div className="flex items-start justify-between mb-4">
                                         <div className="flex items-start gap-5 flex-1 min-w-0">
                                             <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-28 md:h-28 flex-shrink-0 group-hover/card:scale-105 transition-transform duration-500">
-                                                <Image 
-                                                    src={getImageUrl(event.image)} 
-                                                    alt={event.name} 
-                                                    fill 
-                                                    className="object-cover rounded-2xl shadow-md border border-slate-100 dark:border-slate-700" 
-                                                    sizes="112px" 
+                                                <Image
+                                                    src={getImageUrl(event.image)}
+                                                    alt={event.name}
+                                                    fill
+                                                    className="object-cover rounded-2xl shadow-md border border-slate-100 dark:border-slate-700"
+                                                    sizes="112px"
                                                 />
                                             </div>
                                             <div className="flex-1 min-w-0">
@@ -240,7 +251,7 @@ export default function AdminActivitiesIsland({
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     {event.description && (
                                         <p className="text-slate-600 dark:text-slate-300 text-sm mb-4 line-clamp-2 leading-relaxed">
                                             {event.description}
@@ -271,17 +282,17 @@ export default function AdminActivitiesIsland({
 
                                 {/* Actions */}
                                 <div className="flex flex-row md:flex-col gap-3 justify-end items-end w-full md:w-auto flex-wrap pt-4 md:pt-0 border-t md:border-t-0 border-slate-100 dark:border-slate-700">
-                                    <button 
-                                        onClick={() => router.push(`/beheer/activiteiten/${event.id}/aanmeldingen`)} 
+                                    <button
+                                        onClick={() => router.push(`/beheer/activiteiten/${event.id}/aanmeldingen`)}
                                         className="btn-secondary flex items-center gap-2 px-4 py-3 text-sm bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-white dark:hover:bg-blue-800/50 rounded-xl transition-all font-bold cursor-pointer"
                                     >
-                                        <Eye className="h-4 w-4" /> 
+                                        <Eye className="h-4 w-4" />
                                         <span>Show Signups</span>
                                     </button>
 
                                     {!isPast && !isDraft && (
                                         <div className="flex gap-2 w-full md:w-auto">
-                                            <button 
+                                            <button
                                                 onClick={() => handleReminder(event.id, event.name)}
                                                 disabled={isSending}
                                                 className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-3 text-sm bg-amber-50 text-amber-600 hover:bg-amber-100 dark:bg-amber-900/30 dark:text-white rounded-xl transition-all font-bold disabled:opacity-50 cursor-pointer"
@@ -290,7 +301,7 @@ export default function AdminActivitiesIsland({
                                                 <Bell className="h-4 w-4" />
                                                 <span className="md:hidden lg:inline">Reminder</span>
                                             </button>
-                                            <button 
+                                            <button
                                                 onClick={() => {
                                                     setCustomNotification({ title: `Update: ${event.name}`, body: '', eventId: event.id });
                                                     setShowModal(true);
@@ -307,15 +318,15 @@ export default function AdminActivitiesIsland({
 
                                     {canEdit && (
                                         <div className="flex gap-2 w-full md:w-auto">
-                                            <button 
-                                                onClick={() => router.push(`/beheer/activiteiten/${event.id}/bewerken`)} 
+                                            <button
+                                                onClick={() => router.push(`/beheer/activiteiten/${event.id}/bewerken`)}
                                                 className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-3 text-sm bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 rounded-xl transition-all font-bold cursor-pointer"
                                             >
                                                 <Edit className="h-4 w-4" />
                                                 <span>Edit</span>
                                             </button>
-                                            <button 
-                                                onClick={() => handleDelete(event.id, event.name)} 
+                                            <button
+                                                onClick={() => handleDelete(event.id, event.name)}
                                                 disabled={isPending}
                                                 className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-3 text-sm bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/30 dark:text-white rounded-xl transition-all font-bold disabled:opacity-50 cursor-pointer"
                                             >

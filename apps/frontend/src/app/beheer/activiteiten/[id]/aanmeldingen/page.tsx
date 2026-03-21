@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ActiviteitAanmeldingenIsland from '@/components/islands/admin/activities/ActiviteitAanmeldingenIsland';
 import AanmeldingenListSkeleton from '@/components/ui/admin/activities/AanmeldingenListSkeleton';
-import { directus } from '@/lib/directus';
+import { directus, directusRequest } from '@/lib/directus';
 import { readItem, readItems } from '@directus/sdk';
 
 export default async function AanmeldingenPage({ params }: { params: Promise<{ id: string }> }) {
@@ -38,8 +38,8 @@ async function SignupsDataLoader({ id }: { id: string }) {
     // Fetch Event
     let event;
     try {
-        event = await directus.request(
-            readItem('events', id, {
+        event = await directusRequest<any>(
+            readItem<any, any, any>('events', id, {
                 fields: ['id', 'name', 'price_members', 'committee_id']
             })
         );
@@ -61,8 +61,8 @@ async function SignupsDataLoader({ id }: { id: string }) {
     // Fetch Signups
     let signups: any[] = [];
     try {
-        signups = await directus.request(
-            readItems('event_signups', {
+        signups = await directusRequest<any[]>(
+            readItems<any, any, any>('event_signups', {
                 filter: {
                     event_id: { _eq: id }
                 },
@@ -72,7 +72,7 @@ async function SignupsDataLoader({ id }: { id: string }) {
                     'participant_email', 
                     'participant_phone', 
                     'payment_status', 
-                    'created_at', 
+                    'date_created', 
                     'checked_in',
                     'checked_in_at',
                     // @ts-ignore
@@ -86,7 +86,7 @@ async function SignupsDataLoader({ id }: { id: string }) {
                     // @ts-ignore
                     'directus_relations.phone_number'
                 ],
-                sort: ['-created_at'],
+                sort: ['-date_created'],
                 limit: -1
             })
         );

@@ -3,8 +3,9 @@
 import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
-import { directus } from "@/lib/directus";
+import { directus, directusRequest } from "@/lib/directus";
 import { readItems, updateItem, updateUser, readUsers, readUser } from "@directus/sdk";
+import { isSuperAdmin } from "@/lib/auth-utils";
 
 const AZURE_MGMT_URL = process.env.AZURE_MANAGEMENT_SERVICE_URL;
 const AZURE_SYNC_URL = process.env.AZURE_SYNC_SERVICE_URL;
@@ -17,13 +18,7 @@ async function checkAdminAccess() {
     if (!session || !session.user) return null;
     
     const user = session.user as any;
-    const memberships = user.committees || [];
-    const isAdmin = memberships.some((c: any) => {
-        const name = (c?.name || '').toString().toLowerCase();
-        return name.includes('bestuur') || name.includes('ict') || name.includes('kandi');
-    });
-
-    if (!isAdmin) return null;
+    if (!isSuperAdmin(user.committees)) return null;
     return user;
 }
 

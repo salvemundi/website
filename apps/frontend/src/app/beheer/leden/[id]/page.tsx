@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import LedenDetailIsland from '@/components/islands/admin/leden/LedenDetailIsland';
 import MemberDetailSkeleton from '@/components/ui/admin/leden/MemberDetailSkeleton';
-import { directus } from '@/lib/directus';
+import { directus, directusRequest } from '@/lib/directus';
 
 
 // Correct Directus SDK imports
@@ -42,8 +42,8 @@ async function LidDataLoader({ id }: { id: string }) {
     // Fetch Member Data
     let member;
     try {
-        member = await directus.request(
-            readUser(id, {
+        member = await directusRequest<any>(
+            readUser<any, any>(id, {
                 fields: ['id', 'first_name', 'last_name', 'email', 'date_of_birth', 'membership_expiry', 'status', 'phone_number', 'avatar', 'entra_id']
             })
         );
@@ -54,8 +54,8 @@ async function LidDataLoader({ id }: { id: string }) {
     if (!member) return notFound();
 
     // Fetch Committee Memberships
-    const userCommittees = await directus.request(
-        dReadItems('committee_members', {
+    const userCommittees = await directusRequest<any[]>(
+        dReadItems<any, any, any>('committee_members', {
             filter: { user_id: { _eq: id } },
             fields: ['id', 'is_leader', 'committee_id.id', 'committee_id.name', 'committee_id.is_visible', 'committee_id.azure_group_id'],
             limit: -1
@@ -63,11 +63,11 @@ async function LidDataLoader({ id }: { id: string }) {
     );
 
     // Fetch Activity History (Signups)
-    const signups = await directus.request(
-        dReadItems('event_signups', {
+    const signups = await directusRequest<any[]>(
+        dReadItems<any, any, any>('event_signups', {
             filter: { user_id: { _eq: id } },
-            fields: ['id', 'payment_status', 'created_at', 'event_id.id', 'event_id.name', 'event_id.date_start'],
-            sort: ['-created_at'],
+            fields: ['id', 'payment_status', 'date_created', 'event_id.id', 'event_id.name', 'event_id.event_date'],
+            sort: ['-date_created'],
             limit: 20
         })
     );
@@ -75,8 +75,8 @@ async function LidDataLoader({ id }: { id: string }) {
     // Fetch All Committees (for the management tab - admin only)
     let allCommittees: any[] = [];
     if (hasPriv) {
-        allCommittees = await directus.request(
-            dReadItems('committees', {
+        allCommittees = await directusRequest<any[]>(
+            dReadItems<any, any, any>('committees', {
                 fields: ['id', 'name', 'azure_group_id', 'is_visible'],
                 sort: ['name'],
                 limit: -1

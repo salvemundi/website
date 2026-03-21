@@ -8,6 +8,7 @@ import { Input } from '@/shared/ui/Input';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { validateCouponAction, initiateMembershipPaymentAction } from '@/server/actions/membership.actions';
 import { signupSchema, type SignupFormData } from '@salvemundi/validations';
+import { calculateDiscountedPrice } from '@/shared/lib/price-utils';
 
 interface MembershipFormIslandProps {
     baseAmount: number;
@@ -74,17 +75,7 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
         });
     };
 
-    const calculateTotal = () => {
-        if (couponStatus?.valid && couponStatus.discount) {
-            if (couponStatus.type === 'percentage') {
-                return baseAmount * (1 - couponStatus.discount / 100);
-            }
-            return Math.max(0, baseAmount - couponStatus.discount);
-        }
-        return baseAmount;
-    };
-
-    const total = calculateTotal();
+    const total = calculateDiscountedPrice(baseAmount, couponStatus);
 
     return (
         <form

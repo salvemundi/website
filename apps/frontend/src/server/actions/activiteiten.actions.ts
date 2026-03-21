@@ -3,7 +3,8 @@
 import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
-import { directus } from "@/lib/directus";
+import { cache } from "react";
+import { directus, directusRequest } from "@/lib/directus";
 import { 
     readItems, 
     createItem, 
@@ -13,8 +14,9 @@ import {
     aggregate
 } from "@directus/sdk";
 import { activityAdminSchema } from "@salvemundi/validations";
-
 import { AdminActivitySchema } from "@salvemundi/validations";
+import { logAdminAction } from "./audit.actions";
+import { isSuperAdmin } from "@/lib/auth-utils";
 
 async function getSession() {
     return await auth.api.getSession({
@@ -29,49 +31,60 @@ async function checkAdminAccess() {
     if (!session || !session.user) return false;
     
     const user = session.user as any;
-    const committees = user.committees || [];
-    
-    return committees.some((c: any) => {
-        const name = (c?.name || '').toString().toLowerCase();
-        return name.includes('bestuur') || name.includes('ict') || name.includes('kandi') || name.includes('commissie');
-    });
+    return isSuperAdmin(user.committees);
 }
 
-export async function getAdminActivities() {
+export const getAdminActivities = cache(async (search?: string, filter: 'all' | 'upcoming' | 'past' = 'all') => {
     if (!(await checkAdminAccess())) throw new Error("Unauthorized");
 
     try {
-        const events = await directus.request(
-            readItems('events', {
-                fields: ['id', 'name', 'event_date', 'event_date_end', 'description', 'location', 'max_sign_ups', 'price_members', 'price_non_members', 'inschrijf_deadline', 'contact', { image: ['id'] }, 'committee_id', 'status', 'publish_date'],
-                sort: ['-event_date'],
-                limit: -1
-            })
-        );
+        const query: any = {
+            fields: ['id', 'name', 'event_date', 'event_date_end', 'description', 'location', 'max_sign_ups', 'price_members', 'price_non_members', 'inschrijf_deadline', 'contact', { image: ['id'] }, 'committee_id', 'status', 'publish_date'],
+            sort: ['-event_date'],
+            limit: -1,
+            filter: {}
+        };
+
+        if (search) {
+            query.filter._or = [
+                { name: { _icontains: search } },
+                { description: { _icontains: search } },
+                { location: { _icontains: search } }
+            ];
+        }
+
+        const now = new Date().toISOString();
+        if (filter === 'upcoming') {
+            query.filter.event_date = { _gte: now };
+        } else if (filter === 'past') {
+            query.filter.event_date = { _lt: now };
+        }
+
+        const events = await directusRequest<any[]>(readItems('events', query));
         
-        const eventsWithCounts = await Promise.all(
-            events.map(async (event: any) => {
-                const result = await directus.request(
-                    aggregate('event_signups', {
-                        aggregate: { count: '*' },
-                        query: {
-                            filter: { event_id: { _eq: event.id } }
-                        }
-                    })
-                );
-                return {
-                    ...event,
-                    signup_count: parseInt(result[0]?.count || "0")
-                };
+        // Fix N+1 query by using a single aggregate call with groupBy
+        const counts = await directusRequest<any[]>(
+            aggregate('event_signups', {
+                aggregate: { count: '*' },
+                groupBy: ['event_id']
             })
         );
+
+        const countMap = new Map((counts as any[]).map(c => [c.event_id, parseInt(c.count?.count || c.count || "0")]));
+        
+        const eventsWithCounts = events.map((event: any) => {
+            return {
+                ...event,
+                signup_count: countMap.get(event.id) || 0
+            };
+        });
         
         return AdminActivitySchema.array().parse(eventsWithCounts);
     } catch (error) {
-        console.error("Failed to fetch admin activities:", error);
+        // Logging is handled by directusRequest
         return [];
     }
-}
+});
 
 export async function sendActivityReminder(eventId: number) {
     if (!(await checkAdminAccess())) return { success: false, error: "Unauthorized" };
@@ -126,7 +139,8 @@ export async function deleteActivity(eventId: number) {
     if (!(await checkAdminAccess())) return { success: false, error: "Unauthorized" };
 
     try {
-        await directus.request(deleteItem('events', eventId));
+        await directusRequest(deleteItem('events', eventId));
+        await logAdminAction('delete', 'events', eventId);
         
         revalidateTag('events', 'default');
         revalidatePath('/beheer/activiteiten');
@@ -149,7 +163,7 @@ export async function createActivityAction(prevState: any, formData: FormData) {
         const fileData = new FormData();
         fileData.append('file', imageFile);
         try {
-            const res = await directus.request(uploadFiles(fileData));
+            const res = await directusRequest<any>(uploadFiles(fileData));
             imageId = res.id;
         } catch (e) {
             console.error('Image upload failed', e);
@@ -181,7 +195,8 @@ export async function createActivityAction(prevState: any, formData: FormData) {
     if (imageId) directusPayload.image = imageId;
 
     try {
-        const res = await directus.request(createItem('events', directusPayload));
+        const res = await directusRequest<any>(createItem('events', directusPayload));
+        await logAdminAction('create', 'events', res.id, directusPayload);
 
         revalidateTag('events', 'default');
         revalidatePath('/beheer/activiteiten');
@@ -200,14 +215,11 @@ export async function updateActivityAction(eventId: number, prevState: any, form
     // Strict access check
     const user = session.user as any;
     const memberships = user.committees || [];
-    const isPowerful = memberships.some((c: any) => {
-        const name = (c?.name || '').toString().toLowerCase();
-        return name.includes('bestuur') || name.includes('ict') || name.includes('kandi');
-    });
+    const isPowerful = isSuperAdmin(memberships);
 
     try {
         // Fetch existing to check committee ownership if not powerful
-        const existing = await directus.request(readItems('events', {
+        const existing = await directusRequest<any[]>(readItems('events', {
             fields: ['committee_id'],
             filter: { id: { _eq: eventId } },
             limit: 1
@@ -228,7 +240,7 @@ export async function updateActivityAction(eventId: number, prevState: any, form
         if (imageFile && imageFile.size > 0 && imageFile.name !== 'undefined') {
             const fileData = new FormData();
             fileData.append('file', imageFile);
-            const res = await directus.request(uploadFiles(fileData));
+            const res = await directusRequest<any>(uploadFiles(fileData));
             imageId = res.id;
         } else if (removeImage) {
             imageId = null;
@@ -256,7 +268,8 @@ export async function updateActivityAction(eventId: number, prevState: any, form
         
         if (imageId !== undefined) directusPayload.image = imageId;
 
-        await directus.request(updateItem('events', eventId, directusPayload));
+        await directusRequest(updateItem('events', eventId, directusPayload));
+        await logAdminAction('update', 'events', eventId, directusPayload);
 
         revalidateTag('events', 'default');
         revalidateTag(`event_${eventId}`, 'default');

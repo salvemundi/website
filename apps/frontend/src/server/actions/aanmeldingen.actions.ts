@@ -3,7 +3,7 @@
 import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
-import { directus } from "@/lib/directus";
+import { directus, directusRequest } from "@/lib/directus";
 import { 
     readItems, 
     createItem, 
@@ -49,7 +49,7 @@ export async function deleteSignupAction(signupId: number, eventId: string | num
     if (!user) return { success: false, error: "Unauthorized" };
 
     try {
-        await directus.request(deleteItem('event_signups', signupId));
+        await directusRequest(deleteItem('event_signups', signupId));
         
         if (participantEmail && eventName) {
             await sendCancellationEmail(participantEmail, eventName);
@@ -72,7 +72,7 @@ export async function searchMembersAction(query: string) {
     if (query.length < 2) return { success: true, data: [] };
 
     try {
-        const users = await directus.request(
+        const users = await directusRequest<any[]>(
             readUsers({
                 search: query,
                 limit: 10,
@@ -106,7 +106,7 @@ export async function createManualSignupAction(eventId: number, eventName: strin
             payload.participant_phone = guestData.phone || null;
         }
 
-        await directus.request(createItem('event_signups', payload));
+        await directusRequest(createItem('event_signups', payload));
 
         revalidateTag(`event_signups_${eventId}`, 'default');
         revalidatePath(`/beheer/activiteiten/${eventId}/aanmeldingen`);
@@ -127,7 +127,7 @@ export async function toggleCheckInAction(signupId: number, eventId: number, che
     if (!user) return { success: false, error: "Unauthorized" };
 
     try {
-        await directus.request(
+        await directusRequest(
             updateItem('event_signups', signupId, {
                 checked_in: checkedIn,
                 checked_in_at: checkedIn ? new Date().toISOString() : null
