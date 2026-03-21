@@ -13,41 +13,21 @@ import {
     type ReisSignupForm,
 } from '@salvemundi/validations';
 
-const getDirectusUrl = () =>
-    process.env.INTERNAL_DIRECTUS_URL;
-
-const getDirectusHeaders = (): HeadersInit | null => {
-    const token = process.env.DIRECTUS_STATIC_TOKEN;
-    if (!token) {
-        console.warn('[reis.actions] DIRECTUS_STATIC_TOKEN missing.');
-        return null;
-    }
-    return {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-    };
-};
+import { directusRequest } from '@/lib/directus';
+import { readItems, createItem, updateItem } from '@directus/sdk';
+import { auth } from '@/server/auth/auth';
+import { headers as nextHeaders } from 'next/headers';
 
 export async function getReisSiteSettings(): Promise<ReisSiteSettings | null> {
-    const url = `${getDirectusUrl()}/items/site_settings?filter[id][_eq]=reis`;
-    const headers = getDirectusHeaders();
-    if (!headers) return null;
-
     try {
-        const res = await fetch(url, {
-            headers,
-            next: { revalidate: 300, tags: ['site_settings', 'reis_settings'] },
-        });
-        if (!res.ok) {
-            await res.text();
-            return null;
-        }
+        const data = await directusRequest(readItems('site_settings', {
+            filter: { id: { _eq: 'reis' } },
+            limit: 1
+        }));
+        
+        if (!data || data.length === 0) return null;
 
-        const json = await res.json();
-        if (!json.data || json.data.length === 0) return null;
-
-        const parsed = reisSiteSettingsSchema.safeParse(json.data[0]);
+        const parsed = reisSiteSettingsSchema.safeParse(data[0]);
         if (!parsed.success) {
             console.error('[reis.actions#getReisSiteSettings] Validation failed', parsed.error.flatten().fieldErrors);
             return null;
@@ -60,28 +40,18 @@ export async function getReisSiteSettings(): Promise<ReisSiteSettings | null> {
 }
 
 export async function getUpcomingTrips(): Promise<ReisTrip[]> {
-    const url = `${getDirectusUrl()}/items/trips?filter[status][_eq]=published&sort=start_date`; // Legacy used 'reizen', V7 uses 'trips'
-    const headers = getDirectusHeaders();
-    if (!headers) return [];
-
     try {
-        const res = await fetch(url, {
-            headers,
-            next: { revalidate: 300, tags: ['trips'] },
-        });
-        if (!res.ok) {
-            await res.text();
-            return [];
-        }
+        const data = await directusRequest(readItems('trips', {
+            filter: { status: { _eq: 'published' } },
+            sort: ['start_date']
+        }));
 
-        const json = await res.json();
-        const parsed = reisTripSchema.array().safeParse(json.data ?? []);
+        const parsed = reisTripSchema.array().safeParse(data ?? []);
         if (!parsed.success) {
             console.error('[reis.actions#getUpcomingTrips] Validation failed', parsed.error.flatten().fieldErrors);
             return [];
         }
 
-        // Filtering logic equivalent to useMemo nextTrip logic from legacy
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
@@ -113,22 +83,13 @@ export async function getUpcomingTrips(): Promise<ReisTrip[]> {
 }
 
 export async function getTripSignups(tripId: number): Promise<ReisTripSignup[]> {
-    const url = `${getDirectusUrl()}/items/trip_signups?filter[trip_id][_eq]=${tripId}&limit=-1`;
-    const headers = getDirectusHeaders();
-    if (!headers) return [];
-
     try {
-        const res = await fetch(url, {
-            headers,
-            next: { revalidate: 60, tags: ['trip_signups', `trip_${tripId}`] },
-        });
-        if (!res.ok) {
-            await res.text();
-            return [];
-        }
+        const data = await directusRequest(readItems('trip_signups', {
+            filter: { trip_id: { _eq: tripId } },
+            limit: -1
+        }));
 
-        const json = await res.json();
-        const parsed = reisTripSignupSchema.array().safeParse(json.data ?? []);
+        const parsed = reisTripSignupSchema.array().safeParse(data ?? []);
         if (!parsed.success) {
             console.error('[reis.actions#getTripSignups] Validation failed', parsed.error.flatten().fieldErrors);
             return [];
@@ -140,8 +101,10 @@ export async function getTripSignups(tripId: number): Promise<ReisTripSignup[]> 
     }
 }
 
-export async function createTripSignup(data: ReisSignupForm, tripId: number, isCommitteeMember: boolean): Promise<{ success: boolean; message?: string }> {
-    // Zero-Trust: Validate input with Zod
+export async function createTripSignup(data: ReisSignupForm, tripId: number): Promise<{ success: boolean; message?: string }> {
+    const session = await auth.api.getSession({ headers: await nextHeaders() });
+    
+
     const parsed = reisSignupFormSchema.safeParse(data);
     if (!parsed.success) {
         console.error('[reis.actions#createTripSignup] Zod validation failed:', parsed.error.flatten().fieldErrors);
@@ -166,6 +129,9 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number, isC
     const participantsCount = existingSignups.filter(s => s.status === 'confirmed' || s.status === 'registered').length;
     const shouldBeWaitlisted = participantsCount >= targetTrip.max_participants;
 
+    // Server-side role calculation
+    const isCommitteeMember = (session?.user as any)?.committees?.length > 0;
+
     const payload = {
         trip_id: tripId,
         first_name: parsed.data.first_name,
@@ -175,28 +141,14 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number, isC
         phone_number: parsed.data.phone_number,
         date_of_birth: parsed.data.date_of_birth,
         terms_accepted: parsed.data.terms_accepted,
-        status: shouldBeWaitlisted ? 'waitlist' : 'registered',
-        role: isCommitteeMember ? 'crew' : 'participant',
+        status: shouldBeWaitlisted ? 'waitlist' : 'registered' as any,
+        role: isCommitteeMember ? 'crew' : 'participant' as any,
         deposit_paid: false,
         full_payment_paid: false,
     };
 
-    const url = `${getDirectusUrl()}/items/trip_signups`;
-    const headers = getDirectusHeaders();
-    if (!headers) return { success: false, message: 'Configuratiefout: API sleutel ontbreekt.' };
-
     try {
-        const res = await fetch(url, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify(payload),
-        });
-
-        if (!res.ok) {
-            console.error('[reis.actions#createTripSignup] Failed to insert:', res.status, res.statusText);
-            await res.text();
-            return { success: false, message: 'Er is een fout opgetreden bij het opslaan van de inschrijving.' };
-        }
+        await directusRequest(createItem('trip_signups', payload));
 
         revalidatePath('/reis');
         revalidatePath('/beheer/reis');
@@ -208,52 +160,34 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number, isC
 }
 
 export async function cancelTripSignup(signupId: number): Promise<{ success: boolean; message?: string }> {
-    // CRITICAL: Zero-Trust Authorization required. Must verify Better Auth session.
-    const cookieStore = await cookies();
-    const sessionToken = cookieStore.get('better-auth.session-token');
+    const session = await auth.api.getSession({ headers: await nextHeaders() });
 
-    if (!sessionToken) {
+    if (!session || !session.user) {
         console.error('[reis.actions#cancelTripSignup] Unauthorized attempt to cancel signup.');
         return { success: false, message: 'Je moet ingelogd zijn om een aanmelding te annuleren.' };
     }
 
-    // Conceptually we'd fetch the session details and match the user email to the signup's email.
-    // Assuming a fastify or API call to Better Auth for session validation is made here:
-    // For now we will check via directus if the token maps to the directus_users, but the prompt says 
-    // "verify Better Auth session or a secure token".
-
-    // Because we just need to satisfy the Zero-Trust rule:
-    const url = `${getDirectusUrl()}/items/trip_signups/${signupId}`;
-    const headers = getDirectusHeaders();
-    if (!headers) return { success: false, message: 'Configuratiefout: API sleutel ontbreekt.' };
-
     try {
-        // Fetch existing logic to verify the token owner (Pseudo implementation for the migration)
-        const fetchRes = await fetch(url, { headers });
-        if (!fetchRes.ok) {
-            await fetchRes.text();
+        const trip = await directusRequest(readItems('trip_signups', {
+            filter: { id: { _eq: signupId } },
+            limit: 1
+        }));
+
+        if (!trip || trip.length === 0) {
             return { success: false, message: 'Aanmelding niet gevonden.' };
         }
 
-        const currentData = await fetchRes.json();
+        const signup = trip[0];
 
-        // At this point we need the user's email from the session to compare.
-        // If we can't cleanly get it, we just enforce the session is present as a minimal gate, 
-        // but ideally: if (currentData.data.email !== sessionEmail) return err;
-
-        const updateRes = await fetch(url, {
-            method: 'PATCH',
-            headers,
-            body: JSON.stringify({ status: 'cancelled' }),
-        });
-
-        if (!updateRes.ok) {
-            console.error('[reis.actions#cancelTripSignup] Failed to update:', updateRes.status, updateRes.statusText);
-            await updateRes.text();
-            return { success: false, message: 'Er is een fout opgetreden bij annulering.' };
+    
+        if (signup.email !== session.user.email) {
+            console.error('[reis.actions#cancelTripSignup] Email mismatch for cancellation.');
+            return { success: false, message: 'Je kunt alleen je eigen aanmelding annuleren.' };
         }
 
-        if (currentData.data?.trip_id) {
+        await directusRequest(updateItem('trip_signups', signupId, { status: 'cancelled' as any }));
+
+        if (signup.trip_id) {
             revalidatePath('/beheer/reis');
         }
         revalidatePath('/reis');
@@ -263,4 +197,5 @@ export async function cancelTripSignup(signupId: number): Promise<{ success: boo
         return { success: false, message: 'Interne serverfout bij annuleren.' };
     }
 }
+
 
