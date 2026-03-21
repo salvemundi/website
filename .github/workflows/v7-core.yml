@@ -78,7 +78,7 @@ jobs:
               val=$(eval echo \$$var)
               if [ ! -z "$val" ]; then
                 clean_val=$(echo "$val" | tr -d '\n\r')
-                echo "$var=$clean_val" >> .env
+                echo "$var=\"$clean_val\"" >> .env
               fi
             done
 
