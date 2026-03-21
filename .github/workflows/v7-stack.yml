@@ -24,8 +24,24 @@ jobs:
     steps:
       - run: echo "Determining tag for branch ${{ github.ref_name }}"
 
-  build-frontend:
+  lint:
     needs: prepare
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -r lint
+
+  build-frontend:
+    needs: [prepare, lint]
     name: Build Frontend
     runs-on: ubuntu-latest
     permissions:
@@ -45,11 +61,11 @@ jobs:
           file: apps/frontend/Dockerfile
           push: true
           tags: ghcr.io/salvemundi/v7-app:${{ needs.prepare.outputs.tag }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ github.workflow }}-frontend
+          cache-to: type=gha,mode=max,scope=${{ github.workflow }}-frontend
 
   build-services:
-    needs: prepare
+    needs: [prepare, lint]
     name: Build Microservices
     runs-on: ubuntu-latest
     strategy:
@@ -82,8 +98,8 @@ jobs:
           file: ${{ matrix.file }}
           push: true
           tags: ghcr.io/salvemundi/${{ matrix.image }}:${{ needs.prepare.outputs.tag }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ github.workflow }}-${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ github.workflow }}-${{ matrix.service }}
 
   deploy:
     name: Deploy to VPS
