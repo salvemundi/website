@@ -22,16 +22,19 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --no-frozen-lockf
 COPY packages/validations ./packages/validations
 RUN pnpm --filter=@salvemundi/validations build
 
-# ZET DE ENV VARIABELEN HIER (vóór de COPY van de frontend code)
-ENV BETTER_AUTH_URL=http://localhost:3000
-ENV NEXT_PUBLIC_APP_URL=http://localhost:3000
-ENV PUBLIC_URL=http://localhost:3000
-ENV INTERNAL_DIRECTUS_URL=http://localhost:8055
-ENV DIRECTUS_STATIC_TOKEN=dummy_token
-
 # Build the frontend
 COPY apps/frontend ./apps/frontend
-RUN pnpm --filter=@salvemundi/frontend build
+RUN BETTER_AUTH_SECRET=dummy_secret_at_least_32_characters_long_v7_salve_mundi \
+    BETTER_AUTH_URL=http://localhost:3000 \
+    NEXT_PUBLIC_APP_URL=http://localhost:3000 \
+    PUBLIC_URL=http://localhost:3000 \
+    INTERNAL_DIRECTUS_URL=http://localhost:8055 \
+    DIRECTUS_STATIC_TOKEN=dummy_token \
+    DB_USER=dummy \
+    DB_PASSWORD=dummy \
+    DB_NAME=dummy \
+    DB_HOST=localhost \
+    pnpm --filter=@salvemundi/frontend build
 
 # 3. Runner Stage
 FROM node:22.14.0-alpine AS runner
