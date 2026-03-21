@@ -23,6 +23,9 @@ export const auth = betterAuth({
         }
     },
     baseURL: process.env.BETTER_AUTH_URL,
+    advanced: {
+        trustHost: true
+    } as any,
     trustedOrigins: process.env.BETTER_AUTH_TRUSTED_ORIGINS
         ? process.env.BETTER_AUTH_TRUSTED_ORIGINS.split(',')
         : [process.env.BETTER_AUTH_URL!],
