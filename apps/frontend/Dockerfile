@@ -22,6 +22,7 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --no-frozen-lockf
 COPY packages/validations ./packages/validations
 RUN pnpm --filter=@salvemundi/validations build
 
+# VOEG DIT TOE: Voorkomt de ERR_INVALID_URL build error
 ENV BETTER_AUTH_URL=http://localhost:3000
 ENV NEXT_PUBLIC_APP_URL=http://localhost:3000
 
