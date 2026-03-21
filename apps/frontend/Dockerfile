@@ -26,6 +26,8 @@ RUN pnpm --filter=@salvemundi/validations build
 ENV BETTER_AUTH_URL=http://localhost:3000
 ENV NEXT_PUBLIC_APP_URL=http://localhost:3000
 ENV PUBLIC_URL=http://localhost:3000
+ENV INTERNAL_DIRECTUS_URL=http://localhost:8055
+ENV DIRECTUS_STATIC_TOKEN=dummy_token
 
 # Build the frontend
 COPY apps/frontend ./apps/frontend
