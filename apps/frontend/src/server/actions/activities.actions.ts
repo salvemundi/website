@@ -33,7 +33,7 @@ async function checkAdminAccess() {
     const session = await getSession();
     if (!session || !session.user) return false;
     
-    // In Activities.actions check against the committees/admin status
+
     const user = session.user as any;
     const permissions = user.committees || [];
     const { isSuperAdmin } = await import('@/lib/auth-utils');
@@ -204,25 +204,27 @@ export async function signupForActivity(data: EventSignupForm) {
             }
             return { success: false, error: paymentData.error || 'Betaalservice fout' };
         } else {
-            // Free event, trigger mail service directly
-            const mailUrl = `${getMailServiceUrl()}/api/mail/send`;
-            await fetchWithTimeout(mailUrl, {
-                method: 'POST',
-                headers: getInternalHeaders(),
-                body: JSON.stringify({
-                    to: parsed.data.email,
-                    template: 'event-ticket',
-                    data: {
-                        name: parsed.data.name,
-                        eventName: activity.titel,
-                        eventDate: activity.datum_start,
-                        signupId: signupId
-                    }
-                })
-            }).catch(e => console.error('[Activities] Mail trigger failed:', e));
+            // Free event, trigger mail service via Redis Event Stream
+            const { getRedis } = await import('@/server/auth/redis-client');
+            const redis = await getRedis();
+            
+            const eventPayload = {
+                event: 'ACTIVITY_SIGNUP_SUCCESS',
+                timestamp: new Date().toISOString(),
+                email: parsed.data.email,
+                name: parsed.data.name,
+                eventName: activity.titel,
+                eventDate: activity.datum_start,
+                signupId: signupId
+            };
+
+            await redis.xAdd('v7:events', '*', { 
+                payload: JSON.stringify(eventPayload) 
+            });
             
             return { success: true, message: 'Inschrijving geslaagd!' };
         }
+
 
     } catch (error) {
         console.error('[Activities] Signup error:', error);
@@ -244,9 +246,7 @@ export async function getActivitySignups(eventId: string) {
     }
 }
 
-/**
- * Toggle check-in status
- */
+
 
 export async function getSignupStatus(id?: string, transactionId?: string) {
     if (transactionId) {

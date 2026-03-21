@@ -17,6 +17,7 @@ export * from './schema/membership.zod.js';
 export * from './schema/kroegentocht.zod.js';
 export * from './schema/admin.zod.js';
 export * from './schema/audit.zod.js';
+export * from './schema/events.zod.js';
 export * from './security.js';
 
 
@@ -34,6 +35,12 @@ export type HeroBanner = z.infer<typeof heroBannerSchema>;
 export type Activiteit = z.infer<typeof activiteitSchema>;
 export type Sponsor = z.infer<typeof sponsorSchema>;
 export type SafeHaven = z.infer<typeof safeHavenSchema>;
+
+import { BaseEventSchema, PaymentSuccessEventSchema, ActivitySignupEventSchema } from './schema/events.zod.js';
+export type BaseEvent = z.infer<typeof BaseEventSchema>;
+export type PaymentSuccessEvent = z.infer<typeof PaymentSuccessEventSchema>;
+export type ActivitySignupEvent = z.infer<typeof ActivitySignupEventSchema>;
+
 
 import { whatsappGroupSchema, transactionSchema, eventSignupSchema, updateProfileSchema } from './schema/profiel.zod.js';
 

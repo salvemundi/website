@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { timingSafeCompare } from '@salvemundi/validations';
+import { timingSafeCompare, PaymentSuccessEventSchema } from '@salvemundi/validations';
 
 export default async function mollieRoutes(fastify: FastifyInstance) {
     /**
@@ -15,7 +15,7 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
             const queryToken = Array.isArray(queryTokenRaw) ? queryTokenRaw[0] : queryTokenRaw;
 
             const isAuthorized = timingSafeCompare(headerSecret || '', webhookSecret) || 
-                               timingSafeCompare(queryToken || '', webhookSecret);
+                                timingSafeCompare(queryToken || '', webhookSecret);
 
             if (!isAuthorized) {
                 return reply.status(401).send({ error: 'Unauthorized' });
@@ -37,19 +37,15 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
             const payment = await mollie.payments.get(id);
 
             // 2. Update status in PostgreSQL
-            // Idempotency: ON CONFLICT handled by existing schema or simple update
-            // We assume 'transacties' table exists as per docs.
             await fastify.db.query(
                 `UPDATE transactions SET status = $1, updated_at = NOW() WHERE mollie_id = $2`,
                 [payment.status, id]
             );
 
             // 3. Trigger Cache Invalidation for Next.js
-            // We'll use a separate service for this
             const { CacheInvalidationService } = await import('../services/cache-invalidation.js');
 
-            // Get user identifier from payment metadata (assumed stored during checkout)
-            const metadata = payment.metadata as { userId?: string } | null;
+            const metadata = payment.metadata as { userId?: string; registrationId?: string | number; registrationType?: string; email?: string } | null;
             const userId = metadata?.userId;
 
             if (userId) {
@@ -58,40 +54,56 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
 
             // 4. Publish Event to Redis Stream & Direct Update to Directus
             if (payment.status === 'paid') {
+                const registrationId = metadata?.registrationId;
+                const registrationType = metadata?.registrationType;
+                const email = (payment as any).consumerEmail || metadata?.email;
+
                 const eventData = {
                     event: 'PAYMENT_SUCCESS',
                     userId: userId,
                     paymentId: id,
-                    email: (payment as any).consumerEmail || (payment.metadata as any)?.email,
+                    email: email,
+                    registrationId: registrationId,
+                    registrationType: registrationType,
                     timestamp: new Date().toISOString()
                 };
 
+                // Validate payload with Zod
+                const validatedEvent = PaymentSuccessEventSchema.parse(eventData);
+
                 await fastify.redis.xAdd('v7:events', '*', {
-                    payload: JSON.stringify(eventData)
+                    payload: JSON.stringify(validatedEvent)
                 });
 
                 fastify.log.info(`[FINANCE] Published PAYMENT_SUCCESS event for payment ${id}`);
 
                 // Direct Update to Directus for reliability
-                const registrationId = metadata?.registrationId as string | number | undefined;
-                const registrationType = metadata?.registrationType as string | undefined;
+                if (registrationId && registrationType) {
+                    const collectionMap: Record<string, string> = {
+                        'event_signup': 'event_signups',
+                        'pub_crawl_signup': 'pub_crawl_signups',
+                        'trip_signup': 'trip_signups'
+                    };
 
-                if (registrationId && registrationType === 'event_signup') {
-                    const { createDirectus, rest, staticToken, updateItem } = await import('@directus/sdk');
-                    const directusUrl = process.env.INTERNAL_DIRECTUS_URL || process.env.DIRECTUS_URL!;
-                    const directusToken = process.env.DIRECTUS_STATIC_TOKEN!;
-                    
-                    const directus = createDirectus(directusUrl)
-                        .with(staticToken(directusToken))
-                        .with(rest());
+                    const targetCollection = collectionMap[registrationType];
 
-                    try {
-                        await directus.request(updateItem('event_signups', registrationId, {
-                            payment_status: 'paid'
-                        }));
-                        fastify.log.info(`[FINANCE] Directly updated Directus event_signup ${registrationId} to paid`);
-                    } catch (dErr: any) {
-                        fastify.log.error(`[FINANCE] Failed to update Directus directly for ${registrationId}:`, dErr);
+                    if (targetCollection) {
+                        const { createDirectus, rest, staticToken, updateItem } = await import('@directus/sdk');
+                        const directusUrl = process.env.INTERNAL_DIRECTUS_URL || process.env.DIRECTUS_URL!;
+                        const directusToken = process.env.DIRECTUS_STATIC_TOKEN!;
+                        
+                        const directus = createDirectus(directusUrl)
+                            .with(staticToken(directusToken))
+                            .with(rest());
+
+                        try {
+                            await directus.request(updateItem(targetCollection as any, registrationId as any, {
+                                payment_status: 'paid'
+                            }));
+                            fastify.log.info(`[FINANCE] Directly updated Directus ${targetCollection} ${registrationId} to paid`);
+                        } catch (dErr: any) {
+                            fastify.log.error(`[FINANCE] Failed to update Directus directly for ${registrationId}:`, dErr);
+                        }
                     }
                 }
             }
@@ -103,3 +115,4 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
         }
     });
 }
+

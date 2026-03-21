@@ -1,5 +1,6 @@
 import { createClient } from 'redis';
 import { MailWorkerService } from './mail-worker.js';
+import { PaymentSuccessEventSchema, ActivitySignupEventSchema } from '@salvemundi/validations';
 
 export class EventListenerService {
     private static readonly STREAM_KEY = 'v7:events';
@@ -23,12 +24,12 @@ export class EventListenerService {
         while (!this.shouldStop) {
             try {
                 // Read from group
-                const response = await redis.xReadGroup(
+                const response = (await redis.xReadGroup(
                     this.GROUP_NAME,
                     this.CONSUMER_NAME,
                     { key: this.STREAM_KEY, id: '>' },
                     { COUNT: 1, BLOCK: 5000 }
-                );
+                )) as any[];
 
                 if (response && response.length > 0) {
                     for (const stream of response) {
@@ -48,32 +49,31 @@ export class EventListenerService {
 
     private static async handleEvent(redis: ReturnType<typeof createClient>, message: any) {
         try {
-            const data = JSON.parse(message.data.payload);
-            console.log(`[MailEventListener] Received event: ${data.event}`);
+            const payload = JSON.parse(message.data.payload);
+            console.log(`[MailEventListener] Received event: ${payload.event}`);
 
-            if (data.event === 'PAYMENT_SUCCESS') {
-                const { userId, paymentId } = data;
+            if (payload.event === 'PAYMENT_SUCCESS') {
+                const data = PaymentSuccessEventSchema.parse(payload);
                 
-                // In a real scenario, we'd fetch the user's email here.
-                // For now, we'll assume there's a way to get it or use a placeholder
-                // Since this is a specialized task, I'll pretend we have a service for this
-                // or just queue a generic task if we have the email in the event.
+                await MailWorkerService.queueMail(redis, data.email, 'welcome_payment', { 
+                    paymentId: data.paymentId, 
+                    userId: data.userId,
+                    registrationId: data.registrationId,
+                    registrationType: data.registrationType
+                });
                 
-                // Recommendation: Actually, it's better if the event includes the recipient email
-                // or the Mail Service has access to the DB.
-                // The finance service has the userId, maybe it should include the email too?
-                // Let's assume we fetch it via Directus or it's in the event.
-                
-                // I'll update the Finance service to include the email if possible,
-                // but for now let's assume we have it or fetch it.
-                // Since I cannot easily add a new dependency or service call without knowing the exact API,
-                // I will use a dummy email or assume 'data.email' if available.
-                
-                if (data.email) {
-                    await MailWorkerService.queueMail(redis, data.email, 'welcome_payment', { paymentId, userId });
-                } else {
-                    console.warn('[MailEventListener] PAYMENT_SUCCESS event missing email. Cannot queue mail.');
-                }
+                console.log(`[MailEventListener] Queued payment mail for ${data.email}`);
+            } else if (payload.event === 'ACTIVITY_SIGNUP_SUCCESS') {
+                const data = ActivitySignupEventSchema.parse(payload);
+
+                await MailWorkerService.queueMail(redis, data.email, 'event-ticket', {
+                    name: data.name,
+                    eventName: data.eventName,
+                    eventDate: data.eventDate,
+                    signupId: data.signupId
+                });
+
+                console.log(`[MailEventListener] Queued activity ticket mail for ${data.email}`);
             }
         } catch (err: any) {
             console.error('[MailEventListener] Error handling event:', err.message);
@@ -84,3 +84,4 @@ export class EventListenerService {
         this.shouldStop = true;
     }
 }
+
