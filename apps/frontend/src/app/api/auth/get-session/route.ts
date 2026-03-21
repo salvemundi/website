@@ -9,7 +9,7 @@ export async function GET() {
         console.log(`[DEBUG - route.ts] Cookie header: ${h.get('cookie') ? 'Found' : 'Missing'}`);
         
         const session = await auth.api.getSession({
-            headers: h
+            headers: new Headers(h)
         });
         return NextResponse.json(session);
     } catch (error) {

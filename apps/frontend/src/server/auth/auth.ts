@@ -7,13 +7,19 @@ import { createRedisSessionPlugin } from "./redis-session-plugin";
 const pool = new Pool({
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    host: process.env.INTERNAL_DB_HOST,
+    host: process.env.DB_HOST || process.env.INTERNAL_DB_HOST || 'v7-core-db',
     port: 5432,
     database: process.env.DB_NAME,
 });
 
 export const auth = betterAuth({
     database: pool,
+    onSession: (session: any) => {
+        // Alleen voor debugging op Acceptance/Localhost
+        if (process.env.NODE_ENV !== 'production' || process.env.DEBUG_AUTH === 'true') {
+            console.log(`[AUTH-DEBUG] Session retrieved: ${session ? 'YES' : 'NO'} (${session?.user?.email || 'no-email'})`);
+        }
+    },
     baseURL: process.env.BETTER_AUTH_URL,
     trustedOrigins: process.env.BETTER_AUTH_TRUSTED_ORIGINS
         ? process.env.BETTER_AUTH_TRUSTED_ORIGINS.split(',')
