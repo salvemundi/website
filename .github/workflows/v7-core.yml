@@ -25,11 +25,8 @@ jobs:
       # 1. Bepaal de juiste URL op basis van de branch
       - name: Set Environment Variables
         run: |
-          if [[ "${{ github.ref_name }}" == "main" ]]; then
-            echo "DOMAIN=admin.salvemundi.nl" >> $GITHUB_ENV
-          else
-            echo "DOMAIN=acc.salvemundi.nl" >> $GITHUB_ENV
-          fi
+          echo "DOMAIN=admin.salvemundi.nl" >> $GITHUB_ENV
+          echo "ACC_DOMAIN=acc.salvemundi.nl" >> $GITHUB_ENV
 
       - name: Copy Infrastructure files to VPS
         uses: appleboy/scp-action@v0.1.7
@@ -69,11 +66,18 @@ jobs:
             # 2. Expliciete .env generatie (hufterproof)
             echo "# Auto-generated V7 Core Environment" > .env
             
-            echo "PUBLIC_URL=${DOMAIN_URL}" >> .env
-            echo "CORS_ORIGIN=${DOMAIN_URL}" >> .env
+            echo "PUBLIC_URL=https://admin.salvemundi.nl" >> .env
+            echo "CORS_ORIGIN=https://admin.salvemundi.nl,https://acc.salvemundi.nl" >> .env
             echo "INTERNAL_DIRECTUS_URL=${INTERNAL_DIRECTUS_URL}" >> .env
 
-            VARIABLES="INTERNAL_SERVER_IP DB_USER DB_PASSWORD DB_NAME DIRECTUS_KEY DIRECTUS_SECRET AZURE_WEBSITEV7_TENANT_ID AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET DIRECTUS_ALLOWED_REDIRECTS DIRECTUS_STATIC_TOKEN"
+            # Combine redirects
+            COMBINED_REDIRECTS="admin.salvemundi.nl,acc.salvemundi.nl"
+            if [ ! -z "$DIRECTUS_ALLOWED_REDIRECTS" ]; then
+              COMBINED_REDIRECTS="$COMBINED_REDIRECTS,$DIRECTUS_ALLOWED_REDIRECTS"
+            fi
+            echo "AUTH_SAFE_REDIRECT_HOSTS=\"$COMBINED_REDIRECTS\"" >> .env
+
+            VARIABLES="INTERNAL_SERVER_IP DB_USER DB_PASSWORD DB_NAME DIRECTUS_KEY DIRECTUS_SECRET AZURE_WEBSITEV7_TENANT_ID AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET DIRECTUS_STATIC_TOKEN"
             for var in $VARIABLES; do
               val=$(eval echo \$$var)
               if [ ! -z "$val" ]; then
