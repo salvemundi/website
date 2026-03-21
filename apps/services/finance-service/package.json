@@ -10,6 +10,7 @@
     },
     "dependencies": {
         "@mollie/api-client": "^4.0.1",
+        "@directus/sdk": "^21.1.0",
         "@salvemundi/validations": "workspace:*",
         "fastify": "5.1.0",
         "fastify-plugin": "^5.1.0",

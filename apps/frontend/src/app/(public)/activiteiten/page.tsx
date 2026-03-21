@@ -10,13 +10,13 @@ export const metadata = {
     description: 'Bekijk alle evenementen, trainingen en feesten van Salve Mundi.',
 };
 
-// Component that fetches data for the top banner (FlipClock)
+
 async function ActivitiesBannerData() {
     const events = await getActivities();
     return <ActivitiesBannerIsland events={events} />;
 }
 
-// Component that fetches data for the activities list/grid/calendar
+
 async function ActivitiesListData() {
     const events = await getActivities();
     return <ActivitiesProviderIsland events={events} />;
@@ -71,7 +71,7 @@ function ActivitiesListFallback() {
 export default function ActivitiesPage() {
     return (
         <div className="">
-            {/* 1. Header Shell: Static text and background render instantly */}
+            
             <PageHeader
                 title="ACTIVITEITEN"
                 backgroundImage="/img/backgrounds/Kroto2025.jpg"
@@ -86,7 +86,7 @@ export default function ActivitiesPage() {
                 </Suspense>
             </PageHeader>
 
-            {/* 3. Main Content: Static container + Suspended list */}
+            
             <main className="w-full px-4 py-8 sm:py-10 md:py-12">
                 <Suspense fallback={<ActivitiesListFallback />}>
                     <ActivitiesListData />

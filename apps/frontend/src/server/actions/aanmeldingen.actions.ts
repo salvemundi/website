@@ -12,7 +12,7 @@ import {
     readUsers
 } from "@directus/sdk";
 
-const NOTIFICATION_API = process.env.NEXT_PUBLIC_NOTIFICATION_API_URL;
+const getNotificationUrl = () => process.env.INTERNAL_NOTIFICATION_API_URL || process.env.NEXT_PUBLIC_NOTIFICATION_API_URL;
 
 async function getSession() {
     return await auth.api.getSession({
@@ -26,11 +26,11 @@ async function checkAdminAccess() {
     return session.user;
 }
 
-// Optional Email Wrapper for Cancellations
 async function sendCancellationEmail(email: string, eventName: string) {
-    if (!NOTIFICATION_API || !email) return;
+    const url = getNotificationUrl();
+    if (!url || !email) return;
     try {
-        await fetch(NOTIFICATION_API, {
+        await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

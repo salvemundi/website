@@ -1,10 +1,6 @@
 import { createDirectus, rest, staticToken, RestCommand } from '@directus/sdk';
 import { DirectusSchema } from './schema';
 
-/**
- * Directus utility for V7.
- * Provides the official SDK client configured for internal use.
- */
 
 const directusUrl = process.env.INTERNAL_DIRECTUS_URL!;
 
@@ -14,10 +10,6 @@ export const directus = createDirectus<DirectusSchema>(directusUrl)
     .with(staticToken(getDirectusToken()))
     .with(rest());
 
-/**
- * Centralized request wrapper for Directus.
- * Logs duration and status for better observability.
- */
 export async function directusRequest<T>(request: RestCommand<T, DirectusSchema>): Promise<T> {
     const start = Date.now();
     try {
