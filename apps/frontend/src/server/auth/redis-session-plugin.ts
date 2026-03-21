@@ -59,7 +59,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
 
                             if (session && typeof session === 'object' && 'user' in session) {
                                 const sessionWithUser = session as { user?: { id?: string; email?: string; committees?: unknown } };
-                                if (!sessionWithUser.user?.id) return session;
+                                if (!sessionWithUser.user?.id) return {};
 
                                 console.log(`[AUTH-REDIS-DEBUG] Enforcing session enrichment for ${sessionWithUser.user.id}`);
                                 const { rows } = await pool.query(
@@ -76,14 +76,14 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                     const redis = await getRedis();
                                     await redis.set(`session:${token}`, JSON.stringify(session), { EX: 300 });
                                 }
-                                return session;
+                                return { response: session };
                             }
-                            // FIX: Return original context/response when no valid user session is found
-                            return session;
+                            // FIX: Return empty object when no valid user session is found
+                            return {};
                         } catch (error) {
                             console.error("[AUTH-PLUGIN] Session enrichment error:", error);
-                            // FIX: Return original context/response when an error occurs
-                            return (ctx as any)?.context?.returned || ctx;
+                            // FIX: Return empty object when an error occurs
+                            return {};
                         }
                     }
                 }
