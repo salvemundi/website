@@ -20,24 +20,27 @@ import redisPlugin from './plugins/redis.js';
 import rateLimit from '@fastify/rate-limit';
 
 fastify.register(redisPlugin);
-fastify.register(rateLimit, {
-    max: 100,
-    timeWindow: '1 minute',
-    redis: process.env.REDIS_URL || 'redis://v7-core-redis:6379',
-    keyGenerator: (request) => {
-        return request.ip || 'global-mail-limit';
-    },
-    errorResponseBuilder: (request, context) => {
-        return {
-            statusCode: 429,
-            error: 'Too Many Requests',
-            message: `Rate limit exceeded. Try again in ${context.after} seconds.`
-        };
-    }
-});
 
-// Register Routes
-fastify.register(mailRoutes, { prefix: '/api/mail' });
+fastify.register(async (instance) => {
+    instance.register(rateLimit, {
+        max: 100,
+        timeWindow: '1 minute',
+        redis: instance.redis,
+        keyGenerator: (request) => {
+            return request.ip || 'global-mail-limit';
+        },
+        errorResponseBuilder: (request, context) => {
+            return {
+                statusCode: 429,
+                error: 'Too Many Requests',
+                message: `Rate limit exceeded. Try again in ${context.after} seconds.`
+            };
+        }
+    });
+
+    // Register Routes
+    instance.register(mailRoutes, { prefix: '/api/mail' });
+});
 
 const start = async () => {
     try {
