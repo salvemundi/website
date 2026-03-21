@@ -21,7 +21,7 @@ async function getDisabledRoutes(): Promise<string[]> {
     try {
         const directusUrl = process.env.INTERNAL_DIRECTUS_URL;
         const token = process.env.DIRECTUS_STATIC_TOKEN;
-        
+
         if (!token) return cachedDisabledRoutes || [];
 
         const url = `${directusUrl}/items/feature_flags?filter[is_active][_eq]=false&fields=route_match`;
@@ -76,7 +76,7 @@ export async function proxy(request: NextRequest) {
             const internalBase = process.env.NEXT_APP_INTERNAL_URL || origin;
             const sessionUrl = new URL('/api/auth/get-session', internalBase);
             const sessionRes = await fetch(sessionUrl, {
-                headers: { 
+                headers: {
                     cookie: request.headers.get('cookie') || '',
                     'x-better-auth-origin': origin,
                     'x-forwarded-host': request.nextUrl.host,
@@ -100,16 +100,15 @@ export async function proxy(request: NextRequest) {
                 // Behoud volledige URL inclusief query parameters na redirect
                 const callbackUrl = encodeURIComponent(pathname + request.nextUrl.search);
                 const microsoftAuthUrl = new URL(
-                    `/api/auth/login/social?provider=microsoft&callbackURL=${callbackUrl}`, 
+                    `/api/auth/login/social?provider=microsoft&callbackURL=${callbackUrl}`,
                     request.url
                 );
-                
+
                 console.log(`[Proxy] No session for ${pathname}, redirecting to Microsoft.`);
                 return NextResponse.redirect(microsoftAuthUrl);
             }
 
             // Sessie is geldig! 
-            // V7 FIX: Om de sessie-rotatie werkend te houden, moeten we Set-Cookie headers doorgeven
             const response = NextResponse.next();
             sessionRes.headers.forEach((value, key) => {
                 if (key.toLowerCase() === 'set-cookie') {

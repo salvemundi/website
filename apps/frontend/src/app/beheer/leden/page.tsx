@@ -7,8 +7,9 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import LedenOverzichtIsland from '@/components/islands/admin/leden/LedenOverzichtIsland';
 import MemberListSkeleton from '@/components/ui/admin/leden/MemberListSkeleton';
-import { directus } from '@/lib/directus';
+import { directus, directusRequest } from '@/lib/directus';
 import { readUsers } from '@directus/sdk';
+import { isSuperAdmin } from '@/lib/auth-utils';
 
 const PAGE_SIZE = 25;
 
@@ -65,11 +66,7 @@ async function LedenDataLoader({ search, page, tab }: { search: string, page: nu
     if (!session || !session.user) return <UnauthorizedAccess />;
 
     const user = session.user as any;
-    const memberships = user.committees || [];
-    const hasPriv = memberships.some((c: any) => {
-        const name = (c?.name || '').toString().toLowerCase();
-        return name.includes('bestuur') || name.includes('ict') || name.includes('kandi');
-    });
+    const hasPriv = isSuperAdmin(user.committees);
 
     if (!hasPriv) return <UnauthorizedAccess />;
 
@@ -111,7 +108,7 @@ async function LedenDataLoader({ search, page, tab }: { search: string, page: nu
     let totalCount = 0;
 
     try {
-        const res = await directus.request(
+        const res = await directusRequest<any>(
             readUsers({
                 filter: filters,
                 fields: ['id', 'first_name', 'last_name', 'email', 'date_of_birth', 'membership_expiry', 'status'],
@@ -120,7 +117,7 @@ async function LedenDataLoader({ search, page, tab }: { search: string, page: nu
                 sort: ['last_name', 'first_name'],
                 // @ts-ignore
                 meta: 'total_count'
-            })
+            } as any)
         );
         
         // Handling the metadata response (SDK might return wrap or direct depending on version)

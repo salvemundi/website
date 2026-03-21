@@ -3,6 +3,7 @@
 import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
+import { isSuperAdmin } from "@/lib/auth-utils";
 
 const AZURE_SYNC_URL = process.env.AZURE_SYNC_SERVICE_URL;
 const INTERNAL_TOKEN = process.env.INTERNAL_SERVICE_TOKEN;
@@ -14,13 +15,7 @@ async function checkSyncAccess() {
     if (!session || !session.user) return null;
     
     const user = session.user as any;
-    const memberships = user.committees || [];
-    const isAdmin = memberships.some((c: any) => {
-        const name = (c?.name || '').toString().toLowerCase();
-        return name.includes('bestuur') || name.includes('ict') || name.includes('kandi');
-    });
-
-    if (!isAdmin) return null;
+    if (!isSuperAdmin(user.committees)) return null;
     return user;
 }
 

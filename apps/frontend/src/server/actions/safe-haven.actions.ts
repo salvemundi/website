@@ -4,7 +4,7 @@ import { safeHavensSchema, type SafeHaven } from '@salvemundi/validations';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 
-import { directus } from '@/lib/directus';
+import { directus, directusRequest } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 
 /**

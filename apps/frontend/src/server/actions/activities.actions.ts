@@ -4,8 +4,9 @@ import { activiteitenSchema, type Activiteit, eventSignupFormSchema, type EventS
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { revalidateTag } from 'next/cache';
+import { cache } from 'react';
 
-import { directus } from '@/lib/directus';
+import { directus, directusRequest } from '@/lib/directus';
 import { readItems, createItem, updateItem } from '@directus/sdk';
 
 const getFinanceServiceUrl = () =>
@@ -45,16 +46,17 @@ async function fetchWithTimeout(url: string, options: RequestInit & { timeout?: 
 
 /**
  * Fetch all upcoming and past activities
+ * Memoized to prevent duplicate fetches in a single request.
  */
-export async function getActivities(): Promise<Activiteit[]> {
+export const getActivities = cache(async (): Promise<Activiteit[]> => {
     try {
-        const events: any = await directus.request(readItems('events' as any, {
-            fields: ['*', { committee_id: ['name'] }] as any,
+        const events = await directusRequest<any[]>(readItems('events', {
+            fields: ['*', { committee_id: ['name'] }],
             filter: { status: { _eq: 'published' } },
             limit: -1
         }));
 
-        const mappedData = events.map((item: any) => ({
+        const mappedData = events.map((item) => ({
             id: String(item.id ?? ''),
             titel: item.name ?? '',
             beschrijving: item.description ?? null,
@@ -70,7 +72,7 @@ export async function getActivities(): Promise<Activiteit[]> {
             contact: item.contact ?? null,
             event_time: item.event_time ?? null,
             event_time_end: item.event_time_end ?? null,
-            committee_name: item.committee_id?.name || null,
+            committee_name: typeof item.committee_id === 'object' ? (item.committee_id as any)?.name || null : null,
         }));
 
         const parsed = activiteitenSchema.safeParse(mappedData);
@@ -81,21 +83,22 @@ export async function getActivities(): Promise<Activiteit[]> {
 
         return parsed.data;
     } catch (error) {
-        console.error('[Activities] Error fetching activities:', error);
+        // Logging is handled by directusRequest
         return [];
     }
-}
+});
 
 /**
  * Fetch a single activity by ID
+ * Memoized to prevent duplicate fetches in a single request.
  */
-export async function getActivityById(id: string): Promise<Activiteit | null> {
+export const getActivityById = cache(async (id: string): Promise<Activiteit | null> => {
     try {
-        const items: any = await directus.request(readItems('events' as any, {
-            fields: ['*', { committee_id: ['*'] }] as any,
-            filter: { id: { _eq: id } },
+        const items = await directusRequest<any[]>((readItems('events', {
+            fields: ['*', { committee_id: ['*'] }],
+            filter: { id: { _eq: id } as any },
             limit: 1
-        }));
+        })));
         
         const item = items?.[0];
         if (!item) return null;
@@ -116,16 +119,16 @@ export async function getActivityById(id: string): Promise<Activiteit | null> {
             contact: item.contact ?? null,
             event_time: item.event_time ?? null,
             event_time_end: item.event_time_end ?? null,
-            committee_name: item.committee_id?.name || null,
+            committee_name: typeof item.committee_id === 'object' ? (item.committee_id as any)?.name || null : null,
         };
 
         const parsed = activiteitenSchema.element.safeParse(mapped);
         return parsed.success ? parsed.data : null;
     } catch (error) {
-        console.error(`[Activities] Error fetching activity ${id}:`, error);
+        // Logging is handled by directusRequest
         return null;
     }
-}
+});
 
 /**
  * Handle signup for an activity
@@ -162,7 +165,7 @@ export async function signupForActivity(data: EventSignupForm) {
 
         // 4. Create signup in Directus
         const qrToken = `r-${parsed.data.event_id}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
-        const signup: any = await directus.request(createItem('event_signups' as any, {
+        const signup = await directusRequest<any>(createItem('event_signups', {
             event_id: parsed.data.event_id,
             participant_name: parsed.data.name,
             participant_email: parsed.data.email,
@@ -228,9 +231,9 @@ export async function signupForActivity(data: EventSignupForm) {
  */
 export async function getActivitySignups(eventId: string) {
     try {
-        return await directus.request(readItems('event_signups' as any, {
-            filter: { event_id: { _eq: eventId } },
-            fields: ['*', { user_id: ['display_name'] }] as any
+        return await directusRequest<any[]>(readItems('event_signups', {
+            filter: { event_id: { _eq: eventId as any } },
+            fields: ['*', { user_id: ['display_name' as any] }] as any
         }));
     } catch (error) {
         console.error(`[Activities] Error fetching signups for ${eventId}:`, error);
@@ -243,7 +246,7 @@ export async function getActivitySignups(eventId: string) {
  */
 export async function toggleCheckIn(signupId: number, status: boolean) {
     try {
-        const signup: any = await directus.request(updateItem('event_signups' as any, signupId, { 
+        const signup = await directusRequest<any>(updateItem('event_signups', signupId, { 
             checked_in: status,
             checked_in_at: status ? new Date().toISOString() : null
         }));
@@ -264,8 +267,8 @@ export async function toggleCheckIn(signupId: number, status: boolean) {
 export async function getSignupStatus(id?: string, transactionId?: string) {
     if (transactionId) {
         try {
-            const transactions: any = await directus.request(readItems('transactions' as any, {
-                fields: ['id', 'payment_status', 'registration_id', 'registration_type'] as any,
+            const transactions = await directusRequest<any[]>(readItems('transactions', {
+                fields: ['id', 'payment_status', 'registration_id', 'registration_type'],
                 filter: { id: { _eq: transactionId } },
                 limit: 1
             }));
@@ -274,17 +277,17 @@ export async function getSignupStatus(id?: string, transactionId?: string) {
             if (!trans) return { status: 'error' };
 
             if (trans.registration_type === 'event_signup') {
-                const signups: any = await directus.request(readItems('event_signups' as any, {
-                    fields: ['*', { event_id: ['*'] }] as any,
-                    filter: { id: { _eq: trans.registration_id } },
+                const signups = await directusRequest<any[]>(readItems('event_signups', {
+                    fields: ['*', { event_id: ['*'] }],
+                    filter: { id: { _eq: trans.registration_id as any } },
                     limit: 1
                 }));
                 const signup = signups?.[0];
                 return { status: trans.payment_status, signup, transaction: trans };
             } else if (trans.registration_type === 'pub_crawl_signup') {
-                const signups: any = await directus.request(readItems('pub_crawl_signups' as any, {
-                    fields: ['*', { pub_crawl_event_id: ['*'] }, { tickets: ['*'] }] as any,
-                    filter: { id: { _eq: trans.registration_id } },
+                const signups = await directusRequest<any[]>(readItems('pub_crawl_signups', {
+                    fields: ['*', { pub_crawl_event_id: ['*'] as any }, { tickets: ['*'] as any }] as any,
+                    filter: { id: { _eq: trans.registration_id as any } },
                     limit: 1
                 }));
                 const signup = signups?.[0];
@@ -302,14 +305,14 @@ export async function getSignupStatus(id?: string, transactionId?: string) {
         }
     } else if (id) {
         try {
-            const signups: any = await directus.request(readItems('event_signups' as any, {
-                fields: ['*', { event_id: ['*'] }] as any,
-                filter: { id: { _eq: id } },
+            const signups = await directusRequest<any[]>(readItems('event_signups', {
+                fields: ['*', { event_id: ['*'] }],
+                filter: { id: { _eq: id as any } },
                 limit: 1
             }));
             const signup = signups?.[0];
             if (!signup) return { status: 'error' };
-            return { status: signup.payment_status || 'open', signup };
+            return { status: (signup as any).payment_status || 'open', signup };
         } catch (e) {
             console.error('[Activities] Error fetching signup status:', e);
             return { status: 'error' };
@@ -327,13 +330,12 @@ export async function getMyTickets() {
     if (!session?.user) return [];
 
     try {
-        return await directus.request(readItems('event_signups' as any, {
+        return await directusRequest<any[]>(readItems('event_signups', {
             filter: { 
-                user_id: { _eq: session.user.id },
-                payment_status: { _eq: 'paid' }
+                user_id: { _eq: session.user.id }
             },
-            fields: ['*', { event_id: ['*'] }] as any,
-            sort: ['-date_created'] as any
+            fields: ['*', { event_id: ['*'] }],
+            sort: ['-date_created']
         }));
     } catch (error) {
         console.error('[Activities] Error fetching user tickets:', error);

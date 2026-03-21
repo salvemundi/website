@@ -6,7 +6,13 @@ import AdminActivitiesIsland from '@/components/islands/admin/activities/AdminAc
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 
-export default async function AdminActiviteitenPage() {
+export default async function AdminActiviteitenPage({ 
+    searchParams 
+}: { 
+    searchParams: Promise<{ q?: string; filter?: string }> 
+}) {
+    const sParams = await searchParams;
+
     // Hoisted static header for LCP
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
@@ -20,25 +26,30 @@ export default async function AdminActiviteitenPage() {
             />
             
             <Suspense fallback={<AdminActivitiesSkeleton />}>
-                <ActivitiesDataLoader />
+                <ActivitiesDataLoader searchParams={sParams} />
             </Suspense>
         </div>
     );
 }
 
-async function ActivitiesDataLoader() {
+async function ActivitiesDataLoader({ searchParams }: { searchParams: { q?: string; filter?: string } }) {
     const session = await auth.api.getSession({
         headers: await headers()
     });
     
     // Fetch data server-side so the client island hydrates immediately with data
-    const initialEvents = await getAdminActivities().catch(() => []);
+    const initialEvents = await getAdminActivities(
+        searchParams.q, 
+        (searchParams.filter as any) || 'all'
+    ).catch(() => []);
     
     return (
         <AdminActivitiesIsland 
             initialEvents={initialEvents as any} 
             userId={session?.user?.id}
             userCommittees={(session?.user as any)?.committees || []}
+            initialSearch={searchParams.q}
+            initialFilter={(searchParams.filter as any) || 'all'}
         />
     );
 }

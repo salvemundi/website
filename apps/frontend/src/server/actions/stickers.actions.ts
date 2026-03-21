@@ -4,7 +4,7 @@ import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag } from "next/cache";
 
-import { directus } from "@/lib/directus";
+import { directus, directusRequest } from "@/lib/directus";
 import { readItems, createItem, uploadFiles } from "@directus/sdk";
 
 /**
@@ -13,7 +13,7 @@ import { readItems, createItem, uploadFiles } from "@directus/sdk";
  */
 export async function getPublicStickers() {
     try {
-        return await directus.request(readItems('stickers', {
+        return await directusRequest<any[]>(readItems('stickers', {
             fields: ['*', { user_created: ['id', 'first_name', 'last_name', 'avatar'] }] as any,
             sort: ['-date_created'],
             limit: -1
@@ -43,7 +43,7 @@ export async function createStickerPublic(data: any) {
     };
 
     try {
-        const result = await directus.request(createItem('stickers', payload));
+        const result = await directusRequest<any>(createItem('stickers', payload));
 
         // Immediately update both admin and public views.
         revalidateTag('stickers', 'default');
@@ -60,7 +60,7 @@ export async function createStickerPublic(data: any) {
  */
 export async function uploadFileAction(formData: FormData) {
     try {
-        const result = await directus.request(uploadFiles(formData));
+        const result = await directusRequest<any>(uploadFiles(formData));
         return result.id;
     } catch (error) {
         console.error('[Stickers] Photo upload failed:', error);

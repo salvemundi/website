@@ -3,13 +3,35 @@
 import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
-import { directus } from "@/lib/directus";
 import { 
     readItems, 
     updateItem,
-    readSingleton
+    readSingleton,
+    createItem
 } from "@directus/sdk";
 import { PendingSignup } from "@salvemundi/validations";
+import { directus, directusRequest } from "@/lib/directus";
+import { isSuperAdmin } from "@/lib/auth-utils";
+
+/**
+ * Helper to log admin actions to the audit_logs collection.
+ */
+export async function logAdminAction(action: string, collection: string, id: string | number, data?: any) {
+    try {
+        const session = await auth.api.getSession({ headers: await headers() });
+        const userId = session?.user?.id;
+        
+        await directusRequest(createItem('audit_logs', {
+            user_id: userId || null,
+            action,
+            target_collection: collection,
+            target_id: String(id),
+            data: data ? JSON.stringify(data) : null
+        }));
+    } catch (e) {
+        console.warn('[Audit] Failed to log action:', e);
+    }
+}
 
 async function checkAuditAccess() {
     const session = await auth.api.getSession({
@@ -18,11 +40,7 @@ async function checkAuditAccess() {
     if (!session || !session.user) return null;
     
     const user = session.user as any;
-    const memberships = user.committees || [];
-    const isAdmin = memberships.some((c: any) => {
-        const name = (c?.name || '').toString().toLowerCase();
-        return name.includes('bestuur') || name.includes('ict') || name.includes('kas') || name.includes('kandi');
-    });
+    const isAdmin = isSuperAdmin(user.committees);
 
     if (!isAdmin) return null;
     return user;
@@ -35,21 +53,21 @@ export async function getPendingSignupsAction() {
     try {
         // Fetch from all 3 collections
         // 1. Events
-        const eventSignups = await directus.request(readItems('event_signups', {
+        const eventSignups = await directusRequest<any[]>(readItems('event_signups', {
             fields: ['id', 'date_created', 'participant_name', 'participant_email', 'approval_status', 'payment_status', { event_id: ['name'] }],
             filter: { approval_status: { _eq: 'pending' } },
             sort: ['-date_created']
         }));
 
         // 2. Pub Crawl
-        const pubCrawlSignups = await directus.request(readItems('pub_crawl_signups', {
+        const pubCrawlSignups = await directusRequest<any[]>(readItems('pub_crawl_signups', {
             fields: ['id', 'date_created', 'name', 'email', 'approval_status', 'payment_status', { pub_crawl_event_id: ['name'] }],
             filter: { approval_status: { _eq: 'pending' } },
             sort: ['-date_created']
         }));
 
         // 3. Trips
-        const tripSignups = await directus.request(readItems('trip_signups', {
+        const tripSignups = await directusRequest<any[]>(readItems('trip_signups', {
             fields: ['id', 'date_created', 'first_name', 'last_name', 'email', 'approval_status', 'payment_status', { trip_id: ['name'] }],
             filter: { approval_status: { _eq: 'pending' } },
             sort: ['-date_created']
@@ -109,7 +127,7 @@ export async function approveSignupAction(id: string, type: string) {
     const collection = type === 'event' ? 'event_signups' : type === 'pub_crawl' ? 'pub_crawl_signups' : 'trip_signups';
 
     try {
-        await directus.request(updateItem(collection, id, { approval_status: 'approved' }));
+        await directusRequest(updateItem(collection, id, { approval_status: 'approved' }));
         revalidatePath('/beheer/logging');
         return { success: true };
     } catch (err) {
@@ -125,7 +143,7 @@ export async function rejectSignupAction(id: string, type: string) {
     const collection = type === 'event' ? 'event_signups' : type === 'pub_crawl' ? 'pub_crawl_signups' : 'trip_signups';
 
     try {
-        await directus.request(updateItem(collection, id, { approval_status: 'rejected' }));
+        await directusRequest(updateItem(collection, id, { approval_status: 'rejected' }));
         revalidatePath('/beheer/logging');
         return { success: true };
     } catch (err) {
@@ -141,7 +159,7 @@ export async function getAuditSettingsAction() {
     try {
         // App settings is often a singleton or a specific collection
         // Based on ERD, it's a "NIEUW" table. Assuming it's a singleton called 'app_settings'
-        const settings = await directus.request(readSingleton('app_settings')).catch(() => ({ manual_approval: false }));
+        const settings = await directusRequest<any>(readSingleton('app_settings')).catch(() => ({ manual_approval: false }));
         return { success: true, data: settings };
     } catch {
         return { success: true, data: { manual_approval: false } };
@@ -154,7 +172,7 @@ export async function updateAuditSettingsAction(manualApproval: boolean) {
 
     try {
         // Assuming singleton update
-        await directus.request(updateItem('app_settings', undefined as any, { manual_approval: manualApproval }));
+        await directusRequest(updateItem('app_settings', undefined as any, { manual_approval: manualApproval }));
         revalidateTag('app_settings', 'default');
         return { success: true };
     } catch (err) {

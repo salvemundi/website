@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
-import { directus } from '@/lib/directus';
+import { directus, directusRequest } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 import { ShieldAlert } from 'lucide-react';
 import ActiviteitNieuwIsland from '@/components/islands/admin/activities/ActiviteitNieuwIsland';
@@ -20,8 +20,8 @@ async function getCommittees(user: any) {
     try {
         if (isPowerful) {
             // Power users see all committees
-            return await directus.request(
-                readItems('committees', {
+            return await directusRequest<any[]>(
+                readItems<any, any, any>('committees', {
                     fields: ['id', 'name'],
                     sort: ['name'],
                     limit: -1
@@ -36,8 +36,8 @@ async function getCommittees(user: any) {
             
             if (committeeIds.length === 0) return [];
 
-            return await directus.request(
-                readItems('committees', {
+            return await directusRequest<any[]>(
+                readItems<any, any, any>('committees', {
                     fields: ['id', 'name'],
                     filter: {
                         id: { _in: committeeIds }

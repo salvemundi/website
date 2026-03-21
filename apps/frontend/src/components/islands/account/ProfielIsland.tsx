@@ -37,6 +37,9 @@ type SessionUser = {
     image?: string | null;
     minecraft_username?: string | null;
     committees?: CommitteeMeta[] | null;
+    isAdmin?: boolean;
+    isLeader?: boolean;
+    isICT?: boolean;
 };
 
 interface ProfielIslandProps {
@@ -117,18 +120,18 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
     // Bij hydratatie (mounted === false) gebruiken we ALTIJD initialUser om mismatch te voorkomen.
     // Daarna schakelen we over naar de real-time session, maar MERGEN we de committees als die ontbreken.
     const user = useMemo<SessionUser>(() => {
-        const sUser = session?.user as SessionUser | undefined;
-        const iUser = initialUser ?? {};
+        // Trust initialUser from server for the first render and following renders 
+        // until session data is fully available and has changed.
+        if (!mounted || !session?.user) return initialUser;
         
-        if (!mounted) return iUser;
+        const sUser = session.user as SessionUser;
         
-        // Als de client-sessie er is, maar commissies mist (bijv. door cache/stripping),
-        // pakken we die van de initialUser (die we zeker weten van de server hebben).
-        if (sUser && !sUser.committees && iUser?.committees) {
-            return { ...sUser, committees: iUser.committees };
+        // Merge committees from initialUser if missing in session
+        if (!sUser.committees && initialUser?.committees) {
+            return { ...sUser, committees: initialUser.committees };
         }
         
-        return sUser || iUser;
+        return sUser;
     }, [mounted, session?.user, initialUser]);
 
     // Hydratatie fix
@@ -229,13 +232,15 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
     }, [eventSignups, showPastEvents]);
 
     const membershipStatus = useMemo(() => {
-        const isLeader = Array.isArray(optimisticUser.committees) && optimisticUser.committees.some((c) => c.is_leader);
+        const isLeader = !!optimisticUser.isLeader;
+        const isAdmin = !!optimisticUser.isAdmin;
         const isInCommittee = isCommitteeMember;
         const status = optimisticUser.membership_status;
         const isMember = status === 'active';
 
         let role = "Gebruiker";
-        if (isLeader) role = "Commissie Leider";
+        if (isAdmin) role = "Beheerder";
+        else if (isLeader) role = "Commissie Leider";
         else if (isInCommittee) role = "Actief Lid";
         else if (isMember) role = "Lid";
 
@@ -247,7 +252,7 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
         let textColor = "text-[var(--color-purple-700)] dark:text-white font-bold";
 
         if (status === "active") {
-            if (isLeader) {
+            if (isAdmin || isLeader) {
                 color = "bg-gradient-to-r from-[var(--color-purple-500)] to-[var(--color-purple-400)] shadow-lg";
                 textColor = "text-white";
             } else if (isInCommittee || isMember) {
