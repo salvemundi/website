@@ -20,7 +20,8 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                     handler: async (ctx) => {
                         console.log(`[AUTH-REDIS-DEBUG] Before Handler start. CTX keys: ${Object.keys(ctx || {})}`);
                         try {
-                            const requestHeaders = new Headers(ctx?.headers || {});
+                            const headersSource = ctx?.headers || (ctx as any)?.request?.headers || {};
+                            const requestHeaders = new Headers(headersSource);
                             const token = requestHeaders.get("authorization")?.split(" ")[1] ||
                                 requestHeaders.get("cookie")?.split("better-auth.session-token=")[1]?.split(";")[0];
 
