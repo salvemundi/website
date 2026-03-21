@@ -23,9 +23,23 @@ const getInternalHeaders = () => {
     };
 };
 
-/**
- * Helper voor Fetch met timeout
- */
+async function getSession() {
+    return await auth.api.getSession({
+        headers: await headers()
+    });
+}
+
+async function checkAdminAccess() {
+    const session = await getSession();
+    if (!session || !session.user) return false;
+    
+    // In Activities.actions check against the committees/admin status
+    const user = session.user as any;
+    const permissions = user.committees || [];
+    const { isSuperAdmin } = await import('@/lib/auth-utils');
+    return isSuperAdmin(permissions);
+}
+
 async function fetchWithTimeout(url: string, options: RequestInit & { timeout?: number } = {}) {
     const { timeout = 10000, ...fetchOptions } = options;
     const controller = new AbortController();
@@ -44,10 +58,6 @@ async function fetchWithTimeout(url: string, options: RequestInit & { timeout?: 
     }
 }
 
-/**
- * Fetch all upcoming and past activities
- * Memoized to prevent duplicate fetches in a single request.
- */
 export const getActivities = cache(async (): Promise<Activiteit[]> => {
     try {
         const events = await directusRequest<any[]>(readItems('events', {
@@ -88,10 +98,6 @@ export const getActivities = cache(async (): Promise<Activiteit[]> => {
     }
 });
 
-/**
- * Fetch a single activity by ID
- * Memoized to prevent duplicate fetches in a single request.
- */
 export const getActivityById = cache(async (id: string): Promise<Activiteit | null> => {
     try {
         const items = await directusRequest<any[]>((readItems('events', {
@@ -130,17 +136,18 @@ export const getActivityById = cache(async (id: string): Promise<Activiteit | nu
     }
 });
 
-/**
- * Handle signup for an activity
- */
 export async function signupForActivity(data: EventSignupForm) {
-    // 1. Validation
+    const { rateLimit } = await import('../utils/ratelimit');
+    const { success } = await rateLimit('event-signup', 3, 300);
+    if (!success) {
+        return { success: false, error: 'Te veel verzoeken. Probeer het over 5 minuten opnieuw.' };
+    }
+
     const parsed = eventSignupFormSchema.safeParse(data);
     if (!parsed.success) {
         return { success: false, errors: parsed.error.flatten().fieldErrors };
     }
 
-    // 2. Honeypot check
     if (parsed.data.website) {
         return { success: false, error: 'Spam gedetecteerd' };
     }
@@ -151,7 +158,6 @@ export async function signupForActivity(data: EventSignupForm) {
         });
         const userId = session?.user?.id;
 
-        // 3. Fetch activity to check price and membership
         const activity = await getActivityById(String(parsed.data.event_id));
         if (!activity) return { success: false, error: 'Activiteit niet gevonden' };
 
@@ -163,7 +169,6 @@ export async function signupForActivity(data: EventSignupForm) {
         const isMember = user?.membership_status === 'active';
         const price = (isMember ? activity.price_members : activity.price_non_members) ?? 0;
 
-        // 4. Create signup in Directus
         const qrToken = `r-${parsed.data.event_id}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
         const signup = await directusRequest<any>(createItem('event_signups', {
             event_id: parsed.data.event_id,
@@ -177,7 +182,6 @@ export async function signupForActivity(data: EventSignupForm) {
 
         const signupId = signup.id;
 
-        // 5. Trigger service (Finance or Mail)
         if ((price ?? 0) > 0) {
             const financeUrl = `${getFinanceServiceUrl()}/api/payments/create`;
             const paymentRes = await fetchWithTimeout(financeUrl, {
@@ -226,10 +230,9 @@ export async function signupForActivity(data: EventSignupForm) {
     }
 }
 
-/**
- * Get all signups for an activity (Admin only)
- */
 export async function getActivitySignups(eventId: string) {
+    if (!(await checkAdminAccess())) return [];
+    
     try {
         return await directusRequest<any[]>(readItems('event_signups', {
             filter: { event_id: { _eq: eventId as any } },
@@ -244,26 +247,7 @@ export async function getActivitySignups(eventId: string) {
 /**
  * Toggle check-in status
  */
-export async function toggleCheckIn(signupId: number, status: boolean) {
-    try {
-        const signup = await directusRequest<any>(updateItem('event_signups', signupId, { 
-            checked_in: status,
-            checked_in_at: status ? new Date().toISOString() : null
-        }));
 
-        if (signup) {
-            revalidateTag(`signups-${signup.event_id}`, 'default');
-        }
-        return { success: true };
-    } catch (error) {
-        console.error(`[Activities] Error toggling check-in for ${signupId}:`, error);
-        return { success: false };
-    }
-}
-
-/**
- * Fetches the current payment and registration status for a given signup.
- */
 export async function getSignupStatus(id?: string, transactionId?: string) {
     if (transactionId) {
         try {
@@ -322,9 +306,6 @@ export async function getSignupStatus(id?: string, transactionId?: string) {
     return { status: 'error' };
 }
 
-/**
- * Retrieves all valid (paid) tickets for the authenticated user.
- */
 export async function getMyTickets() {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) return [];

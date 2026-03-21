@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Html5QrcodeScanner } from 'html5-qrcode';
-import { getActivitySignups, toggleCheckIn } from '@/server/actions/activities.actions';
+import { getActivitySignups } from '@/server/actions/activities.actions';
+import { toggleCheckInAction } from '@/server/actions/aanmeldingen.actions';
 import { Search, UserCheck, UserX, QrCode, Loader2, RefreshCw } from 'lucide-react';
 
 interface AttendanceIslandProps {
@@ -29,7 +30,7 @@ export default function AttendanceIsland({ eventId, eventName }: AttendanceIslan
     }, [eventId]);
 
     const handleToggleCheckIn = async (signupId: number, currentStatus: boolean) => {
-        const result = await toggleCheckIn(signupId, !currentStatus);
+        const result = await toggleCheckInAction(signupId, Number(eventId), !currentStatus);
         if (result.success) {
             setSignups(prev => prev.map(s => 
                 s.id === signupId ? { ...s, checked_in: !currentStatus, checked_in_at: !currentStatus ? new Date().toISOString() : null } : s

@@ -56,7 +56,7 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
                 await CacheInvalidationService.queueInvalidation(fastify.redis, userId);
             }
 
-            // 4. Publish Event to Redis Stream
+            // 4. Publish Event to Redis Stream & Direct Update to Directus
             if (payment.status === 'paid') {
                 const eventData = {
                     event: 'PAYMENT_SUCCESS',
@@ -71,6 +71,29 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
                 });
 
                 fastify.log.info(`[FINANCE] Published PAYMENT_SUCCESS event for payment ${id}`);
+
+                // Direct Update to Directus for reliability
+                const registrationId = metadata?.registrationId as string | number | undefined;
+                const registrationType = metadata?.registrationType as string | undefined;
+
+                if (registrationId && registrationType === 'event_signup') {
+                    const { createDirectus, rest, staticToken, updateItem } = await import('@directus/sdk');
+                    const directusUrl = process.env.INTERNAL_DIRECTUS_URL || process.env.DIRECTUS_URL!;
+                    const directusToken = process.env.DIRECTUS_STATIC_TOKEN!;
+                    
+                    const directus = createDirectus(directusUrl)
+                        .with(staticToken(directusToken))
+                        .with(rest());
+
+                    try {
+                        await directus.request(updateItem('event_signups', registrationId, {
+                            payment_status: 'paid'
+                        }));
+                        fastify.log.info(`[FINANCE] Directly updated Directus event_signup ${registrationId} to paid`);
+                    } catch (dErr: any) {
+                        fastify.log.error(`[FINANCE] Failed to update Directus directly for ${registrationId}:`, dErr);
+                    }
+                }
             }
 
             return { success: true };

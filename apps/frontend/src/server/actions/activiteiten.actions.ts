@@ -24,7 +24,14 @@ async function getSession() {
     });
 }
 
-const NOTIFICATION_API = process.env.NEXT_PUBLIC_NOTIFICATION_API_URL!;
+const getNotificationUrl = (type: 'reminder' | 'custom') => {
+    const baseUrl = process.env.INTERNAL_NOTIFICATION_API_URL || process.env.NEXT_PUBLIC_NOTIFICATION_API_URL;
+    if (!baseUrl) return null;
+    
+    const url = new URL(baseUrl);
+    url.pathname = url.pathname.replace(/\/send-email$/, type === 'reminder' ? '/send-reminder' : '/send-custom');
+    return url.toString();
+};
 
 async function checkAdminAccess() {
     const session = await getSession();
@@ -90,8 +97,10 @@ export async function sendActivityReminder(eventId: number) {
     if (!(await checkAdminAccess())) return { success: false, error: "Unauthorized" };
 
     try {
-        // Use the notification API as legacy did
-        const response = await fetch(`${NOTIFICATION_API.replace('/send-email', '/send-reminder')}`, {
+        const url = getNotificationUrl('reminder');
+        if (!url) throw new Error("Notification API URL not configured");
+
+        const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ eventId })
@@ -111,7 +120,10 @@ export async function sendActivityCustomNotification(eventId: number, title: str
     if (!(await checkAdminAccess())) return { success: false, error: "Unauthorized" };
 
     try {
-        const response = await fetch(`${NOTIFICATION_API.replace('/send-email', '/send-custom')}`, {
+        const url = getNotificationUrl('custom');
+        if (!url) throw new Error("Notification API URL not configured");
+
+        const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -155,7 +167,6 @@ export async function deleteActivity(eventId: number) {
 export async function createActivityAction(prevState: any, formData: FormData) {
     if (!(await checkAdminAccess())) return { error: "Unauthorized", success: false };
 
-    // File upload handling
     const imageFile = formData.get('imageFile') as File | null;
     let imageId: string | null = null;
     
@@ -170,7 +181,6 @@ export async function createActivityAction(prevState: any, formData: FormData) {
         }
     }
 
-    // Convert formData to object for Zod
     const rawData: Record<string, any> = {};
     formData.forEach((value, key) => {
         if (key !== 'imageFile') rawData[key] = value;
@@ -232,7 +242,6 @@ export async function updateActivityAction(eventId: number, prevState: any, form
             if (!isMember) return { error: "Geen rechten voor deze activiteit", success: false };
         }
 
-        // Image handling
         const imageFile = formData.get('imageFile') as File | null;
         let imageId: string | null | undefined = undefined;
         const removeImage = formData.get('removeImage') === 'true';

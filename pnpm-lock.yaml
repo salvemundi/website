@@ -194,6 +194,9 @@ importers:
 
   apps/services/finance-service:
     dependencies:
+      '@directus/sdk':
+        specifier: ^21.1.0
+        version: 21.1.0
       '@mollie/api-client':
         specifier: ^4.0.1
         version: 4.4.0
