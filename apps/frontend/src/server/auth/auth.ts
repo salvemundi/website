@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth";
+import { nextCookies } from "better-auth/next-js";
 import { Pool } from "pg";
 import { createRedisSessionPlugin } from "./redis-session-plugin";
 
@@ -14,6 +15,7 @@ const pool = new Pool({
 
 export const auth = betterAuth({
     database: pool,
+    secret: process.env.BETTER_AUTH_SECRET,
     onSession: (session: any) => {
         // Alleen voor debugging op Acceptance/Localhost
         if (process.env.NODE_ENV !== 'production' || process.env.DEBUG_AUTH === 'true') {
@@ -51,6 +53,7 @@ export const auth = betterAuth({
         modelName: "auth_accounts"
     },
     plugins: [
+        nextCookies(),
         createRedisSessionPlugin(pool)
     ]
 });
