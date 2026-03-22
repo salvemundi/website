@@ -17,13 +17,16 @@ export const metadata: Metadata = {
     description: 'SV Salve Mundi — Digitaal platform voor Fontys ICT.',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
     children,
 }: Readonly<{ children: React.ReactNode }>) {
+    const nonce = (await headers()).get('x-nonce') || undefined;
+
     return (
         <html lang="nl" className="dark" suppressHydrationWarning>
             <head>
                 <script
+                    nonce={nonce}
                     dangerouslySetInnerHTML={{
                         __html: `
                             try {
@@ -54,10 +57,7 @@ export default function RootLayout({
                     <HeaderWrapper />
                 </Suspense>
 
-                <main
-                    className="flex-grow"
-                    style={{ paddingTop: 'var(--header-total-height, var(--header-height, 72px))' }}
-                >
+                <main className="flex-grow pt-[var(--header-total-height,var(--header-height,72px))]">
                     <Suspense fallback={null}>
                         {children}
                     </Suspense>

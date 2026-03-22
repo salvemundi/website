@@ -89,8 +89,7 @@ export function HeroIsland({ banners, activiteiten }: HeroIslandProps) {
                             <div className="space-y-3 sm:space-y-4 md:space-y-6">
                                 {/* Titel */}
                                 <h1
-                                    className="text-gradient-animated text-2xl font-black leading-tight sm:text-3xl md:text-5xl lg:text-6xl pb-1"
-                                    style={{ fontWeight: 950, WebkitTextStroke: '0.5px currentColor' }}
+                                    className="text-gradient-animated text-2xl font-black leading-tight sm:text-3xl md:text-5xl lg:text-6xl pb-1 font-[950] [WebkitTextStroke:0.5px_currentColor]"
                                 >
                                     <span>Studievereniging</span>
                                     <br />

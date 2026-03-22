@@ -163,8 +163,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
     return (
         <header
             ref={headerRef}
-            className="fixed top-0 z-40 w-full backdrop-blur-md shadow-sm transition-all duration-300"
-            style={{ backgroundColor: 'color-mix(in srgb, var(--bg-main) 80%, transparent)' }}
+            className="fixed top-0 z-40 w-full backdrop-blur-md shadow-sm transition-all duration-300 bg-[color-mix(in_srgb,var(--bg-main)_80%,transparent)]"
         >
             {/* Schaduw-overlay bij scrollen */}
             <div
@@ -179,8 +178,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                     <div className="flex items-center justify-start shrink-0">
                         <Link
                             href="/"
-                            className="flex items-center gap-3 rounded-full px-4 py-2 shadow-sm hover:shadow-md transition shrink-0"
-                            style={{ backgroundColor: 'color-mix(in srgb, var(--bg-card) 80%, transparent)' }}
+                            className="flex items-center gap-3 rounded-full px-4 py-2 shadow-sm hover:shadow-md transition shrink-0 bg-[color-mix(in_srgb,var(--bg-card)_80%,transparent)]"
                         >
                             <Image
                                 src="/img/newlogo.png"
@@ -271,11 +269,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                                         console.error('Fout bij inloggen:', error);
                                     }
                                 }}
-                                className="flex cursor-pointer items-center justify-center gap-2 rounded-full font-semibold px-3 py-1.5 h-8 w-[88px] text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
-                                style={{
-                                    backgroundColor: 'var(--color-purple-50)',
-                                    color: 'var(--color-purple-700)',
-                                }}
+                                className="flex cursor-pointer items-center justify-center gap-2 rounded-full font-semibold px-3 py-1.5 h-8 w-[88px] text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg bg-[var(--color-purple-50)] text-[var(--color-purple-700)]"
                             >
                                 Inloggen
                             </button>
@@ -285,11 +279,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                         {!isAuthenticated && (
                             <Link
                                 href={ROUTES.MEMBERSHIP}
-                                className="hidden items-center justify-center gap-2 rounded-full px-4 py-2 h-9 w-[112px] text-sm font-bold shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl md:inline-flex"
-                                style={{
-                                    background: 'linear-gradient(to right, var(--color-purple-100), var(--color-purple-200))',
-                                    color: 'var(--color-purple-700)',
-                                }}
+                                className="hidden items-center justify-center gap-2 rounded-full px-4 py-2 h-9 w-[112px] text-sm font-bold shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl md:inline-flex bg-linear-to-r from-[var(--color-purple-100)] to-[var(--color-purple-200)] text-[var(--color-purple-700)]"
                             >
                                 <Sparkles className="h-4 w-4" />
                                 Word lid
@@ -392,8 +382,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                                     key={link.href}
                                     href={link.href}
                                     onClick={() => setMenuOpen(false)}
-                                    className="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold text-[var(--text-main)] shadow-sm"
-                                    style={{ backgroundColor: 'color-mix(in srgb, var(--bg-card) 70%, transparent)' }}
+                                    className="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold text-[var(--text-main)] shadow-sm bg-[color-mix(in_srgb,var(--bg-card)_70%,transparent)]"
                                 >
                                     <span className="flex items-center gap-3 whitespace-nowrap">
                                         <Icon className="h-5 w-5 text-[var(--text-main)]" aria-hidden />
