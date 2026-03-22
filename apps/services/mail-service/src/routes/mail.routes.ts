@@ -6,7 +6,7 @@ export default async function mailRoutes(fastify: FastifyInstance) {
      * Security hook: Valideert het interne service token voor alle routes in deze scope.
      */
     fastify.addHook('preHandler', async (request, reply) => {
-        const token = process.env.INTERNAL_SERVICE_TOKEN;
+        const token = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
         const authHeader = request.headers.authorization;
 
         if (!token) {

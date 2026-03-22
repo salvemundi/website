@@ -8,7 +8,7 @@ export default async function groupRoutes(fastify: FastifyInstance) {
     // Middleware-like check for internal service token
     fastify.addHook('preHandler', async (request, reply) => {
         const authHeader = request.headers['authorization'];
-        const token = process.env.INTERNAL_SERVICE_TOKEN;
+        const token = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
 
         if (!authHeader || !token || !timingSafeCompare(authHeader, `Bearer ${token}`)) {
             return reply.status(401).send({ error: 'Unauthorized' });

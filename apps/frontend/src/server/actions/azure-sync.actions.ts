@@ -6,7 +6,7 @@ import { revalidateTag, revalidatePath } from "next/cache";
 import { isSuperAdmin } from "@/lib/auth-utils";
 
 const AZURE_SYNC_URL = process.env.AZURE_SYNC_SERVICE_URL;
-const INTERNAL_TOKEN = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '');
+const INTERNAL_TOKEN = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
 
 async function checkSyncAccess() {
     const session = await auth.api.getSession({

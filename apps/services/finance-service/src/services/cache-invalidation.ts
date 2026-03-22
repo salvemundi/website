@@ -99,7 +99,7 @@ export class CacheInvalidationService {
 
     private static async processInvalidation(task: InvalidationTask) {
         const nextAppUrl = process.env.NEXT_APP_INTERNAL_URL || 'http://v7-acc-frontend-1:3000';
-        const secret = process.env.INTERNAL_SERVICE_TOKEN;
+        const secret = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
 
         const res = await fetch(`${nextAppUrl}/api/revalidate`, {
             method: 'POST',
