@@ -1,4 +1,4 @@
-import { createClient } from 'redis';
+import { Redis } from 'ioredis';
 
 interface InvalidationTask {
     userId: string;
@@ -15,7 +15,7 @@ export class CacheInvalidationService {
      * Queues an invalidation request for a user's transaction tags.
      * Uses a Redis Sorted Set where the score is the UNIX timestamp for execution.
      */
-    static async queueInvalidation(redis: ReturnType<typeof createClient>, userId: string) {
+    static async queueInvalidation(redis: Redis, userId: string) {
         const task: InvalidationTask = {
             userId,
             tag: `user-${userId}-transactions`,
@@ -24,10 +24,7 @@ export class CacheInvalidationService {
         };
 
         // Add to Redis Sorted Set (Score = current time)
-        await redis.zAdd(this.QUEUE_KEY, {
-            score: Date.now(),
-            value: JSON.stringify(task)
-        });
+        await redis.zadd(this.QUEUE_KEY, Date.now(), JSON.stringify(task));
 
         console.log(`[CacheInvalidation] Queued task for user ${userId} in Sorted Set`);
     }
@@ -35,7 +32,7 @@ export class CacheInvalidationService {
     /**
      * Starts the background worker loop.
      */
-    static async startWorker(redis: ReturnType<typeof createClient>) {
+    static async startWorker(redis: Redis) {
         console.log('[CacheInvalidation] Starting Retry Worker Loop...');
         
         while (!this.shouldStop) {
@@ -43,7 +40,7 @@ export class CacheInvalidationService {
                 const now = Date.now();
                 
                 // Get all tasks that are due (score <= now)
-                const taskStrings = await redis.zRangeByScore(this.QUEUE_KEY, 0, now);
+                const taskStrings = await redis.zrangebyscore(this.QUEUE_KEY, 0, now);
 
                 if (taskStrings.length === 0) {
                     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -57,12 +54,12 @@ export class CacheInvalidationService {
                         await this.processInvalidation(task);
                         
                         // Success -> Remove from queue
-                        await redis.zRem(this.QUEUE_KEY, taskStr);
+                        await redis.zrem(this.QUEUE_KEY, taskStr);
                     } catch (err: any) {
                         console.error(`[CacheInvalidation] Failed attempt ${task.retries + 1} for ${task.userId}: ${err.message}`);
                         
                         // Remove old entry before potentially re-adding or dropping
-                        await redis.zRem(this.QUEUE_KEY, taskStr);
+                        await redis.zrem(this.QUEUE_KEY, taskStr);
 
                         if (task.retries < task.maxRetries) {
                             task.retries++;
@@ -71,10 +68,7 @@ export class CacheInvalidationService {
                             const backoffSec = 5 * Math.pow(2, task.retries - 1);
                             const nextAttempt = Date.now() + (backoffSec * 1000);
                             
-                            await redis.zAdd(this.QUEUE_KEY, {
-                                score: nextAttempt,
-                                value: JSON.stringify(task)
-                            });
+                            await redis.zadd(this.QUEUE_KEY, nextAttempt, JSON.stringify(task));
                             
                             console.log(`[CacheInvalidation] Rescheduled user ${task.userId} for +${backoffSec}s (next: ${new Date(nextAttempt).toISOString()})`);
                         } else {
