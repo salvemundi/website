@@ -43,6 +43,8 @@ services:
   finance-service:
     container_name: ${COMPOSE_PROJECT_NAME}-finance
     image: ghcr.io/salvemundi/v7-finance:${IMAGE_TAG:-latest}
+    ports:
+      - "100.77.182.130:3001:3001"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - MOLLIE_API_KEY=${MOLLIE_API_KEY}
@@ -56,6 +58,8 @@ services:
   sync-service:
     container_name: ${COMPOSE_PROJECT_NAME}-sync
     image: ghcr.io/salvemundi/v7-sync:${IMAGE_TAG:-latest}
+    ports:
+      - "100.77.182.130:3002:3002"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - AZURE_TENANT_ID=${AZURE_WEBSITEV7_TENANT_ID}
@@ -71,6 +75,8 @@ services:
   mail-service:
     container_name: ${COMPOSE_PROJECT_NAME}-mail
     image: ghcr.io/salvemundi/v7-mail:${IMAGE_TAG:-latest}
+    ports:
+      - "100.77.182.130:3003:3003"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - AZURE_MAIL_CLIENT_ID=${AZURE_WEBSITEV7_MAIL_CLIENT_ID}
