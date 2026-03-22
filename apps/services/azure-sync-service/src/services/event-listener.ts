@@ -1,4 +1,4 @@
-import { createClient } from 'redis';
+import Redis from 'ioredis';
 import { ProvisionWorkerService } from './provision-worker.js';
 import { PaymentSuccessEventSchema } from '@salvemundi/validations'; // Belangrijk: gebruik het gedeelde contract!
 
@@ -8,11 +8,11 @@ export class EventListenerService {
     private static readonly CONSUMER_NAME = 'azure-consumer-1';
     private static shouldStop = false;
 
-    static async start(redis: ReturnType<typeof createClient>) {
+    static async start(redis: Redis) {
         console.log('[AzureEventListener] Starting Redis Stream listener...');
 
         try {
-            await redis.xGroupCreate(this.STREAM_KEY, this.GROUP_NAME, '0', { MKSTREAM: true });
+            await redis.xgroup('CREATE', this.STREAM_KEY, this.GROUP_NAME, '0', 'MKSTREAM');
         } catch (err: any) {
             if (!err.message.includes('BUSYGROUP')) {
                 console.error('[AzureEventListener] Error creating consumer group:', err);
@@ -21,18 +21,23 @@ export class EventListenerService {
 
         while (!this.shouldStop) {
             try {
-                const response = await redis.xReadGroup(
-                    this.GROUP_NAME,
-                    this.CONSUMER_NAME,
-                    { key: this.STREAM_KEY, id: '>' },
-                    { COUNT: 1, BLOCK: 5000 }
-                );
+                const response = (await redis.xreadgroup(
+                    'GROUP', this.GROUP_NAME, this.CONSUMER_NAME,
+                    'COUNT', 1, 'BLOCK', 5000,
+                    'STREAMS', this.STREAM_KEY, '>'
+                )) as any[];
 
                 if (response && response.length > 0) {
-                    for (const stream of response) {
-                        for (const message of stream.messages) {
-                            await this.handleEvent(redis, message);
-                            await redis.xAck(this.STREAM_KEY, this.GROUP_NAME, message.id);
+                    for (const [stream, messages] of response) {
+                        for (const [id, fields] of messages) {
+                            // Convert flat fields array [f1, v1, f2, v2] to object
+                            const data: any = {};
+                            for (let i = 0; i < fields.length; i += 2) {
+                                data[fields[i]] = fields[i + 1];
+                            }
+                            
+                            await this.handleEvent(redis, { id, data });
+                            await redis.xack(this.STREAM_KEY, this.GROUP_NAME, id);
                         }
                     }
                 }
@@ -43,7 +48,7 @@ export class EventListenerService {
         }
     }
 
-    private static async handleEvent(redis: ReturnType<typeof createClient>, message: any) {
+    private static async handleEvent(redis: Redis, message: any) {
         try {
             const rawData = JSON.parse(message.data.payload);
             console.log(`[AzureEventListener] Received event: ${rawData.event}`);
