@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import Handlebars from 'handlebars';
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 import { TokenService } from './token.service.js';
 
 const __filename = fileURLToPath(import.meta.url);

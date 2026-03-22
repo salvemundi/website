@@ -1,4 +1,4 @@
-import { createClient } from "redis";
+import { Redis } from "ioredis";
 
 // Redis Client voor sessie-caching (Node.js runtime alleen — niet beschikbaar in Edge runtime).
 // De configuratie wordt volledig bepaald door de omgevingsvariabelen (REDIS_URL of host+password).
@@ -10,7 +10,7 @@ if (!redisUrl && host && password) {
     redisUrl = `redis://default:${password}@${host}:6379`;
 }
 
-let redisClient: ReturnType<typeof createClient> | null = null;
+let redisClient: Redis | null = null;
 let isConnecting = false;
 
 export async function getRedis() {
@@ -24,18 +24,18 @@ export async function getRedis() {
 
     try {
         isConnecting = true;
-        console.log(`[AUTH-REDIS] Connecting to ${redisUrl.replace(/:[^:@]+@/, ':****@')}...`);
-        
-        redisClient = createClient({ 
-            url: redisUrl,
-            socket: {
-                reconnectStrategy: (retries) => {
-                    if (retries > 10) {
-                        console.error('[AUTH-REDIS] Max reconnection retries reached. Stopping spam.');
-                        return false; // Stop reconnecting after 10 tries
-                    }
-                    return Math.min(retries * 100, 3000);
+        if (!redisUrl) {
+            throw new Error("Redis URL is missing and no host/password provided.");
+        }
+
+        redisClient = new Redis(redisUrl, {
+            maxRetriesPerRequest: null,
+            retryStrategy: (times) => {
+                if (times > 10) {
+                    console.error('[AUTH-REDIS] Max reconnection retries reached. Stopping spam.');
+                    return null; // Stop reconnecting after 10 tries
                 }
+                return Math.min(times * 100, 3000);
             }
         });
 
@@ -44,7 +44,6 @@ export async function getRedis() {
             console.error('[AUTH-REDIS] Client error:', err.message);
         });
 
-        await redisClient.connect();
         isConnecting = false;
         return redisClient;
     } catch (e: any) {

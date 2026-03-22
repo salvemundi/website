@@ -233,9 +233,7 @@ export async function signupForActivity(data: EventSignupForm) {
                 signupId: signupId
             };
 
-            await redis.xAdd('v7:events', '*', { 
-                payload: JSON.stringify(eventPayload) 
-            });
+            await redis.xadd('v7:events', '*', 'payload', JSON.stringify(eventPayload));
             
             return { success: true, message: 'Inschrijving geslaagd!' };
         }

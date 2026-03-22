@@ -1,19 +1,5 @@
-import { createClient } from 'redis';
+import { getRedis } from '../auth/redis-client';
 import { headers } from 'next/headers';
-
-const redisUrl = process.env.REDIS_URL || 'redis://v7-core-redis:6379';
-
-// Lazy-initialized Redis client
-let redisClient: ReturnType<typeof createClient> | null = null;
-
-async function getRedisClient() {
-    if (!redisClient) {
-        redisClient = createClient({ url: redisUrl });
-        redisClient.on('error', (err) => console.error('Redis Client Error in RateLimiter', err));
-        await redisClient.connect();
-    }
-    return redisClient;
-}
 
 /**
  * Extracts the most reliable client IP from headers.
@@ -47,7 +33,7 @@ async function getClientIp(): Promise<string> {
  * @returns { success: boolean, remaining: number, reset: number }
  */
 export async function rateLimit(key: string, limit: number = 5, windowSeconds: number = 60) {
-    const client = await getRedisClient();
+    const client = await getRedis();
     const ip = await getClientIp();
     
     // Composite key: action-name:ip

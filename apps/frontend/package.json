@@ -30,7 +30,7 @@
         "react-dom": "19.2.0",
         "react-hook-form": "^7.71.2",
         "react-map-gl": "^8.1.0",
-        "redis": "^5.11.0",
+        "ioredis": "^5.6.0",
         "swiper": "^12.1.2",
         "xlsx": "^0.18.5",
         "zod": "^3.23.8"

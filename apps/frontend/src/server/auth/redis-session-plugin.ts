@@ -124,7 +124,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                                 committees: impCommittees
                                             };
                                             impData = JSON.stringify(data);
-                                            await redis.set(cacheKey, impData, { EX: 3600 }); // Cache for 1h
+                                            await redis.set(cacheKey, impData, 'EX', 3600); // Cache for 1h
                                         }
 
                                         const targetUser = JSON.parse(impData);
@@ -166,7 +166,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
 
                                 if (token) {
                                     const redis = await getRedis();
-                                    await redis.set(`session:${token}`, JSON.stringify(session), { EX: 300 });
+                                    await redis.set(`session:${token}`, JSON.stringify(session), 'EX', 300);
                                 }
                                 return { response: session };
                             }
