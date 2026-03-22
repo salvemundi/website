@@ -34,8 +34,8 @@ export async function manageAzureMembershipAction(userId: string, azureGroupId: 
     try {
         // 1. Call Azure Management Service
         const mgmtEndpoint = action === 'add' 
-            ? `${AZURE_MGMT_URL}/api/groups/${azureGroupId}/members`
-            : `${AZURE_MGMT_URL}/api/groups/${azureGroupId}/members/${userId}`;
+            ? `${AZURE_MGMT_URL}/api/groups/${encodeURIComponent(azureGroupId)}/members`
+            : `${AZURE_MGMT_URL}/api/groups/${encodeURIComponent(azureGroupId)}/members/${encodeURIComponent(userId)}`;
         
         const mgmtRes = await fetch(mgmtEndpoint, {
             method: action === 'add' ? 'POST' : 'DELETE',
@@ -47,12 +47,13 @@ export async function manageAzureMembershipAction(userId: string, azureGroupId: 
         });
 
         if (!mgmtRes.ok) {
-            const errorData = await mgmtRes.json().catch(() => ({ error: 'Onbekende fout in management service' }));
-            return { success: false, error: errorData.error || `Azure Management gefaald (${mgmtRes.status})` };
+            const errorData = await mgmtRes.json().catch(() => ({ error: 'Onbekende fout' }));
+            console.error('[LedenAction] Azure Management Error:', errorData);
+            return { success: false, error: "Fout bij communicatie met de Azure Management service." };
         }
 
         // 2. Trigger Targeted Sync for the specific user
-        const syncRes = await fetch(`${AZURE_SYNC_URL}/api/sync/run/${directusUserId}`, {
+        const syncRes = await fetch(`${AZURE_SYNC_URL}/api/sync/run/${encodeURIComponent(directusUserId)}`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${INTERNAL_TOKEN}`
@@ -173,7 +174,7 @@ export async function renewMembershipAction(
 
         // Trigger targeted Azure sync to update group membership (Leden_Actief etc.)
         if (INTERNAL_TOKEN) {
-            fetch(`${AZURE_SYNC_URL}/api/sync/run/${directusUserId}`, {
+            fetch(`${AZURE_SYNC_URL}/api/sync/run/${encodeURIComponent(directusUserId)}`, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${INTERNAL_TOKEN}` },
             }).catch(e => console.warn('[renewMembership] Sync trigger failed:', e));

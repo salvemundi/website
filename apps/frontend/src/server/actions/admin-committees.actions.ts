@@ -123,14 +123,15 @@ export async function addCommitteeMember(
     }
 
     // 2) Add to Azure Group via Azure Management Service
-    const azRes = await fetch(`${getAzureManagementUrl()}/groups/${azureGroupId}/members`, {
+    const azRes = await fetch(`${getAzureManagementUrl()}/api/groups/${encodeURIComponent(azureGroupId)}/members`, {
         method: 'POST',
         headers: serviceHeaders(),
         body: JSON.stringify({ userId: user.entra_id }),
     });
     if (!azRes.ok) {
         const err = await azRes.json().catch(() => ({}));
-        return { success: false, error: err.error || 'Toevoegen aan Azure groep mislukt' };
+        console.error('[AdminCommittees] Add member Azure error:', err);
+        return { success: false, error: 'Bewerking in Azure mislukt. Probeer het later opnieuw.' };
     }
 
     return { success: true };
@@ -141,13 +142,14 @@ export async function removeCommitteeMember(
     entraId: string
 ): Promise<{ success: boolean; error?: string }> {
     await checkAccess();
-    const azRes = await fetch(`${getAzureManagementUrl()}/groups/${azureGroupId}/members/${entraId}`, {
+    const azRes = await fetch(`${getAzureManagementUrl()}/api/groups/${encodeURIComponent(azureGroupId)}/members/${encodeURIComponent(entraId)}`, {
         method: 'DELETE',
         headers: serviceHeaders(),
     });
     if (!azRes.ok) {
         const err = await azRes.json().catch(() => ({}));
-        return { success: false, error: err.error || 'Verwijderen mislukt' };
+        console.error('[AdminCommittees] Remove member Azure error:', err);
+        return { success: false, error: 'Verwijderen uit Azure groep mislukt.' };
     }
     return { success: true };
 }
@@ -172,8 +174,8 @@ export async function toggleCommitteeLeader(
     // If there's an Azure group, also update owners
     if (azureGroupId) {
         const path = currentIsLeader
-            ? `${getAzureManagementUrl()}/groups/${azureGroupId}/owners/${entraId}`
-            : `${getAzureManagementUrl()}/groups/${azureGroupId}/owners`;
+            ? `${getAzureManagementUrl()}/api/groups/${encodeURIComponent(azureGroupId)}/owners/${encodeURIComponent(entraId)}`
+            : `${getAzureManagementUrl()}/api/groups/${encodeURIComponent(azureGroupId)}/owners`;
         const method = currentIsLeader ? 'DELETE' : 'POST';
         await fetch(path, {
             method,

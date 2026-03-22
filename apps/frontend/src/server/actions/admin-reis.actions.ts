@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 import { headers } from 'next/headers';
-import { revalidateTag } from 'next/cache';
+import { revalidateTag, revalidatePath } from 'next/cache';
 import { auth } from '@/server/auth/auth';
 import {
     tripSchema,
@@ -183,7 +183,8 @@ export async function sendPaymentEmail(signupId: number, tripId: number, payment
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error || `Service returned ${response.status}`);
+            console.error('[AdminReisActions#sendPaymentEmail] Finance service error:', errorData);
+            throw new Error('De betaalservice gaf een fout terug.');
         }
 
         return { success: true };
@@ -493,7 +494,8 @@ export async function sendBulkTripEmail(data: {
 
         if (!response.ok) {
             const err = await response.json().catch(() => ({}));
-            throw new Error(err.error || `Mail service error: ${response.status}`);
+            console.error('[AdminReisActions#sendBulkTripEmail] Mail service error:', err);
+            throw new Error('De e-mailservice gaf een fout terug.');
         }
 
         return { success: true };

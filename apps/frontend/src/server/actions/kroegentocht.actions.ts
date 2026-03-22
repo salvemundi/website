@@ -171,8 +171,9 @@ export async function initiateKroegentochtPayment(formData: any) {
         if (paymentRes.ok && paymentData.checkoutUrl) {
             return { success: true, checkoutUrl: paymentData.checkoutUrl };
         }
-
-        return { success: false, error: paymentData.error || 'Fout bij aanmaken betaling' };
+ 
+        console.error('[kroegentocht.actions#initiatePayment] Payment service error:', paymentData);
+        return { success: false, error: 'Het aanmaken van de betaling is mislukt. Probeer het later opnieuw.' };
 
     } catch (error) {
         console.error('[kroegentocht.actions#initiatePayment] Error:', error);

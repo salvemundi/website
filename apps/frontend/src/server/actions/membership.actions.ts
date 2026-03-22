@@ -61,8 +61,9 @@ export async function validateCouponAction(formData: FormData) {
                 description: data.description
             };
         }
-
-        return { success: false, error: data.error || 'Coupon niet geldig' };
+ 
+        console.error('[membership.actions#validateCoupon] Service error:', data);
+        return { success: false, error: 'De opgegeven coupon is niet geldig of de service is niet bereikbaar.' };
     } catch (error) {
         console.error('[membership.actions#validateCoupon] Error:', error);
         return { success: false, error: 'Fout bij valideren van coupon' };
@@ -122,8 +123,9 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
         if (response.ok && data.checkoutUrl) {
             return { success: true, checkoutUrl: data.checkoutUrl };
         }
-
-        return { success: false, error: data.error || 'Fout bij aanmaken van betaling' };
+ 
+        console.error('[membership.actions#initiatePayment] Service error:', data);
+        return { success: false, error: 'Er is een fout opgetreden bij het aanmaken van de betaling.' };
     } catch (error) {
         console.error('[membership.actions#initiatePayment] Error:', error);
         return { success: false, error: 'Kan geen verbinding maken met betaalservice' };

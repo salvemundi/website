@@ -216,7 +216,8 @@ export async function signupForActivity(data: EventSignupForm) {
             if (paymentRes.ok && paymentData.checkoutUrl) {
                 return { success: true, checkoutUrl: paymentData.checkoutUrl };
             }
-            return { success: false, error: paymentData.error || 'Betaalservice fout' };
+            console.error('[Activities] Payment service error:', paymentData);
+            return { success: false, error: 'Er kon geen betaling worden aangemaakt voor deze inschrijving.' };
         } else {
             // Free event, trigger mail service via Redis Event Stream
             const { getRedis } = await import('@/server/auth/redis-client');

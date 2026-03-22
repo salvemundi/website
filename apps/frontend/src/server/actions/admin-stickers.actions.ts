@@ -8,7 +8,7 @@ import { revalidateTag } from "next/cache";
  * Access the internal Directus URL for improved performance and security
  * within the cluster/VPS environment.
  */
-import { getSystemDirectus } from "@/lib/directus";
+import { getSystemDirectus, getUserDirectus } from "@/lib/directus";
 import { readItems, deleteItem, updateItem } from "@directus/sdk";
 
 /**
