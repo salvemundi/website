@@ -71,9 +71,7 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
                 // Validate payload with Zod
                 const validatedEvent = PaymentSuccessEventSchema.parse(eventData);
 
-                await fastify.redis.xAdd('v7:events', '*', {
-                    payload: JSON.stringify(validatedEvent)
-                });
+                await fastify.redis.xadd('v7:events', '*', 'payload', JSON.stringify(validatedEvent));
 
                 fastify.log.info(`[FINANCE] Published PAYMENT_SUCCESS event for payment ${id}`);
 
