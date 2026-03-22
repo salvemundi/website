@@ -73,7 +73,6 @@ export default function KroegentochtFormIsland({ event }: KroegentochtFormIsland
 
         // Honeypot check
         if (website) {
-            console.log("Bot detected (honeypot)");
             return;
         }
 

@@ -1,4 +1,5 @@
 import type { Document } from '@salvemundi/validations';
+import { getImageUrl } from '@/lib/image-utils';
 
 interface DocumentenLijstProps {
     /** Lijst van documenten opgehaald door de server action */
@@ -22,7 +23,7 @@ export default function DocumentenLijst({ documenten }: DocumentenLijstProps) {
         <div className="space-y-3 ml-14">
             {documenten.map((doc) => {
                 // Asset-URL opbouwen via de publieke Directus URL
-                const fileUrl = `/api/assets/${doc.file}`;
+                const fileUrl = getImageUrl(doc.file) || '#';
 
                 return (
                     <a

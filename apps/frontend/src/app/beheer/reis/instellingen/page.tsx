@@ -1,39 +1,47 @@
 import { Suspense } from 'react';
+import type { Metadata } from 'next';
 import PageHeader from '@/components/ui/layout/PageHeader';
-import { getTrips } from '@/server/actions/admin-reis.actions';
 import ReisInstellingenIsland from '@/components/islands/admin/ReisInstellingenIsland';
 import { Loader2 } from 'lucide-react';
+import { getSystemDirectus } from '@/lib/directus';
+import { readItems } from '@directus/sdk';
+
+export const metadata: Metadata = {
+    title: 'Reis Instellingen | SV Salve Mundi',
+};
 
 export default async function ReisInstellingenPage() {
     return (
-        <main className="min-h-screen bg-[var(--bg-main)]">
+        <div className="min-h-screen bg-[var(--bg-main)]">
             <PageHeader 
                 title="Reis Instellingen" 
+                description="Beheer reizen, configuratie en algemene instellingen"
                 backLink="/beheer/reis"
             />
             
-            <Suspense fallback={<SettingsPageLoader />}>
+            <Suspense fallback={
+                <div className="flex justify-center py-20">
+                    <Loader2 className="animate-spin h-10 w-10 text-[var(--theme-purple)]" />
+                </div>
+            }>
                 <SettingsDataWrapper />
             </Suspense>
-        </main>
+        </div>
     );
 }
 
 async function SettingsDataWrapper() {
-    const trips = await getTrips();
+    const trips = await getSystemDirectus().request(readItems('trips', {
+        fields: [
+            'id', 'name', 'description', 'start_date', 'end_date', 'max_participants', 
+            'max_crew', 'base_price', 'deposit_amount', 'crew_discount', 'image', 
+            'registration_open', 'allow_final_payments', 'is_bus_trip', 
+            'registration_start_date', 'event_date'
+        ] as any,
+        sort: ['-event_date']
+    }));
 
     return (
-        <ReisInstellingenIsland 
-            initialTrips={trips}
-        />
-    );
-}
-
-function SettingsPageLoader() {
-    return (
-        <div className="container mx-auto px-4 py-12 flex flex-col items-center justify-center">
-            <Loader2 className="h-12 w-12 animate-spin text-[var(--theme-purple)] mb-4" />
-            <p className="text-[var(--text-muted)] font-bold uppercase tracking-widest text-xs">Instellingen laden...</p>
-        </div>
+        <ReisInstellingenIsland initialTrips={trips as any} />
     );
 }

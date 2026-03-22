@@ -3,6 +3,7 @@
 import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
+import { getSystemDirectus, getUserDirectus } from "@/lib/directus";
 import { 
     readItems, 
     updateItem,
@@ -10,7 +11,6 @@ import {
     createItem
 } from "@directus/sdk";
 import { PendingSignup } from "@salvemundi/validations";
-import { directus, directusRequest } from "@/lib/directus";
 import { isSuperAdmin } from "@/lib/auth-utils";
 
 /**
@@ -21,7 +21,7 @@ export async function logAdminAction(action: string, collection: string, id: str
         const session = await auth.api.getSession({ headers: await headers() });
         const userId = session?.user?.id;
         
-        await directusRequest(createItem('audit_logs', {
+        await getSystemDirectus().request(createItem('audit_logs' as any, {
             user_id: userId || null,
             action,
             target_collection: collection,
@@ -43,7 +43,7 @@ async function checkAuditAccess() {
     const isAdmin = isSuperAdmin(user.committees);
 
     if (!isAdmin) return null;
-    return user;
+    return session;
 }
 
 export async function getPendingSignupsAction() {
@@ -53,29 +53,29 @@ export async function getPendingSignupsAction() {
     try {
         // Fetch from all 3 collections
         // 1. Events
-        const eventSignups = await directusRequest<any[]>(readItems('event_signups', {
-            fields: ['id', 'date_created', 'participant_name', 'participant_email', 'approval_status', 'payment_status', { event_id: ['name'] }],
+        const eventSignups = (await getSystemDirectus().request(readItems('event_signups', {
+            fields: ['id', 'date_created', 'participant_name', 'participant_email', 'approval_status', 'payment_status', { event_id: ['name'] }] as any,
             filter: { approval_status: { _eq: 'pending' } },
             sort: ['-date_created']
-        }));
+        }))) as any[];
 
         // 2. Pub Crawl
-        const pubCrawlSignups = await directusRequest<any[]>(readItems('pub_crawl_signups', {
-            fields: ['id', 'date_created', 'name', 'email', 'approval_status', 'payment_status', { pub_crawl_event_id: ['name'] }],
+        const pubCrawlSignups = (await getSystemDirectus().request(readItems('pub_crawl_signups' as any, {
+            fields: ['id', 'date_created', 'name', 'email', 'approval_status', 'payment_status', { pub_crawl_event_id: ['name'] }] as any,
             filter: { approval_status: { _eq: 'pending' } },
             sort: ['-date_created']
-        }));
+        }))) as any[];
 
         // 3. Trips
-        const tripSignups = await directusRequest<any[]>(readItems('trip_signups', {
-            fields: ['id', 'date_created', 'first_name', 'last_name', 'email', 'approval_status', 'payment_status', { trip_id: ['name'] }],
+        const tripSignups = (await getSystemDirectus().request(readItems('trip_signups' as any, {
+            fields: ['id', 'date_created', 'first_name', 'last_name', 'email', 'approval_status', 'payment_status', { trip_id: ['name'] }] as any,
             filter: { approval_status: { _eq: 'pending' } },
             sort: ['-date_created']
-        }));
+        }))) as any[];
 
         // Aggregate and map
         const aggregated: PendingSignup[] = [
-            ...eventSignups.map(s => ({
+            ...eventSignups.map((s: any) => ({
                 id: s.id.toString(),
                 created_at: s.date_created,
                 email: s.participant_email,
@@ -87,7 +87,7 @@ export async function getPendingSignupsAction() {
                 payment_status: s.payment_status,
                 type: 'event' as const
             })),
-            ...pubCrawlSignups.map(s => ({
+            ...pubCrawlSignups.map((s: any) => ({
                 id: s.id.toString(),
                 created_at: s.date_created,
                 email: s.email,
@@ -99,7 +99,7 @@ export async function getPendingSignupsAction() {
                 payment_status: s.payment_status,
                 type: 'pub_crawl' as const
             })),
-            ...tripSignups.map(s => ({
+            ...tripSignups.map((s: any) => ({
                 id: s.id.toString(),
                 created_at: s.date_created,
                 email: s.email,
@@ -127,7 +127,7 @@ export async function approveSignupAction(id: string, type: string) {
     const collection = type === 'event' ? 'event_signups' : type === 'pub_crawl' ? 'pub_crawl_signups' : 'trip_signups';
 
     try {
-        await directusRequest(updateItem(collection, id, { approval_status: 'approved' }));
+        await getUserDirectus(admin.session.token).request(updateItem(collection as any, id as any, { approval_status: 'approved' }));
         revalidatePath('/beheer/logging');
         return { success: true };
     } catch (err) {
@@ -143,7 +143,7 @@ export async function rejectSignupAction(id: string, type: string) {
     const collection = type === 'event' ? 'event_signups' : type === 'pub_crawl' ? 'pub_crawl_signups' : 'trip_signups';
 
     try {
-        await directusRequest(updateItem(collection, id, { approval_status: 'rejected' }));
+        await getUserDirectus(admin.session.token).request(updateItem(collection as any, id as any, { approval_status: 'rejected' }));
         revalidatePath('/beheer/logging');
         return { success: true };
     } catch (err) {
@@ -159,7 +159,7 @@ export async function getAuditSettingsAction() {
     try {
         // App settings is often a singleton or a specific collection
         // Based on ERD, it's a "NIEUW" table. Assuming it's a singleton called 'app_settings'
-        const settings = await directusRequest<any>(readSingleton('app_settings')).catch(() => ({ manual_approval: false }));
+        const settings = await getSystemDirectus().request(readSingleton('app_settings' as any)).catch(() => ({ manual_approval: false }));
         return { success: true, data: settings };
     } catch {
         return { success: true, data: { manual_approval: false } };
@@ -172,7 +172,7 @@ export async function updateAuditSettingsAction(manualApproval: boolean) {
 
     try {
         // Assuming singleton update
-        await directusRequest(updateItem('app_settings', undefined as any, { manual_approval: manualApproval }));
+        await getUserDirectus(admin.session.token).request(updateItem('app_settings' as any, undefined as any, { manual_approval: manualApproval }));
         revalidateTag('app_settings', 'default');
         return { success: true };
     } catch (err) {

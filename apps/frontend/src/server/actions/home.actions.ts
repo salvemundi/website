@@ -9,7 +9,7 @@ import {
     type Sponsor,
 } from '@salvemundi/validations';
 
-import { directus, directusRequest } from '@/lib/directus';
+import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 
 // Removed redundant fetchWithTimeout in favor of Directus SDK.
@@ -18,7 +18,7 @@ import { readItems } from '@directus/sdk';
 
 export async function getHeroBanners(): Promise<HeroBanner[]> {
     try {
-        const rawData = await directusRequest<any[]>(readItems('hero_banners', {
+        const rawData = await getSystemDirectus().request(readItems('hero_banners', {
             fields: ['id', 'title', 'image', 'sort'],
             limit: 10
         }));
@@ -49,7 +49,7 @@ export async function getHeroBanners(): Promise<HeroBanner[]> {
 
 export async function getUpcomingActiviteiten(limit = 4): Promise<Activiteit[]> {
     try {
-        const rawData = await directusRequest<any[]>(readItems('events', {
+        const rawData = await getSystemDirectus().request(readItems('events', {
             fields: ['id', 'name', 'description', 'location', 'event_date', 'event_date_end', 'image', 'status', 'price_members', 'price_non_members', 'only_members', 'inschrijf_deadline', 'contact', 'event_time', 'event_time_end'],
             filter: {
                 status: { _eq: 'published' },
@@ -89,7 +89,7 @@ export async function getUpcomingActiviteiten(limit = 4): Promise<Activiteit[]> 
 
 export async function getSponsors(): Promise<Sponsor[]> {
     try {
-        const rawData = await directusRequest<any[]>(readItems('sponsors', {
+        const rawData = await getSystemDirectus().request(readItems('sponsors', {
             fields: ['sponsor_id', 'image', 'website_url', 'dark_bg'],
             sort: ['sponsor_id'],
             limit: -1

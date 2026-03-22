@@ -12,7 +12,7 @@ import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { revalidateTag } from 'next/cache';
 
-import { directusRequest } from '@/lib/directus';
+import { getSystemDirectus } from '@/lib/directus';
 import { readItems, createItem } from '@directus/sdk';
 
 const getFinanceServiceUrl = () =>
@@ -54,10 +54,11 @@ export async function getKroegentochtEvent(): Promise<PubCrawlEvent | null> {
     const today = new Date().toISOString().split('T')[0];
     
     try {
-        const data = await directusRequest(readItems('pub_crawl_events', {
+        const data = await getSystemDirectus().request(readItems('pub_crawl_events', {
             filter: { date: { _gte: today } },
             sort: ['date'],
-            limit: 1
+            limit: 1,
+            fields: ['id', 'name', 'date', 'price', 'max_tickets_per_person']
         }));
 
         const event = data?.[0];
@@ -76,14 +77,17 @@ export async function getKroegentochtEvent(): Promise<PubCrawlEvent | null> {
  */
 export async function getKroegentochtTickets(email: string): Promise<PubCrawlTicket[]> {
     try {
-        const data = await directusRequest(readItems('pub_crawl_tickets', {
+        const data = await getSystemDirectus().request(readItems('pub_crawl_tickets', {
             filter: {
                 signup_id: {
                     email: { _eq: email },
                     payment_status: { _eq: 'paid' }
                 } as any
             },
-            fields: ['*', { signup_id: [{ pub_crawl_event_id: ['name'] }] }] as any
+            fields: [
+                'id', 'signup_id', 'name', 'initial', 'qr_token', 'checked_in', 'checked_in_at',
+                { signup_id: [{ pub_crawl_event_id: ['name'] }] }
+            ] as any
         }));
 
         const parsed = (data || []).map((t: any) => pubCrawlTicketSchema.safeParse(t).data).filter(Boolean);
@@ -106,9 +110,10 @@ export async function initiateKroegentochtPayment(formData: any) {
 
     try {
         // 2. Dynamische prijs en limiet ophalen
-        const event = await directusRequest(readItems('pub_crawl_events', {
+        const event = await getSystemDirectus().request(readItems('pub_crawl_events', {
             filter: { id: { _eq: parsed.data.pub_crawl_event_id as any } },
-            limit: 1
+            limit: 1,
+            fields: ['id', 'price', 'max_tickets_per_person']
         }));
         
         const eventData = event?.[0];
@@ -120,7 +125,7 @@ export async function initiateKroegentochtPayment(formData: any) {
         const maxPerPerson = Number(eventData.max_tickets_per_person || 10);
 
         // 3. Dubbele check op ticket limiet
-        const existingSignups = await directusRequest(readItems('pub_crawl_signups', {
+        const existingSignups = await getSystemDirectus().request(readItems('pub_crawl_signups', {
             filter: {
                 email: { _eq: parsed.data.email },
                 pub_crawl_event_id: { _eq: parsed.data.pub_crawl_event_id },
@@ -137,7 +142,7 @@ export async function initiateKroegentochtPayment(formData: any) {
 
         // 4. Signup aanmaken
         const { id: _, ...signupData } = parsed.data;
-        const signup = await directusRequest(createItem('pub_crawl_signups', {
+        const signup = await getSystemDirectus().request(createItem('pub_crawl_signups', {
             ...signupData,
             pub_crawl_event_id: parsed.data.pub_crawl_event_id as any,
             payment_status: 'open'
@@ -180,9 +185,14 @@ export async function initiateKroegentochtPayment(formData: any) {
  */
 export async function getKroegentochtStatus(signupId: string) {
     try {
-        const data = await directusRequest(readItems('pub_crawl_signups', {
+        const data = await getSystemDirectus().request(readItems('pub_crawl_signups', {
             filter: { id: { _eq: signupId as any } },
-            fields: ['*', { pub_crawl_event_id: ['name'] }] as any,
+            fields: [
+                'id', 'pub_crawl_event_id', 'name', 'email', 'association', 
+                'amount_tickets', 'name_initials', 'payment_status', 'approval_status', 
+                'date_created',
+                { pub_crawl_event_id: ['name'] }
+            ] as any,
             limit: 1
         }));
 

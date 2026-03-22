@@ -47,7 +47,7 @@ export const formatDutchDate = (dateStr?: string | null): string | null => {
             month: 'long',
             year: 'numeric'
         }).format(date);
-    } catch (e) {
+    } catch {
         return dateStr;
     }
 };

@@ -4,6 +4,7 @@ import { useState, useRef, useOptimistic, useActionState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save, Upload, X, Loader2 } from 'lucide-react';
 import { updateActivityAction } from '@/server/actions/activiteiten.actions';
+import { getImageUrl } from '@/lib/image-utils';
 
 interface Committee {
     id: number;
@@ -38,8 +39,7 @@ export default function ActiviteitBewerkenIsland({ event, committees }: { event:
     const [removeExistingImage, setRemoveExistingImage] = useState(false);
     
     // Set initial image preview if event has an image
-    const initialImageId = event.image ? (typeof event.image === 'object' ? event.image.id : event.image) : null;
-    const [imagePreview, setImagePreview] = useState<string | null>(initialImageId ? `/api/assets/${initialImageId}` : null);
+    const [imagePreview, setImagePreview] = useState<string | null>(getImageUrl(event.image));
     
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
     

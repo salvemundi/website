@@ -7,6 +7,9 @@ import { revalidatePath } from 'next/cache';
 import { updateProfileSchema } from '@salvemundi/validations';
 
 
+import { getUserDirectus } from '@/lib/directus';
+import { updateUser } from '@directus/sdk';
+
 export async function updateUserProfile(data: z.infer<typeof updateProfileSchema>) {
     const session = await auth.api.getSession({ headers: await headers() });
     const user = session?.user;
@@ -15,41 +18,25 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
         return { success: false, error: 'Not authenticated' };
     }
 
+    const { rateLimit } = await import('../utils/ratelimit');
+    const { success } = await rateLimit('profile-update', 10, 300);
+    if (!success) {
+        return { success: false, error: 'Te veel wijzigingen. Probeer het over 5 minuten opnieuw.' };
+    }
+
     const parsed = updateProfileSchema.safeParse(data);
     if (!parsed.success) {
         return { success: false, error: 'Ongeldige data' };
     }
 
-    const directusUrl = process.env.INTERNAL_DIRECTUS_URL;
-    const token = process.env.DIRECTUS_STATIC_TOKEN;
-
-    if (!token) {
-        console.error('[profiel.actions#updateUserProfile] DIRECTUS_STATIC_TOKEN missing');
-        return { success: false, error: 'Server configuratie fout' };
-    }
-
     try {
-        const res = await fetch(`${directusUrl}/users/${user.id}`, {
-            method: 'PATCH',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            },
-            body: JSON.stringify(parsed.data),
-        });
-
-        if (!res.ok) {
-            console.error('[profiel.actions#updateUserProfile] Update failed:', res.statusText);
-            await res.text();
-            return { success: false, error: 'Opslaan mislukt in Directus' };
-        }
+        await getUserDirectus((session as any).session?.token).request(updateUser(user.id, parsed.data));
 
         revalidatePath('/profiel');
         return { success: true };
     } catch (err) {
         console.error('[profiel.actions#updateUserProfile] Error:', err);
-        return { success: false, error: 'Netwerkfout' };
+        return { success: false, error: 'Bijwerken mislukt' };
     }
 }
 

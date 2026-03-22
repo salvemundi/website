@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
     Mail, 
     Send, 
@@ -12,10 +13,10 @@ import {
     ChevronDown, 
     Search,
     Info,
-    Layout
+    Layout,
+    Check
 } from 'lucide-react';
 import { 
-    getTripSignups, 
     sendBulkTripEmail, 
     sendBulkPaymentEmails 
 } from '@/server/actions/admin-reis.actions';
@@ -23,12 +24,14 @@ import type { Trip, TripSignup } from '@salvemundi/validations';
 
 interface ReisMailIslandProps {
     trips: Trip[];
+    initialSignups: TripSignup[];
+    initialSelectedTripId: number;
 }
 
-export default function ReisMailIsland({ trips }: ReisMailIslandProps) {
-    const [selectedTripId, setSelectedTripId] = useState<number>(trips[0]?.id || 0);
-    const [signups, setSignups] = useState<TripSignup[]>([]);
-    const [loading, setLoading] = useState(false);
+export default function ReisMailIsland({ trips, initialSignups, initialSelectedTripId }: ReisMailIslandProps) {
+    const router = useRouter();
+    const [selectedTripId, setSelectedTripId] = useState<number>(initialSelectedTripId);
+    const [signups, setSignups] = useState<TripSignup[]>(initialSignups);
     const [sending, setSending] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
@@ -44,22 +47,15 @@ export default function ReisMailIsland({ trips }: ReisMailIslandProps) {
     const [subject, setSubject] = useState('');
     const [message, setMessage] = useState('');
 
+    // Sync state with props when trip changes via URL
     useEffect(() => {
-        if (selectedTripId) {
-            loadSignups();
-        }
-    }, [selectedTripId]);
+        setSignups(initialSignups);
+        setSelectedTripId(initialSelectedTripId);
+    }, [initialSignups, initialSelectedTripId]);
 
-    const loadSignups = async () => {
-        setLoading(true);
-        try {
-            const data = await getTripSignups(selectedTripId);
-            setSignups(data);
-        } catch (err) {
-            setError('Fout bij het laden van deelnemers');
-        } finally {
-            setLoading(false);
-        }
+    const handleTripChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const id = parseInt(e.target.value);
+        router.push(`/beheer/reis/mail?tripId=${id}`);
     };
 
     const filteredRecipients = useMemo(() => {
@@ -114,7 +110,7 @@ export default function ReisMailIsland({ trips }: ReisMailIslandProps) {
                 if (res.success) {
                     setSuccess(`${filteredRecipients.length} betalingsverzoeken succesvol verstuurd!`);
                 } else {
-                    setError(`Verzenden voltooid: ${res.successCount} gelukt, ${res.failCount} mislukt.`);
+                    setError(`Verzenden voltooid: ${res.successCount || 0} gelukt, ${res.failCount || 0} mislukt.`);
                 }
             }
         } catch (err) {
@@ -148,7 +144,7 @@ export default function ReisMailIsland({ trips }: ReisMailIslandProps) {
                         <div className="relative group">
                             <select 
                                 value={selectedTripId}
-                                onChange={(e) => setSelectedTripId(parseInt(e.target.value))}
+                                onChange={handleTripChange}
                                 className="w-full pl-4 pr-10 py-3 bg-[var(--bg-main)] border-0 ring-1 ring-[var(--border-color)]/50 rounded-xl text-sm font-bold text-[var(--text-main)] focus:ring-2 focus:ring-[var(--theme-purple)] transition-all appearance-none cursor-pointer"
                             >
                                 {trips.map(trip => (
@@ -194,7 +190,7 @@ export default function ReisMailIsland({ trips }: ReisMailIslandProps) {
                     </Card>
 
                     {/* Summary */}
-                    <div className="bg-[var(--theme-purple)]/5 rounded-[var(--radius-xl)] ring-1 ring-[var(--theme-purple)]/20 p-6">
+                    <div className="bg-[var(--theme-purple)]/5 rounded-[var(--radius-xl)] ring-1 ring-[var(--theme-purple)]/20 p-6 shadow-sm">
                         <div className="flex items-center gap-3 mb-2 text-[var(--theme-purple)]">
                             <Users className="h-5 w-5" />
                             <span className="text-2xl font-black italic">{filteredRecipients.length}</span>
@@ -254,8 +250,8 @@ export default function ReisMailIsland({ trips }: ReisMailIslandProps) {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="p-8 bg-[var(--theme-info)]/10 rounded-3xl border border-[var(--theme-info)]/20 flex items-start gap-6 animate-in zoom-in-95 duration-500">
-                                    <div className="p-4 bg-[var(--theme-info)]/20 rounded-2xl text-[var(--theme-info)]">
+                                <div className="p-8 bg-[var(--theme-purple)]/5 rounded-3xl border border-[var(--theme-purple)]/10 flex items-start gap-6 animate-in zoom-in-95 duration-500">
+                                    <div className="p-4 bg-[var(--theme-purple)]/10 rounded-2xl text-[var(--theme-purple)]">
                                         <Info className="h-8 w-8" />
                                     </div>
                                     <div className="space-y-4">
@@ -344,7 +340,7 @@ function TypeTab({ active, onClick, children }: any) {
 function TickItem({ children }: any) {
     return (
         <li className="flex items-center gap-2 text-xs font-bold text-[var(--text-muted)]">
-            <CheckCircle className="h-3 w-3 text-[var(--theme-info)]" />
+            <Check className="h-3 w-3 text-[var(--theme-purple)]" />
             {children}
         </li>
     );

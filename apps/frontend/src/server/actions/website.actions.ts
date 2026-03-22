@@ -3,7 +3,7 @@
 import { connection } from 'next/server';
 import { documentenSchema, type Document } from '@salvemundi/validations';
 
-import { directus, directusRequest } from '@/lib/directus';
+import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 
 /**
@@ -13,7 +13,8 @@ import { readItems } from '@directus/sdk';
  */
 export async function getDocumenten(): Promise<Document[]> {
     try {
-        const rawData = await directusRequest<any[]>(readItems('documents', {
+        const rawData = await getSystemDirectus().request(readItems('documents', {
+            fields: ['id', 'name', 'file', 'category', 'display_order'],
             sort: ['display_order'],
             limit: 50
         }));
@@ -43,7 +44,7 @@ export async function getDocumenten(): Promise<Document[]> {
 export async function getDisabledRoutes(): Promise<string[]> {
     await connection();
     try {
-        const result = await directusRequest<any[]>(readItems('feature_flags', {
+        const result = await getSystemDirectus().request(readItems('feature_flags', {
             filter: { is_active: { _eq: false } },
             fields: ['route_match']
         }));

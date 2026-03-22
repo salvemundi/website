@@ -4,16 +4,13 @@ import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 
-const getDirectusUrl = () => process.env.INTERNAL_DIRECTUS_URL;
-const getToken = () => {
-    const token = process.env.DIRECTUS_STATIC_TOKEN;
-    if (!token) throw new Error('DIRECTUS_STATIC_TOKEN is missing');
-    return token;
-};
-const directusHeaders = () => ({
-    Authorization: `Bearer ${getToken()}`,
-    'Content-Type': 'application/json',
-});
+import { getSystemDirectus } from '@/lib/directus';
+import { 
+    readItems, 
+    updateItem, 
+    deleteItem, 
+    createItem 
+} from '@directus/sdk';
 
 const ALLOWED_ROLES = ['ictcommissie', 'ict', 'bestuur', 'kascommissie', 'kas', 'kandidaatbestuur', 'kandi'];
 
@@ -42,13 +39,17 @@ export type CouponStatus = 'active' | 'expired' | 'maxed' | 'inactive' | 'pendin
 
 export async function getCoupons(): Promise<Coupon[]> {
     await checkAccess();
-    const res = await fetch(
-        `${getDirectusUrl()}/items/coupons?sort=-id&limit=500&fields=id,coupon_code,discount_type,discount_value,usage_count,usage_limit,valid_from,valid_until,is_active,date_created`,
-        { headers: directusHeaders() }
-    );
-    if (!res.ok) throw new Error('Kon coupons niet ophalen');
-    const json = await res.json();
-    return json.data ?? [];
+    try {
+        const items = await getSystemDirectus().request(readItems('coupons', {
+            sort: ['-id'],
+            limit: 500,
+            fields: ['id', 'coupon_code', 'discount_type', 'discount_value', 'usage_count', 'usage_limit', 'valid_from', 'valid_until', 'is_active', 'date_created']
+        }));
+        return (items ?? []) as Coupon[];
+    } catch (e) {
+        console.error('[AdminCoupons] Fetch failed:', e);
+        throw new Error('Kon coupons niet ophalen');
+    }
 }
 
 export async function createCoupon(formData: FormData): Promise<{ success: boolean; error?: string; fieldErrors?: Record<string, string[]> }> {
@@ -85,49 +86,38 @@ export async function createCoupon(formData: FormData): Promise<{ success: boole
         valid_until: validUntil || null,
     };
 
-    const res = await fetch(`${getDirectusUrl()}/items/coupons`, {
-        method: 'POST',
-        headers: directusHeaders(),
-        body: JSON.stringify(payload),
-    });
-
-    if (!res.ok) {
-        const text = await res.text();
-        console.error('[admin-coupons] createCoupon failed:', text);
-        if (text.includes('unique')) return { success: false, error: 'Deze coupon code bestaat al' };
-        return { success: false, error: 'Aanmaken mislukt' };
+    try {
+        await getUserDirectus(session.session.token).request(createItem('coupons', payload));
+        revalidatePath('/beheer/coupons');
+        return { success: true };
+    } catch (e) {
+        console.error('[AdminCoupons] Create failed:', e);
+        // Directus SDK errors might contain more info, but for simplicity:
+        return { success: false, error: 'Aanmaken mislukt (controleer op unieke code)' };
     }
-
-    revalidatePath('/beheer/coupons');
-    return { success: true };
 }
 
 export async function deleteCoupon(id: number): Promise<{ success: boolean; error?: string }> {
-    await checkAccess();
-    const res = await fetch(`${getDirectusUrl()}/items/coupons/${id}`, {
-        method: 'DELETE',
-        headers: directusHeaders(),
-    });
-    if (!res.ok) {
-        const text = await res.text();
-        if (text.includes('foreign') || text.includes('constraint')) {
-            return { success: false, error: 'Coupon kan niet worden verwijderd (wordt nog gebruikt in een betaling)' };
-        }
-        return { success: false, error: 'Verwijderen mislukt' };
+    const session = await checkAccess();
+    try {
+        await getUserDirectus(session.session.token).request(deleteItem('coupons', id));
+        revalidatePath('/beheer/coupons');
+        return { success: true };
+    } catch (e) {
+        console.error('[AdminCoupons] Delete failed:', e);
+        return { success: false, error: 'Verwijderen mislukt (wordt mogelijk nog gebruikt)' };
     }
-    revalidatePath('/beheer/coupons');
-    return { success: true };
 }
 
 export async function toggleCouponActive(id: number, currentActive: boolean): Promise<{ success: boolean; error?: string }> {
-    await checkAccess();
-    const res = await fetch(`${getDirectusUrl()}/items/coupons/${id}`, {
-        method: 'PATCH',
-        headers: directusHeaders(),
-        body: JSON.stringify({ is_active: !currentActive }),
-    });
-    if (!res.ok) return { success: false, error: 'Bijwerken mislukt' };
-    revalidatePath('/beheer/coupons');
-    return { success: true };
+    const session = await checkAccess();
+    try {
+        await getUserDirectus(session.session.token).request(updateItem('coupons', id, { is_active: !currentActive }));
+        revalidatePath('/beheer/coupons');
+        return { success: true };
+    } catch (e) {
+        console.error('[AdminCoupons] Toggle active failed:', e);
+        return { success: false, error: 'Bijwerken mislukt' };
+    }
 }
 

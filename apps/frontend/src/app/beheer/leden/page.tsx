@@ -7,8 +7,9 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import LedenOverzichtIsland from '@/components/islands/admin/leden/LedenOverzichtIsland';
 import MemberListSkeleton from '@/components/ui/admin/leden/MemberListSkeleton';
-import { directus, directusRequest } from '@/lib/directus';
-import { readUsers } from '@directus/sdk';
+import { getSystemDirectus, getUserDirectus } from '@/lib/directus';
+import { getImageUrl } from '@/lib/image-utils';
+import { readUsers, readRoles } from '@directus/sdk';
 import { isSuperAdmin } from '@/lib/auth-utils';
 
 const PAGE_SIZE = 25;
@@ -108,7 +109,7 @@ async function LedenDataLoader({ search, page, tab }: { search: string, page: nu
     let totalCount = 0;
 
     try {
-        const res = await directusRequest<any>(
+        const res = await getUserDirectus(session.session.token).request(
             readUsers({
                 filter: filters,
                 fields: ['id', 'first_name', 'last_name', 'email', 'date_of_birth', 'membership_expiry', 'status'],

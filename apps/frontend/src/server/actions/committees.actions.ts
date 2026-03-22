@@ -1,7 +1,7 @@
 'use server';
 
 import { committeesSchema, type Committee } from '@salvemundi/validations';
-import { directus, directusRequest } from '@/lib/directus';
+import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 
 /**
@@ -11,7 +11,7 @@ import { readItems } from '@directus/sdk';
 export async function getCommittees(): Promise<Committee[]> {
     try {
         // Stap 1: Haal de commissies op
-        const committeesData = await directusRequest<any[]>(readItems('committees', {
+        const committeesData = await getSystemDirectus().request(readItems('committees', {
             filter: { is_visible: { _eq: true } },
             limit: 100
         }));
@@ -23,8 +23,8 @@ export async function getCommittees(): Promise<Committee[]> {
 
         // Stap 2: Haal alle leden op voor deze commissies (twee-staps fetch)
         const committeeIds = committeesData.map((c: any) => c.id);
-        const allMembers = await directusRequest<any[]>(readItems('committee_members', {
-            fields: ['*', { user_id: ['id', 'first_name', 'last_name', 'avatar', 'title'] } as any],
+        const allMembers = await getSystemDirectus().request(readItems('committee_members', {
+            fields: ['id', 'committee_id', 'is_leader', { user_id: ['id', 'first_name', 'last_name', 'avatar', 'title'] } as any],
             filter: { 
                 committee_id: { _in: committeeIds as any },
                 is_visible: { _eq: true }

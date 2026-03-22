@@ -8,16 +8,8 @@ import { revalidateTag } from "next/cache";
  * Access the internal Directus URL for improved performance and security
  * within the cluster/VPS environment.
  */
-const getDirectusUrl = () => process.env.INTERNAL_DIRECTUS_URL;
-
-/**
- * Common headers for Directus API calls, using the static service token
- * for administrative actions.
- */
-const getDirectusHeaders = () => ({
-    'Authorization': `Bearer ${process.env.DIRECTUS_STATIC_TOKEN}`,
-    'Content-Type': 'application/json'
-});
+import { getSystemDirectus } from "@/lib/directus";
+import { readItems, deleteItem, updateItem } from "@directus/sdk";
 
 /**
  * Ensures the user is logged in and belongs to a committee with administrative 
@@ -47,14 +39,17 @@ async function requireStickerAdmin() {
 export async function getStickers() {
     await requireStickerAdmin();
     
-    const res = await fetch(`${getDirectusUrl()}/items/stickers?fields=*,user_created.id,user_created.first_name,user_created.last_name&sort=-date_created&limit=-1`, {
-        headers: getDirectusHeaders(),
-        next: { tags: ['stickers'] }
-    });
-
-    if (!res.ok) throw new Error('Kon stickers niet ophalen');
-    const json = await res.json();
-    return json.data || [];
+    try {
+        const stickers = await getSystemDirectus().request(readItems('stickers', {
+            fields: ['id', 'name', 'date_created', { user_created: ['id', 'first_name', 'last_name'] }],
+            sort: ['-date_created'],
+            limit: -1
+        }));
+        return stickers || [];
+    } catch (e) {
+        console.error('[AdminStickers] Fetch failed:', e);
+        throw new Error('Kon stickers niet ophalen');
+    }
 }
 
 /**
@@ -62,17 +57,16 @@ export async function getStickers() {
  * Triggers a revalidation of the 'stickers' tag to update the admin table and public map.
  */
 export async function deleteSticker(id: number) {
-    await requireStickerAdmin();
+    const session = await requireStickerAdmin();
 
-    const res = await fetch(`${getDirectusUrl()}/items/stickers/${id}`, {
-        method: 'DELETE',
-        headers: getDirectusHeaders()
-    });
-
-    if (!res.ok) throw new Error('Kon sticker niet verwijderen');
-    
-    revalidateTag('stickers', 'default');
-    return { success: true };
+    try {
+        await getUserDirectus((session as any).session?.token).request(deleteItem('stickers', id));
+        revalidateTag('stickers', 'default');
+        return { success: true };
+    } catch (e) {
+        console.error('[AdminStickers] Delete failed:', e);
+        throw new Error('Kon sticker niet verwijderen');
+    }
 }
 
 /**
@@ -80,18 +74,15 @@ export async function deleteSticker(id: number) {
  * Revalidation is required to ensure consistent state across the board.
  */
 export async function updateSticker(id: number, data: any) {
-    await requireStickerAdmin();
+    const session = await requireStickerAdmin();
 
-    const res = await fetch(`${getDirectusUrl()}/items/stickers/${id}`, {
-        method: 'PATCH',
-        headers: getDirectusHeaders(),
-        body: JSON.stringify(data)
-    });
-
-    if (!res.ok) throw new Error('Kon sticker niet bijwerken');
-    
-    revalidateTag('stickers', 'default');
-    const json = await res.json();
-    return json.data;
+    try {
+        const updated = await getUserDirectus((session as any).session?.token).request(updateItem('stickers', id, data));
+        revalidateTag('stickers', 'default');
+        return updated;
+    } catch (e) {
+        console.error('[AdminStickers] Update failed:', e);
+        throw new Error('Kon sticker niet bijwerken');
+    }
 }
 

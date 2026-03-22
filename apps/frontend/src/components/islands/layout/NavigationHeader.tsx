@@ -11,7 +11,7 @@ import {
 import { authClient } from '@/lib/auth-client';
 import { ThemeToggle } from '@/components/islands/layout/ThemeToggle';
 import { ROUTES } from '@/lib/routes';
-import { getImageUrl } from '@/shared/lib/api/salvemundi';
+import { getImageUrl } from '@/lib/image-utils';
 interface NavigationHeaderProps {
     disabledRoutes?: string[];
     initialSession?: { user?: SessionUser | null } | null;

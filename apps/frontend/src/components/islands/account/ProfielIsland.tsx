@@ -15,7 +15,7 @@ import { updateProfileSchema } from '@salvemundi/validations';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { updateUserProfile } from '@/server/actions/profiel-update.actions';
-import { getImageUrl } from '@/shared/lib/api/salvemundi';
+import { getImageUrl } from '@/lib/image-utils';
 import { z } from 'zod';
 
 type CommitteeMeta = {

@@ -11,20 +11,8 @@ import {
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 
-const getDirectusUrl = () =>
-    process.env.INTERNAL_DIRECTUS_URL;
-
-const getDirectusHeaders = (): HeadersInit | null => {
-    const token = process.env.DIRECTUS_STATIC_TOKEN;
-    if (!token) {
-        console.warn('[profiel.actions] DIRECTUS_STATIC_TOKEN missing.');
-        return null;
-    }
-    return {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json',
-    };
-};
+import { getSystemDirectus } from '@/lib/directus';
+import { readItems } from '@directus/sdk';
 
 // ─── Event Signups ────────────────────────────────────────────────────────────
 
@@ -34,27 +22,15 @@ export async function getUserEventSignups(): Promise<EventSignup[]> {
 
     if (!user?.id) return [];
 
-    const directusUrl = getDirectusUrl();
-    const headersInit = getDirectusHeaders();
-    if (!headersInit) return [];
-
-    // Column names in V7 database: 'directus_relations' refers to the User ID.
-    const url = `${directusUrl}/items/event_signups?filter[directus_relations][_eq]=${user.id}&fields=id,created_at,event_id.id,event_id.name,event_id.event_date,event_id.description,event_id.image,event_id.contact&sort=-created_at`;
-
     try {
-        const res = await fetch(url, {
-            headers: headersInit,
-            next: { revalidate: 0 } // Signups should be always fresh
-        });
+        const res = await getSystemDirectus().request(readItems('event_signups' as any, {
+            filter: { directus_relations: { _eq: user.id } },
+            fields: ['id', 'created_at', { event_id: ['id', 'name', 'event_date', 'description', 'image', 'contact'] }],
+            sort: ['-created_at'],
+            limit: -1
+        }));
 
-        if (!res.ok) {
-            console.error('[profiel.actions#getUserEventSignups] Directus error:', res.statusText);
-            await res.text();
-            return [];
-        }
-
-        const json = await res.json();
-        const parsed = eventSignupSchema.array().safeParse(json?.data ?? []);
+        const parsed = eventSignupSchema.array().safeParse(res);
 
         if (!parsed.success) {
             console.error('[profiel.actions#getUserEventSignups] Validation failed:', parsed.error.flatten());
@@ -63,7 +39,7 @@ export async function getUserEventSignups(): Promise<EventSignup[]> {
 
         return parsed.data;
     } catch (err) {
-        console.error('[profiel.actions#getUserEventSignups] Fetch failed:', err);
+        console.error('[profiel.actions#getUserEventSignups] failed:', err);
         return [];
     }
 }
@@ -76,28 +52,20 @@ export async function getUserTransactions(): Promise<Transaction[]> {
 
     if (!user?.id) return [];
 
-    const directusUrl = getDirectusUrl();
-    const headersInit = getDirectusHeaders();
-    if (!headersInit) return [];
-
-    // Column names in V7 database: 'user_id' can be empty for legacy/migrated records.
-    // We filter on both user_id and email (linked to the session user) for completeness.
-    const url = `${directusUrl}/items/transactions?filter[_or][0][user_id][_eq]=${user.id}&filter[_or][1][email][_eq]=${encodeURIComponent(user.email)}&sort=-created_at&limit=-1`;
-
     try {
-        const res = await fetch(url, {
-            headers: headersInit,
-            next: { revalidate: 0 }
-        });
+        const res = await getSystemDirectus().request(readItems('transactions' as any, {
+            filter: {
+                _or: [
+                    { user_id: { _eq: user.id } },
+                    { email: { _eq: user.email } }
+                ]
+            },
+            fields: ['id', 'user_id', 'email', 'amount', 'currency', 'payment_status', 'description', 'created_at'],
+            sort: ['-created_at'],
+            limit: -1
+        }));
 
-        if (!res.ok) {
-            console.error('[profiel.actions#getUserTransactions] Directus error:', res.statusText);
-            await res.text();
-            return [];
-        }
-
-        const json = await res.json();
-        const parsed = transactionSchema.array().safeParse(json?.data ?? []);
+        const parsed = transactionSchema.array().safeParse(res);
 
         if (!parsed.success) {
             console.error('[profiel.actions#getUserTransactions] Validation failed:', parsed.error.flatten());
@@ -106,7 +74,7 @@ export async function getUserTransactions(): Promise<Transaction[]> {
 
         return parsed.data;
     } catch (err) {
-        console.error('[profiel.actions#getUserTransactions] Fetch failed:', err);
+        console.error('[profiel.actions#getUserTransactions] failed:', err);
         return [];
     }
 }
@@ -114,26 +82,15 @@ export async function getUserTransactions(): Promise<Transaction[]> {
 // ─── WhatsApp Groups ─────────────────────────────────────────────────────────
 
 export async function getWhatsAppGroups(): Promise<WhatsAppGroup[]> {
-    const directusUrl = getDirectusUrl();
-    const headersInit = getDirectusHeaders();
-    if (!headersInit) return [];
-
-    const url = `${directusUrl}/items/whatsapp_groups?filter[is_active][_eq]=true&sort=id`;
-
     try {
-        const res = await fetch(url, {
-            headers: headersInit,
-            next: { tags: ['whatsapp_groups'], revalidate: 300 }
-        });
+        const res = await getSystemDirectus().request(readItems('whatsapp_groups' as any, {
+            filter: { is_active: { _eq: true } },
+            fields: ['id', 'name', 'link', 'is_active'],
+            sort: ['id'],
+            limit: -1
+        }));
 
-        if (!res.ok) {
-            console.error('[profiel.actions#getWhatsAppGroups] Directus error:', res.statusText);
-            await res.text();
-            return [];
-        }
-
-        const json = await res.json();
-        const parsed = whatsappGroupSchema.array().safeParse(json?.data ?? []);
+        const parsed = whatsappGroupSchema.array().safeParse(res);
 
         if (!parsed.success) {
             console.error('[profiel.actions#getWhatsAppGroups] Validation failed:', parsed.error.flatten());
@@ -142,7 +99,7 @@ export async function getWhatsAppGroups(): Promise<WhatsAppGroup[]> {
 
         return parsed.data;
     } catch (err) {
-        console.error('[profiel.actions#getWhatsAppGroups] Fetch failed:', err);
+        console.error('[profiel.actions#getWhatsAppGroups] failed:', err);
         return [];
     }
 }

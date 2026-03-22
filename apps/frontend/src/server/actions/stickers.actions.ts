@@ -4,7 +4,7 @@ import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag } from "next/cache";
 
-import { directus, directusRequest } from "@/lib/directus";
+import { getSystemDirectus, getUserDirectus } from "@/lib/directus";
 import { readItems, createItem, uploadFiles } from "@directus/sdk";
 
 /**
@@ -13,8 +13,8 @@ import { readItems, createItem, uploadFiles } from "@directus/sdk";
  */
 export async function getPublicStickers() {
     try {
-        return await directusRequest<any[]>(readItems('stickers', {
-            fields: ['*', { user_created: ['id', 'first_name', 'last_name', 'avatar'] }] as any,
+        return await getSystemDirectus().request(readItems('stickers', {
+            fields: ['id', 'name', 'date_created', { user_created: ['id', 'first_name', 'last_name', 'avatar'] }],
             sort: ['-date_created'],
             limit: -1
         }));
@@ -37,13 +37,19 @@ export async function createStickerPublic(data: any) {
         throw new Error('Je moet ingelogd zijn om een sticker toe te voegen.');
     }
 
+    const { rateLimit } = await import('../utils/ratelimit');
+    const { success } = await rateLimit('sticker-create', 5, 300);
+    if (!success) {
+        throw new Error('Te veel stickers geplaatst. Probeer het later opnieuw.');
+    }
+
     const payload = {
         ...data,
         user_created: session.user.id
     };
 
     try {
-        const result = await directusRequest<any>(createItem('stickers', payload));
+        const result = await getUserDirectus(session.session.token).request(createItem('stickers', payload));
 
         // Immediately update both admin and public views.
         revalidateTag('stickers', 'default');
@@ -59,9 +65,17 @@ export async function createStickerPublic(data: any) {
  * This allows client components to upload files without needing DIRECTUS_STATIC_TOKEN in the browser.
  */
 export async function uploadFileAction(formData: FormData) {
+    const session = await auth.api.getSession({ headers: await headers() });
+    
+    const { rateLimit } = await import('../utils/ratelimit');
+    const { success } = await rateLimit('file-upload', 5, 300);
+    if (!success) {
+        throw new Error('Te veel bestanden geüpload. Probeer het later opnieuw.');
+    }
     try {
-        const result = await directusRequest<any>(uploadFiles(formData));
-        return result.id;
+        const directus = session?.session?.token ? getUserDirectus(session.session.token) : getSystemDirectus();
+        const result = await directus.request(uploadFiles(formData));
+        return (result as any).id;
     } catch (error) {
         console.error('[Stickers] Photo upload failed:', error);
         throw new Error('Foto upload mislukt op de server.');

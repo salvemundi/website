@@ -3,7 +3,7 @@
 import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
-import { directus, directusRequest } from "@/lib/directus";
+import { getSystemDirectus, getUserDirectus } from "@/lib/directus";
 import { readItems, updateItem, updateUser, readUsers, readUser } from "@directus/sdk";
 import { isSuperAdmin } from "@/lib/auth-utils";
 
@@ -19,7 +19,7 @@ async function checkAdminAccess() {
     
     const user = session.user as any;
     if (!isSuperAdmin(user.committees)) return null;
-    return user;
+    return session;
 }
 
 /**
@@ -129,7 +129,7 @@ export async function updateMemberProfileAction(
     }
 
     try {
-        await directus.request(updateUser(directusUserId, payload));
+        await getUserDirectus((admin as any).session?.token).request(updateUser(directusUserId, payload));
 
         revalidatePath(`/beheer/leden/${directusUserId}`);
         return { success: true };
@@ -151,7 +151,7 @@ export async function renewMembershipAction(
 
     try {
         // Get current expiry using SDK
-        const users: any = await directus.request(readUsers({
+        const users: any = await getSystemDirectus().request(readUsers({
             fields: ['membership_expiry'] as any,
             filter: { id: { _eq: directusUserId } } as any,
             limit: 1
@@ -169,7 +169,7 @@ export async function renewMembershipAction(
         newExpiry.setMonth(newExpiry.getMonth() + months);
         const newExpiryStr = newExpiry.toISOString().substring(0, 10);
 
-        await directus.request(updateUser(directusUserId, { membership_expiry: newExpiryStr } as any));
+        await getUserDirectus((admin as any).session?.token).request(updateUser(directusUserId, { membership_expiry: newExpiryStr } as any));
 
         // Trigger targeted Azure sync to update group membership (Leden_Actief etc.)
         if (INTERNAL_TOKEN) {

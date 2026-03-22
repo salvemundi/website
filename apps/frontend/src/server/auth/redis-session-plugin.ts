@@ -15,11 +15,9 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                 {
                     matcher: (ctx) => {
                         const match = ctx?.path?.includes("get-session");
-                        if (match) console.log(`[AUTH-REDIS-DEBUG] Before Matcher hit: ${ctx.path}`);
                         return match;
                     },
                     handler: async (ctx) => {
-                        console.log(`[AUTH-REDIS-DEBUG] Before Handler start. CTX keys: ${Object.keys(ctx || {})}`);
                         try {
                             const headersSource = ctx?.headers || (ctx as any)?.request?.headers || {};
                             const requestHeaders = new Headers(headersSource);
@@ -27,11 +25,9 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                 requestHeaders.get("cookie")?.split("better-auth.session-token=")[1]?.split(";")[0];
 
                             if (token) {
-                                console.log(`[AUTH-REDIS-DEBUG] Token found in before hook: ${token.substring(0, 5)}...`);
                                 const redis = await getRedis();
                                 const cached = await redis.get(`session:${token}`);
                                 if (cached) {
-                                    console.log(`[AUTH-REDIS-DEBUG] Cache HIT for token`);
                                     return {
                                         response: { headers: { "content-type": "application/json" } },
                                         body: JSON.parse(cached),
@@ -49,7 +45,6 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                 {
                     matcher: (ctx) => ctx?.path?.includes("get-session"),
                     handler: async (ctx) => {
-                        console.log(`[AUTH-REDIS-DEBUG] After Handler start. CTX keys: ${Object.keys(ctx || {})}`);
                         try {
                             // Defensive check for headers source
                             const headersSource = ctx?.headers || (ctx as any)?.request?.headers || {};
@@ -62,7 +57,6 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                 const sessionWithUser = session as { user?: { id?: string; email?: string; committees?: unknown } };
                                 if (!sessionWithUser.user?.id) return {};
 
-                                console.log(`[AUTH-REDIS-DEBUG] Enforcing session enrichment for ${sessionWithUser.user.id}`);
                                 const { rows } = await pool.query(
                                     `SELECT c.id, c.name, m.is_leader 
                                      FROM committee_members m 

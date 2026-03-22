@@ -31,6 +31,7 @@ import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { manageAzureMembershipAction, updateMemberProfileAction, renewMembershipAction } from '@/server/actions/leden.actions';
 import { triggerUserSyncAction } from '@/server/actions/azure-sync.actions';
+import { getImageUrl } from '@/lib/image-utils';
 
 interface Member {
     id: string;
@@ -224,7 +225,7 @@ export default function LedenDetailIsland({
                             <div className="relative group">
                     <div className="h-24 w-24 rounded-3xl bg-primary/10 flex items-center justify-center text-primary font-black text-3xl shadow-xl ring-4 ring-white dark:ring-slate-800 transition-transform group-hover:scale-105">
                         {localMember.avatar ? (
-                            <img src={`/api/assets/${localMember.avatar}?width=100&height=100&fit=cover`} alt="avatar" className="h-full w-full object-cover rounded-3xl" />
+                            <img src={getImageUrl(localMember.avatar, { width: 100, height: 100, fit: 'cover' }) || ''} alt="avatar" className="h-full w-full object-cover rounded-3xl" />
                         ) : (
                             <>{localMember.first_name?.[0]}{localMember.last_name?.[0]}</>
                         )}

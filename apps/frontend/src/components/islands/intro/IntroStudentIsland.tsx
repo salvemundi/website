@@ -38,7 +38,6 @@ export const IntroStudentIsland = () => {
 
         // Filter bots
         if (form.website) {
-            console.log('Bot detected (intro honeypot)');
             setSubmitted(true);
             return;
         }

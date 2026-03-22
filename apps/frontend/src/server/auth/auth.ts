@@ -16,12 +16,6 @@ const pool = new Pool({
 export const auth = betterAuth({
     database: pool,
     secret: process.env.BETTER_AUTH_SECRET,
-    onSession: (session: any) => {
-        // Alleen voor debugging op Acceptance/Localhost
-        if (process.env.NODE_ENV !== 'production' || process.env.DEBUG_AUTH === 'true') {
-            console.log(`[AUTH-DEBUG] Session retrieved: ${session ? 'YES' : 'NO'} (${session?.user?.email || 'no-email'})`);
-        }
-    },
     baseURL: process.env.BETTER_AUTH_URL,
     advanced: {
         trustHost: true

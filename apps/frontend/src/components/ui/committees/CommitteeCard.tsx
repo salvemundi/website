@@ -1,7 +1,7 @@
 import React from 'react';
 import NextLink from 'next/link';
 import { Users, ChevronRight, History } from 'lucide-react';
-import { getImageUrl } from '@/shared/lib/api/salvemundi';
+import { getImageUrl } from '@/lib/image-utils';
 import { slugify } from '@/shared/lib/utils/slug';
 import type { Committee } from '@salvemundi/validations';
 import Image from 'next/image';

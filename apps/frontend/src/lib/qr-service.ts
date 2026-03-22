@@ -1,5 +1,5 @@
 import QRCode from 'qrcode';
-import { directus, directusRequest } from './directus';
+import { getSystemDirectus } from './directus';
 import { readItem, readItems, updateItem } from '@directus/sdk';
 import { COLLECTIONS, FIELDS } from '@/shared/lib/constants/collections';
 import { normalizeCommitteeName } from './committee-utils';
@@ -43,7 +43,7 @@ export async function generateQRCode(data: string): Promise<string> {
  */
 export async function updateSignupWithQRToken(signupId: number | string, token: string) {
     try {
-        await directusRequest(updateItem('event_signups', signupId as any, {
+        await getSystemDirectus().request(updateItem('event_signups', signupId as any, {
             qr_token: token
         }));
     } catch (err) {
@@ -53,7 +53,7 @@ export async function updateSignupWithQRToken(signupId: number | string, token: 
 
 export async function checkInParticipant(qrToken: string) {
     try {
-        const signups = await directusRequest<any[]>(readItems('event_signups', {
+        const signups = await getSystemDirectus().request<any[]>(readItems('event_signups', {
             filter: { qr_token: { _eq: qrToken } },
             fields: ['id', { event_id: ['*'] as any }, 'checked_in', 'checked_in_at', 'qr_token', 'participant_name' as any, 'participant_email' as any, 'participant_phone' as any]
         }));
@@ -67,12 +67,12 @@ export async function checkInParticipant(qrToken: string) {
             return { success: false, message: `Deze persoon is al ingecheckt op ${new Date(signup.checked_in_at!).toLocaleString('nl-NL')}.`, signup };
         }
 
-        await directusRequest(updateItem('event_signups', signup.id, {
+        await getSystemDirectus().request(updateItem('event_signups', signup.id, {
             checked_in: true, 
             checked_in_at: new Date().toISOString() 
         }));
 
-        const updated = await directusRequest<any>(readItem('event_signups', signup.id, {
+        const updated = await getSystemDirectus().request<any>(readItem('event_signups', signup.id, {
             fields: ['id' as any, { event_id: ['*'] as any }, 'checked_in' as any, 'checked_in_at' as any, 'participant_name' as any, 'participant_email' as any, 'participant_phone' as any]
         }));
         
@@ -85,7 +85,7 @@ export async function checkInParticipant(qrToken: string) {
 
 export async function getEventSignupsWithCheckIn(eventId: number | string) {
     try {
-        const list = await directusRequest<any[]>(readItems('event_signups', {
+        const list = await getSystemDirectus().request<any[]>(readItems('event_signups', {
             filter: { event_id: { _eq: eventId as any } },
             fields: ['id' as any, 'event_id' as any, 'checked_in' as any, 'checked_in_at' as any, 'date_created' as any, 'participant_name' as any, 'participant_email' as any, 'participant_phone' as any, 'qr_token' as any],
             sort: ['checked_in_at', '-date_created'] as any
@@ -99,14 +99,14 @@ export async function getEventSignupsWithCheckIn(eventId: number | string) {
 
 export async function isUserAuthorizedForAttendance(userId: string, eventId: number | string) {
     try {
-        const userCommittees = await directusRequest<any[]>(readItems('committee_members', {
+        const userCommittees = await getSystemDirectus().request<any[]>(readItems('committee_members', {
             filter: { user_id: { _eq: userId } },
             fields: [{ committee_id: ['name'] }] as any
         }));
         
         if (isSuperAdmin(userCommittees)) return true;
 
-        const eventData = await directusRequest<any>(readItem('events', eventId as any, {
+        const eventData = await getSystemDirectus().request<any>(readItem('events', eventId as any, {
             fields: ['committee_id' as any, 'attendance_officers' as any]
         }));
         if (!eventData) return false;
@@ -118,7 +118,7 @@ export async function isUserAuthorizedForAttendance(userId: string, eventId: num
 
         if (eventData.committee_id) {
             const commId = typeof eventData.committee_id === 'object' ? eventData.committee_id.id : eventData.committee_id;
-            const members = await directusRequest<any[]>(readItems('committee_members', {
+            const members = await getSystemDirectus().request<any[]>(readItems('committee_members', {
                 filter: { 
                     committee_id: { _eq: commId as any },
                     user_id: { _eq: userId }
@@ -139,7 +139,7 @@ export async function isUserAuthorizedForAttendance(userId: string, eventId: num
 
 export async function updatePubCrawlSignupWithQRToken(signupId: number | string, token: string) {
     try {
-        await directusRequest(updateItem(COLLECTIONS.PUB_CRAWL_SIGNUPS as any, signupId as any, {
+        await getSystemDirectus().request(updateItem(COLLECTIONS.PUB_CRAWL_SIGNUPS as any, signupId as any, {
             qr_token: token
         }));
     } catch (err) {
@@ -149,7 +149,7 @@ export async function updatePubCrawlSignupWithQRToken(signupId: number | string,
 
 export async function checkInPubCrawlParticipant(qrToken: string) {
     try {
-        const tickets = await directusRequest<any[]>(readItems(COLLECTIONS.PUB_CRAWL_TICKETS as any, {
+        const tickets = await getSystemDirectus().request<any[]>(readItems(COLLECTIONS.PUB_CRAWL_TICKETS as any, {
             filter: { [FIELDS.TICKETS.QR_TOKEN]: { _eq: qrToken } },
             fields: ['*', { [FIELDS.TICKETS.SIGNUP_ID]: ['*'] }] as any
         }));
@@ -166,12 +166,12 @@ export async function checkInPubCrawlParticipant(qrToken: string) {
             return { success: false, message: `${ticket[FIELDS.TICKETS.NAME]} is al ingecheckt om ${time}.`, signup };
         }
 
-        await directusRequest(updateItem(COLLECTIONS.PUB_CRAWL_TICKETS as any, ticket.id, {
+        await getSystemDirectus().request(updateItem(COLLECTIONS.PUB_CRAWL_TICKETS as any, ticket.id, {
             [FIELDS.TICKETS.CHECKED_IN]: true,
             [FIELDS.TICKETS.CHECKED_IN_AT]: new Date().toISOString()
         }));
 
-        const updatedTicket = await directusRequest<any>(readItem(COLLECTIONS.PUB_CRAWL_TICKETS as any, ticket.id, {
+        const updatedTicket = await getSystemDirectus().request<any>(readItem(COLLECTIONS.PUB_CRAWL_TICKETS as any, ticket.id, {
             fields: ['*', { [FIELDS.TICKETS.SIGNUP_ID]: ['*'] }] as any
         })) as any;
 
@@ -188,7 +188,7 @@ export async function checkInPubCrawlParticipant(qrToken: string) {
 
 export async function getPubCrawlSignupsWithCheckIn(eventId: number | string) {
     try {
-        const list = await directusRequest<any[]>(readItems(COLLECTIONS.PUB_CRAWL_TICKETS as any, {
+        const list = await getSystemDirectus().request<any[]>(readItems(COLLECTIONS.PUB_CRAWL_TICKETS as any, {
             filter: { [FIELDS.TICKETS.SIGNUP_ID]: { [FIELDS.SIGNUPS.PUB_CRAWL_EVENT_ID]: { _eq: eventId } } } as any,
             fields: ['*', { [FIELDS.TICKETS.SIGNUP_ID]: ['*'] }] as any,
             sort: ['-created_at'] as any
@@ -202,7 +202,7 @@ export async function getPubCrawlSignupsWithCheckIn(eventId: number | string) {
 
 export async function isUserAuthorizedForPubCrawlAttendance(userId: string) {
     try {
-        const committees = await directusRequest<any[]>(readItems('committee_members', {
+        const committees = await getSystemDirectus().request<any[]>(readItems('committee_members', {
             filter: { user_id: { _eq: userId } },
             fields: ['id']
         }));

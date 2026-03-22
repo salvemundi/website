@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ActiviteitAanmeldingenIsland from '@/components/islands/admin/activities/ActiviteitAanmeldingenIsland';
 import AanmeldingenListSkeleton from '@/components/ui/admin/activities/AanmeldingenListSkeleton';
-import { directus, directusRequest } from '@/lib/directus';
+import { getSystemDirectus } from '@/lib/directus';
 import { readItem, readItems } from '@directus/sdk';
 
 export default async function AanmeldingenPage({ params }: { params: Promise<{ id: string }> }) {
@@ -38,7 +38,7 @@ async function SignupsDataLoader({ id }: { id: string }) {
     // Fetch Event
     let event;
     try {
-        event = await directusRequest<any>(
+        event = await getSystemDirectus().request(
             readItem<any, any, any>('events', id, {
                 fields: ['id', 'name', 'price_members', 'committee_id']
             })
@@ -61,7 +61,7 @@ async function SignupsDataLoader({ id }: { id: string }) {
     // Fetch Signups
     let signups: any[] = [];
     try {
-        signups = await directusRequest<any[]>(
+        signups = await getSystemDirectus().request(
             readItems<any, any, any>('event_signups', {
                 filter: {
                     event_id: { _eq: id }

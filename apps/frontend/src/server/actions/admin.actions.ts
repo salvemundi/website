@@ -10,7 +10,7 @@ import {
     BirthdaySchema, type Birthday
 } from "@salvemundi/validations";
 
-import { directus, directusRequest } from "@/lib/directus";
+import { getSystemDirectus } from "@/lib/directus";
 import { readItems, readUsers, aggregate } from "@directus/sdk";
 
 // Removed redundant directusFetch in favor of Directus SDK.
@@ -73,23 +73,23 @@ export async function getDashboardStats(): Promise<DashboardStats> {
             pubCrawlEvents,
             trips
         ] = await Promise.all([
-            directusRequest<any>(aggregate('directus_users', { aggregate: { count: '*' }, query: { filter: { status: { _eq: 'active' } } } })).catch(() => [{ count: 0 }]),
-            directusRequest<any>(aggregate('events', { aggregate: { count: '*' }, query: { filter: { event_date: { _gte: today } } } })).catch(() => [{ count: 0 }]),
-            directusRequest<any>(aggregate('event_signups', { aggregate: { count: '*' }, query: { filter: { event_id: { event_date: { _gte: today } } } } })).catch(() => [{ count: 0 }]),
-            directusRequest<any>(aggregate('intro_signups', { aggregate: { count: '*' } })).catch(() => [{ count: 0 }]),
-            directusRequest<any>(aggregate('coupons', { aggregate: { count: '*' }, query: { filter: { is_active: { _eq: true } } } })).catch(() => [{ count: 0 }]),
-            directusRequest<any>(aggregate('system_logs', { aggregate: { count: '*' }, query: { filter: { level: { _eq: 'error' } } } })).catch(() => [{ count: 0 }]),
-            directusRequest<any>(aggregate('stickers', { aggregate: { count: '*' } })).catch(() => [{ count: 0 }]),
-            directusRequest<any>(aggregate('stickers', { aggregate: { count: '*' }, query: { filter: { date_created: { _gte: lastWeek } } } })).catch(() => [{ count: 0 }]),
-            directusRequest<any[]>(readItems('pub_crawl_events', { fields: ['id', 'date'], sort: ['-date'] })).catch(() => []),
-            directusRequest<any[]>(readItems('trips', { fields: ['id', 'start_date', 'end_date', 'event_date'], filter: { status: { _eq: 'published' } }, sort: ['-start_date'] })).catch(() => [])
+            getSystemDirectus().request(aggregate('directus_users', { aggregate: { count: '*' }, query: { filter: { status: { _eq: 'active' } } } })).catch(() => [{ count: 0 }]),
+            getSystemDirectus().request(aggregate('events', { aggregate: { count: '*' }, query: { filter: { event_date: { _gte: today } } } })).catch(() => [{ count: 0 }]),
+            getSystemDirectus().request(aggregate('event_signups', { aggregate: { count: '*' }, query: { filter: { event_id: { event_date: { _gte: today } } } } })).catch(() => [{ count: 0 }]),
+            getSystemDirectus().request(aggregate('intro_signups', { aggregate: { count: '*' } })).catch(() => [{ count: 0 }]),
+            getSystemDirectus().request(aggregate('coupons', { aggregate: { count: '*' }, query: { filter: { is_active: { _eq: true } } } })).catch(() => [{ count: 0 }]),
+            getSystemDirectus().request(aggregate('system_logs' as any, { aggregate: { count: '*' }, query: { filter: { level: { _eq: 'error' } } } })).catch(() => [{ count: 0 }]),
+            getSystemDirectus().request(aggregate('stickers', { aggregate: { count: '*' } })).catch(() => [{ count: 0 }]),
+            getSystemDirectus().request(aggregate('stickers', { aggregate: { count: '*' }, query: { filter: { date_created: { _gte: lastWeek } } } })).catch(() => [{ count: 0 }]),
+            getSystemDirectus().request(readItems('pub_crawl_events', { fields: ['id', 'date'], sort: ['-date'] })).catch(() => []),
+            getSystemDirectus().request(readItems('trips', { fields: ['id', 'start_date', 'end_date', 'event_date'], filter: { status: { _eq: 'published' } }, sort: ['-start_date'] })).catch(() => [])
         ]);
         
         // Calculate Pub Crawl signups for the upcoming/latest event
         let pubCrawlSignups = 0;
         const upcomingPubCrawl = pubCrawlEvents.find((e: any) => new Date(e.date) >= now) || pubCrawlEvents[0];
         if (upcomingPubCrawl) {
-            const pcSignups: any = await directusRequest<any>(aggregate('pub_crawl_signups' as any, { aggregate: { count: '*' }, query: { filter: { pub_crawl_event_id: { _eq: upcomingPubCrawl.id } } } })).catch(() => [{ count: 0 }]);
+            const pcSignups: any = await getSystemDirectus().request(aggregate('pub_crawl_signups' as any, { aggregate: { count: '*' }, query: { filter: { pub_crawl_event_id: { _eq: upcomingPubCrawl.id } } } })).catch(() => [{ count: 0 }]);
             pubCrawlSignups = Number(pcSignups?.[0]?.count || 0);
         }
 
@@ -101,7 +101,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
         }) || trips[0];
         
         if (activeTrip) {
-            const tSignups: any = await directusRequest<any>(aggregate('trip_signups' as any, { aggregate: { count: '*' }, query: { filter: { trip_id: { _eq: activeTrip.id }, status: { _neq: 'cancelled' } } } })).catch(() => [{ count: 0 }]);
+            const tSignups: any = await getSystemDirectus().request(aggregate('trip_signups' as any, { aggregate: { count: '*' }, query: { filter: { trip_id: { _eq: activeTrip.id }, status: { _neq: 'cancelled' } } } })).catch(() => [{ count: 0 }]);
             reisSignups = Number(tSignups?.[0]?.count || 0);
         }
 
@@ -141,7 +141,11 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 export async function getUpcomingBirthdays(): Promise<Birthday[]> {
     await checkAdminAccess();
     try {
-        const users = await directusRequest<any[]>(readUsers({ fields: ['id', 'first_name', 'last_name', 'date_of_birth'], filter: { date_of_birth: { _nnull: true } }, limit: -1 }));
+        const users = await getSystemDirectus().request(readUsers({ 
+            fields: ['id', 'first_name', 'last_name', 'date_of_birth'], 
+            filter: { date_of_birth: { _nnull: true } }, 
+            limit: -1 
+        }));
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         
@@ -184,10 +188,10 @@ export async function getUpcomingBirthdays(): Promise<Birthday[]> {
 export async function getRecentActivities(): Promise<RecentActivity[]> {
     await checkAdminAccess();
     try {
-        const events = await directusRequest<any[]>(readItems('events', { fields: ['id', 'name', 'event_date'], sort: ['-event_date'], limit: 4 }));
+        const events = await getSystemDirectus().request(readItems('events', { fields: ['id', 'name', 'event_date'], sort: ['-event_date'], limit: 4 }));
         const eventsWithSignups = await Promise.all(
             events.map(async (ev: any) => {
-                const signups: any = await directusRequest<any>(aggregate('event_signups' as any, { aggregate: { count: '*' }, query: { filter: { event_id: { _eq: ev.id } } } })).catch(() => [{ count: 0 }]);
+                const signups: any = await getSystemDirectus().request(aggregate('event_signups' as any, { aggregate: { count: '*' }, query: { filter: { event_id: { _eq: ev.id } } } })).catch(() => [{ count: 0 }]);
                 return {
                     id: ev.id,
                     name: ev.name,
@@ -205,14 +209,18 @@ export async function getRecentActivities(): Promise<RecentActivity[]> {
 export async function getTopStickers(): Promise<TopSticker[]> {
     await checkAdminAccess();
     try {
-        const stickers = await directusRequest<any[]>(readItems('stickers', { fields: ['user_created.id', 'user_created.first_name', 'user_created.last_name'] as any, limit: -1 }));
+        const stickers = await getSystemDirectus().request(readItems('stickers', { 
+            fields: ['user_created.id', 'user_created.first_name', 'user_created.last_name'] as any, 
+            limit: -1 
+        }));
         const counts: Record<string, TopSticker> = {};
         
-        stickers.forEach(s => {
+        (stickers as any[]).forEach((s: any) => {
             const user = s.user_created;
-            if (user && user.id) {
-                if (!counts[user.id]) counts[user.id] = { id: user.id, first_name: user.first_name || 'Onbekend', last_name: user.last_name || '', count: 0 };
-                counts[user.id].count++;
+            if (user && (user as any).id) {
+                const userId = (user as any).id;
+                if (!counts[userId]) counts[userId] = { id: userId, first_name: (user as any).first_name || 'Onbekend', last_name: (user as any).last_name || '', count: 0 };
+                counts[userId].count++;
             }
         });
         

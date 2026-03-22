@@ -7,7 +7,7 @@ import { headers } from 'next/headers';
 import { ShieldAlert, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { directus, directusRequest } from '@/lib/directus';
+import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 
 export default async function BewerkenActiviteitPage({ params }: { params: Promise<{ id: string }> }) {
@@ -41,9 +41,14 @@ async function EditFormLoader({ id }: { id: string }) {
     
     try {
         // Fetch Event via SDK
-        const event = await directusRequest<any[]>(
+        const event = await getSystemDirectus().request(
             readItems<any, any, any>('events', {
-                fields: ['*'],
+                fields: [
+                    'id', 'name', 'description', 'location', 'event_date', 'event_date_end', 
+                    'max_sign_ups', 'price_members', 'price_non_members', 'only_members', 
+                    'inschrijf_deadline', 'contact', 'image', 'committee_id', 'status', 
+                    'publish_date', 'event_time', 'event_time_end'
+                ],
                 filter: { id: { _eq: id } },
                 limit: 1
             })
@@ -53,7 +58,7 @@ async function EditFormLoader({ id }: { id: string }) {
         const eventData = event[0];
 
         // Fetch Committees for the dropdown
-        const allCommittees = await directusRequest<any[]>(
+        const allCommittees = await getSystemDirectus().request(
             readItems<any, any, any>('committees', {
                 fields: ['id', 'name'],
                 filter: { is_visible: { _eq: true } },
