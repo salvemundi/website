@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import Handlebars from 'handlebars';
-import { createClient } from 'redis';
+import Redis from 'ioredis';
 import { TokenService } from './token.service.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -27,7 +27,7 @@ export class MailerService {
     /**
      * Sends an email via Microsoft Graph API.
      */
-    static async send(redis: ReturnType<typeof createClient>, to: string, templateId: string, data: any): Promise<boolean> {
+    static async send(redis: Redis, to: string, templateId: string, data: any): Promise<boolean> {
         try {
             console.log(`[MailerService] Preparing ${templateId} for ${to}...`);
 

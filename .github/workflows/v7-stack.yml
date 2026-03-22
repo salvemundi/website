@@ -182,13 +182,14 @@ jobs:
             fi
             echo "INTERNAL_DIRECTUS_URL=http://v7-core-directus:8055" >> .env
 
-            # Veilig afdrukken van ruwe secrets uit de active shell environment (met newline stripping per variabele)
-            VARIABLES="MOLLIE_API_KEY DB_USER DB_PASSWORD DB_NAME DIRECTUS_KEY DIRECTUS_SECRET INTERNAL_SERVICE_TOKEN AZURE_WEBSITEV7_TENANT_ID AZURE_WEBSITEV7_SYNC_CLIENT_ID AZURE_WEBSITEV7_SYNC_CLIENT_SECRET AZURE_WEBSITEV7_MAIL_CLIENT_ID AZURE_WEBSITEV7_MAIL_CLIENT_SECRET AZURE_MAIL_SENDER AZURE_WEBSITEV7_AUTH_CLIENT_ID AZURE_WEBSITEV7_AUTH_CLIENT_SECRET AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET BETTER_AUTH_SECRET DIRECTUS_STATIC_TOKEN"
+            # Veilig exporteren van alle secrets (hufterproof)
+            VARIABLES="MOLLIE_API_KEY DB_USER DB_PASSWORD DB_NAME DIRECTUS_KEY DIRECTUS_SECRET INTERNAL_SERVICE_TOKEN AZURE_WEBSITEV7_TENANT_ID AZURE_WEBSITEV7_SYNC_CLIENT_ID AZURE_WEBSITEV7_SYNC_CLIENT_SECRET AZURE_WEBSITEV7_MAIL_CLIENT_ID AZURE_WEBSITEV7_MAIL_CLIENT_SECRET AZURE_MAIL_SENDER AZURE_WEBSITEV7_AUTH_CLIENT_ID AZURE_WEBSITEV7_AUTH_CLIENT_SECRET AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET BETTER_AUTH_SECRET DIRECTUS_STATIC_TOKEN REDIS_PASSWORD"
             for var in $VARIABLES; do
-              val=$(eval echo \$$var)
+              # Gebruik indirect expansion om de waarde veilig te pakken
+              val=$(eval echo \"\${$var}\")
               if [ ! -z "$val" ]; then
-                # Strip eventuele extra newlines/carriage returns en omhul met quotes voor spaties
-                clean_val=$(echo "$val" | tr -d '\n\r')
+                # Strip quotes, newlines en carriage returns
+                clean_val=$(echo "$val" | sed 's/^"//;s/"$//' | tr -d '\n\r')
                 echo "$var=\"$clean_val\"" >> .env
               fi
             done

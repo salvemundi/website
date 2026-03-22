@@ -1,9 +1,14 @@
 import { createClient } from "redis";
 
 // Redis Client voor sessie-caching (Node.js runtime alleen — niet beschikbaar in Edge runtime).
-// We gebruiken de INTERNAL_REDIS_HOST en default password als fallback voor lokale ontwikkeling.
-const DEFAULT_URL = 'redis://default:salve_mundi_v7_redis_pass@100.77.182.130:6379';
-const redisUrl = process.env.REDIS_URL || DEFAULT_URL;
+// De configuratie wordt volledig bepaald door de omgevingsvariabelen (REDIS_URL of host+password).
+const host = process.env.INTERNAL_REDIS_HOST;
+const password = process.env.REDIS_PASSWORD;
+
+let redisUrl = process.env.REDIS_URL;
+if (!redisUrl && host && password) {
+    redisUrl = `redis://default:${password}@${host}:6379`;
+}
 
 let redisClient: ReturnType<typeof createClient> | null = null;
 let isConnecting = false;

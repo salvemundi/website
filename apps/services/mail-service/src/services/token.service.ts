@@ -1,5 +1,5 @@
 import { ClientSecretCredential } from '@azure/identity';
-import { createClient } from 'redis';
+import Redis from 'ioredis';
 
 /**
  * TokenService for Mail Service.
@@ -8,7 +8,7 @@ import { createClient } from 'redis';
 export class TokenService {
     private static credential?: ClientSecretCredential;
 
-    static async getAccessToken(redis: ReturnType<typeof createClient>): Promise<string> {
+    static async getAccessToken(redis: Redis): Promise<string> {
         const cacheKey = 'mail_service_access_token';
         
         // 1. Check Redis for a valid cached token
@@ -40,9 +40,7 @@ export class TokenService {
         
         // 3. Save to Redis with 50-minute TTL (3000 seconds) for safe margin
         try {
-            await redis.set(cacheKey, tokenResponse.token, {
-                EX: 3000 // 50 minutes
-            });
+            await redis.set(cacheKey, tokenResponse.token, 'EX', 3000);
             console.log('[TokenService] New token cached in Redis for 50 minutes (3000s buffer)');
         } catch (err) {
             console.error('[TokenService] Redis cache write error:', err);

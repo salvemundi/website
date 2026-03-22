@@ -1,10 +1,10 @@
 import { ClientSecretCredential } from '@azure/identity';
-import { createClient } from 'redis';
+import Redis from 'ioredis';
 
 export class TokenService {
     private static credential?: ClientSecretCredential;
 
-    static async getAccessToken(redis: ReturnType<typeof createClient>): Promise<string> {
+    static async getAccessToken(redis: Redis): Promise<string> {
         const cacheKey = 'azure_sync_access_token';
         
         // 1. Check Redis
@@ -29,9 +29,7 @@ export class TokenService {
         console.log(`[TokenService] Fetched new token starting with: ${tokenResponse.token.substring(0, 10)}...`);
         
         // 3. Save to Redis with 50m TTL (3000s)
-        await redis.set(cacheKey, tokenResponse.token, {
-            EX: 3000
-        });
+        await redis.set(cacheKey, tokenResponse.token, 'EX', 3000);
 
         return tokenResponse.token;
     }

@@ -1,4 +1,4 @@
-import { createClient } from 'redis';
+import Redis from 'ioredis';
 import { MailerService } from './mailer.js';
 import { AuditService } from './audit.js';
 
@@ -17,7 +17,7 @@ export class MailWorkerService {
     /**
      * Queues an email for dispatch.
      */
-    static async queueMail(redis: ReturnType<typeof createClient>, to: string, templateId: string, data: any) {
+    static async queueMail(redis: Redis, to: string, templateId: string, data: any) {
         const task: MailTask = {
             to,
             templateId,
@@ -26,25 +26,20 @@ export class MailWorkerService {
             maxRetries: 5
         };
 
-        await redis.zAdd(this.QUEUE_KEY, {
-            score: Date.now(),
-            value: JSON.stringify(task)
-        });
+        await redis.zadd(this.QUEUE_KEY, Date.now(), JSON.stringify(task));
     }
 
     /**
      * Starts the background worker loop.
      */
-    static async startWorker(redis: ReturnType<typeof createClient>) {
+    static async startWorker(redis: Redis) {
         console.log('[MailWorker] Started background worker loop.');
         
         while (!this.shouldStop) {
             try {
                 // 1. Fetch tasks that are due (score <= now)
                 const now = Date.now();
-                const tasks = await redis.zRangeByScore(this.QUEUE_KEY, 0, now, {
-                    LIMIT: { offset: 0, count: 5 }
-                });
+                const tasks = await redis.zrangebyscore(this.QUEUE_KEY, 0, now, 'LIMIT', 0, 5);
 
                 if (tasks.length === 0) {
                     await new Promise(resolve => setTimeout(resolve, 5000)); // Sleep 5s if empty
@@ -63,7 +58,7 @@ export class MailWorkerService {
                         const success = await MailerService.send(redis, task.to, task.templateId, task.data);
                         
                         if (success) {
-                            await redis.zRem(this.QUEUE_KEY, taskJson);
+                            await redis.zrem(this.QUEUE_KEY, taskJson);
                             await AuditService.logMail(task.to, task.templateId, 'SUCCESS');
                         } else {
                             throw new Error('MailerService returned false');
@@ -75,7 +70,7 @@ export class MailWorkerService {
                         task.retries += 1;
                         if (task.retries >= task.maxRetries) {
                             console.error(`[MailWorker] MAX RETRIES reached for ${task.to}. Removing task.`);
-                            await redis.zRem(this.QUEUE_KEY, taskJson);
+                            await redis.zrem(this.QUEUE_KEY, taskJson);
                             await AuditService.logMail(task.to, task.templateId, 'FAILED', `Max retries reached: ${error.message}`);
                         } else {
                             // Backoff: 10s, 40s, 90s, 160s... (base 10s * retries^2)
@@ -83,11 +78,8 @@ export class MailWorkerService {
                             const newScore = Date.now() + delay;
                             
                             // Remove old and add updated
-                            await redis.zRem(this.QUEUE_KEY, taskJson);
-                            await redis.zAdd(this.QUEUE_KEY, {
-                                score: newScore,
-                                value: JSON.stringify(task)
-                            });
+                            await redis.zrem(this.QUEUE_KEY, taskJson);
+                            await redis.zadd(this.QUEUE_KEY, newScore, JSON.stringify(task));
                             
                             console.log(`[MailWorker] Retrying in ${delay / 1000}s (Attempt ${task.retries}).`);
                         }
