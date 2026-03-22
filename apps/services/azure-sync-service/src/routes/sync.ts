@@ -28,9 +28,10 @@ export default async function syncRoutes(fastify: FastifyInstance) {
     fastify.post('/run', async (request, reply) => {
         try {
             const accessToken = await TokenService.getAccessToken(fastify.redis);
+            const options = request.body as any;
 
             // Start sync job asynchronously (Fire-and-forget)
-            SyncJob.run(accessToken).catch(err => {
+            SyncJob.run(accessToken, options).catch(err => {
                 fastify.log.error(`[SYNC] Full job failed: ${err.message}`);
             });
 
@@ -64,5 +65,13 @@ export default async function syncRoutes(fastify: FastifyInstance) {
                 details: err.message
             });
         }
+    });
+
+    /**
+     * GET /status
+     * Returns the current status of the synchronization job.
+     */
+    fastify.get('/status', async (request, reply) => {
+        return SyncJob.getStatus();
     });
 }

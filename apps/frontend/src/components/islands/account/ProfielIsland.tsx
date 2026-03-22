@@ -45,6 +45,12 @@ type SessionUser = {
 interface ProfielIslandProps {
     initialSignups: EventSignup[];
     user: SessionUser;
+    impersonation?: { 
+        name: string; 
+        avatar?: string | null; 
+        email?: string | null;
+        error?: string;
+    } | null;
 }
 
 // Helper component for Tiles
@@ -117,14 +123,10 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
     const [mounted, setMounted] = useState(false);
     const { data: session } = authClient.useSession();
 
-    // Bij hydratatie (mounted === false) gebruiken we ALTIJD initialUser om mismatch te voorkomen.
-    // Daarna schakelen we over naar de real-time session, maar MERGEN we de committees als die ontbreken.
     const user = useMemo<SessionUser>(() => {
-        // Trust initialUser from server for the first render and following renders 
-        // until session data is fully available and has changed.
-        if (!mounted || !session?.user) return initialUser;
+        const sUser = session?.user as SessionUser;
         
-        const sUser = session.user as SessionUser;
+        if (!mounted || !sUser) return initialUser;
         
         // Merge committees from initialUser if missing in session
         if (!sUser.committees && initialUser?.committees) {
@@ -239,7 +241,15 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
         const isMember = status === 'active';
 
         let role = "Gebruiker";
-        if (isAdmin) role = "Beheerder";
+        if (isAdmin) {
+            // Differentiëren tussen Bestuur en ICT
+            const isBestuur = !!optimisticUser.committees?.some(c => c.name?.toLowerCase().includes('bestuur'));
+            const isICTMember = !!optimisticUser.isICT;
+            
+            if (isBestuur) role = "Beheerder";
+            else if (isICTMember) role = "ICT-commissie";
+            else role = "Beheerder"; // Fallback voor andere admin rollen (bijv. Kandi)
+        }
         else if (isLeader) role = "Commissie Leider";
         else if (isInCommittee) role = "Actief Lid";
         else if (isMember) role = "Lid";

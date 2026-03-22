@@ -1,7 +1,7 @@
 import { createDirectus, rest, staticToken } from '@directus/sdk';
 import { DirectusSchema } from './schema';
 
-const directusUrl = process.env.INTERNAL_DIRECTUS_URL!;
+const directusUrl = process.env.DIRECTUS_SERVICE_URL!;
 
 /**
  * Get a Directus client with system-level permissions.
@@ -21,13 +21,4 @@ export function getUserDirectus(userToken: string) {
     return createDirectus<DirectusSchema>(directusUrl)
         .with(staticToken(userToken))
         .with(rest());
-}
-
-/**
- * LEGACY / COMPATIBILITY EXPORTS
- * These are deprecated and should be replaced with getSystemDirectus() or getUserDirectus().
- */
-export const directus = getSystemDirectus();
-export async function directusRequest<T>(options: any): Promise<T> {
-    return (directus.request as any)(options);
 }

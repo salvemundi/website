@@ -2,10 +2,12 @@ import type { BetterAuthPlugin } from "better-auth";
 import { Pool } from "pg";
 import { getRedis } from "./redis-client";
 import { getPermissions } from "@/shared/lib/permissions";
+import { getUserDirectus } from "@/lib/directus";
+import { readMe } from "@directus/sdk";
 
 /**
  * Better Auth plugin die sessies cached in Redis (TTL: 5 minuten).
- * Vervangt herhaalde database-queries bij get-session calls.
+ * Bevat ook de logica voor impersonatie (nadoen van andere gebruikers).
  */
 export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
     return {
@@ -46,7 +48,6 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                     matcher: (ctx) => ctx?.path?.includes("get-session"),
                     handler: async (ctx) => {
                         try {
-                            // Defensive check for headers source
                             const headersSource = ctx?.headers || (ctx as any)?.request?.headers || {};
                             const requestHeaders = new Headers(headersSource);
                             const session = (ctx as any)?.context?.returned || (ctx as any)?.response || (ctx as any)?.json || (ctx as any)?.body;
@@ -54,10 +55,21 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                 requestHeaders.get("cookie")?.split("better-auth.session-token=")[1]?.split(";")[0];
 
                             if (session && typeof session === 'object' && 'user' in session) {
-                                const sessionWithUser = session as { user?: { id?: string; email?: string; committees?: unknown } };
+                                const sessionWithUser = session as { 
+                                    user?: { 
+                                        id?: string; 
+                                        name?: string;
+                                        email?: string; 
+                                        avatar?: string;
+                                        committees?: any; 
+                                    };
+                                    impersonatedBy?: any;
+                                };
+                                
                                 if (!sessionWithUser.user?.id) return {};
 
-                                const { rows } = await pool.query(
+                                // 1. Haal de echte commissies op van de admin/gebruiker
+                                const { rows: realCommittees } = await pool.query(
                                     `SELECT c.id, c.name, m.is_leader 
                                      FROM committee_members m 
                                      JOIN committees c ON m.committee_id = c.id 
@@ -65,9 +77,92 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                     [sessionWithUser.user.id]
                                 );
 
-                                // Inject committees and derived permissions
-                                sessionWithUser.user.committees = rows;
-                                Object.assign(sessionWithUser.user, getPermissions(rows));
+                                // Injecteer commissies en deriveer permissies
+                                sessionWithUser.user.committees = realCommittees;
+                                Object.assign(sessionWithUser.user, getPermissions(realCommittees));
+
+                                // 2. Check voor IMPERSONATIE (via cookie)
+                                const testToken = requestHeaders.get("cookie")?.split("directus_test_token=")?.[1]?.split(";")?.[0];
+                                const isAdmin = (sessionWithUser.user as any).isAdmin || (sessionWithUser.user as any).isICT;
+
+                                if (testToken && isAdmin) {
+                                    try {
+                                        const redis = await getRedis();
+                                        const cacheKey = `impersonation:${testToken}`;
+                                        let impData = await redis.get(cacheKey);
+                                        
+                                        if (!impData) {
+                                            // Fetch fresh if not in cache
+                                            const testClient = getUserDirectus(testToken);
+                                            const impUser = await testClient.request(readMe({ 
+                                                fields: [
+                                                    'id', 'first_name', 'last_name', 'email', 'avatar',
+                                                    'membership_status', 'membership_expiry', 'phone_number',
+                                                    'date_of_birth', 'minecraft_username'
+                                                ] 
+                                            } as any)) as any;
+                                            
+                                            const { rows: impCommittees } = await pool.query(
+                                                `SELECT c.name FROM committee_members m 
+                                                 JOIN committees c ON m.committee_id = c.id 
+                                                 WHERE m.user_id = $1`,
+                                                [impUser.id]
+                                            );
+                                            
+                                            const data = {
+                                                id: impUser.id,
+                                                first_name: impUser.first_name,
+                                                last_name: impUser.last_name,
+                                                name: `${impUser.first_name || ''} ${impUser.last_name || ''}`.trim() || impUser.email,
+                                                email: impUser.email,
+                                                avatar: impUser.avatar,
+                                                membership_status: impUser.membership_status,
+                                                membership_expiry: impUser.membership_expiry,
+                                                phone_number: impUser.phone_number,
+                                                date_of_birth: impUser.date_of_birth,
+                                                minecraft_username: impUser.minecraft_username,
+                                                committees: impCommittees
+                                            };
+                                            impData = JSON.stringify(data);
+                                            await redis.set(cacheKey, impData, { EX: 3600 }); // Cache for 1h
+                                        }
+
+                                        const targetUser = JSON.parse(impData);
+                                        
+                                        // Bewaar de originele admin info voor de banner
+                                        sessionWithUser.impersonatedBy = {
+                                            name: sessionWithUser.user.name,
+                                            id: sessionWithUser.user.id,
+                                            isNormallyAdmin: (sessionWithUser.user as any).isAdmin
+                                        };
+
+                                        // SWAP identity
+                                        sessionWithUser.user = {
+                                            ...sessionWithUser.user,
+                                            id: targetUser.id,
+                                            first_name: targetUser.first_name,
+                                            last_name: targetUser.last_name,
+                                            name: targetUser.name,
+                                            email: targetUser.email,
+                                            avatar: targetUser.avatar || null,
+                                            image: targetUser.avatar || null,
+                                            membership_status: targetUser.membership_status,
+                                            membership_expiry: targetUser.membership_expiry,
+                                            phone_number: targetUser.phone_number,
+                                            date_of_birth: targetUser.date_of_birth,
+                                            minecraft_username: targetUser.minecraft_username,
+                                            committees: targetUser.committees
+                                        } as any;
+
+                                        // Update permissions voor de target user
+                                        if (sessionWithUser.user) {
+                                            Object.assign(sessionWithUser.user, getPermissions(targetUser.committees));
+                                        }
+
+                                    } catch (e) {
+                                        console.error("[AUTH-REDIS] Impersonation fetch failed:", e);
+                                    }
+                                }
 
                                 if (token) {
                                     const redis = await getRedis();
@@ -75,11 +170,9 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                 }
                                 return { response: session };
                             }
-                            // FIX: Return empty object when no valid user session is found
                             return {};
                         } catch (error) {
                             console.error("[AUTH-PLUGIN] Session enrichment error:", error);
-                            // FIX: Return empty object when an error occurs
                             return {};
                         }
                     }

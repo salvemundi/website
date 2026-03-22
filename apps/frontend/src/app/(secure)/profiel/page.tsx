@@ -1,7 +1,8 @@
 import { Suspense } from 'react';
 import { headers } from 'next/headers';
-import { auth } from '@/server/auth/auth';
 import { getUserEventSignups } from '@/server/actions/profiel.actions';
+import { checkAdminAccess } from '@/server/actions/admin.actions';
+
 import { ProfielSkeleton } from '@/components/ui/account/ProfielSkeleton';
 import { ProfielIsland } from '@/components/islands/account/ProfielIsland';
 
@@ -27,14 +28,18 @@ export default function ProfielPage() {
 }
 
 async function ProfielFetcher() {
-    const session = await auth.api.getSession({ headers: await headers() });
-    const user = session?.user;
+    const { user, impersonation } = await checkAdminAccess();
     
     // Fallback if somehow not authenticated (though proxy handles this)
     if (!user) return null;
 
-    // Fetch user event signups
-    const signups = await getUserEventSignups();
-    return <ProfielIsland initialSignups={signups} user={user} />;
+    // Fetch user event signups (respecting current identity)
+    const signups = await getUserEventSignups(user.id);
+    
+    return (
+        <ProfielIsland 
+            initialSignups={signups} 
+            user={user as any} 
+        />
+    );
 }
-

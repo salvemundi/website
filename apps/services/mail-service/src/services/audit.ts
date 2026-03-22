@@ -1,4 +1,4 @@
-const DIRECTUS_URL = process.env.INTERNAL_DIRECTUS_URL || 'http://v7-core-directus:8055';
+const DIRECTUS_URL = process.env.DIRECTUS_SERVICE_URL || 'http://v7-core-directus:8055';
 const STATIC_TOKEN = process.env.DIRECTUS_STATIC_TOKEN;
 
 export class AuditService {

@@ -259,15 +259,14 @@ export default function SafeHavensPage() {
                                         <ExternalLink className="h-4 w-4 opacity-80 group-hover:opacity-100" />
                                     </a>
 
-                                    <a
-                                        href="mailto:bestuur [at] salvemundi.nl"
-                                        className="group flex items-center justify-center gap-2 rounded-xl bg-slate-600 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 px-5 py-4 text-white shadow-lg transition-all hover:shadow-xl"
-                                    >
-                                        <MessageSquare className="h-5 w-5" />
-                                        <span className="font-semibold text-sm sm:text-base">
-                                            Contact met bestuur
-                                        </span>
-                                    </a>
+                                    <div className="group flex items-center justify-center gap-2 rounded-xl bg-slate-600 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 px-5 py-4 text-white shadow-lg transition-all hover:shadow-xl">
+                                        <ObfuscatedEmail
+                                            email="bestuur@salvemundi.nl"
+                                            className="text-white hover:text-white"
+                                            showIcon={false}
+                                        />
+                                    </div>
+
                                 </div>
 
                                 <div className="mt-6 rounded-xl bg-red-50 dark:bg-red-950/30 border-2 border-red-300 dark:border-red-700 p-4">

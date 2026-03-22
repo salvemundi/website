@@ -14,8 +14,8 @@ import { readItems } from '@directus/sdk';
 async function fetchSafeHavensFromDirectus(): Promise<SafeHaven[]> {
     try {
         const rawData = await getSystemDirectus().request(readItems('safe_havens', {
-            fields: ['id', 'contact_name', 'email', 'phone_number', 'image', 'sort'],
-            limit: 50
+            fields: ['id', 'contact_name', 'email', 'phone_number', 'image'],
+            limit: 10
         }));
 
         // Mapping van DB velden naar Zod Schema velden

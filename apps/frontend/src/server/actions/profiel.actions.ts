@@ -12,19 +12,22 @@ import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 
 import { getSystemDirectus } from '@/lib/directus';
+import { getDirectusClient } from '@/lib/directus.server';
 import { readItems } from '@directus/sdk';
 
 // ─── Event Signups ────────────────────────────────────────────────────────────
 
-export async function getUserEventSignups(): Promise<EventSignup[]> {
+export async function getUserEventSignups(overrideUserId?: string): Promise<EventSignup[]> {
     const session = await auth.api.getSession({ headers: await headers() });
     const user = session?.user;
 
-    if (!user?.id) return [];
+    const targetUserId = overrideUserId || user?.id;
+    if (!targetUserId) return [];
 
     try {
-        const res = await getSystemDirectus().request(readItems('event_signups' as any, {
-            filter: { directus_relations: { _eq: user.id } },
+        const client = await getDirectusClient();
+        const res = await client.request(readItems('event_signups' as any, {
+            filter: { directus_relations: { _eq: targetUserId } },
             fields: ['id', 'created_at', { event_id: ['id', 'name', 'event_date', 'description', 'image', 'contact'] }],
             sort: ['-created_at'],
             limit: -1
@@ -46,18 +49,20 @@ export async function getUserEventSignups(): Promise<EventSignup[]> {
 
 // ─── Transactions ────────────────────────────────────────────────────────────
 
-export async function getUserTransactions(): Promise<Transaction[]> {
+export async function getUserTransactions(overrideUserId?: string): Promise<Transaction[]> {
     const session = await auth.api.getSession({ headers: await headers() });
     const user = session?.user;
 
-    if (!user?.id) return [];
+    const targetUserId = overrideUserId || user?.id;
+    if (!targetUserId) return [];
 
     try {
-        const res = await getSystemDirectus().request(readItems('transactions' as any, {
+        const client = await getDirectusClient();
+        const res = await client.request(readItems('transactions' as any, {
             filter: {
                 _or: [
-                    { user_id: { _eq: user.id } },
-                    { email: { _eq: user.email } }
+                    { user_id: { _eq: targetUserId } },
+                    { email: { _eq: user?.email } }
                 ]
             },
             fields: ['id', 'user_id', 'email', 'amount', 'currency', 'payment_status', 'description', 'created_at'],

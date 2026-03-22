@@ -5,8 +5,7 @@ import {
     QuickActions, 
     BirthdaysList, 
     TopStickersList, 
-    ActivitySignupsList, 
-    SystemHealthStatus 
+    ActivitySignupsList
 } from '@/components/ui/admin/dashboard/DashboardSections';
 import { 
     StatCardSkeleton, 
@@ -57,10 +56,6 @@ export default async function BeheerPage() {
                     </div>
                 </div>
 
-                {/* Bottom: System Health (ICT Only) */}
-                <Suspense fallback={<div className="h-32 bg-slate-200 dark:bg-slate-800 animate-pulse rounded-2xl mt-8"></div>}>
-                    <SystemHealthStatus />
-                </Suspense>
             </div>
         </div>
     );
