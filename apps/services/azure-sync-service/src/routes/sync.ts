@@ -8,7 +8,7 @@ export default async function syncRoutes(fastify: FastifyInstance) {
      * Security hook: Validates the internal service token for all sync routes.
      */
     fastify.addHook('preHandler', async (request, reply) => {
-        const token = process.env.INTERNAL_SERVICE_TOKEN;
+        const token = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '');
         const authHeader = request.headers.authorization;
 
         if (!token) {
