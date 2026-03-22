@@ -29,7 +29,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
       - DB_HOST=v7-core-db
-      - REDIS_URL=redis://v7-core-redis:6379
+      - REDIS_URL=${REDIS_URL}
       - NEXT_APP_INTERNAL_URL=http://localhost:3000
       - TRUST_PROXY=true
       - HOSTNAME=0.0.0.0
@@ -67,7 +67,7 @@ services:
       - AZURE_SYNC_CLIENT_SECRET=${AZURE_WEBSITEV7_SYNC_CLIENT_SECRET}
       - DIRECTUS_STATIC_TOKEN=${DIRECTUS_STATIC_TOKEN}
       - DIRECTUS_SERVICE_URL=${INTERNAL_DIRECTUS_URL}
-      - REDIS_URL=redis://v7-core-redis:6379
+      - REDIS_URL=${REDIS_URL}
     networks:
       - salve-mundi-v7-shared
 
@@ -85,7 +85,7 @@ services:
       - AZURE_MAIL_SENDER=${AZURE_MAIL_SENDER}
       - DIRECTUS_STATIC_TOKEN=${DIRECTUS_STATIC_TOKEN}
       - DIRECTUS_SERVICE_URL=${INTERNAL_DIRECTUS_URL}
-      - REDIS_URL=redis://v7-core-redis:6379
+      - REDIS_URL=${REDIS_URL}
     networks:
       - salve-mundi-v7-shared
 
