@@ -1,4 +1,4 @@
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 import { SyncJob } from './sync.job.js';
 import { TokenService } from './token.service.js';
 

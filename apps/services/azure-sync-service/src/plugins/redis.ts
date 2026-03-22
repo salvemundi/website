@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 
 declare module 'fastify' {
     interface FastifyInstance {
@@ -14,7 +14,7 @@ export default fp(async (fastify: FastifyInstance) => {
         maxRetriesPerRequest: null
     });
 
-    client.on('error', (err) => fastify.log.error('Redis Client Error', err));
+    client.on('error', (err: Error) => fastify.log.error(err, 'Redis Client Error'));
 
     fastify.decorate('redis', client);
 

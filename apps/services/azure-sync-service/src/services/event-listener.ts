@@ -1,4 +1,4 @@
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 import { ProvisionWorkerService } from './provision-worker.js';
 import { PaymentSuccessEventSchema } from '@salvemundi/validations'; // Belangrijk: gebruik het gedeelde contract!
 

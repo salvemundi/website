@@ -1,5 +1,5 @@
 import { ClientSecretCredential } from '@azure/identity';
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 
 /**
  * TokenService for Mail Service.

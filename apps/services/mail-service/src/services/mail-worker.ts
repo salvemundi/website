@@ -1,4 +1,4 @@
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 import { MailerService } from './mailer.js';
 import { AuditService } from './audit.js';
 

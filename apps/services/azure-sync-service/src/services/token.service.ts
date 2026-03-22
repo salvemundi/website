@@ -1,5 +1,5 @@
 import { ClientSecretCredential } from '@azure/identity';
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 
 export class TokenService {
     private static credential?: ClientSecretCredential;
