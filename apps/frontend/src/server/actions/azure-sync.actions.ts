@@ -40,7 +40,8 @@ export async function triggerFullSyncAction() {
 
         if (!res.ok) {
             const errorData = await res.json().catch(() => ({ error: 'Sync service onbeschikbaar' }));
-            return { success: false, error: errorData.error || `Sync gefaald (${res.status})` };
+            console.error("[AzureSyncAction] Service error:", errorData);
+            return { success: false, error: "De synchronisatie service is momenteel niet bereikbaar." };
         }
 
         return { success: true, message: "Synchronisatie taak succesvol gestart." };
@@ -63,7 +64,7 @@ export async function triggerUserSyncAction(userId: string) {
     }
 
     try {
-        const res = await fetch(`${AZURE_SYNC_URL}/api/sync/run/${userId}`, {
+        const res = await fetch(`${AZURE_SYNC_URL}/api/sync/run/${encodeURIComponent(userId)}`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${INTERNAL_TOKEN}`
@@ -72,7 +73,8 @@ export async function triggerUserSyncAction(userId: string) {
 
         if (!res.ok) {
             const errorData = await res.json().catch(() => ({ error: 'Sync service onbeschikbaar' }));
-            return { success: false, error: errorData.error || `Sync gefaald (${res.status})` };
+            console.error("[AzureSyncAction] Service error:", errorData);
+            return { success: false, error: "De synchronisatie service is momenteel niet bereikbaar." };
         }
 
         // Revalidate the specific user to show updated data

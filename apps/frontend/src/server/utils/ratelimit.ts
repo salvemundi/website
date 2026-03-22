@@ -16,6 +16,30 @@ async function getRedisClient() {
 }
 
 /**
+ * Extracts the most reliable client IP from headers.
+ * Priority: Cloudflare Connecting IP > Nginx Real IP > X-Forwarded-For (first part).
+ */
+async function getClientIp(): Promise<string> {
+    const h = await headers();
+    
+    // 1. Cloudflare (often configured in public sites)
+    const cf = h.get('cf-connecting-ip');
+    if (cf) return cf;
+
+    // 2. Nginx / Custom Proxy
+    const xReal = h.get('x-real-ip');
+    if (xReal) return xReal;
+
+    // 3. Last resort: X-Forwarded-For
+    const xForwarded = h.get('x-forwarded-for');
+    if (xForwarded) {
+        return xForwarded.split(',')[0].trim();
+    }
+
+    return 'unknown';
+}
+
+/**
  * Basic Redis-based Rate Limiter for Server Actions.
  * @param key Unique key for the action (e.g., "membership-signup")
  * @param limit Maximum number of requests allowed in the window
@@ -24,8 +48,7 @@ async function getRedisClient() {
  */
 export async function rateLimit(key: string, limit: number = 5, windowSeconds: number = 60) {
     const client = await getRedisClient();
-    const forwardedFor = (await headers()).get('x-forwarded-for');
-    const ip = forwardedFor ? forwardedFor.split(',')[0] : 'unknown';
+    const ip = await getClientIp();
     
     // Composite key: action-name:ip
     const rateLimitKey = `ratelimit:${key}:${ip}`;
