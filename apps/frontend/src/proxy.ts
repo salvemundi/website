@@ -51,28 +51,59 @@ async function getDisabledRoutes(): Promise<string[]> {
  * Beheert toegang tot routes en voert de naadloze "Direct Provider" flow uit.
  */
 export async function proxy(request: NextRequest) {
+    const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
     const { pathname, origin } = request.nextUrl;
 
-    // 1. Whitelist & System checks (Bypass proxy for auth and internal tokens)
+    // Helper om CSP en Nonce toe te voegen aan een response
+    const withSecurity = (res: NextResponse) => {
+        const cspHeader = `
+            default-src 'self';
+            script-src 'self' 'nonce-${nonce}' 'strict-dynamic';
+            style-src 'self' 'unsafe-inline';
+            img-src 'self' blob: data: https://admin.salvemundi.nl https://acc.salvemundi.nl https://salvemundi.nl;
+            font-src 'self';
+            connect-src 'self' https://admin.salvemundi.nl https://acc.salvemundi.nl https://login.microsoftonline.com;
+            frame-src 'self' https://login.microsoftonline.com;
+            object-src 'none';
+            base-uri 'self';
+            form-action 'self';
+            frame-ancestors 'none';
+            upgrade-insecure-requests;
+        `.replace(/\s{2,}/g, ' ').trim();
+
+        res.headers.set('Content-Security-Policy', cspHeader);
+        res.headers.set('x-nonce', nonce);
+        return res;
+    };
+
+    // Helper voor NextResponse.next met doorgegeven headers
+    const nextWithNonce = () => {
+        const requestHeaders = new Headers(request.headers);
+        requestHeaders.set('x-nonce', nonce);
+        return withSecurity(NextResponse.next({
+            request: { headers: requestHeaders }
+        }));
+    };
+
+    // 1. Whitelist & System checks
     const internalToken = process.env.INTERNAL_SERVICE_TOKEN;
     if (internalToken && request.headers.get('authorization') === `Bearer ${internalToken}`) {
-        return NextResponse.next();
+        return nextWithNonce();
     }
     if (pathname === '/api/finance/webhook/mollie' || pathname.startsWith('/api/auth/')) {
-        return NextResponse.next();
+        return nextWithNonce();
     }
 
     // 2. Feature Flags
     const disabledRoutes = await getDisabledRoutes();
     if (disabledRoutes.some(r => pathname === r || pathname.startsWith(`${r}/`))) {
-        return NextResponse.rewrite(new URL('/404', request.url));
+        return withSecurity(NextResponse.rewrite(new URL('/404', request.url)));
     }
 
-    // 3. Auth Gating (Direct Redirect naar Microsoft)
+    // 3. Auth Gating
     const isPublic = PUBLIC_ROUTES.some(r => pathname === r || pathname.startsWith(`${r}/`));
     if (!isPublic) {
         try {
-            // Check sessie via fetch (Edge-safe) naar interne API
             const internalBase = process.env.NEXT_APP_INTERNAL_URL || origin;
             const sessionUrl = new URL('/api/auth/get-session', internalBase);
             const sessionRes = await fetch(sessionUrl, {
@@ -82,48 +113,86 @@ export async function proxy(request: NextRequest) {
                     'x-forwarded-host': request.nextUrl.host,
                     'x-forwarded-proto': request.nextUrl.protocol.replace(':', '')
                 },
-                signal: AbortSignal.timeout(10000), // V7: voorkomt Eternal Skeletons
+                signal: AbortSignal.timeout(10000),
             });
 
-            // Handle cases where session exists (200 OK) vs non-existent (204 or body "null")
             let hasSession = sessionRes.ok && sessionRes.status !== 204;
             if (hasSession) {
                 const text = await sessionRes.text();
-                // Sommige Better Auth responses geven "null" als string terug bij missing session
-                if (text === 'null' || !text) {
-                    hasSession = false;
-                }
+                if (text === 'null' || !text) hasSession = false;
             }
 
             if (!hasSession) {
-                // GEEN sessie: Redirect DIRECT naar Microsoft Sign-in (Direct Provider Flow)
-                // Behoud volledige URL inclusief query parameters na redirect
                 const callbackUrl = encodeURIComponent(pathname + request.nextUrl.search);
                 const microsoftAuthUrl = new URL(
                     `/api/auth/login/social?provider=microsoft&callbackURL=${callbackUrl}`,
                     request.url
                 );
-
                 console.log(`[Proxy] No session for ${pathname}, redirecting to Microsoft.`);
-                return NextResponse.redirect(microsoftAuthUrl);
+                return withSecurity(NextResponse.redirect(microsoftAuthUrl));
             }
 
-            // Sessie is geldig! 
-            const response = NextResponse.next();
+            // Sessie is geldig! Cookies overzetten.
+            const response = nextWithNonce();
             sessionRes.headers.forEach((value, key) => {
                 if (key.toLowerCase() === 'set-cookie') {
-                    // Gebruik append om meerdere cookies (indien nodig) te ondersteunen
                     response.headers.append('set-cookie', value);
                 }
             });
             return response;
         } catch (error) {
             console.error('[Proxy] Auth gating critical error:', error);
-            return NextResponse.rewrite(new URL('/404', request.url));
+            return withSecurity(NextResponse.rewrite(new URL('/404', request.url)));
         }
     }
 
-    return NextResponse.next();
+    return nextWithNonce();
+}
+
+/**
+ * V7 Security: Versterkt de Content Security Policy (CSP) door 'unsafe-inline' te verwijderen.
+ * Gebruikt dynamic nonces voor zowel scripts als styles om XSS kwetsbaarheden te dichten.
+ */
+function applySecurityHeaders(response: NextResponse, request: NextRequest): NextResponse {
+    const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
+    
+    // De CSP string — 'unsafe-inline' is hier verwijderd voor script-src.
+    // Voor style-src houden we het tijdelijk even aan vanwege de vele inline 'style' attributes in React componenten.
+    const cspHeader = `
+        default-src 'self';
+        script-src 'self' 'nonce-${nonce}' 'strict-dynamic';
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' blob: data: https://admin.salvemundi.nl https://acc.salvemundi.nl https://salvemundi.nl;
+        font-src 'self';
+        connect-src 'self' https://admin.salvemundi.nl https://acc.salvemundi.nl https://login.microsoftonline.com;
+        frame-src 'self' https://login.microsoftonline.com;
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+        frame-ancestors 'none';
+        upgrade-insecure-requests;
+    `.replace(/\s{2,}/g, ' ').trim();
+
+    // 1. Maak een nieuwe response met de nonce in de REQUEST headers zodat Server Components erbij kunnen
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-nonce', nonce);
+
+    const newResponse = NextResponse.next({
+        request: {
+            headers: requestHeaders,
+        },
+    });
+
+    // 2. Kopieer de cookies en andere headers van de originele response naar de nieuwe
+    response.headers.forEach((value, key) => {
+        newResponse.headers.append(key, value);
+    });
+
+    // 3. Zet de daadwerkelijke CSP header en x-nonce voor de browser/app
+    newResponse.headers.set('x-nonce', nonce);
+    newResponse.headers.set('Content-Security-Policy', cspHeader);
+
+    return newResponse;
 }
 
 export const config = {
