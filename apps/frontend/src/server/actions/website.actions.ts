@@ -14,7 +14,7 @@ import { readItems } from '@directus/sdk';
 export async function getDocumenten(): Promise<Document[]> {
     try {
         const rawData = await getSystemDirectus().request(readItems('documents', {
-            fields: ['id', 'name', 'file', 'category', 'display_order'],
+            fields: ['id', 'title', 'file', 'category', 'display_order'],
             sort: ['display_order'],
             limit: 50
         }));

@@ -7,7 +7,7 @@ import {
     Loader2, Euro, Info, MoreHorizontal, Settings2, Trash
 } from 'lucide-react';
 import { 
-    deleteTripActivity, getActivitySignups 
+    deleteTripActivity, getActivitySignups, getTripActivities, createTripActivity, updateTripActivity 
 } from '@/server/actions/admin-reis.actions';
 import { getImageUrl } from '@/lib/image-utils';
 
@@ -354,7 +354,7 @@ export default function TripActivitiesIsland({ trips }: { trips: Trip[] }) {
                             {/* Card Header/Visual */}
                             {activity.image && (
                                 <div className="relative h-48 bg-slate-900 overflow-hidden">
-                                    <img src={getImageUrl(activity.image)} alt={activity.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                    <img src={(activity.image ? getImageUrl(activity.image) : '') as any} alt={activity.name} className="h-10 w-10 rounded object-cover group-hover:scale-110 transition-transform duration-700" />
                                     <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-lg ${activity.is_active ? 'bg-emerald-500 text-white' : 'bg-slate-500 text-white'}`}>
                                         {activity.is_active ? 'Actief' : 'Inactief'}
                                     </div>

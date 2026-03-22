@@ -46,7 +46,7 @@ async function EditFormLoader({ id }: { id: string }) {
                 fields: [
                     'id', 'name', 'description', 'location', 'event_date', 'event_date_end', 
                     'max_sign_ups', 'price_members', 'price_non_members', 'only_members', 
-                    'inschrijf_deadline', 'contact', 'image', 'committee_id', 'status', 
+                    'registration_deadline', 'contact', 'image', 'committee_id', 'status', 
                     'publish_date', 'event_time', 'event_time_end'
                 ],
                 filter: { id: { _eq: id } },

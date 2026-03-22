@@ -67,12 +67,12 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
                     {nextTrip.image && (
                         <button
                             type="button"
-                            onClick={() => openLightbox(getImageUrl(nextTrip.image!))}
+                            onClick={() => openLightbox(getImageUrl(nextTrip.image) ?? '')}
                             className="w-full rounded-xl sm:rounded-2xl overflow-hidden focus:outline-none group relative"
                         >
                             <div className="relative w-full max-h-64 sm:max-h-80 md:max-h-96 h-[240px] sm:h-[320px] md:h-[380px]">
                                 <Image
-                                    src={imageError ? '/img/placeholder.svg' : getImageUrl(nextTrip.image)}
+                                    src={imageError ? '/img/placeholder.svg' : (getImageUrl(nextTrip.image) ?? '/img/placeholder.svg')}
                                     alt={nextTrip.name}
                                     fill
                                     sizes="(max-width: 768px) 100vw, 50vw"

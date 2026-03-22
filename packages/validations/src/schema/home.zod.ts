@@ -32,7 +32,7 @@ export const activiteitSchema = z.object({
     price_members: z.number().nullable().optional(),
     price_non_members: z.number().nullable().optional(),
     only_members: z.boolean().nullable().optional(),
-    inschrijf_deadline: z.string().nullable().optional(),
+    registration_deadline: z.string().nullable().optional(),
     contact: z.string().nullable().optional(),
     committee_name: z.string().nullable().optional(),
     event_time: z.string().nullable().optional(),

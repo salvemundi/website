@@ -243,8 +243,8 @@ export default function ActiviteitNieuwIsland({ committees }: { committees: Comm
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-2">
-                                <label htmlFor="inschrijf_deadline" className="text-xs font-bold text-slate-500 uppercase tracking-wider">Inschrijfdeadline</label>
-                                <input type="datetime-local" id="inschrijf_deadline" name="inschrijf_deadline" className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:border-primary outline-none transition" />
+                                <label htmlFor="registration_deadline" className="text-xs font-bold text-slate-500 uppercase tracking-wider">Inschrijfdeadline</label>
+                                <input type="datetime-local" id="registration_deadline" name="registration_deadline" className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:border-primary outline-none transition" />
                             </div>
                             <div className="space-y-2">
                                 <label htmlFor="committee_id" className="text-xs font-bold text-slate-500 uppercase tracking-wider">Verantwoordelijke Commissie</label>

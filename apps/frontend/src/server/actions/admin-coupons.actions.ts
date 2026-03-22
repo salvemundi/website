@@ -4,7 +4,7 @@ import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 
-import { getSystemDirectus } from '@/lib/directus';
+import { getSystemDirectus, getUserDirectus } from '@/lib/directus';
 import { 
     readItems, 
     updateItem, 
@@ -86,6 +86,8 @@ export async function createCoupon(formData: FormData): Promise<{ success: boole
         valid_until: validUntil || null,
     };
 
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session) throw new Error('Unauthorized');
     try {
         await getUserDirectus(session.session.token).request(createItem('coupons', payload));
         revalidatePath('/beheer/coupons');

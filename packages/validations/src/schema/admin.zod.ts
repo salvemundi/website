@@ -52,7 +52,7 @@ export const AdminActivitySchema = z.object({
     max_sign_ups: z.number().optional().nullable(),
     price_members: z.number().optional().nullable(),
     price_non_members: z.number().optional().nullable(),
-    inschrijf_deadline: z.string().optional().nullable(),
+    registration_deadline: z.string().optional().nullable(),
     contact: z.string().optional().nullable(),
     image: z.object({ id: z.string() }).optional().nullable(),
     committee_id: z.number().optional().nullable(),

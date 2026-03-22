@@ -16,7 +16,7 @@ export const activitySchema = z.object({
     price_non_members: z.number().nullable().optional(),
     committee_name: z.string().nullable().optional(),
     contact: z.string().nullable().optional(),
-    inschrijf_deadline: z.string().nullable().optional(),
+    registration_deadline: z.string().nullable().optional(),
     only_members: z.boolean().nullable().optional().default(false),
     status: z.string().nullable().optional(),
 });
@@ -63,7 +63,7 @@ export const activityAdminSchema = z.object({
         if (v === '' || v === undefined) return null;
         return typeof v === 'string' ? parseFloat(v) : v;
     }),
-    inschrijf_deadline: z.string().nullable().optional(),
+    registration_deadline: z.string().nullable().optional(),
     committee_id: z.union([z.string(), z.number()]).nullable().optional().transform(v => {
         if (v === '' || v === undefined) return null;
         return typeof v === 'string' ? parseInt(v) : v;

@@ -24,6 +24,8 @@ type CommitteeMeta = {
 };
 
 type SessionUser = {
+    name?: string | null;
+    display_name?: string | null;
     email?: string | null;
     avatar?: string | null;
     image?: string | null;
@@ -245,10 +247,9 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                                 >
                                     <div className="relative h-6 w-6 rounded-full overflow-hidden shrink-0">
                                         <Image
-                                            src={getImageUrl(user?.avatar || user?.image)}
-                                            alt={user?.email ? String(user.email) : 'Profiel'}
+                                            src={(user.avatar ? getImageUrl(user.avatar) : '') as string}
+                                            alt={user.name || 'Profiel'}
                                             fill
-                                            sizes="24px"
                                             className="object-cover"
                                             priority
                                             unoptimized
@@ -330,10 +331,9 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                             <span className="inline-flex relative h-10 w-10 items-center justify-center rounded-full bg-[var(--bg-card)] shadow-sm overflow-hidden">
                                 {mounted && (user?.avatar || user?.image) ? (
                                     <Image
-                                        src={getImageUrl(user?.avatar || user?.image)}
-                                        alt={user?.email ? String(user.email) : ''}
+                                        src={(user.avatar ? getImageUrl(user.avatar) : '') as string}
+                                        alt={user.name || 'Profiel'}
                                         fill
-                                        sizes="40px"
                                         className="object-cover"
                                         priority
                                         unoptimized

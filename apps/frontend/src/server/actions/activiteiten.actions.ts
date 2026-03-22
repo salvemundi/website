@@ -48,7 +48,7 @@ export const getAdminActivities = cache(async (search?: string, filter: 'all' | 
 
     try {
         const query: any = {
-            fields: ['id', 'name', 'event_date', 'event_date_end', 'description', 'location', 'max_sign_ups', 'price_members', 'price_non_members', 'inschrijf_deadline', 'contact', { image: ['id'] }, 'committee_id', 'status', 'publish_date'],
+            fields: ['id', 'name', 'event_date', 'event_date_end', 'description', 'location', 'max_sign_ups', 'price_members', 'price_non_members', 'registration_deadline', 'contact', { image: ['id'] }, 'committee_id', 'status', 'publish_date'],
             sort: ['-event_date'],
             limit: -1,
             filter: {}

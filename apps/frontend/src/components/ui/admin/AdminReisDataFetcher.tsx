@@ -1,4 +1,4 @@
-import { getTripSignups } from '@/server/actions/admin-reis.actions';
+import { getTripSignups, getSignupActivities } from '@/server/actions/admin-reis.actions';
 import AdminReisTableIsland from '@/components/islands/admin/AdminReisTableIsland';
 import type { Trip } from '@salvemundi/validations';
 
@@ -9,6 +9,12 @@ interface AdminReisDataFetcherProps {
 
 export default async function AdminReisDataFetcher({ tripId, trip }: AdminReisDataFetcherProps) {
     const signups = await getTripSignups(tripId);
+    
+    // Fetch activities for all signups to satisfy AdminReisTableIslandProps
+    const signupActivitiesMap: Record<number, any[]> = {};
+    await Promise.all(signups.map(async (s) => {
+        signupActivitiesMap[s.id] = await getSignupActivities(s.id);
+    }));
 
     const stats = {
         total: signups.length,
@@ -21,6 +27,7 @@ export default async function AdminReisDataFetcher({ tripId, trip }: AdminReisDa
     return (
         <AdminReisTableIsland
             initialSignups={signups}
+            initialSignupActivities={signupActivitiesMap}
             trip={trip}
             stats={stats}
         />

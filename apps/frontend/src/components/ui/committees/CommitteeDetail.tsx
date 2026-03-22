@@ -18,7 +18,7 @@ export const CommitteeDetail: React.FC<CommitteeDetailProps> = ({ committee }) =
                 <div className="lg:col-span-2 space-y-8">
                     <div className="relative h-64 md:h-96 w-full overflow-hidden rounded-3xl shadow-xl">
                         <Image
-                            src={committee.image ? getImageUrl(committee.image) : '/img/placeholder.svg'}
+                            src={getImageUrl(committee.image) ?? '/img/placeholder.svg'}
                             alt={cleanedName}
                             fill
                             className="object-cover"
@@ -63,7 +63,7 @@ export const CommitteeDetail: React.FC<CommitteeDetailProps> = ({ committee }) =
                                 <div key={idx} className="flex items-center gap-4 group">
                                     <div className="relative h-12 w-12 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-[var(--bg-soft)] transition-transform group-hover:scale-105">
                                         <Image
-                                            src={member.user_id?.avatar ? getImageUrl(member.user_id.avatar) : '/img/placeholder.svg'}
+                                            src={getImageUrl(member.user_id?.avatar) ?? '/img/placeholder.svg'}
                                             alt={member.user_id?.first_name || 'Lid'}
                                             fill
                                             className="object-cover"
