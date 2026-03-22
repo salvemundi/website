@@ -9,14 +9,16 @@ export default async function syncRoutes(fastify: FastifyInstance) {
      */
     fastify.addHook('preHandler', async (request, reply) => {
         const token = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
-        const authHeader = request.headers.authorization;
+        const rawAuthHeader = request.headers.authorization;
+        const authHeader = Array.isArray(rawAuthHeader) ? rawAuthHeader[0] : rawAuthHeader;
 
         if (!token) {
             fastify.log.error('[AUTH] INTERNAL_SERVICE_TOKEN is not configured');
             return reply.status(500).send({ error: 'Internal Server Configuration Error' });
         }
 
-        if (!authHeader || !timingSafeCompare(authHeader, `Bearer ${token}`)) {
+        const expectedHeader = `Bearer ${token}`;
+        if (!authHeader || !timingSafeCompare(authHeader.trim(), expectedHeader)) {
             return reply.status(401).send({ error: 'Unauthorized' });
         }
     });
