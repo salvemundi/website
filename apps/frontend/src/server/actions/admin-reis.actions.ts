@@ -21,8 +21,8 @@ import {
     createItem 
 } from '@directus/sdk';
 
-const FINANCE_URL = process.env.INTERNAL_FINANCE_URL;
-const MAIL_URL = process.env.INTERNAL_MAIL_URL;
+const FINANCE_URL = process.env.FINANCE_SERVICE_URL;
+const MAIL_URL = process.env.MAIL_SERVICE_URL;
 const INTERNAL_SERVICE_TOKEN = process.env.INTERNAL_SERVICE_TOKEN;
 
 /**

@@ -16,7 +16,7 @@ import { getSystemDirectus } from '@/lib/directus';
 import { readItems, createItem } from '@directus/sdk';
 
 const getFinanceServiceUrl = () =>
-    process.env.INTERNAL_FINANCE_URL;
+    process.env.FINANCE_SERVICE_URL;
 
 const getInternalHeaders = () => {
     const token = process.env.INTERNAL_SERVICE_TOKEN;

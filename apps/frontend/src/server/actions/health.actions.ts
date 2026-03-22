@@ -67,12 +67,12 @@ export async function checkServiceStatus(url: string, serviceName: string): Prom
 
 export async function getHealthStatuses() {
     // Core Infra
-    const directusUrl = process.env.INTERNAL_DIRECTUS_URL!;
+    const directusUrl = process.env.DIRECTUS_SERVICE_URL!;
 
     // Services
-    const financeUrl = process.env.INTERNAL_FINANCE_URL!;
-    const syncUrl = process.env.INTERNAL_SYNC_URL!;
-    const mailUrl = process.env.INTERNAL_MAIL_URL!;
+    const financeUrl = process.env.FINANCE_SERVICE_URL!;
+    const syncUrl = process.env.AZURE_SYNC_SERVICE_URL!;
+    const mailUrl = process.env.MAIL_SERVICE_URL!;
 
     const results = await Promise.all([
         // Shared Core Stack

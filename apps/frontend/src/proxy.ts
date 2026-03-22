@@ -19,7 +19,7 @@ async function getDisabledRoutes(): Promise<string[]> {
     }
 
     try {
-        const directusUrl = process.env.INTERNAL_DIRECTUS_URL;
+        const directusUrl = process.env.DIRECTUS_SERVICE_URL;
         const token = process.env.DIRECTUS_STATIC_TOKEN;
 
         if (!token) return cachedDisabledRoutes || [];

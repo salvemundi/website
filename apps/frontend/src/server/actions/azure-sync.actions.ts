@@ -22,7 +22,7 @@ async function checkSyncAccess() {
 /**
  * Triggers a full synchronization job in the Azure Sync Service.
  */
-export async function triggerFullSyncAction() {
+export async function triggerFullSyncAction(options?: { fields: string[]; forceLink?: boolean; activeOnly?: boolean }) {
     const admin = await checkSyncAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
 
@@ -34,8 +34,10 @@ export async function triggerFullSyncAction() {
         const res = await fetch(`${AZURE_SYNC_URL}/api/sync/run`, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${INTERNAL_TOKEN}`
-            }
+                'Authorization': `Bearer ${INTERNAL_TOKEN}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(options || { fields: [] })
         });
 
         if (!res.ok) {
@@ -85,6 +87,36 @@ export async function triggerUserSyncAction(userId: string) {
     } catch (err) {
         console.error("[AzureSyncAction] User sync error:", err);
         return { success: false, error: "Kon geen verbinding maken met de sync service." };
+    }
+}
+
+/**
+ * Fetches the current status of the sync job.
+ */
+export async function getSyncStatusAction() {
+    const admin = await checkSyncAccess();
+    if (!admin) return { success: false, error: "Unauthorized" };
+
+    if (!INTERNAL_TOKEN) {
+        return { success: false, error: "Systeemfout: Ontbrekende service token." };
+    }
+
+    try {
+        const res = await fetch(`${AZURE_SYNC_URL}/api/sync/status`, {
+            headers: {
+                'Authorization': `Bearer ${INTERNAL_TOKEN}`
+            },
+            cache: 'no-store'
+        });
+
+        if (!res.ok) {
+            return { success: false, error: "Status service onbeschikbaar" };
+        }
+
+        return await res.json();
+    } catch (err) {
+        console.error("[AzureSyncAction] Get status error:", err);
+        return { success: false, error: "Kon status niet ophalen." };
     }
 }
 

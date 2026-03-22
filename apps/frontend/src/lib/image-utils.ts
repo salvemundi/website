@@ -7,11 +7,11 @@
 export function getImageUrl(
     idOrObject?: string | { id: string } | null, 
     options?: { width?: number; height?: number; fit?: string }
-): string | null {
-    if (!idOrObject) return null;
+): string {
+    if (!idOrObject) return '';
     
     const id = typeof idOrObject === 'string' ? idOrObject : idOrObject.id;
-    if (!id) return null;
+    if (!id) return '';
 
     const params = new URLSearchParams();
     if (options?.width) params.append('width', options.width.toString());

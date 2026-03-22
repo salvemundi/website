@@ -10,10 +10,10 @@ import { getSystemDirectus, getUserDirectus } from '@/lib/directus';
 import { readItems, createItem, updateItem } from '@directus/sdk';
 
 const getFinanceServiceUrl = () =>
-    process.env.INTERNAL_FINANCE_URL;
+    process.env.FINANCE_SERVICE_URL;
 
 const getMailServiceUrl = () =>
-    process.env.INTERNAL_MAIL_URL;
+    process.env.MAIL_SERVICE_URL;
 
 const getInternalHeaders = () => {
     const token = process.env.INTERNAL_SERVICE_TOKEN;

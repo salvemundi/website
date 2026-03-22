@@ -15,6 +15,12 @@ import { getImageUrl } from '@/lib/image-utils';
 interface NavigationHeaderProps {
     disabledRoutes?: string[];
     initialSession?: { user?: SessionUser | null } | null;
+    impersonation?: { 
+        name: string; 
+        avatar?: string | null; 
+        email?: string | null;
+        error?: string;
+    } | null;
 }
 
 type CommitteeMeta = {
@@ -33,29 +39,34 @@ type SessionUser = {
     committees?: CommitteeMeta[] | null;
 };
 
-const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = [], initialSession }) => {
+const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = [], initialSession, impersonation }) => {
     const pathname = usePathname();
     const router = useRouter();
     const [mounted, setMounted] = useState(false);
 
     // Better Auth sessie — uitsluitend via useSession() conform V7-advies
+    // De Redis-plugin zorgt ervoor dat 'user' al geswapped is bij impersonatie.
     const { data: session } = authClient.useSession();
     
     // Bij hydratatie (mounted === false) gebruiken we ALTIJD initialSession om mismatch te voorkomen.
-    // Daarna schakelen we over naar de real-time session, maar MERGEN we de committees als die ontbreken.
+    // Daarna schakelen we over naar de real-time session.
     const user = useMemo(() => {
-        const sUser = session?.user as SessionUser | undefined;
+        const sUser = session?.user as any;
         const iUser = initialSession?.user ?? null;
         
         if (!mounted) return iUser;
         
-        // Als de client-sessie er is, maar commissies mist, pakken we die van de initialSession.
+        // Als de client-sessie er is, maar commissies mist (bijv. tijdens laden), pakken we die van de initialSession.
         if (sUser && !sUser.committees && iUser?.committees) {
             return { ...sUser, committees: iUser.committees };
         }
         
         return sUser || iUser;
     }, [mounted, session?.user, initialSession]);
+
+    // De banner-informatie komt nu direct uit de geswengelde sessie
+    const activeImpersonation = (session as any)?.impersonatedBy || null;
+;
 
     const isAuthenticated = !!user;
 
@@ -245,15 +256,19 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                                     href={ROUTES.ACCOUNT}
                                     className="flex items-center gap-2 rounded-full px-3 py-1.5 h-8 text-sm font-medium text-[var(--text-main)] shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg min-w-[136px] justify-center whitespace-nowrap"
                                 >
-                                    <div className="relative h-6 w-6 rounded-full overflow-hidden shrink-0">
-                                        <Image
-                                            src={(user.avatar ? getImageUrl(user.avatar) : '') as string}
-                                            alt={user.name || 'Profiel'}
-                                            fill
-                                            className="object-cover"
-                                            priority
-                                            unoptimized
-                                        />
+                                    <div className="relative h-6 w-6 rounded-full overflow-hidden shrink-0 bg-[var(--color-purple-50)] dark:bg-white/10 flex items-center justify-center">
+                                        {user.avatar ? (
+                                            <Image
+                                                src={getImageUrl(user.avatar)}
+                                                alt={user.name || 'Profiel'}
+                                                fill
+                                                className="object-cover"
+                                                priority
+                                                unoptimized
+                                            />
+                                        ) : (
+                                            <User className="h-3.5 w-3.5 text-[var(--color-purple-600)] dark:text-[var(--color-purple-300)]" />
+                                        )}
                                     </div>
                                     <span className="hidden sm:inline whitespace-nowrap">Mijn profiel</span>
                                 </Link>

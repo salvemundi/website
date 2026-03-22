@@ -8,7 +8,7 @@ import { getSystemDirectus, getUserDirectus } from '@/lib/directus';
 import { readItems, createItem } from '@directus/sdk';
 import { revalidatePath } from 'next/cache';
 
-const getMailUrl = () => process.env.INTERNAL_MAIL_URL;
+const getMailUrl = () => process.env.MAIL_SERVICE_URL;
 
 const getServiceHeaders = (): HeadersInit => {
     const token = process.env.INTERNAL_SERVICE_TOKEN;

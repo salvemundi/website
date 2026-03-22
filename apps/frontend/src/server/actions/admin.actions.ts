@@ -1,19 +1,32 @@
 'use server';
 
 import { auth } from "@/server/auth/auth";
-import { headers } from "next/headers";
 import { z } from "zod";
-import { 
+import {
     DashboardStatsSchema, type DashboardStats,
     RecentActivitySchema, type RecentActivity,
     TopStickerSchema, type TopSticker,
     BirthdaySchema, type Birthday
 } from "@salvemundi/validations";
 
-import { getSystemDirectus } from "@/lib/directus";
-import { readItems, readUsers, aggregate } from "@directus/sdk";
+import { readMe, readItems, readUsers, aggregate } from "@directus/sdk";
+import { revalidatePath } from "next/cache";
+import { headers, cookies } from "next/headers";
+import { getUserDirectus, getSystemDirectus } from "@/lib/directus";
+import { type DirectusUser } from "@/lib/schema";
+import { Pool } from "pg";
+import { getRedis } from "@/server/auth/redis-client";
 
-// Removed redundant directusFetch in favor of Directus SDK.
+const pool = new Pool({
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    host: process.env.DB_HOST || process.env.INTERNAL_DB_HOST || 'v7-core-db',
+    port: 5432,
+    database: process.env.DB_NAME,
+});
+
+const TEST_TOKEN_COOKIE = 'directus_test_token';
+const IMPERSONATION_INFO_COOKIE = 'directus_impersonation_info';
 
 export async function checkAdminAccess() {
     const session = await auth.api.getSession({
@@ -21,34 +34,44 @@ export async function checkAdminAccess() {
     });
 
     if (!session || !session.user) {
-        return { isAuthorized: false, user: null, isIct: false };
+        return { isAuthorized: false, user: null, isIct: false, impersonation: null };
     }
 
-    type CommitteeMeta = { name?: string | null };
-    const user = session.user as { committees?: CommitteeMeta[], first_name?: string };
-    const committees = user.committees ?? [];
-    const isIct = committees.some((c) => c.name?.toLowerCase().includes('ict'));
-    const isBestuur = committees.some((c) => c.name?.toLowerCase().includes('bestuur'));
-    const isAdmin = isIct || isBestuur;
+    const user = session.user as any;
+    const impersonation = (session as any).impersonatedBy || null;
 
-    return { isAuthorized: isAdmin, user, isIct };
+    // determine admin status for the LOGGED IN user (or the impersonated user if swapped)
+    const isIct = user.isICT || false;
+    const isBestuur = user.isAdmin || false; 
+    const isAuthorized = isIct || isBestuur;
+
+    return { 
+        isAuthorized, 
+        user, 
+        isIct, 
+        impersonation: impersonation ? {
+            ...impersonation,
+            // Add any missing banner-specific fields if needed
+            committees: user.committees?.map((c: any) => c.name) || []
+        } : null
+    };
 }
 
 export async function getDashboardPermissions() {
     const { isAuthorized, user, isIct } = await checkAdminAccess();
     if (!isAuthorized) return { canAccessIntro: false, canAccessReis: false, canAccessLogging: false, canAccessSync: false, canAccessCoupons: false, canAccessPermissions: false };
 
-    // Placeholder until settings validation is synced properly, using legacy fallbacks
+    // Placeholder until settings validation is synced properly, using fallbacks
     const committees = (user as any).committees || [];
     const names = committees.map((c: any) => (c.name || '').toLowerCase());
     const hasHighPrivilege = names.some((n: string) => n.includes('ict') || n.includes('bestuur') || n.includes('kandi'));
-    
+
     return {
-        canAccessIntro: hasHighPrivilege, // replace with real check if needed
+        canAccessIntro: hasHighPrivilege,
         canAccessReis: hasHighPrivilege,
         canAccessLogging: hasHighPrivilege,
         canAccessSync: hasHighPrivilege,
-        canAccessCoupons: hasHighPrivilege || names.some((n: string) => n.includes('kas')),
+        canAccessCoupons: hasHighPrivilege,
         canAccessPermissions: names.some((n: string) => n.includes('ict') || n.includes('bestuur')),
         isIct
     };
@@ -62,11 +85,11 @@ export async function getDashboardStats(): Promise<DashboardStats> {
         const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
         const [
-            membersCount, 
-            eventsCount, 
-            signupsCount, 
-            introCount, 
-            couponsCount, 
+            membersCount,
+            eventsCount,
+            signupsCount,
+            introCount,
+            couponsCount,
             activityCount,
             allStickersCount,
             recentStickersCount,
@@ -84,7 +107,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
             getSystemDirectus().request(readItems('pub_crawl_events', { fields: ['id', 'date'], sort: ['-date'] })).catch(() => []),
             getSystemDirectus().request(readItems('trips', { fields: ['id', 'start_date', 'end_date', 'event_date'], filter: { status: { _eq: 'published' } }, sort: ['-start_date'] })).catch(() => [])
         ]);
-        
+
         // Calculate Pub Crawl signups for the upcoming/latest event
         let pubCrawlSignups = 0;
         const upcomingPubCrawl = pubCrawlEvents.find((e: any) => new Date(e.date) >= now) || pubCrawlEvents[0];
@@ -99,7 +122,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
             const dateStr = t.end_date || t.event_date || t.start_date;
             return dateStr && new Date(dateStr) >= now;
         }) || trips[0];
-        
+
         if (activeTrip) {
             const tSignups: any = await getSystemDirectus().request(aggregate('trip_signups' as any, { aggregate: { count: '*' }, query: { filter: { trip_id: { _eq: activeTrip.id }, status: { _neq: 'cancelled' } } } })).catch(() => [{ count: 0 }]);
             reisSignups = Number(tSignups?.[0]?.count || 0);
@@ -124,14 +147,14 @@ export async function getDashboardStats(): Promise<DashboardStats> {
         return DashboardStatsSchema.parse(stats);
     } catch (error) {
         console.error("Dashboard stats error:", error);
-        return { 
-            totalMembers: 0, 
-            upcomingEventsCount: 0, 
-            pendingSignupsCount: 0, 
-            systemErrors: 0, 
-            introSignups: 0, 
-            totalCoupons: 0, 
-            pubCrawlSignups: 0, 
+        return {
+            totalMembers: 0,
+            upcomingEventsCount: 0,
+            pendingSignupsCount: 0,
+            systemErrors: 0,
+            introSignups: 0,
+            totalCoupons: 0,
+            pubCrawlSignups: 0,
             reisSignups: 0,
             stickerGrowthRate: 0
         };
@@ -141,20 +164,20 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 export async function getUpcomingBirthdays(): Promise<Birthday[]> {
     await checkAdminAccess();
     try {
-        const users = await getSystemDirectus().request(readUsers({ 
-            fields: ['id', 'first_name', 'last_name', 'date_of_birth'], 
-            filter: { date_of_birth: { _nnull: true } }, 
-            limit: -1 
+        const users = await getSystemDirectus().request(readUsers({
+            fields: ['id', 'first_name', 'last_name', 'date_of_birth'],
+            filter: { date_of_birth: { _nnull: true } },
+            limit: -1
         }));
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        
+
         const upcomingItems = users
             .map(user => {
                 if (!user.date_of_birth) return null;
                 const dob = new Date(user.date_of_birth);
                 if (isNaN(dob.getTime())) return null;
-                
+
                 const nextBirthday = new Date(today.getFullYear(), dob.getMonth(), dob.getDate());
                 if (nextBirthday.getTime() < today.getTime()) {
                     nextBirthday.setFullYear(today.getFullYear() + 1);
@@ -170,13 +193,13 @@ export async function getUpcomingBirthdays(): Promise<Birthday[]> {
             })
             .filter((u): u is NonNullable<typeof u> => u !== null)
             .sort((a, b) => a.nextBirthday.getTime() - b.nextBirthday.getTime());
-            
-        const result = upcomingItems.slice(0, 5).map(u => ({ 
-            id: u.id, 
-            first_name: u.first_name, 
-            last_name: u.last_name, 
-            birthday: u.birthday, 
-            isToday: u.isToday 
+
+        const result = upcomingItems.slice(0, 5).map(u => ({
+            id: u.id,
+            first_name: u.first_name,
+            last_name: u.last_name,
+            birthday: u.birthday,
+            isToday: u.isToday
         }));
 
         return z.array(BirthdaySchema).parse(result);
@@ -209,12 +232,12 @@ export async function getRecentActivities(): Promise<RecentActivity[]> {
 export async function getTopStickers(): Promise<TopSticker[]> {
     await checkAdminAccess();
     try {
-        const stickers = await getSystemDirectus().request(readItems('stickers', { 
-            fields: ['user_created.id', 'user_created.first_name', 'user_created.last_name'] as any, 
-            limit: -1 
+        const stickers = await getSystemDirectus().request(readItems('stickers', {
+            fields: ['user_created.id', 'user_created.first_name', 'user_created.last_name'] as any,
+            limit: -1
         }));
         const counts: Record<string, TopSticker> = {};
-        
+
         (stickers as any[]).forEach((s: any) => {
             const user = s.user_created;
             if (user && (user as any).id) {
@@ -223,10 +246,119 @@ export async function getTopStickers(): Promise<TopSticker[]> {
                 counts[userId].count++;
             }
         });
-        
+
         const result = Object.values(counts).sort((a, b) => b.count - a.count).slice(0, 3);
         return z.array(TopStickerSchema).parse(result);
     } catch {
         return [];
     }
+}
+
+export async function setImpersonateToken(token: string) {
+    const { isAuthorized } = await checkAdminAccess();
+    if (!isAuthorized) throw new Error("Unauthorized");
+
+    try {
+        // 1. TEST DE TOKEN: Probeer de gebruiker en hun permissies op te halen
+        const testClient = getUserDirectus(token);
+        const user = await testClient.request(readMe({ 
+            fields: ['id', 'first_name', 'last_name', 'email', 'avatar', { role: ['name'] }] 
+        } as any)) as unknown as DirectusUser;
+        
+        if (!user) {
+            return { success: false, error: "Token is ongeldig." };
+        }
+
+        // 2. TOKEN IS GELDIG: Sla op in cookies
+        const cookieStore = await cookies();
+        cookieStore.set(TEST_TOKEN_COOKIE, token, {
+            path: '/',
+            maxAge: 7 * 24 * 60 * 60,
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production',
+        });
+
+        // Cache the impersonation info IMMEDIATELY
+        let impCommittees: string[] = [];
+        try {
+            const { rows } = await pool.query(
+                `SELECT c.name 
+                 FROM committee_members m 
+                 JOIN committees c ON m.committee_id = c.id 
+                 WHERE m.user_id = $1`,
+                [user.id]
+            );
+            impCommittees = rows.map((r: any) => r.name).filter(Boolean);
+        } catch (e) {
+            console.error("[setImpersonateToken] Failed to fetch committees:", e);
+        }
+
+        const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+
+        // Admin status based purely on names
+        const normallyAdmin = impCommittees.some(n => {
+            const l = n.toLowerCase();
+            return l.includes('ict') || l.includes('bestuur') || l.includes('kandi');
+        });
+        
+        const info = {
+            id: user.id,
+            name: fullName || user.email || 'Onbekende gebruiker',
+            email: user.email,
+            avatar: user.avatar,
+            committees: impCommittees,
+            isNormallyAdmin: normallyAdmin
+        };
+        
+        cookieStore.set(IMPERSONATION_INFO_COOKIE, Buffer.from(JSON.stringify(info)).toString('base64'), {
+            path: '/',
+            maxAge: 7 * 24 * 60 * 60,
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production',
+        });
+
+        // FORCE Redis cache invalidation for this session AND the impersonation data
+        const sessionToken = cookieStore.get('better-auth.session-token')?.value;
+        const redis = await getRedis();
+        
+        if (sessionToken) {
+            await redis.del(`session:${sessionToken}`);
+        }
+        await redis.del(`impersonation:${token}`);
+
+        revalidatePath('/beheer/impersonate');
+        revalidatePath('/', 'layout');
+
+        return { 
+            success: true, 
+            name: info.name
+        };
+    } catch (error) {
+        return { success: false, error: "Deze token bestaat niet of is verlopen." };
+    }
+}
+
+export async function clearImpersonateToken() {
+    const { isAuthorized } = await checkAdminAccess();
+    if (!isAuthorized) throw new Error("Unauthorized");
+
+    const cookieStore = await cookies();
+    cookieStore.delete(TEST_TOKEN_COOKIE);
+    cookieStore.delete(IMPERSONATION_INFO_COOKIE);
+
+    // FORCE Redis cache invalidation for this session AND the impersonation data
+    const sessionToken = cookieStore.get('better-auth.session-token')?.value;
+    const redis = await getRedis();
+    
+    if (sessionToken) {
+        await redis.del(`session:${sessionToken}`);
+    }
+    
+    const testToken = cookieStore.get(TEST_TOKEN_COOKIE)?.value;
+    if (testToken) {
+        await redis.del(`impersonation:${testToken}`);
+    }
+
+    revalidatePath('/beheer/impersonate');
+    revalidatePath('/', 'layout');
 }

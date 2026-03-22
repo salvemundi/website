@@ -89,7 +89,7 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
 
                     if (targetCollection) {
                         const { createDirectus, rest, staticToken, updateItem } = await import('@directus/sdk');
-                        const directusUrl = process.env.INTERNAL_DIRECTUS_URL || process.env.DIRECTUS_URL!;
+                        const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL!;
                         const directusToken = process.env.DIRECTUS_STATIC_TOKEN!;
                         
                         const directus = createDirectus(directusUrl)

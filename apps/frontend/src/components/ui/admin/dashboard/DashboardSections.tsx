@@ -73,6 +73,7 @@ export async function QuickActions() {
                 <ActionCard title="Nieuwe" subtitle="Intro Post" icon={<FileText className="h-6 w-6" />} href="/beheer/intro?tab=blogs&create=1" colorClass="blue" disabled={!permissions.canAccessIntro} />
                 {permissions.canAccessSync && <ActionCard title="Sync" subtitle="Leden" icon={<Users className="h-6 w-6" />} href="/beheer/sync" colorClass="green" />}
                 {permissions.canAccessSync && <ActionCard title="Beheer" subtitle="Commissie" icon={<Shield className="h-6 w-6" />} href="/beheer/vereniging" colorClass="orange" />}
+                {permissions.isIct && <ActionCard title="Test Modus" subtitle="Impersonatie" icon={<Users className="h-6 w-6" />} href="/beheer/impersonate" colorClass="teal" />}
             </div>
         </div>
     );
@@ -182,39 +183,3 @@ export async function ActivitySignupsList() {
     );
 }
 
-export async function SystemHealthStatus() {
-    const stats = await getDashboardStats();
-    const permissions = await getDashboardPermissions();
-    if (!permissions.isIct) return null;
-
-    return (
-        <div className="mt-8">
-            <ListCard title="Systeemstatus" icon={<Activity className="h-5 w-5" />}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/30 rounded-2xl border border-green-100 dark:border-green-800/50">
-                        <div className="flex items-center gap-4">
-                            <div className="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.6)] animate-pulse" />
-                            <div>
-                                <p className="font-bold text-slate-900 dark:text-white">API Status</p>
-                                <p className="text-sm text-green-700 dark:text-green-400">Operationeel</p>
-                            </div>
-                        </div>
-                        <span className="text-green-600 dark:text-green-400 font-black text-xl">✓</span>
-                    </div>
-                    <div className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${stats.systemErrors > 0 
-                        ? 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-800/50 shadow-sm' 
-                        : 'bg-slate-50 dark:bg-slate-700/40 border-slate-100 dark:border-slate-700/50'}`}>
-                        <div className="flex items-center gap-4">
-                            <AlertCircle className={`h-6 w-6 ${stats.systemErrors > 0 ? 'text-red-500 animate-bounce' : 'text-slate-400'}`} />
-                            <div>
-                                <p className="font-bold text-slate-900 dark:text-white">Systeemfouten</p>
-                                <p className="text-sm text-slate-500 dark:text-slate-400">Laatste 24 uur</p>
-                            </div>
-                        </div>
-                        <span className={`text-2xl font-black ${stats.systemErrors > 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-500'}`}>{stats.systemErrors}</span>
-                    </div>
-                </div>
-            </ListCard>
-        </div>
-    );
-}

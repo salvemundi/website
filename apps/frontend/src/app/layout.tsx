@@ -5,9 +5,11 @@ import NavigationHeader from '@/components/islands/layout/NavigationHeader';
 import NavigationHeaderSkeleton from '@/components/ui/layout/NavigationHeaderSkeleton';
 import FooterIsland from '@/components/islands/layout/FooterIsland';
 import FooterSkeleton from '@/components/ui/layout/FooterSkeleton';
+import ImpersonationBanner from '@/components/ui/admin/ImpersonationBanner';
 import { getDocumenten, getDisabledRoutes } from '@/server/actions/website.actions';
 import { getCommittees } from '@/server/actions/committees.actions';
 import { auth } from '@/server/auth/auth';
+import { checkAdminAccess } from '@/server/actions/admin.actions';
 import { headers } from 'next/headers';
 import { connection } from 'next/server';
 
@@ -54,6 +56,10 @@ export default async function RootLayout({
                 />
             </head>
             <body className="antialiased flex flex-col min-h-screen">
+                <Suspense fallback={null}>
+                    <ImpersonationWrapper />
+                </Suspense>
+                
                 <Suspense fallback={<NavigationHeaderSkeleton />}>
                     <HeaderWrapper />
                 </Suspense>
@@ -74,18 +80,17 @@ export default async function RootLayout({
 
 async function HeaderWrapper() {
     await connection();
-    const h = await headers();
-    const [disabledRoutes, session] = await Promise.all([
+    const [disabledRoutes, session, { impersonation }] = await Promise.all([
         getDisabledRoutes(),
-        auth.api.getSession({
-            headers: new Headers(h)
-        })
+        auth.api.getSession({ headers: await headers() }),
+        checkAdminAccess(),
     ]);
 
     return (
-        <NavigationHeader
-            disabledRoutes={disabledRoutes}
-            initialSession={session}
+        <NavigationHeader 
+            disabledRoutes={disabledRoutes} 
+            initialSession={session} 
+            impersonation={impersonation}
         />
     );
 }
@@ -103,6 +108,21 @@ async function FooterWrapper() {
             documents={documents}
             disabledRoutes={disabledRoutes}
             committees={committees}
+        />
+    );
+}
+
+async function ImpersonationWrapper() {
+    await connection();
+    const { impersonation } = await checkAdminAccess();
+    
+    if (!impersonation || impersonation.error) return null;
+
+    return (
+        <ImpersonationBanner 
+            name={impersonation.name}
+            committees={impersonation.committees}
+            isNormallyAdmin={impersonation.isNormallyAdmin}
         />
     );
 }
