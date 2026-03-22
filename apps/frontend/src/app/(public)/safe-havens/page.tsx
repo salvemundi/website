@@ -17,6 +17,7 @@ import { getSafeHavens } from '@/server/actions/safe-haven.actions';
 import SafeHavenCard from '@/components/ui/social/SafeHavenCard';
 import SafeHavenSkeleton from '@/components/ui/social/SafeHavenSkeleton';
 import PageHeader from '@/components/ui/layout/PageHeader';
+import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 
 export const metadata: Metadata = {
     title: 'Vertrouwenspersonen',
@@ -259,7 +260,7 @@ export default function SafeHavensPage() {
                                     </a>
 
                                     <a
-                                        href="mailto:bestuur@salvemundi.nl"
+                                        href="mailto:bestuur [at] salvemundi.nl"
                                         className="group flex items-center justify-center gap-2 rounded-xl bg-slate-600 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 px-5 py-4 text-white shadow-lg transition-all hover:shadow-xl"
                                     >
                                         <MessageSquare className="h-5 w-5" />

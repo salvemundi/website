@@ -56,13 +56,14 @@ export async function proxy(request: NextRequest) {
 
     // Helper om CSP en Nonce toe te voegen aan een response
     const withSecurity = (res: NextResponse) => {
+        const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL || '';
         const cspHeader = `
             default-src 'self';
             script-src 'self' 'nonce-${nonce}' 'strict-dynamic';
             style-src 'self' 'unsafe-inline';
-            img-src 'self' blob: data: https://admin.salvemundi.nl https://acc.salvemundi.nl https://salvemundi.nl;
+            img-src 'self' blob: data: ${directusUrl};
             font-src 'self';
-            connect-src 'self' https://admin.salvemundi.nl https://acc.salvemundi.nl https://login.microsoftonline.com;
+            connect-src 'self' ${directusUrl} https://login.microsoftonline.com;
             frame-src 'self' https://login.microsoftonline.com;
             object-src 'none';
             base-uri 'self';
@@ -156,15 +157,16 @@ export async function proxy(request: NextRequest) {
 function applySecurityHeaders(response: NextResponse, request: NextRequest): NextResponse {
     const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
     
+    const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL || '';
     // De CSP string — 'unsafe-inline' is hier verwijderd voor script-src.
     // Voor style-src houden we het tijdelijk even aan vanwege de vele inline 'style' attributes in React componenten.
     const cspHeader = `
         default-src 'self';
         script-src 'self' 'nonce-${nonce}' 'strict-dynamic';
         style-src 'self' 'unsafe-inline';
-        img-src 'self' blob: data: https://admin.salvemundi.nl https://acc.salvemundi.nl https://salvemundi.nl;
+        img-src 'self' blob: data: ${directusUrl};
         font-src 'self';
-        connect-src 'self' https://admin.salvemundi.nl https://acc.salvemundi.nl https://login.microsoftonline.com;
+        connect-src 'self' ${directusUrl} https://login.microsoftonline.com;
         frame-src 'self' https://login.microsoftonline.com;
         object-src 'none';
         base-uri 'self';

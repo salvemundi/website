@@ -2,6 +2,7 @@ import Image from 'next/image';
 import type { SafeHaven } from '@salvemundi/validations';
 import { Mail, Phone } from 'lucide-react';
 import { getImageUrl } from '@/lib/image-utils';
+import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 
 interface SafeHavenCardProps {
     safeHaven: SafeHaven;
@@ -48,13 +49,10 @@ export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
                 {safeHaven.email || safeHaven.telefoon ? (
                     <>
                         {safeHaven.email && (
-                            <a
-                                href={`mailto:${safeHaven.email}`}
-                                className="flex items-center gap-3 rounded-xl bg-white dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 p-3 text-sm font-medium text-theme hover:border-slate-300 dark:hover:border-slate-600 transition-colors"
-                            >
-                                <Mail className="h-4 w-4 text-slate-400" />
-                                <span className="truncate">{safeHaven.email}</span>
-                            </a>
+                            <ObfuscatedEmail 
+                                email={safeHaven.email} 
+                                className="flex items-center gap-3 rounded-xl bg-white dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 p-3 text-sm font-medium text-theme hover:border-slate-300 dark:hover:border-slate-600 transition-colors w-full" 
+                            />
                         )}
                         {safeHaven.telefoon && (
                             <a

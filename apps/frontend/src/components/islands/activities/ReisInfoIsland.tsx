@@ -9,6 +9,7 @@ import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import type { ReisTrip } from '@salvemundi/validations';
 import { SafeHtml } from '@/components/ui/security/SafeHtml';
+import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 
 interface ReisInfoIslandProps {
     nextTrip: ReisTrip | null;
@@ -131,15 +132,14 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
                         { icon: '📧', text: 'Je ontvangt een bevestigingsmail na inschrijving' },
                         { icon: '🔞', text: 'Minimumleeftijd: 18 jaar' },
                         { icon: '🪪', text: 'Gebruik je volledige naam zoals op je paspoort/ID' },
-                        { icon: '📞', text: 'Bij vragen? Neem contact op via <a href="mailto:reis@salvemundi.nl" class="text-theme-purple underline font-semibold">reis@salvemundi.nl</a>' },
+                        { icon: '📞', text: 'Bij vragen? Neem contact op via ', email: 'reis@salvemundi.nl' },
                     ].map((item, i) => (
                         <li key={i} className="flex items-start gap-3 sm:gap-4">
                             <span className="text-lg sm:text-xl flex-shrink-0">{item.icon}</span>
-                            <SafeHtml
-                                as="span"
-                                className="text-sm sm:text-base text-theme-text-muted leading-snug"
-                                html={item.text}
-                            />
+                            <div className="text-sm sm:text-base text-theme-text-muted leading-snug flex flex-wrap items-center">
+                                {item.text && <SafeHtml as="span" html={item.text} />}
+                                {item.email && <ObfuscatedEmail email={item.email} className="text-theme-purple font-semibold underline" showIcon={false} />}
+                            </div>
                         </li>
                     ))}
                 </ul>

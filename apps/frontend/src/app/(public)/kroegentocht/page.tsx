@@ -7,6 +7,7 @@ import KroegentochtFormIsland from '@/components/islands/kroegentocht/Kroegentoc
 import KroegentochtTicketsIsland from '@/components/islands/kroegentocht/KroegentochtTicketsIsland';
 import KroegentochtSkeleton, { KroegentochtFormSkeleton, KroegentochtTicketsSkeleton, KroegentochtInfoSkeleton } from '@/components/ui/kroegentocht/KroegentochtSkeleton';
 import { Info, MapPin, Calendar, Clock, Beer, AlertCircle, Users, Mail, ShieldAlert } from 'lucide-react';
+import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 
 export const metadata = {
     title: 'Kroegentocht | SV Salve Mundi',
@@ -116,9 +117,9 @@ async function RegistrationSection() {
                             <Mail className="w-5 h-5 text-purple-600 shrink-0 mt-1" />
                             <div>
                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Contact</p>
-                                <a href={`mailto:${event.email || 'ict@salvemundi.nl'}`} className="font-bold text-[var(--color-purple-theme)] break-all">
-                                    {event.email || 'ict@salvemundi.nl'}
-                                </a>
+                                <div className="font-bold text-[var(--color-purple-theme)] break-all">
+                                    <ObfuscatedEmail email={event.email || 'ict@salvemundi.nl'} showIcon={false} />
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -2,6 +2,7 @@ import React from 'react';
 import Image from 'next/image';
 import { Calendar, MapPin, Clock, Info, User, Mail, Euro, CalendarClock } from 'lucide-react';
 import SafeHtml from '@/components/ui/security/SafeHtml';
+import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 import { Activiteit } from '@salvemundi/validations';
 import { buildCommitteeEmail, formatDutchDate, formatTime } from '@/shared/lib/activity-utils';
 import { getImageUrl } from '@/lib/image-utils';
@@ -123,9 +124,9 @@ export default function ActivityDetailIsland({ activity, children }: ActivityDet
                             <div className="min-w-0">
                                 <p className="text-[10px] uppercase font-black text-[var(--theme-purple)]/40 tracking-[0.2em] mb-1">Contact</p>
                                 {committeeEmail ? (
-                                    <a href={`mailto:${committeeEmail}`} className="text-sm font-bold text-[var(--theme-purple)] hover:underline truncate block">
-                                        {committeeEmail}
-                                    </a>
+                                    <div className="text-sm font-bold text-[var(--theme-purple)] truncate block">
+                                        <ObfuscatedEmail email={committeeEmail} showIcon={false} />
+                                    </div>
                                 ) : (
                                     <span className="text-sm font-bold text-[var(--text-muted)] italic">Via website</span>
                                 )}
