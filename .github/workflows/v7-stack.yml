@@ -166,33 +166,39 @@ jobs:
               FRONTEND_PORT="4000"
             fi
 
-            # Expliciete .env generatie (hufterproof)
+            # 1. Maak .env leeg
             echo "# Auto-generated V7 App Environment" > .env
             
-            echo "IMAGE_TAG=${{ needs.prepare.outputs.tag }}" >> .env
+            # 2. Opschonen van ALLE secrets (hufterproof) naar lokale shell variabelen
+            VARIABLES="MOLLIE_API_KEY DB_USER DB_PASSWORD DB_NAME DIRECTUS_KEY DIRECTUS_SECRET INTERNAL_SERVICE_TOKEN AZURE_WEBSITEV7_TENANT_ID AZURE_WEBSITEV7_SYNC_CLIENT_ID AZURE_WEBSITEV7_SYNC_CLIENT_SECRET AZURE_WEBSITEV7_MAIL_CLIENT_ID AZURE_WEBSITEV7_MAIL_CLIENT_SECRET AZURE_MAIL_SENDER AZURE_WEBSITEV7_AUTH_CLIENT_ID AZURE_WEBSITEV7_AUTH_CLIENT_SECRET AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET BETTER_AUTH_SECRET DIRECTUS_STATIC_TOKEN REDIS_PASSWORD"
+            
+            for var in $VARIABLES; do
+              # Pak de waarde uit de environment
+              val=$(eval echo \"\${$var}\")
+              if [ ! -z "$val" ]; then
+                # Strip quotes, newlines en carriage returns. Gebruik printf om enters te voorkomen.
+                clean_val=$(printf '%s' "$val" | sed 's/^"//;s/"$//' | tr -d '\n\r')
+                # Export de SCHONE waarde terug naar de shell zodat we die hieronder kunnen gebruiken
+                export "$var=$clean_val"
+                # Schrijf naar .env (omringd door quotes voor Docker Compose veiligheid)
+                echo "$var=\"$clean_val\"" >> .env
+              fi
+            done
+
+            # 3. Voeg de afgeleide variabelen toe (gebruik de nu schone variabelen)
+            echo "IMAGE_TAG=${IMAGE_TAG}" >> .env
             echo "PUBLIC_URL=${PUBLIC_URL}" >> .env
             echo "BETTER_AUTH_URL=${BETTER_AUTH_URL}" >> .env
             echo "FRONTEND_PORT=${FRONTEND_PORT}" >> .env
             echo "COMPOSE_PROJECT_NAME=v7-${ENV_NAME}" >> .env
             echo "TRUST_PROXY=true" >> .env
+            echo "INTERNAL_DIRECTUS_URL=http://v7-core-directus:8055" >> .env
+
             if [ ! -z "$REDIS_PASSWORD" ]; then
               echo "REDIS_URL=redis://default:${REDIS_PASSWORD}@v7-core-redis:6379" >> .env
             else
               echo "REDIS_URL=redis://v7-core-redis:6379" >> .env
             fi
-            echo "INTERNAL_DIRECTUS_URL=http://v7-core-directus:8055" >> .env
-
-            # Veilig exporteren van alle secrets (hufterproof)
-            VARIABLES="MOLLIE_API_KEY DB_USER DB_PASSWORD DB_NAME DIRECTUS_KEY DIRECTUS_SECRET INTERNAL_SERVICE_TOKEN AZURE_WEBSITEV7_TENANT_ID AZURE_WEBSITEV7_SYNC_CLIENT_ID AZURE_WEBSITEV7_SYNC_CLIENT_SECRET AZURE_WEBSITEV7_MAIL_CLIENT_ID AZURE_WEBSITEV7_MAIL_CLIENT_SECRET AZURE_MAIL_SENDER AZURE_WEBSITEV7_AUTH_CLIENT_ID AZURE_WEBSITEV7_AUTH_CLIENT_SECRET AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET BETTER_AUTH_SECRET DIRECTUS_STATIC_TOKEN REDIS_PASSWORD"
-            for var in $VARIABLES; do
-              # Gebruik indirect expansion om de waarde veilig te pakken
-              val=$(eval echo \"\${$var}\")
-              if [ ! -z "$val" ]; then
-                # Strip quotes, newlines en carriage returns
-                clean_val=$(echo "$val" | sed 's/^"//;s/"$//' | tr -d '\n\r')
-                echo "$var=\"$clean_val\"" >> .env
-              fi
-            done
 
             # Login en start
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin

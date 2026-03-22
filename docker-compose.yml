@@ -51,6 +51,7 @@ services:
       - DB_URL=postgresql://${DB_USER}:${DB_PASSWORD}@v7-core-db:5432/${DB_NAME}
       - DIRECTUS_STATIC_TOKEN=${DIRECTUS_STATIC_TOKEN}
       - DIRECTUS_SERVICE_URL=${INTERNAL_DIRECTUS_URL}
+      - REDIS_URL=${REDIS_URL}
     networks:
       - salve-mundi-v7-shared
 
