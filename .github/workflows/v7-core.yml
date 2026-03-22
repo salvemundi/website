@@ -15,6 +15,8 @@ permissions:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  DOMAIN: admin.salvemundi.nl
+  ACC_DOMAIN: acc.salvemundi.nl
 
 jobs:
   deploy-core:
@@ -22,11 +24,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # 1. Bepaal de juiste URL op basis van de branch
-      - name: Set Environment Variables
-        run: |
-          echo "DOMAIN=admin.salvemundi.nl" >> $GITHUB_ENV
-          echo "ACC_DOMAIN=acc.salvemundi.nl" >> $GITHUB_ENV
 
       - name: Copy Infrastructure files to VPS
         uses: appleboy/scp-action@v0.1.7
@@ -54,11 +51,12 @@ jobs:
           DIRECTUS_STATIC_TOKEN: ${{ secrets.DIRECTUS_STATIC_TOKEN }}
           DOMAIN_URL: "https://${{ env.DOMAIN }}"
           INTERNAL_DIRECTUS_URL: "http://v7-core-directus:8055"
+          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          envs: INTERNAL_SERVER_IP,DB_USER,DB_PASSWORD,DB_NAME,DIRECTUS_KEY,DIRECTUS_SECRET,AZURE_WEBSITEV7_TENANT_ID,AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID,AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET,DIRECTUS_ALLOWED_REDIRECTS,DOMAIN_URL,DIRECTUS_STATIC_TOKEN,INTERNAL_DIRECTUS_URL
+          envs: INTERNAL_SERVER_IP,DB_USER,DB_PASSWORD,DB_NAME,DIRECTUS_KEY,DIRECTUS_SECRET,AZURE_WEBSITEV7_TENANT_ID,AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID,AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET,DIRECTUS_ALLOWED_REDIRECTS,DOMAIN_URL,DIRECTUS_STATIC_TOKEN,INTERNAL_DIRECTUS_URL,REDIS_PASSWORD
           script_stop: true
           script: |
             cd /opt/salve-mundi-v7/infra
@@ -66,18 +64,18 @@ jobs:
             # 2. Expliciete .env generatie (hufterproof)
             echo "# Auto-generated V7 Core Environment" > .env
             
-            echo "PUBLIC_URL=https://admin.salvemundi.nl" >> .env
-            echo "CORS_ORIGIN=https://admin.salvemundi.nl,https://acc.salvemundi.nl" >> .env
+            echo "PUBLIC_URL=https://${{ env.DOMAIN }}" >> .env
+            echo "CORS_ORIGIN=https://${{ env.DOMAIN }},https://${{ env.ACC_DOMAIN }}" >> .env
             echo "INTERNAL_DIRECTUS_URL=${INTERNAL_DIRECTUS_URL}" >> .env
 
             # Combine redirects
-            COMBINED_REDIRECTS="admin.salvemundi.nl,acc.salvemundi.nl"
+            COMBINED_REDIRECTS="${{ env.DOMAIN }},${{ env.ACC_DOMAIN }}"
             if [ ! -z "$DIRECTUS_ALLOWED_REDIRECTS" ]; then
               COMBINED_REDIRECTS="$COMBINED_REDIRECTS,$DIRECTUS_ALLOWED_REDIRECTS"
             fi
             echo "AUTH_SAFE_REDIRECT_HOSTS=\"$COMBINED_REDIRECTS\"" >> .env
 
-            VARIABLES="INTERNAL_SERVER_IP DB_USER DB_PASSWORD DB_NAME DIRECTUS_KEY DIRECTUS_SECRET AZURE_WEBSITEV7_TENANT_ID AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET DIRECTUS_STATIC_TOKEN"
+            VARIABLES="INTERNAL_SERVER_IP DB_USER DB_PASSWORD DB_NAME DIRECTUS_KEY DIRECTUS_SECRET AZURE_WEBSITEV7_TENANT_ID AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET DIRECTUS_STATIC_TOKEN REDIS_PASSWORD"
             for var in $VARIABLES; do
               val=$(eval echo \$$var)
               if [ ! -z "$val" ]; then
