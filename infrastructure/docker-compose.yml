@@ -3,7 +3,7 @@ services:
     image: postgres:16.6-alpine
     container_name: v7-core-db
     ports:
-      - "127.0.0.1:5432:5432"
+      - "${INTERNAL_SERVER_IP:-127.0.0.1}:5432:5432"
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -23,7 +23,7 @@ services:
     container_name: v7-core-redis
     command: redis-server --requirepass ${REDIS_PASSWORD:-salve_mundi_v7_redis_pass}
     ports:
-      - "127.0.0.1:6379:6379"
+      - "${INTERNAL_SERVER_IP:-127.0.0.1}:6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s

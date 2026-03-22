@@ -4,7 +4,7 @@ import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { revalidateTag } from 'next/cache';
 
-import { getSystemDirectus } from '@/lib/directus';
+import { getSystemDirectus, getUserDirectus } from "@/lib/directus";
 import { readItems, updateItem, createItem } from '@directus/sdk';
 
 /**
@@ -50,7 +50,7 @@ export async function getPermissions() {
 }
 
 export async function savePermission(key: string, tokens: string[]) {
-    await requireSuperAdmin();
+    const admin = await requireSuperAdmin();
     const cleanTokens = tokens.map(t => t.trim().toLowerCase()).filter(Boolean);
     const payload = { 
         id: key, 
@@ -59,11 +59,11 @@ export async function savePermission(key: string, tokens: string[]) {
 
     try {
         // Try update first
-        await getUserDirectus(session.session.token).request(updateItem('site_settings', key, payload));
+        await getUserDirectus(admin.session.token).request(updateItem('site_settings', key, payload));
     } catch (e) {
         // If update fails, try create
         try {
-            await getUserDirectus(session.session.token).request(createItem('site_settings', payload));
+            await getUserDirectus(admin.session.token).request(createItem('site_settings', payload));
         } catch (postErr) {
             console.error('[AdminPermissions] Save failed:', postErr);
             throw new Error(`Opslaan mislukt`);

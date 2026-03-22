@@ -116,8 +116,8 @@ export default function ActiviteitFormIsland({ committees }: { committees: Commi
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label htmlFor="inschrijf_deadline" className="block text-sm font-bold text-slate-600 dark:text-slate-300 mb-2">Inschrijfdeadline</label>
-                        <input type="datetime-local" id="inschrijf_deadline" name="inschrijf_deadline" className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:border-purple-500 focus:ring-2 outline-none transition" />
+                        <label htmlFor="registration_deadline" className="block text-sm font-bold text-slate-600 dark:text-slate-300 mb-2">Inschrijfdeadline</label>
+                        <input type="datetime-local" id="registration_deadline" name="registration_deadline" className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:border-purple-500 focus:ring-2 outline-none transition" />
                     </div>
                     <div>
                         <label htmlFor="location" className="block text-sm font-bold text-slate-600 dark:text-slate-300 mb-2">Locatie</label>

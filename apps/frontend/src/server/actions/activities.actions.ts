@@ -64,7 +64,7 @@ export const getActivities = cache(async (): Promise<Activiteit[]> => {
             fields: [
                 'id', 'name', 'description', 'location', 'event_date', 'event_date_end', 
                 'image', 'status', 'price_members', 'price_non_members', 'only_members', 
-                'inschrijf_deadline', 'contact', 'event_time', 'event_time_end',
+                'registration_deadline', 'contact', 'event_time', 'event_time_end',
                 { committee_id: ['name'] }
             ] as any,
             filter: { status: { _eq: 'published' } },
@@ -83,7 +83,7 @@ export const getActivities = cache(async (): Promise<Activiteit[]> => {
             price_members: item.price_members != null ? Number(item.price_members) : 0,
             price_non_members: item.price_non_members != null ? Number(item.price_non_members) : 0,
             only_members: item.only_members ?? false,
-            inschrijf_deadline: item.inschrijf_deadline ?? null,
+            registration_deadline: item.registration_deadline ?? null,
             contact: item.contact ?? null,
             event_time: item.event_time ?? null,
             event_time_end: item.event_time_end ?? null,
@@ -109,7 +109,7 @@ export const getActivityById = cache(async (id: string): Promise<Activiteit | nu
             fields: [
                 'id', 'name', 'description', 'location', 'event_date', 'event_date_end', 
                 'image', 'status', 'price_members', 'price_non_members', 'only_members', 
-                'inschrijf_deadline', 'contact', 'event_time', 'event_time_end',
+                'registration_deadline', 'contact', 'event_time', 'event_time_end',
                 { committee_id: ['id', 'name'] }
             ] as any,
             filter: { id: { _eq: id } as any },
@@ -131,7 +131,7 @@ export const getActivityById = cache(async (id: string): Promise<Activiteit | nu
             price_members: item.price_members != null ? Number(item.price_members) : 0,
             price_non_members: item.price_non_members != null ? Number(item.price_non_members) : 0,
             only_members: item.only_members ?? false,
-            inschrijf_deadline: item.inschrijf_deadline ?? null,
+            registration_deadline: item.registration_deadline ?? null,
             contact: item.contact ?? null,
             event_time: item.event_time ?? null,
             event_time_end: item.event_time_end ?? null,
@@ -292,7 +292,7 @@ export async function getSignupStatus(id?: string, transactionId?: string) {
                 }));
                 const signup = signups?.[0];
                 if (signup) {
-                    signup.amount_tickets = signup.tickets?.length || 1;
+                    (signup as any).amount_tickets = (signup as any).tickets?.length || 1;
                 }
                 return { status: trans.payment_status, signup, transaction: trans };
             } else if (trans.registration_type === 'membership') {

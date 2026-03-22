@@ -18,7 +18,7 @@ export interface Event {
     price_non_members?: number | null;
     committee_id?: number | Committee | null;
     contact?: string | null;
-    inschrijf_deadline?: any | null;
+    registration_deadline?: any | null;
     only_members?: boolean | null;
     status?: 'published' | 'draft' | 'scheduled' | null;
     publish_date?: any | null;
@@ -181,6 +181,7 @@ export interface DirectusUser {
     title?: string | null;
     display_name?: string | null;
     committees?: (number | CommitteeMember)[] | null;
+    entra_id?: string | null;
 }
 
 export interface AuditLog {
@@ -246,6 +247,48 @@ export interface SiteSetting {
 
 export interface IntroSignup {
     id: number;
+    first_name: string;
+    middle_name?: string | null;
+    last_name: string;
+    email: string;
+    phone_number?: string | null;
+    date_of_birth?: any | null;
+    favorite_gif?: string | null;
+    status?: string | null;
+    date_created?: any | null;
+}
+
+export interface IntroParentSignup {
+    id: number;
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone_number?: string | null;
+    motivation?: string | null;
+    date_created?: any | null;
+}
+
+export interface IntroBlog {
+    id: number;
+    title: string;
+    slug: string;
+    excerpt?: string | null;
+    content: string;
+    blog_type: 'update' | 'pictures' | 'event' | 'announcement';
+    image?: string | null;
+    is_published: boolean;
+    date_created?: any | null;
+}
+
+export interface IntroPlanningItem {
+    id: number;
+    date: any;
+    day?: string | null;
+    time_start: any;
+    time_end?: any | null;
+    title: string;
+    description?: string | null;
+    location?: string | null;
     date_created?: any | null;
 }
 
@@ -282,6 +325,9 @@ export interface DirectusSchema {
     site_settings: SiteSetting[];
     pub_crawl_tickets: PubCrawlTicket[];
     intro_signups: IntroSignup[];
+    intro_parent_signups: IntroParentSignup[];
+    intro_blogs: IntroBlog[];
+    intro_planning: IntroPlanningItem[];
     coupons: Coupon[];
     system_logs: SystemLog[];
     trip_activities: TripActivity[];

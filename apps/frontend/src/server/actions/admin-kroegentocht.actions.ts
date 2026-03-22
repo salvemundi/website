@@ -10,7 +10,7 @@ import {
     type PubCrawlSignup 
 } from '@salvemundi/validations';
 
-import { getSystemDirectus } from '@/lib/directus';
+import { getSystemDirectus, getUserDirectus } from "@/lib/directus";
 import { 
     readItems, 
     readItem, 
@@ -71,10 +71,11 @@ export async function upsertPubCrawlEvent(data: Partial<PubCrawlEvent>) {
     const { id, ...payload } = data;
     
     try {
+        const client = getUserDirectus(session.session.token);
         if (id) {
-            await getUserDirectus(session.session.token).request(updateItem('pub_crawl_events', id, payload));
+            await client.request(updateItem('pub_crawl_events', id, payload));
         } else {
-            await getUserDirectus(session.session.token).request(createItem('pub_crawl_events', payload));
+            await client.request(createItem('pub_crawl_events', payload));
         }
         revalidateTag('kroegentocht-events', 'default');
         revalidateTag('kroegentocht-event', 'default');
@@ -99,7 +100,7 @@ export async function getPubCrawlSignups(eventId: number) {
                 { tickets: ['id', 'name', 'initial', 'qr_token', 'checked_in'] }
             ] as any,
             limit: 1000,
-            sort: ['-created_at']
+            sort: ['-date_created'],
         }));
 
         return (items ?? []).map((s: any) => ({

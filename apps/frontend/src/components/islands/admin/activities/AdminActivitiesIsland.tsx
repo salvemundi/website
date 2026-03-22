@@ -21,7 +21,7 @@ interface AdminActivity {
     max_sign_ups?: number | null;
     price_members?: number | null;
     price_non_members?: number | null;
-    inschrijf_deadline?: string | null;
+    registration_deadline?: string | null;
     contact?: string | null;
     image?: { id: string } | string | null;
     committee_id?: number | null;

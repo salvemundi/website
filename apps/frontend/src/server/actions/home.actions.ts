@@ -50,7 +50,7 @@ export async function getHeroBanners(): Promise<HeroBanner[]> {
 export async function getUpcomingActiviteiten(limit = 4): Promise<Activiteit[]> {
     try {
         const rawData = await getSystemDirectus().request(readItems('events', {
-            fields: ['id', 'name', 'description', 'location', 'event_date', 'event_date_end', 'image', 'status', 'price_members', 'price_non_members', 'only_members', 'inschrijf_deadline', 'contact', 'event_time', 'event_time_end'],
+            fields: ['id', 'name', 'description', 'location', 'event_date', 'event_date_end', 'image', 'status', 'price_members', 'price_non_members', 'only_members', 'registration_deadline', 'contact', 'event_time', 'event_time_end'],
             filter: {
                 status: { _eq: 'published' },
                 event_date: { _gte: '$NOW' }
@@ -71,7 +71,7 @@ export async function getUpcomingActiviteiten(limit = 4): Promise<Activiteit[]> 
             price_members: item.price_members != null ? Number(item.price_members) : 0,
             price_non_members: item.price_non_members != null ? Number(item.price_non_members) : 0,
             only_members: item.only_members ?? false,
-            inschrijf_deadline: item.inschrijf_deadline ?? null,
+            registration_deadline: item.registration_deadline ?? null,
             contact: item.contact ?? null,
             event_time: item.event_time ?? null,
             event_time_end: item.event_time_end ?? null,

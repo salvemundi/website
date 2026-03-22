@@ -24,7 +24,7 @@ interface EventProps {
     max_sign_ups?: number | null;
     price_members?: number | null;
     price_non_members?: number | null;
-    inschrijf_deadline?: string | null;
+    registration_deadline?: string | null;
     committee_id?: number | null;
     contact?: string | null;
     only_members?: boolean;
@@ -166,8 +166,8 @@ export default function ActiviteitBewerkenIsland({ event, committees }: { event:
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label htmlFor="inschrijf_deadline" className="block text-sm font-bold text-slate-600 dark:text-slate-300 mb-2">Inschrijfdeadline</label>
-                        <input type="datetime-local" id="inschrijf_deadline" name="inschrijf_deadline" defaultValue={formatDateTime(event.inschrijf_deadline)} className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition" />
+                        <label htmlFor="registration_deadline" className="block text-sm font-bold text-slate-600 dark:text-slate-300 mb-2">Inschrijfdeadline</label>
+                        <input type="datetime-local" id="registration_deadline" name="registration_deadline" defaultValue={formatDateTime(event.registration_deadline)} className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition" />
                     </div>
                     <div>
                         <label htmlFor="location" className="block text-sm font-bold text-slate-600 dark:text-slate-300 mb-2">Locatie</label>

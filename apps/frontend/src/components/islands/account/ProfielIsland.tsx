@@ -277,11 +277,9 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
                             <div className="relative h-28 w-28 sm:h-32 sm:w-32 rounded-full overflow-hidden border-4 border-[var(--color-purple-100)] shadow-lg bg-white">
                                 {optimisticUser.avatar || optimisticUser.image ? (
                                     <Image
-                                        src={getImageUrl(optimisticUser.avatar || optimisticUser.image)}
+                                        src={(optimisticUser.avatar ? getImageUrl(optimisticUser.avatar) : optimisticUser.image ? getImageUrl(optimisticUser.image) : '') as string}
                                         alt={optimisticUser.name || "Avatar"}
                                         fill
-                                        sizes="128px"
-                                        className="object-cover"
                                         unoptimized
                                     />
                                 ) : (

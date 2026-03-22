@@ -24,7 +24,7 @@ export async function getCommittees(): Promise<Committee[]> {
         // Stap 2: Haal alle leden op voor deze commissies (twee-staps fetch)
         const committeeIds = committeesData.map((c: any) => c.id);
         const allMembers = await getSystemDirectus().request(readItems('committee_members', {
-            fields: ['id', 'committee_id', 'is_leader', { user_id: ['id', 'first_name', 'last_name', 'avatar', 'title'] } as any],
+            fields: ['id', 'committee_id', 'is_leader', 'is_visible', { user_id: ['id', 'first_name', 'last_name', 'avatar', 'title'] } as any],
             filter: { 
                 committee_id: { _in: committeeIds as any },
                 is_visible: { _eq: true }

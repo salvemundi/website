@@ -40,13 +40,7 @@ export const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee }) => {
             }`}>
                 {/* Image Header */}
                 <div className="relative h-56 w-full overflow-hidden bg-gradient-to-br from-[var(--color-purple-500)]/20 to-[var(--color-purple-900)]/20">
-                    <Image
-                        src={committee.image ? getImageUrl(committee.image) : getDefaultCommitteeImage(committee.id)}
-                        alt={cleanedName}
-                        fill
-                        className="object-cover transition duration-700 group-hover:scale-105"
-                        unoptimized
-                    />
+                    <Image src={getImageUrl(committee.image) ?? '/img/placeholder.svg'} alt={committee.name} fill className="object-cover" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
                     
                     {isBestuur && (
@@ -73,7 +67,7 @@ export const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee }) => {
                                 {members.slice(0, 5).map((member, idx) => (
                                     <div key={idx} className="relative h-8 w-8 rounded-full overflow-hidden ring-2 ring-[var(--bg-card)]">
                                         <Image
-                                            src={member.avatar}
+                                            src={member.avatar ?? '/img/placeholder.svg'}
                                             alt={member.name}
                                             fill
                                             className="object-cover"

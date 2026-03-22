@@ -100,7 +100,7 @@ export async function getTripSignups(tripId: number) {
                 'role', 'status', 'deposit_paid', 'deposit_paid_at', 'full_payment_paid', 
                 'full_payment_paid_at', 'date_created'
             ],
-            sort: ['-created_at'],
+            sort: ['-date_created'],
             limit: -1
         }));
 
@@ -435,7 +435,7 @@ export async function updateSignupActivities(signupId: number, activityIds: numb
         });
 
         for (const item of toDelete) {
-            await client.request(deleteItem('trip_signup_activities', item.id));
+            await client.request(deleteItem('trip_signup_activities', item.id!));
         }
 
         // 3. Add new
@@ -555,7 +555,7 @@ export async function createTrip(prevState: any, formData: FormData) {
         registration_start_date: rawData.registration_start_date || null,
         description: rawData.description || null,
         image: rawData.image || null,
-        event_date: rawData.start_date || null, // Fallback for legacy systems
+        event_date: rawData.start_date || null,
     };
 
     const validated = tripSchema.omit({ id: true }).safeParse(data);
@@ -564,7 +564,7 @@ export async function createTrip(prevState: any, formData: FormData) {
     }
 
     try {
-        await getUserDirectus((session as any).session?.token).request(createItem('trips', validated.data));
+        await getUserDirectus((session as any).session?.token).request(createItem('trips', validated.data as any));
 
         revalidatePath('/beheer/reis');
         return { success: true };

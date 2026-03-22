@@ -23,7 +23,7 @@ interface ActiviteitCardProps {
     isSignedUp?: boolean;
     variant?: 'grid' | 'list';
     committeeName?: string;
-    inschrijfDeadline?: string;
+    registrationDeadline?: string;
     contact?: string;
     onlyMembers?: boolean;
 }
@@ -46,7 +46,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     variant = 'grid',
     committeeName,
     contact,
-    inschrijfDeadline,
+    registrationDeadline,
     onlyMembers = false,
 }) => {
     const { isAuthenticated, user } = useAuth();
@@ -55,7 +55,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     const alreadySignedUp = Boolean(isSignedUp);
     const isListVariant = variant === 'list';
 
-    const isDeadlinePassed = inschrijfDeadline ? new Date(inschrijfDeadline) < new Date() : false;
+    const isDeadlinePassed = registrationDeadline ? new Date(registrationDeadline) < new Date() : false;
     const cannotSignUp = alreadySignedUp || isDeadlinePassed;
 
     const handleSignupClick = (e: React.MouseEvent) => {

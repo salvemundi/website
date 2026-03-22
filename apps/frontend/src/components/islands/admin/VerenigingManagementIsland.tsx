@@ -78,7 +78,7 @@ export default function VerenigingManagementIsland({ initialCommittees }: Props)
         setAddError(null);
         setNewMemberEmail('');
         setMembersLoading(true);
-        const m = await getCommitteeMembers(c.id).catch(() => []);
+        const m = await getCommitteeMembers(c.id.toString()).catch(() => []);
         setMembers(m);
         setMembersLoading(false);
     }, []);
@@ -88,7 +88,7 @@ export default function VerenigingManagementIsland({ initialCommittees }: Props)
         if (!selected?.azureGroupId || !newMemberEmail) return;
         setAddingMember(true);
         setAddError(null);
-        const res = await addCommitteeMember(selected.azureGroupId, selected.id, newMemberEmail);
+        const res = await addCommitteeMember(selected.azureGroupId, selected.id.toString(), newMemberEmail);
         if (!res.success) {
             setAddError(res.error ?? 'Toevoegen mislukt');
         } else {
@@ -129,7 +129,7 @@ export default function VerenigingManagementIsland({ initialCommittees }: Props)
     const handleSaveDetail = async () => {
         if (!selected) return;
         setSavingDetail(true);
-        const res = await updateCommitteeDetails(selected.id, {
+        const res = await updateCommitteeDetails(selected.id.toString(), {
             short_description: editShortDesc,
             description: editDesc,
         });
