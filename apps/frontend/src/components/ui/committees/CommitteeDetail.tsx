@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Committee } from '@salvemundi/validations';
 import Image from 'next/image';
-import { getImageUrl } from '@/shared/lib/api/salvemundi';
+import { getImageUrl } from '@/lib/image-utils';
 import { Mail, Users, UserCheck } from 'lucide-react';
 
 interface CommitteeDetailProps {

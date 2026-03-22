@@ -1,30 +1,33 @@
-import { createDirectus, rest, staticToken, RestCommand } from '@directus/sdk';
+import { createDirectus, rest, staticToken } from '@directus/sdk';
 import { DirectusSchema } from './schema';
-
 
 const directusUrl = process.env.INTERNAL_DIRECTUS_URL!;
 
-const getDirectusToken = () => process.env.DIRECTUS_STATIC_TOKEN!;
+/**
+ * Get a Directus client with system-level permissions.
+ * Used for public data or background tasks.
+ */
+export function getSystemDirectus() {
+    return createDirectus<DirectusSchema>(directusUrl)
+        .with(staticToken(process.env.DIRECTUS_STATIC_TOKEN!))
+        .with(rest());
+}
 
-export const directus = createDirectus<DirectusSchema>(directusUrl)
-    .with(staticToken(getDirectusToken()))
-    .with(rest());
+/**
+ * Get a Directus client with user-level permissions.
+ * Used in Server Actions when a user is authenticated.
+ */
+export function getUserDirectus(userToken: string) {
+    return createDirectus<DirectusSchema>(directusUrl)
+        .with(staticToken(userToken))
+        .with(rest());
+}
 
-export async function directusRequest<T>(request: RestCommand<T, DirectusSchema>): Promise<T> {
-    const start = Date.now();
-    try {
-        const result = await directus.request(request);
-        const duration = Date.now() - start;
-        
-        // Only log in development or if DEBUG is enabled
-        if (process.env.NODE_ENV !== 'production' || process.env.DEBUG_DIRECTUS === 'true') {
-            console.log(`[DIRECTUS] Request successful - ${duration}ms`);
-        }
-        
-        return result as T;
-    } catch (error: any) {
-        const duration = Date.now() - start;
-        console.error(`[DIRECTUS] Request failed after ${duration}ms:`, error?.message || error);
-        throw error;
-    }
+/**
+ * LEGACY / COMPATIBILITY EXPORTS
+ * These are deprecated and should be replaced with getSystemDirectus() or getUserDirectus().
+ */
+export const directus = getSystemDirectus();
+export async function directusRequest<T>(options: any): Promise<T> {
+    return (directus.request as any)(options);
 }

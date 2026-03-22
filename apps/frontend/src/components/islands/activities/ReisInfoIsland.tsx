@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Calendar } from 'lucide-react';
-import { getImageUrl } from '@/shared/lib/api/salvemundi'; // Keeping legacy getImageUrl logic, assuming it returns directus URL
+import { getImageUrl } from '@/lib/image-utils';
+ // Keeping legacy getImageUrl logic, assuming it returns directus URL
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import type { ReisTrip } from '@salvemundi/validations';

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition, useActionState, useMemo, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { 
     Loader2, 
     Plus, 
@@ -8,36 +9,40 @@ import {
     Trash2, 
     Save, 
     X, 
-    Image as ImageIcon, 
-    Upload, 
     Users,
     ChevronRight,
-    Search,
     AlertCircle,
     Info,
-    LayoutGrid,
-    Euro,
     Layers,
-    Clock
+    Euro
 } from 'lucide-react';
 import { 
-    getTripActivities, 
     createTripActivity, 
     updateTripActivity, 
-    deleteTripActivity,
-    getActivitySignups 
+    deleteTripActivity
 } from '@/server/actions/admin-reis.actions';
+import { getImageUrl } from '@/lib/image-utils';
 import type { Trip, TripActivity } from '@salvemundi/validations';
 
 interface ReisActiviteitenIslandProps {
     initialTrips: Trip[];
+    initialActivities: TripActivity[];
+    initialSelectedTripId: number;
+    initialSignupsByActivity: Record<number, any[]>;
 }
 
-export default function ReisActiviteitenIsland({ initialTrips }: ReisActiviteitenIslandProps) {
+export default function ReisActiviteitenIsland({ 
+    initialTrips, 
+    initialActivities, 
+    initialSelectedTripId,
+    initialSignupsByActivity
+}: ReisActiviteitenIslandProps) {
+    const router = useRouter();
     const [trips] = useState<Trip[]>(initialTrips);
-    const [selectedTripId, setSelectedTripId] = useState<number | null>(initialTrips[0]?.id || null);
-    const [activities, setActivities] = useState<TripActivity[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [selectedTripId, setSelectedTripId] = useState<number>(initialSelectedTripId);
+    const [activities, setActivities] = useState<TripActivity[]>(initialActivities);
+    const [signupsByActivity] = useState<Record<number, any[]>>(initialSignupsByActivity);
+    
     const [error, setError] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
 
@@ -45,37 +50,18 @@ export default function ReisActiviteitenIsland({ initialTrips }: ReisActiviteite
     const [isAddingNew, setIsAddingNew] = useState(false);
 
     const [viewingSignupsId, setViewingSignupsId] = useState<number | null>(null);
-    const [activitySignups, setActivitySignups] = useState<any[]>([]);
-    const [loadingSignups, setLoadingSignups] = useState(false);
 
-    // Load activities when trip changes
-    const loadActivities = (tripId: number) => {
-        setLoading(true);
-        setError(null);
-        startTransition(async () => {
-            try {
-                const data = await getTripActivities(tripId);
-                setActivities(data);
-            } catch (err) {
-                setError('Fout bij het laden van activiteiten');
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        });
-    };
+    // Sync state with props when trip changes via URL
+    useEffect(() => {
+        setActivities(initialActivities);
+        setSelectedTripId(initialSelectedTripId);
+    }, [initialActivities, initialSelectedTripId]);
 
-    // Handle trip selection
+    // Handle trip selection via URL
     const handleTripChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const id = parseInt(e.target.value);
-        setSelectedTripId(id);
-        loadActivities(id);
+        router.push(`/beheer/reis/activiteiten?tripId=${id}`);
     };
-
-    // Initial load
-    useEffect(() => {
-        if (selectedTripId) loadActivities(selectedTripId);
-    }, [selectedTripId]);
 
     const handleDelete = async (id: number) => {
         if (!confirm('Weet je zeker dat je deze activiteit wilt verwijderen?')) return;
@@ -90,22 +76,6 @@ export default function ReisActiviteitenIsland({ initialTrips }: ReisActiviteite
         });
     };
 
-    const handleViewSignups = async (activityId: number) => {
-        setViewingSignupsId(activityId);
-        setLoadingSignups(true);
-        try {
-            const data = await getActivitySignups(activityId);
-            setActivitySignups(data);
-        } catch (err) {
-            console.error(err);
-            alert('Fout bij het laden van inschrijvingen');
-        } finally {
-            setLoadingSignups(false);
-        }
-    };
-
-    const getImageUrl = (id: string) => `/api/assets/${id}`;
-
     return (
         <div className="container mx-auto px-4 py-8 max-w-6xl animate-in fade-in duration-500">
             {/* Trip Selector Card */}
@@ -117,7 +87,7 @@ export default function ReisActiviteitenIsland({ initialTrips }: ReisActiviteite
                         </label>
                         <div className="relative group">
                             <select
-                                value={selectedTripId || ''}
+                                value={selectedTripId}
                                 onChange={handleTripChange}
                                 className="w-full pl-4 pr-10 py-3 bg-[var(--bg-main)] border-0 ring-1 ring-[var(--border-color)] rounded-[var(--radius-xl)] text-[var(--text-main)] font-semibold focus:ring-2 focus:ring-[var(--theme-purple)] transition-all appearance-none cursor-pointer"
                             >
@@ -134,8 +104,7 @@ export default function ReisActiviteitenIsland({ initialTrips }: ReisActiviteite
                             setIsAddingNew(true);
                             setEditingActivity(null);
                         }}
-                        disabled={!selectedTripId}
-                        className="flex items-center justify-center gap-2 px-8 py-4 bg-[var(--theme-purple)] hover:opacity-90 text-white rounded-[var(--radius-xl)] font-bold shadow-lg shadow-[var(--theme-purple)]/20 transition-all active:scale-95 disabled:opacity-50"
+                        className="flex items-center justify-center gap-2 px-8 py-4 bg-[var(--theme-purple)] hover:opacity-90 text-white rounded-[var(--radius-xl)] font-bold shadow-lg shadow-[var(--theme-purple)]/20 transition-all active:scale-95"
                     >
                         <Plus className="h-5 w-5" />
                         Nieuwe Activiteit
@@ -154,7 +123,7 @@ export default function ReisActiviteitenIsland({ initialTrips }: ReisActiviteite
             {isAddingNew || editingActivity ? (
                 <ActivityForm 
                     activity={editingActivity} 
-                    tripId={selectedTripId!} 
+                    tripId={selectedTripId} 
                     onCancel={() => {
                         setIsAddingNew(false);
                         setEditingActivity(null);
@@ -162,16 +131,12 @@ export default function ReisActiviteitenIsland({ initialTrips }: ReisActiviteite
                     onSuccess={() => {
                         setIsAddingNew(false);
                         setEditingActivity(null);
-                        loadActivities(selectedTripId!);
+                        // Data will refresh via revalidatePath in the action
                     }}
                 />
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {loading ? (
-                        Array.from({ length: 3 }).map((_, i) => (
-                            <div key={i} className="bg-[var(--bg-card)]/50 rounded-[var(--radius-2xl)] h-64 animate-pulse ring-1 ring-[var(--border-color)]" />
-                        ))
-                    ) : activities.length === 0 ? (
+                    {activities.length === 0 ? (
                         <div className="col-span-full py-20 text-center bg-[var(--bg-card)]/40 rounded-[var(--radius-2xl)] border-2 border-dashed border-[var(--border-color)]">
                             <Layers className="h-12 w-12 text-[var(--text-light)] mx-auto mb-4" />
                             <p className="text-[var(--text-muted)] font-medium uppercase tracking-widest text-xs">Nog geen activiteiten voor deze reis</p>
@@ -181,10 +146,10 @@ export default function ReisActiviteitenIsland({ initialTrips }: ReisActiviteite
                             <ActivityCard 
                                 key={activity.id} 
                                 activity={activity} 
+                                signupCount={signupsByActivity[activity.id]?.length || 0}
                                 onEdit={() => setEditingActivity(activity)}
                                 onDelete={() => handleDelete(activity.id)}
-                                onViewSignups={() => handleViewSignups(activity.id)}
-                                getImageUrl={getImageUrl}
+                                onViewSignups={() => setViewingSignupsId(activity.id)}
                             />
                         ))
                     )}
@@ -195,8 +160,7 @@ export default function ReisActiviteitenIsland({ initialTrips }: ReisActiviteite
             {viewingSignupsId && (
                 <SignupsModal 
                     activity={activities.find(a => a.id === viewingSignupsId)!}
-                    signups={activitySignups}
-                    loading={loadingSignups}
+                    signups={signupsByActivity[viewingSignupsId] || []}
                     onClose={() => setViewingSignupsId(null)}
                 />
             )}
@@ -204,13 +168,13 @@ export default function ReisActiviteitenIsland({ initialTrips }: ReisActiviteite
     );
 }
 
-function ActivityCard({ activity, onEdit, onDelete, onViewSignups, getImageUrl }: any) {
+function ActivityCard({ activity, signupCount, onEdit, onDelete, onViewSignups }: any) {
     return (
         <div className="group bg-[var(--bg-card)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)] overflow-hidden flex flex-col transition-all hover:ring-[var(--theme-purple)]/50 hover:shadow-[var(--shadow-glow)]">
             {activity.image && (
                 <div className="relative h-48 w-full overflow-hidden bg-[var(--bg-main)]">
                     <img 
-                        src={getImageUrl(activity.image)} 
+                        src={getImageUrl(activity.image, { width: 600, height: 400, fit: 'cover' }) || ''} 
                         alt={activity.name} 
                         className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" 
                     />
@@ -242,7 +206,7 @@ function ActivityCard({ activity, onEdit, onDelete, onViewSignups, getImageUrl }
                         className="w-full flex items-center justify-center gap-2 py-3 bg-[var(--bg-main)] hover:bg-[var(--theme-purple)]/10 text-[var(--text-subtle)] hover:text-[var(--theme-purple)] rounded-[var(--radius-xl)] font-bold text-sm transition-all ring-1 ring-[var(--border-color)] hover:ring-[var(--theme-purple)]/30"
                     >
                         <Users className="h-4 w-4" />
-                        Inschrijvingen
+                        Inschrijvingen ({signupCount})
                     </button>
                     
                     <div className="flex gap-2">
@@ -364,7 +328,6 @@ function ActivityForm({ activity, tripId, onCancel, onSuccess }: any) {
                             />
                         </div>
                         <div className="flex items-end">
-                             {/* max_selections is now handled by the toggle below */}
                              <input 
                                 type="hidden" 
                                 name="max_selections" 
@@ -398,7 +361,7 @@ function ActivityForm({ activity, tripId, onCancel, onSuccess }: any) {
                                         type="radio" 
                                         name="selection_type_ui" 
                                         checked={selectionType === 'single'}
-                                        onChange={() => {}} // Handled by onClick of label
+                                        onChange={() => {}} 
                                         className="sr-only"
                                     />
                                     <span className="text-xs font-bold">Enkele selectie (Radio)</span>
@@ -414,17 +377,12 @@ function ActivityForm({ activity, tripId, onCancel, onSuccess }: any) {
                                         type="radio" 
                                         name="selection_type_ui" 
                                         checked={selectionType === 'multiple'}
-                                        onChange={() => {}} // Handled by onClick of label
+                                        onChange={() => {}} 
                                         className="sr-only"
                                     />
                                     <span className="text-xs font-bold">Meerdere (Checkbox)</span>
                                 </label>
                             </div>
-                            <p className="text-[9px] text-[var(--text-muted)] mt-2 italic">
-                                {selectionType === 'single' 
-                                    ? "* Deelnemers kunnen precies één van de onderstaande opties kiezen." 
-                                    : "* Deelnemers kunnen meerdere van de onderstaande opties aanvinken."}
-                            </p>
                         </div>
                         
                         <div className="space-y-3">
@@ -511,7 +469,7 @@ function ActivityForm({ activity, tripId, onCancel, onSuccess }: any) {
     );
 }
 
-function SignupsModal({ activity, signups, loading, onClose }: any) {
+function SignupsModal({ activity, signups, onClose }: any) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--bg-main)]/60 backdrop-blur-md animate-in fade-in duration-300">
             <div className="bg-[var(--bg-card)] w-full max-w-2xl rounded-[var(--radius-2xl)] shadow-2xl overflow-hidden flex flex-col max-h-[85vh] ring-1 ring-[var(--border-color)] animate-in zoom-in-95 duration-300">
@@ -531,12 +489,7 @@ function SignupsModal({ activity, signups, loading, onClose }: any) {
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-6">
-                    {loading ? (
-                        <div className="flex flex-col items-center justify-center py-20">
-                            <Loader2 className="h-10 w-10 animate-spin text-[var(--theme-purple)] mb-4" />
-                            <p className="text-[var(--text-light)] font-bold uppercase tracking-widest text-[10px]">Laden...</p>
-                        </div>
-                    ) : signups.length === 0 ? (
+                    {signups.length === 0 ? (
                         <div className="text-center py-20">
                             <Info className="h-10 w-10 text-[var(--text-light)]/50 mx-auto mb-4" />
                             <p className="text-[var(--text-muted)] font-medium">Nog geen inschrijvingen voor deze activiteit.</p>

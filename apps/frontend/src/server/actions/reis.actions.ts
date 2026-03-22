@@ -13,15 +13,16 @@ import {
     type ReisSignupForm,
 } from '@salvemundi/validations';
 
-import { directusRequest } from '@/lib/directus';
+import { getSystemDirectus, getUserDirectus } from '@/lib/directus';
 import { readItems, createItem, updateItem } from '@directus/sdk';
 import { auth } from '@/server/auth/auth';
 import { headers as nextHeaders } from 'next/headers';
 
 export async function getReisSiteSettings(): Promise<ReisSiteSettings | null> {
     try {
-        const data = await directusRequest(readItems('site_settings', {
+        const data = await getSystemDirectus().request(readItems('site_settings', {
             filter: { id: { _eq: 'reis' } },
+            fields: ['id', 'show', 'disabled_message'],
             limit: 1
         }));
         
@@ -41,8 +42,14 @@ export async function getReisSiteSettings(): Promise<ReisSiteSettings | null> {
 
 export async function getUpcomingTrips(): Promise<ReisTrip[]> {
     try {
-        const data = await directusRequest(readItems('trips', {
+        const data = await getSystemDirectus().request(readItems('trips', {
             filter: { status: { _eq: 'published' } },
+            fields: [
+                'id', 'name', 'description', 'image', 'event_date', 'start_date', 'end_date', 
+                'registration_start_date', 'registration_open', 'max_participants', 
+                'max_crew', 'base_price', 'crew_discount', 'deposit_amount', 
+                'is_bus_trip', 'allow_final_payments', 'status'
+            ],
             sort: ['start_date']
         }));
 
@@ -84,8 +91,15 @@ export async function getUpcomingTrips(): Promise<ReisTrip[]> {
 
 export async function getTripSignups(tripId: number): Promise<ReisTripSignup[]> {
     try {
-        const data = await directusRequest(readItems('trip_signups', {
+        const data = await getSystemDirectus().request(readItems('trip_signups', {
             filter: { trip_id: { _eq: tripId } },
+            fields: [
+                'id', 'trip_id', 'user_id', 'first_name', 'middle_name', 'last_name', 
+                'email', 'phone_number', 'date_of_birth', 'id_document_type', 
+                'document_number', 'allergies', 'special_notes', 'willing_to_drive', 
+                'role', 'status', 'deposit_paid', 'deposit_paid_at', 'full_payment_paid', 
+                'full_payment_paid_at', 'date_created'
+            ],
             limit: -1
         }));
 
@@ -148,7 +162,8 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
     };
 
     try {
-        await directusRequest(createItem('trip_signups', payload));
+        const directus = session?.session?.token ? getUserDirectus(session.session.token) : getSystemDirectus();
+        await directus.request(createItem('trip_signups', payload));
 
         revalidatePath('/reis');
         revalidatePath('/beheer/reis');
@@ -168,7 +183,7 @@ export async function cancelTripSignup(signupId: number): Promise<{ success: boo
     }
 
     try {
-        const trip = await directusRequest(readItems('trip_signups', {
+        const trip = await getSystemDirectus().request(readItems('trip_signups', {
             filter: { id: { _eq: signupId } },
             limit: 1
         }));
@@ -185,7 +200,7 @@ export async function cancelTripSignup(signupId: number): Promise<{ success: boo
             return { success: false, message: 'Je kunt alleen je eigen aanmelding annuleren.' };
         }
 
-        await directusRequest(updateItem('trip_signups', signupId, { status: 'cancelled' as any }));
+        await getUserDirectus(session.session.token).request(updateItem('trip_signups', signupId, { status: 'cancelled' as any }));
 
         if (signup.trip_id) {
             revalidatePath('/beheer/reis');

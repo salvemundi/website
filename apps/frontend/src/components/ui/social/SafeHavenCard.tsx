@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import type { SafeHaven } from '@salvemundi/validations';
 import { Mail, Phone } from 'lucide-react';
+import { getImageUrl } from '@/lib/image-utils';
 
 interface SafeHavenCardProps {
     safeHaven: SafeHaven;
@@ -12,9 +13,8 @@ interface SafeHavenCardProps {
  */
 export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
     // Afbeeldings-URL opbouwen via de interne asset-proxy
-    const imageUrl = safeHaven.afbeelding_id
-        ? `/api/assets/${safeHaven.afbeelding_id}?width=200&height=200&fit=cover`
-        : '/img/newlogo.png'; // Fallback indien geen afbeelding
+    // Afbeeldings-URL opbouwen via de interne asset-proxy
+    const imageUrl = getImageUrl(safeHaven.afbeelding_id, { width: 200, height: 200, fit: 'cover' }) || '/img/newlogo.png';
 
     return (
         <div className="flex flex-col rounded-2xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-700/30 p-5 sm:p-6 transition-all duration-300 hover:border-slate-300 dark:hover:border-slate-600/50">

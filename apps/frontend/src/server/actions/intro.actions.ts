@@ -4,17 +4,11 @@ import { introSignupFormSchema, introParentSignupFormSchema, type IntroSignupFor
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 
-const getDirectusUrl = () => process.env.INTERNAL_DIRECTUS_URL;
-const getMailUrl = () => process.env.INTERNAL_MAIL_URL;
+import { getSystemDirectus, getUserDirectus } from '@/lib/directus';
+import { readItems, createItem } from '@directus/sdk';
+import { revalidatePath } from 'next/cache';
 
-const getDirectusHeaders = (): HeadersInit => {
-    const token = process.env.DIRECTUS_STATIC_TOKEN;
-    if (!token) throw new Error('DIRECTUS_STATIC_TOKEN is missing');
-    return {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-    };
-};
+const getMailUrl = () => process.env.INTERNAL_MAIL_URL;
 
 const getServiceHeaders = (): HeadersInit => {
     const token = process.env.INTERNAL_SERVICE_TOKEN;
@@ -26,20 +20,12 @@ const getServiceHeaders = (): HeadersInit => {
 };
 
 export async function getIntroSettings() {
-    const url = `${getDirectusUrl()}/items/site_settings?filter[id][_eq]=intro`;
-
     try {
-        const res = await fetch(url, {
-            headers: getDirectusHeaders(),
-            next: { tags: ['site_settings', 'intro_settings'] },
-        });
+        const items = await getSystemDirectus().request(readItems('site_settings', {
+            filter: { id: { _eq: 'intro' } }
+        }));
 
-        if (!res.ok) {
-            return { show: false, disabled_message: 'De inschrijvingen voor de introweek zijn momenteel gesloten.' };
-        }
-
-        const json = await res.json();
-        const data = json.data?.[0];
+        const data = items?.[0];
 
         return {
             show: data?.show ?? false,
@@ -58,14 +44,11 @@ export async function hasParentSignup(): Promise<boolean> {
     if (!session?.user) return false;
 
     try {
-        const res = await fetch(`${getDirectusUrl()}/items/intro_parent_signups?filter[user_id][_eq]=${session.user.id}`, {
-            headers: getDirectusHeaders(),
-        });
+        const items = await getSystemDirectus().request(readItems('intro_parent_signups' as any, {
+            filter: { user_id: { _eq: session.user.id } }
+        }));
 
-        if (!res.ok) return false;
-
-        const json = await res.json();
-        return Array.isArray(json.data) && json.data.length > 0;
+        return Array.isArray(items) && items.length > 0;
     } catch {
         return false;
     }
@@ -85,7 +68,6 @@ export async function submitIntroSignup(data: IntroSignupForm) {
 
     // Bot detection (honeypot)
     if (parsed.data.website) {
-        console.log('[IntroAction] Bot detected via honeypot');
         return { success: true };
     }
 
@@ -99,14 +81,10 @@ export async function submitIntroSignup(data: IntroSignupForm) {
         favorite_gif: parsed.data.favorieteGif || null,
     };
 
-    const res = await fetch(`${getDirectusUrl()}/items/intro_signups`, {
-        method: 'POST',
-        headers: getDirectusHeaders(),
-        body: JSON.stringify(payload),
-    });
-
-    if (!res.ok) {
-        console.error('[IntroAction] Mislukt bij Directus creatie:', await res.text());
+    try {
+        await getSystemDirectus().request(createItem('intro_signups' as any, payload as any));
+    } catch (e) {
+        console.error('[IntroAction] Mislukt bij Directus creatie:', e);
         throw new Error('Er is een fout opgetreden bij je inschrijving');
     }
 
@@ -137,6 +115,12 @@ export async function submitIntroParentSignup(data: IntroParentSignupForm) {
         throw new Error('Je moet ingelogd zijn als lid om je aan te melden als Intro Ouder');
     }
 
+    const { rateLimit } = await import('../utils/ratelimit');
+    const { success } = await rateLimit('intro-parent-signup', 3, 300);
+    if (!success) {
+        throw new Error('Te veel aanmeldingen. Probeer het over een paar minuten opnieuw.');
+    }
+
     const parsed = introParentSignupFormSchema.safeParse(data);
     if (!parsed.success) {
         throw new Error('Validatie mislukt');
@@ -153,18 +137,14 @@ export async function submitIntroParentSignup(data: IntroParentSignupForm) {
         availability: []
     };
 
-    const res = await fetch(`${getDirectusUrl()}/items/intro_parent_signups`, {
-        method: 'POST',
-        headers: getDirectusHeaders(),
-        body: JSON.stringify(payload),
-    });
-
-    if (!res.ok) {
-        console.error('[IntroParentAction] Mislukt:', await res.text());
+    try {
+        await getUserDirectus(session.session.token).request(createItem('intro_parent_signups' as any, payload as any));
+        revalidatePath('/beheer/intro');
+        return { success: true };
+    } catch (e) {
+        console.error('[IntroParentAction] Mislukt:', e);
         throw new Error('Er is een fout opgetreden tijdens de intro-ouder inschrijving');
     }
-
-    return { success: true };
 }
 
 

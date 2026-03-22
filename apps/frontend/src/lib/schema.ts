@@ -103,10 +103,35 @@ export interface PubCrawlTicket {
 export interface Trip {
     id: number;
     name: string;
+    description?: string | null;
+    image?: string | null;
     start_date: any;
     end_date: any;
     event_date: any;
+    registration_start_date?: any | null;
+    registration_open?: boolean | null;
+    max_participants: number;
+    max_crew: number;
+    base_price: number;
+    crew_discount: number;
+    deposit_amount: number;
+    is_bus_trip?: boolean | null;
+    allow_final_payments?: boolean | null;
     status?: 'published' | 'draft' | 'scheduled' | null;
+}
+
+export interface TripActivity {
+    id: number;
+    trip_id: number | Trip;
+    name: string;
+    description?: string | null;
+    image?: string | null;
+    price: number;
+    max_participants?: number | null;
+    display_order?: number | null;
+    is_active?: boolean | null;
+    options?: any;
+    max_selections?: number | null;
 }
 
 export interface TripSignup {
@@ -114,11 +139,33 @@ export interface TripSignup {
     trip_id: number | Trip;
     user_id?: string | DirectusUser | null;
     first_name: string;
+    middle_name?: string | null;
     last_name: string;
     email: string;
-    payment_status?: string | null;
-    approval_status?: 'pending' | 'approved' | 'rejected' | null;
-    date_created?: any | null;
+    phone_number: string;
+    date_of_birth: any;
+    id_document_type?: string | null;
+    document_number?: string | null;
+    allergies?: string | null;
+    special_notes?: string | null;
+    willing_to_drive?: boolean | null;
+    role?: 'participant' | 'crew' | null;
+    status: 'registered' | 'waitlist' | 'confirmed' | 'cancelled';
+    deposit_paid: boolean;
+    deposit_paid_at?: any | null;
+    deposit_email_sent?: boolean | null;
+    full_payment_paid: boolean;
+    full_payment_paid_at?: any | null;
+    final_email_sent?: boolean | null;
+    terms_accepted?: boolean | null;
+    date_created: any;
+}
+
+export interface TripSignupActivity {
+    id: number;
+    trip_signup_id: number | TripSignup;
+    trip_activity_id: number | TripActivity;
+    selected_options?: any;
 }
 
 export interface DirectusUser {
@@ -237,4 +284,6 @@ export interface DirectusSchema {
     intro_signups: IntroSignup[];
     coupons: Coupon[];
     system_logs: SystemLog[];
+    trip_activities: TripActivity[];
+    trip_signup_activities: TripSignupActivity[];
 }

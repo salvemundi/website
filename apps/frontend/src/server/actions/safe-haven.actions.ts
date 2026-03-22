@@ -4,7 +4,7 @@ import { safeHavensSchema, type SafeHaven } from '@salvemundi/validations';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 
-import { directus, directusRequest } from '@/lib/directus';
+import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 
 /**
@@ -13,7 +13,8 @@ import { readItems } from '@directus/sdk';
  */
 async function fetchSafeHavensFromDirectus(): Promise<SafeHaven[]> {
     try {
-        const rawData = await directus.request(readItems('safe_havens', {
+        const rawData = await getSystemDirectus().request(readItems('safe_havens', {
+            fields: ['id', 'contact_name', 'email', 'phone_number', 'image', 'sort'],
             limit: 50
         }));
 

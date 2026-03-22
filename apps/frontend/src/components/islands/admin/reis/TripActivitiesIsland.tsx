@@ -7,9 +7,9 @@ import {
     Loader2, Euro, Info, MoreHorizontal, Settings2, Trash
 } from 'lucide-react';
 import { 
-    getTripActivities, createTripActivity, updateTripActivity, 
     deleteTripActivity, getActivitySignups 
 } from '@/server/actions/admin-reis.actions';
+import { getImageUrl } from '@/lib/image-utils';
 
 interface Trip {
     id: number;
@@ -132,7 +132,6 @@ export default function TripActivitiesIsland({ trips }: { trips: Trip[] }) {
         setOptions(newOpts);
     };
 
-    const getImageUrl = (id: string) => `/api/assets/${id}`;
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-7xl">

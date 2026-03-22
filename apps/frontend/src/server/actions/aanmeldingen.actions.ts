@@ -3,7 +3,7 @@
 import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
-import { directus, directusRequest } from "@/lib/directus";
+import { getSystemDirectus, getUserDirectus } from "@/lib/directus";
 import { 
     readItems, 
     createItem, 
@@ -22,8 +22,8 @@ async function getSession() {
 
 async function checkAdminAccess() {
     const session = await getSession();
-    if (!session || !session.user) return false;
-    return session.user;
+    if (!session || !session.user) return null;
+    return session;
 }
 
 async function sendCancellationEmail(email: string, eventName: string) {
@@ -45,11 +45,11 @@ async function sendCancellationEmail(email: string, eventName: string) {
 }
 
 export async function deleteSignupAction(signupId: number, eventId: string | number, participantEmail?: string, eventName?: string) {
-    const user = await checkAdminAccess();
-    if (!user) return { success: false, error: "Unauthorized" };
+    const session = await checkAdminAccess();
+    if (!session) return { success: false, error: "Unauthorized" };
 
     try {
-        await directusRequest(deleteItem('event_signups', signupId));
+        await getUserDirectus(session.session.token).request(deleteItem('event_signups', signupId));
         
         if (participantEmail && eventName) {
             await sendCancellationEmail(participantEmail, eventName);
@@ -66,20 +66,20 @@ export async function deleteSignupAction(signupId: number, eventId: string | num
 }
 
 export async function searchMembersAction(query: string) {
-    const user = await checkAdminAccess();
-    if (!user) return { success: false, error: "Unauthorized", data: [] };
+    const session = await checkAdminAccess();
+    if (!session) return { success: false, error: "Unauthorized", data: [] };
 
     if (query.length < 2) return { success: true, data: [] };
 
     try {
-        const users = await directusRequest<any[]>(
+        const users = await getSystemDirectus().request(
             readUsers({
                 search: query,
                 limit: 10,
                 fields: ['id', 'first_name', 'last_name', 'email']
             })
         );
-        return { success: true, data: users || [] };
+        return { success: true, data: (users || []) as any[] };
     } catch (error) {
         console.error("Failed to search members:", error);
         return { success: false, error: "Zoeken mislukt", data: [] };
@@ -87,17 +87,17 @@ export async function searchMembersAction(query: string) {
 }
 
 export async function createManualSignupAction(eventId: number, eventName: string, signupType: 'member' | 'guest', guestData?: any, memberData?: any) {
-    const user = await checkAdminAccess();
-    if (!user) return { success: false, error: "Unauthorized" };
+    const session = await checkAdminAccess();
+    if (!session) return { success: false, error: "Unauthorized" };
 
     try {
-        let payload: any = {
+        const payload: any = {
             event_id: eventId,
             payment_status: 'paid'
         };
 
         if (signupType === 'member') {
-            payload.directus_relations = memberData.id;
+            payload.user_id = memberData.id;
             payload.participant_name = `${memberData.first_name} ${memberData.last_name || ''}`.trim();
             payload.participant_email = memberData.email;
         } else {
@@ -106,7 +106,7 @@ export async function createManualSignupAction(eventId: number, eventName: strin
             payload.participant_phone = guestData.phone || null;
         }
 
-        await directusRequest(createItem('event_signups', payload));
+        await getUserDirectus(session.session.token).request(createItem('event_signups', payload));
 
         revalidateTag(`event_signups_${eventId}`, 'default');
         revalidatePath(`/beheer/activiteiten/${eventId}/aanmeldingen`);
@@ -123,11 +123,11 @@ export async function createManualSignupAction(eventId: number, eventName: strin
 }
 
 export async function toggleCheckInAction(signupId: number, eventId: number, checkedIn: boolean) {
-    const user = await checkAdminAccess();
-    if (!user) return { success: false, error: "Unauthorized" };
+    const session = await checkAdminAccess();
+    if (!session) return { success: false, error: "Unauthorized" };
 
     try {
-        await directusRequest(
+        await getUserDirectus(session.session.token).request(
             updateItem('event_signups', signupId, {
                 checked_in: checkedIn,
                 checked_in_at: checkedIn ? new Date().toISOString() : null

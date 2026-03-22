@@ -4,7 +4,7 @@ import { Calendar, MapPin, Clock, Info, User, Mail, Euro, CalendarClock } from '
 import SafeHtml from '@/components/ui/security/SafeHtml';
 import { Activiteit } from '@salvemundi/validations';
 import { buildCommitteeEmail, formatDutchDate, formatTime } from '@/shared/lib/activity-utils';
-import { getImageUrl } from '@/shared/lib/api/salvemundi';
+import { getImageUrl } from '@/lib/image-utils';
 
 interface ActivityDetailIslandProps {
     activity: Activiteit;

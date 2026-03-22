@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { Calendar, Clock, MapPin } from 'lucide-react';
-import { getImageUrl } from '@/shared/lib/api/salvemundi'; // Assumption: provided by legacy
+import { getImageUrl } from '@/lib/image-utils'; // Assumption: provided by legacy
 import type { Activiteit } from '@salvemundi/validations';
 
 interface FeaturedEventProps {

@@ -4,7 +4,7 @@ import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
 import { cache } from "react";
-import { directus, directusRequest } from "@/lib/directus";
+import { getSystemDirectus, getUserDirectus } from "@/lib/directus";
 import { 
     readItems, 
     createItem, 
@@ -35,14 +35,16 @@ const getNotificationUrl = (type: 'reminder' | 'custom') => {
 
 async function checkAdminAccess() {
     const session = await getSession();
-    if (!session || !session.user) return false;
+    if (!session || !session.user) return null;
     
     const user = session.user as any;
-    return isSuperAdmin(user.committees);
+    if (!isSuperAdmin(user.committees)) return null;
+    return session;
 }
 
 export const getAdminActivities = cache(async (search?: string, filter: 'all' | 'upcoming' | 'past' = 'all') => {
-    if (!(await checkAdminAccess())) throw new Error("Unauthorized");
+    const session = await checkAdminAccess();
+    if (!session) throw new Error("Unauthorized");
 
     try {
         const query: any = {
@@ -67,10 +69,10 @@ export const getAdminActivities = cache(async (search?: string, filter: 'all' | 
             query.filter.event_date = { _lt: now };
         }
 
-        const events = await directusRequest<any[]>(readItems('events', query));
+        const events = await getSystemDirectus().request(readItems('events', query));
         
         // Fix N+1 query by using a single aggregate call with groupBy
-        const counts = await directusRequest<any[]>(
+        const counts = await getSystemDirectus().request(
             aggregate('event_signups', {
                 aggregate: { count: '*' },
                 groupBy: ['event_id']
@@ -88,7 +90,7 @@ export const getAdminActivities = cache(async (search?: string, filter: 'all' | 
         
         return AdminActivitySchema.array().parse(eventsWithCounts);
     } catch (error) {
-        // Logging is handled by directusRequest
+        console.error('[AdminActivities] Fetch failed:', error);
         return [];
     }
 });
@@ -148,10 +150,11 @@ export async function sendActivityCustomNotification(eventId: number, title: str
 }
 
 export async function deleteActivity(eventId: number) {
-    if (!(await checkAdminAccess())) return { success: false, error: "Unauthorized" };
+    const session = await checkAdminAccess();
+    if (!session) return { success: false, error: "Unauthorized" };
 
     try {
-        await directusRequest(deleteItem('events', eventId));
+        await getUserDirectus(session.session.token).request(deleteItem('events', eventId));
         await logAdminAction('delete', 'events', eventId);
         
         revalidateTag('events', 'default');
@@ -165,7 +168,8 @@ export async function deleteActivity(eventId: number) {
 }
 
 export async function createActivityAction(prevState: any, formData: FormData) {
-    if (!(await checkAdminAccess())) return { error: "Unauthorized", success: false };
+    const session = await checkAdminAccess();
+    if (!session) return { error: "Unauthorized", success: false };
 
     const imageFile = formData.get('imageFile') as File | null;
     let imageId: string | null = null;
@@ -174,7 +178,7 @@ export async function createActivityAction(prevState: any, formData: FormData) {
         const fileData = new FormData();
         fileData.append('file', imageFile);
         try {
-            const res = await directusRequest<any>(uploadFiles(fileData));
+            const res = await getUserDirectus(session.session.token).request(uploadFiles(fileData));
             imageId = res.id;
         } catch (e) {
             console.error('Image upload failed', e);
@@ -205,7 +209,7 @@ export async function createActivityAction(prevState: any, formData: FormData) {
     if (imageId) directusPayload.image = imageId;
 
     try {
-        const res = await directusRequest<any>(createItem('events', directusPayload));
+        const res = await getUserDirectus(session.session.token).request(createItem('events', directusPayload));
         await logAdminAction('create', 'events', res.id, directusPayload);
 
         revalidateTag('events', 'default');
@@ -229,7 +233,7 @@ export async function updateActivityAction(eventId: number, prevState: any, form
 
     try {
         // Fetch existing to check committee ownership if not powerful
-        const existing = await directusRequest<any[]>(readItems('events', {
+        const existing = await getSystemDirectus().request(readItems('events', {
             fields: ['committee_id'],
             filter: { id: { _eq: eventId } },
             limit: 1
@@ -249,7 +253,7 @@ export async function updateActivityAction(eventId: number, prevState: any, form
         if (imageFile && imageFile.size > 0 && imageFile.name !== 'undefined') {
             const fileData = new FormData();
             fileData.append('file', imageFile);
-            const res = await directusRequest<any>(uploadFiles(fileData));
+            const res = await getUserDirectus(session.session.token).request(uploadFiles(fileData));
             imageId = res.id;
         } else if (removeImage) {
             imageId = null;
@@ -277,7 +281,7 @@ export async function updateActivityAction(eventId: number, prevState: any, form
         
         if (imageId !== undefined) directusPayload.image = imageId;
 
-        await directusRequest(updateItem('events', eventId, directusPayload));
+        await getUserDirectus(session.session.token).request(updateItem('events', eventId, directusPayload));
         await logAdminAction('update', 'events', eventId, directusPayload);
 
         revalidateTag('events', 'default');

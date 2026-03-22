@@ -10,16 +10,14 @@ import {
     type PubCrawlSignup 
 } from '@salvemundi/validations';
 
-const getDirectusUrl = () => process.env.INTERNAL_DIRECTUS_URL;
-
-const getDirectusHeaders = (): HeadersInit => {
-    const token = process.env.DIRECTUS_STATIC_TOKEN;
-    if (!token) throw new Error('DIRECTUS_STATIC_TOKEN is missing');
-    return {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-    };
-};
+import { getSystemDirectus } from '@/lib/directus';
+import { 
+    readItems, 
+    readItem, 
+    updateItem, 
+    deleteItem, 
+    createItem 
+} from '@directus/sdk';
 
 /**
  * Access check for Pub Crawl Admin
@@ -42,116 +40,138 @@ async function requireKroegAdmin() {
 
 export async function getPubCrawlEvents(): Promise<PubCrawlEvent[]> {
     await requireKroegAdmin();
-    const res = await fetch(`${getDirectusUrl()}/items/pub_crawl_events?sort=-date&limit=100`, {
-        headers: getDirectusHeaders(),
-        next: { tags: ['kroegentocht-events'] }
-    });
-    if (!res.ok) throw new Error('Kon events niet ophalen');
-    const json = await res.json();
-    return (json.data ?? []).map((e: any) => pubCrawlEventSchema.parse(e));
+    try {
+        const items = await getSystemDirectus().request(readItems('pub_crawl_events', {
+            sort: ['-date'],
+            limit: 100,
+            fields: ['id', 'name', 'date', 'price', 'max_tickets_per_person']
+        }));
+        return (items ?? []).map((e: any) => pubCrawlEventSchema.parse(e));
+    } catch (e) {
+        console.error('[AdminKroegentocht] Fetch events failed:', e);
+        throw new Error('Kon events niet ophalen');
+    }
 }
 
 export async function getPubCrawlEvent(id: string | number): Promise<PubCrawlEvent> {
     await requireKroegAdmin();
-    const res = await fetch(`${getDirectusUrl()}/items/pub_crawl_events/${id}`, {
-        headers: getDirectusHeaders()
-    });
-    if (!res.ok) throw new Error('Kon event niet ophalen');
-    const json = await res.json();
-    return pubCrawlEventSchema.parse(json.data);
+    try {
+        const item = await getSystemDirectus().request(readItem('pub_crawl_events', id, {
+            fields: ['id', 'name', 'date', 'price', 'max_tickets_per_person']
+        }));
+        return pubCrawlEventSchema.parse(item);
+    } catch (e) {
+        console.error('[AdminKroegentocht] Fetch event failed:', e);
+        throw new Error('Kon event niet ophalen');
+    }
 }
 
 export async function upsertPubCrawlEvent(data: Partial<PubCrawlEvent>) {
-    await requireKroegAdmin();
+    const session = await requireKroegAdmin();
     const { id, ...payload } = data;
-    const method = id ? 'PATCH' : 'POST';
-    const url = id 
-        ? `${getDirectusUrl()}/items/pub_crawl_events/${id}` 
-        : `${getDirectusUrl()}/items/pub_crawl_events`;
-
-    const res = await fetch(url, {
-        method,
-        headers: getDirectusHeaders(),
-        body: JSON.stringify(payload),
-    });
-
-    if (!res.ok) throw new Error('Opslaan van event mislukt');
-    revalidateTag('kroegentocht-events', 'default');
-    revalidateTag('kroegentocht-event', 'default');
-    return { success: true };
+    
+    try {
+        if (id) {
+            await getUserDirectus(session.session.token).request(updateItem('pub_crawl_events', id, payload));
+        } else {
+            await getUserDirectus(session.session.token).request(createItem('pub_crawl_events', payload));
+        }
+        revalidateTag('kroegentocht-events', 'default');
+        revalidateTag('kroegentocht-event', 'default');
+        return { success: true };
+    } catch (e) {
+        console.error('[AdminKroegentocht] Upsert event failed:', e);
+        throw new Error('Opslaan van event mislukt');
+    }
 }
 
 // ── Signups ────────────────────────────────────────────────────────────────
 
 export async function getPubCrawlSignups(eventId: number) {
     await requireKroegAdmin();
-    const res = await fetch(
-        `${getDirectusUrl()}/items/pub_crawl_signups?filter[pub_crawl_event_id][_eq]=${eventId}&fields=*,tickets.*&limit=1000&sort=-created_at`,
-        { headers: getDirectusHeaders(), next: { tags: [`signups-${eventId}`] } }
-    );
-    if (!res.ok) throw new Error('Kon aanmeldingen niet ophalen');
-    const json = await res.json();
-    
-    // In V7/Directus signups table has "tickets" relation (o2m)
-    return (json.data ?? []).map((s: any) => ({
-        ...s,
-        participants: s.tickets?.map((t: any) => ({ name: t.name, initial: t.initial })) ?? []
-    }));
+    try {
+        const items = await getSystemDirectus().request(readItems('pub_crawl_signups', {
+            filter: { pub_crawl_event_id: { _eq: eventId } },
+            fields: [
+                'id', 'pub_crawl_event_id', 'name', 'email', 'association', 
+                'amount_tickets', 'name_initials', 'payment_status', 'approval_status', 
+                'date_created',
+                { tickets: ['id', 'name', 'initial', 'qr_token', 'checked_in'] }
+            ] as any,
+            limit: 1000,
+            sort: ['-created_at']
+        }));
+
+        return (items ?? []).map((s: any) => ({
+            ...s,
+            participants: s.tickets?.map((t: any) => ({ name: t.name, initial: t.initial })) ?? []
+        }));
+    } catch (e) {
+        console.error('[AdminKroegentocht] Fetch signups failed:', e);
+        throw new Error('Kon aanmeldingen niet ophalen');
+    }
 }
 
 export async function getPubCrawlSignup(id: number) {
     await requireKroegAdmin();
-    const res = await fetch(
-        `${getDirectusUrl()}/items/pub_crawl_signups/${id}?fields=*,tickets.*`,
-        { headers: getDirectusHeaders() }
-    );
-    if (!res.ok) throw new Error('Kon aanmelding niet ophalen');
-    const json = await res.json();
-    return json.data;
+    try {
+        const item = await getSystemDirectus().request(readItem('pub_crawl_signups', id, {
+            fields: [
+                'id', 'pub_crawl_event_id', 'name', 'email', 'association', 
+                'amount_tickets', 'name_initials', 'payment_status', 'approval_status', 
+                'date_created',
+                { tickets: ['id', 'name', 'initial', 'qr_token', 'checked_in'] }
+            ] as any
+        }));
+        return item;
+    } catch (e) {
+        console.error('[AdminKroegentocht] Fetch signup failed:', e);
+        throw new Error('Kon aanmelding niet ophalen');
+    }
 }
 
 export async function deletePubCrawlSignup(id: number, eventId: number) {
-    await requireKroegAdmin();
-    const res = await fetch(`${getDirectusUrl()}/items/pub_crawl_signups/${id}`, {
-        method: 'DELETE',
-        headers: getDirectusHeaders(),
-    });
-    if (!res.ok) throw new Error('Verwijderen mislukt');
-    revalidateTag(`signups-${eventId}`, 'default');
-    return { success: true };
+    const session = await requireKroegAdmin();
+    try {
+        await getUserDirectus(session.session.token).request(deleteItem('pub_crawl_signups', id));
+        revalidateTag(`signups-${eventId}`, 'default');
+        return { success: true };
+    } catch (e) {
+        console.error('[AdminKroegentocht] Delete signup failed:', e);
+        throw new Error('Verwijderen mislukt');
+    }
 }
 
 export async function updatePubCrawlSignup(id: number, eventId: number, data: any) {
-    await requireKroegAdmin();
-    const res = await fetch(`${getDirectusUrl()}/items/pub_crawl_signups/${id}`, {
-        method: 'PATCH',
-        headers: getDirectusHeaders(),
-        body: JSON.stringify(data),
-    });
-    if (!res.ok) throw new Error('Bijwerken mislukt');
-    revalidateTag(`signups-${eventId}`, 'default');
-    return { success: true };
+    const session = await requireKroegAdmin();
+    try {
+        await getUserDirectus(session.session.token).request(updateItem('pub_crawl_signups', id, data));
+        revalidateTag(`signups-${eventId}`, 'default');
+        return { success: true };
+    } catch (e) {
+        console.error('[AdminKroegentocht] Update signup failed:', e);
+        throw new Error('Bijwerken mislukt');
+    }
 }
 
 // ── Settings ───────────────────────────────────────────────────────────────
 
 export async function toggleKroegentochtVisibility(current: boolean) {
-    await requireKroegAdmin();
+    const session = await requireKroegAdmin();
     const key = 'kroegentocht';
     const payload = { id: key, show: !current };
     
-    const patchRes = await fetch(`${getDirectusUrl()}/items/site_settings/${key}`, {
-        method: 'PATCH',
-        headers: getDirectusHeaders(),
-        body: JSON.stringify(payload),
-    });
-
-    if (!patchRes.ok) {
-        await fetch(`${getDirectusUrl()}/items/site_settings`, {
-            method: 'POST',
-            headers: getDirectusHeaders(),
-            body: JSON.stringify(payload),
-        });
+    try {
+        // Try update first
+        await getUserDirectus(session.session.token).request(updateItem('site_settings', key, payload));
+    } catch (e) {
+        // If update fails, try create
+        try {
+            await getUserDirectus(session.session.token).request(createItem('site_settings', payload));
+        } catch (postErr) {
+            console.error('[AdminKroegentocht] Toggle visibility failed:', postErr);
+            throw new Error('Bijwerken mislukt');
+        }
     }
 
     revalidateTag('site_settings', 'default');
@@ -160,12 +180,12 @@ export async function toggleKroegentochtVisibility(current: boolean) {
 
 export async function getKroegentochtSettings() {
     await requireKroegAdmin();
-    const res = await fetch(`${getDirectusUrl()}/items/site_settings/kroegentocht`, {
-        headers: getDirectusHeaders(),
-        next: { tags: ['site_settings'] }
-    });
-    if (!res.ok) return { show: true };
-    const json = await res.json();
-    return json.data;
+    try {
+        const item = await getSystemDirectus().request(readItem('site_settings', 'kroegentocht'));
+        return item;
+    } catch (e) {
+        console.error('[AdminKroegentocht] Get settings failed:', e);
+        return { show: true };
+    }
 }
 

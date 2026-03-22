@@ -10,7 +10,7 @@ import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { revalidateTag } from 'next/cache';
 import { rateLimit } from '../utils/ratelimit';
-import { directus, directusRequest } from '@/lib/directus';
+import { getSystemDirectus } from '@/lib/directus';
 import { readItem } from '@directus/sdk';
 
 
@@ -141,12 +141,14 @@ export async function getTransactionStatusAction(transactionId: string) {
     }
 
     try {
-        const transaction = await directusRequest<any>(readItem('transactions', parsed.data.id));
+        const transaction = await getSystemDirectus().request(readItem('transactions', parsed.data.id, {
+            fields: ['id', 'user_id', 'payment_status', 'amount', 'date_created']
+        }));
 
         if (transaction?.payment_status === 'paid') {
             // Revalidate user data if payment was successful
             if (transaction.user_id) {
-                const userId = typeof transaction.user_id === 'object' ? transaction.user_id.id : transaction.user_id;
+                const userId = typeof (transaction as any).user_id === 'object' ? (transaction as any).user_id.id : (transaction as any).user_id;
                 revalidateTag(`user-${userId}`, 'default');
             }
             return { status: 'paid' };

@@ -9,6 +9,8 @@ import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
 import type { HeroBanner, Activiteit } from '@salvemundi/validations';
+import { getImageUrl } from '@/lib/image-utils';
+
 
 interface HeroIslandProps {
     // Gevalideerde data vanuit de server (getHeroBanners / getUpcomingActiviteiten)
@@ -35,34 +37,25 @@ export function HeroIsland({ banners, activiteiten }: HeroIslandProps) {
     const { data: session, isPending: authLoading } = authClient.useSession();
     const isAuthenticated = !!session?.user;
 
-    // Mount-gate: voorkomt hydration mismatch (zelfde patroon als JoinSectionIsland)
     const [mounted, setMounted] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
     const imageRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => { setMounted(true); }, []);
-
-    // Client-only check voor mobiel scherm (Swiper vermijden op mobile)
-    const [isMobile, setIsMobile] = useState(false);
     useEffect(() => {
-        if (typeof window === 'undefined') return;
-        const mq = window.matchMedia('(max-width: 639px)');
-        const apply = () => setIsMobile(mq.matches);
-        apply();
-        mq.addEventListener('change', apply);
-        return () => mq.removeEventListener('change', apply);
+        setMounted(true);
+        const checkMobile = () => setIsMobile(window.innerWidth < 640);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
-    // Afbeeldings-URLs ophalen vanuit banner data (via interne asset proxy)
     const slideUrls = useMemo(() => {
-        if (banners.length > 0) {
-            return banners
-                .filter((b) => !!b.afbeelding_id)
-                .map((b) => `/api/assets/${b.afbeelding_id}`);
-        }
-        return ['/img/newlogo.png'];
+        if (!banners.length) return ['/images/placeholder-hero.jpg'];
+        return banners
+            .sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))
+            .map((b) => getImageUrl(b.afbeelding_id, { width: 1200, height: 800, fit: 'cover' }) || '/images/placeholder-hero.jpg');
     }, [banners]);
 
-    // Eerstvolgende evenement bepalen (zelfde logica als legacy Hero)
     const nextEvent = useMemo(() => {
         if (!activiteiten.length) return null;
         const now = new Date();

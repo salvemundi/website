@@ -1,4 +1,5 @@
 import type { Sponsor } from '@salvemundi/validations';
+import { getImageUrl } from '@/lib/image-utils';
 
 interface SponsorsSectionProps {
     sponsors: Sponsor[];
@@ -42,9 +43,7 @@ export function SponsorsSection({ sponsors }: SponsorsSectionProps) {
                             const key = `${sponsor.sponsor_id}-${index}`;
 
                             // Afbeelding-URL via interne Directus asset-proxy
-                            const src = sponsor.image
-                                ? `/api/assets/${sponsor.image}`
-                                : '/img/newlogo.png';
+                            const src = getImageUrl(sponsor.image) || '/img/newlogo.png';
 
                             // Per-sponsor achtergrondvoorkeur (dark_bg al genormaliseerd via Zod)
                             const cls = `sponsor-item ${sponsor.dark_bg ? 'sponsor-dark-bg' : 'sponsor-light-bg'}`;

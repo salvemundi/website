@@ -5,10 +5,11 @@ import { useRouter } from 'next/navigation';
 import { Search, Download, Users, Plane, Edit, Trash2, Loader2, AlertCircle, UserCheck, UserX, Send } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Trip, TripSignup, TripSignupActivity } from '@salvemundi/validations';
-import { updateSignupStatus, deleteTripSignup, sendPaymentEmail, getSignupActivities } from '@/server/actions/admin-reis.actions';
+import { updateSignupStatus, deleteTripSignup, sendPaymentEmail } from '@/server/actions/admin-reis.actions';
 
 interface AdminReisTableIslandProps {
     initialSignups: TripSignup[];
+    initialSignupActivities: Record<number, TripSignupActivity[]>;
     trip: Trip;
     stats: {
         total: number;
@@ -19,7 +20,7 @@ interface AdminReisTableIslandProps {
     }
 }
 
-export default function AdminReisTableIsland({ initialSignups, trip, stats }: AdminReisTableIslandProps) {
+export default function AdminReisTableIsland({ initialSignups, initialSignupActivities, trip, stats }: AdminReisTableIslandProps) {
     const router = useRouter();
     const [signups, setSignups] = useState<TripSignup[]>(initialSignups);
     const [searchQuery, setSearchQuery] = useState('');
@@ -27,9 +28,8 @@ export default function AdminReisTableIsland({ initialSignups, trip, stats }: Ad
     const [roleFilter, setRoleFilter] = useState<string>('all');
 
     const [expandedIds, setExpandedIds] = useState<number[]>([]);
-    const [signupActivitiesMap, setSignupActivitiesMap] = useState<Record<number, TripSignupActivity[]>>({});
+    const [signupActivitiesMap] = useState<Record<number, TripSignupActivity[]>>(initialSignupActivities);
     const [sendingEmailTo, setSendingEmailTo] = useState<{ signupId: number; type: string } | null>(null);
-    const [isLoadingActivities, setIsLoadingActivities] = useState<Record<number, boolean>>({});
 
     const filteredSignups = signups.filter(signup => {
         if (searchQuery) {
@@ -42,32 +42,17 @@ export default function AdminReisTableIsland({ initialSignups, trip, stats }: Ad
         return true;
     });
 
-    const pendingActions = {
+    const [actionStates, setActionStates] = useState({
         delete: new Set<number>(),
         status: new Set<number>()
-    };
-    const [actionStates, setActionStates] = useState(pendingActions);
+    });
 
-    const toggleExpand = async (signup: TripSignup) => {
+    const toggleExpand = (signup: TripSignup) => {
         if (expandedIds.includes(signup.id)) {
             setExpandedIds(prev => prev.filter(id => id !== signup.id));
             return;
         }
-
         setExpandedIds(prev => [...prev, signup.id]);
-
-        if (!signupActivitiesMap[signup.id]) {
-            setIsLoadingActivities(prev => ({ ...prev, [signup.id]: true }));
-            try {
-                const activities = await getSignupActivities(signup.id);
-                setSignupActivitiesMap(prev => ({ ...prev, [signup.id]: activities }));
-            } catch (err) {
-                console.error('Failed to load signup activities:', err);
-                setSignupActivitiesMap(prev => ({ ...prev, [signup.id]: [] }));
-            } finally {
-                setIsLoadingActivities(prev => ({ ...prev, [signup.id]: false }));
-            }
-        }
     };
 
     const handleStatusChange = async (id: number, newStatus: string) => {
@@ -88,7 +73,7 @@ export default function AdminReisTableIsland({ initialSignups, trip, stats }: Ad
         try {
             const res = await updateSignupStatus(id, newStatus);
             if (res.success) {
-                setSignups(signups.map(s => s.id === id ? { ...s, status: newStatus } : s));
+                setSignups(signups.map(s => s.id === id ? { ...s, status: newStatus as any } : s));
             } else {
                 alert(res.error || 'Er is een fout opgetreden bij het updaten van de status.');
             }
@@ -172,19 +157,13 @@ export default function AdminReisTableIsland({ initialSignups, trip, stats }: Ad
         if (filteredSignups.length === 0) return;
 
         try {
-            // Dynamic import of heavy xlsx library (Performance optimization)
             const XLSX = await import('xlsx');
-
-            // Note: in a real big system we would lazy load ALL activities first if needed, 
-            // for now we use what we have in signupActivitiesMap or fetch them dynamically
-            // But this mirrors legacy behaviour exactly for V7
 
             const excelData = filteredSignups.map(signup => {
                 const idDoc = signup.id_document_type || '';
                 const idDocLabel = idDoc === 'passport' ? 'Paspoort' : idDoc === 'id_card' ? 'ID Kaart' : idDoc;
 
                 const activities = signupActivitiesMap[signup.id] || [];
-                // Simplified activity extraction exactly as legacy
                 const activitiesStr = activities.map(a => a.trip_activity_id?.name || a.trip_activity_id).join(', ');
 
                 return {
@@ -349,7 +328,6 @@ export default function AdminReisTableIsland({ initialSignups, trip, stats }: Ad
                         <Download className="h-5 w-5" />
                         Export naar Excel
                     </button>
-                    {/* Reis Instellingen (Legacy kept it here too, but could be on page level) */}
                     <button
                         onClick={() => router.push('/beheer/reis/instellingen')}
                         className="flex items-center justify-center gap-2 px-4 py-2 bg-theme-purple text-white rounded-lg hover:bg-theme-purple-dark transition w-full sm:w-auto"
@@ -468,16 +446,10 @@ export default function AdminReisTableIsland({ initialSignups, trip, stats }: Ad
                                                             </div>
                                                             <div>
                                                                 <p className="text-sm font-semibold text-admin">Activiteiten</p>
-                                                                {isLoadingActivities[signup.id] ? (
-                                                                    <div className="flex items-center gap-2">
-                                                                        <Loader2 className="h-4 w-4 animate-spin text-theme-purple" />
-                                                                        <span className="text-sm text-admin-muted">Activiiteiten ophalen...</span>
-                                                                    </div>
-                                                                ) : signupActivitiesMap[signup.id] ? (
+                                                                {signupActivitiesMap[signup.id] ? (
                                                                     signupActivitiesMap[signup.id].length > 0 ? (
                                                                         signupActivitiesMap[signup.id].map(a => (
                                                                             <div key={a.id} className="flex items-center justify-between text-sm text-admin">
-                                                                                {/* V7 Simplified relation display */}
                                                                                 <span>{a.trip_activity_id?.name || 'Activiteit ID ' + a.trip_activity_id}</span>
                                                                             </div>
                                                                         ))

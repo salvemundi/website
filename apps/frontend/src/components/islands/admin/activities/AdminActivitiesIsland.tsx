@@ -8,6 +8,7 @@ import { deleteActivity, sendActivityReminder, sendActivityCustomNotification } 
 import PageHeader from '@/components/ui/layout/PageHeader';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
+import { getImageUrl } from '@/lib/image-utils';
 import { isSuperAdmin } from '@/lib/auth-utils';
 
 interface AdminActivity {
@@ -128,11 +129,6 @@ export default function AdminActivitiesIsland({
         }
     };
 
-    const getImageUrl = (image?: { id: string } | string | null) => {
-        if (!image) return '/img/placeholder.svg';
-        const imageId = typeof image === 'object' ? image.id : image;
-        return `/api/assets/${imageId}`;
-    };
 
     const formatDate = (date: string) => {
         return format(new Date(date), 'dd MMMM yyyy', { locale: nl });
@@ -214,7 +210,7 @@ export default function AdminActivitiesIsland({
                                         <div className="flex items-start gap-5 flex-1 min-w-0">
                                             <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-28 md:h-28 flex-shrink-0 group-hover/card:scale-105 transition-transform duration-500">
                                                 <Image
-                                                    src={getImageUrl(event.image)}
+                                                    src={getImageUrl(event.image) || '/img/placeholder.svg'}
                                                     alt={event.name}
                                                     fill
                                                     className="object-cover rounded-2xl shadow-md border border-slate-100 dark:border-slate-700"

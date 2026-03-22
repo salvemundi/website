@@ -25,6 +25,7 @@ import {
     updateTrip, 
     deleteTrip 
 } from '@/server/actions/admin-reis.actions';
+import { getImageUrl } from '@/lib/image-utils';
 import type { Trip } from '@salvemundi/validations';
 
 interface ReisInstellingenIslandProps {
@@ -278,7 +279,7 @@ function TripCard({ trip, onEdit, onDelete, isDeleting }: any) {
                 
                 {trip.image ? (
                     <img 
-                        src={`/api/assets/${trip.image}?width=600&height=400&fit=cover`} 
+                        src={getImageUrl(trip.image, { width: 600, height: 400, fit: 'cover' }) || '/img/newlogo.png'} 
                         alt={trip.name}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
