@@ -11,16 +11,14 @@ const nextConfig: NextConfig = {
     },
     images: {
         remotePatterns: [
-            {
-                protocol: 'https',
-                hostname: 'admin.salvemundi.nl',
-                pathname: '/assets/**',
-            },
-            {
-                protocol: 'https',
-                hostname: 'acc.salvemundi.nl',
-                pathname: '/assets/**',
-            },
+            ...(process.env.NEXT_PUBLIC_DIRECTUS_URL 
+                ? [{
+                    protocol: new URL(process.env.NEXT_PUBLIC_DIRECTUS_URL).protocol.replace(':', '') as 'http' | 'https',
+                    hostname: new URL(process.env.NEXT_PUBLIC_DIRECTUS_URL).hostname,
+                    pathname: '/assets/**',
+                  }]
+                : []
+            ),
             {
                 protocol: 'http',
                 hostname: 'localhost',

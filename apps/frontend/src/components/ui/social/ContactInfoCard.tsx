@@ -4,6 +4,7 @@ import { getDocumenten } from '@/server/actions/website.actions';
 import DocumentenLijst from '@/components/ui/social/DocumentenLijst';
 import SafeHavenButton from '@/components/islands/social/SafeHavenButton';
 import WhatsAppLink from '@/components/islands/social/WhatsAppLink';
+import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 
 /**
  * Skeleton voor de documentenlijst om layout shift (CLS) te voorkomen.
@@ -119,12 +120,9 @@ function ContactKaart() {
                         <span className="text-2xl" aria-hidden="true">✉️</span>
                     </div>
                     <div>
-                        <a
-                            href="mailto:info@salvemundi.nl"
-                            className="text-[var(--text-main)] text-[1.3rem] font-bold hover:opacity-80 transition-opacity"
-                        >
-                            info@salvemundi.nl
-                        </a>
+                    <div className="text-[var(--text-main)] text-[1.3rem] font-bold">
+                        <ObfuscatedEmail email="info@salvemundi.nl" showIcon={false} />
+                    </div>
                     </div>
                 </div>
 

@@ -521,7 +521,7 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
                             <QuickLink
                                 label="Admin panel"
                                 icon={<Shield className="h-6 w-6" />}
-                                href="https://admin.salvemundi.nl"
+                                href={process.env.NEXT_PUBLIC_DIRECTUS_URL || "#"}
                                 external
                             />
                         )}

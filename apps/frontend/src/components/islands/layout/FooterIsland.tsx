@@ -6,6 +6,7 @@ import { Instagram, Facebook, Linkedin } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
 import { ROUTES } from '@/lib/routes';
 import type { Committee, Document } from '@salvemundi/validations';
+import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 // Alle data wordt server-side opgehaald en als props doorgegeven.
@@ -174,9 +175,11 @@ const FooterIsland: React.FC<FooterIslandProps> = ({ documents, disabledRoutes =
                         <h3 className={HEADING_CLS}>Contact</h3>
                         <ul className="space-y-2 text-sm mb-6">
                             <li>
-                                <a href="mailto:info@salvemundi.nl" className={LINK_CLS}>
-                                    info@salvemundi.nl
-                                </a>
+                                <ObfuscatedEmail 
+                                    email="info@salvemundi.nl" 
+                                    className={LINK_CLS} 
+                                    showIcon={false} 
+                                />
                             </li>
                             <li>
                                 <a href="tel:+31624827777" className={LINK_CLS}>

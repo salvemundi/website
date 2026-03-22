@@ -3,6 +3,7 @@ import type { Committee } from '@salvemundi/validations';
 import Image from 'next/image';
 import { getImageUrl } from '@/lib/image-utils';
 import { Mail, Users, UserCheck } from 'lucide-react';
+import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 
 interface CommitteeDetailProps {
     committee: Committee;
@@ -43,12 +44,9 @@ export const CommitteeDetail: React.FC<CommitteeDetailProps> = ({ committee }) =
                                 <Mail className="h-5 w-5 text-[var(--color-purple-500)]" />
                                 Contact
                             </h3>
-                            <a 
-                                href={`mailto:${committee.email}`}
-                                className="text-[var(--color-purple-500)] font-medium hover:underline break-all"
-                            >
-                                {committee.email}
-                            </a>
+                            <div className="text-[var(--color-purple-500)] font-medium break-all">
+                                <ObfuscatedEmail email={committee.email} showIcon={false} />
+                            </div>
                         </div>
                     )}
 
