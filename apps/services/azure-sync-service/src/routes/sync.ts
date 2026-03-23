@@ -20,12 +20,16 @@ export default async function syncRoutes(fastify: FastifyInstance) {
         const expectedHeader = `Bearer ${token}`;
         const trimmedAuth = authHeader.trim();
         
-        // Debug lengths (safe as it doesn't log secrets)
+        // Byte-level comparison of the START of the strings (safe)
+        const getBytes = (s: string | undefined) => s ? s.substring(0, 10).split('').map(c => c.charCodeAt(0)).join(',') : 'none';
+
         fastify.log.info({ 
+            match: trimmedAuth === expectedHeader,
             receivedLen: trimmedAuth.length, 
             expectedLen: expectedHeader.length,
-            directMatch: trimmedAuth === expectedHeader
-        }, 'AUTH_DEBUG');
+            receivedStartBytes: getBytes(trimmedAuth),
+            expectedStartBytes: getBytes(expectedHeader)
+        }, 'AUTH_DETAIL_DEBUG');
 
         if (!authHeader || trimmedAuth !== expectedHeader) {
             return reply.status(401).send({ error: 'Unauthorized' });

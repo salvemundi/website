@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
 import { isSuperAdmin } from "@/lib/auth-utils";
 
-const AZURE_SYNC_URL = process.env.AZURE_SYNC_SERVICE_URL;
+const AZURE_SYNC_URL = "http://sync-service:3002";
 const INTERNAL_TOKEN = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
 
 async function checkSyncAccess() {
