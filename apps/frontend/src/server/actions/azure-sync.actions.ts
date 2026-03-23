@@ -131,16 +131,19 @@ export async function stopSyncAction() {
 
     try {
         const redis = await getRedis();
+        // 1. Signal the job via a separate key so it doesn't get clobbered
+        await redis.set('v7:sync:abort', 'true', 'EX', 600); // 10 min TTL
+
+        // 2. Also update status for immediate UI feedback if possible
         const data = await redis.get('v7:sync:status');
         if (data) {
             const status = JSON.parse(data);
             if (status.active) {
                 status.abortRequested = true;
                 await redis.set('v7:sync:status', JSON.stringify(status), 'EX', 86400 * 7);
-                return { success: true };
             }
         }
-        return { success: false, error: "Geen actieve synchronisatie gevonden." };
+        return { success: true };
     } catch (error: any) {
         console.error('[Action] stopSyncAction error:', error);
         return { success: false, error: error.message };

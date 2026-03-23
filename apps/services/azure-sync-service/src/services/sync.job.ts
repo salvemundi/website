@@ -40,19 +40,8 @@ interface SyncContext {
 }
 
 export class SyncJob {
-    private static REDIS_KEY = 'v7:sync:status';
-    private static statusLock: Promise<void> = Promise.resolve();
-
-    private static async acquireStatusLock(): Promise<() => void> {
-        let release: () => void;
-        const nextLock = new Promise<void>((resolve) => {
-            release = resolve;
-        });
-        const currentLock = this.statusLock;
-        this.statusLock = currentLock.then(() => nextLock);
-        await currentLock;
-        return release!;
-    }
+    private static readonly REDIS_KEY = 'v7:sync:status';
+    private static readonly ABORT_KEY = 'v7:sync:abort';
 
     private static defaultStatus: SyncStatus = {
         active: false,
@@ -83,19 +72,14 @@ export class SyncJob {
     }
 
     private static async persistStatus(redis: Redis, status: SyncStatus, forceJobIdMatch: boolean = true) {
-        const release = await this.acquireStatusLock();
-        try {
-            if (forceJobIdMatch) {
-                const existing = await this.getStatus(redis);
-                if (existing.jobId && existing.jobId !== status.jobId) {
-                    console.warn(`[SYNC] Ghost job detected (${status.jobId}). Will not overwrite ${existing.jobId}`);
-                    return;
-                }
+        if (forceJobIdMatch) {
+            const current = await this.getStatus(redis);
+            if (current.jobId && current.jobId !== status.jobId && current.active) {
+                console.warn(`[SYNC] Ghost job detected (${status.jobId}). Will not overwrite running job ${current.jobId}`);
+                return;
             }
-            await redis.set(this.REDIS_KEY, JSON.stringify(status), 'EX', 86400 * 7);
-        } finally {
-            release();
         }
+        await redis.set(this.REDIS_KEY, JSON.stringify(status), 'EX', 86400 * 7);
     }
 
     static parseAzureDate(dateStr?: string): string | null {
@@ -127,12 +111,21 @@ export class SyncJob {
 
     static async run(redis: Redis, options: SyncOptions = { fields: [] }) {
         const jobId = Math.random().toString(36).substring(2, 11);
-        console.log(`[SYNC] Starting synchronization job ${jobId}...`);
+
+        // 1. Mutex: prevent duplicate runs
+        const current = await this.getStatus(redis);
+        if (current.active && current.status === 'running') {
+            console.log(`[SYNC] Job ${jobId} failed to start. Another job (${current.jobId}) is already running.`);
+            return;
+        }
+
+        console.log(`[SYNC] [${jobId}] Starting synchronization job...`);
+        await redis.del(this.ABORT_KEY); // Clean start for abort signals
 
         try {
             const initialToken = await TokenService.getAccessToken(redis);
             const azureUsers = await GraphService.getAllUsers(initialToken);
-            console.log(`[SYNC] Found ${azureUsers.length} users in Azure AD.`);
+            console.log(`[SYNC] [${jobId}] Found ${azureUsers.length} users in Azure AD.`);
 
             const committees = await DirectusService.getAllCommittees();
             const committeeCache = new Map<string, any>();
@@ -161,34 +154,34 @@ export class SyncJob {
             // Force initial persist to clear any old status and set the jobId
             await redis.set(this.REDIS_KEY, JSON.stringify(status), 'EX', 86400 * 7);
 
-            const chunkSize = 15; 
-            for (let i = 0; i < azureUsers.length; i += chunkSize) {
-                // ABORT CHECK
-                const latest = await this.getStatus(redis);
-                if (latest.jobId === jobId && latest.abortRequested) {
-                    console.log(`[SYNC] Abort requested for job ${jobId}.`);
-                    status.active = false;
-                    status.status = 'aborted';
-                    status.endTime = new Date().toISOString();
-                    await this.persistStatus(redis, status);
-                    return;
-                }
-
-                const chunk = azureUsers.slice(i, i + chunkSize);
-                console.log(`[SYNC] Processing chunk ${Math.floor(i / chunkSize) + 1} of ${Math.ceil(azureUsers.length / chunkSize)}...`);
-                
-                ctx.token = await TokenService.getAccessToken(redis);
-
-                await Promise.all(chunk.map(async (aUser) => {
-                    const email = (aUser.mail || aUser.userPrincipalName || 'Unknown').toLowerCase();
-                    
-                    if (this.shouldExcludeUser(email)) {
-                        status.excludedCount++;
-                        status.excludedUsers.push({ email });
-                        status.processed++;
+            // We'll process users in a more granular way to keep the event loop responsive
+            for (let i = 0; i < azureUsers.length; i++) {
+                // 1. HIGH-FREQUENCY ABORT CHECK
+                // We check every single user to ensure the "Stop" button is instant.
+                if (i % 5 === 0) {
+                    const abort = await redis.get(this.ABORT_KEY);
+                    if (abort) {
+                        console.log(`[SYNC] [${jobId}] Interrupt requested at user ${i}. Aborting sync.`);
+                        status.active = false;
+                        status.status = 'aborted';
+                        status.endTime = new Date().toISOString();
+                        await this.persistStatus(redis, status, false);
                         return;
                     }
+                }
 
+                const aUser = azureUsers[i];
+                const email = (aUser.mail || aUser.userPrincipalName || 'Unknown').toLowerCase();
+
+                // 2. YIELD to event loop
+                // This ensures Fastify can handle status requests even during heavy synchronization.
+                await new Promise(resolve => setImmediate(resolve));
+
+                if (this.shouldExcludeUser(email)) {
+                    status.excludedCount++;
+                    status.excludedUsers.push({ email });
+                    status.processed++;
+                } else {
                     try {
                         await this.syncUser(ctx, aUser);
                         status.processed++;
@@ -201,19 +194,25 @@ export class SyncJob {
                         });
                         status.processed++;
                     }
-                }));
+                }
 
-                // Persist status after each chunk
-                await this.persistStatus(redis, status);
+                // 3. PERIODIC PROGRESS UPDATE
+                // Only persist to Redis every 10 users to avoid overhead, or if it's the last one.
+                if (i % 10 === 0 || i === azureUsers.length - 1) {
+                    // Update the status object and persist
+                    // Refresh token if needed
+                    ctx.token = await TokenService.getAccessToken(redis);
+                    await this.persistStatus(redis, status);
+                }
             }
 
             status.active = false;
             status.status = 'completed';
             status.endTime = new Date().toISOString();
             await this.persistStatus(redis, status);
-            console.log('[SYNC] Completed synchronization job.');
+            console.log(`[SYNC] [${jobId}] Finished normally.`);
         } catch (error: any) {
-            console.error('[SYNC] Fatal error during synchronization:', error);
+            console.error(`[SYNC] [${jobId}] Fatal error:`, error);
             const currentStatus = await this.getStatus(redis);
             currentStatus.active = false;
             currentStatus.status = 'failed';

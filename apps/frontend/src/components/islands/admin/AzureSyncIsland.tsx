@@ -49,6 +49,7 @@ export default function AzureSyncIsland() {
     const [isUserSyncLoading, setIsUserSyncLoading] = useState(false);
     const [userId, setUserId] = useState('');
     const [error, setError] = useState<string | null>(null);
+    const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
     const [selectedSyncFields, setSelectedSyncFields] = useState<string[]>(['membership_expiry', 'geboortedatum', 'phone_number', 'committees']);
     const [forceLink, setForceLink] = useState(false);
@@ -60,6 +61,7 @@ export default function AzureSyncIsland() {
             const data = await getSyncStatusAction();
             if (data && 'status' in data) {
                 setStatus(data as SyncStatus);
+                setLastUpdated(new Date());
             }
         } catch (err) {
             console.error('Failed to fetch sync status:', err);
@@ -166,7 +168,7 @@ export default function AzureSyncIsland() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Configuration Card */}
                 <div className="lg:col-span-2 space-y-8">
-                    <section className="bg-white/80 dark:bg-slate-900/50 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl shadow-indigo-500/5 border border-white/20 dark:border-white/5">
+                    <section className="bg-white dark:bg-slate-800 p-8 rounded-[2rem] shadow-sm ring-1 ring-slate-200 dark:ring-slate-700/50">
                         <div className="flex items-center justify-between mb-8">
                             <div className="flex items-center gap-4">
                                 <div className="p-3 bg-indigo-500/10 rounded-2xl text-indigo-500">
@@ -265,7 +267,7 @@ export default function AzureSyncIsland() {
 
                 {/* Individual Sync Card */}
                 <div className="space-y-8">
-                    <section className="bg-white/80 dark:bg-slate-900/50 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl shadow-blue-500/5 border border-white/20 dark:border-white/5 h-full">
+                    <section className="bg-white dark:bg-slate-800 p-8 rounded-[2rem] shadow-sm ring-1 ring-slate-200 dark:ring-slate-700/50 h-full">
                         <div className="flex items-center gap-4 mb-8">
                             <div className="p-3 bg-blue-500/10 rounded-2xl text-blue-500">
                                 <User className="h-6 w-6" />
@@ -283,12 +285,12 @@ export default function AzureSyncIsland() {
                                 onChange={e => setUserId(e.target.value)}
                                 placeholder="UUID (bijv. d3a1b2...)"
                                 autoComplete="off"
-                                className="w-full p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all dark:text-white"
+                                className="w-full p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all dark:text-white"
                             />
                             <button
                                 type="submit"
                                 disabled={isUserSyncLoading || !userId.trim()}
-                                className="w-full py-4 px-6 bg-slate-900 dark:bg-white dark:text-slate-900 text-white font-bold rounded-2xl shadow-lg transition-all active:scale-95 disabled:opacity-50"
+                                className="w-full py-4 px-6 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 font-bold rounded-2xl shadow-sm transition-all active:scale-95 disabled:opacity-50 text-slate-900 dark:text-white"
                             >
                                 {isUserSyncLoading ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : 'Nu Bijwerken'}
                             </button>
@@ -299,14 +301,22 @@ export default function AzureSyncIsland() {
 
             {/* Progress & Results Section */}
             {status && (
-                <section className="bg-white/80 dark:bg-slate-900/50 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-white/20 dark:border-white/5 animate-in slide-in-from-bottom-4 duration-700">
+                <section className="bg-white dark:bg-slate-800 p-8 rounded-[2rem] shadow-sm ring-1 ring-slate-200 dark:ring-slate-700/50 animate-in slide-in-from-bottom-4 duration-700">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
-                        <div>
-                            <div className="flex items-center gap-3 mb-1">
+                        <div className="space-y-1">
+                            <div className="flex items-center gap-3">
                                 <h3 className="text-2xl font-black dark:text-white">Live Voortgang</h3>
                                 {status.active && <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />}
                             </div>
-                            <p className="text-sm text-slate-500">Status: <span className="capitalize font-bold text-indigo-500">{status.status}</span></p>
+                            <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+                                <p>Status: <span className="capitalize font-bold text-indigo-500">{status.status}</span></p>
+                                {lastUpdated && (
+                                    <>
+                                        <span>•</span>
+                                        <p>Laatst bijgewerkt: {lastUpdated.toLocaleTimeString()}</p>
+                                    </>
+                                )}
+                            </div>
                         </div>
                         <div className="text-right">
                             <div className="text-3xl font-black text-indigo-500">{Math.round(progress)}%</div>
@@ -332,7 +342,7 @@ export default function AzureSyncIsland() {
 
                     {/* Results Explorer */}
                     <div className="space-y-6">
-                        <div className="flex bg-slate-100 dark:bg-black/40 p-1.5 rounded-2xl overflow-x-auto gap-1">
+                        <div className="flex bg-slate-100 dark:bg-slate-900/50 p-1.5 rounded-2xl overflow-x-auto gap-1">
                             <FilterTab active={resultFilter === 'all'} label="Alles" count={status.processed} onClick={() => setResultFilter('all')} />
                             <FilterTab active={resultFilter === 'success'} label="Success" count={status.successCount} onClick={() => setResultFilter('success')} color="green" />
                             <FilterTab active={resultFilter === 'warnings'} label="Warnings" count={status.warningCount} onClick={() => setResultFilter('warnings')} color="amber" />
@@ -341,7 +351,7 @@ export default function AzureSyncIsland() {
                             <FilterTab active={resultFilter === 'excluded'} label="Excluded" count={status.excludedCount} onClick={() => setResultFilter('excluded')} color="slate" />
                         </div>
 
-                        <div className="bg-slate-50 dark:bg-black/20 rounded-3xl border border-slate-200 dark:border-white/5 overflow-hidden">
+                        <div className="bg-white dark:bg-slate-800 rounded-2xl ring-1 ring-slate-200 dark:ring-slate-700/50 overflow-hidden">
                             <div className="max-h-[30rem] overflow-y-auto custom-scrollbar p-1">
                                 <ResultsList filter={resultFilter} status={status} />
                             </div>
