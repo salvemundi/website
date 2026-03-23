@@ -30,6 +30,10 @@ export class DirectusService {
         return await getDirectusClient().request(updateUser(id, data));
     }
 
+    static async createUser(data: any) {
+        return await getDirectusClient().request(createItem('directus_users' as any, data));
+    }
+
     static async getCommitteeByAzureId(azureGroupId: string) {
         const committees = await getDirectusClient().request(readItems('committees', {
             filter: { azure_group_id: { _eq: azureGroupId } },

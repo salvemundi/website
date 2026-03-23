@@ -14,11 +14,13 @@ export interface SyncStatus {
     missingDataCount: number;
     successCount: number;
     excludedCount: number;
+    createdCount: number;
     errors: { email: string; message: string; timestamp: string }[];
     warnings: { email: string; message: string }[];
     missingData: { email: string; reason: string }[];
     successfulUsers: { email: string }[];
     excludedUsers: { email: string }[];
+    createdUsers: { email: string }[];
     startTime?: string;
     endTime?: string;
     lastHeartbeat?: string;
@@ -39,8 +41,8 @@ interface SyncContext {
     committeeCache: Map<string, any>; // azure_group_id -> committee
     ownerCache: Map<string, string[]>; // azure_group_id -> owner_ids[]
     userCacheByEntra: Map<string, any>;
-    userCacheByEmail: Map<string, any>;
     membershipCache: Map<string, any[]>; // user_id -> membership[]
+    membershipMap?: Map<string, Map<number, boolean>>;
 }
 
 export class SyncJob {
@@ -62,6 +64,8 @@ export class SyncJob {
         missingData: [],
         successfulUsers: [],
         excludedUsers: [],
+        createdUsers: [],
+        createdCount: 0,
         lastHeartbeat: new Date().toISOString(),
         abortRequested: false
     };
@@ -130,7 +134,7 @@ export class SyncJob {
             console.warn(`[SYNC] Stale job detected (${current.jobId}). Forcing start of new job ${jobId}.`);
         }
 
-        console.log(`[SYNC] [${jobId}] Starting BULLK synchronization job...`);
+        console.log(`[SYNC] [${jobId}] Starting BULK synchronization job...`);
         await redis.del(this.ABORT_KEY);
 
         try {
@@ -173,10 +177,8 @@ export class SyncJob {
             }
 
             const userCacheByEntra = new Map<string, any>();
-            const userCacheByEmail = new Map<string, any>();
             for (const u of allLeden) {
                 if (u.entra_id) userCacheByEntra.set(u.entra_id, u);
-                if (u.email) userCacheByEmail.set(u.email.toLowerCase(), u);
             }
 
             const membershipCache = new Map<string, any[]>();
@@ -204,7 +206,6 @@ export class SyncJob {
                 committeeCache,
                 ownerCache: new Map(), // No longer needed but kept for TS compatibility if others use it
                 userCacheByEntra,
-                userCacheByEmail,
                 membershipCache,
                 membershipMap
             };
@@ -278,21 +279,49 @@ export class SyncJob {
     private static async syncUserOptimized(ctx: SyncContext & { membershipMap: Map<string, Map<number, boolean>> }, aUser: AzureUser) {
         const email = (aUser.mail || aUser.userPrincipalName).toLowerCase();
         
-        // 1. Find or Link User
+        // 1. Find User by Entra ID
         let dUser = ctx.userCacheByEntra.get(aUser.id);
-        if (!dUser) {
-            dUser = ctx.userCacheByEmail.get(email);
-            if (dUser && !dUser.entra_id) {
-                await DirectusService.updateUser(dUser.id, { entra_id: aUser.id });
-                ctx.status.warningCount++;
-                ctx.status.warnings.push({ email, message: `Linked existing user to Entra ID ${aUser.id}` });
-            }
-        }
 
         if (!dUser) {
-            ctx.status.excludedCount++;
-            ctx.status.excludedUsers.push({ email });
-            return;
+            const csa = aUser.customSecurityAttributes?.SalveMundiLidmaatschap;
+            const phone = aUser.mobilePhone || '';
+            
+            let dob: string | undefined = undefined;
+            if (csa?.Geboortedatum) {
+                dob = csa.Geboortedatum.includes('-') ? csa.Geboortedatum : this.parseAzureDate(csa.Geboortedatum) || undefined;
+            } else if (aUser.birthday) {
+                dob = new Date(aUser.birthday).toISOString().split('T')[0];
+            }
+
+            let expiry: string | undefined = undefined;
+            const date = csa?.VerloopdatumStr || csa?.Verloopdatum;
+            if (date) {
+                expiry = this.parseAzureDate(date) || undefined;
+            }
+
+            let paidDate: string | undefined = undefined;
+            const pDate = csa?.OrigineleBetaalDatumStr || csa?.OrigineleBetaalDatum;
+            if (pDate) {
+                paidDate = this.parseAzureDate(pDate) || undefined;
+            }
+
+            // Create with full field set to ensure successful first-time creation
+            dUser = await DirectusService.createUser({
+                first_name: aUser.givenName || '',
+                last_name: aUser.surname || '',
+                email: email,
+                entra_id: aUser.id,
+                status: 'active',
+                role: '82fe4735-4724-48af-9d37-ee85e1c5441e', // "Members" role
+                text_direction: 'auto',
+                admin_access: false,
+                phone_number: phone,
+                date_of_birth: dob,
+                membership_expiry: expiry,
+                originele_betaaldatum: paidDate
+            });
+            ctx.status.createdCount++;
+            ctx.status.createdUsers.push({ email });
         }
 
         if (ctx.options.activeOnly && dUser.status !== 'active') {
@@ -381,10 +410,8 @@ export class SyncJob {
         }
 
         const userCacheByEntra = new Map<string, any>();
-        const userCacheByEmail = new Map<string, any>();
         for (const u of allLeden) {
             if (u.entra_id) userCacheByEntra.set(u.entra_id, u);
-            if (u.email) userCacheByEmail.set(u.email.toLowerCase(), u);
         }
 
         const membershipCache = new Map<string, any[]>();
@@ -402,7 +429,6 @@ export class SyncJob {
             committeeCache,
             ownerCache: new Map(),
             userCacheByEntra,
-            userCacheByEmail,
             membershipCache
         };
 
@@ -430,18 +456,8 @@ export class SyncJob {
     public static async syncUser(ctx: SyncContext, aUser: AzureUser) {
         const email = (aUser.mail || aUser.userPrincipalName).toLowerCase();
         
-        // 1. Find or Link User using Cache
+        // 1. Find User by Entra ID
         let dUser = ctx.userCacheByEntra.get(aUser.id);
-        if (!dUser) {
-            dUser = ctx.userCacheByEmail.get(email);
-            if (dUser && !dUser.entra_id) {
-                await DirectusService.updateUser(dUser.id, { entra_id: aUser.id });
-                // Note: local cache update if we cared about subsequent users linking to same? 
-                // but users are unique, so it's fine.
-                ctx.status.warningCount++;
-                ctx.status.warnings.push({ email, message: `Linked existing user to Entra ID ${aUser.id}` });
-            }
-        }
 
         if (!dUser) {
             ctx.status.excludedCount++;

@@ -20,11 +20,13 @@ interface SyncStatus {
     missingDataCount: number;
     successCount: number;
     excludedCount: number;
+    createdCount: number;
     errors: { email: string; message: string; timestamp: string }[];
     warnings: { email: string; message: string }[];
     missingData: { email: string; reason: string }[];
     successfulUsers: { email: string }[];
     excludedUsers: { email: string }[];
+    createdUsers: { email: string }[];
     startTime?: string;
     endTime?: string;
     lastHeartbeat?: string;
@@ -52,7 +54,7 @@ export default function AzureSyncIsland() {
     const [selectedSyncFields, setSelectedSyncFields] = useState<string[]>(['membership_expiry', 'geboortedatum', 'phone_number', 'committees']);
     const [forceLink, setForceLink] = useState(false);
     const [activeOnly, setActiveOnly] = useState(false);
-    const [resultFilter, setResultFilter] = useState<'all' | 'success' | 'warnings' | 'missing' | 'errors' | 'excluded'>('all');
+    const [resultFilter, setResultFilter] = useState<'all' | 'success' | 'created' | 'warnings' | 'missing' | 'errors' | 'excluded'>('all');
 
     const fetchStatus = useCallback(async () => {
         try {
@@ -342,8 +344,9 @@ export default function AzureSyncIsland() {
                     </div>
 
                     {/* Stats Grid */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-12">
                         <StatCard icon={<CheckCircle className="text-green-500" />} label="Geslaagd" count={status.successCount} color="green" />
+                        <StatCard icon={<Users className="text-purple-500" />} label="Nieuw" count={status.createdCount || 0} color="purple" />
                         <StatCard icon={<AlertTriangle className="text-amber-500" />} label="Warnings" count={status.warningCount} color="amber" />
                         <StatCard icon={<Info className="text-blue-500" />} label="Missend" count={status.missingDataCount} color="blue" />
                         <StatCard icon={<AlertCircle className="text-red-500" />} label="Fouten" count={status.errorCount} color="red" />
@@ -354,6 +357,7 @@ export default function AzureSyncIsland() {
                         <div className="flex bg-slate-100 dark:bg-slate-900/50 p-1.5 rounded-2xl overflow-x-auto gap-1">
                             <FilterTab active={resultFilter === 'all'} label="Alles" count={status.processed} onClick={() => setResultFilter('all')} />
                             <FilterTab active={resultFilter === 'success'} label="Success" count={status.successCount} onClick={() => setResultFilter('success')} color="green" />
+                            <FilterTab active={resultFilter === 'created'} label="Nieuw" count={status.createdCount || 0} onClick={() => setResultFilter('created')} color="purple" />
                             <FilterTab active={resultFilter === 'warnings'} label="Warnings" count={status.warningCount} onClick={() => setResultFilter('warnings')} color="amber" />
                             <FilterTab active={resultFilter === 'missing'} label="Missend" count={status.missingDataCount} onClick={() => setResultFilter('missing')} color="blue" />
                             <FilterTab active={resultFilter === 'errors'} label="Errors" count={status.errorCount} onClick={() => setResultFilter('errors')} color="red" />
@@ -393,6 +397,7 @@ function StatCard({ icon, label, count, color }: { icon: React.ReactNode; label:
         amber: 'border-amber-500/10 bg-amber-500/5',
         blue: 'border-blue-500/10 bg-blue-500/5',
         red: 'border-red-500/10 bg-red-500/5',
+        purple: 'border-purple-500/10 bg-purple-500/5',
     };
 
     return (
@@ -414,6 +419,7 @@ function FilterTab({ active, label, count, onClick, color = 'indigo' }: { active
         blue: 'bg-blue-500 text-white',
         red: 'bg-red-500 text-white',
         slate: 'bg-slate-500 text-white',
+        purple: 'bg-purple-500 text-white',
     };
 
     return (
@@ -439,6 +445,11 @@ function ResultsList({ filter, status }: { filter: string; status: SyncStatus })
     if (filter === 'all' || filter === 'success') {
         items.push(...status.successfulUsers.map((u, i) => (
             <ResultRow key={`s-${i}`} email={u.email} type="success" />
+        )));
+    }
+    if (filter === 'all' || filter === 'created') {
+        items.push(...(status.createdUsers || []).map((u, i) => (
+            <ResultRow key={`c-${i}`} email={u.email} type="success" message="Nieuw lid aangemaakt" />
         )));
     }
     if (filter === 'all' || filter === 'warnings') {

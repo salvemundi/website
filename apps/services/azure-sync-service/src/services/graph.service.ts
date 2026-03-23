@@ -9,6 +9,7 @@ export interface AzureUser {
     mail: string;
     userPrincipalName: string;
     mobilePhone: string;
+    businessPhones: string[];
     jobTitle: string;
     birthday?: string;
     customSecurityAttributes?: {
@@ -17,6 +18,7 @@ export interface AzureUser {
             Verloopdatum?: string;
             Geboortedatum?: string;
             OrigineleBetaalDatumStr?: string;
+            OrigineleBetaalDatum?: string;
         }
     }
 }
