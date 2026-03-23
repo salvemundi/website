@@ -1,5 +1,6 @@
 import { GraphService, AzureUser } from './graph.service.js';
 import { DirectusService } from './directus.service.js';
+import { Redis } from 'ioredis';
 
 export interface SyncStatus {
     active: boolean;
@@ -27,8 +28,9 @@ export interface SyncOptions {
 }
 
 export class SyncJob {
+    private static REDIS_KEY = 'v7:sync:status';
     private static currentOptions: SyncOptions = { fields: [] };
-    private static currentStatus: SyncStatus = {
+    private static defaultStatus: SyncStatus = {
         active: false,
         status: 'idle',
         total: 0,
@@ -45,28 +47,29 @@ export class SyncJob {
         excludedUsers: []
     };
 
-    static getStatus(): SyncStatus {
-        return this.currentStatus;
+    static async getStatus(redis: Redis): Promise<SyncStatus> {
+        const data = await redis.get(this.REDIS_KEY);
+        if (!data) return this.defaultStatus;
+        try {
+            return JSON.parse(data);
+        } catch {
+            return this.defaultStatus;
+        }
     }
 
-    private static resetStatus(total: number) {
-        this.currentStatus = {
+    private static async updateStatus(redis: Redis, status: SyncStatus) {
+        await redis.set(this.REDIS_KEY, JSON.stringify(status), 'EX', 86400 * 7); // 7 days expiry
+    }
+
+    private static async resetStatus(redis: Redis, total: number) {
+        const status: SyncStatus = {
+            ...this.defaultStatus,
             active: true,
             status: 'running',
             total,
-            processed: 0,
-            errorCount: 0,
-            warningCount: 0,
-            missingDataCount: 0,
-            successCount: 0,
-            excludedCount: 0,
-            errors: [],
-            warnings: [],
-            missingData: [],
-            successfulUsers: [],
-            excludedUsers: [],
             startTime: new Date().toISOString()
         };
+        await this.updateStatus(redis, status);
     }
 
     static parseAzureDate(dateStr?: string): string | null {
@@ -75,39 +78,47 @@ export class SyncJob {
         return `${dateStr.substring(0, 4)}-${dateStr.substring(4, 6)}-${dateStr.substring(6, 8)}`;
     }
 
-    static async run(token: string, options?: SyncOptions) {
+    static async run(redis: Redis, token: string, options?: SyncOptions) {
         if (options) this.currentOptions = options;
         console.log('[SYNC] Starting synchronization job...');
         try {
             const azureUsers = await GraphService.getAllUsers(token);
             console.log(`[SYNC] Found ${azureUsers.length} users in Azure AD.`);
 
-            this.resetStatus(azureUsers.length);
+            await this.resetStatus(redis, azureUsers.length);
 
             for (const aUser of azureUsers) {
+                const status = await this.getStatus(redis);
                 try {
-                    await this.syncUser(aUser, token);
+                    await this.syncUser(redis, aUser, token);
                 } catch (err: any) {
                     const email = aUser.mail || aUser.userPrincipalName || 'Unknown';
-                    this.currentStatus.errorCount++;
-                    this.currentStatus.errors.push({
+                    status.errorCount++;
+                    status.errors.push({
                         email,
                         error: err.message,
                         timestamp: new Date().toISOString()
                     });
+                    await this.updateStatus(redis, status);
                 } finally {
-                    this.currentStatus.processed++;
+                    const finalStatus = await this.getStatus(redis);
+                    finalStatus.processed++;
+                    await this.updateStatus(redis, finalStatus);
                 }
             }
 
-            this.currentStatus.active = false;
-            this.currentStatus.status = 'completed';
-            this.currentStatus.endTime = new Date().toISOString();
+            const finalStatus = await this.getStatus(redis);
+            finalStatus.active = false;
+            finalStatus.status = 'completed';
+            finalStatus.endTime = new Date().toISOString();
+            await this.updateStatus(redis, finalStatus);
             console.log('[SYNC] Completed synchronization job.');
         } catch (error: any) {
-            this.currentStatus.active = false;
-            this.currentStatus.status = 'failed';
-            this.currentStatus.endTime = new Date().toISOString();
+            const status = await this.getStatus(redis);
+            status.active = false;
+            status.status = 'failed';
+            status.endTime = new Date().toISOString();
+            await this.updateStatus(redis, status);
             console.error('[SYNC] Error during synchronization:', error);
         }
     }
@@ -116,7 +127,7 @@ export class SyncJob {
      * Synchronizes a single user by their Directus UUID.
      * Useful for targeted provisioning after events.
      */
-    static async syncUserById(userId: string, token: string) {
+    static async syncUserById(redis: Redis, userId: string, token: string) {
         const dUser = await DirectusService.getUserById(userId);
         if (!dUser) {
             throw new Error(`User ${userId} not found in Directus.`);
@@ -124,7 +135,6 @@ export class SyncJob {
 
         const entraId = dUser.entra_id;
         if (!entraId) {
-            // If no Entra ID, we might need to search by email if it's a new provision
             if (!dUser.email) {
                 throw new Error(`User ${dUser.id} has no email or Entra ID.`);
             }
@@ -133,17 +143,17 @@ export class SyncJob {
             if (!aUser) {
                 throw new Error(`User ${dUser.email} not found in Azure AD.`);
             }
-            await this.syncUser(aUser, token);
+            await this.syncUser(redis, aUser, token);
         } else {
             const aUser = await GraphService.getUser(entraId, token);
             if (!aUser) {
                 throw new Error(`Entra ID ${entraId} not found in Azure.`);
             }
-            await this.syncUser(aUser, token);
+            await this.syncUser(redis, aUser, token);
         }
     }
 
-    public static async syncUser(aUser: AzureUser, token: string) {
+    public static async syncUser(redis: Redis, aUser: AzureUser, token: string) {
         const email = (aUser.mail || aUser.userPrincipalName).toLowerCase();
         
         // 1. Find or Link User
@@ -154,25 +164,32 @@ export class SyncJob {
                 // Auto-link existing account
                 await DirectusService.updateUser(dUser.id, { entra_id: aUser.id });
                 console.log(`[SYNC] Linked existing user ${email} to Entra ID ${aUser.id}`);
-                this.currentStatus.warningCount++;
-                this.currentStatus.warnings.push({
+                
+                const status = await this.getStatus(redis);
+                status.warningCount++;
+                status.warnings.push({
                     email,
                     message: `Linked existing user to Entra ID ${aUser.id}`
                 });
+                await this.updateStatus(redis, status);
             }
         }
 
         if (!dUser) {
             // User likely not yet provisioned by SSO, skip background sync for now
-            this.currentStatus.excludedCount++;
-            this.currentStatus.excludedUsers.push({ email });
+            const status = await this.getStatus(redis);
+            status.excludedCount++;
+            status.excludedUsers.push({ email });
+            await this.updateStatus(redis, status);
             return;
         }
 
         // Active only check
         if (this.currentOptions.activeOnly && dUser.status !== 'active') {
-            this.currentStatus.excludedCount++;
-            this.currentStatus.excludedUsers.push({ email });
+            const status = await this.getStatus(redis);
+            status.excludedCount++;
+            status.excludedUsers.push({ email });
+            await this.updateStatus(redis, status);
             return;
         }
 
@@ -185,8 +202,10 @@ export class SyncJob {
             if (csa?.VerloopdatumStr || csa?.Verloopdatum) {
                 updatePayload.membership_expiry = this.parseAzureDate(csa.VerloopdatumStr || csa.Verloopdatum);
             } else {
-                this.currentStatus.missingDataCount++;
-                this.currentStatus.missingData.push({ email, reason: 'Missende lidmaatschap vervaldatum' });
+                const status = await this.getStatus(redis);
+                status.missingDataCount++;
+                status.missingData.push({ email, reason: 'Missende lidmaatschap vervaldatum' });
+                await this.updateStatus(redis, status);
             }
         }
 
@@ -198,8 +217,10 @@ export class SyncJob {
             } else if (aUser.birthday) {
                 updatePayload.date_of_birth = new Date(aUser.birthday).toISOString().split('T')[0];
             } else {
-                this.currentStatus.missingDataCount++;
-                this.currentStatus.missingData.push({ email, reason: 'Missende geboortedatum' });
+                const status = await this.getStatus(redis);
+                status.missingDataCount++;
+                status.missingData.push({ email, reason: 'Missende geboortedatum' });
+                await this.updateStatus(redis, status);
             }
         }
 
@@ -252,7 +273,9 @@ export class SyncJob {
             }
         }
 
-        this.currentStatus.successCount++;
-        this.currentStatus.successfulUsers.push({ email });
+        const status = await this.getStatus(redis);
+        status.successCount++;
+        status.successfulUsers.push({ email });
+        await this.updateStatus(redis, status);
     }
 }

@@ -49,7 +49,7 @@ export class ProvisionWorkerService {
                         
                         // 2. Perform individual sync/provisioning
                         // We'll refactor SyncJob.syncUser to be public
-                        await SyncJob.syncUserById(task.userId, token);
+                        await SyncJob.syncUserById(redis, task.userId, token);
 
                         // Success -> Remove
                         await redis.zrem(this.QUEUE_KEY, taskJson);
