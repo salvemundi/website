@@ -28,10 +28,17 @@ export interface SyncOptions {
     activeOnly?: boolean;
 }
 
+interface SyncContext {
+    redis: Redis;
+    status: SyncStatus;
+    options: SyncOptions;
+    token: string;
+    committeeCache: Map<string, any>; // azure_group_id -> committee
+    ownerCache: Map<string, string[]>; // azure_group_id -> owner_ids[]
+}
+
 export class SyncJob {
     private static REDIS_KEY = 'v7:sync:status';
-    private static currentOptions: SyncOptions = { fields: [] };
-
     private static statusLock: Promise<void> = Promise.resolve();
 
     private static async acquireStatusLock(): Promise<() => void> {
@@ -44,6 +51,7 @@ export class SyncJob {
         await currentLock;
         return release!;
     }
+
     private static defaultStatus: SyncStatus = {
         active: false,
         status: 'idle',
@@ -71,29 +79,17 @@ export class SyncJob {
         }
     }
 
-    private static async updateStatus(redis: Redis, status: SyncStatus) {
+    private static async persistStatus(redis: Redis, status: SyncStatus) {
         const release = await this.acquireStatusLock();
         try {
-            await redis.set(this.REDIS_KEY, JSON.stringify(status), 'EX', 86400 * 7); // 7 days expiry
+            await redis.set(this.REDIS_KEY, JSON.stringify(status), 'EX', 86400 * 7);
         } finally {
             release();
         }
     }
 
-    private static async resetStatus(redis: Redis, total: number) {
-        const status: SyncStatus = {
-            ...this.defaultStatus,
-            active: true,
-            status: 'running',
-            total,
-            startTime: new Date().toISOString()
-        };
-        await this.updateStatus(redis, status);
-    }
-
     static parseAzureDate(dateStr?: string): string | null {
         if (!dateStr || dateStr.length !== 8) return null;
-        // Format YYYYMMDD to YYYY-MM-DD
         return `${dateStr.substring(0, 4)}-${dateStr.substring(4, 6)}-${dateStr.substring(6, 8)}`;
     }
 
@@ -114,80 +110,90 @@ export class SyncJob {
     private static shouldExcludeUser(email?: string): boolean {
         if (!email) return true;
         const lowerEmail = email.toLowerCase();
-        
-        // Exact match
         if (this.EXCLUDED_EMAILS.includes(lowerEmail)) return true;
-        
-        // Pattern checks
         if (lowerEmail.startsWith('test-')) return true;
-        
         return false;
     }
 
-    static async run(redis: Redis, options?: SyncOptions) {
-        if (options) this.currentOptions = options;
+    static async run(redis: Redis, options: SyncOptions = { fields: [] }) {
         console.log('[SYNC] Starting synchronization job...');
         try {
-            // Initial token for fetching user list
             const initialToken = await TokenService.getAccessToken(redis);
             const azureUsers = await GraphService.getAllUsers(initialToken);
             console.log(`[SYNC] Found ${azureUsers.length} users in Azure AD.`);
 
-            await this.resetStatus(redis, azureUsers.length);
+            const committees = await DirectusService.getAllCommittees();
+            const committeeCache = new Map<string, any>();
+            for (const c of committees) {
+                if (c.azure_group_id) committeeCache.set(c.azure_group_id, c);
+            }
 
-            const chunkSize = 10;
+            const status: SyncStatus = {
+                ...this.defaultStatus,
+                active: true,
+                status: 'running',
+                total: azureUsers.length,
+                startTime: new Date().toISOString()
+            };
+
+            const ctx: SyncContext = {
+                redis,
+                status,
+                options,
+                token: initialToken,
+                committeeCache,
+                ownerCache: new Map()
+            };
+
+            await this.persistStatus(redis, status);
+
+            const chunkSize = 15; // Slightly larger chunk size for better parallelism
             for (let i = 0; i < azureUsers.length; i += chunkSize) {
                 const chunk = azureUsers.slice(i, i + chunkSize);
                 console.log(`[SYNC] Processing chunk ${Math.floor(i / chunkSize) + 1} of ${Math.ceil(azureUsers.length / chunkSize)}...`);
                 
-                // Get a fresh token for this chunk
-                const currentToken = await TokenService.getAccessToken(redis);
+                ctx.token = await TokenService.getAccessToken(redis);
 
                 await Promise.all(chunk.map(async (aUser) => {
-                    const email = aUser.mail || aUser.userPrincipalName || 'Unknown';
+                    const email = (aUser.mail || aUser.userPrincipalName || 'Unknown').toLowerCase();
                     
                     if (this.shouldExcludeUser(email)) {
-                        const status = await this.getStatus(redis);
                         status.excludedCount++;
                         status.excludedUsers.push({ email });
                         status.processed++;
-                        await this.updateStatus(redis, status);
                         return;
                     }
 
                     try {
-                        await this.syncUser(redis, aUser, currentToken);
+                        await this.syncUser(ctx, aUser);
+                        status.processed++;
                     } catch (err: any) {
-                        const email = aUser.mail || aUser.userPrincipalName || 'Unknown';
-                        const status = await this.getStatus(redis);
                         status.errorCount++;
                         status.errors.push({
                             email,
                             error: err.message,
                             timestamp: new Date().toISOString()
                         });
-                        await this.updateStatus(redis, status);
-                    } finally {
-                        const finalStatus = await this.getStatus(redis);
-                        finalStatus.processed++;
-                        await this.updateStatus(redis, finalStatus);
+                        status.processed++;
                     }
                 }));
+
+                // Persist status after each chunk
+                await this.persistStatus(redis, status);
             }
 
-            const finalStatus = await this.getStatus(redis);
-            finalStatus.active = false;
-            finalStatus.status = 'completed';
-            finalStatus.endTime = new Date().toISOString();
-            await this.updateStatus(redis, finalStatus);
+            status.active = false;
+            status.status = 'completed';
+            status.endTime = new Date().toISOString();
+            await this.persistStatus(redis, status);
             console.log('[SYNC] Completed synchronization job.');
         } catch (error: any) {
-            const status = await this.getStatus(redis);
-            status.active = false;
-            status.status = 'failed';
-            status.endTime = new Date().toISOString();
-            await this.updateStatus(redis, status);
-            console.error('[SYNC] Error during synchronization:', error);
+            console.error('[SYNC] Fatal error during synchronization:', error);
+            const currentStatus = await this.getStatus(redis);
+            currentStatus.active = false;
+            currentStatus.status = 'failed';
+            currentStatus.endTime = new Date().toISOString();
+            await this.persistStatus(redis, currentStatus);
         }
     }
 
@@ -201,6 +207,22 @@ export class SyncJob {
             throw new Error(`User ${userId} not found in Directus.`);
         }
 
+        // Fetch committees for the cache
+        const committees = await DirectusService.getAllCommittees();
+        const committeeCache = new Map<string, any>();
+        for (const c of committees) {
+            if (c.azure_group_id) committeeCache.set(c.azure_group_id, c);
+        }
+
+        const ctx: SyncContext = {
+            redis,
+            status: { ...this.defaultStatus, active: true, status: 'running' },
+            options: { fields: ['membership_expiry', 'geboortedatum', 'phone_number', 'committees'] },
+            token,
+            committeeCache,
+            ownerCache: new Map()
+        };
+
         const entraId = dUser.entra_id;
         if (!entraId) {
             if (!dUser.email) {
@@ -211,17 +233,17 @@ export class SyncJob {
             if (!aUser) {
                 throw new Error(`User ${dUser.email} not found in Azure AD.`);
             }
-            await this.syncUser(redis, aUser, token);
+            await this.syncUser(ctx, aUser);
         } else {
             const aUser = await GraphService.getUser(entraId, token);
             if (!aUser) {
                 throw new Error(`Entra ID ${entraId} not found in Azure.`);
             }
-            await this.syncUser(redis, aUser, token);
+            await this.syncUser(ctx, aUser);
         }
     }
 
-    public static async syncUser(redis: Redis, aUser: AzureUser, token: string) {
+    public static async syncUser(ctx: SyncContext, aUser: AzureUser) {
         const email = (aUser.mail || aUser.userPrincipalName).toLowerCase();
         
         // 1. Find or Link User
@@ -229,66 +251,46 @@ export class SyncJob {
         if (!dUser) {
             dUser = await DirectusService.getUserByEmail(email);
             if (dUser && !dUser.entra_id) {
-                // Auto-link existing account
                 await DirectusService.updateUser(dUser.id, { entra_id: aUser.id });
-                console.log(`[SYNC] Linked existing user ${email} to Entra ID ${aUser.id}`);
-                
-                const status = await this.getStatus(redis);
-                status.warningCount++;
-                status.warnings.push({
-                    email,
-                    message: `Linked existing user to Entra ID ${aUser.id}`
-                });
-                await this.updateStatus(redis, status);
+                ctx.status.warningCount++;
+                ctx.status.warnings.push({ email, message: `Linked existing user to Entra ID ${aUser.id}` });
             }
         }
 
         if (!dUser) {
-            // User likely not yet provisioned by SSO, skip background sync for now
-            const status = await this.getStatus(redis);
-            status.excludedCount++;
-            status.excludedUsers.push({ email });
-            await this.updateStatus(redis, status);
+            ctx.status.excludedCount++;
+            ctx.status.excludedUsers.push({ email });
             return;
         }
 
-        // Active only check
-        if (this.currentOptions.activeOnly && dUser.status !== 'active') {
-            const status = await this.getStatus(redis);
-            status.excludedCount++;
-            status.excludedUsers.push({ email });
-            await this.updateStatus(redis, status);
+        if (ctx.options.activeOnly && dUser.status !== 'active') {
+            ctx.status.excludedCount++;
+            ctx.status.excludedUsers.push({ email });
             return;
         }
 
-        // 2. Update Basic Attributes (Custom Security Attributes)
+        // 2. Attributes
         const csa = aUser.customSecurityAttributes?.SalveMundiLidmaatschap;
         const updatePayload: any = {};
-        const fields = this.currentOptions.fields;
+        const fields = ctx.options.fields;
 
         if (fields.includes('membership_expiry')) {
             if (csa?.VerloopdatumStr || csa?.Verloopdatum) {
                 updatePayload.membership_expiry = this.parseAzureDate(csa.VerloopdatumStr || csa.Verloopdatum);
             } else {
-                const status = await this.getStatus(redis);
-                status.missingDataCount++;
-                status.missingData.push({ email, reason: 'Missende lidmaatschap vervaldatum' });
-                await this.updateStatus(redis, status);
+                ctx.status.missingDataCount++;
+                ctx.status.missingData.push({ email, reason: 'Missende lidmaatschap vervaldatum' });
             }
         }
 
         if (fields.includes('geboortedatum')) {
             if (csa?.Geboortedatum) {
-                updatePayload.date_of_birth = csa.Geboortedatum.includes('-') 
-                    ? csa.Geboortedatum 
-                    : this.parseAzureDate(csa.Geboortedatum);
+                updatePayload.date_of_birth = csa.Geboortedatum.includes('-') ? csa.Geboortedatum : this.parseAzureDate(csa.Geboortedatum);
             } else if (aUser.birthday) {
                 updatePayload.date_of_birth = new Date(aUser.birthday).toISOString().split('T')[0];
             } else {
-                const status = await this.getStatus(redis);
-                status.missingDataCount++;
-                status.missingData.push({ email, reason: 'Missende geboortedatum' });
-                await this.updateStatus(redis, status);
+                ctx.status.missingDataCount++;
+                ctx.status.missingData.push({ email, reason: 'Missende geboortedatum' });
             }
         }
 
@@ -304,25 +306,26 @@ export class SyncJob {
             await DirectusService.updateUser(dUser.id, updatePayload);
         }
 
-        // 3. Sync Committee Memberships
+        // 3. Committees
         if (fields.includes('committees')) {
-            const azureGroups = await GraphService.getUserGroups(aUser.id, token);
+            const azureGroups = await GraphService.getUserGroups(aUser.id, ctx.token);
             const currentMemberships = await DirectusService.getCommitteeMembers(dUser.id);
-            
             const desiredCommittees: { id: number; isLeader: boolean }[] = [];
 
             for (const group of azureGroups) {
-                const dCommittee = await DirectusService.getCommitteeByAzureId(group.id);
-                if (!dCommittee) {
-                    continue;
-                }
+                const dCommittee = ctx.committeeCache.get(group.id);
+                if (!dCommittee) continue;
 
-                const owners = await GraphService.getGroupOwners(group.id, token);
+                // Owner/Leader check with caching
+                let owners = ctx.ownerCache.get(group.id);
+                if (!owners) {
+                    owners = await GraphService.getGroupOwners(group.id, ctx.token);
+                    ctx.ownerCache.set(group.id, owners);
+                }
                 const isLeader = owners.includes(aUser.id);
                 desiredCommittees.push({ id: dCommittee.id, isLeader });
             }
 
-            // Add/Update memberships
             for (const desired of desiredCommittees) {
                 const existing = currentMemberships.find((m: any) => m.committee_id === desired.id);
                 if (!existing) {
@@ -332,18 +335,14 @@ export class SyncJob {
                 }
             }
 
-            // Remove old memberships
             for (const current of currentMemberships) {
-                const stillDesired = desiredCommittees.some(d => d.id === current.committee_id);
-                if (!stillDesired) {
+                if (!desiredCommittees.some(d => d.id === current.committee_id)) {
                     await DirectusService.removeMemberFromCommittee(current.id);
                 }
             }
         }
 
-        const status = await this.getStatus(redis);
-        status.successCount++;
-        status.successfulUsers.push({ email });
-        await this.updateStatus(redis, status);
+        ctx.status.successCount++;
+        ctx.status.successfulUsers.push({ email });
     }
 }
