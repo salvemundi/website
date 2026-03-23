@@ -18,7 +18,16 @@ export default async function syncRoutes(fastify: FastifyInstance) {
         }
 
         const expectedHeader = `Bearer ${token}`;
-        if (!authHeader || !timingSafeCompare(authHeader.trim(), expectedHeader)) {
+        const trimmedAuth = authHeader.trim();
+        
+        // Debug lengths (safe as it doesn't log secrets)
+        fastify.log.info({ 
+            receivedLen: trimmedAuth.length, 
+            expectedLen: expectedHeader.length,
+            directMatch: trimmedAuth === expectedHeader
+        }, 'AUTH_DEBUG');
+
+        if (!authHeader || trimmedAuth !== expectedHeader) {
             return reply.status(401).send({ error: 'Unauthorized' });
         }
     });
