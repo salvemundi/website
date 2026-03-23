@@ -12,7 +12,7 @@ const fastify = Fastify({
                     method: request.method,
                     url: request.url,
                     headers: request.headers,
-                    remoteAddress: request.remoteAddress
+                    remoteAddress: request.ip
                 };
             }
         }
