@@ -1,5 +1,6 @@
 import { GraphService, AzureUser } from './graph.service.js';
 import { DirectusService } from './directus.service.js';
+import { TokenService } from './token.service.js';
 import { Redis } from 'ioredis';
 
 export interface SyncStatus {
@@ -30,6 +31,19 @@ export interface SyncOptions {
 export class SyncJob {
     private static REDIS_KEY = 'v7:sync:status';
     private static currentOptions: SyncOptions = { fields: [] };
+
+    private static statusLock: Promise<void> = Promise.resolve();
+
+    private static async acquireStatusLock(): Promise<() => void> {
+        let release: () => void;
+        const nextLock = new Promise<void>((resolve) => {
+            release = resolve;
+        });
+        const currentLock = this.statusLock;
+        this.statusLock = currentLock.then(() => nextLock);
+        await currentLock;
+        return release!;
+    }
     private static defaultStatus: SyncStatus = {
         active: false,
         status: 'idle',
@@ -58,7 +72,12 @@ export class SyncJob {
     }
 
     private static async updateStatus(redis: Redis, status: SyncStatus) {
-        await redis.set(this.REDIS_KEY, JSON.stringify(status), 'EX', 86400 * 7); // 7 days expiry
+        const release = await this.acquireStatusLock();
+        try {
+            await redis.set(this.REDIS_KEY, JSON.stringify(status), 'EX', 86400 * 7); // 7 days expiry
+        } finally {
+            release();
+        }
     }
 
     private static async resetStatus(redis: Redis, total: number) {
@@ -78,33 +97,82 @@ export class SyncJob {
         return `${dateStr.substring(0, 4)}-${dateStr.substring(4, 6)}-${dateStr.substring(6, 8)}`;
     }
 
-    static async run(redis: Redis, token: string, options?: SyncOptions) {
+    private static EXCLUDED_EMAILS = [
+        'youtube@salvemundi.nl',
+        'github@salvemundi.nl',
+        'intern@salvemundi.nl',
+        'ik.ben.de.website@salvemundi.nl',
+        'voorzitter@salvemundi.nl',
+        'twitch@salvemundi.nl',
+        'secretaris@salvemundi.nl',
+        'penningmeester@salvemundi.nl',
+        'noreply@salvemundi.nl',
+        'extern@salvemundi.nl',
+        'commissaris.administratie@salvemundi.nl',
+    ];
+
+    private static shouldExcludeUser(email?: string): boolean {
+        if (!email) return true;
+        const lowerEmail = email.toLowerCase();
+        
+        // Exact match
+        if (this.EXCLUDED_EMAILS.includes(lowerEmail)) return true;
+        
+        // Pattern checks
+        if (lowerEmail.startsWith('test-')) return true;
+        
+        return false;
+    }
+
+    static async run(redis: Redis, options?: SyncOptions) {
         if (options) this.currentOptions = options;
         console.log('[SYNC] Starting synchronization job...');
         try {
-            const azureUsers = await GraphService.getAllUsers(token);
+            // Initial token for fetching user list
+            const initialToken = await TokenService.getAccessToken(redis);
+            const azureUsers = await GraphService.getAllUsers(initialToken);
             console.log(`[SYNC] Found ${azureUsers.length} users in Azure AD.`);
 
             await this.resetStatus(redis, azureUsers.length);
 
-            for (const aUser of azureUsers) {
-                const status = await this.getStatus(redis);
-                try {
-                    await this.syncUser(redis, aUser, token);
-                } catch (err: any) {
+            const chunkSize = 10;
+            for (let i = 0; i < azureUsers.length; i += chunkSize) {
+                const chunk = azureUsers.slice(i, i + chunkSize);
+                console.log(`[SYNC] Processing chunk ${Math.floor(i / chunkSize) + 1} of ${Math.ceil(azureUsers.length / chunkSize)}...`);
+                
+                // Get a fresh token for this chunk
+                const currentToken = await TokenService.getAccessToken(redis);
+
+                await Promise.all(chunk.map(async (aUser) => {
                     const email = aUser.mail || aUser.userPrincipalName || 'Unknown';
-                    status.errorCount++;
-                    status.errors.push({
-                        email,
-                        error: err.message,
-                        timestamp: new Date().toISOString()
-                    });
-                    await this.updateStatus(redis, status);
-                } finally {
-                    const finalStatus = await this.getStatus(redis);
-                    finalStatus.processed++;
-                    await this.updateStatus(redis, finalStatus);
-                }
+                    
+                    if (this.shouldExcludeUser(email)) {
+                        const status = await this.getStatus(redis);
+                        status.excludedCount++;
+                        status.excludedUsers.push({ email });
+                        status.processed++;
+                        await this.updateStatus(redis, status);
+                        return;
+                    }
+
+                    try {
+                        await this.syncUser(redis, aUser, currentToken);
+                    } catch (err: any) {
+                        const email = aUser.mail || aUser.userPrincipalName || 'Unknown';
+                        const status = await this.getStatus(redis);
+                        status.errorCount++;
+                        status.errors.push({
+                            email,
+                            error: err.message,
+                            timestamp: new Date().toISOString()
+                        });
+                        await this.updateStatus(redis, status);
+                    } finally {
+                        const finalStatus = await this.getStatus(redis);
+                        finalStatus.processed++;
+                        await this.updateStatus(redis, finalStatus);
+                    }
+                }));
             }
 
             const finalStatus = await this.getStatus(redis);
