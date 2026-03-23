@@ -1,5 +1,5 @@
 import { getDirectusClient } from '../config/directus.js';
-import { updateItem, readItems, createItem, deleteItem, readUsers, updateUser } from '@directus/sdk';
+import { updateItem, readItems, createItem, deleteItem, readUsers, updateUser, createUser } from '@directus/sdk';
 
 export class DirectusService {
     static async getUserById(id: string) {
@@ -31,7 +31,7 @@ export class DirectusService {
     }
 
     static async createUser(data: any) {
-        return await getDirectusClient().request(createItem('directus_users' as any, data));
+        return await getDirectusClient().request(createUser(data));
     }
 
     static async getCommitteeByAzureId(azureGroupId: string) {
