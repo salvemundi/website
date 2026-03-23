@@ -79,4 +79,18 @@ export class DirectusService {
     static async removeMemberFromCommittee(id: number) {
         return await getDirectusClient().request(deleteItem('committee_members', id));
     }
+
+    static async getAllCommitteeMembers() {
+        return await getDirectusClient().request(readItems('committee_members', {
+            fields: ['id', 'user_id', 'committee_id', 'is_leader'],
+            limit: -1
+        }));
+    }
+
+    static async getAllUsers() {
+        return await getDirectusClient().request(readUsers({
+            fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status'],
+            limit: -1
+        }));
+    }
 }

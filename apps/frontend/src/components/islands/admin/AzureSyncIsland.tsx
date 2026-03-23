@@ -1,17 +1,13 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-    RefreshCw, User, CheckCircle, AlertCircle, 
-    Loader2, ArrowRight, Settings, Info, 
+import {
+    RefreshCw, User, CheckCircle, AlertCircle,
+    Loader2, ArrowRight, Settings, Info,
     Check, X, AlertTriangle, Users
 } from 'lucide-react';
-import { 
-    triggerFullSyncAction, 
-    triggerUserSyncAction, 
-    getSyncStatusAction,
-    stopSyncAction
-} from '@/server/actions/azure-sync.actions';
+import { triggerFullSyncAction, getSyncStatusAction, stopSyncAction, triggerUserSyncAction } from '@/server/actions/azure-sync.actions';
+import SyncSkeleton from '@/components/ui/admin/SyncSkeleton';
 
 interface SyncStatus {
     jobId?: string;
@@ -31,6 +27,7 @@ interface SyncStatus {
     excludedUsers: { email: string }[];
     startTime?: string;
     endTime?: string;
+    lastHeartbeat?: string;
     abortRequested?: boolean;
 }
 
@@ -50,6 +47,7 @@ export default function AzureSyncIsland() {
     const [userId, setUserId] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     const [selectedSyncFields, setSelectedSyncFields] = useState<string[]>(['membership_expiry', 'geboortedatum', 'phone_number', 'committees']);
     const [forceLink, setForceLink] = useState(false);
@@ -65,6 +63,8 @@ export default function AzureSyncIsland() {
             }
         } catch (err) {
             console.error('Failed to fetch sync status:', err);
+        } finally {
+            setIsLoading(false);
         }
     }, []);
 
@@ -74,18 +74,27 @@ export default function AzureSyncIsland() {
         fetchStatus();
     }, [fetchStatus]);
 
-    // Polling while active or starting
+    // Polling while active or starting (Serial approach to prevent request piling)
     useEffect(() => {
-        let interval: NodeJS.Timeout;
+        if (!mounted) return;
+        
+        let timeout: NodeJS.Timeout;
         const shouldPoll = status?.active || status?.status === 'running' || isStartingSync;
         
-        if (shouldPoll && mounted) {
-            interval = setInterval(fetchStatus, 2000);
+        const poll = async () => {
+            if (!shouldPoll) return;
+            await fetchStatus();
+            timeout = setTimeout(poll, 2000); // Wait 2s AFTER fetch completes
+        };
+
+        if (shouldPoll) {
+            poll();
         }
-        return () => clearInterval(interval);
+
+        return () => clearTimeout(timeout);
     }, [status?.active, status?.status, isStartingSync, fetchStatus, mounted]);
 
-    if (!mounted) return null;
+    if (!mounted || (isLoading && !status)) return <SyncSkeleton />;
 
     const handleFullSync = async () => {
         setIsStartingSync(true);

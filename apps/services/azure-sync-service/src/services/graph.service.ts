@@ -105,4 +105,45 @@ export class GraphService {
             .get();
         return (response.value || []).map((o: any) => o.id);
     }
+
+    /**
+     * Fetches members and owners for multiple groups in batches to minimize round-trips.
+     * Uses Microsoft Graph JSON Batching.
+     */
+    static async getBatchGroupDetails(groupIds: string[], token: string): Promise<Map<string, { members: string[], owners: string[] }>> {
+        const result = new Map<string, { members: string[], owners: string[] }>();
+        const client = this.getClient(token);
+
+        // Process in batches of 10 groups (each group needs 2 calls: members & owners)
+        // Max 20 requests per batch in MS Graph
+        for (let i = 0; i < groupIds.length; i += 10) {
+            const batchIds = groupIds.slice(i, i + 10);
+            const requests = batchIds.flatMap(id => [
+                {
+                    id: `${id}-members`,
+                    method: 'GET',
+                    url: `/groups/${id}/members?$select=id`
+                },
+                {
+                    id: `${id}-owners`,
+                    method: 'GET',
+                    url: `/groups/${id}/owners?$select=id`
+                }
+            ]);
+
+            const batchResponse = await client.api('/$batch').post({ requests });
+            
+            for (const id of batchIds) {
+                const membersRes = batchResponse.responses.find((r: any) => r.id === `${id}-members`);
+                const ownersRes = batchResponse.responses.find((r: any) => r.id === `${id}-owners`);
+
+                result.set(id, {
+                    members: (membersRes?.body?.value || []).map((m: any) => m.id),
+                    owners: (ownersRes?.body?.value || []).map((o: any) => o.id)
+                });
+            }
+        }
+
+        return result;
+    }
 }
