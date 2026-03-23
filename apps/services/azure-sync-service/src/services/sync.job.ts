@@ -4,8 +4,9 @@ import { TokenService } from './token.service.js';
 import { Redis } from 'ioredis';
 
 export interface SyncStatus {
+    jobId?: string;
     active: boolean;
-    status: 'idle' | 'running' | 'completed' | 'failed';
+    status: 'idle' | 'running' | 'completed' | 'failed' | 'aborted';
     total: number;
     processed: number;
     errorCount: number;
@@ -13,13 +14,14 @@ export interface SyncStatus {
     missingDataCount: number;
     successCount: number;
     excludedCount: number;
-    errors: { email: string; error: string; timestamp: string }[];
+    errors: { email: string; message: string; timestamp: string }[];
     warnings: { email: string; message: string }[];
     missingData: { email: string; reason: string }[];
     successfulUsers: { email: string }[];
     excludedUsers: { email: string }[];
     startTime?: string;
     endTime?: string;
+    abortRequested?: boolean;
 }
 
 export interface SyncOptions {
@@ -66,7 +68,8 @@ export class SyncJob {
         warnings: [],
         missingData: [],
         successfulUsers: [],
-        excludedUsers: []
+        excludedUsers: [],
+        abortRequested: false
     };
 
     static async getStatus(redis: Redis): Promise<SyncStatus> {
@@ -79,9 +82,16 @@ export class SyncJob {
         }
     }
 
-    private static async persistStatus(redis: Redis, status: SyncStatus) {
+    private static async persistStatus(redis: Redis, status: SyncStatus, forceJobIdMatch: boolean = true) {
         const release = await this.acquireStatusLock();
         try {
+            if (forceJobIdMatch) {
+                const existing = await this.getStatus(redis);
+                if (existing.jobId && existing.jobId !== status.jobId) {
+                    console.warn(`[SYNC] Ghost job detected (${status.jobId}). Will not overwrite ${existing.jobId}`);
+                    return;
+                }
+            }
             await redis.set(this.REDIS_KEY, JSON.stringify(status), 'EX', 86400 * 7);
         } finally {
             release();
@@ -116,7 +126,9 @@ export class SyncJob {
     }
 
     static async run(redis: Redis, options: SyncOptions = { fields: [] }) {
-        console.log('[SYNC] Starting synchronization job...');
+        const jobId = Math.random().toString(36).substring(2, 11);
+        console.log(`[SYNC] Starting synchronization job ${jobId}...`);
+
         try {
             const initialToken = await TokenService.getAccessToken(redis);
             const azureUsers = await GraphService.getAllUsers(initialToken);
@@ -130,6 +142,7 @@ export class SyncJob {
 
             const status: SyncStatus = {
                 ...this.defaultStatus,
+                jobId,
                 active: true,
                 status: 'running',
                 total: azureUsers.length,
@@ -145,10 +158,22 @@ export class SyncJob {
                 ownerCache: new Map()
             };
 
-            await this.persistStatus(redis, status);
+            // Force initial persist to clear any old status and set the jobId
+            await redis.set(this.REDIS_KEY, JSON.stringify(status), 'EX', 86400 * 7);
 
-            const chunkSize = 15; // Slightly larger chunk size for better parallelism
+            const chunkSize = 15; 
             for (let i = 0; i < azureUsers.length; i += chunkSize) {
+                // ABORT CHECK
+                const latest = await this.getStatus(redis);
+                if (latest.jobId === jobId && latest.abortRequested) {
+                    console.log(`[SYNC] Abort requested for job ${jobId}.`);
+                    status.active = false;
+                    status.status = 'aborted';
+                    status.endTime = new Date().toISOString();
+                    await this.persistStatus(redis, status);
+                    return;
+                }
+
                 const chunk = azureUsers.slice(i, i + chunkSize);
                 console.log(`[SYNC] Processing chunk ${Math.floor(i / chunkSize) + 1} of ${Math.ceil(azureUsers.length / chunkSize)}...`);
                 
@@ -171,7 +196,7 @@ export class SyncJob {
                         status.errorCount++;
                         status.errors.push({
                             email,
-                            error: err.message,
+                            message: err.message,
                             timestamp: new Date().toISOString()
                         });
                         status.processed++;

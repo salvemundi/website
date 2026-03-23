@@ -90,6 +90,8 @@ export async function triggerUserSyncAction(userId: string) {
     }
 }
 
+import { getRedis } from "@/server/auth/redis-client";
+
 /**
  * Fetches the current status of the sync job.
  */
@@ -117,6 +119,31 @@ export async function getSyncStatusAction() {
     } catch (err) {
         console.error("[AzureSyncAction] Get status error:", err);
         return { success: false, error: "Kon status niet ophalen." };
+    }
+}
+
+/**
+ * Requests the current sync job to stop.
+ */
+export async function stopSyncAction() {
+    const admin = await checkSyncAccess();
+    if (!admin) return { success: false, error: "Unauthorized" };
+
+    try {
+        const redis = await getRedis();
+        const data = await redis.get('v7:sync:status');
+        if (data) {
+            const status = JSON.parse(data);
+            if (status.active) {
+                status.abortRequested = true;
+                await redis.set('v7:sync:status', JSON.stringify(status), 'EX', 86400 * 7);
+                return { success: true };
+            }
+        }
+        return { success: false, error: "Geen actieve synchronisatie gevonden." };
+    } catch (error: any) {
+        console.error('[Action] stopSyncAction error:', error);
+        return { success: false, error: error.message };
     }
 }
 
