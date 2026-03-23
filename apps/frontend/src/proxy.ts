@@ -24,11 +24,14 @@ async function getDisabledRoutes(): Promise<string[]> {
 
         if (!token) return cachedDisabledRoutes || [];
 
+        // Mark as "last attempt" to prevent thundering herd
+        cacheTimestamp = now;
+
         const url = `${directusUrl}/items/feature_flags?filter[is_active][_eq]=false&fields=route_match`;
         const res = await fetch(url, {
             headers: { Authorization: `Bearer ${token}` },
             cache: 'no-store',
-            signal: AbortSignal.timeout(10000), // V7: voorkomt Eternal Skeletons
+            signal: AbortSignal.timeout(2000), // V7: Sneller falen bij drukte
         });
 
         if (res.ok) {
@@ -36,12 +39,14 @@ async function getDisabledRoutes(): Promise<string[]> {
             if (data && Array.isArray(data.data)) {
                 const routes = data.data.map((f: any) => f.route_match).filter(Boolean);
                 cachedDisabledRoutes = routes;
-                cacheTimestamp = now;
                 return routes;
             }
         }
     } catch (e) {
-        console.error('[Proxy] Feature flags error:', e);
+        // Alleen loggen als we nog geen cache hebben, om ruis te voorkomen
+        if (!cachedDisabledRoutes) {
+            console.error('[Proxy] Feature flags initial fetch failed (Directus unreachable?):', e instanceof Error ? e.message : e);
+        }
     }
     return cachedDisabledRoutes || [];
 }
