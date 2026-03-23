@@ -9,12 +9,14 @@ import {
 import { 
     triggerFullSyncAction, 
     triggerUserSyncAction, 
-    getSyncStatusAction 
+    getSyncStatusAction,
+    stopSyncAction
 } from '@/server/actions/azure-sync.actions';
 
 interface SyncStatus {
+    jobId?: string;
     active: boolean;
-    status: 'idle' | 'running' | 'completed' | 'failed';
+    status: 'idle' | 'running' | 'completed' | 'failed' | 'aborted';
     total: number;
     processed: number;
     errorCount: number;
@@ -22,13 +24,14 @@ interface SyncStatus {
     missingDataCount: number;
     successCount: number;
     excludedCount: number;
-    errors: { email: string; error: string; timestamp: string }[];
+    errors: { email: string; message: string; timestamp: string }[];
     warnings: { email: string; message: string }[];
     missingData: { email: string; reason: string }[];
     successfulUsers: { email: string }[];
     excludedUsers: { email: string }[];
     startTime?: string;
     endTime?: string;
+    abortRequested?: boolean;
 }
 
 const syncFieldOptions = [
@@ -42,6 +45,7 @@ export default function AzureSyncIsland() {
     const [mounted, setMounted] = useState(false);
     const [status, setStatus] = useState<SyncStatus | null>(null);
     const [isStartingSync, setIsStartingSync] = useState(false);
+    const [isStopping, setIsStopping] = useState(false);
     const [isUserSyncLoading, setIsUserSyncLoading] = useState(false);
     const [userId, setUserId] = useState('');
     const [error, setError] = useState<string | null>(null);
@@ -99,6 +103,23 @@ export default function AzureSyncIsland() {
             setError('Netwerkfout bij het starten van de sync.');
         } finally {
             setIsStartingSync(false);
+        }
+    };
+
+    const handleStopSync = async () => {
+        setIsStopping(true);
+        setError(null);
+        try {
+            const result = await stopSyncAction();
+            if (!result.success) {
+                setError(result.error || 'Kon sync niet stoppen');
+            } else {
+                fetchStatus();
+            }
+        } catch (err) {
+            setError('Netwerkfout bij het stoppen van de sync.');
+        } finally {
+            setIsStopping(false);
         }
     };
 
@@ -207,20 +228,37 @@ export default function AzureSyncIsland() {
                                 </label>
                             </div>
 
-                            <button
-                                onClick={handleFullSync}
-                                disabled={isStartingSync || (status?.active ?? false)}
-                                className="w-full mt-4 py-4 px-6 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-2xl shadow-xl shadow-indigo-500/20 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale active:scale-95"
-                            >
-                                {isStartingSync ? (
-                                    <Loader2 className="h-6 w-6 animate-spin" />
-                                ) : (
-                                    <>
-                                        <RefreshCw className={`h-6 w-6 ${status?.active ? 'animate-spin' : ''}`} />
-                                        <span>{(status?.active) ? 'Synchronisatie Bezig...' : 'Start Volledige Synchronisatie'}</span>
-                                    </>
-                                )}
-                            </button>
+                            {status?.active ? (
+                                <button
+                                    onClick={handleStopSync}
+                                    disabled={isStopping || status?.abortRequested}
+                                    className="w-full mt-4 py-4 px-6 bg-red-500 hover:bg-red-600 text-white font-bold rounded-2xl shadow-xl shadow-red-500/20 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
+                                >
+                                    {isStopping ? (
+                                        <Loader2 className="h-6 w-6 animate-spin" />
+                                    ) : (
+                                        <>
+                                            <X className="h-6 w-6" />
+                                            <span>{status?.abortRequested ? 'Stoppen aangevraagd...' : 'Synchronisatie Stoppen'}</span>
+                                        </>
+                                    )}
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={handleFullSync}
+                                    disabled={isStartingSync}
+                                    className="w-full mt-4 py-4 px-6 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-2xl shadow-xl shadow-indigo-500/20 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale active:scale-95"
+                                >
+                                    {isStartingSync ? (
+                                        <Loader2 className="h-6 w-6 animate-spin" />
+                                    ) : (
+                                        <>
+                                            <RefreshCw className="h-6 w-6" />
+                                            <span>Start Volledige Synchronisatie</span>
+                                        </>
+                                    )}
+                                </button>
+                            )}
                         </div>
                     </section>
                 </div>
@@ -396,7 +434,7 @@ function ResultsList({ filter, status }: { filter: string; status: SyncStatus })
     }
     if (filter === 'all' || filter === 'errors') {
         items.push(...status.errors.map((e, i) => (
-            <ResultRow key={`e-${i}`} email={e.email} message={e.error} type="error" />
+            <ResultRow key={`e-${i}`} email={e.email} message={e.message} type="error" />
         )));
     }
     if (filter === 'all' || filter === 'excluded') {
