@@ -126,7 +126,7 @@ export async function proxy(request: NextRequest) {
             if (!hasSession) {
                 const callbackUrl = encodeURIComponent(pathname + request.nextUrl.search);
                 const microsoftAuthUrl = new URL(
-                    `/api/auth/login/social?provider=microsoft&callbackURL=${callbackUrl}`,
+                    `/api/auth/login/social/microsoft?callbackURL=${callbackUrl}`,
                     request.url
                 );
                 console.log(`[Proxy] No session for ${pathname}, redirecting to Microsoft.`);
