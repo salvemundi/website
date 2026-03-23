@@ -287,14 +287,14 @@ export default function AzureSyncIsland() {
                         </div>
                         
                         <p className="text-sm text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">
-                            Synchroniseer direct een specifieke gebruiker door hun Directus UUID in te voeren. 
+                            Synchroniseer direct een specifiek lid door hun Azure Entra ID in te voeren. 
                         </p>
 
                         <form onSubmit={handleUserSync} className="space-y-4">
                             <input 
                                 value={userId}
                                 onChange={e => setUserId(e.target.value)}
-                                placeholder="UUID (bijv. d3a1b2...)"
+                                placeholder="Azure Entra ID (bijv. d3a1b2...)"
                                 autoComplete="off"
                                 className="w-full p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all dark:text-white"
                             />
@@ -303,7 +303,7 @@ export default function AzureSyncIsland() {
                                 disabled={isUserSyncLoading || !userId.trim()}
                                 className="w-full py-4 px-6 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 font-bold rounded-2xl shadow-sm transition-all active:scale-95 disabled:opacity-50 text-slate-900 dark:text-white"
                             >
-                                {isUserSyncLoading ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : 'Nu Bijwerken'}
+                                {isUserSyncLoading ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : 'Nu via Azure Syncen'}
                             </button>
                         </form>
                     </section>

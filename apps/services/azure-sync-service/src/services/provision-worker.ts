@@ -48,8 +48,7 @@ export class ProvisionWorkerService {
                         const token = await TokenService.getAccessToken(redis);
                         
                         // 2. Perform individual sync/provisioning
-                        // We'll refactor SyncJob.syncUser to be public
-                        await SyncJob.syncUserById(redis, task.userId, token);
+                        await SyncJob.syncByEntraId(redis, task.userId, token);
 
                         // Success -> Remove
                         await redis.zrem(this.QUEUE_KEY, taskJson);
