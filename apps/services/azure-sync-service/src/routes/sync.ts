@@ -17,19 +17,17 @@ export default async function syncRoutes(fastify: FastifyInstance) {
             return reply.status(500).send({ error: 'Internal Server Configuration Error' });
         }
 
-        const expectedHeader = `Bearer ${token}`;
+        const expectedHeader = `Bearer ${token}`.trim();
         const trimmedAuth = authHeader.trim();
         
-        // Byte-level comparison of the START of the strings (safe)
-        const getBytes = (s: string | undefined) => s ? s.substring(0, 10).split('').map(c => c.charCodeAt(0)).join(',') : 'none';
-
+        // Detailed byte-level log (no secrets)
         fastify.log.info({ 
             match: trimmedAuth === expectedHeader,
             receivedLen: trimmedAuth.length, 
             expectedLen: expectedHeader.length,
-            receivedStartBytes: getBytes(trimmedAuth),
-            expectedStartBytes: getBytes(expectedHeader)
-        }, 'AUTH_DETAIL_DEBUG');
+            receivedEnd: trimmedAuth.slice(-3).split('').map(c => c.charCodeAt(0)),
+            expectedEnd: expectedHeader.slice(-3).split('').map(c => c.charCodeAt(0))
+        }, 'AUTH_FINAL_DEBUG');
 
         if (!authHeader || trimmedAuth !== expectedHeader) {
             return reply.status(401).send({ error: 'Unauthorized' });
