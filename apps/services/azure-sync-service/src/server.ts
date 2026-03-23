@@ -4,19 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const fastify = Fastify({
-    logger: {
-        level: 'info',
-        serializers: {
-            req: (request) => {
-                return {
-                    method: request.method,
-                    url: request.url,
-                    headers: request.headers,
-                    remoteAddress: request.ip
-                };
-            }
-        }
-    }
+    logger: true
 });
 
 // Import Plugins & Routes
