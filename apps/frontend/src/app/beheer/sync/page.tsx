@@ -20,6 +20,8 @@ async function checkSyncAccess() {
     });
 }
 
+import SyncSkeleton from '@/components/ui/admin/SyncSkeleton';
+
 export default async function AzureSyncPage() {
     const hasAccess = await checkSyncAccess();
 
@@ -30,17 +32,16 @@ export default async function AzureSyncPage() {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-900 pb-20">
             <PageHeader
-                title="Leden Synchronisatie"
+                title="Azure AD Synchronisatie"
                 description="Synchroniseer gebruikersgegevens en commissierechten met Microsoft Azure AD."
+                backLink="/beheer"
+                className="mb-0"
+                contentPadding="pt-0 pb-2 sm:pt-0 sm:pb-2"
+                titleClassName="text-sm sm:text-base md:text-xl"
             />
 
-            <div className="container mx-auto px-4 -mt-8 max-w-5xl relative z-10">
-                <Suspense fallback={
-                    <div className="flex flex-col items-center justify-center py-24 bg-white dark:bg-slate-800 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-700 animate-pulse">
-                        <Loader2 className="h-12 w-12 text-slate-300 dark:text-slate-600 animate-spin mb-4" />
-                        <p className="text-slate-400 dark:text-slate-500 font-medium font-inter">Sync interface laden...</p>
-                    </div>
-                }>
+            <div className="container mx-auto px-4 py-8 max-w-7xl relative z-10">
+                <Suspense fallback={<SyncSkeleton />}>
                     <AzureSyncIsland />
                 </Suspense>
             </div>
