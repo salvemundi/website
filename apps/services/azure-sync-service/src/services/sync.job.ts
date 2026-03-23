@@ -312,7 +312,6 @@ export class SyncJob {
                 email: email,
                 entra_id: aUser.id,
                 status: 'active',
-                role: '82fe4735-4724-48af-9d37-ee85e1c5441e', // "Members" role
                 text_direction: 'auto',
                 admin_access: false,
                 phone_number: phone,
