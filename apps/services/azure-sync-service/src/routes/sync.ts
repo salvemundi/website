@@ -33,7 +33,7 @@ export default async function syncRoutes(fastify: FastifyInstance) {
             const options = request.body as any;
 
             // Start sync job asynchronously (Fire-and-forget)
-            SyncJob.run(accessToken, options).catch(err => {
+            SyncJob.run(fastify.redis, accessToken, options).catch(err => {
                 fastify.log.error(`[SYNC] Full job failed: ${err.message}`);
             });
 
@@ -57,7 +57,7 @@ export default async function syncRoutes(fastify: FastifyInstance) {
         try {
             const accessToken = await TokenService.getAccessToken(fastify.redis);
 
-            await SyncJob.syncUserById(userId, accessToken);
+            await SyncJob.syncUserById(fastify.redis, userId, accessToken);
 
             return { message: `Sync for user ${userId} completed` };
         } catch (err: any) {
@@ -74,6 +74,6 @@ export default async function syncRoutes(fastify: FastifyInstance) {
      * Returns the current status of the synchronization job.
      */
     fastify.get('/status', async (request, reply) => {
-        return SyncJob.getStatus();
+        return SyncJob.getStatus(fastify.redis);
     });
 }

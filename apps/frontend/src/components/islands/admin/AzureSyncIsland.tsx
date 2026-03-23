@@ -68,14 +68,16 @@ export default function AzureSyncIsland() {
         fetchStatus();
     }, [fetchStatus]);
 
-    // Polling while active
+    // Polling while active or starting
     useEffect(() => {
         let interval: NodeJS.Timeout;
-        if (status?.active) {
+        const shouldPoll = status?.active || status?.status === 'running' || isStartingSync;
+        
+        if (shouldPoll && mounted) {
             interval = setInterval(fetchStatus, 2000);
         }
         return () => clearInterval(interval);
-    }, [status?.active, fetchStatus]);
+    }, [status?.active, status?.status, isStartingSync, fetchStatus, mounted]);
 
     if (!mounted) return null;
 
@@ -258,7 +260,7 @@ export default function AzureSyncIsland() {
             </div>
 
             {/* Progress & Results Section */}
-            {status && (status.status !== 'idle' || status.active) && (
+            {status && (
                 <section className="bg-white/80 dark:bg-slate-900/50 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-white/20 dark:border-white/5 animate-in slide-in-from-bottom-4 duration-700">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
                         <div>
