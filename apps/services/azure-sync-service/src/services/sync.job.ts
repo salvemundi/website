@@ -387,21 +387,16 @@ export class SyncJob {
     }
 
     /**
-     * Synchronizes a single user by their Directus UUID.
-     * Useful for targeted provisioning after events.
+     * Synchronizes a specific user from Azure AD into Directus using their Entra ID.
+     * This will create the user in Directus if they don't exist yet.
      */
-    static async syncUserById(redis: Redis, userId: string, token: string) {
-        // Fetch all needed data for the context
-        const [dUser, committees, allLeden, allMemberships] = await Promise.all([
-            DirectusService.getUserById(userId),
+    static async syncByEntraId(redis: Redis, entraId: string, token: string) {
+        // Fetch context data
+        const [committees, allLeden, allMemberships] = await Promise.all([
             DirectusService.getAllCommittees(),
             DirectusService.getAllUsers(),
             DirectusService.getAllCommitteeMembers()
         ]);
-
-        if (!dUser) {
-            throw new Error(`User ${userId} not found in Directus.`);
-        }
 
         const committeeCache = new Map<string, any>();
         for (const c of committees) {
@@ -420,7 +415,7 @@ export class SyncJob {
             membershipCache.set(m.user_id, list);
         }
 
-        const ctx: SyncContext = {
+        const ctx: SyncContext & { membershipMap: Map<string, Map<number, boolean>> } = {
             redis,
             status: { ...this.defaultStatus, active: true, status: 'running' },
             options: { fields: ['membership_expiry', 'geboortedatum', 'phone_number', 'committees'] },
@@ -428,28 +423,17 @@ export class SyncJob {
             committeeCache,
             ownerCache: new Map(),
             userCacheByEntra,
-            membershipCache
+            membershipCache,
+            membershipMap: new Map() // Empty for single sync
         };
 
-        const entraId = dUser.entra_id;
-        if (!entraId) {
-            // ...
-            if (!dUser.email) {
-                throw new Error(`User ${dUser.id} has no email or Entra ID.`);
-            }
-            console.log(`[SYNC] User ${dUser.email} has no Entra ID. Attempting to locate in Azure...`);
-            const aUser = await GraphService.getUserByEmail(dUser.email, token);
-            if (!aUser) {
-                throw new Error(`User ${dUser.email} not found in Azure AD.`);
-            }
-            await this.syncUser(ctx, aUser);
-        } else {
-            const aUser = await GraphService.getUser(entraId, token);
-            if (!aUser) {
-                throw new Error(`Entra ID ${entraId} not found in Azure.`);
-            }
-            await this.syncUser(ctx, aUser);
+        const aUser = await GraphService.getUser(entraId, token);
+        if (!aUser) {
+            throw new Error(`Entra ID ${entraId} not found in Azure AD.`);
         }
+
+        // Use optimized sync to handle both creation and updating
+        await this.syncUserOptimized(ctx, aUser);
     }
 
     public static async syncUser(ctx: SyncContext, aUser: AzureUser) {

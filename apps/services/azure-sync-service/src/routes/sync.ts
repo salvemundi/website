@@ -56,9 +56,8 @@ export default async function syncRoutes(fastify: FastifyInstance) {
         try {
             const accessToken = await TokenService.getAccessToken(fastify.redis);
 
-            await SyncJob.syncUserById(fastify.redis, userId, accessToken);
-
-            return { message: `Sync for user ${userId} completed` };
+            await SyncJob.syncByEntraId(fastify.redis, userId, accessToken);
+            return { message: `Sync for Entra ID ${userId} completed` };
         } catch (err: any) {
             fastify.log.error(`[SYNC] Failed to sync user ${userId}: ${err.message}`);
             return reply.status(500).send({
