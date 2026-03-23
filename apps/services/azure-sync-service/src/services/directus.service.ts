@@ -38,6 +38,12 @@ export class DirectusService {
         return committees[0] || null;
     }
 
+    static async getAllCommittees() {
+        return await getDirectusClient().request(readItems('committees', {
+            fields: ['id', 'name', 'azure_group_id']
+        }));
+    }
+
     static async getCommitteeByName(name: string) {
         const committees = await getDirectusClient().request(readItems('committees', {
             filter: { name: { _eq: name } },
