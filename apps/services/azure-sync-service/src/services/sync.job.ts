@@ -421,6 +421,25 @@ export class SyncJob {
             membershipCache.set(m.user_id, list);
         }
 
+        const aUser = await GraphService.getUser(entraId, token);
+        if (!aUser) {
+            throw new Error(`Entra ID ${entraId} niet gevonden in Azure AD.`);
+        }
+
+        // Populate membershipMap for this specific user
+        const membershipMap = new Map<string, Map<number, boolean>>();
+        const userMap = new Map<number, boolean>();
+        
+        const userGroups = await GraphService.getUserGroups(aUser.id, token);
+        for (const group of userGroups) {
+            const dComm = committeeCache.get(group.id);
+            if (!dComm) continue;
+
+            const owners = await GraphService.getGroupOwners(group.id, token);
+            userMap.set(dComm.id, owners.includes(aUser.id));
+        }
+        membershipMap.set(aUser.id, userMap);
+
         const ctx: SyncContext & { membershipMap: Map<string, Map<number, boolean>> } = {
             redis,
             status: { ...this.defaultStatus, active: true, status: 'running' },
@@ -430,13 +449,8 @@ export class SyncJob {
             ownerCache: new Map(),
             userCacheByEntra,
             membershipCache,
-            membershipMap: new Map() // Empty for single sync
+            membershipMap
         };
-
-        const aUser = await GraphService.getUser(entraId, token);
-        if (!aUser) {
-            throw new Error(`Entra ID ${entraId} not found in Azure AD.`);
-        }
 
         // Use optimized sync to handle both creation and updating
         await this.syncUserOptimized(ctx, aUser);
