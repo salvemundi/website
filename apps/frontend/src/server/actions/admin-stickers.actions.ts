@@ -39,8 +39,8 @@ export async function getStickers() {
     await requireStickerAdmin();
     
     try {
-        const stickers = await getSystemDirectus().request(readItems('stickers', {
-            fields: ['id', 'name', 'date_created', { user_created: ['id', 'first_name', 'last_name'] }],
+        const stickers = await getSystemDirectus().request(readItems('Stickers' as any, {
+            fields: ['id', 'location_name', 'date_created', 'latitude', 'longitude', 'city', 'country', 'address', 'image', { user_created: ['id', 'first_name', 'last_name', 'avatar'] }],
             sort: ['-date_created'],
             limit: -1
         }));
@@ -59,7 +59,7 @@ export async function deleteSticker(id: number) {
     const session = await requireStickerAdmin();
 
     try {
-        await getSystemDirectus().request(deleteItem('stickers', id));
+        await getSystemDirectus().request(deleteItem('Stickers' as any, id));
         revalidateTag('stickers', 'default');
         return { success: true };
     } catch (e) {
@@ -76,7 +76,7 @@ export async function updateSticker(id: number, data: any) {
     const session = await requireStickerAdmin();
 
     try {
-        const updated = await getSystemDirectus().request(updateItem('stickers', id, data));
+        const updated = await getSystemDirectus().request(updateItem('Stickers' as any, id, data));
         revalidateTag('stickers', 'default');
         return updated;
     } catch (e) {

@@ -46,6 +46,7 @@ export default function StickersTable({ stickers, onDelete }: StickersTableProps
                         placeholder="Zoek op locatie, stad, land of gebruiker..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
+                        suppressHydrationWarning
                         className="w-full pl-12 pr-4 py-3 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-medium text-sm text-[var(--text-main)]"
                     />
                 </div>
@@ -77,7 +78,7 @@ export default function StickersTable({ stickers, onDelete }: StickersTableProps
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col gap-1">
                                                 <span className="font-bold text-[var(--text-main)] group-hover:text-[var(--theme-purple)] transition-colors">
-                                                    {sticker.location_name || 'Naamloze locatie'}
+                                                    {sticker.location_name === 'Imported' ? (sticker.city || sticker.address || 'Imported') : (sticker.location_name || 'Naamloze locatie')}
                                                 </span>
                                                 <div className="flex items-center gap-1.5 text-[11px] text-[var(--text-muted)]">
                                                     <User className="h-3 w-3" />
@@ -98,7 +99,7 @@ export default function StickersTable({ stickers, onDelete }: StickersTableProps
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className="text-xs font-mono text-[var(--text-muted)]">
+                                            <span className="text-xs font-mono text-[var(--text-muted)]" suppressHydrationWarning>
                                                 {format(new Date(sticker.date_created), 'dd MMM yyyy', { locale: nl })}
                                             </span>
                                         </td>

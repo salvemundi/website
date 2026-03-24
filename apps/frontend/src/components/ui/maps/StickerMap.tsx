@@ -159,7 +159,7 @@ export default function StickerMap({
                                 />
                                 <div>
                                     <h3 className="font-black text-[var(--text-main)] leading-tight uppercase tracking-tight">
-                                        {popupInfo.location_name || 'Sticker Locatie'}
+                                        {popupInfo.location_name === 'Imported' ? (popupInfo.city || popupInfo.address || 'Imported') : (popupInfo.location_name || 'Sticker Locatie')}
                                     </h3>
                                     <p className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">
                                         {[popupInfo.city || popupInfo.address, popupInfo.country].filter(Boolean).join(' • ')}
@@ -197,7 +197,7 @@ export default function StickerMap({
                             )}
 
                             <div className="mt-4 pt-4 border-t border-[var(--border-color)]/20 flex flex-col gap-1">
-                                <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">
+                                <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest" suppressHydrationWarning>
                                     Toegevoegd op {new Date(popupInfo.date_created).toLocaleDateString('nl-NL')}
                                 </p>
                                 {typeof popupInfo.user_created === 'object' && (
