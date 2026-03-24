@@ -139,12 +139,11 @@ export interface TripSignup {
     trip_id: number | Trip;
     user_id?: string | DirectusUser | null;
     first_name: string;
-    middle_name?: string | null;
     last_name: string;
     email: string;
     phone_number: string;
     date_of_birth: any;
-    id_document_type?: string | null;
+    id_document?: string | null;
     document_number?: string | null;
     allergies?: string | null;
     special_notes?: string | null;
@@ -252,7 +251,6 @@ export interface SiteSetting {
 export interface IntroSignup {
     id: number;
     first_name: string;
-    middle_name?: string | null;
     last_name: string;
     email: string;
     phone_number?: string | null;

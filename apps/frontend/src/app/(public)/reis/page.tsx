@@ -3,7 +3,7 @@
 import React, { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import PageHeader from '@/components/ui/layout/PageHeader';
-import { getReisSiteSettings, getUpcomingTrips, getTripSignups } from '@/server/actions/reis.actions';
+import { getReisSiteSettings, getUpcomingTrips, getUserTripSignup, getTripParticipantsCount } from '@/server/actions/reis.actions';
 import { ReisTrip, ReisSiteSettings, ReisTripSignup } from '@salvemundi/validations';
 import { ReisPageHeaderSkeleton, ReisFormSkeleton, ReisInfoSkeleton } from '@/components/ui/activities/ReisSkeletons';
 import { ReisFormIsland } from '@/components/islands/activities/ReisFormIsland';
@@ -11,15 +11,19 @@ import { ReisInfoIsland } from '@/components/islands/activities/ReisInfoIsland';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 
+interface ReisMainContentProps {
+    trips: ReisTrip[];
+    siteSettings: ReisSiteSettings | null;
+    participantsCount: number;
+    userSignup: ReisTripSignup | null;
+}
+
 function ReisMainContent({
     trips,
     siteSettings,
-    signups
-}: {
-    trips: ReisTrip[],
-    siteSettings: ReisSiteSettings | null,
-    signups: ReisTripSignup[]
-}) {
+    participantsCount,
+    userSignup
+}: ReisMainContentProps) {
     const isReisEnabled = siteSettings?.show ?? true;
     const reisDisabledMessage = siteSettings?.disabled_message || 'De inschrijvingen voor de reis zijn momenteel gesloten.';
 
@@ -50,9 +54,6 @@ function ReisMainContent({
         ? `Inschrijving opent op ${format(registrationStartDate!, 'd MMMM yyyy HH:mm', { locale: nl })}`
         : 'Inschrijving nog niet beschikbaar';
 
-    const participantsCount = signups.filter(s => s.status === 'confirmed' || s.status === 'registered').length || 0;
-    const userSignup = null;
-
     return (
         <div className="mx-auto max-w-app px-4 py-8 sm:py-10 md:py-12">
             <div className="flex flex-col lg:flex-row gap-8 items-start">
@@ -76,7 +77,12 @@ function ReisMainContent({
 
 // Client-side data fetching wrapper to satisfy prerenderer
 function ReisPageDataWrapper() {
-    const [data, setData] = useState<{ trips: ReisTrip[]; settings: ReisSiteSettings | null; signups: ReisTripSignup[] } | null>(null);
+    const [data, setData] = useState<{ 
+        trips: ReisTrip[]; 
+        settings: ReisSiteSettings | null; 
+        participantsCount: number;
+        userSignup: ReisTripSignup | null;
+    } | null>(null);
 
     useEffect(() => {
         async function fetchData() {
@@ -84,18 +90,34 @@ function ReisPageDataWrapper() {
                 getUpcomingTrips(),
                 getReisSiteSettings()
             ]);
-            let signups: ReisTripSignup[] = [];
+            
+            let participantsCount = 0;
+            let userSignup: ReisTripSignup | null = null;
+            
             if (trips.length > 0) {
-                signups = await getTripSignups(trips[0].id);
+                const tripId = trips[0].id;
+                const [count, signup] = await Promise.all([
+                    getTripParticipantsCount(tripId),
+                    getUserTripSignup(tripId)
+                ]);
+                participantsCount = count;
+                userSignup = signup;
             }
-            setData({ trips, settings, signups });
+            setData({ trips, settings, participantsCount, userSignup });
         }
         fetchData();
     }, []);
 
     if (!data) return <div className="mx-auto max-w-app px-4 py-8 sm:py-10 md:py-12 flex flex-col lg:flex-row gap-8 items-start"><ReisFormSkeleton /><ReisInfoSkeleton /></div>;
 
-    return <ReisMainContent trips={data.trips} siteSettings={data.settings} signups={data.signups} />;
+    return (
+        <ReisMainContent 
+            trips={data.trips} 
+            siteSettings={data.settings} 
+            participantsCount={data.participantsCount} 
+            userSignup={data.userSignup} 
+        />
+    );
 }
 
 // Static shell for the page
@@ -104,12 +126,9 @@ export default function ReisPage() {
         <>
             <div className="flex flex-col w-full">
                 <Suspense fallback={<ReisPageHeaderSkeleton />}>
-                    {/* Header can still be server-action based if it doesn't use Date/auth, 
-                        but for safety we'll just use a static-ish header or move it to client if needed. 
-                        Let's keep it simple for now. */}
                     <PageHeader
                         title="SALVE MUNDI REIS"
-                        backgroundImage="/img/placeholder.svg"
+                        backgroundImage="/img/newlogo.svg"
                         contentPadding="py-20"
                         imageFilter="brightness(0.65)"
                     >

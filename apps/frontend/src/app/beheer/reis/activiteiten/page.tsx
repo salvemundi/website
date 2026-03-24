@@ -87,7 +87,7 @@ async function ReisActiviteitenLoader({ searchParams }: PageProps) {
                     trip_id: { _eq: activeTripId }
                 } 
             },
-            fields: ['id', 'trip_activity_id', 'selected_options', { trip_signup_id: ['id', 'first_name', 'middle_name', 'last_name', 'email'] }] as any,
+            fields: ['id', 'trip_activity_id', 'selected_options', { trip_signup_id: ['id', 'first_name', 'last_name', 'email'] }] as any,
             limit: -1
         }))
     ]);

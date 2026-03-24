@@ -91,8 +91,8 @@ export async function getTripSignups(tripId: number) {
         const signups = await getSystemDirectus().request(readItems('trip_signups', {
             filter: { trip_id: { _eq: tripId } },
             fields: [
-                'id', 'trip_id', 'user_id', 'first_name', 'middle_name', 'last_name', 
-                'email', 'phone_number', 'date_of_birth', 'id_document_type', 
+                'id', 'trip_id', 'user_id', 'first_name', 'last_name', 
+                'email', 'phone_number', 'date_of_birth', 'id_document', 
                 'document_number', 'allergies', 'special_notes', 'willing_to_drive', 
                 'role', 'status', 'deposit_paid', 'deposit_paid_at', 'full_payment_paid', 
                 'full_payment_paid_at', 'date_created'
@@ -352,7 +352,7 @@ export async function getActivitySignups(activityId: number) {
     try {
         const signups = await getSystemDirectus().request(readItems('trip_signup_activities', {
             filter: { trip_activity_id: { _eq: activityId } },
-            fields: ['id', 'selected_options', { trip_signup_id: ['id', 'first_name', 'middle_name', 'last_name', 'email'] }]
+            fields: ['id', 'selected_options', { trip_signup_id: ['id', 'first_name', 'last_name', 'email'] }]
         }));
 
         return signups ?? [];
@@ -372,8 +372,8 @@ export async function getTripSignup(id: number): Promise<TripSignup | null> {
     try {
         const signup = await getSystemDirectus().request(readItem('trip_signups', id, {
             fields: [
-                'id', 'trip_id', 'user_id', 'first_name', 'middle_name', 'last_name', 
-                'email', 'phone_number', 'date_of_birth', 'id_document_type', 
+                'id', 'trip_id', 'user_id', 'first_name', 'last_name', 
+                'email', 'phone_number', 'date_of_birth', 'id_document', 
                 'document_number', 'allergies', 'special_notes', 'willing_to_drive', 
                 'role', 'status', 'deposit_paid', 'deposit_paid_at', 'full_payment_paid', 
                 'full_payment_paid_at', 'date_created'
@@ -400,7 +400,6 @@ export async function updateTripSignup(id: number, prevState: any, formData: For
         deposit_paid: rawData.deposit_paid === 'on' || rawData.deposit_paid === 'true',
         full_payment_paid: rawData.full_payment_paid === 'on' || rawData.full_payment_paid === 'true',
         date_of_birth: rawData.date_of_birth || null,
-        middle_name: rawData.middle_name || null,
     };
 
     try {

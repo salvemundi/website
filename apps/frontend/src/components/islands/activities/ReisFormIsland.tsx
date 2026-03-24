@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { CheckCircle2, CreditCard, Loader2, Utensils } from 'lucide-react';
-import { createTripSignup, cancelTripSignup } from '@/server/actions/reis.actions';
-import type { ReisTrip, TripSignup } from '@salvemundi/validations';
+import { createTripSignup, cancelTripSignup, getCurrentUserProfileAction } from '@/server/actions/reis.actions';
+import type { ReisTrip, ReisTripSignup } from '@salvemundi/validations';
 import { authClient } from '@/lib/auth-client';
 import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
@@ -12,7 +12,7 @@ import { PhoneInput } from '@/shared/ui/PhoneInput';
 
 interface ReisFormIslandProps {
     nextTrip: ReisTrip | null;
-    userSignup: TripSignup | null;
+    userSignup: ReisTripSignup | null;
     canSignUp: boolean;
     registrationStartText: string;
     participantsCount: number;
@@ -24,7 +24,6 @@ export function ReisFormIsland({ nextTrip, userSignup, canSignUp, registrationSt
 
     const [form, setForm] = useState({
         first_name: '',
-        middle_name: '',
         last_name: '',
         email: '',
         phone_number: '',
@@ -39,16 +38,29 @@ export function ReisFormIsland({ nextTrip, userSignup, canSignUp, registrationSt
     useEffect(() => {
         if (!currentUser) return;
 
-        setForm(prev => ({
-            ...prev,
-            email: prev.email || currentUser.email || '',
-            // Assuming BetterAuth session extends user type or these fields are requested via another API if strict
-            // Using placeholder logic for now matching the shape.
-        }));
-
+        async function prefill() {
+            const profile = await getCurrentUserProfileAction();
+            if (profile.success && profile.data) {
+                setForm(prev => ({
+                    ...prev,
+                    last_name: prev.last_name || profile.data.last_name || '',
+                    email: prev.email || profile.data.email || '',
+                    phone_number: prev.phone_number || profile.data.phone_number || '',
+                    date_of_birth: prev.date_of_birth || profile.data.date_of_birth || '',
+                }));
+            } else {
+                // Fallback to basic session data if directus fetch fails
+                setForm(prev => ({
+                    ...prev,
+                    email: prev.email || currentUser?.email || '',
+                }));
+            }
+        }
+        
+        prefill();
     }, [currentUser]);
 
-    const getSignupStatusDisplay = (signup: TripSignup) => {
+    const getSignupStatusDisplay = (signup: ReisTripSignup) => {
         if (signup.status === 'waitlist') return 'Wachtrij';
         if (signup.status === 'cancelled') return 'Geannuleerd';
         if (signup.status === 'registered') return 'Geregistreerd';
@@ -114,7 +126,7 @@ export function ReisFormIsland({ nextTrip, userSignup, canSignUp, registrationSt
                 ...form
             };
 
-            const result = await createTripSignup(formData, nextTrip.id);
+            const result = await createTripSignup(formData as any, nextTrip.id);
             if (!result.success) {
                 setError(result.message || 'Fout bij inschrijven.');
             } else {
@@ -136,6 +148,11 @@ export function ReisFormIsland({ nextTrip, userSignup, canSignUp, registrationSt
 
             {userSignup ? (
                 <div className="bg-gradient-to-br from-theme-purple/5 to-theme-purple/10 rounded-2xl p-6 border border-theme-purple/20">
+                    {error && (
+                        <div className="bg-red-500/10 text-red-500 border border-red-500/20 px-4 py-3 rounded-xl mb-6 text-sm font-medium">
+                            {error}
+                        </div>
+                    )}
                     <div className="flex items-center gap-4 mb-6">
                         <div className="w-14 h-14 rounded-full bg-theme-purple/20 flex items-center justify-center">
                             <CheckCircle2 className="h-8 w-8 text-theme-purple" />
@@ -235,7 +252,7 @@ export function ReisFormIsland({ nextTrip, userSignup, canSignUp, registrationSt
                     </p>
 
                     <div className="flex flex-col gap-4">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4">
                             <FormField label="Voornaam" required error={error && !form.first_name ? 'Verplicht' : undefined}>
                                 <Input
                                     name="first_name"
@@ -249,25 +266,15 @@ export function ReisFormIsland({ nextTrip, userSignup, canSignUp, registrationSt
                                     Gebruik je volledige naam zoals op je paspoort/ID
                                 </span>
                             </FormField>
-
-                            <FormField label="Tussenvoegsel">
-                                <Input
-                                    name="middle_name"
-                                    value={form.middle_name}
-                                    onChange={handleChange}
-                                    placeholder="bijv. van, de"
-                                    autoComplete="additional-name"
-                                />
-                            </FormField>
                         </div>
 
-                        <FormField label="Achternaam" required error={error && !form.last_name ? 'Verplicht' : undefined}>
+                        <FormField label="Tussenvoegsel & Achternaam" required error={error && !form.last_name ? 'Verplicht' : undefined}>
                             <Input
                                 name="last_name"
                                 value={form.last_name}
                                 onChange={handleChange}
                                 required
-                                placeholder="Achternaam"
+                                placeholder="Achternaam (incl. tussenvoegsel)"
                                 autoComplete="family-name"
                             />
                         </FormField>

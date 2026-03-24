@@ -114,11 +114,11 @@ async function AdminReisSignupsTable({ tripId, trip }: { tripId: number, trip: a
             getSystemDirectus().request(readItems('trip_signups', {
                 filter: { trip_id: { _eq: tripId } },
                 fields: [
-                    'id', 'first_name', 'middle_name', 'last_name', 'email', 'phone_number', 
-                    'date_of_birth', 'id_document_type', 'document_number', 'allergies', 
+                    'id', 'first_name', 'last_name', 'email', 'phone_number', 
+                    'date_of_birth', 'id_document', 'document_number', 'allergies', 
                     'special_notes', 'willing_to_drive', 'role', 'status', 'deposit_paid', 
                     'deposit_paid_at', 'deposit_email_sent', 'full_payment_paid', 
-                    'full_payment_paid_at', 'final_email_sent'
+                    'full_payment_paid_at', 'final_email_sent', 'date_created'
                 ] as any,
                 sort: ['-id'],
                 limit: -1

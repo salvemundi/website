@@ -17,30 +17,38 @@ export const reisTripSchema = z.object({
     registration_open: z.boolean(),
     registration_start_date: z.string().nullable().optional(),
     max_participants: z.number().int(),
+    max_crew: z.number().int().optional(),
+    base_price: z.string().nullable().optional(),
+    crew_discount: z.string().nullable().optional(),
+    deposit_amount: z.string().nullable().optional(),
+    is_bus_trip: z.boolean().nullable().optional(),
     allow_final_payments: z.boolean().nullable().optional(),
+    status: z.string().nullable().optional(),
 });
 
 export const reisTripSignupSchema = z.object({
     id: z.number().int(),
     trip_id: z.number().int(),
     first_name: z.string().min(1, 'Voornaam is verplicht'),
-    middle_name: z.string().nullable().optional(),
     last_name: z.string().min(1, 'Achternaam is verplicht'),
     email: z.string().email('Ongeldig e-mailadres'),
     phone_number: z.string().nullable().optional(),
     date_of_birth: z.string().nullable().optional(),
-    terms_accepted: z.boolean().refine(val => val === true, {
-        message: 'Je moet de algemene voorwaarden accepteren.',
-    }),
+    id_document: z.string().nullable().optional(),
+    document_number: z.string().nullable().optional(),
+    terms_accepted: z.boolean().optional(),
     status: z.enum(['registered', 'waitlist', 'confirmed', 'cancelled']),
     role: z.enum(['participant', 'crew']).optional(),
+    allergies: z.string().nullable().optional(),
+    special_notes: z.string().nullable().optional(),
+    willing_to_drive: z.boolean().nullable().optional(),
     deposit_paid: z.boolean().optional(),
     full_payment_paid: z.boolean().optional(),
+    date_created: z.string().nullable().optional(),
 });
 
 export const reisSignupFormSchema = z.object({
     first_name: z.string().min(1, 'Voornaam is verplicht'),
-    middle_name: z.string().optional(),
     last_name: z.string().min(1, 'Achternaam is verplicht'),
     email: z.string().email('Ongeldig e-mailadres'),
     phone_number: z.string().min(5, 'Telefoonnummer is verplicht'),

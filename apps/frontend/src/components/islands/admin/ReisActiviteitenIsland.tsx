@@ -500,7 +500,7 @@ function SignupsModal({ activity, signups, onClose }: any) {
                                 <div key={s.id} className="p-4 bg-[var(--bg-main)]/50 rounded-[var(--radius-xl)] ring-1 ring-[var(--border-color)]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:bg-[var(--bg-main)]">
                                     <div>
                                         <p className="font-bold text-[var(--text-main)]">
-                                            {s.trip_signup_id?.first_name} {s.trip_signup_id?.middle_name} {s.trip_signup_id?.last_name}
+                                            {s.trip_signup_id?.first_name} {s.trip_signup_id?.last_name}
                                         </p>
                                         <p className="text-xs text-[var(--text-muted)]">{s.trip_signup_id?.email}</p>
                                     </div>
