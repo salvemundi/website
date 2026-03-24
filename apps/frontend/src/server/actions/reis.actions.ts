@@ -279,44 +279,5 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
     }
 }
 
-export async function cancelTripSignup(signupId: number): Promise<{ success: boolean; message?: string }> {
-    const session = await auth.api.getSession({ headers: await nextHeaders() });
-
-    if (!session || !session.user) {
-        console.error('[reis.actions#cancelTripSignup] Unauthorized attempt to cancel signup.');
-        return { success: false, message: 'Je moet ingelogd zijn om een aanmelding te annuleren.' };
-    }
-
-    try {
-        const trip = await getSystemDirectus().request(readItems('trip_signups', {
-            filter: { id: { _eq: signupId } },
-            fields: ['id', 'email', 'trip_id'],
-            limit: 1
-        }));
-
-        if (!trip || trip.length === 0) {
-            return { success: false, message: 'Aanmelding niet gevonden.' };
-        }
-
-        const signup = trip[0];
-
-    
-        if (signup.email.toLowerCase() !== session.user.email.toLowerCase()) {
-            console.error('[reis.actions#cancelTripSignup] Email mismatch for cancellation.', { signupEmail: signup.email, sessionEmail: session.user.email });
-            return { success: false, message: 'Je kunt alleen je eigen aanmelding annuleren.' };
-        }
-
-        await getSystemDirectus().request(updateItem('trip_signups', signupId, { status: 'cancelled' as any }));
-
-        if (signup.trip_id) {
-            revalidatePath('/beheer/reis');
-        }
-        revalidatePath('/reis');
-        return { success: true };
-    } catch (err) {
-        console.error('[reis.actions#cancelTripSignup] Error:', err);
-        return { success: false, message: 'Interne serverfout bij annuleren.' };
-    }
-}
 
 
