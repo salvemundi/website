@@ -12,7 +12,6 @@ import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 
 import { getSystemDirectus } from '@/lib/directus';
-import { getDirectusClient } from '@/lib/directus.server';
 import { readItems } from '@directus/sdk';
 
 // ─── Event Signups ────────────────────────────────────────────────────────────
@@ -25,7 +24,7 @@ export async function getUserEventSignups(overrideUserId?: string): Promise<Even
     if (!targetUserId) return [];
 
     try {
-        const client = await getDirectusClient();
+        const client = getSystemDirectus();
         const res = await client.request(readItems('event_signups' as any, {
             filter: { directus_relations: { _eq: targetUserId } },
             fields: ['id', 'created_at', { event_id: ['id', 'name', 'event_date', 'description', 'image', 'contact'] }],
@@ -57,7 +56,7 @@ export async function getUserTransactions(overrideUserId?: string): Promise<Tran
     if (!targetUserId) return [];
 
     try {
-        const client = await getDirectusClient();
+        const client = getSystemDirectus();
         const res = await client.request(readItems('transactions' as any, {
             filter: {
                 _or: [

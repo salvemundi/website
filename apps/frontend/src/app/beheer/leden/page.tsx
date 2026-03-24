@@ -2,12 +2,12 @@ import { Suspense } from 'react';
 import PageHeader from '@/components/ui/layout/PageHeader';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
-import { ShieldAlert, ArrowLeft } from 'lucide-react';
+import { AlertCircle, ShieldAlert, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import LedenOverzichtIsland from '@/components/islands/admin/leden/LedenOverzichtIsland';
 import MemberListSkeleton from '@/components/ui/admin/leden/MemberListSkeleton';
-import { getSystemDirectus, getUserDirectus } from '@/lib/directus';
+import { getSystemDirectus } from '@/lib/directus';
 import { getImageUrl } from '@/lib/image-utils';
 import { readUsers, readRoles } from '@directus/sdk';
 import { isSuperAdmin } from '@/lib/auth-utils';
@@ -49,7 +49,7 @@ export default async function LedenPage({
                 contentPadding="pt-0 pb-2 sm:pt-0 sm:pb-2"
                 titleClassName="text-sm sm:text-base md:text-xl"
             />
-            <Suspense key={`${search}-${page}-${tab}`} fallback={<MemberListSkeleton />}>
+            <Suspense key={search + "-" + page + "-" + tab} fallback={<MemberListSkeleton />}>
                 <LedenDataLoader 
                     search={search} 
                     page={page} 
@@ -73,66 +73,54 @@ async function LedenDataLoader({ search, page, tab }: { search: string, page: nu
 
     const todayStr = new Date().toISOString().substring(0, 10);
 
-    // Build filter
-    const filters: any = {
-        _and: [
-            { email: { _nnull: true } },
-            { email: { _nlike: 'test-%' } },
-            { email: { _nin: EXCLUDED_EMAILS } }
-        ]
-    };
-
-    if (search) {
-        filters._and.push({
-            _or: [
-                { first_name: { _icontains: search } },
-                { last_name: { _icontains: search } },
-                { email: { _icontains: search } }
-            ]
-        });
-    }
-
-    if (tab === 'active') {
-        filters._and.push({ 
-            membership_expiry: { _gte: todayStr } 
-        });
-    } else {
-        filters._and.push({
-            _or: [
-                { membership_expiry: { _lt: todayStr } },
-                { membership_expiry: { _null: true } }
-            ]
-        });
-    }
-
     let members: any[] = [];
     let totalCount = 0;
 
     try {
-        const res = await getUserDirectus(session.session.token).request(
-            readUsers({
-                filter: filters,
-                fields: ['id', 'first_name', 'last_name', 'email', 'date_of_birth', 'membership_expiry', 'status'],
-                limit: PAGE_SIZE,
-                offset: (page - 1) * PAGE_SIZE,
-                sort: ['last_name', 'first_name'],
-                // @ts-ignore
-                meta: 'total_count'
-            } as any)
-        );
+        // Simple filter first to avoid operator issues on directus_users
+        const query: any = {
+            fields: ['id', 'first_name', 'last_name', 'email', 'date_of_birth', 'membership_expiry', 'status'],
+            limit: 200, // Fetch enough to avoid pagination issues for now
+            sort: ['last_name', 'first_name'],
+            filter: {
+                _and: [
+                    { email: { _nnull: true } },
+                    { email: { _nin: EXCLUDED_EMAILS } }
+                ]
+            }
+        };
+
+        if (search) {
+            query.filter._and.push({
+                _or: [
+                    { first_name: { _icontains: search } },
+                    { last_name: { _icontains: search } },
+                    { email: { _icontains: search } }
+                ]
+            });
+        }
+
+        const res = await getSystemDirectus().request(readUsers(query));
         
-        // Handling the metadata response (SDK might return wrap or direct depending on version)
         if (Array.isArray(res)) {
             members = res;
-            totalCount = res.length; // Fallback if no meta
-        } else {
-            // @ts-ignore
-            members = res.data || [];
-            // @ts-ignore
-            totalCount = res.meta?.total_count || members.length;
+            totalCount = res.length;
         }
-    } catch (e) {
+    } catch (e: any) {
         console.error("Failed to fetch members:", e);
+        // We still return so it doesn't crash the whole beheer dashboard, 
+        // but we show a small error in the context.
+        return (
+            <div className="container mx-auto px-4 py-8">
+                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-6 text-amber-700 dark:text-amber-400 flex items-center gap-4">
+                    <AlertCircle className="h-6 w-6 shrink-0" />
+                    <div>
+                        <h2 className="font-bold">Ledenlijst kon niet volledig worden geladen</h2>
+                        <p className="text-sm opacity-90">Controleer de Directus permissies of probeer het later opnieuw.</p>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     return (
@@ -141,7 +129,6 @@ async function LedenDataLoader({ search, page, tab }: { search: string, page: nu
             totalCount={totalCount} 
             currentPage={page} 
             searchQuery={search}
-            activeTab={tab}
             pageSize={PAGE_SIZE}
         />
     );

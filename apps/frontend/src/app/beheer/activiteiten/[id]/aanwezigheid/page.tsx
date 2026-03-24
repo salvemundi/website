@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
-import { getActivityById } from '@/server/actions/activities.actions';
+import { getActivityById } from '@/server/actions/activiteit-actions';
 import AttendanceIsland from '@/components/islands/activities/AttendanceIsland';
 import PageHeader from '@/components/ui/layout/PageHeader';
 

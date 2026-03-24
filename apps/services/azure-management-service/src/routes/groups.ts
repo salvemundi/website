@@ -31,6 +31,10 @@ export default async function groupRoutes(fastify: FastifyInstance) {
             await GraphService.addGroupMember(groupId, userId, token);
             return { success: true, message: 'Member added to Azure group' };
         } catch (err: any) {
+            // Already a member?
+            if (err.message?.includes('already exists') || err.message?.includes('One or more added object references already exist')) {
+                return { success: true, message: 'User is already a member of this group' };
+            }
             fastify.log.error(err);
             return reply.status(500).send({ error: 'Failed to add member to Azure group', details: err.message });
         }
@@ -45,6 +49,10 @@ export default async function groupRoutes(fastify: FastifyInstance) {
             await GraphService.removeGroupMember(groupId, userId, token);
             return { success: true, message: 'Member removed from Azure group' };
         } catch (err: any) {
+            // Not a member?
+            if (err.message?.includes('does not exist') || err.status === 404) {
+                return { success: true, message: 'User was not a member of this group' };
+            }
             fastify.log.error(err);
             return reply.status(500).send({ error: 'Failed to remove member from Azure group', details: err.message });
         }

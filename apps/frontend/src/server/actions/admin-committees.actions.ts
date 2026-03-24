@@ -4,7 +4,8 @@ import { auth } from '@/server/auth/auth';
 import { revalidateTag, revalidatePath } from "next/cache";
 import { headers } from 'next/headers';
 
-import { getSystemDirectus, getUserDirectus } from '@/lib/directus';
+import { isSuperAdmin } from '@/lib/auth-utils';
+import { getSystemDirectus } from '@/lib/directus';
 import { readItems, updateItem, readUsers } from '@directus/sdk';
 
 const getAzureManagementUrl = () => process.env.AZURE_MANAGEMENT_SERVICE_URL;
@@ -18,10 +19,12 @@ const serviceHeaders = () => {
 async function checkAccess() {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) throw new Error('Niet ingelogd');
-    const userRole = (session.user as any).role; // Adjust based on actual session type
-    // Fallback access check
-    const hasAccess = !!session.user;
-    if (!hasAccess) throw new Error('Geen toegang');
+    
+    const user = session.user as any;
+    if (!isSuperAdmin(user.committees)) {
+        throw new Error('Geen toegang: SuperAdmin rechten vereist.');
+    }
+    
     return session;
 }
 
@@ -29,7 +32,7 @@ export type Committee = {
     id: number;
     name: string;
     email?: string | null;
-    azureGroupId?: string | null;
+    azure_group_id?: string | null;
     description?: string | null;
     short_description?: string | null;
     image?: string | null;
@@ -50,7 +53,7 @@ export async function getCommittees(): Promise<Committee[]> {
     try {
         const items = await getSystemDirectus().request(readItems('committees', {
             limit: 200,
-            fields: ['id', 'name', 'email', 'azureGroupId', 'description', 'short_description', 'image'],
+            fields: ['id', 'name', 'email', 'azure_group_id', 'description', 'short_description', 'image'],
             sort: ['name']
         }));
         return items as Committee[];
@@ -67,7 +70,7 @@ export async function updateCommitteeDetails(
     const session = await checkAccess();
     
     try {
-        await getUserDirectus(session.session.token).request(updateItem('committees', committeeId, payload));
+        await getSystemDirectus().request(updateItem('committees', committeeId, payload));
     revalidatePath(`/beheer/committees/${committeeId}`);
     revalidatePath('/beheer/committees');
     return { success: true };
@@ -163,7 +166,7 @@ export async function toggleCommitteeLeader(
 
     // Update is_leader in Directus
     try {
-        await getUserDirectus(session.session.token).request(updateItem('committee_members' as any, membershipId, { is_leader: !currentIsLeader }));
+        await getSystemDirectus().request(updateItem('committee_members' as any, membershipId, { is_leader: !currentIsLeader }));
         revalidatePath('/beheer/vereniging');
     } catch (e) {
         console.error('[AdminCommittees] Toggle leader failed:', e);

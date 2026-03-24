@@ -13,7 +13,7 @@ import {
     type ReisSignupForm,
 } from '@salvemundi/validations';
 
-import { getSystemDirectus, getUserDirectus } from '@/lib/directus';
+import { getSystemDirectus } from '@/lib/directus';
 import { readItems, createItem, updateItem } from '@directus/sdk';
 import { auth } from '@/server/auth/auth';
 import { headers as nextHeaders } from 'next/headers';
@@ -162,7 +162,7 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
     };
 
     try {
-        const directus = session?.session?.token ? getUserDirectus(session.session.token) : getSystemDirectus();
+        const directus = getSystemDirectus();
         await directus.request(createItem('trip_signups', payload));
 
         revalidatePath('/reis');
@@ -200,7 +200,7 @@ export async function cancelTripSignup(signupId: number): Promise<{ success: boo
             return { success: false, message: 'Je kunt alleen je eigen aanmelding annuleren.' };
         }
 
-        await getUserDirectus(session.session.token).request(updateItem('trip_signups', signupId, { status: 'cancelled' as any }));
+        await getSystemDirectus().request(updateItem('trip_signups', signupId, { status: 'cancelled' as any }));
 
         if (signup.trip_id) {
             revalidatePath('/beheer/reis');

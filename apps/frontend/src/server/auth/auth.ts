@@ -41,6 +41,7 @@ export const auth = betterAuth({
             date_of_birth: { type: "string" },
             avatar: { type: "string" },
             minecraft_username: { type: "string" },
+            entra_id: { type: "string" },
         }
     },
     session: {

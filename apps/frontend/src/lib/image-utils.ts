@@ -8,10 +8,12 @@ export function getImageUrl(
     idOrObject?: string | { id: string } | null, 
     options?: { width?: number; height?: number; fit?: string }
 ): string {
-    if (!idOrObject) return '';
+    const DEFAULT_FALLBACK = '/img/newlogo.svg';
+
+    if (!idOrObject) return DEFAULT_FALLBACK;
     
     const id = typeof idOrObject === 'string' ? idOrObject : idOrObject.id;
-    if (!id) return '';
+    if (!id) return DEFAULT_FALLBACK;
 
     const params = new URLSearchParams();
     if (options?.width) params.append('width', options.width.toString());

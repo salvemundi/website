@@ -3,8 +3,9 @@
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
+import { isSuperAdmin } from '@/lib/auth-utils';
 
-import { getSystemDirectus, getUserDirectus } from '@/lib/directus';
+import { getSystemDirectus } from '@/lib/directus';
 import { 
     readItems, 
     updateItem, 
@@ -17,8 +18,12 @@ const ALLOWED_ROLES = ['ictcommissie', 'ict', 'bestuur', 'kascommissie', 'kas', 
 async function checkAccess() {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) throw new Error('Niet ingelogd');
-    // Allow any admin with entra_id (all internal staff can manage coupons)
-    if (!(session.user as any).entra_id) throw new Error('Geen toegang');
+    
+    const user = session.user as any;
+    if (!isSuperAdmin(user.committees)) {
+        throw new Error('Geen toegang: SuperAdmin rechten vereist voor coupon beheer');
+    }
+    
     return session;
 }
 
@@ -89,7 +94,7 @@ export async function createCoupon(formData: FormData): Promise<{ success: boole
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session) throw new Error('Unauthorized');
     try {
-        await getUserDirectus(session.session.token).request(createItem('coupons', payload));
+        await getSystemDirectus().request(createItem('coupons', payload));
         revalidatePath('/beheer/coupons');
         return { success: true };
     } catch (e) {
@@ -102,7 +107,7 @@ export async function createCoupon(formData: FormData): Promise<{ success: boole
 export async function deleteCoupon(id: number): Promise<{ success: boolean; error?: string }> {
     const session = await checkAccess();
     try {
-        await getUserDirectus(session.session.token).request(deleteItem('coupons', id));
+        await getSystemDirectus().request(deleteItem('coupons', id));
         revalidatePath('/beheer/coupons');
         return { success: true };
     } catch (e) {
@@ -114,7 +119,7 @@ export async function deleteCoupon(id: number): Promise<{ success: boolean; erro
 export async function toggleCouponActive(id: number, currentActive: boolean): Promise<{ success: boolean; error?: string }> {
     const session = await checkAccess();
     try {
-        await getUserDirectus(session.session.token).request(updateItem('coupons', id, { is_active: !currentActive }));
+        await getSystemDirectus().request(updateItem('coupons', id, { is_active: !currentActive }));
         revalidatePath('/beheer/coupons');
         return { success: true };
     } catch (e) {

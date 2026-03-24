@@ -9,8 +9,9 @@ import {
     type PubCrawlEvent, 
     type PubCrawlSignup 
 } from '@salvemundi/validations';
+import { isSuperAdmin } from "@/lib/auth-utils";
 
-import { getSystemDirectus, getUserDirectus } from "@/lib/directus";
+import { getSystemDirectus } from "@/lib/directus";
 import { 
     readItems, 
     readItem, 
@@ -26,12 +27,10 @@ async function requireKroegAdmin() {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) throw new Error('Niet ingelogd');
 
-    const userRoles: string[] = (session.user as any).committees?.map((c: any) =>
-        (c.name || '').toLowerCase().replace(/[^a-z0-9]/g, '')
-    ) ?? [];
-
-    const hasAccess = userRoles.some(r => ['reiscommissie', 'reis', 'ictcommissie', 'ict', 'bestuur'].includes(r));
-    if (!hasAccess) throw new Error('Geen toegang tot Kroegentocht beheer');
+    const user = session.user as any;
+    if (!isSuperAdmin(user.committees)) {
+        throw new Error('Geen toegang tot Kroegentocht beheer: SuperAdmin rechten vereist');
+    }
 
     return session;
 }
@@ -71,7 +70,7 @@ export async function upsertPubCrawlEvent(data: Partial<PubCrawlEvent>) {
     const { id, ...payload } = data;
     
     try {
-        const client = getUserDirectus(session.session.token);
+        const client = getSystemDirectus();
         if (id) {
             await client.request(updateItem('pub_crawl_events', id, payload));
         } else {
@@ -134,7 +133,7 @@ export async function getPubCrawlSignup(id: number) {
 export async function deletePubCrawlSignup(id: number, eventId: number) {
     const session = await requireKroegAdmin();
     try {
-        await getUserDirectus(session.session.token).request(deleteItem('pub_crawl_signups', id));
+        await getSystemDirectus().request(deleteItem('pub_crawl_signups', id));
         revalidateTag(`signups-${eventId}`, 'default');
         return { success: true };
     } catch (e) {
@@ -146,7 +145,7 @@ export async function deletePubCrawlSignup(id: number, eventId: number) {
 export async function updatePubCrawlSignup(id: number, eventId: number, data: any) {
     const session = await requireKroegAdmin();
     try {
-        await getUserDirectus(session.session.token).request(updateItem('pub_crawl_signups', id, data));
+        await getSystemDirectus().request(updateItem('pub_crawl_signups', id, data));
         revalidateTag(`signups-${eventId}`, 'default');
         return { success: true };
     } catch (e) {
@@ -164,11 +163,11 @@ export async function toggleKroegentochtVisibility(current: boolean) {
     
     try {
         // Try update first
-        await getUserDirectus(session.session.token).request(updateItem('site_settings', key, payload));
+        await getSystemDirectus().request(updateItem('site_settings', key, payload));
     } catch (e) {
         // If update fails, try create
         try {
-            await getUserDirectus(session.session.token).request(createItem('site_settings', payload));
+            await getSystemDirectus().request(createItem('site_settings', payload));
         } catch (postErr) {
             console.error('[AdminKroegentocht] Toggle visibility failed:', postErr);
             throw new Error('Bijwerken mislukt');

@@ -3,7 +3,8 @@
 import { useState, useCallback } from 'react';
 import {
     Users, UserPlus, UserMinus, Shield, Mail, Info, Search,
-    Loader2, RefreshCw, Settings, ExternalLink, Save, X, ChevronRight, CheckCircle
+    Loader2, RefreshCw, Settings, ExternalLink, Save, X, ChevronRight, CheckCircle,
+    Award, History, ShieldAlert
 } from 'lucide-react';
 import type { Committee, CommitteeMember } from '@/server/actions/admin-committees.actions';
 import {
@@ -85,10 +86,10 @@ export default function VerenigingManagementIsland({ initialCommittees }: Props)
 
     const handleAddMember = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selected?.azureGroupId || !newMemberEmail) return;
+        if (!selected?.azure_group_id || !newMemberEmail) return;
         setAddingMember(true);
         setAddError(null);
-        const res = await addCommitteeMember(selected.azureGroupId, selected.id.toString(), newMemberEmail);
+        const res = await addCommitteeMember(selected.azure_group_id, selected.id.toString(), newMemberEmail);
         if (!res.success) {
             setAddError(res.error ?? 'Toevoegen mislukt');
         } else {
@@ -100,10 +101,10 @@ export default function VerenigingManagementIsland({ initialCommittees }: Props)
     };
 
     const handleRemoveMember = async (member: CommitteeMember) => {
-        if (!selected?.azureGroupId) return;
+        if (!selected?.azure_group_id) return;
         if (!confirm(`Weet je zeker dat je ${member.displayName} wilt verwijderen uit ${selected.name}?`)) return;
         setActionLoading(`remove-${member.entraId}`);
-        const res = await removeCommitteeMember(selected.azureGroupId, member.entraId);
+        const res = await removeCommitteeMember(selected.azure_group_id, member.entraId);
         if (res.success) setMembers(prev => prev.filter(m => m.entraId !== member.entraId));
         else alert(res.error ?? 'Verwijderen mislukt');
         setActionLoading(null);
@@ -118,7 +119,7 @@ export default function VerenigingManagementIsland({ initialCommittees }: Props)
         const res = await toggleCommitteeLeader(
             member.directusMembershipId,
             member.isLeader,
-            selected?.azureGroupId,
+            selected?.azure_group_id,
             member.entraId
         );
         if (res.success) setMembers(prev => prev.map(m => m.entraId === member.entraId ? { ...m, isLeader: !m.isLeader } : m));
@@ -144,257 +145,319 @@ export default function VerenigingManagementIsland({ initialCommittees }: Props)
         name.toLowerCase().replace(/\s*(\|\||\|)\s*salve mundi/gi, '').trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-7xl">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div className="container mx-auto px-4 py-12 max-w-7xl">
+            {/* Header Area */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
                 <div>
-                    <h1 className="text-2xl font-black text-[var(--text-main)] flex items-center gap-3">
-                        <Shield className="h-7 w-7 text-[var(--theme-purple)]" />
-                        Commissie Beheer
-                    </h1>
-                    <p className="text-sm text-[var(--text-muted)] mt-1">
-                        Beheer leden en leiders van Salve Mundi commissies.
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-sm ring-1 ring-primary/20">
+                            <Shield className="h-6 w-6" />
+                        </div>
+                        <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">
+                            Vereniging <span className="text-primary italic">Beheer</span>
+                        </h1>
+                    </div>
+                    <p className="text-slate-500 dark:text-slate-400 font-medium ml-1">
+                        Beheer commissies, leden en Azure-groepslidmaatschappen.
                     </p>
                 </div>
+                
                 <button
                     onClick={handleRefresh}
                     disabled={refreshing}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-[var(--bg-card)] ring-1 ring-[var(--border-color)] rounded-xl text-sm font-bold text-[var(--text-muted)] hover:text-[var(--text-main)] hover:ring-[var(--theme-purple)] transition"
+                    className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 hover:ring-primary hover:text-primary transition-all disabled:opacity-50"
                 >
                     <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-                    Verversen
+                    Gegevens Verversen
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                {/* ── Left Panel – Committee List ── */}
-                <div className="lg:col-span-5 xl:col-span-4">
-                    <div className="bg-[var(--bg-card)] ring-1 ring-[var(--border-color)] rounded-2xl p-5">
-                        <h2 className="font-bold text-[var(--text-main)] mb-4 flex items-center gap-2">
-                            <Users className="h-4 w-4 text-[var(--theme-purple)]" />
-                            Commissies
-                            <span className="ml-auto text-xs font-normal text-[var(--text-muted)]">{filtered.length} zichtbaar</span>
-                        </h2>
-
-                        <div className="flex gap-2 mb-4">
-                            <div className="relative flex-1">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--text-muted)]" />
-                                <input
-                                    type="text"
-                                    placeholder="Zoek..."
-                                    value={searchQuery}
-                                    onChange={e => setSearchQuery(e.target.value)}
-                                    className="w-full pl-8 pr-3 py-2 bg-[var(--bg-main,_#f4f4f5)] border border-[var(--border-color)] rounded-xl text-sm text-[var(--text-main)] focus:ring-2 focus:ring-[var(--theme-purple)] focus:outline-none"
-                                />
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                {/* ── Left Sidebar: Committee Selection ── */}
+                <div className="lg:col-span-4 space-y-6">
+                    <div className="bg-white dark:bg-slate-800 rounded-[2rem] shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 overflow-hidden">
+                        <div className="p-6 border-b border-slate-100 dark:border-slate-700/50">
+                            <h2 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2 mb-4">
+                                <Users className="h-5 w-5 text-primary" />
+                                Commissies
+                            </h2>
+                            
+                            <div className="space-y-3">
+                                <div className="relative group">
+                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+                                    <input
+                                        type="text"
+                                        placeholder="Zoek commissie..."
+                                        value={searchQuery}
+                                        onChange={e => setSearchQuery(e.target.value)}
+                                        className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-900/50 border-none rounded-2xl text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 transition-all"
+                                    />
+                                </div>
+                                <div className="flex p-1 bg-slate-100 dark:bg-slate-900/50 rounded-xl">
+                                    <button
+                                        onClick={() => setShowAll(false)}
+                                        className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${!showAll ? 'bg-white dark:bg-slate-800 text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                                    >
+                                        Standaard
+                                    </button>
+                                    <button
+                                        onClick={() => setShowAll(true)}
+                                        className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${showAll ? 'bg-white dark:bg-slate-800 text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                                    >
+                                        Alle Groepen
+                                    </button>
+                                </div>
                             </div>
-                            <button
-                                onClick={() => setShowAll(!showAll)}
-                                className={`px-3 py-2 rounded-xl border text-xs font-bold transition-all whitespace-nowrap ${showAll ? 'bg-[var(--theme-purple)] text-white border-transparent' : 'border-[var(--border-color)] text-[var(--text-muted)] hover:border-[var(--theme-purple)] hover:text-[var(--theme-purple)]'}`}
-                            >
-                                {showAll ? 'Standaard' : 'Toon Alle'}
-                            </button>
                         </div>
 
-                        <div className="space-y-1.5 max-h-[60vh] overflow-y-auto pr-1">
-                            {filtered.length === 0 && (
-                                <p className="text-center text-[var(--text-muted)] py-8 text-sm">Geen commissies gevonden</p>
+                        <div className="max-h-[500px] overflow-y-auto custom-scrollbar p-3 space-y-1">
+                            {filtered.length === 0 ? (
+                                <div className="py-12 text-center">
+                                    <Search className="h-8 w-8 text-slate-200 mx-auto mb-2" />
+                                    <p className="text-slate-400 text-sm italic">Geen resultaten</p>
+                                </div>
+                            ) : (
+                                filtered.map(c => (
+                                    <button
+                                        key={c.id}
+                                        onClick={() => handleSelectCommittee(c)}
+                                        className={`w-full group flex items-center justify-between p-4 rounded-2xl transition-all ${selected?.id === c.id
+                                            ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                                            : 'hover:bg-slate-50 dark:hover:bg-slate-700/30'}`}
+                                    >
+                                        <div className="text-left min-w-0">
+                                            <div className={`font-bold truncate ${selected?.id === c.id ? 'text-white' : 'text-slate-700 dark:text-slate-200'}`}>
+                                                {normalizeName(c.name)}
+                                            </div>
+                                            {c.email && (
+                                                <div className={`text-[10px] truncate flex items-center gap-1 mt-0.5 ${selected?.id === c.id ? 'text-white/70' : 'text-slate-400'}`}>
+                                                    <Mail className="h-2.5 w-2.5" />
+                                                    {c.email}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <ChevronRight className={`h-4 w-4 shrink-0 transition-transform ${selected?.id === c.id ? 'translate-x-1 text-white' : 'text-slate-300 group-hover:text-slate-500'}`} />
+                                    </button>
+                                ))
                             )}
-                            {filtered.map(c => (
-                                <button
-                                    key={c.id}
-                                    onClick={() => handleSelectCommittee(c)}
-                                    className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all text-left ${selected?.id === c.id
-                                        ? 'bg-[var(--theme-purple)]/10 border-[var(--theme-purple)]/30 text-[var(--theme-purple)]'
-                                        : 'border-transparent hover:bg-[var(--bg-card-soft,_#f4f4f5)] text-[var(--text-main)]'}`}
-                                >
-                                    <div className="min-w-0">
-                                        <div className="font-semibold text-sm truncate">{c.name}</div>
-                                        {c.email && <div className="text-xs text-[var(--text-muted)] truncate flex items-center gap-1 mt-0.5"><Mail className="h-3 w-3" />{c.email}</div>}
-                                    </div>
-                                    <div className="flex items-center gap-1 shrink-0 ml-2">
-                                        {!c.azureGroupId && <span title="Geen Azure groep gekoppeld"><Info className="h-3.5 w-3.5 text-amber-400" /></span>}
-                                        <ChevronRight className={`h-3.5 w-3.5 transition ${selected?.id === c.id ? 'text-[var(--theme-purple)]' : 'text-[var(--text-muted)]'}`} />
-                                    </div>
-                                </button>
-                            ))}
                         </div>
                     </div>
                 </div>
 
-                {/* ── Right Panel – Member Management ── */}
-                <div className="lg:col-span-7 xl:col-span-8 lg:sticky lg:top-8">
+                {/* ── Right Content: Management Area ── */}
+                <div className="lg:col-span-8">
                     {!selected ? (
-                        <div className="bg-[var(--bg-card)] ring-1 ring-dashed ring-[var(--border-color)] rounded-2xl p-16 text-center text-[var(--text-muted)]">
-                            <Users className="h-14 w-14 mx-auto mb-4 opacity-20" />
-                            <p className="font-semibold">Selecteer een commissie om de leden te beheren</p>
+                        <div className="bg-white dark:bg-slate-800 rounded-[2rem] shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 p-20 text-center border-2 border-dashed border-slate-200 dark:border-slate-700 relative overflow-hidden">
+                            <div className="relative z-10">
+                                <div className="h-20 w-20 rounded-3xl bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center mx-auto mb-6 text-slate-200 dark:text-slate-700">
+                                    <Users className="h-10 w-10" />
+                                </div>
+                                <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">Geen commissie geselecteerd</h3>
+                                <p className="text-slate-500 dark:text-slate-400 font-medium max-w-xs mx-auto">
+                                    Kies een commissie uit de lijst aan de linkerkant om leden en details te beheren.
+                                </p>
+                            </div>
+                            <div className="absolute top-0 right-0 p-8 opacity-5">
+                                <Shield className="h-64 w-64 rotate-12" />
+                            </div>
                         </div>
                     ) : (
-                        <div className="bg-[var(--bg-card)] ring-1 ring-[var(--border-color)] rounded-2xl p-6">
-                            {/* Committee Header */}
-                            <div className="flex items-start justify-between gap-4 mb-6">
-                                <div>
-                                    <h2 className="font-black text-lg text-[var(--text-main)]">{selected.name}</h2>
-                                    {selected.email && (
-                                        <div className="flex items-center gap-1 text-xs text-[var(--text-muted)] mt-1">
-                                            <Mail className="h-3 w-3" />{selected.email}
+                        <div className="space-y-6">
+                            {/* Main Info Card */}
+                            <div className="bg-white dark:bg-slate-800 rounded-[2rem] shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 p-8">
+                                <div className="flex flex-col sm:flex-row justify-between items-start gap-6">
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <div className="h-14 w-14 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
+                                                <Users className="h-7 w-7" />
+                                            </div>
+                                            <div>
+                                                <h2 className="text-2xl font-black text-slate-900 dark:text-white leading-tight">
+                                                    {selected.name}
+                                                </h2>
+                                                {selected.email && (
+                                                    <a href={`mailto:${selected.email}`} className="text-primary font-bold text-sm hover:underline flex items-center gap-1 mt-1">
+                                                        <Mail className="h-3.5 w-3.5" />
+                                                        {selected.email}
+                                                    </a>
+                                                )}
+                                            </div>
                                         </div>
-                                    )}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <a
-                                        href={`/vereniging/commissies/${slugify(selected.name)}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="p-2 text-[var(--text-muted)] hover:text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/10 rounded-xl transition"
-                                        title="Bekijk op website"
-                                    >
-                                        <ExternalLink className="h-4 w-4" />
-                                    </a>
-                                    <button
-                                        onClick={() => setEditingDetail(!editingDetail)}
-                                        className={`p-2 rounded-xl border transition-all ${editingDetail ? 'bg-[var(--theme-purple)] text-white border-transparent' : 'border-[var(--border-color)] text-[var(--text-muted)] hover:border-[var(--theme-purple)] hover:text-[var(--theme-purple)]'}`}
-                                        title="Bewerk details"
-                                    >
-                                        <Settings className="h-4 w-4" />
-                                    </button>
-                                </div>
-                            </div>
+                                        
+                                        {!editingDetail && selected.short_description && (
+                                            <p className="text-slate-600 dark:text-slate-300 font-medium text-sm leading-relaxed mb-4">
+                                                {selected.short_description}
+                                            </p>
+                                        )}
+                                    </div>
 
-                            {/* Detail Edit Panel */}
-                            {editingDetail && (
-                                <div className="mb-6 p-4 bg-[var(--bg-card-soft,_#f4f4f5)] rounded-2xl space-y-4 border border-[var(--border-color)]">
-                                    <h3 className="font-bold text-sm text-[var(--text-main)]">Details Bewerken</h3>
-                                    <div>
-                                        <label className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] block mb-1">Korte Beschrijving</label>
-                                        <textarea
-                                            value={editShortDesc}
-                                            onChange={e => setEditShortDesc(e.target.value)}
-                                            rows={3}
-                                            className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-sm text-[var(--text-main)] focus:ring-2 focus:ring-[var(--theme-purple)] focus:outline-none"
-                                            placeholder="Korte tekst voor de overzichtskaart..."
-                                        />
+                                    <div className="flex gap-2">
+                                        <a
+                                            href={`/vereniging/commissies/${slugify(selected.name)}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 rounded-xl font-bold text-xs ring-1 ring-slate-200 dark:ring-slate-700 hover:bg-white dark:hover:bg-slate-700 transition"
+                                        >
+                                            <ExternalLink className="h-3.5 w-3.5" /> Website
+                                        </a>
+                                        <button
+                                            onClick={() => setEditingDetail(!editingDetail)}
+                                            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs transition-all ${editingDetail ? 'bg-primary text-white shadow-md' : 'bg-slate-100 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-700 hover:bg-white dark:hover:bg-slate-700'}`}
+                                        >
+                                            <Settings className="h-3.5 w-3.5" /> {editingDetail ? 'Annuleren' : 'Bewerken'}
+                                        </button>
                                     </div>
-                                    <div>
-                                        <label className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] block mb-1">Volledige Beschrijving (HTML)</label>
-                                        <textarea
-                                            value={editDesc}
-                                            onChange={e => setEditDesc(e.target.value)}
-                                            rows={6}
-                                            className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-sm text-[var(--text-main)] font-mono focus:ring-2 focus:ring-[var(--theme-purple)] focus:outline-none"
-                                            placeholder="Volledige omschrijving..."
-                                        />
-                                    </div>
-                                    <div className="flex gap-3">
+                                </div>
+
+                                {editingDetail && (
+                                    <div className="mt-8 pt-8 border-t border-slate-100 dark:border-slate-700/50 space-y-6">
+                                        <div className="grid grid-cols-1 gap-6">
+                                            <div>
+                                                <label className="text-xs font-black uppercase text-slate-400 tracking-widest block mb-2">Korte Beschrijving</label>
+                                                <textarea
+                                                    value={editShortDesc}
+                                                    onChange={e => setEditShortDesc(e.target.value)}
+                                                    rows={2}
+                                                    className="w-full px-5 py-3 rounded-2xl bg-slate-50 dark:bg-slate-900 border-none text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 transition-all resize-none"
+                                                    placeholder="Korte tekst voor previews..."
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="text-xs font-black uppercase text-slate-400 tracking-widest block mb-2">Inhoud (HTML ondersteund)</label>
+                                                <textarea
+                                                    value={editDesc}
+                                                    onChange={e => setEditDesc(e.target.value)}
+                                                    rows={10}
+                                                    className="w-full px-5 py-3 rounded-2xl bg-slate-50 dark:bg-slate-900 border-none text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 transition-all font-mono"
+                                                    placeholder="Schrijf hier de volledige tekst..."
+                                                />
+                                            </div>
+                                        </div>
                                         <button
                                             onClick={handleSaveDetail}
                                             disabled={savingDetail}
-                                            className="flex items-center gap-2 px-5 py-2.5 bg-[var(--theme-purple)] text-white rounded-xl text-sm font-bold hover:opacity-90 transition disabled:opacity-60"
+                                            className="w-full flex items-center justify-center gap-2 py-4 bg-primary text-white rounded-2xl font-black text-sm shadow-lg shadow-primary/20 hover:opacity-90 transition disabled:opacity-50"
                                         >
-                                            {savingDetail ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Opslaan
+                                            {savingDetail ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
+                                            Wijzigingen Opslaan
                                         </button>
-                                        <button onClick={() => setEditingDetail(false)} className="px-5 py-2.5 rounded-xl text-sm font-bold text-[var(--text-muted)] hover:bg-[var(--border-color)] transition">Annuleren</button>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Add Member Form */}
-                            {selected.azureGroupId ? (
-                                <form onSubmit={handleAddMember} className="mb-6 p-4 bg-[var(--bg-card-soft,_#f4f4f5)] rounded-2xl border border-[var(--border-color)]">
-                                    <h3 className="font-bold text-sm text-[var(--text-main)] mb-3 flex items-center gap-2">
-                                        <UserPlus className="h-4 w-4 text-[var(--theme-purple)]" /> Lid Toevoegen
-                                    </h3>
-                                    {addError && (
-                                        <div className="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl text-xs">
-                                            {addError}
-                                        </div>
-                                    )}
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="email"
-                                            placeholder="E-mailadres (student.fontys.nl of salvemundi.nl)..."
-                                            value={newMemberEmail}
-                                            onChange={e => { setNewMemberEmail(e.target.value); setAddError(null); }}
-                                            required
-                                            className="flex-1 px-4 py-2.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-sm text-[var(--text-main)] focus:ring-2 focus:ring-[var(--theme-purple)] focus:outline-none"
-                                        />
-                                        <button
-                                            type="submit"
-                                            disabled={addingMember || !newMemberEmail}
-                                            className="flex items-center gap-2 px-5 py-2.5 bg-[var(--theme-purple)] text-white rounded-xl text-sm font-bold hover:opacity-90 transition disabled:opacity-60"
-                                        >
-                                            {addingMember ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
-                                            Toevoegen
-                                        </button>
-                                    </div>
-                                    <p className="text-[10px] text-[var(--text-muted)] mt-2">
-                                        * Toevoegen werkt via Azure AD. De synchronisatie naar Directus volgt automatisch.
-                                    </p>
-                                </form>
-                            ) : (
-                                <div className="mb-6 flex items-center gap-2 px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl text-amber-700 dark:text-amber-300 text-sm">
-                                    <Info className="h-4 w-4 flex-shrink-0" />
-                                    Deze commissie heeft geen Azure groep gekoppeld. Ledenwijzigingen zijn niet mogelijk.
-                                </div>
-                            )}
-
-                            {/* Members List */}
-                            <div>
-                                <div className="flex items-center justify-between mb-3">
-                                    <h3 className="font-bold text-sm text-[var(--text-main)]">Leden ({members.length})</h3>
-                                    <span className="text-[10px] text-[var(--text-muted)] italic">Data via Directus</span>
-                                </div>
-
-                                {membersLoading ? (
-                                    <div className="py-12 text-center">
-                                        <Loader2 className="h-8 w-8 animate-spin mx-auto text-[var(--theme-purple)] mb-2" />
-                                        <p className="text-sm text-[var(--text-muted)]">Leden ophalen...</p>
-                                    </div>
-                                ) : members.length === 0 ? (
-                                    <div className="py-12 text-center border border-dashed border-[var(--border-color)] rounded-2xl text-[var(--text-muted)]">
-                                        Geen leden gevonden voor deze commissie.
-                                    </div>
-                                ) : (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        {members.map(member => (
-                                            <div
-                                                key={member.entraId}
-                                                className="flex items-center justify-between gap-3 p-3.5 bg-[var(--bg-card-soft,_#f4f4f5)] rounded-2xl border border-[var(--border-color)] group hover:border-[var(--theme-purple)]/30 transition-all"
-                                            >
-                                                <div className="min-w-0">
-                                                    <div className="font-bold text-sm text-[var(--text-main)] truncate flex items-center gap-2">
-                                                        {member.displayName}
-                                                        {member.isLeader && (
-                                                            <span className="shrink-0 px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-bold rounded-full uppercase tracking-wider">Leider</span>
-                                                        )}
-                                                    </div>
-                                                    <div className="text-xs text-[var(--text-muted)] truncate">{member.email}</div>
-                                                </div>
-                                                <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-all">
-                                                    {member.directusMembershipId && (
-                                                        <button
-                                                            onClick={() => handleToggleLeader(member)}
-                                                            disabled={!!actionLoading}
-                                                            title={member.isLeader ? 'Verwijder leider status' : 'Maak commissie leider'}
-                                                            className={`p-1.5 rounded-lg transition-all ${member.isLeader ? 'bg-amber-100 text-amber-600' : 'hover:bg-amber-100 text-[var(--text-muted)] hover:text-amber-600'}`}
-                                                        >
-                                                            {actionLoading === `leader-${member.entraId}` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Shield className="h-3.5 w-3.5" />}
-                                                        </button>
-                                                    )}
-                                                    {selected.azureGroupId && (
-                                                        <button
-                                                            onClick={() => handleRemoveMember(member)}
-                                                            disabled={!!actionLoading}
-                                                            title="Verwijderen uit commissie"
-                                                            className="p-1.5 hover:bg-red-100 text-[var(--text-muted)] hover:text-red-500 rounded-lg transition-all"
-                                                        >
-                                                            {actionLoading === `remove-${member.entraId}` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <UserMinus className="h-3.5 w-3.5" />}
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        ))}
                                     </div>
                                 )}
+                            </div>
+
+                            {/* Members Management Section */}
+                            <div className="bg-white dark:bg-slate-800 rounded-[2rem] shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 overflow-hidden">
+                                <div className="p-8 border-b border-slate-100 dark:border-slate-700/50 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                    <div>
+                                        <h3 className="text-xl font-black text-slate-900 dark:text-white">Leden & Rechten</h3>
+                                        <p className="text-sm text-slate-500 font-medium">Beheer wie toegang heeft tot de Azure-groep.</p>
+                                    </div>
+                                    
+                                    {selected.azure_group_id ? (
+                                        <div className="flex-1 max-w-md">
+                                            <form onSubmit={handleAddMember} className="relative group">
+                                                <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 text-slate-400 group-focus-within:text-primary transition-colors">
+                                                    <UserPlus className="h-4 w-4" />
+                                                </div>
+                                                <input
+                                                    type="email"
+                                                    placeholder="Nieuw lid toevoegen (e-mail)..."
+                                                    value={newMemberEmail}
+                                                    onChange={e => { setNewMemberEmail(e.target.value); setAddError(null); }}
+                                                    required
+                                                    className="w-full pl-12 pr-24 py-3 bg-slate-50 dark:bg-slate-900 border-none rounded-2xl text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 transition-all"
+                                                />
+                                                <button
+                                                    type="submit"
+                                                    disabled={addingMember || !newMemberEmail}
+                                                    className="absolute right-2 top-1.5 bottom-1.5 px-4 bg-primary text-white rounded-xl text-xs font-black shadow-sm hover:opacity-90 transition-all disabled:opacity-50"
+                                                >
+                                                    {addingMember ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Toevoegen'}
+                                                </button>
+                                            </form>
+                                            {addError && (
+                                                <p className="mt-2 text-red-500 text-[10px] font-bold ml-2">⚠️ {addError}</p>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="px-4 py-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 text-xs font-bold rounded-xl flex items-center gap-2 ring-1 ring-amber-100 dark:ring-amber-900/30">
+                                            <ShieldAlert className="h-3.5 w-3.5" /> Geen Azure-koppeling
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="p-8">
+                                    {membersLoading ? (
+                                        <div className="py-20 text-center">
+                                            <div className="relative inline-block">
+                                                <div className="h-12 w-12 rounded-full border-4 border-slate-100 dark:border-slate-700 animate-pulse"></div>
+                                                <div className="absolute top-0 h-12 w-12 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
+                                            </div>
+                                            <p className="text-slate-400 font-bold mt-4">Lidmaatschappen laden...</p>
+                                        </div>
+                                    ) : members.length === 0 ? (
+                                        <div className="py-16 text-center bg-slate-50/50 dark:bg-slate-900/20 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-700">
+                                            <History className="h-8 w-8 text-slate-200 dark:text-slate-700 mx-auto mb-3" />
+                                            <p className="text-slate-400 font-bold">Nog geen leden in deze groep</p>
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {members.map(member => (
+                                                <div
+                                                    key={member.entraId}
+                                                    className="group flex items-center justify-between p-4 bg-white dark:bg-slate-900/40 rounded-2xl shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 hover:ring-primary/30 transition-all"
+                                                >
+                                                    <div className="flex items-center gap-3 min-w-0">
+                                                        <div className="h-10 w-10 shrink-0 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 font-black text-xs">
+                                                            {member.displayName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <div className="font-bold text-slate-900 dark:text-white truncate flex items-center gap-2">
+                                                                {member.displayName}
+                                                                {member.isLeader && (
+                                                                    <div className="flex items-center gap-1 px-1.5 py-0.5 bg-amber-500 text-white text-[8px] font-black rounded-full uppercase tracking-tighter shadow-sm">
+                                                                        <Award className="h-2 w-2" /> Leider
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div className="text-[10px] text-slate-400 font-medium truncate">{member.email}</div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div className="flex items-center gap-1 translate-x-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition-all">
+                                                        {member.directusMembershipId && (
+                                                            <button
+                                                                onClick={() => handleToggleLeader(member)}
+                                                                disabled={!!actionLoading}
+                                                                className={`p-2 rounded-xl transition-all ${member.isLeader ? 'bg-amber-100 dark:bg-amber-500/10 text-amber-600' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-amber-500'}`}
+                                                                title="Leader status omschakelen"
+                                                            >
+                                                                {actionLoading === `leader-${member.entraId}` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Shield className="h-3.5 w-3.5" />}
+                                                            </button>
+                                                        )}
+                                                        {selected.azure_group_id && (
+                                                            <button
+                                                                onClick={() => handleRemoveMember(member)}
+                                                                disabled={!!actionLoading}
+                                                                className="p-2 hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-400 hover:text-red-500 rounded-xl transition-all"
+                                                                title="Lid verwijderen"
+                                                            >
+                                                                {actionLoading === `remove-${member.entraId}` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <UserMinus className="h-3.5 w-3.5" />}
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="px-8 py-4 bg-slate-50 dark:bg-slate-900/50 flex items-center gap-2">
+                                    <Info className="h-3.5 w-3.5 text-slate-400" />
+                                    <p className="text-[10px] text-slate-400 font-medium italic">
+                                        Wanneer je een lid toevoegt of verwijdert, wordt dit via de Azure Management Service direct verwerkt in Entra ID. 
+                                        De wijzigingen zijn vaak pas na circa 2 minuten zichtbaar in de lijst onder het tabblad 'Leden'.
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     )}

@@ -33,9 +33,11 @@ export default function PageHeader({
         return /blur\(/.test(base) ? base : `${base} blur(0px)`;
     })();
 
+    const hasImage = backgroundImage && typeof backgroundImage === 'string' && backgroundImage.length > 0 && !backgroundImage.includes('undefined');
+
     return (
         <header className={`relative flex items-center justify-center mb-5 ${className}`} style={{ minHeight: 'var(--pageheader-height, 300px)' }}>
-            {backgroundImage ? (
+            {hasImage ? (
                 <div className="absolute inset-0 z-0">
                     <Image
                         src={backgroundImage}

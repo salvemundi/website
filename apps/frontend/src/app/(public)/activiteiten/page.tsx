@@ -3,7 +3,7 @@ import PageHeader from '@/components/ui/layout/PageHeader';
 import ActivitiesBannerIsland from '@/components/islands/activities/ActivitiesBannerIsland';
 import ActivityCardSkeleton from '@/components/ui/activities/ActivityCardSkeleton';
 import ActivitiesProviderIsland from '@/components/islands/activities/ActivitiesProviderIsland';
-import { getActivities } from '@/server/actions/activities.actions';
+import { getActivities } from '@/server/actions/activiteit-actions';
 
 export const metadata = {
     title: 'Activiteiten | SV Salve Mundi',

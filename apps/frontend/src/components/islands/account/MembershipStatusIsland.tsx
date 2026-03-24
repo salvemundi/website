@@ -72,8 +72,13 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
                         <p className="font-bold text-xl leading-tight dark:text-white">
                             {user.first_name} {user.last_name}
                         </p>
-                        <p className="opacity-60 dark:text-white/60 text-sm break-all font-medium">
-                            <span className="opacity-70">E-mailadres:</span> {user.email}
+                        <p className="opacity-60 dark:text-white/60 text-sm break-words font-medium">
+                            <span className="opacity-70">E-mailadres:</span> {user.email.split('').map((char, i) => (
+                                <span key={i}>
+                                    {char}
+                                    {(char === '@' || char === '.' || char === '-' || char === '_') && <wbr />}
+                                </span>
+                            ))}
                         </p>
                     </div>
                     {user.membership_expiry && (

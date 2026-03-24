@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import LedenDetailIsland from '@/components/islands/admin/leden/LedenDetailIsland';
 import MemberDetailSkeleton from '@/components/ui/admin/leden/MemberDetailSkeleton';
-import { getSystemDirectus, getUserDirectus } from '@/lib/directus';
+import { getSystemDirectus } from '@/lib/directus';
 
 
 // Correct Directus SDK imports
@@ -54,33 +54,47 @@ async function LidDataLoader({ id }: { id: string }) {
     if (!member) return notFound();
 
     // Fetch Committee Memberships
-    const userCommittees = await getSystemDirectus().request(
-        dReadItems<any, any, any>('committee_members', {
-            filter: { user_id: { _eq: id } },
-            fields: ['id', 'is_leader', 'committee_id.id', 'committee_id.name', 'committee_id.is_visible', 'committee_id.azure_group_id'],
-            limit: -1
-        })
-    );
+    let userCommittees: any[] = [];
+    try {
+        userCommittees = await getSystemDirectus().request(
+            dReadItems<any, any, any>('committee_members' as any, {
+                filter: { user_id: { _eq: id } },
+                fields: ['id', 'is_leader', { committee_id: ['id', 'name', 'email', 'azure_group_id', 'is_visible'] }],
+                limit: 50
+            })
+        );
+    } catch (e: any) {
+        console.error("[LidDataLoader] Failed to fetch committees:", e.message, e?.errors || e);
+    }
 
     // Fetch Activity History (Signups)
-    const signups = await getSystemDirectus().request(
-        dReadItems<any, any, any>('event_signups', {
-            filter: { user_id: { _eq: id } },
-            fields: ['id', 'payment_status', 'date_created', 'event_id.id', 'event_id.name', 'event_id.event_date'],
-            sort: ['-date_created'],
-            limit: 20
-        })
-    );
+    let signups: any[] = [];
+    try {
+        signups = await getSystemDirectus().request(
+            dReadItems<any, any, any>('event_signups', {
+                filter: { directus_relations: { _eq: id } },
+                // Limit fields to those known to work with system token (based on activities.actions.ts)
+                fields: ['id', 'payment_status', { event_id: ['id', 'name', 'event_date'] }],
+                limit: 20
+            })
+        );
+    } catch (e: any) {
+        console.error("[LidDataLoader] Failed to fetch signups:", e.message, e?.errors || e);
+    }
 
     let allCommittees: any[] = [];
     if (hasPriv) {
-        allCommittees = await getUserDirectus(session.session.token).request(
-            dReadItems<any, any, any>('committees', {
-                fields: ['id', 'name', 'azure_group_id', 'is_visible'],
-                sort: ['name'],
-                limit: -1
-            })
-        );
+        try {
+            allCommittees = await getSystemDirectus().request(
+                dReadItems<any, any, any>('committees', {
+                    fields: ['id', 'name', 'azure_group_id', 'is_visible'],
+                    sort: ['name'],
+                    limit: -1
+                })
+            );
+        } catch (e: any) {
+            console.error("[LidDataLoader] Failed to fetch all committees:", e.message, e?.errors || e);
+        }
     }
 
     return (

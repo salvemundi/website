@@ -72,26 +72,15 @@ async function SignupsDataLoader({ id }: { id: string }) {
                     'participant_email', 
                     'participant_phone', 
                     'payment_status', 
-                    'date_created', 
                     'checked_in',
-                    'checked_in_at',
-                    // @ts-ignore
-                    'directus_relations.id', 
-                    // @ts-ignore
-                    'directus_relations.first_name', 
-                    // @ts-ignore
-                    'directus_relations.last_name', 
-                    // @ts-ignore
-                    'directus_relations.email', 
-                    // @ts-ignore
-                    'directus_relations.phone_number'
+                    'checked_in_at'
                 ],
-                sort: ['-date_created'],
+                sort: ['-id'], // Use id for sorting instead of date_created if needed
                 limit: -1
             })
         );
-    } catch (e) {
-        console.error("Failed to fetch signups:", e);
+    } catch (e: any) {
+        console.error("Failed to fetch signups:", e.message, e?.errors || e);
     }
 
     return (

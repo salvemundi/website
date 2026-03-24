@@ -3,7 +3,7 @@
 import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
-import { getSystemDirectus, getUserDirectus } from "@/lib/directus";
+import { getSystemDirectus } from "@/lib/directus";
 import { 
     readItems, 
     updateItem,
@@ -127,7 +127,7 @@ export async function approveSignupAction(id: string, type: string) {
     const collection = type === 'event' ? 'event_signups' : type === 'pub_crawl' ? 'pub_crawl_signups' : 'trip_signups';
 
     try {
-        await getUserDirectus(admin.session.token).request(updateItem(collection as any, id as any, { approval_status: 'approved' }));
+        await getSystemDirectus().request(updateItem(collection as any, id as any, { approval_status: 'approved' }));
         revalidatePath('/beheer/logging');
         return { success: true };
     } catch (err) {
@@ -143,7 +143,7 @@ export async function rejectSignupAction(id: string, type: string) {
     const collection = type === 'event' ? 'event_signups' : type === 'pub_crawl' ? 'pub_crawl_signups' : 'trip_signups';
 
     try {
-        await getUserDirectus(admin.session.token).request(updateItem(collection as any, id as any, { approval_status: 'rejected' }));
+        await getSystemDirectus().request(updateItem(collection as any, id as any, { approval_status: 'rejected' }));
         revalidatePath('/beheer/logging');
         return { success: true };
     } catch (err) {
@@ -172,7 +172,7 @@ export async function updateAuditSettingsAction(manualApproval: boolean) {
 
     try {
         // Assuming singleton update
-        await getUserDirectus(admin.session.token).request(updateItem('app_settings' as any, undefined as any, { manual_approval: manualApproval }));
+        await getSystemDirectus().request(updateItem('app_settings' as any, undefined as any, { manual_approval: manualApproval }));
         revalidateTag('app_settings', 'default');
         return { success: true };
     } catch (err) {

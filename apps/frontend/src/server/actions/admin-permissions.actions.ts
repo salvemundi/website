@@ -3,8 +3,9 @@
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { revalidateTag } from 'next/cache';
+import { isSuperAdmin } from "@/lib/auth-utils";
 
-import { getSystemDirectus, getUserDirectus } from "@/lib/directus";
+import { getSystemDirectus } from "@/lib/directus";
 import { readItems, updateItem, createItem } from '@directus/sdk';
 
 /**
@@ -14,12 +15,10 @@ async function requireSuperAdmin() {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) throw new Error('Niet ingelogd');
 
-    const userRoles: string[] = (session.user as any).committees?.map((c: any) =>
-        (c.name || '').toLowerCase().replace(/[^a-z0-9]/g, '')
-    ) ?? [];
-
-    const isSuperAdmin = userRoles.some(r => ['ictcommissie', 'ict', 'bestuur'].includes(r));
-    if (!isSuperAdmin) throw new Error('Geen toegang tot permissiebeheer');
+    const user = session.user as any;
+    if (!isSuperAdmin(user.committees)) {
+        throw new Error('Geen toegang tot permissiebeheer: SuperAdmin vereist');
+    }
 
     return session;
 }
@@ -59,11 +58,11 @@ export async function savePermission(key: string, tokens: string[]) {
 
     try {
         // Try update first
-        await getUserDirectus(admin.session.token).request(updateItem('site_settings', key, payload));
+        await getSystemDirectus().request(updateItem('site_settings', key, payload));
     } catch (e) {
         // If update fails, try create
         try {
-            await getUserDirectus(admin.session.token).request(createItem('site_settings', payload));
+            await getSystemDirectus().request(createItem('site_settings', payload));
         } catch (postErr) {
             console.error('[AdminPermissions] Save failed:', postErr);
             throw new Error(`Opslaan mislukt`);

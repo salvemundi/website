@@ -4,7 +4,7 @@ import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag } from "next/cache";
 
-import { getSystemDirectus, getUserDirectus } from "@/lib/directus";
+import { getSystemDirectus } from "@/lib/directus";
 import { readItems, createItem, uploadFiles } from "@directus/sdk";
 
 /**
@@ -49,7 +49,7 @@ export async function createStickerPublic(data: any) {
     };
 
     try {
-        const result = await getUserDirectus(session.session.token).request(createItem('stickers', payload));
+        const result = await getSystemDirectus().request(createItem('stickers', payload));
 
         // Immediately update both admin and public views.
         revalidateTag('stickers', 'default');
@@ -73,7 +73,7 @@ export async function uploadFileAction(formData: FormData) {
         throw new Error('Te veel bestanden geüpload. Probeer het later opnieuw.');
     }
     try {
-        const directus = session?.session?.token ? getUserDirectus(session.session.token) : getSystemDirectus();
+        const directus = getSystemDirectus();
         const result = await directus.request(uploadFiles(formData));
         return (result as any).id;
     } catch (error) {

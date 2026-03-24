@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { getMyTickets } from '@/server/actions/activities.actions';
+import { getMyTickets } from '@/server/actions/activiteit-actions';
 import TicketListIsland from '@/components/islands/activities/TicketListIsland';
 import PageHeader from '@/components/ui/layout/PageHeader';
 import { Loader2 } from 'lucide-react';

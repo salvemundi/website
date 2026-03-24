@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Html5QrcodeScanner } from 'html5-qrcode';
-import { getActivitySignups } from '@/server/actions/activities.actions';
+import { getActivitySignups } from '@/server/actions/activiteit-actions';
 import { toggleCheckInAction } from '@/server/actions/aanmeldingen.actions';
 import { Search, UserCheck, UserX, QrCode, Loader2, RefreshCw } from 'lucide-react';
 
