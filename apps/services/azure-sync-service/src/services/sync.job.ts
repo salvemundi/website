@@ -366,7 +366,13 @@ export class SyncJob {
 
             // Add or Update
             for (const [committeeId, isLeader] of azureMemberships) {
-                const existing = currentMemberships.find((m: any) => m.committee_id === committeeId);
+                const existing = currentMemberships.find((m: any) => {
+                    const mCommId = (typeof m.committee_id === 'object' && m.committee_id !== null) 
+                        ? m.committee_id.id 
+                        : m.committee_id;
+                    return Number(mCommId) === Number(committeeId);
+                });
+
                 if (!existing) {
                     await DirectusService.addMemberToCommittee(dUser.id, committeeId, isLeader);
                 } else if (existing.is_leader !== isLeader) {
