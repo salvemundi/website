@@ -222,10 +222,10 @@ export interface Document {
 
 export interface FeatureFlag {
     id: string;
-    key: string;
-    value: boolean;
+    name: string;
     is_active?: boolean | null;
     route_match?: string | null;
+    message?: string | null;
 }
 
 export interface HeroBanner {
@@ -242,9 +242,6 @@ export interface Sponsor {
     dark_bg?: boolean | null;
 }
 
-export interface AppSettings {
-    manual_approval?: boolean | null;
-}
 
 export interface SiteSetting {
     id: string;
@@ -332,7 +329,6 @@ export interface DirectusSchema {
     feature_flags: FeatureFlag[];
     hero_banners: HeroBanner[];
     sponsors: Sponsor[];
-    app_settings: AppSettings;
     site_settings: SiteSetting[];
     pub_crawl_tickets: PubCrawlTicket[];
     intro_signups: IntroSignup[];

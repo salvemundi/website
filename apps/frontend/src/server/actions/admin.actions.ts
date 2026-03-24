@@ -64,20 +64,22 @@ export async function checkAdminAccess() {
 
 export async function getDashboardPermissions() {
     const { isAuthorized, user, isIct } = await checkAdminAccess();
-    if (!isAuthorized) return { canAccessIntro: false, canAccessReis: false, canAccessLogging: false, canAccessSync: false, canAccessCoupons: false, canAccessPermissions: false };
+    if (!isAuthorized) return { canAccessIntro: false, canAccessReis: false, canAccessLogging: false, canAccessSync: false, canAccessCoupons: false, canAccessPermissions: false, canAccessStickers: false };
 
     // Placeholder until settings validation is synced properly, using fallbacks
     const committees = (user as any).committees || [];
     const names = committees.map((c: any) => (c.name || '').toLowerCase());
-    const hasHighPrivilege = names.some((n: string) => n.includes('ict') || n.includes('bestuur') || n.includes('kandi'));
+    const isBestuurOrIct = names.some((n: string) => n.includes('ict') || n.includes('bestuur'));
+    const hasHighPrivilege = isBestuurOrIct || names.some((n: string) => n.includes('kandi'));
 
     return {
         canAccessIntro: hasHighPrivilege,
         canAccessReis: hasHighPrivilege,
-        canAccessLogging: hasHighPrivilege,
-        canAccessSync: hasHighPrivilege,
+        canAccessLogging: isBestuurOrIct,
+        canAccessSync: isBestuurOrIct,
         canAccessCoupons: hasHighPrivilege,
-        canAccessPermissions: names.some((n: string) => n.includes('ict') || n.includes('bestuur')),
+        canAccessStickers: isBestuurOrIct,
+        canAccessPermissions: isBestuurOrIct,
         isIct
     };
 }
