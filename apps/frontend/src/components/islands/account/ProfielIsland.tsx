@@ -1,13 +1,14 @@
 'use client';
 
-import { useMemo, useState, useEffect, useOptimistic } from 'react';
+import React, { useMemo, useState, useEffect, useOptimistic, useTransition, startTransition } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { format, startOfDay, isBefore } from 'date-fns';
 import { nl } from 'date-fns/locale';
+import { useRouter } from 'next/navigation';
 import { 
     Gamepad2, Mail, Phone, Calendar, X, Loader2, Users2, ChevronRight, 
-    CreditCard, MessageCircle, Shield, Lock, ExternalLink, Edit2, Save
+    CreditCard, MessageCircle, Shield, Lock, ExternalLink, Edit2, Save, AlertCircle
 } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
 import type { EventSignup } from '@salvemundi/validations';
@@ -27,6 +28,8 @@ type CommitteeMeta = {
 type SessionUser = {
     id?: string | number;
     name?: string | null;
+    first_name?: string | null;
+    last_name?: string | null;
     email?: string | null;
     fontys_email?: string | null;
     membership_status?: string | null;
@@ -121,12 +124,17 @@ function QuickLink({
 
 export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, user: initialUser }) => {
     const [mounted, setMounted] = useState(false);
-    const { data: session } = authClient.useSession();
+    const { data: session, refetch } = authClient.useSession();
 
     const user = useMemo<SessionUser>(() => {
         const sUser = session?.user as SessionUser;
         
         if (!mounted || !sUser) return initialUser;
+
+        // Enrich name if missing on client
+        if (!sUser.name && (sUser.first_name || sUser.last_name)) {
+            sUser.name = `${sUser.first_name || ''} ${sUser.last_name || ''}`.trim();
+        }
         
         // Merge committees from initialUser if missing in session
         if (!sUser.committees && initialUser?.committees) {
@@ -135,6 +143,8 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
         
         return sUser;
     }, [mounted, session?.user, initialUser]);
+    
+    const router = useRouter();
 
     // Hydratatie fix
     useEffect(() => {
@@ -144,11 +154,21 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
     const [eventSignups] = useState<EventSignup[]>(initialSignups || []);
     const [showPastEvents, setShowPastEvents] = useState(false);
 
+    // Helper to allow word breaks at @, ., - and _ for emails and usernames
+    const formatForBreak = (text: string | null | undefined) => {
+        if (!text) return null;
+        return text.split('').map((char, i) => (
+            <span key={i}>
+                {char}
+                {(char === '@' || char === '.' || char === '-' || char === '_') && <wbr />}
+            </span>
+        ));
+    };
+
     // Profile editing states
     const [isEditingMinecraft, setIsEditingMinecraft] = useState(false);
-    const [isSavingMinecraft, setIsSavingMinecraft] = useState(false);
     const [isEditingPhoneNumber, setIsEditingPhoneNumber] = useState(false);
-    const [isSavingPhoneNumber, setIsSavingPhoneNumber] = useState(false);
+    const [isPending, startUpdateTransition] = useTransition();
 
     // React 19 useOptimistic for instant UI feedback
     const [optimisticUser, addOptimisticUpdate] = useOptimistic(
@@ -193,24 +213,44 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
         resetPhone({ phone_number: user?.phone_number || "" });
     }, [user, resetMinecraft, resetPhone]);
 
-    const onSaveMinecraft = async (data: MinecraftFormData) => {
-        setIsSavingMinecraft(true);
-        // Step 1: Trigger optimistic update
-        addOptimisticUpdate({ minecraft_username: data.minecraft_username });
-        // Step 2: Trigger server action
-        await updateUserProfile(data);
-        setIsSavingMinecraft(false);
-        setIsEditingMinecraft(false);
+    const onSaveMinecraft = (data: MinecraftFormData) => {
+        startUpdateTransition(async () => {
+            // Step 1: Trigger optimistic update
+            addOptimisticUpdate({ minecraft_username: data.minecraft_username });
+            
+            // Step 2: Trigger server action
+            const result = await updateUserProfile(data);
+            
+            if (result.success) {
+                // 1. Refresh server data
+                router.refresh();
+                // 2. Refresh client session 
+                await refetch();
+                setIsEditingMinecraft(false);
+            } else {
+                alert(result.error || 'Het bijwerken van je Minecraft username is mislukt.');
+            }
+        });
     };
 
-    const onSavePhone = async (data: PhoneFormData) => {
-        setIsSavingPhoneNumber(true);
-        // Step 1: Trigger optimistic update
-        addOptimisticUpdate({ phone_number: data.phone_number });
-        // Step 2: Trigger server action
-        await updateUserProfile(data);
-        setIsSavingPhoneNumber(false);
-        setIsEditingPhoneNumber(false);
+    const onSavePhone = (data: PhoneFormData) => {
+        startUpdateTransition(async () => {
+            // Step 1: Trigger optimistic update
+            addOptimisticUpdate({ phone_number: data.phone_number });
+            
+            // Step 2: Trigger server action
+            const result = await updateUserProfile(data);
+            
+            if (result.success) {
+                // 1. Refresh server data
+                router.refresh();
+                // 2. Refresh client session 
+                await refetch();
+                setIsEditingPhoneNumber(false);
+            } else {
+                alert(result.error || 'Het bijwerken van je telefoonnummer is mislukt.');
+            }
+        });
     };
     
     // Derived values
@@ -295,7 +335,7 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
                                 ) : (
                                     <div className="h-full w-full bg-[var(--color-purple-50)] border border-[var(--color-purple-100)] flex items-center justify-center">
                                         <span className="text-4xl font-bold text-[var(--color-purple-300)]">
-                                            {optimisticUser.name?.[0] || optimisticUser.email?.[0] || '?'}
+                                            {optimisticUser.name?.[0] || '?'}
                                         </span>
                                     </div>
                                 )}
@@ -304,11 +344,11 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
 
                         <div className="min-w-0 w-full">
                             <h2 className="text-xl sm:text-2xl font-extrabold text-[var(--color-purple-700)] dark:text-white break-words">
-                                {optimisticUser.name || optimisticUser.email || "User"}
+                                {optimisticUser.name || "Niet ingesteld"}
                             </h2>
 
                             <div className="mt-4 flex flex-wrap justify-center">
-                                <span className={`px-6 py-2 ${membershipStatus.color} ${membershipStatus.textColor} text-[11px] font-black uppercase tracking-wider rounded-full shadow-md transition-all`}>
+                                <span className={`px-6 py-2 ${membershipStatus.color} ${membershipStatus.textColor} text-[11px] font-black uppercase tracking-wider rounded-full shadow-md transition-all text-center break-words max-w-full`}>
                                     {membershipStatus.text}
                                 </span>
                             </div>
@@ -323,15 +363,15 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
                                         {optimisticUser.committees.map((committee) => (
                                             <span
                                                 key={committee.id || (committee.name ?? 'unknown')}
-                                                className="group relative inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-purple-50)] dark:bg-white/10 border border-[var(--color-purple-100)] dark:border-white/20 rounded-full text-xs font-bold text-[var(--color-purple-700)] dark:text-white shadow-sm"
+                                                className="group relative inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-purple-50)] dark:bg-white/10 border border-[var(--color-purple-100)] dark:border-white/20 rounded-full text-xs font-bold text-[var(--color-purple-700)] dark:text-white shadow-sm max-w-full"
                                             >
                                                 {committee.is_leader && (
-                                                    <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 border-2 border-[var(--bg-card)] shadow-md flex items-center justify-center">
+                                                    <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 border-2 border-[var(--bg-card)] shadow-md flex items-center justify-center shrink-0">
                                                         <span className="text-[8px]">⭐</span>
                                                     </span>
                                                 )}
-                                                <Users2 className="h-3.5 w-3.5" />
-                                                <span>{(committee.name ?? '').replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim()}</span>
+                                                <Users2 className="h-3.5 w-3.5 shrink-0" />
+                                                <span className="truncate">{(committee.name ?? '').replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim()}</span>
                                             </span>
                                         ))}
                                     </div>
@@ -378,8 +418,8 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
                                             className={`flex-1 bg-white dark:bg-black/40 border ${minecraftErrors.minecraft_username ? 'border-red-500 ring-1 ring-red-500' : 'border-slate-300 dark:border-white/20'} rounded-lg px-3 py-1.5 text-sm font-medium focus:ring-2 focus:ring-[var(--color-purple-500)] focus:border-transparent outline-none`}
                                             placeholder="Username"
                                         />
-                                        <button type="submit" disabled={isSavingMinecraft} className="p-1.5 bg-[var(--color-purple-500)] text-white rounded-lg hover:bg-[var(--color-purple-600)] transition-colors">
-                                            {isSavingMinecraft ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                                        <button type="submit" disabled={isPending} className="p-1.5 bg-[var(--color-purple-500)] text-white rounded-lg hover:bg-[var(--color-purple-600)] transition-colors">
+                                            {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                                         </button>
                                         <button 
                                             type="button" 
@@ -397,8 +437,8 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
                                     )}
                                 </form>
                             ) : (
-                                <p className="break-words font-bold text-[var(--color-purple-700)] dark:text-white text-base">
-                                    {optimisticUser.minecraft_username || "Niet ingesteld"}
+                                <p className="break-words font-bold text-[var(--color-purple-700)] dark:text-white text-base min-w-0 flex-1">
+                                    {formatForBreak(optimisticUser.minecraft_username) || "Niet ingesteld"}
                                 </p>
                             )}
                         </div>
@@ -414,14 +454,14 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
                             <div className="shrink-0 rounded-xl bg-[var(--color-purple-100)] p-3 text-[var(--color-purple-600)] shadow-sm">
                                 <Mail className="h-5 w-5" />
                             </div>
-                            <div className="min-w-0 flex-1">
-                                <p className="text-[11px] text-[var(--color-purple-400)] font-bold uppercase tracking-wide mb-1">
-                                    E-mailadres
-                                </p>
-                                <p className="font-bold text-[var(--color-purple-700)] dark:text-white truncate text-sm" title={optimisticUser.email ?? undefined}>
-                                    {optimisticUser.email || 'Geen email'}
-                                </p>
-                            </div>
+                                <div className="min-w-0 flex-1 overflow-hidden">
+                                    <p className="text-[11px] text-[var(--color-purple-400)] font-bold uppercase tracking-wide mb-1">
+                                        E-mailadres
+                                    </p>
+                                    <p className="font-bold text-[var(--color-purple-700)] dark:text-white break-words text-xs sm:text-sm leading-tight" title={optimisticUser.email ?? undefined}>
+                                        {formatForBreak(optimisticUser.email) || 'Geen email'}
+                                    </p>
+                                </div>
                         </div>
 
                         {optimisticUser.fontys_email && (
@@ -429,12 +469,12 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
                                 <div className="shrink-0 rounded-xl bg-[var(--color-purple-100)] p-3 text-[var(--color-purple-600)] shadow-sm">
                                     <Mail className="h-5 w-5" />
                                 </div>
-                                <div className="min-w-0 flex-1">
+                                <div className="min-w-0 flex-1 overflow-hidden">
                                     <p className="text-[11px] text-[var(--color-purple-400)] font-bold uppercase tracking-wide mb-1">
                                         Fontys e-mail
                                     </p>
-                                    <p className="font-bold text-[var(--color-purple-700)] dark:text-white truncate text-sm" title={optimisticUser.fontys_email ?? undefined}>
-                                        {optimisticUser.fontys_email}
+                                    <p className="font-bold text-[var(--color-purple-700)] dark:text-white break-words text-xs sm:text-sm leading-tight" title={optimisticUser.fontys_email ?? undefined}>
+                                        {formatForBreak(optimisticUser.fontys_email)}
                                     </p>
                                 </div>
                             </div>
@@ -464,8 +504,8 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
                                                 className={`flex-1 min-w-0 bg-white dark:bg-black/40 border ${phoneErrors.phone_number ? 'border-red-500 ring-1 ring-red-500' : 'border-slate-300 dark:border-white/20'} rounded-lg px-3 py-1.5 text-sm font-medium focus:ring-2 focus:ring-[var(--color-purple-500)] focus:border-transparent outline-none`}
                                                 placeholder="0612345678"
                                             />
-                                            <button type="submit" disabled={isSavingPhoneNumber} className="shrink-0 p-1.5 bg-[var(--color-purple-500)] text-white rounded-lg hover:bg-[var(--color-purple-600)] transition-colors">
-                                                {isSavingPhoneNumber ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                                            <button type="submit" disabled={isPending} className="shrink-0 p-1.5 bg-[var(--color-purple-500)] text-white rounded-lg hover:bg-[var(--color-purple-600)] transition-colors">
+                                                {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                                             </button>
                                             <button 
                                                 type="button" 

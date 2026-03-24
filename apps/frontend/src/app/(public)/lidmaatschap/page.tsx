@@ -11,7 +11,7 @@ export const metadata = {
     description: 'Beheer je lidmaatschap bij Salve Mundi en krijg toegang tot exclusieve activiteiten.',
 };
 
-async function MembershipDynamicSection() {
+async function MembershipDynamicContent() {
     const session = await auth.api.getSession({
         headers: await headers()
     });
@@ -21,25 +21,9 @@ async function MembershipDynamicSection() {
     const baseAmount = 20.00;
 
     return (
-        <section className="w-full sm:w-1/2 bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-[2rem] shadow-xl p-6 sm:p-10">
-            <h1 className="text-4xl font-black text-theme-purple dark:text-purple-400 mb-8 tracking-tight">
-                {isGuest ? 'INSCHRIJVEN' : (user?.membership_status === 'active' ? 'STATUS' : 'VERLENGEN')}
-            </h1>
-
-            {isGuest ? (
-                <MembershipFormIsland baseAmount={baseAmount} />
-            ) : (
-                <MembershipStatusIsland user={user as MembershipUserData} baseAmount={baseAmount} />
-            )}
-        </section>
-    );
-}
-
-export default function MembershipPage() {
-    return (
         <>
             <PageHeader
-                title="WORD LID!"
+                title={isGuest ? "WORD LID!" : "MIJN LIDMAATSCHAP"}
                 backgroundImage=""
                 contentPadding="py-20"
                 imageFilter="brightness(0.65)"
@@ -47,26 +31,42 @@ export default function MembershipPage() {
 
             <main className="max-w-app mx-auto">
                 <div className="flex flex-col sm:flex-row gap-6 px-6 py-8 sm:py-10 md:py-12">
-                    {/* Only the dynamic status/form part is suspended */}
-                    <Suspense fallback={<MembershipSkeleton />}>
-                        <MembershipDynamicSection />
-                    </Suspense>
+                    <section className={`bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-[2rem] shadow-xl p-6 sm:p-10 ${isGuest ? 'w-full sm:w-1/2' : 'w-full max-w-2xl mx-auto'}`}>
+                        <h1 className="text-4xl font-black text-theme-purple dark:text-purple-400 mb-8 tracking-tight">
+                            {isGuest ? 'INSCHRIJVEN' : (user?.membership_status === 'active' ? 'STATUS' : 'VERLENGEN')}
+                        </h1>
 
-                    {/* Static aside is rendered immediately (PPR) */}
-                    <aside className="w-full sm:w-1/2 flex flex-col gap-6">
-                        <div className="w-full text-center bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-[2rem] p-8 shadow-lg">
-                            <h2 className="text-3xl font-black text-theme-purple dark:text-purple-400 mb-4 tracking-tight">
-                                WAAROM LID WORDEN?
-                            </h2>
-                            <p className="text-lg opacity-80 leading-relaxed font-medium">
-                                Als lid van Salve Mundi krijg je toegang tot exclusieve
-                                activiteiten, workshops, borrels en nog veel meer! Word vandaag
-                                nog lid en ontdek de wereld van ICT samen met ons.
-                            </p>
-                        </div>
-                    </aside>
+                        {isGuest ? (
+                            <MembershipFormIsland baseAmount={baseAmount} />
+                        ) : (
+                            <MembershipStatusIsland user={user as MembershipUserData} baseAmount={baseAmount} />
+                        )}
+                    </section>
+
+                    {isGuest && (
+                        <aside className="w-full sm:w-1/2 flex flex-col gap-6">
+                            <div className="w-full text-center bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-[2rem] p-8 shadow-lg">
+                                <h2 className="text-3xl font-black text-theme-purple dark:text-purple-400 mb-4 tracking-tight">
+                                    WAAROM LID WORDEN?
+                                </h2>
+                                <p className="text-lg opacity-80 leading-relaxed font-medium">
+                                    Als lid van Salve Mundi krijg je toegang tot exclusieve
+                                    activiteiten, workshops, borrels en nog veel meer! Word vandaag
+                                    nog lid en ontdek de wereld van ICT samen met ons.
+                                </p>
+                            </div>
+                        </aside>
+                    )}
                 </div>
             </main>
         </>
+    );
+}
+
+export default function MembershipPage() {
+    return (
+        <Suspense fallback={<MembershipSkeleton />}>
+            <MembershipDynamicContent />
+        </Suspense>
     );
 }

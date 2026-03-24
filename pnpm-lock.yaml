@@ -141,10 +141,19 @@ importers:
       fastify:
         specifier: 5.1.0
         version: 5.1.0
+      fastify-plugin:
+        specifier: ^5.1.0
+        version: 5.1.0
+      ioredis:
+        specifier: ^5.6.0
+        version: 5.10.1
       isomorphic-fetch:
         specifier: ^3.0.0
         version: 3.0.0
     devDependencies:
+      '@types/isomorphic-fetch':
+        specifier: ^0.0.39
+        version: 0.0.39
       '@types/node':
         specifier: ^22.0.0
         version: 22.19.13
@@ -1464,6 +1473,9 @@ packages:
 
   '@types/geojson@7946.0.16':
     resolution: {integrity: sha512-6C8nqWur3j98U6+lXDfTUWIfgvZU+EumvpHKcYjujKH7woYyLj2sUmff0tRhrqM7BohUw7Pz3ZB1jj2gW9Fvmg==}
+
+  '@types/isomorphic-fetch@0.0.39':
+    resolution: {integrity: sha512-I0gou/ZdA1vMG7t7gMzL7VYu2xAKU78rW9U1l10MI0nn77pEHq3tQqHQ8hMmXdMpBlkxZOorjI4sO594Z3kKJw==}
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
@@ -5509,6 +5521,8 @@ snapshots:
   '@types/estree@1.0.8': {}
 
   '@types/geojson@7946.0.16': {}
+
+  '@types/isomorphic-fetch@0.0.39': {}
 
   '@types/json-schema@7.0.15': {}
 

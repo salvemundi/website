@@ -4,7 +4,7 @@ import { introSignupFormSchema, introParentSignupFormSchema, type IntroSignupFor
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 
-import { getSystemDirectus, getUserDirectus } from '@/lib/directus';
+import { getSystemDirectus } from '@/lib/directus';
 import { readItems, createItem } from '@directus/sdk';
 import { revalidatePath } from 'next/cache';
 
@@ -138,7 +138,7 @@ export async function submitIntroParentSignup(data: IntroParentSignupForm) {
     };
 
     try {
-        await getUserDirectus(session.session.token).request(createItem('intro_parent_signups' as any, payload as any));
+        await getSystemDirectus().request(createItem('intro_parent_signups' as any, payload as any));
         revalidatePath('/beheer/intro');
         return { success: true };
     } catch (e) {

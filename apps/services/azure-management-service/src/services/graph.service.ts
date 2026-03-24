@@ -57,4 +57,89 @@ export class GraphService {
         return await client.api(`/groups/${groupId}/owners/${ownerId}/$ref`)
             .delete();
     }
+
+    /**
+     * Creates a new user in Microsoft Entra ID.
+     */
+    static async createUser(
+        email: string, 
+        firstName: string, 
+        lastName: string, 
+        token: string,
+        phoneNumber?: string,
+        dateOfBirth?: string
+    ) {
+        const client = this.getClient(token);
+        
+        // Generate a cryptographically secure temporary password
+        const randomPart = crypto.randomUUID().split('-')[0];
+        const specialPart = crypto.randomUUID().split('-')[1].toUpperCase();
+        const tempPassword = `SM-${randomPart}!${specialPart}#`;
+        
+        const user: any = {
+            accountEnabled: true,
+            displayName: `${firstName} ${lastName}`,
+            mailNickname: email.split('@')[0],
+            userPrincipalName: email,
+            passwordProfile: {
+                forceChangePasswordNextSignIn: true,
+                password: tempPassword
+            }
+        };
+
+        // Add Custom Security Attributes if provided
+        if (phoneNumber || dateOfBirth) {
+            user.customSecurityAttributes = {
+                SalveMundiLidmaatschap: {
+                    "@odata.type": "#Microsoft.DirectoryServices.CustomSecurityAttributeValue",
+                }
+            };
+            if (phoneNumber) user.customSecurityAttributes.SalveMundiLidmaatschap.Telefoon = phoneNumber;
+            if (dateOfBirth) {
+                // Ensure date format is YYYYMMDD for Azure if needed, or stick to what SyncJob expects
+                const cleanDob = dateOfBirth.replace(/-/g, '');
+                user.customSecurityAttributes.SalveMundiLidmaatschap.Geboortedatum = cleanDob;
+            }
+        }
+
+        const result = await client.api('/users').post(user);
+        
+        return {
+            ...result,
+            temporaryPassword: tempPassword
+        };
+    }
+
+    /**
+     * Updates an existing user in Microsoft Entra ID.
+     */
+    static async updateUser(
+        entraId: string,
+        token: string,
+        data: {
+            displayName?: string;
+            phoneNumber?: string;
+            dateOfBirth?: string;
+        }
+    ) {
+        const client = this.getClient(token);
+        const payload: any = {};
+
+        if (data.displayName) payload.displayName = data.displayName;
+
+        if (data.phoneNumber || data.dateOfBirth) {
+            payload.customSecurityAttributes = {
+                SalveMundiLidmaatschap: {
+                    "@odata.type": "#Microsoft.DirectoryServices.CustomSecurityAttributeValue",
+                }
+            };
+            if (data.phoneNumber) payload.customSecurityAttributes.SalveMundiLidmaatschap.Telefoon = data.phoneNumber;
+            if (data.dateOfBirth) {
+                const cleanDob = data.dateOfBirth.replace(/-/g, '');
+                payload.customSecurityAttributes.SalveMundiLidmaatschap.Geboortedatum = cleanDob;
+            }
+        }
+
+        return await client.api(`/users/${entraId}`).update(payload);
+    }
 }

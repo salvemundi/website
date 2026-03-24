@@ -86,44 +86,11 @@ async function DynamicIntroContent() {
     const isAlreadyParent = isAuthenticated ? await parentCheckProm : false;
 
     return (
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 max-w-7xl mx-auto w-full">
-            <div className="flex-1">
-                {isAuthenticated ? <IntroInfoParent /> : <IntroInfoStudent />}
-                <IntroLightboxIsland />
-            </div>
-
-            <div className="flex-1 w-full flex flex-col justify-start">
-                {isAuthenticated ? (
-                    isAlreadyParent ? (
-                        <div className="bg-gradient-theme rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg text-center">
-                            <h3 className="text-xl lg:text-2xl font-bold text-white mb-4">Je hebt je al aangemeld als Intro Ouder</h3>
-                            <p className="text-theme-text-muted dark:text-theme-text-muted">
-                                Bedankt! Je inschrijving is ontvangen. Als je iets wilt aanpassen, neem contact op met de intro commissie.
-                            </p>
-                        </div>
-                    ) : (
-                        <IntroParentIsland
-                            userName={session.user.name}
-                            userEmail={session.user.email}
-                            initialPhone={''}
-                        />
-                    )
-                ) : (
-                    <IntroStudentIsland />
-                )}
-            </div>
-        </div>
-    );
-}
-
-export default async function IntroPage() {
-
-    return (
         <>
             <div className="flex flex-col w-full">
                 <PageHeader
                     title="INTRO - AANMELDEN"
-                    backgroundImage="/img/backgrounds/intro-banner.jpg"
+                    backgroundImage={!isAuthenticated ? "/img/backgrounds/intro-banner.jpg" : ""}
                     contentPadding="py-20"
                     imageFilter="brightness(0.65)"
                 />
@@ -131,11 +98,43 @@ export default async function IntroPage() {
 
             <main>
                 <section className="px-4 sm:px-6 lg:px-10 py-8 lg:py-10">
-                    <Suspense fallback={<IntroContentSkeleton />}>
-                        <DynamicIntroContent />
-                    </Suspense>
+                    <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 max-w-7xl mx-auto w-full">
+                        <div className="flex-1">
+                            {isAuthenticated ? <IntroInfoParent /> : <IntroInfoStudent />}
+                            {!isAuthenticated && <IntroLightboxIsland />}
+                        </div>
+
+                        <div className="flex-1 w-full flex flex-col justify-start">
+                            {isAuthenticated ? (
+                                isAlreadyParent ? (
+                                    <div className="bg-gradient-theme rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg text-center">
+                                        <h3 className="text-xl lg:text-2xl font-bold text-white mb-4">Je hebt je al aangemeld als Intro Ouder</h3>
+                                        <p className="text-theme-text-muted dark:text-theme-text-muted">
+                                            Bedankt! Je inschrijving is ontvangen. Als je iets wilt aanpassen, neem contact op met de intro commissie.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <IntroParentIsland
+                                        userName={session.user.name}
+                                        userEmail={session.user.email}
+                                        initialPhone={''}
+                                    />
+                                )
+                            ) : (
+                                <IntroStudentIsland />
+                            )}
+                        </div>
+                    </div>
                 </section>
             </main>
         </>
+    );
+}
+
+export default async function IntroPage() {
+    return (
+        <Suspense fallback={<IntroContentSkeleton />}>
+            <DynamicIntroContent />
+        </Suspense>
     );
 }

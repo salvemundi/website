@@ -36,7 +36,6 @@ interface LedenOverzichtIslandProps {
     totalCount: number;
     currentPage: number;
     searchQuery: string;
-    activeTab: 'active' | 'inactive';
     pageSize: number;
 }
 
@@ -45,13 +44,13 @@ export default function LedenOverzichtIsland({
     totalCount, 
     currentPage, 
     searchQuery: initialSearchQuery,
-    activeTab: initialActiveTab,
     pageSize
 }: LedenOverzichtIslandProps) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
     const [isSendingReminder, setIsSendingReminder] = useState(false);
+    const [activeTab, setActiveTab] = useState<'active' | 'inactive'>('active');
 
     // Debounce search update
     useEffect(() => {
@@ -63,7 +62,7 @@ export default function LedenOverzichtIsland({
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    function updateUrl(params: { search?: string, page?: number, tab?: string }) {
+    function updateUrl(params: { search?: string, page?: number }) {
         const url = new URL(window.location.href);
         if (params.search !== undefined) {
             if (params.search) url.searchParams.set('search', params.search);
@@ -72,9 +71,6 @@ export default function LedenOverzichtIsland({
         if (params.page !== undefined) {
             if (params.page > 1) url.searchParams.set('page', params.page.toString());
             else url.searchParams.delete('page');
-        }
-        if (params.tab !== undefined) {
-            url.searchParams.set('tab', params.tab);
         }
         
         startTransition(() => {
@@ -87,6 +83,11 @@ export default function LedenOverzichtIsland({
         const todayStr = new Date().toISOString().substring(0, 10);
         return m.membership_expiry.substring(0, 10) >= todayStr;
     };
+
+    const filteredMembers = members.filter(m => {
+        const active = isMembershipActive(m);
+        return activeTab === 'active' ? active : !active;
+    });
 
     const formatDate = (dateString: string | null) => {
         if (!dateString) return 'Onbekend';
@@ -111,7 +112,7 @@ export default function LedenOverzichtIsland({
     };
 
     const exportToXLSX = () => {
-        const data = members.map(m => ({
+        const data = filteredMembers.map(m => ({
             Naam: `${m.first_name} ${m.last_name}`,
             Email: m.email,
             Geboortedatum: formatDate(m.date_of_birth),
@@ -133,8 +134,8 @@ export default function LedenOverzichtIsland({
             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm ring-1 ring-slate-200 dark:ring-slate-700/50 p-4 mb-8 flex flex-col lg:flex-row gap-4 items-center justify-between">
                 <div className="flex p-1 bg-slate-100 dark:bg-slate-900/50 rounded-xl w-full lg:w-auto">
                     <button
-                        onClick={() => updateUrl({ tab: 'active', page: 1 })}
-                        className={`flex-1 lg:flex-none px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${initialActiveTab === 'active'
+                        onClick={() => setActiveTab('active')}
+                        className={`flex-1 lg:flex-none px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'active'
                             ? 'bg-white dark:bg-slate-800 text-primary shadow-sm ring-1 ring-slate-200 dark:ring-slate-700'
                             : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
                             }`}
@@ -143,8 +144,8 @@ export default function LedenOverzichtIsland({
                         Actief
                     </button>
                     <button
-                        onClick={() => updateUrl({ tab: 'inactive', page: 1 })}
-                        className={`flex-1 lg:flex-none px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${initialActiveTab === 'inactive'
+                        onClick={() => setActiveTab('inactive')}
+                        className={`flex-1 lg:flex-none px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'inactive'
                             ? 'bg-white dark:bg-slate-800 text-primary shadow-sm ring-1 ring-slate-200 dark:ring-slate-700'
                             : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
                             }`}
@@ -163,6 +164,7 @@ export default function LedenOverzichtIsland({
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full pl-12 pr-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border-none ring-1 ring-slate-200 dark:ring-slate-700/50 text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary outline-none transition-all font-medium"
+                            suppressHydrationWarning
                         />
                         {isPending && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-primary" />}
                     </div>
@@ -202,7 +204,7 @@ export default function LedenOverzichtIsland({
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
-                            {members.map((member) => (
+                            {filteredMembers.map((member) => (
                                 <tr key={member.id} className="group hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition-colors">
                                     <td className="px-8 py-5">
                                         <div className="flex items-center gap-4">
@@ -248,7 +250,7 @@ export default function LedenOverzichtIsland({
                     </table>
                 </div>
 
-                {members.length === 0 && (
+                {filteredMembers.length === 0 && (
                     <div className="p-20 text-center">
                         <Users className="h-16 w-16 text-slate-200 dark:text-slate-700 mx-auto mb-4" />
                         <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">Geen leden gevonden</h3>

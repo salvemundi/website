@@ -2,7 +2,7 @@ import type { BetterAuthPlugin } from "better-auth";
 import { Pool } from "pg";
 import { getRedis } from "./redis-client";
 import { getPermissions } from "@/shared/lib/permissions";
-import { getUserDirectus } from "@/lib/directus";
+import { getSystemDirectus } from "@/lib/directus";
 import { readMe } from "@directus/sdk";
 
 /**
@@ -30,11 +30,16 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                 const redis = await getRedis();
                                 const cached = await redis.get(`session:${token}`);
                                 if (cached) {
-                                    return {
-                                        response: { headers: { "content-type": "application/json" } },
-                                        body: JSON.parse(cached),
-                                        _flag: "json"
-                                    } as any;
+                                    const session = JSON.parse(cached);
+                                    // Safety net: if the cached session is missing committees enrichment,
+                                    // ignore the cache and let it be enriched fresh.
+                                    if (session?.user && Array.isArray(session.user.committees)) {
+                                        return {
+                                            response: { headers: { "content-type": "application/json" } },
+                                            body: session,
+                                            _flag: "json"
+                                        } as any;
+                                    }
                                 }
                             }
                         } catch (e) {
@@ -59,6 +64,8 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                     user?: { 
                                         id?: string; 
                                         name?: string;
+                                        first_name?: string;
+                                        last_name?: string;
                                         email?: string; 
                                         avatar?: string;
                                         committees?: any; 
@@ -73,13 +80,18 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                     `SELECT c.id, c.name, m.is_leader 
                                      FROM committee_members m 
                                      JOIN committees c ON m.committee_id = c.id 
-                                     WHERE m.user_id = $1 AND m.is_visible = true`,
+                                     WHERE m.user_id = $1`,
                                     [sessionWithUser.user.id]
                                 );
 
                                 // Injecteer commissies en deriveer permissies
                                 sessionWithUser.user.committees = realCommittees;
                                 Object.assign(sessionWithUser.user, getPermissions(realCommittees));
+
+                                // 1.5. Enrich name if missing
+                                if (!sessionWithUser.user.name && (sessionWithUser.user.first_name || sessionWithUser.user.last_name)) {
+                                    sessionWithUser.user.name = `${sessionWithUser.user.first_name || ''} ${sessionWithUser.user.last_name || ''}`.trim();
+                                }
 
                                 // 2. Check voor IMPERSONATIE (via cookie)
                                 const testToken = requestHeaders.get("cookie")?.split("directus_test_token=")?.[1]?.split(";")?.[0];
@@ -90,10 +102,15 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                         const redis = await getRedis();
                                         const cacheKey = `impersonation:${testToken}`;
                                         let impData = await redis.get(cacheKey);
-                                        
                                         if (!impData) {
                                             // Fetch fresh if not in cache
-                                            const testClient = getUserDirectus(testToken);
+                                            const directusUrl = process.env.DIRECTUS_SERVICE_URL!;
+                                            const { createDirectus, rest, staticToken, readMe } = await import("@directus/sdk");
+                                            
+                                            const testClient = createDirectus(directusUrl)
+                                                .with(staticToken(testToken))
+                                                .with(rest());
+
                                             const impUser = await testClient.request(readMe({ 
                                                 fields: [
                                                     'id', 'first_name', 'last_name', 'email', 'avatar',
@@ -155,10 +172,10 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                         } as any;
 
                                         // Update permissions voor de target user
+                                        // Update permissions voor de target user
                                         if (sessionWithUser.user) {
                                             Object.assign(sessionWithUser.user, getPermissions(targetUser.committees));
                                         }
-
                                     } catch (e) {
                                         console.error("[AUTH-REDIS] Impersonation fetch failed:", e);
                                     }

@@ -13,12 +13,4 @@ export function getSystemDirectus() {
         .with(rest());
 }
 
-/**
- * Get a Directus client with user-level permissions.
- * Used in Server Actions when a user is authenticated.
- */
-export function getUserDirectus(userToken: string) {
-    return createDirectus<DirectusSchema>(directusUrl)
-        .with(staticToken(userToken))
-        .with(rest());
-}
+// getUserDirectus deleted as per "no user token" policy.

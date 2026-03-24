@@ -1,0 +1,130 @@
+import { Redis } from 'ioredis';
+import fetch from 'isomorphic-fetch';
+import { GraphService } from './graph.service.js';
+import { TokenService } from './token.service.js';
+
+interface ProvisionTask {
+    email: string;
+    firstName: string;
+    lastName: string;
+    phoneNumber?: string;
+    dateOfBirth?: string;
+    retries: number;
+    maxRetries: number;
+}
+
+export class ProvisionWorkerService {
+    private static readonly QUEUE_KEY = 'azure_provision_queue';
+    private static shouldStop = false;
+
+    /**
+     * Queues a provisioning task in Redis.
+     */
+    static async queueProvisioning(redis: Redis, data: Omit<ProvisionTask, 'retries' | 'maxRetries'>) {
+        const task: ProvisionTask = {
+            ...data,
+            retries: 0,
+            maxRetries: 5
+        };
+        // Use zadd for scheduled/retryable tasks
+        await redis.zadd(this.QUEUE_KEY, Date.now(), JSON.stringify(task));
+    }
+
+    /**
+     * Starts the worker loop.
+     */
+    static async start(redis: Redis) {
+        console.log('[ProvisionWorker] Starting worker loop...');
+        
+        while (!this.shouldStop) {
+            try {
+                // 1. Fetch tasks that are due
+                const tasks = await redis.zrangebyscore(this.QUEUE_KEY, 0, Date.now(), 'LIMIT', 0, 5);
+
+                if (tasks.length === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 5000));
+                    continue;
+                }
+
+                for (const taskJson of tasks) {
+                    if (this.shouldStop) break;
+                    const task: ProvisionTask = JSON.parse(taskJson);
+
+                    try {
+                        console.log(`[ProvisionWorker] Provisioning ${task.email}...`);
+                        
+                        // 2. Create User in Azure
+                        const token = await TokenService.getAccessToken();
+                        const result = await GraphService.createUser(
+                            task.email,
+                            task.firstName,
+                            task.lastName,
+                            token,
+                            task.phoneNumber,
+                            task.dateOfBirth
+                        );
+
+                        console.log(`[ProvisionWorker] Azure account created for ${task.email}`);
+
+                        // 3. Queue Welcome Email
+                        const mailRes = await fetch(`${process.env.MAIL_SERVICE_URL}/api/mail/send`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${process.env.INTERNAL_SERVICE_TOKEN}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                to: task.email,
+                                templateId: 'account_created',
+                                data: {
+                                    name: task.firstName,
+                                    temporaryPassword: result.temporaryPassword
+                                }
+                            })
+                        });
+
+                        if (!mailRes.ok) throw new Error(`Mail service failed: ${mailRes.statusText}`);
+
+                        // 4. Trigger Sync (Optional but recommended for immediate result)
+                        if (process.env.AZURE_SYNC_SERVICE_URL) {
+                            await fetch(`${process.env.AZURE_SYNC_SERVICE_URL}/api/sync/run/${encodeURIComponent(result.id)}`, {
+                                method: 'POST',
+                                headers: { 'Authorization': `Bearer ${process.env.INTERNAL_SERVICE_TOKEN}` }
+                            }).catch((err: any) => console.warn('[ProvisionWorker] Sync trigger failed (non-critical):', err.message));
+                        }
+
+                        // Success -> Remove task
+                        await redis.zrem(this.QUEUE_KEY, taskJson);
+                    } catch (err: any) {
+                        console.error(`[ProvisionWorker] Failed for ${task.email}:`, err.message);
+
+                        // If user already exists, we consider it "Success" (or at least done)
+                        if (err.message?.includes('already exists') || err.status === 409) {
+                            console.log(`[ProvisionWorker] User ${task.email} already exists. Removing task.`);
+                            await redis.zrem(this.QUEUE_KEY, taskJson);
+                            continue;
+                        }
+
+                        // Retry logic
+                        task.retries += 1;
+                        await redis.zrem(this.QUEUE_KEY, taskJson);
+
+                        if (task.retries < task.maxRetries) {
+                            const delay = 30000 * Math.pow(task.retries, 2); // 30s, 2m, 4.5m...
+                            await redis.zadd(this.QUEUE_KEY, Date.now() + delay, JSON.stringify(task));
+                        } else {
+                            console.error(`[ProvisionWorker] Max retries reached for ${task.email}`);
+                        }
+                    }
+                }
+            } catch (loopErr: any) {
+                console.error('[ProvisionWorker] Loop Error:', loopErr.message);
+                await new Promise(resolve => setTimeout(resolve, 5000));
+            }
+        }
+    }
+
+    static stop() {
+        this.shouldStop = true;
+    }
+}

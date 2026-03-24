@@ -3,7 +3,7 @@
 import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
-import { getSystemDirectus, getUserDirectus } from "@/lib/directus";
+import { getSystemDirectus } from "@/lib/directus";
 import { readItems, updateItem, updateUser, readUsers, readUser } from "@directus/sdk";
 import { isSuperAdmin } from "@/lib/auth-utils";
 
@@ -130,7 +130,28 @@ export async function updateMemberProfileAction(
     }
 
     try {
-        await getUserDirectus((admin as any).session?.token).request(updateUser(directusUserId, payload));
+        // 1. Update Directus
+        await getSystemDirectus().request(updateUser(directusUserId, payload));
+
+        // 2. Sync to Azure AD if entra_id exists
+        const user: any = await getSystemDirectus().request(readUser(directusUserId, {
+            fields: ['entra_id']
+        }));
+
+        if (user?.entra_id && AZURE_MGMT_URL && INTERNAL_TOKEN) {
+            await fetch(`${AZURE_MGMT_URL}/api/users/${encodeURIComponent(user.entra_id)}`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${INTERNAL_TOKEN}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    displayName: payload.first_name || payload.last_name ? `${payload.first_name || ''} ${payload.last_name || ''}`.trim() : undefined,
+                    phoneNumber: payload.phone_number,
+                    dateOfBirth: payload.date_of_birth
+                })
+            }).catch(e => console.error('[updateMemberProfile] Azure sync failed:', e));
+        }
 
         revalidatePath(`/beheer/leden/${directusUserId}`);
         return { success: true };
@@ -141,7 +162,7 @@ export async function updateMemberProfileAction(
 }
 
 /**
- * Manually extend a member's membership by a given number of months.
+ * Manually extend a member's membership and update Azure AD group.
  */
 export async function renewMembershipAction(
     directusUserId: string,
@@ -151,17 +172,15 @@ export async function renewMembershipAction(
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
-        // Get current expiry using SDK
+        // 1. Update Directus
         const users: any = await getSystemDirectus().request(readUsers({
-            fields: ['membership_expiry'] as any,
+            fields: ['membership_expiry', 'entra_id'] as any,
             filter: { id: { _eq: directusUserId } } as any,
             limit: 1
         }));
         const user = users?.[0];
-        
         if (!user) return { success: false, error: 'Kon lid niet ophalen' };
         
-        // Compute new expiry: extend from current expiry or from today, whichever is later
         const today = new Date();
         const currentExpiry = user.membership_expiry ? new Date(user.membership_expiry) : null;
         const baseDate = currentExpiry && currentExpiry > today ? currentExpiry : today;
@@ -170,10 +189,29 @@ export async function renewMembershipAction(
         newExpiry.setMonth(newExpiry.getMonth() + months);
         const newExpiryStr = newExpiry.toISOString().substring(0, 10);
 
-        await getUserDirectus((admin as any).session?.token).request(updateUser(directusUserId, { membership_expiry: newExpiryStr } as any));
+        await getSystemDirectus().request(updateUser(directusUserId, { membership_expiry: newExpiryStr } as any));
 
-        // Trigger targeted Azure sync to update group membership (Leden_Actief etc.)
-        if (INTERNAL_TOKEN) {
+        // 2. Update Azure AD (Leden_Actief_Lidmaatschap)
+        if (user.entra_id && AZURE_MGMT_URL && INTERNAL_TOKEN) {
+            // First, find the Azure group ID for 'Leden_Actief_Lidmaatschap'
+            const committees: any = await getSystemDirectus().request(readItems('committees', {
+                filter: { name: { _eq: 'Leden_Actief_Lidmaatschap' } },
+                fields: ['azure_group_id'],
+                limit: 1
+            }));
+            const activeGroupId = committees?.[0]?.azure_group_id;
+
+            if (activeGroupId) {
+                await fetch(`${AZURE_MGMT_URL}/api/groups/${encodeURIComponent(activeGroupId)}/members`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${INTERNAL_TOKEN}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: user.entra_id })
+                }).catch(e => console.warn('[renewMembership] Azure group update failed:', e));
+            }
+        }
+
+        // 3. Trigger targeted Sync
+        if (AZURE_SYNC_URL && INTERNAL_TOKEN) {
             fetch(`${AZURE_SYNC_URL}/api/sync/run/${encodeURIComponent(directusUserId)}`, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${INTERNAL_TOKEN}` },
@@ -186,6 +224,50 @@ export async function renewMembershipAction(
     } catch (err) {
         console.error('[renewMembership] Error:', err);
         return { success: false, error: 'Er is een fout opgetreden' };
+    }
+}
+
+/**
+ * Provisions a member in Azure AD if they don't have an account yet.
+ */
+export async function provisionAzureAccountAction(directusUserId: string) {
+    const admin = await checkAdminAccess();
+    if (!admin) return { success: false, error: "Unauthorized" };
+
+    try {
+        // 1. Get full member data from Directus
+        const user: any = await getSystemDirectus().request(readUser(directusUserId, {
+            fields: ['email', 'first_name', 'last_name', 'phone_number', 'date_of_birth']
+        }));
+
+        if (!user || !user.email) return { success: false, error: "Lid niet gevonden of geen e-mailadres." };
+
+        // 2. Call Management Service
+        const res = await fetch(`${AZURE_MGMT_URL}/api/provisioning/user`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${INTERNAL_TOKEN}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: user.email,
+                firstName: user.first_name,
+                lastName: user.last_name,
+                phoneNumber: user.phone_number,
+                dateOfBirth: user.date_of_birth
+            })
+        });
+
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({ error: 'Onbekende fout' }));
+            return { success: false, error: errData.error || "Azure provisioning mislukt." };
+        }
+
+        revalidatePath(`/beheer/leden/${directusUserId}`);
+        return { success: true };
+    } catch (err: any) {
+        console.error("[ProvisionAction] Error:", err);
+        return { success: false, error: "Interne fout bij provisioning." };
     }
 }
 

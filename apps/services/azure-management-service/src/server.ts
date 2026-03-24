@@ -1,7 +1,9 @@
 import Fastify from 'fastify';
 import dotenv from 'dotenv';
+import redisPlugin from './plugins/redis.js';
 import provisioningRoutes from './routes/provisioning.js';
 import groupRoutes from './routes/groups.js';
+import userRoutes from './routes/users.js';
 
 dotenv.config();
 
@@ -9,9 +11,13 @@ const fastify = Fastify({
     logger: true
 });
 
+// Register Plugins
+fastify.register(redisPlugin);
+
 // Register Routes
 fastify.register(provisioningRoutes, { prefix: '/api/provisioning' });
 fastify.register(groupRoutes, { prefix: '/api/groups' });
+fastify.register(userRoutes, { prefix: '/api/users' });
 
 fastify.get('/health', async () => {
     return { status: 'ok', service: 'azure-management-service' };
@@ -22,6 +28,10 @@ const start = async () => {
         const port = Number(process.env.PORT) || 3004;
         await fastify.listen({ port, host: '0.0.0.0' });
         console.log(`Azure Management Service listening on port ${port}`);
+
+        // Start the Provisioning Worker
+        const { ProvisionWorkerService } = await import('./services/provision-worker.js');
+        ProvisionWorkerService.start(fastify.redis);
     } catch (err) {
         fastify.log.error(err);
         process.exit(1);

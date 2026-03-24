@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
-import { getActivityById } from '@/server/actions/activities.actions';
+import { getActivityById } from '@/server/actions/activiteit-actions';
 import ActivityDetailIsland from '@/components/islands/activities/ActivityDetailIsland';
 import EventSignupIsland from '@/components/islands/activities/EventSignupIsland';
 import ActivityDetailSkeleton from '@/components/ui/activities/ActivityDetailSkeleton';

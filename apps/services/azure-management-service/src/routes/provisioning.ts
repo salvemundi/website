@@ -1,36 +1,35 @@
 import { FastifyInstance } from 'fastify';
+import { ProvisionWorkerService } from '../services/provision-worker.js';
 
 export default async function provisioningRoutes(fastify: FastifyInstance) {
     /**
-     * POST /api/provisioning/user
-     * Body: { email: "...", firstName: "...", lastName: "..." }
+     * Provision a new user in Azure AD.
+     * This is now an ASYNCHRONOUS operation that joins a Redis queue.
      */
     fastify.post('/user', async (request: any, reply) => {
-        const { email, firstName, lastName } = request.body;
+        const { email, firstName, lastName, phoneNumber, dateOfBirth } = request.body;
 
-        if (!email) {
-            return reply.status(400).send({ error: 'Missing email' });
+        if (!email || !firstName || !lastName) {
+            return reply.status(400).send({ error: 'Missing required fields (email, firstName, lastName)' });
         }
-
-        fastify.log.info(`[PROVISIONING] Creating/Updating user ${email}`);
 
         try {
-            // Logic to create user in Microsoft Entra ID
-            // Since this is the 관리 (Management) service, it uses the Provisioning client ID.
-            
-            return { success: true, message: 'User provisioned' };
-        } catch (err: any) {
-            fastify.log.error(`[PROVISIONING] Failed for ${email}:`, err);
-            return reply.status(500).send({ error: 'Provisioning failed' });
-        }
-    });
+            // Queue the provisioning task
+            await ProvisionWorkerService.queueProvisioning(fastify.redis, {
+                email,
+                firstName,
+                lastName,
+                phoneNumber,
+                dateOfBirth
+            });
 
-    /**
-     * POST /api/provisioning/group/assign
-     * Body: { userId: "...", groupId: "..." }
-     */
-    fastify.post('/group/assign', async (request: any, reply) => {
-        // ... logic for group assignment
-        return { success: true };
+            return reply.status(202).send({ 
+                success: true, 
+                message: 'Provisioning task queued successfully. The account will be created and welcome email sent shortly.' 
+            });
+        } catch (err: any) {
+            fastify.log.error(`[PROVISIONING] Failed for ${email}:`, err.message);
+            return reply.status(500).send({ error: 'Failed to queue provisioning task' });
+        }
     });
 }

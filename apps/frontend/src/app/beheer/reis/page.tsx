@@ -106,29 +106,36 @@ async function AdminReisDashboardContent({ searchParams }: AdminReisPageProps) {
 
 async function AdminReisSignupsTable({ tripId, trip }: { tripId: number, trip: any }) {
     // Fetch signups and their activities in parallel
-    const [signups, allSignupActivities] = await Promise.all([
-        getSystemDirectus().request(readItems('trip_signups', {
-            filter: { trip_id: { _eq: tripId } },
-            fields: [
-                'id', 'first_name', 'middle_name', 'last_name', 'email', 'phone_number', 
-                'date_of_birth', 'id_document_type', 'document_number', 'allergies', 
-                'special_notes', 'willing_to_drive', 'role', 'status', 'deposit_paid', 
-                'deposit_paid_at', 'deposit_email_sent', 'full_payment_paid', 
-                'full_payment_paid_at', 'final_email_sent', 'date_created'
-            ] as any,
-            sort: ['-date_created'],
-            limit: -1
-        })),
-        getSystemDirectus().request(readItems('trip_signup_activities', {
-            filter: { 
-                trip_signup_id: { 
-                    trip_id: { _eq: tripId }
-                } 
-            },
-            fields: ['id', 'trip_signup_id', 'selected_options', { trip_activity_id: ['id', 'name'] }] as any,
-            limit: -1
-        }))
-    ]);
+    let signups: any[] = [];
+    let allSignupActivities: any[] = [];
+    
+    try {
+        [signups, allSignupActivities] = await Promise.all([
+            getSystemDirectus().request(readItems('trip_signups', {
+                filter: { trip_id: { _eq: tripId } },
+                fields: [
+                    'id', 'first_name', 'middle_name', 'last_name', 'email', 'phone_number', 
+                    'date_of_birth', 'id_document_type', 'document_number', 'allergies', 
+                    'special_notes', 'willing_to_drive', 'role', 'status', 'deposit_paid', 
+                    'deposit_paid_at', 'deposit_email_sent', 'full_payment_paid', 
+                    'full_payment_paid_at', 'final_email_sent'
+                ] as any,
+                sort: ['-id'],
+                limit: -1
+            })),
+            getSystemDirectus().request(readItems('trip_signup_activities', {
+                filter: { 
+                    trip_signup_id: { 
+                        trip_id: { _eq: tripId }
+                    } 
+                },
+                fields: ['id', 'trip_signup_id', 'selected_options', { trip_activity_id: ['id', 'name'] }] as any,
+                limit: -1
+            }))
+        ]);
+    } catch (e: any) {
+        console.error('[AdminReisSignupsTable] Error fetching signups data:', e.message, e?.errors || e);
+    }
 
     // Group activities by signupId
     const activitiesMap: Record<number, any[]> = {};

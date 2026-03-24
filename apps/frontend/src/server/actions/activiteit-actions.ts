@@ -6,7 +6,7 @@ import { headers } from 'next/headers';
 import { revalidateTag } from 'next/cache';
 import { cache } from 'react';
 
-import { getSystemDirectus, getUserDirectus } from '@/lib/directus';
+import { getSystemDirectus } from '@/lib/directus';
 import { readItems, createItem, updateItem } from '@directus/sdk';
 
 const getFinanceServiceUrl = () =>
@@ -180,16 +180,18 @@ export async function signupForActivity(data: EventSignupForm) {
         const price = (isMember ? activity.price_members : activity.price_non_members) ?? 0;
 
         const qrToken = `r-${parsed.data.event_id}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
-        const directus = session?.session?.token ? getUserDirectus(session.session.token) : getSystemDirectus();
-        const signup = await directus.request(createItem('event_signups', {
+        const directus = getSystemDirectus();
+        const payload: any = {
             event_id: parsed.data.event_id,
             participant_name: parsed.data.name,
             participant_email: parsed.data.email,
             participant_phone: parsed.data.phoneNumber,
-            user_id: userId || null,
             payment_status: (price ?? 0) > 0 ? 'open' : 'paid',
             qr_token: qrToken
-        }));
+        };
+        if (userId) payload.directus_relations = userId;
+
+        const signup = await directus.request(createItem('event_signups', payload));
 
         const signupId = signup.id;
 
@@ -237,8 +239,6 @@ export async function signupForActivity(data: EventSignupForm) {
             
             return { success: true, message: 'Inschrijving geslaagd!' };
         }
-
-
     } catch (error) {
         console.error('[Activities] Signup error:', error);
         return { success: false, error: 'Er is een fout opgetreden bij de inschrijving.' };
@@ -250,7 +250,7 @@ export async function getActivitySignups(eventId: string) {
     if (!session) return [];
     
     try {
-        return await getUserDirectus(session.session.token).request(readItems('event_signups', {
+        return await getSystemDirectus().request(readItems('event_signups', {
             filter: { event_id: { _eq: eventId as any } },
             fields: ['id', 'participant_name', 'participant_email', 'payment_status', 'checked_in', { user_id: ['display_name' as any] }] as any
         }));
@@ -259,8 +259,6 @@ export async function getActivitySignups(eventId: string) {
         return [];
     }
 }
-
-
 
 export async function getSignupStatus(id?: string, transactionId?: string) {
     if (transactionId) {
@@ -322,16 +320,21 @@ export async function getSignupStatus(id?: string, transactionId?: string) {
 
 export async function getMyTickets() {
     const session = await auth.api.getSession({ headers: await headers() });
-    if (!session?.user) return [];
+    const userId = session?.user?.id;
+    if (!userId) return [];
 
     try {
-        return await getUserDirectus(session.session.token).request(readItems('event_signups', {
-            filter: { 
-                user_id: { _eq: session.user.id }
+        const query: any = {
+            filter: {
+                directus_relations: {
+                    _eq: userId
+                }
             },
             fields: ['id', 'payment_status', 'qr_token', { event_id: ['id', 'name', 'event_date', 'location'] }],
             sort: ['-date_created']
-        }));
+        };
+        
+        return await getSystemDirectus().request(readItems('event_signups', query));
     } catch (error) {
         console.error('[Activities] Error fetching user tickets:', error);
         return [];

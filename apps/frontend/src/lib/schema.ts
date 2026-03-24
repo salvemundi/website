@@ -300,6 +300,7 @@ export interface Coupon {
 export interface SystemLog {
     id: number;
     level?: string | null;
+    status?: string | null;
     date_created?: any | null;
 }
 

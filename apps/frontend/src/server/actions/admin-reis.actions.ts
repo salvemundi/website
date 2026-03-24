@@ -12,13 +12,15 @@ import {
     type TripSignup
 } from '@salvemundi/validations';
 
-import { getSystemDirectus, getUserDirectus } from '@/lib/directus';
+import { isSuperAdmin } from '@/lib/auth-utils';
+import { getSystemDirectus } from '@/lib/directus';
 import { 
     readItems, 
     readItem, 
     updateItem, 
     deleteItem, 
-    createItem 
+    createItem,
+    updateUser
 } from '@directus/sdk';
 
 const FINANCE_URL = process.env.FINANCE_SERVICE_URL;
@@ -37,15 +39,10 @@ async function requireReisAdmin() {
         throw new Error('Unauthorized');
     }
 
-    // Role check logic based on the old permission array:
-    // ['admin_reis', 'reiscommissie', 'reis', 'ictcommissie', 'ict', 'bestuur', 'kandi', 'kandidaat']
-    // We assume the user role is stored somehow in session.user.role or similar, or we check directus
-    // For now we will allow if a valid session exists and log the role check
-    // In strict V7 we must do this check here
-    // If you have a different claims implementation, adjust this
-    // if (!allowedRoles.includes(userRole)) {
-    //    throw new Error('Forbidden: Insufficient Permissions');
-    // }
+    const user = session.user as any;
+    if (!isSuperAdmin(user.committees)) {
+        throw new Error('Forbidden: SuperAdmin rechten vereist voor reisbeheer');
+    }
 
     return session.user;
 }
@@ -131,7 +128,7 @@ export async function updateSignupStatus(signupId: number, status: string) {
     const session = await requireReisAdmin();
 
     try {
-        await getUserDirectus((session as any).session?.token).request(updateItem('trip_signups', signupId, { status }));
+        await getSystemDirectus().request(updateItem('trip_signups', signupId, { status }));
         revalidatePath('/beheer/reis');
         return { success: true };
     } catch (error) {
@@ -144,7 +141,7 @@ export async function deleteTripSignup(signupId: number) {
     const session = await requireReisAdmin();
 
     try {
-        await getUserDirectus((session as any).session?.token).request(deleteItem('trip_signups', signupId));
+        await getSystemDirectus().request(deleteItem('trip_signups', signupId));
         revalidatePath('/beheer/reis');
         return { success: true };
     } catch (error) {
@@ -288,7 +285,7 @@ export async function createTripActivity(prevState: any, formData: FormData) {
     }
 
     try {
-        await getUserDirectus((session as any).session?.token).request(createItem('trip_activities', validated.data));
+        await getSystemDirectus().request(createItem('trip_activities', validated.data));
         revalidateTag('trip_activities', 'default');
         return { success: true };
     } catch (error) {
@@ -325,7 +322,7 @@ export async function updateTripActivity(id: number, prevState: any, formData: F
     }
 
     try {
-        await getUserDirectus((session as any).session?.token).request(updateItem('trip_activities', id, validated.data));
+        await getSystemDirectus().request(updateItem('trip_activities', id, validated.data));
         revalidateTag('trip_activities', 'default');
         return { success: true };
     } catch (error) {
@@ -339,7 +336,7 @@ export async function deleteTripActivity(id: number) {
     const session = await requireReisAdmin();
 
     try {
-        await getUserDirectus((session as any).session?.token).request(deleteItem('trip_activities', id));
+        await getSystemDirectus().request(deleteItem('trip_activities', id));
         revalidateTag('trip_activities', 'default');
         return { success: true };
     } catch (error) {
@@ -407,7 +404,7 @@ export async function updateTripSignup(id: number, prevState: any, formData: For
     };
 
     try {
-        await getUserDirectus((session as any).session?.token).request(updateItem('trip_signups', id, data));
+        await getSystemDirectus().request(updateItem('trip_signups', id, data));
 
         revalidatePath('/beheer/reis');
         revalidatePath(`/beheer/reis/deelnemer/${id}`);
@@ -422,7 +419,7 @@ export async function updateSignupActivities(signupId: number, activityIds: numb
     const session = await requireReisAdmin();
 
     try {
-        const client = getUserDirectus((session as any).session?.token);
+        const client = getSystemDirectus();
         
         // 1. Get current activities
         const current = await getSignupActivities(signupId);
@@ -564,7 +561,7 @@ export async function createTrip(prevState: any, formData: FormData) {
     }
 
     try {
-        await getUserDirectus((session as any).session?.token).request(createItem('trips', validated.data as any));
+        await getSystemDirectus().request(createItem('trips', validated.data as any));
 
         revalidatePath('/beheer/reis');
         return { success: true };
@@ -600,7 +597,7 @@ export async function updateTrip(id: number, prevState: any, formData: FormData)
     }
 
     try {
-        await getUserDirectus((session as any).session?.token).request(updateItem('trips', id, validated.data));
+        await getSystemDirectus().request(updateItem('trips', id, validated.data));
 
         revalidatePath('/beheer/reis');
         return { success: true };
@@ -613,7 +610,7 @@ export async function updateTrip(id: number, prevState: any, formData: FormData)
 export async function deleteTrip(id: number) {
     const session = await requireReisAdmin();
     try {
-        await getUserDirectus((session as any).session?.token).request(deleteItem('trips', id));
+        await getSystemDirectus().request(deleteItem('trips', id));
         revalidatePath('/beheer/reis');
         return { success: true };
     } catch (error) {

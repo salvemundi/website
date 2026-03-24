@@ -25,11 +25,18 @@ import {
     Save,
     X,
     RefreshCw,
-    CalendarPlus
+    CalendarPlus,
+    ShieldAlert,
+    AlertCircle
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import { manageAzureMembershipAction, updateMemberProfileAction, renewMembershipAction } from '@/server/actions/leden.actions';
+import { 
+    manageAzureMembershipAction, 
+    updateMemberProfileAction, 
+    renewMembershipAction,
+    provisionAzureAccountAction 
+} from '@/server/actions/leden.actions';
 import { triggerUserSyncAction } from '@/server/actions/azure-sync.actions';
 import { getImageUrl } from '@/lib/image-utils';
 
@@ -64,7 +71,7 @@ interface Signup {
     event_id: {
         id: string;
         name: string;
-        date_start: string;
+        event_date: string;
     };
 }
 
@@ -105,6 +112,10 @@ export default function LedenDetailIsland({
     // Force sync
     const [syncLoading, setSyncLoading] = useState(false);
     const [syncResult, setSyncResult] = useState<string | null>(null);
+
+    // Provisioning
+    const [provisioningLoading, setProvisioningLoading] = useState(false);
+    const [provisioningResult, setProvisioningResult] = useState<string | null>(null);
 
     // Optimistic memberships
     const [optimisticMemberships, setOptimisticMemberships] = useOptimistic(
@@ -160,7 +171,8 @@ export default function LedenDetailIsland({
 
     async function handleMembershipChange(azureGroupId: string, action: 'add' | 'remove', committeeName: string) {
         if (!localMember.entra_id) {
-            alert("Dit lid heeft geen gekoppeld Azure account!");
+            alert("Dit lid heeft geen gekoppeld Azure account! Maak deze eerst aan onder het tabblad 'Beheer'.");
+            setActiveTab('beheer');
             return;
         }
 
@@ -172,7 +184,7 @@ export default function LedenDetailIsland({
         startTransition(async () => {
              const res = await manageAzureMembershipAction(localMember.entra_id!, azureGroupId, action, localMember.id);
              if (!res.success) {
-                 alert(res.error || "Fout bij het bijwerken van lidmaatschap");
+                  alert(res.error || "Fout bij het bijwerken van lidmaatschap");
              }
         });
         setIsActionInProgress(null);
@@ -211,6 +223,19 @@ export default function LedenDetailIsland({
         const res = await triggerUserSyncAction(localMember.id);
         setSyncResult(res.success ? '✓ Synchronisatie gestart' : `✗ ${res.error}`);
         setSyncLoading(false);
+    }
+
+    async function handleProvisionAzure() {
+        if (!confirm(`Weet je zeker dat je een Azure account wilt aanmaken voor ${localMember.first_name}? Er wordt direct een welkom-mail verstuurd.`)) return;
+        setProvisioningLoading(true);
+        setProvisioningResult(null);
+        const res = await provisionAzureAccountAction(localMember.id);
+        if (res.success) {
+            setProvisioningResult('✓ Aanvraag ingediend! Het account wordt binnen enkele minuten aangemaakt en de welkomstmail verzonden.');
+        } else {
+            setProvisioningResult(`✗ ${res.error}`);
+        }
+        setProvisioningLoading(false);
     }
 
     const availableCommittees = useMemo(() => {
@@ -421,7 +446,7 @@ export default function LedenDetailIsland({
                                                         <div className="font-extrabold text-slate-900 dark:text-white">{signup.event_id.name}</div>
                                                     </td>
                                                     <td className="px-8 py-5 text-sm text-slate-500 font-medium">
-                                                        {formatDate(signup.event_id.date_start)}
+                                                        {formatDate(signup.event_id.event_date)}
                                                     </td>
                                                     <td className="px-8 py-5 text-right">
                                                         <SignupStatus status={signup.payment_status || 'open'} />
@@ -437,11 +462,46 @@ export default function LedenDetailIsland({
 
                     {activeTab === 'beheer' && (
                         <div className="space-y-6">
+                            {/* Azure Provisioning (Only if not in Azure yet) */}
+                            {!localMember.entra_id && (
+                                <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 p-8 border-l-8 border-l-amber-500">
+                                    <div className="flex items-center justify-between mb-6">
+                                        <div className="flex items-center gap-4">
+                                            <div className="h-12 w-12 rounded-2xl bg-amber-100 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 flex items-center justify-center">
+                                                <ShieldAlert className="h-6 w-6" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-xl font-black text-slate-900 dark:text-white">Azure Account Ontbreekt</h3>
+                                                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Dit lid is nog niet bekend in Microsoft Entra ID.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="bg-amber-50 dark:bg-amber-900/10 p-4 rounded-2xl mb-6 text-sm text-amber-800 dark:text-amber-300 font-medium">
+                                        Door een account aan te maken krijgt het lid een salvemundi.nl e-mailadres en toegang tot Office 365. 
+                                        Het tijdelijke wachtwoord wordt direct naar hun persoonlijke e-mailadres gestuurd.
+                                    </div>
+                                    <button
+                                        onClick={handleProvisionAzure}
+                                        disabled={provisioningLoading}
+                                        className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-amber-500 hover:bg-amber-600 text-white rounded-2xl font-black text-sm shadow-lg shadow-amber-500/20 transition-all disabled:opacity-60"
+                                    >
+                                        {provisioningLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Plus className="h-5 w-5" />}
+                                        Azure AD Account Aanmaken
+                                    </button>
+                                    {provisioningResult && (
+                                        <div className={`mt-4 p-4 rounded-2xl font-bold flex items-center gap-2 ${provisioningResult.startsWith('✓') ? 'bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400' : 'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400'}`}>
+                                            {provisioningResult.startsWith('✓') ? <CheckCircle2 className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
+                                            {provisioningResult}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             {/* Azure Committee Management */}
                             <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 p-8">
                                 <div className="flex items-center justify-between mb-8">
                                     <div>
-                                        <h3 className="text-2xl font-black text-slate-900 dark:text-white">Azure Beheer</h3>
+                                        <h3 className="text-2xl font-black text-slate-900 dark:text-white">Azure Groepsbeheer</h3>
                                         <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">Lidmaatschappen direct in Azure AD aanpassen</p>
                                     </div>
                                     <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">

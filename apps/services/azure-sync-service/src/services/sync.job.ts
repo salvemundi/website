@@ -391,6 +391,12 @@ export class SyncJob {
      * This will create the user in Directus if they don't exist yet.
      */
     static async syncByEntraId(redis: Redis, entraId: string, token: string) {
+        // Validation: Entra ID MUST be a valid UUID
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(entraId)) {
+            throw new Error(`Onveldige Entra ID format: "${entraId}". Een UUID is vereist.`);
+        }
+
         // Fetch context data
         const [committees, allLeden, allMemberships] = await Promise.all([
             DirectusService.getAllCommittees(),

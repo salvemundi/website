@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useTransition } from 'react';
 import { useAuth } from '@/features/auth/providers/auth-provider';
-import { signupForActivity } from '@/server/actions/activities.actions';
+import { signupForActivity } from '@/server/actions/activiteit-actions';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { Input } from '@/shared/ui/Input';
 import { Loader2, CheckCircle2, AlertCircle, CreditCard, Send, Users, Ticket, Info } from 'lucide-react';

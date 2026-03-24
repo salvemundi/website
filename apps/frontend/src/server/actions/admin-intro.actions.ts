@@ -2,10 +2,11 @@
 
 import { auth } from '@/server/auth/auth';
 import { revalidateTag, revalidatePath } from "next/cache";
+import { isSuperAdmin } from "@/lib/auth-utils";
 import { headers } from 'next/headers';
 import type { IntroBlog, IntroPlanningItem } from '@salvemundi/validations';
 
-import { getSystemDirectus, getUserDirectus } from "@/lib/directus";
+import { getSystemDirectus } from "@/lib/directus";
 import { 
     readItems, 
     deleteItem, 
@@ -19,11 +20,12 @@ const ALLOWED_ROLES = ['introcommissie', 'intro', 'ictcommissie', 'ict', 'bestuu
 async function checkIntroAdminAccess() {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) throw new Error('Niet ingelogd');
-    const userRoles: string[] = (session.user as any).committees?.map((c: any) =>
-        (c.committee_id?.name || c.name || '').toLowerCase().replace(/\s|\||-/g, '')
-    ) ?? [];
-    const hasAccess = userRoles.some(r => ALLOWED_ROLES.includes(r)) || (session.user as any).entra_id;
-    if (!hasAccess) throw new Error('Geen toegang');
+
+    const user = session.user as any;
+    if (!isSuperAdmin(user.committees)) {
+        throw new Error('Geen toegang: SuperAdmin rechten vereist voor intro beheer');
+    }
+    
     return session;
 }
 
@@ -73,7 +75,7 @@ export async function getIntroSignups() {
 export async function deleteIntroSignup(id: number): Promise<{ success: boolean; error?: string }> {
     const session = await checkIntroAdminAccess();
     try {
-        await getUserDirectus(session.session.token).request(deleteItem('intro_signups', id));
+        await getSystemDirectus().request(deleteItem('intro_signups', id));
         revalidatePath('/beheer/intro');
         return { success: true };
     } catch (e) {
@@ -102,7 +104,7 @@ export async function getIntroParentSignups() {
 export async function deleteIntroParentSignup(id: number): Promise<{ success: boolean; error?: string }> {
     const session = await checkIntroAdminAccess();
     try {
-        await getUserDirectus(session.session.token).request(deleteItem('intro_parent_signups', id));
+        await getSystemDirectus().request(deleteItem('intro_parent_signups', id));
         revalidatePath('/beheer/intro');
         return { success: true };
     } catch (e) {
@@ -135,9 +137,9 @@ export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ succe
     try {
         let result;
         if (id) {
-            result = await getUserDirectus(session.session.token).request(updateItem('intro_blogs', id, payload));
+            result = await getSystemDirectus().request(updateItem('intro_blogs', id, payload));
         } else {
-            result = await getUserDirectus(session.session.token).request(createItem('intro_blogs', payload));
+            result = await getSystemDirectus().request(createItem('intro_blogs', payload));
         }
         revalidatePath('/beheer/intro');
         return { success: true, data: result as IntroBlog };
@@ -150,7 +152,7 @@ export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ succe
 export async function deleteIntroBlog(id: number): Promise<{ success: boolean; error?: string }> {
     const session = await checkIntroAdminAccess();
     try {
-        await getUserDirectus(session.session.token).request(deleteItem('intro_blogs', id));
+        await getSystemDirectus().request(deleteItem('intro_blogs', id));
         revalidatePath('/beheer/intro');
         return { success: true };
     } catch (e) {
@@ -193,9 +195,9 @@ export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Pro
     try {
         let result;
         if (id) {
-            result = await getUserDirectus(session.session.token).request(updateItem('intro_planning', id, payload));
+            result = await getSystemDirectus().request(updateItem('intro_planning', id, payload));
         } else {
-            result = await getUserDirectus(session.session.token).request(createItem('intro_planning', payload));
+            result = await getSystemDirectus().request(createItem('intro_planning', payload));
         }
         revalidatePath('/beheer/intro');
         return { success: true, data: result as IntroPlanningItem };
@@ -208,7 +210,7 @@ export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Pro
 export async function deleteIntroPlanning(id: number): Promise<{ success: boolean; error?: string }> {
     const session = await checkIntroAdminAccess();
     try {
-        await getUserDirectus(session.session.token).request(deleteItem('intro_planning', id));
+        await getSystemDirectus().request(deleteItem('intro_planning', id));
         revalidatePath('/beheer/intro');
         return { success: true };
     } catch (e) {
@@ -223,11 +225,11 @@ export async function toggleIntroVisibility(current: boolean): Promise<{ success
     const session = await checkIntroAdminAccess();
     try {
         // Try update first
-        await getUserDirectus(session.session.token).request(updateItem('site_settings', 'intro', { show: !current }));
+        await getSystemDirectus().request(updateItem('site_settings', 'intro', { show: !current }));
     } catch (e) {
         // Try upsert with POST if PATCH fails (first time)
         try {
-            await getUserDirectus(session.session.token).request(createItem('site_settings', { id: 'intro', show: !current }));
+            await getSystemDirectus().request(createItem('site_settings', { id: 'intro', show: !current }));
         } catch (postErr) {
             console.error('[AdminIntro] Toggle visibility failed:', postErr);
             return { success: false, error: 'Bijwerken mislukt' };

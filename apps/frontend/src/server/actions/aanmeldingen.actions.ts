@@ -3,7 +3,8 @@
 import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
-import { getSystemDirectus, getUserDirectus } from "@/lib/directus";
+import { getSystemDirectus } from "@/lib/directus";
+import { isSuperAdmin } from "@/lib/auth-utils";
 import { 
     readItems, 
     createItem, 
@@ -23,6 +24,10 @@ async function getSession() {
 async function checkAdminAccess() {
     const session = await getSession();
     if (!session || !session.user) return null;
+
+    const user = session.user as any;
+    if (!isSuperAdmin(user.committees)) return null;
+
     return session;
 }
 
@@ -49,7 +54,7 @@ export async function deleteSignupAction(signupId: number, eventId: string | num
     if (!session) return { success: false, error: "Unauthorized" };
 
     try {
-        await getUserDirectus(session.session.token).request(deleteItem('event_signups', signupId));
+        await getSystemDirectus().request(deleteItem('event_signups', signupId));
         
         if (participantEmail && eventName) {
             await sendCancellationEmail(participantEmail, eventName);
@@ -97,7 +102,7 @@ export async function createManualSignupAction(eventId: number, eventName: strin
         };
 
         if (signupType === 'member') {
-            payload.user_id = memberData.id;
+            payload.directus_relations = memberData.id;
             payload.participant_name = `${memberData.first_name} ${memberData.last_name || ''}`.trim();
             payload.participant_email = memberData.email;
         } else {
@@ -106,7 +111,7 @@ export async function createManualSignupAction(eventId: number, eventName: strin
             payload.participant_phone = guestData.phone || null;
         }
 
-        await getUserDirectus(session.session.token).request(createItem('event_signups', payload));
+        await getSystemDirectus().request(createItem('event_signups', payload));
 
         revalidateTag(`event_signups_${eventId}`, 'default');
         revalidatePath(`/beheer/activiteiten/${eventId}/aanmeldingen`);
@@ -127,7 +132,7 @@ export async function toggleCheckInAction(signupId: number, eventId: number, che
     if (!session) return { success: false, error: "Unauthorized" };
 
     try {
-        await getUserDirectus(session.session.token).request(
+        await getSystemDirectus().request(
             updateItem('event_signups', signupId, {
                 checked_in: checkedIn,
                 checked_in_at: checkedIn ? new Date().toISOString() : null

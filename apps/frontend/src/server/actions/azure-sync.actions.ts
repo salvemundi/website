@@ -4,19 +4,27 @@ import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
 import { isSuperAdmin } from "@/lib/auth-utils";
+import { getSystemDirectus } from "@/lib/directus";
+import { readUsers } from "@directus/sdk";
 
 const AZURE_SYNC_URL = "http://100.77.182.130:3002";
 const INTERNAL_TOKEN = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
 
-async function checkSyncAccess() {
+async function checkSyncAccess(targetId?: string) {
     const session = await auth.api.getSession({
         headers: await headers()
     });
     if (!session || !session.user) return null;
     
     const user = session.user as any;
-    if (!isSuperAdmin(user.committees)) return null;
-    return user;
+    
+    // Allow if SuperAdmin OR if it's the user's own ID/EntraID
+    const isOwner = targetId && (user.id === targetId || user.entra_id === targetId);
+    if (isSuperAdmin(user.committees) || isOwner) {
+        return user;
+    }
+    
+    return null;
 }
 
 /**
@@ -57,7 +65,7 @@ export async function triggerFullSyncAction(options?: { fields: string[]; forceL
  * Triggers a targeted synchronization for a specific user.
  */
 export async function triggerUserSyncAction(userId: string) {
-    const admin = await checkSyncAccess();
+    const admin = await checkSyncAccess(userId);
     if (!admin) return { success: false, error: "Unauthorized" };
 
     if (!userId) return { success: false, error: "Geen User ID opgegeven." };
@@ -66,7 +74,32 @@ export async function triggerUserSyncAction(userId: string) {
     }
 
     try {
-        const res = await fetch(`${AZURE_SYNC_URL}/api/sync/run/${encodeURIComponent(userId)}`, {
+        // Fetch the user from Directus to get their Entra ID
+        const users = await getSystemDirectus().request(readUsers({
+            filter: { id: { _eq: userId } },
+            fields: ['entra_id', 'email']
+        }));
+        
+        const targetUser = users?.[0];
+        const entraId = targetUser?.entra_id;
+        
+        if (!entraId) {
+            return { 
+                success: false, 
+                error: `Kon geen Entra ID vinden voor gebruiker ${targetUser?.email || userId}. Zorg dat de identifier correct is ingevuld in Directus.` 
+            };
+        }
+
+        // Validate Entra ID format (must be UUID)
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(entraId)) {
+            return { 
+                success: false, 
+                error: `De Entra ID "${entraId}" voor deze gebruiker is ongeldig (geen UUID). De sync is afgebroken om fouten te voorkomen.` 
+            };
+        }
+
+        const res = await fetch(`${AZURE_SYNC_URL}/api/sync/run/${encodeURIComponent(entraId)}`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${INTERNAL_TOKEN}`
@@ -80,7 +113,7 @@ export async function triggerUserSyncAction(userId: string) {
         }
 
         // Revalidate the specific user to show updated data
-        revalidateTag(`user_${userId}`, 'default');
+        revalidateTag(`user_${userId}`, 'max');
         revalidatePath(`/beheer/leden/${userId}`);
 
         return { success: true, message: `Synchronisatie voor gebruiker ${userId} voltooid.` };

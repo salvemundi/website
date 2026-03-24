@@ -3,12 +3,13 @@
 import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag } from "next/cache";
+import { isSuperAdmin } from "@/lib/auth-utils";
 
 /**
  * Access the internal Directus URL for improved performance and security
  * within the cluster/VPS environment.
  */
-import { getSystemDirectus, getUserDirectus } from "@/lib/directus";
+import { getSystemDirectus } from "@/lib/directus";
 import { readItems, deleteItem, updateItem } from "@directus/sdk";
 
 /**
@@ -22,12 +23,10 @@ async function requireStickerAdmin() {
 
     if (!session?.user) throw new Error('Niet ingelogd');
 
-    const committees = (session.user as any).committees || [];
-    const isAdmin = committees.some((c: any) => 
-        ['ict', 'bestuur'].some(role => (c.name || '').toLowerCase().includes(role))
-    );
-
-    if (!isAdmin) throw new Error('Geen beheer rechten');
+    const user = session.user as any;
+    if (!isSuperAdmin(user.committees)) {
+        throw new Error('Geen beheer rechten: SuperAdmin vereist');
+    }
     
     return session.user;
 }
@@ -60,7 +59,7 @@ export async function deleteSticker(id: number) {
     const session = await requireStickerAdmin();
 
     try {
-        await getUserDirectus((session as any).session?.token).request(deleteItem('stickers', id));
+        await getSystemDirectus().request(deleteItem('stickers', id));
         revalidateTag('stickers', 'default');
         return { success: true };
     } catch (e) {
@@ -77,7 +76,7 @@ export async function updateSticker(id: number, data: any) {
     const session = await requireStickerAdmin();
 
     try {
-        const updated = await getUserDirectus((session as any).session?.token).request(updateItem('stickers', id, data));
+        const updated = await getSystemDirectus().request(updateItem('stickers', id, data));
         revalidateTag('stickers', 'default');
         return updated;
     } catch (e) {

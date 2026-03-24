@@ -14,6 +14,7 @@ services:
       - DIRECTUS_SERVICE_URL=${INTERNAL_DIRECTUS_URL}
       - FINANCE_SERVICE_URL=http://finance-service:3001
       - AZURE_SYNC_SERVICE_URL=http://sync-service:3002
+      - AZURE_MANAGEMENT_SERVICE_URL=http://management-service:3004
       - MAIL_SERVICE_URL=http://mail-service:3003
       # Secrets
       - DIRECTUS_STATIC_TOKEN=${DIRECTUS_STATIC_TOKEN}
@@ -94,6 +95,8 @@ services:
   management-service:
     container_name: ${COMPOSE_PROJECT_NAME}-management
     image: ghcr.io/salvemundi/v7-management:${IMAGE_TAG:-latest}
+    ports:
+      - "100.77.182.130:3004:3004"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - AZURE_TENANT_ID=${AZURE_WEBSITEV7_TENANT_ID}

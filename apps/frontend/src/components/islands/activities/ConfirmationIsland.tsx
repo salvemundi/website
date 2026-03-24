@@ -12,7 +12,7 @@ import {
     Download,
     UserPlus
 } from 'lucide-react';
-import { getSignupStatus } from '@/server/actions/activities.actions';
+import { getSignupStatus } from '@/server/actions/activiteit-actions';
 import QRDisplay from '@/shared/ui/QRDisplay';
 
 interface ConfirmationIslandProps {

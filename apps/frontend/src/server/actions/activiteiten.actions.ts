@@ -4,7 +4,7 @@ import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
 import { cache } from "react";
-import { getSystemDirectus, getUserDirectus } from "@/lib/directus";
+import { getSystemDirectus } from "@/lib/directus";
 import { 
     readItems, 
     createItem, 
@@ -154,7 +154,7 @@ export async function deleteActivity(eventId: number) {
     if (!session) return { success: false, error: "Unauthorized" };
 
     try {
-        await getUserDirectus(session.session.token).request(deleteItem('events', eventId));
+        await getSystemDirectus().request(deleteItem('events', eventId));
         await logAdminAction('delete', 'events', eventId);
         
         revalidateTag('events', 'default');
@@ -178,7 +178,7 @@ export async function createActivityAction(prevState: any, formData: FormData) {
         const fileData = new FormData();
         fileData.append('file', imageFile);
         try {
-            const res = await getUserDirectus(session.session.token).request(uploadFiles(fileData));
+            const res = await getSystemDirectus().request(uploadFiles(fileData));
             imageId = res.id;
         } catch (e) {
             console.error('Image upload failed', e);
@@ -209,7 +209,7 @@ export async function createActivityAction(prevState: any, formData: FormData) {
     if (imageId) directusPayload.image = imageId;
 
     try {
-        const res = await getUserDirectus(session.session.token).request(createItem('events', directusPayload));
+        const res = await getSystemDirectus().request(createItem('events', directusPayload));
         await logAdminAction('create', 'events', res.id, directusPayload);
 
         revalidateTag('events', 'default');
@@ -253,7 +253,7 @@ export async function updateActivityAction(eventId: number, prevState: any, form
         if (imageFile && imageFile.size > 0 && imageFile.name !== 'undefined') {
             const fileData = new FormData();
             fileData.append('file', imageFile);
-            const res = await getUserDirectus(session.session.token).request(uploadFiles(fileData));
+            const res = await getSystemDirectus().request(uploadFiles(fileData));
             imageId = res.id;
         } else if (removeImage) {
             imageId = null;
@@ -281,7 +281,7 @@ export async function updateActivityAction(eventId: number, prevState: any, form
         
         if (imageId !== undefined) directusPayload.image = imageId;
 
-        await getUserDirectus(session.session.token).request(updateItem('events', eventId, directusPayload));
+        await getSystemDirectus().request(updateItem('events', eventId, directusPayload));
         await logAdminAction('update', 'events', eventId, directusPayload);
 
         revalidateTag('events', 'default');
