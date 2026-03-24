@@ -62,7 +62,7 @@ export async function deleteSticker(id: number) {
         await getSystemDirectus().request(deleteItem('Stickers' as any, id));
         revalidatePath('/beheer/stickers');
         revalidatePath('/stickers');
-        revalidateTag('stickers');
+        revalidateTag('stickers', 'max');
         return { success: true };
     } catch (e) {
         console.error('[AdminStickers] Delete failed:', e);
@@ -81,7 +81,7 @@ export async function updateSticker(id: number, data: any) {
         const updated = await getSystemDirectus().request(updateItem('Stickers' as any, id, data));
         revalidatePath('/beheer/stickers');
         revalidatePath('/stickers');
-        revalidateTag('stickers');
+        revalidateTag('stickers', 'max');
         return updated;
     } catch (e) {
         console.error('[AdminStickers] Update failed:', e);

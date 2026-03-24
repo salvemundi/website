@@ -54,7 +54,7 @@ export async function createStickerPublic(data: any) {
         // Immediately update both admin and public views.
         revalidatePath('/beheer/stickers');
         revalidatePath('/stickers');
-        revalidateTag('stickers');
+        revalidateTag('stickers', 'max');
         return result;
     } catch (error) {
         console.error('[Stickers] Sticker create error:', error);
