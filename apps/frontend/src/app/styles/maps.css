@@ -11,46 +11,56 @@
     background-color: var(--bg-card);
 }
 
-/* ── Mapbox Controls ────────────────────────────────────────────────────────── */
+/* ── Mapbox/MapLibre Controls ───────────────────────────────────────────────── */
 .mapboxgl-ctrl,
-.mapboxgl-ctrl-top-right {
+.maplibregl-ctrl,
+.mapboxgl-ctrl-top-right,
+.maplibregl-ctrl-top-right {
     background: transparent !important;
 }
 
 /* ── Close Button ───────────────────────────────────────────────────────────── */
-.mapboxgl-popup-close-button {
+.mapboxgl-popup-close-button,
+.maplibregl-popup-close-button {
     color: var(--color-purple-700) !important;
     font-size: 24px;
     padding: 0 8px;
 }
 
-html.dark .mapboxgl-popup-close-button {
+html.dark .mapboxgl-popup-close-button,
+html.dark .maplibregl-popup-close-button {
     color: var(--text-main) !important;
 }
 
-.mapboxgl-popup-close-button:hover {
+.mapboxgl-popup-close-button:hover,
+.maplibregl-popup-close-button:hover {
     background-color: rgba(128, 128, 128, 0.2);
 }
 
 /* ── Popup: Light Mode ──────────────────────────────────────────────────────── */
 html:not(.dark) .mapboxgl-popup-content,
-html:not(.dark) .mapboxgl-popup-content * {
+html:not(.dark) .maplibregl-popup-content,
+html:not(.dark) .mapboxgl-popup-content *,
+html:not(.dark) .maplibregl-popup-content * {
     background: var(--bg-card) !important;
     color: var(--color-purple-700) !important;
 }
 
-html:not(.dark) .mapboxgl-popup-content {
+html:not(.dark) .mapboxgl-popup-content,
+html:not(.dark) .maplibregl-popup-content {
     border-radius: 0.5rem;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
-.mapboxgl-popup-tip {
+.mapboxgl-popup-tip,
+.maplibregl-popup-tip {
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
 /* ── Popup: Dark Mode ───────────────────────────────────────────────────────── */
 /* Outer popup shell — must be transparent so only the inner card is visible  */
-html.dark .mapboxgl-popup {
+html.dark .mapboxgl-popup,
+html.dark .maplibregl-popup {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
@@ -58,21 +68,23 @@ html.dark .mapboxgl-popup {
 }
 
 /* Hide the tip/arrow — white edges are visible in dark mode */
-html.dark .mapboxgl-popup-tip {
+html.dark .mapboxgl-popup-tip,
+html.dark .maplibregl-popup-tip {
     display: none !important;
 }
 
 /* Clear anchor wrappers */
-html.dark :is(.mapboxgl-popup-anchor-top,
-    .mapboxgl-popup-anchor-bottom,
-    .mapboxgl-popup-anchor-left,
-    .mapboxgl-popup-anchor-right) {
+html.dark :is(.mapboxgl-popup-anchor-top, .maplibregl-popup-anchor-top,
+    .mapboxgl-popup-anchor-bottom, .maplibregl-popup-anchor-bottom,
+    .mapboxgl-popup-anchor-left, .maplibregl-popup-anchor-left,
+    .mapboxgl-popup-anchor-right, .maplibregl-popup-anchor-right) {
     background: transparent !important;
     padding: 0 !important;
 }
 
 /* Strip default content wrapper so the inner .map-popup card is the surface */
-html.dark .mapboxgl-popup-content {
+html.dark .mapboxgl-popup-content,
+html.dark .maplibregl-popup-content {
     background: transparent !important;
     padding: 0 !important;
     border-radius: 0 !important;
@@ -83,8 +95,11 @@ html.dark .mapboxgl-popup-content {
 
 /* SVG tip — remove any stroke/fill remnants */
 html.dark .mapboxgl-popup-tip svg,
+html.dark .maplibregl-popup-tip svg,
 html.dark .mapboxgl-popup-tip path,
-html.dark .mapboxgl-popup-tip polygon {
+html.dark .maplibregl-popup-tip path,
+html.dark .mapboxgl-popup-tip polygon,
+html.dark .maplibregl-popup-tip polygon {
     stroke: none !important;
     fill: var(--bg-card) !important;
 }

@@ -15,7 +15,6 @@ const ASSET_PROXY_URL = '/api/assets';
 interface StickerMapProps {
     stickers?: any[];
     user?: any;
-    onLocationSelect?: (lat: number, lng: number) => void;
     selectedLocation?: { lat: number; lng: number } | null;
     filterCountry?: string;
     filterCity?: string;
@@ -29,7 +28,6 @@ interface StickerMapProps {
 export default function StickerMap({
     stickers = [],
     user,
-    onLocationSelect,
     selectedLocation,
     filterCountry,
     filterCity,
@@ -82,13 +80,6 @@ export default function StickerMap({
         return () => observer.disconnect();
     }, []);
 
-    const handleMapClick = useCallback((event: any) => {
-        if (onLocationSelect) {
-            const { lngLat } = event;
-            onLocationSelect(lngLat.lat, lngLat.lng);
-        }
-    }, [onLocationSelect]);
-
     return (
         <div style={{ height, width: '100%', position: 'relative' }} className="rounded-[var(--radius-2xl)] overflow-hidden shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)]/30">
             <Map
@@ -96,8 +87,7 @@ export default function StickerMap({
                 initialViewState={{ latitude: center[0], longitude: center[1], zoom }}
                 style={{ width: '100%', height: '100%' }}
                 mapStyle={isDark ? 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json' : 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json'}
-                onClick={handleMapClick}
-                cursor={onLocationSelect ? 'crosshair' : 'grab'}
+                cursor="grab"
             >
                 <NavigationControl position="top-right" />
                 <GeolocateControl position="top-right" trackUserLocation={false} />
@@ -172,7 +162,7 @@ export default function StickerMap({
                                         {popupInfo.location_name || 'Sticker Locatie'}
                                     </h3>
                                     <p className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">
-                                        {popupInfo.city || 'Onbekend'}{popupInfo.country ? ` • ${popupInfo.country}` : ''}
+                                        {[popupInfo.city || popupInfo.address, popupInfo.country].filter(Boolean).join(' • ')}
                                     </p>
                                 </div>
                             </div>

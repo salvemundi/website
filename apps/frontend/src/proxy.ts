@@ -65,15 +65,16 @@ async function proxy(request: NextRequest) {
             default-src 'self';
             script-src 'self' 'nonce-${nonce}' 'strict-dynamic';
             style-src 'self' 'unsafe-inline';
-            img-src 'self' blob: data: ${directusUrl};
-            font-src 'self';
-            connect-src 'self' ${directusUrl} https://login.microsoftonline.com;
+            img-src 'self' blob: data: ${directusUrl} https://*.tile.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com;
+            font-src 'self' data:;
+            connect-src 'self' ${directusUrl} https://login.microsoftonline.com https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://nominatim.openstreetmap.org;
             frame-src 'self' https://login.microsoftonline.com;
+            worker-src 'self' blob:;
             object-src 'none';
             base-uri 'self';
             form-action 'self';
             frame-ancestors 'none';
-            upgrade-insecure-requests;
+            ${origin.includes('localhost') ? '' : 'upgrade-insecure-requests;'}
         `.replace(/\s{2,}/g, ' ').trim();
 
         res.headers.set('Content-Security-Policy', cspHeader);
