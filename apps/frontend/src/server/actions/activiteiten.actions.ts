@@ -155,7 +155,7 @@ export async function deleteActivity(eventId: number) {
 
     try {
         await getSystemDirectus().request(deleteItem('events', eventId));
-        await logAdminAction('delete', 'events', eventId);
+        await logAdminAction('activity_deleted', 'SUCCESS', { id: eventId });
         
         revalidateTag('events', 'default');
         revalidatePath('/beheer/activiteiten');
@@ -210,7 +210,7 @@ export async function createActivityAction(prevState: any, formData: FormData) {
 
     try {
         const res = await getSystemDirectus().request(createItem('events', directusPayload));
-        await logAdminAction('create', 'events', res.id, directusPayload);
+        await logAdminAction('activity_created', 'SUCCESS', { id: res.id, data: directusPayload });
 
         revalidateTag('events', 'default');
         revalidatePath('/beheer/activiteiten');
@@ -282,7 +282,7 @@ export async function updateActivityAction(eventId: number, prevState: any, form
         if (imageId !== undefined) directusPayload.image = imageId;
 
         await getSystemDirectus().request(updateItem('events', eventId, directusPayload));
-        await logAdminAction('update', 'events', eventId, directusPayload);
+        await logAdminAction('activity_updated', 'SUCCESS', { id: eventId, data: directusPayload });
 
         revalidateTag('events', 'default');
         revalidateTag(`event_${eventId}`, 'default');

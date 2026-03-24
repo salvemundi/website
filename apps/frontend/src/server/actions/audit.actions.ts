@@ -14,19 +14,23 @@ import { PendingSignup } from "@salvemundi/validations";
 import { isSuperAdmin } from "@/lib/auth-utils";
 
 /**
- * Helper to log admin actions to the audit_logs collection.
+ * Helper to log admin actions to the system_logs collection.
+ * This is the new designated logging collection.
  */
-export async function logAdminAction(action: string, collection: string, id: string | number, data?: any) {
+export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' | 'INFO', payload?: any) {
     try {
         const session = await auth.api.getSession({ headers: await headers() });
-        const userId = session?.user?.id;
+        const user = session?.user as any;
         
-        await getSystemDirectus().request(createItem('audit_logs' as any, {
-            user_id: userId || null,
-            action,
-            target_collection: collection,
-            target_id: String(id),
-            data: data ? JSON.stringify(data) : null
+        await getSystemDirectus().request(createItem('system_logs' as any, {
+            type,
+            status,
+            payload: {
+                ...payload,
+                admin_id: user?.id || null,
+                admin_name: user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : 'Systeem',
+                timestamp: new Date().toISOString()
+            }
         }));
     } catch (e) {
         console.warn('[Audit] Failed to log action:', e);
@@ -128,6 +132,13 @@ export async function approveSignupAction(id: string, type: string) {
 
     try {
         await getSystemDirectus().request(updateItem(collection as any, id as any, { approval_status: 'approved' }));
+        
+        // Log the approval
+        await logAdminAction('signup_approved', 'SUCCESS', { 
+            signup_id: id, 
+            type: type 
+        });
+
         revalidatePath('/beheer/logging');
         return { success: true };
     } catch (err) {
@@ -144,6 +155,13 @@ export async function rejectSignupAction(id: string, type: string) {
 
     try {
         await getSystemDirectus().request(updateItem(collection as any, id as any, { approval_status: 'rejected' }));
+        
+        // Log the rejection
+        await logAdminAction('signup_rejected', 'SUCCESS', { 
+            signup_id: id, 
+            type: type 
+        });
+
         revalidatePath('/beheer/logging');
         return { success: true };
     } catch (err) {
@@ -173,10 +191,38 @@ export async function updateAuditSettingsAction(manualApproval: boolean) {
     try {
         // Assuming singleton update
         await getSystemDirectus().request(updateItem('app_settings' as any, undefined as any, { manual_approval: manualApproval }));
-        revalidateTag('app_settings', 'default');
+        
+        // Log the change
+        await logAdminAction('settings_change', 'SUCCESS', { 
+            setting: 'manual_approval', 
+            value: manualApproval 
+        });
+
+        revalidateTag('app_settings', 'max');
         return { success: true };
     } catch (err) {
         console.error("[AuditAction] Settings update error:", err);
         return { success: false, error: "Bijwerken instellingen mislukt." };
+    }
+}
+
+/**
+ * Fetches recent system logs for the audit dashboard.
+ */
+export async function getSystemLogsAction(limit: number = 50) {
+    const admin = await checkAuditAccess();
+    if (!admin) return { success: false, error: "Unauthorized" };
+
+    try {
+        const logs = await getSystemDirectus().request(readItems('system_logs' as any, {
+            fields: ['id', 'type', 'status', 'payload', 'created_at'],
+            sort: ['-created_at'],
+            limit
+        }));
+        
+        return { success: true, data: logs };
+    } catch (err) {
+        console.error("[AuditAction] Logs fetch error:", err);
+        return { success: false, error: "Kon logs niet ophalen." };
     }
 }
