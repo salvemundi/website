@@ -446,9 +446,18 @@ export class SyncJob {
         }
         membershipMap.set(aUser.id, userMap);
 
+        const status: SyncStatus = { 
+            ...this.defaultStatus, 
+            active: true, 
+            status: 'running', 
+            total: 1, 
+            jobId: `single-${entraId}`,
+            startTime: new Date().toISOString()
+        };
+
         const ctx: SyncContext & { membershipMap: Map<string, Map<number, boolean>> } = {
             redis,
-            status: { ...this.defaultStatus, active: true, status: 'running' },
+            status,
             options: { fields: ['membership_expiry', 'geboortedatum', 'phone_number', 'committees'] },
             token,
             committeeCache,
@@ -458,8 +467,26 @@ export class SyncJob {
             membershipMap
         };
 
-        // Use optimized sync to handle both creation and updating
-        await this.syncUserOptimized(ctx, aUser);
+        await this.persistStatus(redis, status, true);
+
+        try {
+            // Use optimized sync to handle both creation and updating
+            await this.syncUserOptimized(ctx, aUser);
+            
+            status.processed = 1;
+            status.active = false;
+            status.status = 'completed';
+            status.endTime = new Date().toISOString();
+            await this.persistStatus(redis, status, true);
+        } catch (error: any) {
+            status.active = false;
+            status.status = 'failed';
+            status.endTime = new Date().toISOString();
+            status.errorCount = 1;
+            status.errors.push({ email: aUser.mail || aUser.userPrincipalName, message: error.message, timestamp: new Date().toISOString() });
+            await this.persistStatus(redis, status, true);
+            throw error;
+        }
     }
 
     public static async syncUser(ctx: SyncContext, aUser: AzureUser) {
