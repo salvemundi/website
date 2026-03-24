@@ -2,7 +2,7 @@
 
 import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
-import { revalidateTag } from "next/cache";
+import { revalidateTag, revalidatePath } from "next/cache";
 import { isSuperAdmin } from "@/lib/auth-utils";
 
 /**
@@ -60,7 +60,9 @@ export async function deleteSticker(id: number) {
 
     try {
         await getSystemDirectus().request(deleteItem('Stickers' as any, id));
-        revalidateTag('stickers', 'default');
+        revalidatePath('/beheer/stickers');
+        revalidatePath('/stickers');
+        revalidateTag('stickers');
         return { success: true };
     } catch (e) {
         console.error('[AdminStickers] Delete failed:', e);
@@ -77,7 +79,9 @@ export async function updateSticker(id: number, data: any) {
 
     try {
         const updated = await getSystemDirectus().request(updateItem('Stickers' as any, id, data));
-        revalidateTag('stickers', 'default');
+        revalidatePath('/beheer/stickers');
+        revalidatePath('/stickers');
+        revalidateTag('stickers');
         return updated;
     } catch (e) {
         console.error('[AdminStickers] Update failed:', e);
