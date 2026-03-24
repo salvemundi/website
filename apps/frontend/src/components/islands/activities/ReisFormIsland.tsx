@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { CheckCircle2, CreditCard, Loader2, Utensils } from 'lucide-react';
-import { createTripSignup, cancelTripSignup, getCurrentUserProfileAction } from '@/server/actions/reis.actions';
+import { createTripSignup, getCurrentUserProfileAction } from '@/server/actions/reis.actions';
 import type { ReisTrip, ReisTripSignup } from '@salvemundi/validations';
 import { authClient } from '@/lib/auth-client';
 import { FormField } from '@/shared/ui/FormField';
@@ -72,24 +72,6 @@ export function ReisFormIsland({ nextTrip, userSignup, canSignUp, registrationSt
         return 'In afwachting';
     };
 
-    const handleCancelSignup = async () => {
-        if (!userSignup) return;
-        if (!confirm('Weet je zeker dat je je aanmelding wilt annuleren? Dit kan niet ongedaan gemaakt worden.')) return;
-
-        setLoading(true);
-        try {
-            const result = await cancelTripSignup(userSignup.id);
-            if (!result.success) {
-                setError(result.message || 'Fout bij annuleren.');
-            } else {
-                window.location.reload();
-            }
-        } catch {
-            setError('Er is een fout opgetreden.');
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target as HTMLInputElement;
@@ -215,16 +197,6 @@ export function ReisFormIsland({ nextTrip, userSignup, canSignUp, registrationSt
                         </div>
                     )}
 
-                    <div className="mt-8 flex flex-col gap-3">
-                        <button
-                            onClick={handleCancelSignup}
-                            disabled={loading}
-                            className="w-full py-3 border border-red-500/30 text-red-500 rounded-xl font-semibold hover:bg-red-500/5 transition-all flex items-center justify-center gap-2"
-                        >
-                            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                            <span>Aanmelding annuleren</span>
-                        </button>
-                    </div>
 
                 </div>
             ) : (
