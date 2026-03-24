@@ -2,7 +2,7 @@
 
 import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
-import { revalidateTag } from "next/cache";
+import { revalidateTag, revalidatePath } from "next/cache";
 
 import { getSystemDirectus } from "@/lib/directus";
 import { readItems, createItem, uploadFiles } from "@directus/sdk";
@@ -52,7 +52,9 @@ export async function createStickerPublic(data: any) {
         const result = await getSystemDirectus().request(createItem('Stickers' as any, payload));
 
         // Immediately update both admin and public views.
-        revalidateTag('stickers', 'default');
+        revalidatePath('/beheer/stickers');
+        revalidatePath('/stickers');
+        revalidateTag('stickers');
         return result;
     } catch (error) {
         console.error('[Stickers] Sticker create error:', error);
