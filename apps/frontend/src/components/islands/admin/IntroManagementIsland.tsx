@@ -25,7 +25,6 @@ type TabType = 'signups' | 'parents' | 'blogs' | 'planning';
 type IntroSignupRow = {
     id: number;
     first_name: string;
-    middle_name?: string;
     last_name: string;
     email: string;
     phone_number: string;
@@ -95,7 +94,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
     const filteredSignups = signups.filter(s => {
         if (!signupSearch) return true;
         const q = signupSearch.toLowerCase();
-        return `${s.first_name} ${s.middle_name || ''} ${s.last_name}`.toLowerCase().includes(q) ||
+        return `${s.first_name} ${s.last_name}`.toLowerCase().includes(q) ||
             s.email.toLowerCase().includes(q) || s.phone_number.includes(q);
     });
 
@@ -195,7 +194,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
         const rows = [
             ['Voornaam', 'Tussenvoegsel', 'Achternaam', 'Email', 'Telefoon', 'Geboortedatum', 'Favoriete GIF', 'Aangemeld op'],
             ...signups.map(s => [
-                s.first_name, s.middle_name || '', s.last_name, s.email, s.phone_number,
+                s.first_name, s.last_name, s.email, s.phone_number,
                 s.date_of_birth || '', s.favorite_gif || '',
                 s.date_created ? format(new Date(s.date_created), 'dd-MM-yyyy HH:mm') : '',
             ])
@@ -321,7 +320,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                                                         className="flex items-center gap-1.5 text-[var(--text-main)] font-medium hover:text-[var(--theme-purple)]"
                                                     >
                                                         {expandedSignups.includes(s.id) ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-                                                        {s.first_name} {s.middle_name} {s.last_name}
+                                                        {s.first_name} {s.last_name}
                                                     </button>
                                                 </td>
                                                 <td className="px-5 py-3 text-[var(--text-muted)] hidden sm:table-cell">{s.email}</td>

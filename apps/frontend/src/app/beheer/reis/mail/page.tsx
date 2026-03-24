@@ -62,7 +62,7 @@ async function MailDataWrapper({ searchParams }: PageProps) {
     // Fetch signups for the selected trip
     const signups = await getSystemDirectus().request(readItems('trip_signups', {
         filter: { trip_id: { _eq: activeTripId } },
-        fields: ['id', 'first_name', 'middle_name', 'last_name', 'email', 'status', 'role', 'deposit_paid', 'full_payment_paid'] as any,
+        fields: ['id', 'first_name', 'last_name', 'email', 'status', 'role', 'deposit_paid', 'full_payment_paid'] as any,
         limit: -1
     }));
 

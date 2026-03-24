@@ -476,7 +476,7 @@ export default function TripActivitiesIsland({ trips }: { trips: Trip[] }) {
                                             {signups.map((s) => (
                                                 <tr key={s.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                                                     <td className="px-6 py-6 font-bold text-slate-900 dark:text-white">
-                                                        {s.trip_signup_id ? `${s.trip_signup_id.first_name} ${s.trip_signup_id.middle_name || ''} ${s.trip_signup_id.last_name}` : 'Onbekend'}
+                                                        {s.trip_signup_id ? `${s.trip_signup_id.first_name} ${s.trip_signup_id.last_name}` : 'Onbekend'}
                                                     </td>
                                                     <td className="px-6 py-6 text-slate-500 dark:text-slate-400 font-medium">{s.trip_signup_id?.email || '-'}</td>
                                                     <td className="px-6 py-6">

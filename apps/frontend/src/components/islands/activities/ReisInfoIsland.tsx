@@ -137,7 +137,7 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
                         <li key={i} className="flex items-start gap-3 sm:gap-4">
                             <span className="text-lg sm:text-xl flex-shrink-0">{item.icon}</span>
                             <div className="text-sm sm:text-base text-theme-text-muted leading-snug flex flex-wrap items-center">
-                                {item.text && <SafeHtml as="span" html={item.text} />}
+                                {item.text && <SafeHtml as="span" html={item.text} className={item.email ? "mr-1" : ""} />}
                                 {item.email && <ObfuscatedEmail email={item.email} className="text-theme-purple font-semibold underline" showIcon={false} />}
                             </div>
                         </li>

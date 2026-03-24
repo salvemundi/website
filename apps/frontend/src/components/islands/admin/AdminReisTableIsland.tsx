@@ -34,7 +34,7 @@ export default function AdminReisTableIsland({ initialSignups, initialSignupActi
     const filteredSignups = signups.filter(signup => {
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
-            const fullName = `${signup.first_name} ${signup.middle_name || ''} ${signup.last_name}`.toLowerCase();
+            const fullName = `${signup.first_name} ${signup.last_name}`.toLowerCase();
             if (!fullName.includes(query) && !signup.email.toLowerCase().includes(query)) return false;
         }
         if (statusFilter !== 'all' && signup.status !== statusFilter) return false;
@@ -160,7 +160,7 @@ export default function AdminReisTableIsland({ initialSignups, initialSignupActi
             const XLSX = await import('xlsx');
 
             const excelData = filteredSignups.map(signup => {
-                const idDoc = signup.id_document_type || '';
+                const idDoc = signup.id_document || '';
                 const idDocLabel = idDoc === 'passport' ? 'Paspoort' : idDoc === 'id_card' ? 'ID Kaart' : idDoc;
 
                 const activities = signupActivitiesMap[signup.id] || [];
@@ -168,9 +168,8 @@ export default function AdminReisTableIsland({ initialSignups, initialSignupActi
 
                 return {
                     'Voornaam': signup.first_name,
-                    'Tussenvoegsel': signup.middle_name || '',
                     'Achternaam': signup.last_name,
-                    'Volledige naam': `${signup.first_name} ${signup.middle_name || ''} ${signup.last_name}`.trim(),
+                    'Volledige naam': `${signup.first_name} ${signup.last_name}`.trim(),
                     'E-mailadres': signup.email,
                     'Telefoonnummer': signup.phone_number,
                     'Geboortedatum': signup.date_of_birth ? format(new Date(signup.date_of_birth), 'dd-MM-yyyy') : '',
@@ -185,7 +184,7 @@ export default function AdminReisTableIsland({ initialSignups, initialSignupActi
                     'Betalingstatus': getPaymentStatus(signup).label,
                     'Aanbetaling betaald op': signup.deposit_paid_at ? format(new Date(signup.deposit_paid_at), 'dd-MM-yyyy HH:mm') : '',
                     'Volledige betaling op': signup.full_payment_paid_at ? format(new Date(signup.full_payment_paid_at), 'dd-MM-yyyy HH:mm') : '',
-                    'Aangemeld op': format(new Date(signup.created_at), 'dd-MM-yyyy HH:mm'),
+                    'Aangemeld op': signup.date_created ? format(new Date(signup.date_created), 'dd-MM-yyyy HH:mm') : '',
                 };
             });
 
@@ -368,7 +367,7 @@ export default function AdminReisTableIsland({ initialSignups, initialSignupActi
                                             <tr onClick={() => toggleExpand(signup)} className="hover:bg-admin-hover cursor-pointer">
                                                 <td className="px-3 sm:px-6 py-3 sm:py-4">
                                                     <div className="text-xs sm:text-sm font-medium text-admin">
-                                                        {signup.first_name} {signup.middle_name} {signup.last_name}
+                                                        {signup.first_name} {signup.last_name}
                                                     </div>
                                                     <div className="text-xs sm:text-sm text-admin-muted">{signup.email}</div>
                                                 </td>
@@ -436,7 +435,7 @@ export default function AdminReisTableIsland({ initialSignups, initialSignupActi
                                                                 <p className="text-sm font-semibold text-admin">Contact</p>
                                                                 <p className="text-sm text-admin"><span className="opacity-60">E-mailadres:</span> {signup.email}</p>
                                                                 <p className="text-sm text-admin"><span className="opacity-60">Telefoonnummer:</span> {signup.phone_number || '-'}</p>
-                                                                <p className="text-sm text-admin">ID Type: {signup.id_document_type === 'passport' ? 'Paspoort' : signup.id_document_type === 'id_card' ? 'ID Kaart' : (signup.id_document_type || '-')}</p>
+                                                                <p className="text-sm text-admin">ID Type: {signup.id_document === 'passport' ? 'Paspoort' : signup.id_document === 'id_card' ? 'ID Kaart' : (signup.id_document || '-')}</p>
                                                                 <p className="text-sm text-admin">Document nummer: {signup.document_number || '-'}</p>
                                                             </div>
                                                             <div>

@@ -63,7 +63,7 @@ export async function getIntroSignups() {
         const items = await getSystemDirectus().request(readItems('intro_signups', {
             sort: ['-date_created'],
             limit: 1000,
-            fields: ['id', 'first_name', 'middle_name', 'last_name', 'email', 'phone_number', 'date_of_birth', 'favorite_gif', 'date_created']
+            fields: ['id', 'first_name', 'last_name', 'email', 'phone_number', 'date_of_birth', 'favorite_gif', 'date_created']
         }));
         return (items ?? []) as any[];
     } catch (e) {

@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
         ppr: false,
         serverSourceMaps: true,
     },
+    logging: {
+        fetches: {
+            fullUrl: false,
+        },
+    },
     images: {
         remotePatterns: [
             ...(process.env.NEXT_PUBLIC_DIRECTUS_URL 

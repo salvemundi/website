@@ -56,7 +56,7 @@ async function getDisabledRoutes(): Promise<string[]> {
  * Direct Provider Proxy (V7)
  */
 async function proxy(request: NextRequest) {
-    const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
+    const nonce = btoa(crypto.randomUUID()).substring(0, 16);
     const { pathname, origin } = request.nextUrl;
 
     const withSecurity = (res: NextResponse) => {
@@ -83,6 +83,11 @@ async function proxy(request: NextRequest) {
     };
 
     const nextWithNonce = () => {
+        // Avoid cloning the request body for POST requests to prevent TypeError in Node.js Proxy
+        if (request.method === 'POST') {
+            return withSecurity(NextResponse.next());
+        }
+
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set('x-nonce', nonce);
         return withSecurity(NextResponse.next({

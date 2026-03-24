@@ -116,7 +116,7 @@ export default function ReisDeelnemerDetailIsland({
                                 </div>
                                 <div>
                                     <h1 className="text-3xl font-bold text-[var(--text-main)] italic">
-                                        {initialSignup.first_name} {initialSignup.middle_name} {initialSignup.last_name}
+                                        {initialSignup.first_name} {initialSignup.last_name}
                                     </h1>
                                     <div className="flex items-center gap-2 mt-1">
                                         <Mail className="h-3 w-3 text-[var(--text-muted)]" />
@@ -152,14 +152,13 @@ export default function ReisDeelnemerDetailIsland({
                                 <h2 className="text-lg font-bold text-[var(--text-main)] uppercase tracking-widest italic">Persoonsgegevens</h2>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <Input label="Voornaam" name="first_name" defaultValue={initialSignup.first_name} required />
-                                <Input label="Tussenvoegsel" name="middle_name" defaultValue={initialSignup.middle_name || ''} />
                                 <Input label="Achternaam" name="last_name" defaultValue={initialSignup.last_name} required />
                                 <Input label="Email" name="email" type="email" defaultValue={initialSignup.email} required className="md:col-span-2" />
                                 <Input label="Telefoon" name="phone_number" defaultValue={initialSignup.phone_number || ''} />
                                 <Input label="Geboortedatum" name="date_of_birth" type="date" defaultValue={initialSignup.date_of_birth ? format(new Date(initialSignup.date_of_birth), 'yyyy-MM-dd') : ''} />
-                                <Select label="ID Type" name="id_document_type" defaultValue={initialSignup.id_document_type || ''}>
+                                <Select label="ID Type" name="id_document" defaultValue={initialSignup.id_document || ''}>
                                     <option value="">Niet opgegeven</option>
                                     <option value="passport">Paspoort</option>
                                     <option value="id_card">ID Kaart</option>
@@ -292,7 +291,7 @@ export default function ReisDeelnemerDetailIsland({
                     <div className="bg-[var(--bg-card)]/50 backdrop-blur-sm rounded-[var(--radius-2xl)] ring-1 ring-[var(--border-color)] p-6 space-y-4">
                         <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
                             <span>Aangemeld op</span>
-                            <span className="text-[var(--text-main)]">{format(new Date(initialSignup.created_at), 'd MMM yyyy HH:mm', { locale: nl })}</span>
+                             <span className="text-[var(--text-main)]">{initialSignup.date_created ? format(new Date(initialSignup.date_created), 'd MMM yyyy HH:mm', { locale: nl }) : '-'}</span>
                         </div>
                         <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
                             <span>Deelnemer ID</span>

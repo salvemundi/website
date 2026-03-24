@@ -73,8 +73,7 @@ export async function submitIntroSignup(data: IntroSignupForm) {
 
     const payload = {
         first_name: parsed.data.voornaam,
-        middle_name: parsed.data.tussenvoegsel || null,
-        last_name: parsed.data.achternaam,
+        last_name: `${parsed.data.tussenvoegsel ? parsed.data.tussenvoegsel + ' ' : ''}${parsed.data.achternaam}`.trim(),
         date_of_birth: parsed.data.geboortedatum,
         email: parsed.data.email,
         phone_number: parsed.data.telefoonnummer,

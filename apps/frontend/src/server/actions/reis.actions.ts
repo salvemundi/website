@@ -14,36 +14,79 @@ import {
 } from '@salvemundi/validations';
 
 import { getSystemDirectus } from '@/lib/directus';
-import { readItems, createItem, updateItem } from '@directus/sdk';
+import { readItems, createItem, updateItem, readMe, readUsers } from '@directus/sdk';
 import { auth } from '@/server/auth/auth';
 import { headers as nextHeaders } from 'next/headers';
 
+const getMailUrl = () => process.env.MAIL_SERVICE_URL;
+
+const getServiceHeaders = (): HeadersInit => {
+    const token = process.env.INTERNAL_SERVICE_TOKEN;
+    if (!token) throw new Error('INTERNAL_SERVICE_TOKEN is missing');
+    return {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+    };
+};
+
 export async function getReisSiteSettings(): Promise<ReisSiteSettings | null> {
     try {
-        const data = await getSystemDirectus().request(readItems('site_settings', {
-            filter: { id: { _eq: 'reis' } },
-            fields: ['id', 'show', 'disabled_message'],
+        const directus = getSystemDirectus();
+        const data = await directus.request(readItems('feature_flags', {
+            filter: { name: { _eq: 'trip_registration' } },
             limit: 1
         }));
-        
-        if (!data || data.length === 0) return null;
 
-        const parsed = reisSiteSettingsSchema.safeParse(data[0]);
-        if (!parsed.success) {
-            console.error('[reis.actions#getReisSiteSettings] Validation failed', parsed.error.flatten().fieldErrors);
-            return null;
+        if (!data || data.length === 0) return null;
+        const flag = (data[0] as any);
+
+        return {
+            id: 'reis',
+            show: flag.is_active,
+            disabled_message: flag.message
+        };
+    } catch (err: any) {
+        // Only log if it's not a permission error
+        if (err?.response?.status !== 403) {
+            console.error('[reis.actions#getReisSiteSettings] Error:', err);
         }
-        return parsed.data;
-    } catch (err) {
-        console.error('[reis.actions#getReisSiteSettings] Error:', err);
         return null;
+    }
+}
+
+export async function getCurrentUserProfileAction(): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+        const session = await auth.api.getSession({ headers: await nextHeaders() });
+        if (!session || !session.user) return { success: false, error: "Not logged in" };
+
+        const directus = getSystemDirectus();
+        const userEmail = session.user.email;
+
+        // Fetch user profile by email from session using readUsers
+        const users = await directus.request(readUsers({
+            filter: { email: { _eq: userEmail } },
+            fields: ['first_name', 'last_name', 'email', 'phone_number', 'date_of_birth'],
+            limit: 1
+        }));
+
+        if (!users || users.length === 0) return { success: false, error: "User not found" };
+
+        return { success: true, data: users[0] };
+    } catch (err) {
+        console.error('[reis.actions#getCurrentUserProfileAction] Error:', err);
+        return { success: false, error: "Failed to fetch profile" };
     }
 }
 
 export async function getUpcomingTrips(): Promise<ReisTrip[]> {
     try {
         const data = await getSystemDirectus().request(readItems('trips', {
-            filter: { status: { _eq: 'published' } },
+            filter: {
+                _or: [
+                    { status: { _eq: 'published' } },
+                    { status: { _null: true } }
+                ]
+            },
             fields: [
                 'id', 'name', 'description', 'image', 'event_date', 'start_date', 'end_date', 
                 'registration_start_date', 'registration_open', 'max_participants', 
@@ -89,16 +132,59 @@ export async function getUpcomingTrips(): Promise<ReisTrip[]> {
     }
 }
 
+export async function getTripParticipantsCount(tripId: number): Promise<number> {
+    try {
+        const data = await getSystemDirectus().request(readItems('trip_signups', {
+            filter: { 
+                _and: [
+                    { trip_id: { _eq: tripId } },
+                    { status: { _in: ['registered', 'confirmed'] } }
+                ]
+            },
+            fields: ['id'],
+            limit: -1
+        }));
+        return data?.length || 0;
+    } catch (err) {
+        console.error('[reis.actions#getTripParticipantsCount] Error:', err);
+        return 0;
+    }
+}
+
+export async function getUserTripSignup(tripId: number): Promise<ReisTripSignup | null> {
+    try {
+        const session = await auth.api.getSession({ headers: await nextHeaders() });
+        if (!session || !session.user) return null;
+
+        const userEmail = session.user.email;
+        const data = await getSystemDirectus().request(readItems('trip_signups', {
+            filter: { 
+                _and: [
+                    { trip_id: { _eq: tripId } },
+                    { email: { _eq: userEmail } }
+                ]
+            },
+            fields: [
+                'id', 'status', 'deposit_paid', 'full_payment_paid'
+            ],
+            limit: 1
+        }));
+
+        if (!data || data.length === 0) return null;
+        return data[0] as any;
+    } catch (err) {
+        console.error('[reis.actions#getUserTripSignup] Error:', err);
+        return null;
+    }
+}
+
 export async function getTripSignups(tripId: number): Promise<ReisTripSignup[]> {
     try {
         const data = await getSystemDirectus().request(readItems('trip_signups', {
             filter: { trip_id: { _eq: tripId } },
             fields: [
-                'id', 'trip_id', 'user_id', 'first_name', 'middle_name', 'last_name', 
-                'email', 'phone_number', 'date_of_birth', 'id_document_type', 
-                'document_number', 'allergies', 'special_notes', 'willing_to_drive', 
-                'role', 'status', 'deposit_paid', 'deposit_paid_at', 'full_payment_paid', 
-                'full_payment_paid_at', 'date_created'
+                'id', 'trip_id', 'first_name', 'last_name', 
+                'email', 'status'
             ],
             limit: -1
         }));
@@ -149,7 +235,6 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
     const payload = {
         trip_id: tripId,
         first_name: parsed.data.first_name,
-        middle_name: parsed.data.middle_name || null,
         last_name: parsed.data.last_name,
         email: parsed.data.email,
         phone_number: parsed.data.phone_number,
@@ -167,6 +252,26 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
 
         revalidatePath('/reis');
         revalidatePath('/beheer/reis');
+
+        // Trigger Mail Confirmation
+        const statusDisplay = payload.status === 'waitlist' ? 'Wachtlijst' : 'Geregistreerd (Beoordeling)';
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://salvemundi.nl';
+
+        fetch(`${getMailUrl()}/api/mail/send`, {
+            method: 'POST',
+            headers: getServiceHeaders(),
+            body: JSON.stringify({
+                templateId: 'trip-signup',
+                to: payload.email,
+                data: {
+                    firstName: payload.first_name,
+                    status: payload.status,
+                    statusDisplay: statusDisplay,
+                    siteUrl: siteUrl
+                }
+            })
+        }).catch(e => console.error('[reis.actions#createTripSignup] Mail trigger failed', e));
+
         return { success: true };
     } catch (err) {
         console.error('[reis.actions#createTripSignup] Error:', err);
@@ -185,6 +290,7 @@ export async function cancelTripSignup(signupId: number): Promise<{ success: boo
     try {
         const trip = await getSystemDirectus().request(readItems('trip_signups', {
             filter: { id: { _eq: signupId } },
+            fields: ['id', 'email', 'trip_id'],
             limit: 1
         }));
 
@@ -195,8 +301,8 @@ export async function cancelTripSignup(signupId: number): Promise<{ success: boo
         const signup = trip[0];
 
     
-        if (signup.email !== session.user.email) {
-            console.error('[reis.actions#cancelTripSignup] Email mismatch for cancellation.');
+        if (signup.email.toLowerCase() !== session.user.email.toLowerCase()) {
+            console.error('[reis.actions#cancelTripSignup] Email mismatch for cancellation.', { signupEmail: signup.email, sessionEmail: session.user.email });
             return { success: false, message: 'Je kunt alleen je eigen aanmelding annuleren.' };
         }
 

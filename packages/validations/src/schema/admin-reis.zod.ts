@@ -21,13 +21,13 @@ export const tripSchema = z.object({
 
 export const tripSignupSchema = z.object({
     id: z.number().int(),
+    user_id: z.string().nullable().optional(),
     first_name: z.string(),
-    middle_name: z.string().nullable().optional(),
     last_name: z.string(),
     email: z.string().email(),
     phone_number: z.string().nullable().optional(),
     date_of_birth: z.string().nullable().optional(),
-    id_document_type: z.string().nullable().optional(),
+    id_document: z.string().nullable().optional(),
     document_number: z.string().nullable().optional(),
     allergies: z.string().nullable().optional(),
     special_notes: z.string().nullable().optional(),
@@ -40,7 +40,7 @@ export const tripSignupSchema = z.object({
     full_payment_paid_at: z.string().nullable().optional(),
     deposit_email_sent: z.boolean().nullable().optional(),
     final_email_sent: z.boolean().nullable().optional(),
-    created_at: z.string(),
+    date_created: z.string().optional(),
     trip_id: z.coerce.number().int().nullable().optional(),
 });
 

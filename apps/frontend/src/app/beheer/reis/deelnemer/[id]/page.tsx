@@ -57,8 +57,8 @@ async function DeelnemerDataWrapper({ signupId }: { signupId: number }) {
     const signups = await directus.request(readItems('trip_signups', {
         filter: { id: { _eq: signupId } },
         fields: [
-            'id', 'first_name', 'middle_name', 'last_name', 'email', 'phone_number', 
-            'date_of_birth', 'id_document_type', 'document_number', 'allergies', 
+            'id', 'first_name', 'last_name', 'email', 'phone_number', 
+            'date_of_birth', 'id_document', 'document_number', 'allergies', 
             'special_notes', 'willing_to_drive', 'role', 'status', 'deposit_paid', 
             'deposit_paid_at', 'full_payment_paid', 'full_payment_paid_at', 'date_created',
             { trip_id: ['id', 'name'] }
