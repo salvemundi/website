@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { Calendar, Users, Ticket, Activity, AlertCircle, UserCheck, Cake, Award, Plus, FileText, Shield } from 'lucide-react';
+import { Calendar, Users, Ticket, Activity, AlertCircle, UserCheck, Cake, Award, Plus, FileText, Shield, MapPin } from 'lucide-react';
 import { StatCard, ActionCard, ListCard } from './LegacyCards';
 import { getDashboardStats, getDashboardPermissions, getUpcomingBirthdays, getRecentActivities, getTopStickers } from '@/server/actions/admin.actions';
 
@@ -73,6 +73,8 @@ export async function QuickActions() {
                 <ActionCard title="Nieuwe" subtitle="Intro Post" icon={<FileText className="h-6 w-6" />} href="/beheer/intro?tab=blogs&create=1" colorClass="blue" disabled={!permissions.canAccessIntro} />
                 {permissions.canAccessSync && <ActionCard title="Sync" subtitle="Leden" icon={<Users className="h-6 w-6" />} href="/beheer/sync" colorClass="green" />}
                 {permissions.canAccessSync && <ActionCard title="Beheer" subtitle="Commissie" icon={<Shield className="h-6 w-6" />} href="/beheer/vereniging" colorClass="orange" />}
+                {permissions.canAccessLogging && <ActionCard title="Logboek" subtitle="Activiteiten" icon={<FileText className="h-6 w-6" />} href="/beheer/logging" colorClass="amber" />}
+                {permissions.canAccessStickers && <ActionCard title="Beheer" subtitle="Stickers" icon={<MapPin className="h-6 w-6" />} href="/beheer/stickers" colorClass="purple" />}
                 {permissions.isIct && <ActionCard title="Test Modus" subtitle="Impersonatie" icon={<Users className="h-6 w-6" />} href="/beheer/impersonate" colorClass="teal" />}
             </div>
         </div>

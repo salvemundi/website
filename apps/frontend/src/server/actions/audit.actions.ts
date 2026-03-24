@@ -8,6 +8,7 @@ import {
     readItems, 
     updateItem,
     readSingleton,
+    updateSingleton,
     createItem
 } from "@directus/sdk";
 import { PendingSignup } from "@salvemundi/validations";
@@ -175,10 +176,18 @@ export async function getAuditSettingsAction() {
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
-        // App settings is often a singleton or a specific collection
-        // Based on ERD, it's a "NIEUW" table. Assuming it's a singleton called 'app_settings'
-        const settings = await getSystemDirectus().request(readSingleton('app_settings' as any)).catch(() => ({ manual_approval: false }));
-        return { success: true, data: settings };
+        const url = `${process.env.DIRECTUS_SERVICE_URL}/items/feature_flags?filter[name][_eq]=manual_approval&fields=id,is_active`;
+        const res = await fetch(url, {
+            headers: { Authorization: `Bearer ${process.env.DIRECTUS_STATIC_TOKEN}` },
+            cache: 'no-store'
+        });
+        
+        if (res.ok) {
+            const data = await res.json();
+            const flag = data.data?.[0];
+            return { success: true, data: { manual_approval: !!flag?.is_active } };
+        }
+        return { success: true, data: { manual_approval: false } };
     } catch {
         return { success: true, data: { manual_approval: false } };
     }
@@ -189,8 +198,42 @@ export async function updateAuditSettingsAction(manualApproval: boolean) {
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
-        // Assuming singleton update
-        await getSystemDirectus().request(updateItem('app_settings' as any, undefined as any, { manual_approval: manualApproval }));
+        const token = process.env.DIRECTUS_STATIC_TOKEN;
+        const baseUrl = process.env.DIRECTUS_SERVICE_URL;
+        
+        // 1. Find the flag
+        const listUrl = `${baseUrl}/items/feature_flags?filter[name][_eq]=manual_approval&fields=id`;
+        const listRes = await fetch(listUrl, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        const listData = await listRes.json();
+        const flagId = listData.data?.[0]?.id;
+
+        if (flagId) {
+            // 2a. Update existing
+            await fetch(`${baseUrl}/items/feature_flags/${flagId}`, {
+                method: 'PATCH',
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ is_active: manualApproval })
+            });
+        } else {
+            // 2b. Create new
+            await fetch(`${baseUrl}/items/feature_flags`, {
+                method: 'POST',
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    name: 'manual_approval', 
+                    is_active: manualApproval,
+                    route_match: 'SYSTEM'
+                })
+            });
+        }
         
         // Log the change
         await logAdminAction('settings_change', 'SUCCESS', { 
@@ -198,10 +241,10 @@ export async function updateAuditSettingsAction(manualApproval: boolean) {
             value: manualApproval 
         });
 
-        revalidateTag('app_settings', 'max');
+        revalidateTag('audit_settings', 'default');
         return { success: true };
-    } catch (err) {
-        console.error("[AuditAction] Settings update error:", err);
+    } catch (error) {
+        console.error("[AuditAction] Settings update error:", error);
         return { success: false, error: "Bijwerken instellingen mislukt." };
     }
 }

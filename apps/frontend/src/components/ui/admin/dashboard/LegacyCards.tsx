@@ -13,7 +13,7 @@ export function ActionCard({
     subtitle?: string;
     icon: React.ReactNode;
     href?: string;
-    colorClass?: 'purple' | 'blue' | 'red' | 'green' | 'orange' | 'teal';
+    colorClass?: 'purple' | 'blue' | 'red' | 'green' | 'orange' | 'teal' | 'amber';
     disabled?: boolean;
 }) {
     const isLink = !disabled && href;
@@ -24,7 +24,8 @@ export function ActionCard({
         red: 'bg-gradient-to-br from-red-500 to-red-600',
         green: 'bg-gradient-to-br from-green-500 to-green-600',
         orange: 'bg-gradient-to-br from-orange-500 to-orange-600',
-        teal: 'bg-gradient-to-br from-teal-500 to-teal-600'
+        teal: 'bg-gradient-to-br from-teal-500 to-teal-600',
+        amber: 'bg-gradient-to-br from-amber-500 to-amber-600'
     };
 
     return (

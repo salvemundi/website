@@ -156,7 +156,7 @@ export default function AuditLogIsland() {
                     onClick={() => setActiveTab('logs')}
                     className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold transition-all text-sm ${activeTab === 'logs' ? 'bg-white dark:bg-slate-800 shadow-sm text-purple-600' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                 >
-                    <Tag className="h-4 w-4" /> Logboek (Nieuw)
+                    <Tag className="h-4 w-4" /> Logboek
                 </button>
             </div>
 
