@@ -203,6 +203,13 @@ export interface SafeHaven {
 export interface Sticker {
     id: number;
     name: string;
+    location_name?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+    city?: string | null;
+    country?: string | null;
+    address?: string | null;
+    image?: string | null;
     date_created?: any | null;
     user_created?: string | DirectusUser | null;
 }
@@ -298,9 +305,11 @@ export interface Coupon {
 }
 
 export interface SystemLog {
-    id: number;
-    level?: string | null;
+    id: string;
+    type?: string | null;
     status?: string | null;
+    payload?: any | null;
+    created_at?: any | null;
     date_created?: any | null;
 }
 
@@ -318,6 +327,7 @@ export interface DirectusSchema {
     audit_logs: AuditLog[];
     safe_havens: SafeHaven[];
     stickers: Sticker[];
+    Stickers: Sticker[];
     documents: Document[];
     feature_flags: FeatureFlag[];
     hero_banners: HeroBanner[];

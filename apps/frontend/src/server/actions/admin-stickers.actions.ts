@@ -3,6 +3,7 @@
 import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
+import { logAdminAction } from "./audit.actions";
 import { isSuperAdmin } from "@/lib/auth-utils";
 
 /**
@@ -39,7 +40,7 @@ export async function getStickers() {
     await requireStickerAdmin();
     
     try {
-        const stickers = await getSystemDirectus().request(readItems('Stickers' as any, {
+        const stickers = await getSystemDirectus().request(readItems('Stickers', {
             fields: ['id', 'location_name', 'date_created', 'latitude', 'longitude', 'city', 'country', 'address', 'image', { user_created: ['id', 'first_name', 'last_name', 'avatar'] }],
             sort: ['-date_created'],
             limit: -1
@@ -59,13 +60,17 @@ export async function deleteSticker(id: number) {
     const session = await requireStickerAdmin();
 
     try {
-        await getSystemDirectus().request(deleteItem('Stickers' as any, id));
+        await getSystemDirectus().request(deleteItem('Stickers', id));
         revalidatePath('/beheer/stickers');
         revalidatePath('/stickers');
         revalidateTag('stickers', 'max');
+        
+        // Log the deletion
+        await logAdminAction('sticker_deleted', 'SUCCESS', { sticker_id: id });
+
         return { success: true };
-    } catch (e) {
-        console.error('[AdminStickers] Delete failed:', e);
+    } catch (error) {
+        console.error('[AdminStickers] Delete failed:', error);
         throw new Error('Kon sticker niet verwijderen');
     }
 }
@@ -78,7 +83,7 @@ export async function updateSticker(id: number, data: any) {
     const session = await requireStickerAdmin();
 
     try {
-        const updated = await getSystemDirectus().request(updateItem('Stickers' as any, id, data));
+        const updated = await getSystemDirectus().request(updateItem('Stickers', id, data));
         revalidatePath('/beheer/stickers');
         revalidatePath('/stickers');
         revalidateTag('stickers', 'max');

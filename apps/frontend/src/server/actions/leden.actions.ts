@@ -6,6 +6,7 @@ import { revalidateTag, revalidatePath } from "next/cache";
 import { getSystemDirectus } from "@/lib/directus";
 import { readItems, updateItem, updateUser, readUsers, readUser } from "@directus/sdk";
 import { isSuperAdmin } from "@/lib/auth-utils";
+import { logAdminAction } from "./audit.actions";
 
 const AZURE_MGMT_URL = process.env.AZURE_MANAGEMENT_SERVICE_URL;
 const AZURE_SYNC_URL = process.env.AZURE_SYNC_SERVICE_URL;
@@ -154,6 +155,13 @@ export async function updateMemberProfileAction(
         }
 
         revalidatePath(`/beheer/leden/${directusUserId}`);
+        
+        // Log the change
+        await logAdminAction('member_profile_updated', 'SUCCESS', { 
+            member_id: directusUserId,
+            updates: payload 
+        });
+
         return { success: true };
     } catch (err) {
         console.error('[updateMemberProfile] Error:', err);
@@ -220,6 +228,14 @@ export async function renewMembershipAction(
 
         revalidatePath(`/beheer/leden/${directusUserId}`);
         revalidatePath('/beheer/leden');
+
+        // Log the renewal
+        await logAdminAction('membership_renewed', 'SUCCESS', { 
+            member_id: directusUserId,
+            months_added: months,
+            new_expiry: newExpiryStr 
+        });
+
         return { success: true, newExpiry: newExpiryStr };
     } catch (err) {
         console.error('[renewMembership] Error:', err);
@@ -264,6 +280,13 @@ export async function provisionAzureAccountAction(directusUserId: string) {
         }
 
         revalidatePath(`/beheer/leden/${directusUserId}`);
+
+        // Log the provisioning
+        await logAdminAction('azure_provisioning', 'SUCCESS', { 
+            member_id: directusUserId,
+            email: user.email 
+        });
+
         return { success: true };
     } catch (err: any) {
         console.error("[ProvisionAction] Error:", err);
