@@ -74,9 +74,9 @@ export async function triggerUserSyncAction(userId: string) {
     }
 
     try {
-        // Fetch the user from Directus to get their Entra ID
+        // Fetch the user from Directus by Entra ID (Strictly)
         const users = await getSystemDirectus().request(readUsers({
-            filter: { id: { _eq: userId } },
+            filter: { entra_id: { _eq: userId } },
             fields: ['entra_id', 'email']
         }));
         
