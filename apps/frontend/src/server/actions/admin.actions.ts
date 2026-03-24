@@ -102,14 +102,14 @@ export async function getDashboardStats(): Promise<DashboardStats> {
             pubCrawlEvents,
             trips
         ] = await Promise.all([
-            getSystemDirectus().request(aggregate('directus_users', { aggregate: { count: '*' }, query: { filter: { status: { _eq: 'active' } } } })).catch(e => { console.error("Stats: users fail", e instanceof Error ? e.message : JSON.stringify(e)); return [{ count: 0 }]; }),
-            getSystemDirectus().request(aggregate('events', { aggregate: { count: '*' }, query: { filter: { event_date: { _gte: today } } } })).catch(e => { console.error("Stats: events fail", e instanceof Error ? e.message : JSON.stringify(e)); return [{ count: 0 }]; }),
-            getSystemDirectus().request(aggregate('event_signups', { aggregate: { count: '*' }, query: { filter: { event_id: { event_date: { _gte: today } } } } })).catch(e => { console.error("Stats: signups fail", e instanceof Error ? e.message : JSON.stringify(e)); return [{ count: 0 }]; }),
-            getSystemDirectus().request(aggregate('intro_signups', { aggregate: { count: '*' } })).catch(e => { console.error("Stats: intro fail", e instanceof Error ? e.message : JSON.stringify(e)); return [{ count: 0 }]; }),
-            getSystemDirectus().request(aggregate('coupons', { aggregate: { count: '*' }, query: { filter: { is_active: { _eq: true } } } })).catch(e => { console.error("Stats: coupons fail", e instanceof Error ? e.message : JSON.stringify(e)); return [{ count: 0 }]; }),
-            getSystemDirectus().request(aggregate('system_logs' as any, { aggregate: { count: '*' }, query: { filter: { status: { _eq: 'FAILED' } } } })).catch(e => { console.error("Stats: logs fail", e instanceof Error ? e.message : JSON.stringify(e)); return [{ count: 0 }]; }),
-            getSystemDirectus().request(aggregate('stickers', { aggregate: { count: '*' } })).catch(e => { console.error("Stats: stickers fail", e instanceof Error ? e.message : JSON.stringify(e)); return [{ count: 0 }]; }),
-            getSystemDirectus().request(aggregate('stickers', { aggregate: { count: '*' }, query: { filter: { date_created: { _gte: lastWeek } } } })).catch(e => { console.error("Stats: recent stickers fail", e instanceof Error ? e.message : JSON.stringify(e)); return [{ count: 0 }]; }),
+            getSystemDirectus().request(aggregate('directus_users', { aggregate: { count: '*' }, query: { filter: { status: { _eq: 'active' } } } })).catch(e => { console.error("Stats: users fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
+            getSystemDirectus().request(aggregate('events', { aggregate: { count: '*' }, query: { filter: { event_date: { _gte: today } } } })).catch(e => { console.error("Stats: events fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
+            getSystemDirectus().request(aggregate('event_signups', { aggregate: { count: '*' }, query: { filter: { event_id: { event_date: { _gte: today } } } } })).catch(e => { console.error("Stats: signups fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
+            getSystemDirectus().request(aggregate('intro_signups', { aggregate: { count: '*' } })).catch(e => { console.error("Stats: intro fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
+            getSystemDirectus().request(aggregate('coupons', { aggregate: { count: '*' }, query: { filter: { is_active: { _eq: true } } } })).catch(e => { console.error("Stats: coupons fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
+            getSystemDirectus().request(aggregate('system_logs' as any, { aggregate: { count: '*' }, query: { filter: { status: { _eq: 'FAILED' } } } })).catch(e => { console.error("Stats: logs fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
+            getSystemDirectus().request(aggregate('Stickers' as any, { aggregate: { count: '*' } })).catch(e => { console.error("Stats: Stickers fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
+            getSystemDirectus().request(aggregate('Stickers' as any, { aggregate: { count: '*' }, query: { filter: { date_created: { _gte: lastWeek } } } })).catch(e => { console.error("Stats: recent Stickers fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
             getSystemDirectus().request(readItems('pub_crawl_events', { fields: ['id', 'date'], sort: ['-date'] })).catch(() => []),
             getSystemDirectus().request(readItems('trips', { fields: ['id', 'start_date', 'end_date', 'event_date'], filter: { status: { _eq: 'published' } }, sort: ['-start_date'] })).catch(() => [])
         ]);
@@ -239,7 +239,7 @@ export async function getTopStickers(): Promise<TopSticker[]> {
     const { isAuthorized } = await checkAdminAccess();
     if (!isAuthorized) return [];
     try {
-        const stickers = await getSystemDirectus().request(readItems('stickers', {
+        const stickers = await getSystemDirectus().request(readItems('Stickers' as any, {
             fields: ['user_created.id', 'user_created.first_name', 'user_created.last_name'] as any,
             limit: -1
         }));

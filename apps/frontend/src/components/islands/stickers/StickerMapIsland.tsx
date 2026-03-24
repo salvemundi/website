@@ -28,6 +28,7 @@ export default function StickerMapIsland({
 }: StickerMapIslandProps) {
     const [stickers, setStickers] = useState(initialStickers);
     const [isPending, startTransition] = useTransition();
+    const [isLocating, setIsLocating] = useState(false);
     
     // UI State
     const [showAddModal, setShowAddModal] = useState(false);
@@ -48,10 +49,52 @@ export default function StickerMapIsland({
     });
     const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-    const handleLocationSelect = (lat: number, lng: number) => {
+    const handlePlaceSticker = () => {
         if (!user) return;
-        setSelectedLocation({ lat, lng });
-        setShowAddModal(true);
+        
+        setIsLocating(true);
+        
+        if (!navigator.geolocation) {
+            alert("Je browser ondersteunt geen geolocatie.");
+            setIsLocating(false);
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+                setSelectedLocation({ lat: latitude, lng: longitude });
+                
+                // Reverse Geocoding to pre-fill city and country
+                try {
+                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=nl`, {
+                        headers: { 'User-Agent': 'SalveMundi-Website' }
+                    });
+                    const geoData = await response.json();
+                    const addr = geoData.address || {};
+                    const city = addr.city || addr.town || addr.village || addr.suburb || '';
+                    const country = addr.country || '';
+                    
+                    setFormData(prev => ({
+                        ...prev,
+                        city,
+                        country
+                    }));
+                } catch (err) {
+                    console.error('Reverse geocoding failed:', err);
+                }
+
+                setShowAddModal(true);
+                setIsLocating(false);
+            },
+            (error) => {
+                let msg = "Kon je locatie niet bepalen.";
+                if (error.code === 1) msg = "Locatie toegang geweigerd. Zet dit aan in je browser.";
+                alert(msg);
+                setIsLocating(false);
+            },
+            { enableHighAccuracy: true, timeout: 10000 }
+        );
     };
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,8 +151,8 @@ export default function StickerMapIsland({
             {/* Stats Header Area */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <StatCard label="Totaal" value={stickers.length} icon={MapIcon} color="text-purple-500" />
-                <StatCard label="Landen" value={new Set(stickers.map(s => s.country)).size} icon={Globe} color="text-blue-500" />
-                <StatCard label="Steden" value={new Set(stickers.map(s => s.city)).size} icon={Award} color="text-green-500" />
+                <StatCard label="Landen" value={new Set(stickers.map(s => s.country?.toLowerCase()).filter(Boolean)).size} icon={Globe} color="text-blue-500" />
+                <StatCard label="Steden" value={new Set(stickers.map(s => s.city?.toLowerCase()).filter(Boolean)).size} icon={Award} color="text-green-500" />
                 <StatCard label="Top Land" value="NL" icon={TrendingUp} color="text-orange-500" />
             </div>
 
@@ -120,7 +163,6 @@ export default function StickerMapIsland({
                 <StickerMap 
                     stickers={stickers}
                     user={user}
-                    onLocationSelect={handleLocationSelect}
                     selectedLocation={selectedLocation}
                     filterCountry={filterCountry}
                     filterCity={filterCity}
@@ -140,6 +182,7 @@ export default function StickerMapIsland({
                                 placeholder="Land..." 
                                 value={filterCountry}
                                 onChange={(e) => setFilterCountry(e.target.value)}
+                                suppressHydrationWarning
                                 className="w-full bg-[var(--bg-main)]/50 border border-[var(--border-color)]/30 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-[var(--theme-purple)]/50 transition-all outline-none"
                             />
                             <input 
@@ -147,12 +190,27 @@ export default function StickerMapIsland({
                                 placeholder="Stad..." 
                                 value={filterCity}
                                 onChange={(e) => setFilterCity(e.target.value)}
+                                suppressHydrationWarning
                                 className="w-full bg-[var(--bg-main)]/50 border border-[var(--border-color)]/30 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-[var(--theme-purple)]/50 transition-all outline-none"
                             />
                         </div>
                     </div>
 
-                    {!user && (
+                    {user ? (
+                        <div className="bg-[var(--bg-card)]/90 backdrop-blur-md rounded-2xl p-4 shadow-2xl pointer-events-auto border border-white/10">
+                             <button
+                                onClick={handlePlaceSticker}
+                                disabled={isLocating}
+                                className="w-full py-3 bg-gradient-to-r from-[var(--theme-purple)] to-orange-500 text-white rounded-xl shadow-lg hover:shadow-xl transition-all font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 disabled:opacity-50"
+                            >
+                                {isLocating ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapIcon className="h-4 w-4" />}
+                                Ik ben hier! 📍
+                            </button>
+                            <p className="text-[9px] text-[var(--text-muted)] mt-2 text-center uppercase font-bold tracking-tighter italic">
+                                Plak een sticker op je huidige GPS locatie
+                            </p>
+                        </div>
+                    ) : (
                         <div className="bg-orange-500/90 backdrop-blur-md text-white rounded-2xl p-4 shadow-2xl pointer-events-auto flex items-start gap-3 border border-white/20">
                             <div className="p-2 bg-white/20 rounded-lg">
                                 <Plus className="h-5 w-5" />
@@ -190,6 +248,7 @@ export default function StickerMapIsland({
                                         placeholder="Bijv. Eiffeltoren, Fontys R10..."
                                         value={formData.location_name}
                                         onChange={(e) => setFormData(prev => ({ ...prev, location_name: e.target.value }))}
+                                        suppressHydrationWarning
                                         className="w-full bg-[var(--bg-main)]/50 border border-[var(--border-color)]/30 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all outline-none"
                                     />
                                 </div>
@@ -202,6 +261,7 @@ export default function StickerMapIsland({
                                             placeholder="Eindhoven"
                                             value={formData.city}
                                             onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                                            suppressHydrationWarning
                                             className="w-full bg-[var(--bg-main)]/50 border border-[var(--border-color)]/30 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all outline-none"
                                         />
                                     </div>
@@ -213,6 +273,7 @@ export default function StickerMapIsland({
                                             placeholder="Nederland"
                                             value={formData.country}
                                             onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
+                                            suppressHydrationWarning
                                             className="w-full bg-[var(--bg-main)]/50 border border-[var(--border-color)]/30 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all outline-none"
                                         />
                                     </div>

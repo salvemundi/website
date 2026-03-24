@@ -13,8 +13,8 @@ import { readItems, createItem, uploadFiles } from "@directus/sdk";
  */
 export async function getPublicStickers() {
     try {
-        return await getSystemDirectus().request(readItems('stickers', {
-            fields: ['id', 'name', 'date_created', { user_created: ['id', 'first_name', 'last_name', 'avatar'] }],
+        return await getSystemDirectus().request(readItems('Stickers' as any, {
+            fields: ['id', 'location_name', 'date_created', 'latitude', 'longitude', 'city', 'country', 'address', 'image', { user_created: ['id', 'first_name', 'last_name', 'avatar'] }],
             sort: ['-date_created'],
             limit: -1
         }));
@@ -49,7 +49,7 @@ export async function createStickerPublic(data: any) {
     };
 
     try {
-        const result = await getSystemDirectus().request(createItem('stickers', payload));
+        const result = await getSystemDirectus().request(createItem('Stickers' as any, payload));
 
         // Immediately update both admin and public views.
         revalidateTag('stickers', 'default');

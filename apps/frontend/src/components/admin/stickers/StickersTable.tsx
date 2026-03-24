@@ -89,11 +89,11 @@ export default function StickersTable({ stickers, onDelete }: StickersTableProps
                                             <div className="flex flex-col">
                                                 <span className="text-xs font-bold text-[var(--text-subtle)] flex items-center gap-1.5">
                                                     <MapPin className="h-3 w-3 text-red-500" />
-                                                    {sticker.city || 'Onbekend'}
+                                                    {sticker.city || ''}
                                                 </span>
                                                 <span className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-wider flex items-center gap-1.5 mt-0.5">
                                                     <Globe className="h-3 w-3 text-blue-500" />
-                                                    {sticker.country || 'Onbekend'}
+                                                    {sticker.country || ''}
                                                 </span>
                                             </div>
                                         </td>
