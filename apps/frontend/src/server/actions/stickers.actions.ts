@@ -11,7 +11,7 @@ import { STICKER_FIELDS } from "@salvemundi/validations";
 export async function getPublicStickers() {
     try {
         return await getSystemDirectus().request(readItems('Stickers', {
-            fields: [...STICKER_FIELDS, { user_created: ['id', 'first_name', 'last_name', 'avatar'] }],
+            fields: [...STICKER_FIELDS, { user_created: ['id', 'first_name', 'last_name', 'avatar'] }] as any,
             sort: ['-date_created'],
             limit: -1
         }));

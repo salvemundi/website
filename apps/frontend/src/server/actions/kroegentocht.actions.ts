@@ -141,7 +141,7 @@ export async function initiateKroegentochtPayment(formData: any) {
             payment_status: 'open'
         }));
         
-        const signupId = signup.id as number;
+        const signupId = Number(signup.id);
 
         // 5. Initiate payment via Finance Service
         const financeUrl = `${getFinanceServiceUrl()}/api/payments/create`;
