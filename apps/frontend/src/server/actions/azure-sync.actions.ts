@@ -71,7 +71,7 @@ export async function triggerUserSyncAction(userId: string) {
     try {
         const users = await getSystemDirectus().request(readUsers({
             filter: { entra_id: { _eq: userId } },
-            fields: [...USER_FULL_FIELDS]
+            fields: [...USER_FULL_FIELDS] as any
         }));
         
         const targetUser = users?.[0];

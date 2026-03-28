@@ -33,11 +33,14 @@ export async function getStickers() {
             fields: [
                 ...STICKER_FIELDS, 
                 { user_created: ['id', 'first_name', 'last_name', 'avatar'] }
-            ],
+            ] as any,
             sort: ['-date_created'],
             limit: -1
         }));
-        return stickers || [];
+        return (stickers ?? []).map((s: any) => ({
+            ...s,
+            id: Number(s.id)
+        }));
     } catch (e) {
         console.error('[AdminStickers] Fetch failed:', e);
         throw new Error('Could not fetch stickers');

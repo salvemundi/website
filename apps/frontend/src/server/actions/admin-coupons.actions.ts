@@ -52,7 +52,15 @@ export async function getCoupons(): Promise<Coupon[]> {
             limit: 500,
             fields: [...COUPON_FIELDS]
         }));
-        return (items ?? []) as Coupon[];
+        return (items ?? []).map(i => ({
+            ...i,
+            id: Number(i.id),
+            coupon_code: i.coupon_code || '',
+            discount_type: (i.discount_type || 'percentage') as 'fixed' | 'percentage',
+            discount_value: Number(i.discount_value),
+            usage_count: Number(i.usage_count),
+            is_active: !!i.is_active
+        })) as Coupon[];
     } catch (e) {
         console.error('[AdminCoupons] Fetch failed:', e);
         throw new Error('Kon coupons niet ophalen');

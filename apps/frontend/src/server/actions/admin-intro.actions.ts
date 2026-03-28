@@ -127,7 +127,14 @@ export async function getIntroBlogs() {
             limit: 200,
             fields: [...INTRO_BLOG_FIELDS]
         }));
-        return (items ?? []) as IntroBlog[];
+        return (items ?? []).map(i => ({
+            ...i,
+            id: Number(i.id),
+            title: i.title || '',
+            content: i.content || '',
+            blog_type: (i.blog_type || 'update') as any,
+            is_published: !!i.is_published
+        })) as IntroBlog[];
     } catch (e) {
         console.error('[AdminIntro] Get blogs failed:', e);
         throw new Error('Kon blogs niet ophalen');
@@ -140,13 +147,25 @@ export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ succe
     
     try {
         let result;
+        const sanitizedPayload = {
+            ...payload,
+            created_at: payload.created_at instanceof Date ? payload.created_at.toISOString() : payload.created_at
+        };
+        
         if (id) {
-            result = await getSystemDirectus().request(updateItem('intro_blogs', id, payload));
+            result = await getSystemDirectus().request(updateItem('intro_blogs', id, sanitizedPayload));
         } else {
-            result = await getSystemDirectus().request(createItem('intro_blogs', payload));
+            result = await getSystemDirectus().request(createItem('intro_blogs', sanitizedPayload));
         }
         revalidatePath('/beheer/intro');
-        return { success: true, data: result as IntroBlog };
+        return { success: true, data: { 
+            ...result, 
+            id: Number(result.id),
+            title: result.title || '',
+            content: result.content || '',
+            blog_type: (result.blog_type || 'update') as any,
+            is_published: !!result.is_published
+        } as IntroBlog };
     } catch (e) {
         console.error('[AdminIntro] Upsert blog failed:', e);
         return { success: false, error: 'Opslaan mislukt' };
@@ -174,7 +193,14 @@ export async function getIntroPlanning() {
             limit: 200,
             fields: [...INTRO_PLANNING_FIELDS]
         }));
-        return (items ?? []) as IntroPlanningItem[];
+        return (items ?? []).map(i => ({
+            ...i,
+            id: Number(i.id),
+            date: i.date || '',
+            time_start: i.time_start || '',
+            title: i.title || '',
+            description: i.description || ''
+        })) as IntroPlanningItem[];
     } catch (e) {
         console.error('[AdminIntro] Get planning failed:', e);
         throw new Error('Kon planning niet ophalen');
@@ -202,7 +228,14 @@ export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Pro
             result = await getSystemDirectus().request(createItem('intro_planning', payload));
         }
         revalidatePath('/beheer/intro');
-        return { success: true, data: result as IntroPlanningItem };
+        return { success: true, data: { 
+            ...result, 
+            id: Number(result.id),
+            date: result.date || '',
+            time_start: result.time_start || '',
+            title: result.title || '',
+            description: result.description || ''
+        } as IntroPlanningItem };
     } catch (e) {
         console.error('[AdminIntro] Upsert planning failed:', e);
         return { success: false, error: 'Opslaan mislukt' };
@@ -235,7 +268,7 @@ export async function toggleIntroVisibility(current: boolean): Promise<{ success
         }));
 
         if (existing && existing.length > 0) {
-            await client.request(updateItem('feature_flags', existing[0].id, { is_active: !current }));
+            await client.request(updateItem('feature_flags', Number(existing[0].id), { is_active: !current }));
         } else {
             await client.request(createItem('feature_flags', { 
                 name: 'Intro Inschrijving',

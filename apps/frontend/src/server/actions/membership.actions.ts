@@ -137,7 +137,7 @@ export async function getTransactionStatusAction(transactionId: string) {
             fields: [...TRANSACTION_FIELDS]
         }));
 
-        if (transaction?.payment_status === 'paid') {
+        if ((transaction as any)?.payment_status === 'paid') {
             // Revalidate user data if payment was successful
             if (transaction.user_id) {
                 const userId = typeof (transaction as any).user_id === 'object' ? (transaction as any).user_id.id : (transaction as any).user_id;

@@ -130,7 +130,7 @@ export async function updateMemberProfileAction(
         await getSystemDirectus().request(updateUser(directusUserId, payload));
 
         const user: any = await getSystemDirectus().request(readUser(directusUserId, {
-            fields: [...USER_ID_FIELDS]
+            fields: [...USER_ID_FIELDS] as any
         }));
 
         if (user?.entra_id && AZURE_MGMT_URL && INTERNAL_TOKEN) {
@@ -242,7 +242,7 @@ export async function provisionAzureAccountAction(directusUserId: string) {
 
     try {
         const user: any = await getSystemDirectus().request(readUser(directusUserId, {
-            fields: [...USER_FULL_FIELDS]
+            fields: [...USER_FULL_FIELDS] as any
         }));
 
         if (!user || !user.email) return { success: false, error: "Lid niet gevonden of geen e-mailadres." };

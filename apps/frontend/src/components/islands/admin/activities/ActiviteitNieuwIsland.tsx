@@ -44,10 +44,11 @@ export default function ActiviteitNieuwIsland({ committees }: { committees: Comm
             const res = await createActivityAction(prevState, formData);
             
             if (res.success && res.id) {
+                const createdId = res.id;
                 showToast('Activiteit succesvol aangemaakt!', 'success');
                 // Redirect after a short delay
                 setTimeout(() => {
-                    router.push(`/beheer/activiteiten/${res.id}/bewerken`);
+                    router.push(`/beheer/activiteiten/${createdId}/bewerken`);
                 }, 1000);
             } else if (!res.success) {
                 showToast(res.error || 'Er is een fout opgetreden', 'error');

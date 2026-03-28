@@ -22,7 +22,7 @@ export const EVENT_ADMIN_FIELDS = [
 export const EVENT_ID_FIELDS = ['id'] as const;
 
 export const PUB_CRAWL_EVENT_FIELDS = [
-    'id', 'name', 'date', 'description', 'image', 'email', 'show', 'disabled_message', 'price', 'max_tickets_per_person'
+    'id', 'name', 'date', 'description', 'image', 'email'
 ] as const;
 
 export const PUB_CRAWL_SIGNUP_FIELDS = [

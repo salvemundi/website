@@ -68,7 +68,7 @@ export async function getCurrentUserProfileAction(): Promise<{ success: boolean;
 
         const users = await directus.request(readUsers({
             filter: { email: { _eq: userEmail } },
-            fields: [...USER_FULL_FIELDS],
+            fields: [...USER_FULL_FIELDS] as any,
             limit: 1
         }));
 
@@ -162,7 +162,7 @@ export async function getUserTripSignup(tripId: number): Promise<ReisTripSignup 
                     { email: { _eq: userEmail } }
                 ]
             },
-            fields: [...TRIP_SIGNUP_FIELDS],
+            fields: [...TRIP_SIGNUP_FIELDS] as any,
             limit: 1
         }));
 
@@ -178,7 +178,7 @@ export async function getTripSignups(tripId: number): Promise<ReisTripSignup[]> 
     try {
         const data = await getSystemDirectus().request(readItems('trip_signups', {
             filter: { trip_id: { _eq: tripId } },
-            fields: [...TRIP_SIGNUP_FIELDS],
+            fields: [...TRIP_SIGNUP_FIELDS] as any,
             limit: -1
         }));
 

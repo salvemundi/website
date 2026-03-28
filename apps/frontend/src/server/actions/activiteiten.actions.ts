@@ -175,7 +175,11 @@ export async function deleteActivity(eventId: number) {
     }
 }
 
-export async function createActivityAction(prevState: any, formData: FormData) {
+export type CreateActivityResult = 
+    | { success: true; id: number }
+    | { success: false; error: string; fieldErrors?: Record<string, string[]> };
+
+export async function createActivityAction(prevState: any, formData: FormData): Promise<CreateActivityResult> {
     const session = await checkAdminAccess();
     if (!session) return { error: "Unauthorized", success: false };
 
@@ -222,7 +226,10 @@ export async function createActivityAction(prevState: any, formData: FormData) {
         revalidateTag('events', 'default');
         revalidatePath('/beheer/activiteiten');
         revalidatePath('/beheer');
-        return { success: true, id: res.id as number };
+        if (typeof res.id !== 'number') {
+            throw new Error('Geen ID teruggekregen van de database');
+        }
+        return { success: true, id: res.id };
     } catch (error) {
         console.error("Failed to create activity:", error);
         return { error: 'Fout bij opslaan in de database', success: false };

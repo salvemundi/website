@@ -56,7 +56,11 @@ export async function getCommittees(): Promise<Committee[]> {
             fields: [...COMMITTEE_FIELDS],
             sort: ['name']
         }));
-        return items as Committee[];
+        return (items ?? []).map(i => ({
+            ...i,
+            id: Number(i.id),
+            name: i.name || '',
+        })) as Committee[];
     } catch (e) {
         console.error('[AdminCommittees] Fetch failed:', e);
         throw new Error('Kon commissies niet ophalen');
