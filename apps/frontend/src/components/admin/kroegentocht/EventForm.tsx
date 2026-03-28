@@ -8,12 +8,14 @@ import {
     Calendar, 
     Type, 
     FileText, 
-    Mail, 
+    Mail,
+    ImagePlus,
+    X,
     Building2 
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { upsertPubCrawlEvent } from '@/server/actions/admin-kroegentocht.actions';
+import { upsertPubCrawlEvent, uploadPubCrawlImage } from '@/server/actions/admin-kroegentocht.actions';
 
 interface EventFormProps {
     event?: any;
@@ -26,11 +28,31 @@ export default function EventForm({ event }: EventFormProps) {
         name: event?.name || '',
         description: event?.description || '',
         date: event?.date ? new Date(event.date).toISOString().split('T')[0] : '',
-        association: event?.association || 'Salve Mundi',
         email: event?.email || 'intro@salvemundi.nl',
+        association: event?.association || 'Salve Mundi',
+        image: event?.image || null,
     });
+    const [uploading, setUploading] = useState(false);
 
     const isEdit = !!event?.id;
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploading(true);
+        const uploadData = new FormData();
+        uploadData.append('file', file);
+
+        try {
+            const result = await uploadPubCrawlImage(uploadData);
+            setFormData(prev => ({ ...prev, image: result.id }));
+        } catch (err) {
+            alert('Upload mislukt: ' + err);
+        } finally {
+            setUploading(false);
+        }
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -104,6 +126,19 @@ export default function EventForm({ event }: EventFormProps) {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] ml-1 flex items-center gap-2">
+                                <Mail className="h-3 w-3" /> Contact E-mail
+                            </label>
+                            <input
+                                type="email"
+                                value={formData.email}
+                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-bold text-[var(--text-main)]"
+                                placeholder="Bijv. intro@salvemundi.nl"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] ml-1 flex items-center gap-2">
                                 <Building2 className="h-3 w-3" /> Gast-Vereniging
                             </label>
                             <input
@@ -114,18 +149,49 @@ export default function EventForm({ event }: EventFormProps) {
                                 placeholder="Standaard: Salve Mundi"
                             />
                         </div>
+                    </div>
 
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] ml-1 flex items-center gap-2">
-                                <Mail className="h-3 w-3" /> Contact E-mail
+                                <ImagePlus className="h-3 w-3" /> Event Afbeelding
                             </label>
-                            <input
-                                type="email"
-                                value={formData.email}
-                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-bold text-[var(--text-main)]"
-                                placeholder="Bijv. intro@salvemundi.nl"
-                            />
+                            <div className="relative group/img">
+                                {formData.image ? (
+                                    <div className="relative w-full h-40 rounded-[var(--radius-xl)] overflow-hidden border-2 border-[var(--theme-purple)]/30">
+                                        <img 
+                                            src={`http://100.77.182.130:8055/assets/${formData.image}?width=400`} 
+                                            alt="Preview" 
+                                            className="w-full h-full object-cover"
+                                        />
+                                        <button 
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({ ...prev, image: null }))}
+                                            className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full shadow-lg opacity-0 group-hover/img:opacity-100 transition-opacity"
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <label className="flex flex-col items-center justify-center w-full h-40 bg-[var(--bg-main)]/50 border-2 border-dashed border-[var(--border-color)]/50 rounded-[var(--radius-xl)] hover:border-[var(--theme-purple)]/50 hover:bg-[var(--theme-purple)]/5 transition-all cursor-pointer">
+                                        {uploading ? (
+                                            <Loader2 className="h-8 w-8 text-[var(--theme-purple)] animate-spin" />
+                                        ) : (
+                                            <>
+                                                <ImagePlus className="h-8 w-8 text-[var(--text-muted)] mb-2" />
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Upload Image</span>
+                                            </>
+                                        )}
+                                        <input 
+                                            type="file" 
+                                            className="hidden" 
+                                            accept="image/*"
+                                            onChange={handleImageUpload}
+                                            disabled={uploading}
+                                        />
+                                    </label>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

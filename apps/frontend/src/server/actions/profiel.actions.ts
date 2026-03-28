@@ -1,12 +1,15 @@
 'use server';
 
 import { 
-    whatsappGroupSchema, 
-    transactionSchema, 
-    eventSignupSchema,
-    type WhatsAppGroup,
     type Transaction,
-    type EventSignup
+    type WhatsAppGroup,
+    type EventSignup,
+    EVENT_SIGNUP_FIELDS,
+    TRANSACTION_FIELDS,
+    WHATSAPP_GROUP_FIELDS,
+    eventSignupSchema,
+    transactionSchema,
+    whatsappGroupSchema
 } from '@salvemundi/validations';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
@@ -14,7 +17,6 @@ import { headers } from 'next/headers';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 
-// ─── Event Signups ────────────────────────────────────────────────────────────
 
 export async function getUserEventSignups(overrideUserId?: string): Promise<EventSignup[]> {
     const session = await auth.api.getSession({ headers: await headers() });
@@ -27,7 +29,10 @@ export async function getUserEventSignups(overrideUserId?: string): Promise<Even
         const client = getSystemDirectus();
         const res = await client.request(readItems('event_signups' as any, {
             filter: { directus_relations: { _eq: targetUserId } },
-            fields: ['id', 'created_at', { event_id: ['id', 'name', 'event_date', 'description', 'image', 'contact'] }],
+            fields: [
+                ...EVENT_SIGNUP_FIELDS, 
+                { event_id: ['id', 'name', 'event_date', 'description', 'image', 'contact'] }
+            ] as any,
             sort: ['-created_at'],
             limit: -1
         }));
@@ -46,7 +51,6 @@ export async function getUserEventSignups(overrideUserId?: string): Promise<Even
     }
 }
 
-// ─── Transactions ────────────────────────────────────────────────────────────
 
 export async function getUserTransactions(overrideUserId?: string): Promise<Transaction[]> {
     const session = await auth.api.getSession({ headers: await headers() });
@@ -64,7 +68,7 @@ export async function getUserTransactions(overrideUserId?: string): Promise<Tran
                     { email: { _eq: user?.email } }
                 ]
             },
-            fields: ['id', 'user_id', 'email', 'amount', 'currency', 'payment_status', 'description', 'created_at'],
+            fields: [...TRANSACTION_FIELDS],
             sort: ['-created_at'],
             limit: -1
         }));
@@ -83,13 +87,12 @@ export async function getUserTransactions(overrideUserId?: string): Promise<Tran
     }
 }
 
-// ─── WhatsApp Groups ─────────────────────────────────────────────────────────
 
 export async function getWhatsAppGroups(): Promise<WhatsAppGroup[]> {
     try {
         const res = await getSystemDirectus().request(readItems('whatsapp_groups' as any, {
             filter: { is_active: { _eq: true } },
-            fields: ['id', 'name', 'link', 'is_active'],
+            fields: [...WHATSAPP_GROUP_FIELDS],
             sort: ['id'],
             limit: -1
         }));

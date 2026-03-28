@@ -118,7 +118,7 @@ async function AdminReisSignupsTable({ tripId, trip }: { tripId: number, trip: a
                     'date_of_birth', 'id_document', 'document_number', 'allergies', 
                     'special_notes', 'willing_to_drive', 'role', 'status', 'deposit_paid', 
                     'deposit_paid_at', 'deposit_email_sent', 'full_payment_paid', 
-                    'full_payment_paid_at', 'final_email_sent', 'date_created'
+                    'full_payment_paid_at', 'final_email_sent', 'created_at'
                 ] as any,
                 sort: ['-id'],
                 limit: -1
@@ -155,7 +155,7 @@ async function AdminReisSignupsTable({ tripId, trip }: { tripId: number, trip: a
 
     return (
         <AdminReisTableIsland
-            initialSignups={signups as any}
+            initialSignups={(signups || []).map(s => ({ ...s, date_created: s.created_at })) as any}
             initialSignupActivities={activitiesMap}
             trip={trip}
             stats={stats}

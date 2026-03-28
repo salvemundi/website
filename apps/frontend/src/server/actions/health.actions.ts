@@ -66,21 +66,17 @@ export async function checkServiceStatus(url: string, serviceName: string): Prom
 }
 
 export async function getHealthStatuses() {
-    // Core Infra
     const directusUrl = process.env.DIRECTUS_SERVICE_URL!;
 
-    // Services
     const financeUrl = process.env.FINANCE_SERVICE_URL!;
     const syncUrl = process.env.AZURE_SYNC_SERVICE_URL!;
     const mailUrl = process.env.MAIL_SERVICE_URL!;
 
     const results = await Promise.all([
-        // Shared Core Stack
         checkServiceStatus(`${directusUrl}/server/ping`, 'Core: Directus'),
         checkPort(process.env.INTERNAL_DB_HOST!, 5432, 'Core: Database (Postgres)'),
         checkPort(process.env.INTERNAL_REDIS_HOST!, 6379, 'Core: Cache (Redis)'),
 
-        // Application Stack
         checkServiceStatus(`${financeUrl}/health`, 'App: Finance Service'),
         checkServiceStatus(`${syncUrl}/health`, 'App: Sync Service'),
         checkServiceStatus(`${mailUrl}/health`, 'App: Mail Service')

@@ -19,6 +19,8 @@ export * from './schema/admin.zod.js';
 export * from './schema/audit.zod.js';
 export * from './schema/events.zod.js';
 export * from './security.js';
+export * from './directus/schema.js';
+export * from './directus/fields.js';
 
 
 import { memberSchema } from './schema/members.zod.js';

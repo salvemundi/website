@@ -1,5 +1,5 @@
 import { createDirectus, rest, staticToken } from '@directus/sdk';
-import { DirectusSchema } from './schema';
+import { type DirectusSchema } from '@salvemundi/validations';
 
 const directusUrl = process.env.DIRECTUS_SERVICE_URL!;
 
@@ -20,6 +20,7 @@ export function getSystemDirectus() {
 
                 return fetch(url, {
                     ...options,
+                    signal: AbortSignal.timeout(10000),
                     next: Object.keys(nextOptions).length > 0 ? nextOptions : undefined
                 } as RequestInit);
             }

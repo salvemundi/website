@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: #1e1e1e;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 600px;
+            margin: auto;
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .header {
+            background: #a4539b;
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .ticket-box {
+            border: 2px dashed #a4539b;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+            background: #fdfbff;
+        }
+
+        .footer {
+            font-size: 0.8em;
+            color: #8a7a8c;
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+            text-align: center;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 16px 32px;
+            background-color: #a4539b;
+            color: white !important;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="margin:0; font-weight: 900; letter-spacing: 2px;">JE TICKET IS ER!</h1>
+        </div>
+        <div class="content">
+            <p>Beste {{name}},</p>
+            <p>Je hebt je succesvol ingeschreven voor <strong>{{eventName}}</strong>.</p>
+            
+            <div class="ticket-box">
+                <h2 style="color: #a4539b; margin: 0 0 10px 0;">{{eventName}}</h2>
+                <p style="font-weight: bold; margin: 0;">{{eventDate}}</p>
+                <p style="font-size: 12px; color: #666; margin-top: 10px;">Signup ID: #{{signupId}}</p>
+            </div>
+
+            <p>Je kunt je ticket(s) vinden in je profiel op de website. Scan de QR-code bij de ingang van het evenement.</p>
+            
+            <p style="text-align: center;">
+                <a href="https://salvemundi.nl/profiel/tickets" class="button">Bekijk Mijn Tickets</a>
+            </p>
+
+            <p>Veel plezier!</p>
+
+            <p>Met paarse groet,<br><strong>Bestuur Salve Mundi</strong></p>
+        </div>
+        <div class="footer">
+            Dit is een automatisch bericht van het Salve Mundi Platform v7.
+        </div>
+    </div>
+</body>
+
+</html>

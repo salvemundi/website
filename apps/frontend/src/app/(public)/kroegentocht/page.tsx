@@ -110,7 +110,7 @@ async function RegistrationSection() {
                             <Users className="w-5 h-5 text-purple-600 shrink-0 mt-1" />
                             <div>
                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Organisatie</p>
-                                <p className="font-bold">{event.association || 'Salve Mundi'}</p>
+                                <p className="font-bold">SV Salve Mundi</p>
                             </div>
                         </div>
                         <div className="flex items-start gap-3">

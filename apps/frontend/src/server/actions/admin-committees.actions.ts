@@ -7,6 +7,7 @@ import { headers } from 'next/headers';
 import { isSuperAdmin } from '@/lib/auth-utils';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems, updateItem, readUsers } from '@directus/sdk';
+import { COMMITTEE_FIELDS, COMMITTEE_MEMBER_FIELDS, USER_ID_FIELDS } from '@salvemundi/validations';
 
 const getAzureManagementUrl = () => process.env.AZURE_MANAGEMENT_SERVICE_URL;
 
@@ -46,14 +47,13 @@ export type CommitteeMember = {
     isLeader: boolean;
 };
 
-// ── Committees ─────────────────────────────────────────────────────────────
 
 export async function getCommittees(): Promise<Committee[]> {
     await checkAccess();
     try {
         const items = await getSystemDirectus().request(readItems('committees', {
             limit: 200,
-            fields: ['id', 'name', 'email', 'azure_group_id', 'description', 'short_description', 'image'],
+            fields: [...COMMITTEE_FIELDS],
             sort: ['name']
         }));
         return items as Committee[];
@@ -80,14 +80,16 @@ export async function updateCommitteeDetails(
     }
 }
 
-// ── Members ────────────────────────────────────────────────────────────────
 
 export async function getCommitteeMembers(committeeId: string): Promise<CommitteeMember[]> {
     await checkAccess();
     try {
         const items = await getSystemDirectus().request(readItems('committee_members' as any, {
             filter: { committee_id: { _eq: committeeId } },
-            fields: ['id', 'is_leader', { user_id: ['id', 'entra_id', 'first_name', 'last_name', 'email'] }],
+            fields: [
+                ...COMMITTEE_MEMBER_FIELDS,
+                { user_id: ['id', 'entra_id', 'first_name', 'last_name', 'email'] }
+            ] as any,
             limit: 200
         }));
 
@@ -113,10 +115,9 @@ export async function addCommitteeMember(
 ): Promise<{ success: boolean; error?: string }> {
     await checkAccess();
 
-    // 1) Lookup user by email in Directus
     const users = await getSystemDirectus().request(readUsers({
         filter: { email: { _eq: userEmail } },
-        fields: ['id', 'entra_id'],
+        fields: [...USER_ID_FIELDS],
         limit: 1
     }));
     const user = users?.[0];
@@ -124,7 +125,6 @@ export async function addCommitteeMember(
         return { success: false, error: 'Gebruiker niet gevonden in het systeem (email onbekend of niet gesynchroniseerd)' };
     }
 
-    // 2) Add to Azure Group via Azure Management Service
     const azRes = await fetch(`${getAzureManagementUrl()}/api/groups/${encodeURIComponent(azureGroupId)}/members`, {
         method: 'POST',
         headers: serviceHeaders(),
@@ -164,7 +164,6 @@ export async function toggleCommitteeLeader(
 ): Promise<{ success: boolean; error?: string }> {
     const session = await checkAccess();
 
-    // Update is_leader in Directus
     try {
         await getSystemDirectus().request(updateItem('committee_members' as any, membershipId, { is_leader: !currentIsLeader }));
         revalidatePath('/beheer/vereniging');
@@ -173,7 +172,6 @@ export async function toggleCommitteeLeader(
         return { success: false, error: 'Bijwerken mislukt' };
     }
 
-    // If there's an Azure group, also update owners
     if (azureGroupId) {
         const path = currentIsLeader
             ? `${getAzureManagementUrl()}/api/groups/${encodeURIComponent(azureGroupId)}/owners/${encodeURIComponent(entraId)}`

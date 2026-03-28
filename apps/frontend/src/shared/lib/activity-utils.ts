@@ -1,5 +1,5 @@
 /**
- * Utility functions for activities, based on legacy patterns.
+ * Utility functions for activities.
  */
 
 /**

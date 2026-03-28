@@ -60,7 +60,7 @@ async function DeelnemerDataWrapper({ signupId }: { signupId: number }) {
             'id', 'first_name', 'last_name', 'email', 'phone_number', 
             'date_of_birth', 'id_document', 'document_number', 'allergies', 
             'special_notes', 'willing_to_drive', 'role', 'status', 'deposit_paid', 
-            'deposit_paid_at', 'full_payment_paid', 'full_payment_paid_at', 'date_created',
+            'deposit_paid_at', 'full_payment_paid', 'full_payment_paid_at', 'created_at',
             { trip_id: ['id', 'name'] }
         ] as any,
         limit: 1
@@ -94,7 +94,7 @@ async function DeelnemerDataWrapper({ signupId }: { signupId: number }) {
 
     return (
         <ReisDeelnemerDetailIsland 
-            initialSignup={signup as any}
+            initialSignup={{ ...signup, date_created: signup.created_at } as any}
             trips={trips as any}
             allActivities={activities as any}
             initialSelectedActivities={(signupActivities || []).map((a: any) => 

@@ -8,6 +8,7 @@ import { cache } from 'react';
 
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems, createItem, updateItem } from '@directus/sdk';
+import { EVENT_FIELDS, EVENT_SIGNUP_FIELDS, TRANSACTION_FIELDS, PUB_CRAWL_SIGNUP_FIELDS } from '@salvemundi/validations';
 
 const getFinanceServiceUrl = () =>
     process.env.FINANCE_SERVICE_URL;
@@ -62,9 +63,7 @@ export const getActivities = cache(async (): Promise<Activiteit[]> => {
     try {
         const events = await getSystemDirectus().request(readItems('events', {
             fields: [
-                'id', 'name', 'description', 'location', 'event_date', 'event_date_end', 
-                'image', 'status', 'price_members', 'price_non_members', 'only_members', 
-                'registration_deadline', 'contact', 'event_time', 'event_time_end',
+                ...EVENT_FIELDS,
                 { committee_id: ['name'] }
             ] as any,
             filter: { status: { _eq: 'published' } },
@@ -107,9 +106,7 @@ export const getActivityById = cache(async (id: string): Promise<Activiteit | nu
     try {
         const items = await getSystemDirectus().request((readItems('events', {
             fields: [
-                'id', 'name', 'description', 'location', 'event_date', 'event_date_end', 
-                'image', 'status', 'price_members', 'price_non_members', 'only_members', 
-                'registration_deadline', 'contact', 'event_time', 'event_time_end',
+                ...EVENT_FIELDS,
                 { committee_id: ['id', 'name'] }
             ] as any,
             filter: { id: { _eq: id } as any },
@@ -195,7 +192,6 @@ export async function signupForActivity(data: EventSignupForm) {
 
         const signupId = signup.id;
 
-        // Revalidate signups for this event
         revalidateTag(`event_signups_${parsed.data.event_id}`, 'default');
 
         if ((price ?? 0) > 0) {
@@ -221,7 +217,6 @@ export async function signupForActivity(data: EventSignupForm) {
             console.error('[Activities] Payment service error:', paymentData);
             return { success: false, error: 'Er kon geen betaling worden aangemaakt voor deze inschrijving.' };
         } else {
-            // Free event, trigger mail service via Redis Event Stream
             const { getRedis } = await import('@/server/auth/redis-client');
             const redis = await getRedis();
             
@@ -252,7 +247,7 @@ export async function getActivitySignups(eventId: string) {
     try {
         return await getSystemDirectus().request(readItems('event_signups', {
             filter: { event_id: { _eq: eventId as any } },
-            fields: ['id', 'participant_name', 'participant_email', 'payment_status', 'checked_in', { user_id: ['display_name' as any] }] as any
+            fields: EVENT_SIGNUP_FIELDS as any
         }));
     } catch (error) {
         console.error(`[Activities] Error fetching signups for ${eventId}:`, error);
@@ -264,7 +259,7 @@ export async function getSignupStatus(id?: string, transactionId?: string) {
     if (transactionId) {
         try {
             const transactions = await getSystemDirectus().request(readItems('transactions', {
-                fields: ['id', 'payment_status', 'registration_id', 'registration_type'],
+                fields: [...TRANSACTION_FIELDS],
                 filter: { id: { _eq: transactionId } },
                 limit: 1
             }));
@@ -272,18 +267,18 @@ export async function getSignupStatus(id?: string, transactionId?: string) {
 
             if (!trans) return { status: 'error' };
 
-            if (trans.registration_type === 'event_signup') {
+            if ((trans.product_type as any) === 'event_signup') {
                 const signups = await getSystemDirectus().request(readItems('event_signups', {
-                    fields: ['id', 'payment_status', 'participant_name', { event_id: ['id', 'name'] }],
-                    filter: { id: { _eq: trans.registration_id as any } },
+                    fields: ['id', 'payment_status', 'participant_name', { event_id: ['id', 'name'] }] as any,
+                    filter: { id: { _eq: trans.registration as any } },
                     limit: 1
                 }));
                 const signup = signups?.[0];
                 return { status: trans.payment_status, signup, transaction: trans };
-            } else if (trans.registration_type === 'pub_crawl_signup') {
+            } else if ((trans.product_type as any) === 'pub_crawl_signup') {
                 const signups = await getSystemDirectus().request(readItems('pub_crawl_signups', {
-                    fields: ['id', 'name', 'payment_status', { pub_crawl_event_id: ['name'] as any }, { tickets: ['id', 'name', 'qr_token'] as any }] as any,
-                    filter: { id: { _eq: trans.registration_id as any } },
+                    fields: [...PUB_CRAWL_SIGNUP_FIELDS, { pub_crawl_event_id: ['name'] as any }, { tickets: ['id', 'name', 'qr_token'] as any }] as any,
+                    filter: { id: { _eq: trans.pub_crawl_signup as any } },
                     limit: 1
                 }));
                 const signup = signups?.[0];
@@ -291,8 +286,10 @@ export async function getSignupStatus(id?: string, transactionId?: string) {
                     (signup as any).amount_tickets = (signup as any).tickets?.length || 1;
                 }
                 return { status: trans.payment_status, signup, transaction: trans };
-            } else if (trans.registration_type === 'membership') {
+            } else if ((trans.product_type as any) === 'membership') {
                 return { status: trans.payment_status, transaction: trans, isMembership: true };
+            } else if ((trans.product_type as any) === 'trip_signup') {
+                return { status: trans.payment_status, transaction: trans, isTrip: true };
             }
             return { status: trans.payment_status, transaction: trans };
         } catch (e) {
@@ -302,7 +299,7 @@ export async function getSignupStatus(id?: string, transactionId?: string) {
     } else if (id) {
         try {
             const signups = await getSystemDirectus().request(readItems('event_signups', {
-                fields: ['id', 'payment_status', 'participant_name', { event_id: ['id', 'name'] }],
+                fields: [...EVENT_SIGNUP_FIELDS, { event_id: ['id', 'name'] }] as any,
                 filter: { id: { _eq: id as any } },
                 limit: 1
             }));
@@ -330,7 +327,7 @@ export async function getMyTickets() {
                     _eq: userId
                 }
             },
-            fields: ['id', 'payment_status', 'qr_token', { event_id: ['id', 'name', 'event_date', 'location'] }],
+            fields: [...EVENT_SIGNUP_FIELDS, { event_id: ['id', 'name', 'event_date', 'location'] }] as any,
             sort: ['-date_created']
         };
         

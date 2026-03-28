@@ -6,12 +6,12 @@ import { revalidateTag, revalidatePath } from "next/cache";
 import { getSystemDirectus } from "@/lib/directus";
 import { isSuperAdmin } from "@/lib/auth-utils";
 import { 
-    readItems, 
-    createItem, 
-    updateItem, 
     deleteItem,
+    createItem,
+    updateItem,
     readUsers
 } from "@directus/sdk";
+import { USER_BASIC_FIELDS } from "@salvemundi/validations";
 
 const getNotificationUrl = () => process.env.INTERNAL_NOTIFICATION_API_URL || process.env.NEXT_PUBLIC_NOTIFICATION_API_URL;
 
@@ -81,7 +81,7 @@ export async function searchMembersAction(query: string) {
             readUsers({
                 search: query,
                 limit: 10,
-                fields: ['id', 'first_name', 'last_name', 'email']
+                fields: [...USER_BASIC_FIELDS]
             })
         );
         return { success: true, data: (users || []) as any[] };

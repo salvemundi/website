@@ -7,9 +7,13 @@ import { auth } from '@/server/auth/auth';
 import {
     tripSchema,
     tripSignupSchema,
-    tripSignupActivitySchema,
     tripActivitySchema,
-    type TripSignup
+    tripSignupActivitySchema,
+    type TripSignup,
+    TRIP_FIELDS,
+    TRIP_SIGNUP_FIELDS,
+    TRIP_ACTIVITY_FIELDS,
+    TRIP_ID_FIELDS
 } from '@salvemundi/validations';
 
 import { isSuperAdmin } from '@/lib/auth-utils';
@@ -27,16 +31,13 @@ const FINANCE_URL = process.env.FINANCE_SERVICE_URL;
 const MAIL_URL = process.env.MAIL_SERVICE_URL;
 const INTERNAL_SERVICE_TOKEN = process.env.INTERNAL_SERVICE_TOKEN;
 
-/**
- * Shared Auth Checker to ensure ZERO-TRUST on every action
- */
 async function requireReisAdmin() {
     const session = await auth.api.getSession({
         headers: await headers()
     });
 
     if (!session || !session.user) {
-        throw new Error('Unauthorized');
+        throw new Error('Niet geautoriseerd');
     }
 
     const user = session.user as any;
@@ -52,11 +53,10 @@ export async function getTrips() {
 
     try {
         const trips = await getSystemDirectus().request(readItems('trips', {
-            fields: ['id', 'name', 'description', 'image', 'event_date', 'start_date', 'end_date', 'registration_start_date', 'registration_open', 'max_participants', 'max_crew', 'base_price', 'crew_discount', 'deposit_amount', 'is_bus_trip', 'allow_final_payments'],
+            fields: [...TRIP_FIELDS],
             sort: ['-event_date']
         }));
 
-        // Manual Sanitization before Zod
         const sanitized = (trips ?? []).map((t: any) => ({
             ...t,
             max_participants: t.max_participants !== null ? Number(t.max_participants) : t.max_participants,
@@ -90,26 +90,19 @@ export async function getTripSignups(tripId: number) {
     try {
         const signups = await getSystemDirectus().request(readItems('trip_signups', {
             filter: { trip_id: { _eq: tripId } },
-            fields: [
-                'id', 'trip_id', 'user_id', 'first_name', 'last_name', 
-                'email', 'phone_number', 'date_of_birth', 'id_document', 
-                'document_number', 'allergies', 'special_notes', 'willing_to_drive', 
-                'role', 'status', 'deposit_paid', 'deposit_paid_at', 'full_payment_paid', 
-                'full_payment_paid_at', 'date_created'
-            ],
-            sort: ['-date_created'],
+            fields: [...TRIP_SIGNUP_FIELDS] as any,
+            sort: ['-created_at'] as any,
             limit: -1
         }));
 
-        // Manual Sanitization before Zod
         const sanitized = (signups ?? []).map((s: any) => ({
             ...s,
+            date_created: s.created_at,
             deposit_paid: !!s.deposit_paid,
             full_payment_paid: !!s.full_payment_paid,
             willing_to_drive: !!s.willing_to_drive,
         }));
 
-        // Zod validation (Zero-Trust)
         const parsed = z.array(tripSignupSchema).safeParse(sanitized);
 
         if (!parsed.success) {
@@ -155,21 +148,17 @@ export async function sendPaymentEmail(signupId: number, tripId: number, payment
 
     if (!INTERNAL_SERVICE_TOKEN) {
         console.error('[AdminReisActions#sendPaymentEmail] INTERNAL_SERVICE_TOKEN is missing');
-        throw new Error('Missing service token for microservice communication');
+        throw new Error('Missing service token');
     }
 
     try {
-        // Communicate with the Finance Service or Mail Service
-        // This validates the webhook and creates a payment request
-        // In the legacy code this is a NextJS api route, but in V7 we move it to Fastify
-
         const url = new URL(`${FINANCE_URL}/api/finance/trip-payment-request`);
 
         const response = await fetch(url.toString(), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${INTERNAL_SERVICE_TOKEN}` // Mandatory Zero-Trust
+                'Authorization': `Bearer ${INTERNAL_SERVICE_TOKEN}`
             },
             body: JSON.stringify({
                 signupId,
@@ -224,14 +213,10 @@ export async function getTripActivities(tripId: number) {
     try {
         const activities = await getSystemDirectus().request(readItems('trip_activities', {
             filter: { trip_id: { _eq: tripId } },
-            fields: [
-                'id', 'trip_id', 'name', 'description', 'image', 'price', 
-                'max_participants', 'display_order', 'is_active', 'options', 'max_selections'
-            ],
+            fields: [...TRIP_ACTIVITY_FIELDS],
             sort: ['display_order']
         }));
 
-        // Manual Sanitization (handle Directus decimal-as-string and bit-as-int)
         const sanitized = (activities ?? []).map((a: any) => ({
             ...a,
             price: a.price !== null ? Number(a.price) : a.price,
@@ -261,7 +246,6 @@ export async function getTripActivities(tripId: number) {
 export async function createTripActivity(prevState: any, formData: FormData) {
     const session = await requireReisAdmin();
 
-    // Convert formData to object for Zod
     const rawData: Record<string, any> = {};
     formData.forEach((value, key) => {
         if (key === 'options') {
@@ -298,7 +282,6 @@ export async function createTripActivity(prevState: any, formData: FormData) {
 export async function updateTripActivity(id: number, prevState: any, formData: FormData) {
     const session = await requireReisAdmin();
 
-    // Convert formData to object for Zod
     const rawData: Record<string, any> = {};
     formData.forEach((value, key) => {
         if (key === 'options') {
@@ -362,26 +345,18 @@ export async function getActivitySignups(activityId: number) {
     }
 }
 
-/**
- * Trip Signup Detail Actions
- */
 
 export async function getTripSignup(id: number): Promise<TripSignup | null> {
     await requireReisAdmin();
 
     try {
         const signup = await getSystemDirectus().request(readItem('trip_signups', id, {
-            fields: [
-                'id', 'trip_id', 'user_id', 'first_name', 'last_name', 
-                'email', 'phone_number', 'date_of_birth', 'id_document', 
-                'document_number', 'allergies', 'special_notes', 'willing_to_drive', 
-                'role', 'status', 'deposit_paid', 'deposit_paid_at', 'full_payment_paid', 
-                'full_payment_paid_at', 'date_created'
-            ]
+            fields: [...TRIP_SIGNUP_FIELDS, 'role' as any] as any
         }));
 
         if (!signup) return null;
-        return tripSignupSchema.parse(signup);
+        const sanitized = { ...signup, date_created: (signup as any).created_at };
+        return tripSignupSchema.parse(sanitized);
     } catch (error) {
         console.error('[AdminReisActions#getTripSignup] Error:', error);
         return null;
@@ -393,7 +368,6 @@ export async function updateTripSignup(id: number, prevState: any, formData: For
 
     const rawData = Object.fromEntries(formData.entries());
     
-    // Handle specific field types for Directus
     const data = {
         ...rawData,
         willing_to_drive: rawData.willing_to_drive === 'on' || rawData.willing_to_drive === 'true',
@@ -420,21 +394,18 @@ export async function updateSignupActivities(signupId: number, activityIds: numb
     try {
         const client = getSystemDirectus();
         
-        // 1. Get current activities
         const current = await getSignupActivities(signupId);
         const currentIds = current.map(a => typeof a.trip_activity_id === 'object' ? a.trip_activity_id.id : a.trip_activity_id);
-
-        // 2. Remove deselected
+        
         const toDelete = current.filter(a => {
             const activityId = typeof a.trip_activity_id === 'object' ? a.trip_activity_id.id : a.trip_activity_id;
             return !activityIds.includes(activityId);
         });
-
+        
         for (const item of toDelete) {
             await client.request(deleteItem('trip_signup_activities', item.id!));
         }
-
-        // 3. Add new
+        
         const toAdd = activityIds.filter(id => !currentIds.includes(id));
         for (const activityId of toAdd) {
             await client.request(createItem('trip_signup_activities', {
@@ -452,9 +423,6 @@ export async function updateSignupActivities(signupId: number, activityIds: numb
     }
 }
 
-/**
- * Bulk Mail Actions
- */
 
 export async function sendBulkTripEmail(data: {
     tripId: number;
@@ -509,8 +477,6 @@ export async function sendBulkPaymentEmails(tripId: number, signupIds: number[],
         failCount: 0,
     };
 
-    // Note: We sequence these for now to avoid overloading the service, 
-    // but we could use Promise.all in chunks if performance is an issue.
     for (const signupId of signupIds) {
         try {
             const res = await sendPaymentEmail(signupId, tripId, paymentType);
@@ -530,9 +496,6 @@ export async function sendBulkPaymentEmails(tripId: number, signupIds: number[],
     };
 }
 
-/**
- * Trip CRUD Actions
- */
 
 export async function createTrip(prevState: any, formData: FormData) {
     const session = await requireReisAdmin();

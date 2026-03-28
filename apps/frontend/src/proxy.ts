@@ -33,7 +33,7 @@ async function getDisabledRoutes(): Promise<string[]> {
         const res = await fetch(url, {
             headers: { Authorization: `Bearer ${token}` },
             cache: 'no-store',
-            signal: AbortSignal.timeout(2000), 
+            signal: AbortSignal.timeout(10000), 
         });
 
         if (res.ok) {

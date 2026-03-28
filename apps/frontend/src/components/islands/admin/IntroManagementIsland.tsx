@@ -196,7 +196,6 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
             ...signups.map(s => [
                 s.first_name, s.last_name, s.email, s.phone_number,
                 s.date_of_birth || '', s.favorite_gif || '',
-                s.date_created ? format(new Date(s.date_created), 'dd-MM-yyyy HH:mm') : '',
             ])
         ];
         const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
@@ -214,7 +213,6 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
             ...parents.map(p => [
                 p.first_name || '', p.last_name || '', p.email || '', p.phone_number || '',
                 p.motivation || '',
-                p.date_created ? format(new Date(p.date_created), 'dd-MM-yyyy HH:mm') : '',
             ])
         ];
         const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
@@ -306,7 +304,6 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                                         <th className="px-5 py-3 text-left font-semibold text-[var(--text-muted)] text-xs uppercase tracking-wider">Naam</th>
                                         <th className="px-5 py-3 text-left font-semibold text-[var(--text-muted)] text-xs uppercase tracking-wider hidden sm:table-cell">Email</th>
                                         <th className="px-5 py-3 text-left font-semibold text-[var(--text-muted)] text-xs uppercase tracking-wider hidden md:table-cell">Telefoon</th>
-                                        <th className="px-5 py-3 text-left font-semibold text-[var(--text-muted)] text-xs uppercase tracking-wider hidden lg:table-cell">Aangemeld op</th>
                                         <th className="px-5 py-3 text-right font-semibold text-[var(--text-muted)] text-xs uppercase tracking-wider">Acties</th>
                                     </tr>
                                 </thead>
@@ -325,9 +322,6 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                                                 </td>
                                                 <td className="px-5 py-3 text-[var(--text-muted)] hidden sm:table-cell">{s.email}</td>
                                                 <td className="px-5 py-3 text-[var(--text-muted)] hidden md:table-cell">{s.phone_number}</td>
-                                                <td className="px-5 py-3 text-[var(--text-muted)] hidden lg:table-cell">
-                                                    {s.date_created ? format(new Date(s.date_created), 'dd MMM yyyy', { locale: nl }) : '-'}
-                                                </td>
                                                 <td className="px-5 py-3 text-right">
                                                     <button
                                                         onClick={() => handleDeleteSignup(s.id)}

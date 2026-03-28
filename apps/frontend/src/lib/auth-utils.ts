@@ -2,21 +2,21 @@
  * Authentication and authorization utilities for Salve Mundi V7.
  */
 
+import { hasPermission, type Committee } from '@/shared/lib/permissions';
+import { AdminResource } from '@/shared/lib/permissions-config';
+
 /**
- * Checks if a user has "Super Admin" privileges (Bestuur, ICT, Kandi).
+ * Checks if a user has "Super Admin" privileges.
  * This logic is used both on the server and client to gate administrative features.
  * 
- * @param committees List of committees (either as objects or just names/IDs)
+ * @param committees List of committees
  * @returns boolean
  */
-export function isSuperAdmin(committees: any[] | null | undefined): boolean {
+export function isSuperAdmin(committees: Committee[] | null | undefined): boolean {
     if (!committees || !Array.isArray(committees)) return false;
     
-    return committees.some((c: any) => {
-        // Handle both enriched objects from SDK and simpler prop-based structures
-        const name = (c?.name || c?.committee_id?.name || '').toString().toLowerCase();
-        return name.includes('bestuur') || name.includes('ict') || name.includes('kandi');
-    });
+    // We use the Intro resource as a general "SuperAdmin" check
+    return hasPermission(committees, AdminResource.Intro);
 }
 
 /**

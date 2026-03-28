@@ -8,28 +8,35 @@ import type { IntroBlog, IntroPlanningItem } from '@salvemundi/validations';
 
 import { getSystemDirectus } from "@/lib/directus";
 import { 
-    readItems, 
-    deleteItem, 
-    updateItem, 
-    createItem, 
+    readItems,
+    deleteItem,
+    updateItem,
+    createItem,
     aggregate 
 } from '@directus/sdk';
+import { 
+    INTRO_BLOG_FIELDS, 
+    INTRO_PLANNING_FIELDS,
+    FEATURE_FLAG_FIELDS,
+    INTRO_SIGNUP_FIELDS,
+    INTRO_PARENT_SIGNUP_FIELDS
+} from '@salvemundi/validations';
 
-const ALLOWED_ROLES = ['introcommissie', 'intro', 'ictcommissie', 'ict', 'bestuur', 'kandi', 'kandidaat'];
+import { AdminResource } from '@/shared/lib/permissions-config';
+import { hasPermission } from '@/shared/lib/permissions';
 
 async function checkIntroAdminAccess() {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) throw new Error('Niet ingelogd');
 
     const user = session.user as any;
-    if (!isSuperAdmin(user.committees)) {
-        throw new Error('Geen toegang: SuperAdmin rechten vereist voor intro beheer');
+    if (!hasPermission(user.committees, AdminResource.Intro)) {
+        throw new Error('Geen toegang: onvoldoende rechten voor intro beheer');
     }
     
     return session;
 }
 
-// ── Stats ──────────────────────────────────────────────────────────────────
 
 export async function getIntroStats() {
     await checkIntroAdminAccess();
@@ -55,15 +62,14 @@ export async function getIntroStats() {
     }
 }
 
-// ── Signups ────────────────────────────────────────────────────────────────
 
 export async function getIntroSignups() {
     await checkIntroAdminAccess();
     try {
         const items = await getSystemDirectus().request(readItems('intro_signups', {
-            sort: ['-date_created'],
+            sort: ['-id'],
             limit: 1000,
-            fields: ['id', 'first_name', 'last_name', 'email', 'phone_number', 'date_of_birth', 'favorite_gif', 'date_created']
+            fields: [...INTRO_SIGNUP_FIELDS]
         }));
         return (items ?? []) as any[];
     } catch (e) {
@@ -84,15 +90,14 @@ export async function deleteIntroSignup(id: number): Promise<{ success: boolean;
     }
 }
 
-// ── Parent Signups ─────────────────────────────────────────────────────────
 
 export async function getIntroParentSignups() {
     await checkIntroAdminAccess();
     try {
         const items = await getSystemDirectus().request(readItems('intro_parent_signups', {
-            sort: ['-date_created'],
+            sort: ['-id'],
             limit: 1000,
-            fields: ['id', 'first_name', 'last_name', 'email', 'phone_number', 'motivation', 'date_created']
+            fields: [...INTRO_PARENT_SIGNUP_FIELDS]
         }));
         return (items ?? []) as any[];
     } catch (e) {
@@ -113,15 +118,14 @@ export async function deleteIntroParentSignup(id: number): Promise<{ success: bo
     }
 }
 
-// ── Blogs ──────────────────────────────────────────────────────────────────
 
 export async function getIntroBlogs() {
     await checkIntroAdminAccess();
     try {
         const items = await getSystemDirectus().request(readItems('intro_blogs', {
-            sort: ['-date_created'],
+            sort: ['-id'],
             limit: 200,
-            fields: ['id', 'title', 'slug', 'excerpt', 'content', 'blog_type', 'image', 'is_published', 'date_created']
+            fields: [...INTRO_BLOG_FIELDS]
         }));
         return (items ?? []) as IntroBlog[];
     } catch (e) {
@@ -161,7 +165,6 @@ export async function deleteIntroBlog(id: number): Promise<{ success: boolean; e
     }
 }
 
-// ── Planning ───────────────────────────────────────────────────────────────
 
 export async function getIntroPlanning() {
     await checkIntroAdminAccess();
@@ -169,7 +172,7 @@ export async function getIntroPlanning() {
         const items = await getSystemDirectus().request(readItems('intro_planning', {
             sort: ['date', 'time_start'],
             limit: 200,
-            fields: ['id', 'date', 'day', 'time_start', 'time_end', 'title', 'description', 'location']
+            fields: [...INTRO_PLANNING_FIELDS]
         }));
         return (items ?? []) as IntroPlanningItem[];
     } catch (e) {
@@ -182,12 +185,11 @@ export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Pro
     const session = await checkIntroAdminAccess();
     const { id, date, ...rest } = item;
 
-    // Auto-fill day from date
     let day = rest.day;
     if (date) {
         try {
             day = new Date(date).toLocaleDateString('nl-NL', { weekday: 'long' });
-        } catch { /* ignore */ }
+        } catch { }
     }
 
     const payload = { ...rest, date, day };
@@ -219,27 +221,38 @@ export async function deleteIntroPlanning(id: number): Promise<{ success: boolea
     }
 }
 
-// ── Settings ───────────────────────────────────────────────────────────────
 
 export async function toggleIntroVisibility(current: boolean): Promise<{ success: boolean; show?: boolean; error?: string }> {
-    const session = await checkIntroAdminAccess();
+    await checkIntroAdminAccess();
+    const route = '/intro';
+
     try {
-        // Try update first
-        await getSystemDirectus().request(updateItem('site_settings', 'intro', { show: !current }));
-    } catch (e) {
-        // Try upsert with POST if PATCH fails (first time)
-        try {
-            await getSystemDirectus().request(createItem('site_settings', { id: 'intro', show: !current }));
-        } catch (postErr) {
-            console.error('[AdminIntro] Toggle visibility failed:', postErr);
-            return { success: false, error: 'Bijwerken mislukt' };
+        const client = getSystemDirectus();
+        const existing = await client.request(readItems('feature_flags', {
+            filter: { route_match: { _eq: route } },
+            fields: [...FEATURE_FLAG_FIELDS],
+            limit: 1
+        }));
+
+        if (existing && existing.length > 0) {
+            await client.request(updateItem('feature_flags', existing[0].id, { is_active: !current }));
+        } else {
+            await client.request(createItem('feature_flags', { 
+                name: 'Intro Inschrijving',
+                route_match: route, 
+                is_active: !current 
+            }));
         }
+    } catch (e) {
+        console.error('[AdminIntro] Toggle visibility failed:', e);
+        return { success: false, error: 'Bijwerken mislukt' };
     }
+
+    revalidateTag('feature_flags', 'default');
     revalidatePath('/beheer/intro');
     return { success: true, show: !current };
 }
 
-// ── Notifications ──────────────────────────────────────────────────────────
 
 export async function sendIntroCustomNotification(
     title: string,

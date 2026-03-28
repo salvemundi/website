@@ -13,8 +13,14 @@ import {
     uploadFiles,
     aggregate
 } from "@directus/sdk";
-import { activityAdminSchema } from "@salvemundi/validations";
-import { AdminActivitySchema } from "@salvemundi/validations";
+import { 
+    activityAdminSchema, 
+    EVENT_FIELDS, 
+    EVENT_ADMIN_FIELDS,
+    AdminActivitySchema,
+    type Activiteit
+} from "@salvemundi/validations";
+const EVENT_ID_FIELDS = ['id'] as const;
 import { logAdminAction } from "./audit.actions";
 import { isSuperAdmin } from "@/lib/auth-utils";
 
@@ -48,7 +54,10 @@ export const getAdminActivities = cache(async (search?: string, filter: 'all' | 
 
     try {
         const query: any = {
-            fields: ['id', 'name', 'event_date', 'event_date_end', 'description', 'location', 'max_sign_ups', 'price_members', 'price_non_members', 'registration_deadline', 'contact', { image: ['id'] }, 'committee_id', 'status', 'publish_date'],
+            fields: [
+                ...EVENT_ADMIN_FIELDS,
+                { image: ['id'] }
+            ],
             sort: ['-event_date'],
             limit: -1,
             filter: {}
@@ -71,7 +80,6 @@ export const getAdminActivities = cache(async (search?: string, filter: 'all' | 
 
         const events = await getSystemDirectus().request(readItems('events', query));
         
-        // Fix N+1 query by using a single aggregate call with groupBy
         const counts = await getSystemDirectus().request(
             aggregate('event_signups', {
                 aggregate: { count: '*' },
@@ -202,7 +210,6 @@ export async function createActivityAction(prevState: any, formData: FormData) {
     const data = validated.data;
     const directusPayload: Record<string, any> = {
         ...data,
-        // Override status logic if scheduled
         status: data.status === 'scheduled' ? 'published' : data.status,
     };
     
@@ -215,7 +222,7 @@ export async function createActivityAction(prevState: any, formData: FormData) {
         revalidateTag('events', 'default');
         revalidatePath('/beheer/activiteiten');
         revalidatePath('/beheer');
-        return { success: true, id: res.id };
+        return { success: true, id: res.id as number };
     } catch (error) {
         console.error("Failed to create activity:", error);
         return { error: 'Fout bij opslaan in de database', success: false };
@@ -226,15 +233,13 @@ export async function updateActivityAction(eventId: number, prevState: any, form
     const session = await getSession();
     if (!session || !session.user) return { error: "Unauthorized", success: false };
 
-    // Strict access check
     const user = session.user as any;
     const memberships = user.committees || [];
     const isPowerful = isSuperAdmin(memberships);
 
     try {
-        // Fetch existing to check committee ownership if not powerful
         const existing = await getSystemDirectus().request(readItems('events', {
-            fields: ['committee_id'],
+            fields: [...EVENT_ID_FIELDS, 'committee_id' as any],
             filter: { id: { _eq: eventId } },
             limit: 1
         }));

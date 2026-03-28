@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { 
     Plus, 
     Settings, 
@@ -39,25 +39,28 @@ export default function KroegentochtManagementIsland({
     const [isLoadingSignups, setIsLoadingSignups] = useState(false);
     const [showPastEvents, setShowPastEvents] = useState(false);
     const [settings, setSettings] = useState(initialSettings);
+    const [error, setError] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
 
     // Load signups when event changes
     const loadSignups = async (eventId: number) => {
         setIsLoadingSignups(true);
+        setError(null);
         try {
             const data = await getPubCrawlSignups(eventId);
             setSignups(data);
         } catch (err) {
             console.error(err);
+            setError('Kon aanmeldingen niet laden. Controleer je verbinding of probeer het later opnieuw.');
         } finally {
             setIsLoadingSignups(false);
         }
     };
 
     // Trigger initial load or on change
-    useState(() => {
+    useEffect(() => {
         if (selectedEvent) loadSignups(selectedEvent.id);
-    });
+    }, [selectedEvent?.id]);
 
     const handleEventSelect = (event: any) => {
         setSelectedEvent(event);
@@ -123,6 +126,7 @@ export default function KroegentochtManagementIsland({
                         <Plus className="h-4 w-4" />
                         Nieuw Event
                     </Link>
+                    {/* # TODO: Implement Admin QR Scanner for Kroegentocht here */}
                 </div>
             </div>
 
@@ -156,6 +160,19 @@ export default function KroegentochtManagementIsland({
                     </div>
 
                     <KroegStats signups={signups} />
+
+                    {error && (
+                        <div className="flex flex-col items-center justify-center py-16 bg-red-50 dark:bg-red-900/10 rounded-[var(--radius-2xl)] border border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 mb-8">
+                            <AlertCircle className="h-10 w-10 mb-3" />
+                            <p className="text-sm font-bold uppercase tracking-wider">{error}</p>
+                            <button 
+                                onClick={() => selectedEvent && loadSignups(selectedEvent.id)}
+                                className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-red-700 transition"
+                            >
+                                Opnieuw Proberen
+                            </button>
+                        </div>
+                    )}
 
                     {isLoadingSignups ? (
                         <div className="flex flex-col items-center justify-center py-32 bg-[var(--bg-card)]/40 rounded-[var(--radius-2xl)] border-2 border-dashed border-[var(--border-color)]/30">
