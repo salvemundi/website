@@ -29,17 +29,22 @@ export function hasPermission(committees: Committee[] = [], resource: AdminResou
     if (!requirement) return false;
 
     return committees.some(c => {
-        const committeeId = c.id.toString();
-        const hasPermissionForGroup = requirement.allowedCommitteeIds.includes(committeeId);
+        // We exclusively use the azure_group_id (UUID) for authorization because 
+        // administrative roles are linked to Entra ID groups, and numeric IDs 
+        // are non-stable across environments.
+        const hasPermissionForGroup = !!(c.azure_group_id && requirement.allowedCommitteeIds.includes(c.azure_group_id));
         
-        // If leaderOnly is required, the user must be a leader of that specific committee
+        // Certain restricted resources require the user to be a leader 
+        // to prevent unauthorized actions by regular members.
         if (requirement.leaderOnly) {
             return hasPermissionForGroup && c.is_leader;
         }
 
         return hasPermissionForGroup;
     });
+
 }
+
 
 /**
  * Derives permissions from a list of committees.
