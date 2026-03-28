@@ -36,7 +36,6 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
     const INTERNAL_TOKEN = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
 
     try {
-        // Step 1: Handle Phone Number update in Azure AD if changed
         if (parsed.data.phone_number && (user as any).entra_id) {
             try {
                 const azureRes = await fetch(`${AZURE_MGMT_URL}/api/users/${(user as any).entra_id}`, {
@@ -50,17 +49,14 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
 
                 if (!azureRes.ok) {
                     console.error("[updateUserProfile] Azure update failed:", await azureRes.text());
-                    // We continue anyway to update Directus, but log the error
                 }
             } catch (azureErr) {
                 console.error("[updateUserProfile] Azure connection error:", azureErr);
             }
         }
 
-        // Step 2: Update Directus
         await getSystemDirectus().request(updateUser(user.id, parsed.data));
 
-        // Invalidate Redis session cache for this user
         const cookieStore = await cookies();
         const sessionToken = cookieStore.get('better-auth.session-token')?.value;
         if (sessionToken) {
@@ -68,8 +64,6 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
             await redis.del(`session:${sessionToken}`);
         }
 
-        // Step 4: Trigger a targeted sync to ensure everything is matched up
-        // We use entra_id because the sync service expects the Microsoft ID for targeted runs
         const entraId = (user as any).entra_id;
         if (parsed.data.phone_number && entraId) {
             await triggerUserSyncAction(entraId).catch(e => console.error("[updateUserProfile] Post-update sync trigger failed:", e));

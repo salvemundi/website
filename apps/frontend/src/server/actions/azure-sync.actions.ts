@@ -6,6 +6,7 @@ import { revalidateTag, revalidatePath } from "next/cache";
 import { isSuperAdmin } from "@/lib/auth-utils";
 import { getSystemDirectus } from "@/lib/directus";
 import { readUsers } from "@directus/sdk";
+import { USER_FULL_FIELDS } from "@salvemundi/validations";
 
 const AZURE_SYNC_URL = "http://100.77.182.130:3002";
 const INTERNAL_TOKEN = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
@@ -27,9 +28,6 @@ async function checkSyncAccess(targetId?: string) {
     return null;
 }
 
-/**
- * Triggers a full synchronization job in the Azure Sync Service.
- */
 export async function triggerFullSyncAction(options?: { fields: string[]; forceLink?: boolean; activeOnly?: boolean }) {
     const admin = await checkSyncAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
@@ -61,9 +59,6 @@ export async function triggerFullSyncAction(options?: { fields: string[]; forceL
     }
 }
 
-/**
- * Triggers a targeted synchronization for a specific user.
- */
 export async function triggerUserSyncAction(userId: string) {
     const admin = await checkSyncAccess(userId);
     if (!admin) return { success: false, error: "Unauthorized" };
@@ -74,10 +69,9 @@ export async function triggerUserSyncAction(userId: string) {
     }
 
     try {
-        // Fetch the user from Directus by Entra ID (Strictly)
         const users = await getSystemDirectus().request(readUsers({
             filter: { entra_id: { _eq: userId } },
-            fields: ['entra_id', 'email']
+            fields: [...USER_FULL_FIELDS]
         }));
         
         const targetUser = users?.[0];
@@ -90,7 +84,6 @@ export async function triggerUserSyncAction(userId: string) {
             };
         }
 
-        // Validate Entra ID format (must be UUID)
         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
         if (!uuidRegex.test(entraId)) {
             return { 
@@ -112,7 +105,6 @@ export async function triggerUserSyncAction(userId: string) {
             return { success: false, error: "De synchronisatie service is momenteel niet bereikbaar." };
         }
 
-        // Revalidate the specific user to show updated data
         revalidateTag(`user_${userId}`, 'max');
         revalidatePath(`/beheer/leden/${userId}`);
 
@@ -125,9 +117,6 @@ export async function triggerUserSyncAction(userId: string) {
 
 import { getRedis } from "@/server/auth/redis-client";
 
-/**
- * Fetches the current status of the sync job.
- */
 export async function getSyncStatusAction() {
     const admin = await checkSyncAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
@@ -155,22 +144,15 @@ export async function getSyncStatusAction() {
     }
 }
 
-/**
- * Requests the current sync job to stop.
- */
 export async function stopSyncAction() {
     const admin = await checkSyncAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
         const redis = await getRedis();
-        // 1. Signal the job via a separate key so it doesn't get clobbered
-        await redis.set('v7:sync:abort', 'true', 'EX', 600); // 10 min TTL
-
-        // 2. Also update status for immediate UI feedback if possible
-        const data = await redis.get('v7:sync:status');
-        if (data) {
-            const status = JSON.parse(data);
+        const statusRaw = await redis.get('v7:sync:status');
+        if (statusRaw) {
+            const status = JSON.parse(statusRaw);
             if (status.active) {
                 status.abortRequested = true;
                 await redis.set('v7:sync:status', JSON.stringify(status), 'EX', 86400 * 7);

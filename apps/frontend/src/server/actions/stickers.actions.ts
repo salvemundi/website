@@ -6,15 +6,12 @@ import { revalidateTag, revalidatePath } from "next/cache";
 
 import { getSystemDirectus } from "@/lib/directus";
 import { readItems, createItem, uploadFiles } from "@directus/sdk";
+import { STICKER_FIELDS } from "@salvemundi/validations";
 
-/**
- * Fetches all stickers marked as published for the public map view.
- * We include avatar and identity info to enable the leaderboard and custom markers.
- */
 export async function getPublicStickers() {
     try {
         return await getSystemDirectus().request(readItems('Stickers', {
-            fields: ['id', 'location_name', 'date_created', 'latitude', 'longitude', 'city', 'country', 'address', 'image', { user_created: ['id', 'first_name', 'last_name', 'avatar'] }],
+            fields: [...STICKER_FIELDS, { user_created: ['id', 'first_name', 'last_name', 'avatar'] }],
             sort: ['-date_created'],
             limit: -1
         }));
@@ -24,10 +21,6 @@ export async function getPublicStickers() {
     }
 }
 
-/**
- * Allows a registered and logged-in user to 'claim' a spot on the map.
- * Linking to the current user is essential for the leaderboard system.
- */
 export async function createStickerPublic(data: any) {
     const session = await auth.api.getSession({
         headers: await headers()
@@ -51,7 +44,6 @@ export async function createStickerPublic(data: any) {
     try {
         const result = await getSystemDirectus().request(createItem('Stickers', payload));
 
-        // Immediately update both admin and public views.
         revalidatePath('/beheer/stickers');
         revalidatePath('/stickers');
         revalidateTag('stickers', 'max');
@@ -62,10 +54,6 @@ export async function createStickerPublic(data: any) {
     }
 }
 
-/**
- * Uploads a file to Directus from the server.
- * This allows client components to upload files without needing DIRECTUS_STATIC_TOKEN in the browser.
- */
 export async function uploadFileAction(formData: FormData) {
     const session = await auth.api.getSession({ headers: await headers() });
     

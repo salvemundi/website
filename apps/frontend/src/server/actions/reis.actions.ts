@@ -1,7 +1,6 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { cookies } from 'next/headers';
 import {
     reisSiteSettingsSchema,
     reisTripSchema,
@@ -11,10 +10,15 @@ import {
     type ReisTrip,
     type ReisTripSignup,
     type ReisSignupForm,
+    FEATURE_FLAG_FIELDS,
+    TRIP_FIELDS,
+    TRIP_SIGNUP_FIELDS,
+    USER_FULL_FIELDS,
+    TRIP_ID_FIELDS
 } from '@salvemundi/validations';
 
 import { getSystemDirectus } from '@/lib/directus';
-import { readItems, createItem, updateItem, readMe, readUsers } from '@directus/sdk';
+import { readItems, createItem, readUsers } from '@directus/sdk';
 import { auth } from '@/server/auth/auth';
 import { headers as nextHeaders } from 'next/headers';
 
@@ -34,6 +38,7 @@ export async function getReisSiteSettings(): Promise<ReisSiteSettings | null> {
         const directus = getSystemDirectus();
         const data = await directus.request(readItems('feature_flags', {
             filter: { name: { _eq: 'trip_registration' } },
+            fields: [...FEATURE_FLAG_FIELDS],
             limit: 1
         }));
 
@@ -46,7 +51,6 @@ export async function getReisSiteSettings(): Promise<ReisSiteSettings | null> {
             disabled_message: flag.message
         };
     } catch (err: any) {
-        // Only log if it's not a permission error
         if (err?.response?.status !== 403) {
             console.error('[reis.actions#getReisSiteSettings] Error:', err);
         }
@@ -57,24 +61,23 @@ export async function getReisSiteSettings(): Promise<ReisSiteSettings | null> {
 export async function getCurrentUserProfileAction(): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
         const session = await auth.api.getSession({ headers: await nextHeaders() });
-        if (!session || !session.user) return { success: false, error: "Not logged in" };
+        if (!session || !session.user) return { success: false, error: "Niet ingelogd" };
 
         const directus = getSystemDirectus();
         const userEmail = session.user.email;
 
-        // Fetch user profile by email from session using readUsers
         const users = await directus.request(readUsers({
             filter: { email: { _eq: userEmail } },
-            fields: ['first_name', 'last_name', 'email', 'phone_number', 'date_of_birth'],
+            fields: [...USER_FULL_FIELDS],
             limit: 1
         }));
 
-        if (!users || users.length === 0) return { success: false, error: "User not found" };
+        if (!users || users.length === 0) return { success: false, error: "Gebruiker niet gevonden" };
 
         return { success: true, data: users[0] };
     } catch (err) {
         console.error('[reis.actions#getCurrentUserProfileAction] Error:', err);
-        return { success: false, error: "Failed to fetch profile" };
+        return { success: false, error: "Profiel ophalen mislukt" };
     }
 }
 
@@ -87,12 +90,7 @@ export async function getUpcomingTrips(): Promise<ReisTrip[]> {
                     { status: { _null: true } }
                 ]
             },
-            fields: [
-                'id', 'name', 'description', 'image', 'event_date', 'start_date', 'end_date', 
-                'registration_start_date', 'registration_open', 'max_participants', 
-                'max_crew', 'base_price', 'crew_discount', 'deposit_amount', 
-                'is_bus_trip', 'allow_final_payments', 'status'
-            ],
+            fields: [...TRIP_FIELDS],
             sort: ['start_date']
         }));
 
@@ -141,7 +139,7 @@ export async function getTripParticipantsCount(tripId: number): Promise<number> 
                     { status: { _in: ['registered', 'confirmed'] } }
                 ]
             },
-            fields: ['id'],
+            fields: [...TRIP_ID_FIELDS],
             limit: -1
         }));
         return data?.length || 0;
@@ -164,9 +162,7 @@ export async function getUserTripSignup(tripId: number): Promise<ReisTripSignup 
                     { email: { _eq: userEmail } }
                 ]
             },
-            fields: [
-                'id', 'status', 'deposit_paid', 'full_payment_paid'
-            ],
+            fields: [...TRIP_SIGNUP_FIELDS],
             limit: 1
         }));
 
@@ -182,10 +178,7 @@ export async function getTripSignups(tripId: number): Promise<ReisTripSignup[]> 
     try {
         const data = await getSystemDirectus().request(readItems('trip_signups', {
             filter: { trip_id: { _eq: tripId } },
-            fields: [
-                'id', 'trip_id', 'first_name', 'last_name', 
-                'email', 'status'
-            ],
+            fields: [...TRIP_SIGNUP_FIELDS],
             limit: -1
         }));
 
@@ -204,7 +197,6 @@ export async function getTripSignups(tripId: number): Promise<ReisTripSignup[]> 
 export async function createTripSignup(data: ReisSignupForm, tripId: number): Promise<{ success: boolean; message?: string }> {
     const session = await auth.api.getSession({ headers: await nextHeaders() });
     
-
     const parsed = reisSignupFormSchema.safeParse(data);
     if (!parsed.success) {
         console.error('[reis.actions#createTripSignup] Zod validation failed:', parsed.error.flatten().fieldErrors);
@@ -213,7 +205,6 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
 
     const { email } = parsed.data;
 
-    // Check if user already exists
     const existingSignups = await getTripSignups(tripId);
     const existing = existingSignups.find(s => s.email.toLowerCase() === email.toLowerCase() && s.status !== 'cancelled');
     if (existing) {
@@ -229,7 +220,6 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
     const participantsCount = existingSignups.filter(s => s.status === 'confirmed' || s.status === 'registered').length;
     const shouldBeWaitlisted = participantsCount >= targetTrip.max_participants;
 
-    // Server-side role calculation
     const isCommitteeMember = (session?.user as any)?.committees?.length > 0;
 
     const payload = {
@@ -253,7 +243,6 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
         revalidatePath('/reis');
         revalidatePath('/beheer/reis');
 
-        // Trigger Mail Confirmation
         const statusDisplay = payload.status === 'waitlist' ? 'Wachtlijst' : 'Geregistreerd (Beoordeling)';
         const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://salvemundi.nl';
 

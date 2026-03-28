@@ -1,30 +1,45 @@
 'use server';
 
-import { committeesSchema, type Committee } from '@salvemundi/validations';
+import { committeesSchema, type Committee, COMMITTEE_FIELDS, COMMITTEE_MEMBER_FIELDS } from '@salvemundi/validations';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
+import { getRedis } from '@/server/auth/redis-client';
 
-/**
- * Haalt alle zichtbare commissies op.
- * We gebruiken een twee-staps fetch om de 403 op de JOIN te omzeilen.
- */
+const COMMITTEES_CACHE_KEY = 'cache:committees:all';
+const COMMITTEES_TTL = 3600; // 1 hour
+
 export async function getCommittees(): Promise<Committee[]> {
     try {
-        // Stap 1: Haal de commissies op
+        try {
+            const redis = await getRedis();
+            const cached = await redis.get(COMMITTEES_CACHE_KEY);
+            if (cached) {
+                const data = JSON.parse(cached);
+                const parsed = committeesSchema.safeParse(data);
+                if (parsed.success) {
+                    return parsed.data;
+                }
+            }
+        } catch (cacheErr) {
+            console.warn('[committees.actions#getCommittees] Cache retrieval failed:', cacheErr);
+        }
+
         const committeesData = await getSystemDirectus().request(readItems('committees', {
             filter: { is_visible: { _eq: true } },
+            fields: [...COMMITTEE_FIELDS],
             limit: 100
         }));
 
         if (committeesData.length === 0) {
-            console.warn('[committees.actions#getCommittees] No committees found matching visibility filter.');
             return [];
         }
 
-        // Stap 2: Haal alle leden op voor deze commissies (twee-staps fetch)
         const committeeIds = committeesData.map((c: any) => c.id);
         const allMembers = await getSystemDirectus().request(readItems('committee_members', {
-            fields: ['id', 'committee_id', 'is_leader', 'is_visible', { user_id: ['id', 'first_name', 'last_name', 'avatar', 'title'] } as any],
+            fields: [
+                ...COMMITTEE_MEMBER_FIELDS, 
+                { user_id: ['id', 'first_name', 'last_name', 'avatar', 'title'] } as any
+            ],
             filter: { 
                 committee_id: { _in: committeeIds as any },
                 is_visible: { _eq: true }
@@ -32,18 +47,23 @@ export async function getCommittees(): Promise<Committee[]> {
             limit: 500
         }));
 
-        // Voeg de leden toe aan de juiste commissie
         const committeesWithMembers = committeesData.map((committee: any) => ({
             ...committee,
             members: allMembers.filter((m: any) => (typeof m.committee_id === 'object' ? m.committee_id.id : m.committee_id) === committee.id)
         }));
 
-        // Validatie met Zod
         const parsed = committeesSchema.safeParse(committeesWithMembers);
 
         if (!parsed.success) {
             console.error('[committees.actions#getCommittees] Validation failed:', JSON.stringify(parsed.error.format(), null, 2));
             return [];
+        }
+
+        try {
+            const redis = await getRedis();
+            await redis.setex(COMMITTEES_CACHE_KEY, COMMITTEES_TTL, JSON.stringify(parsed.data));
+        } catch (cacheStoreErr) {
+            console.warn('[committees.actions#getCommittees] Cache storage failed:', cacheStoreErr);
         }
 
         return parsed.data;
@@ -53,13 +73,9 @@ export async function getCommittees(): Promise<Committee[]> {
     }
 }
 
-/**
- * Haalt één commissie op basis van slug (naam).
- */
 export async function getCommitteeBySlug(slug: string): Promise<Committee | null> {
     const committees = await getCommittees();
     
-    // We gebruiken dezelfde slugify-logica om de match te vinden
     const found = committees.find(c => {
         const cleaned = c.name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim();
         return slugify(cleaned) === slug;

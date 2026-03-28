@@ -77,7 +77,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
 
                                 // 1. Haal de echte commissies op van de admin/gebruiker
                                 const { rows: realCommittees } = await pool.query(
-                                    `SELECT c.id, c.name, m.is_leader 
+                                    `SELECT c.id, c.name, c.azure_group_id, m.is_leader 
                                      FROM committee_members m 
                                      JOIN committees c ON m.committee_id = c.id 
                                      WHERE m.user_id = $1`,
@@ -120,7 +120,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                             } as any)) as any;
                                             
                                             const { rows: impCommittees } = await pool.query(
-                                                `SELECT c.name FROM committee_members m 
+                                                `SELECT c.id, c.name, c.azure_group_id FROM committee_members m 
                                                  JOIN committees c ON m.committee_id = c.id 
                                                  WHERE m.user_id = $1`,
                                                 [impUser.id]

@@ -7,12 +7,13 @@ export const pubCrawlEventSchema = z.object({
     id: z.union([z.string(), z.number()]),
     name: z.string(),
     description: z.string().nullable().optional(),
-    association: z.string().nullable().optional(),
     email: z.string().email().nullable().optional(),
     image: z.string().nullable().optional(),
     date: z.string().nullable().optional(),
     show: z.boolean().nullable().optional().default(true), // Default to true if missing
     disabled_message: z.string().nullable().optional(),
+    price: z.number().optional().default(1),
+    max_tickets_per_person: z.number().optional().default(10),
 });
 
 /**

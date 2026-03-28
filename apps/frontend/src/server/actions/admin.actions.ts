@@ -2,19 +2,36 @@
 
 import { auth } from "@/server/auth/auth";
 import { z } from "zod";
-import {
-    DashboardStatsSchema, type DashboardStats,
-    RecentActivitySchema, type RecentActivity,
-    TopStickerSchema, type TopSticker,
-    BirthdaySchema, type Birthday
-} from "@salvemundi/validations";
-
-import { readMe, readItems, readUsers, aggregate } from "@directus/sdk";
-import { revalidatePath } from "next/cache";
 import { headers, cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { getSystemDirectus } from "@/lib/directus";
-import { type DirectusUser } from "@/lib/schema";
+import { readMe, readItems, readUsers, aggregate } from "@directus/sdk";
+import { 
+    type DbDirectusUser as DirectusUser,
+    USER_BASIC_FIELDS,
+    EVENT_FIELDS,
+    EVENT_SIGNUP_FIELDS,
+    INTRO_SIGNUP_FIELDS,
+    COUPON_FIELDS,
+    STICKER_FIELDS,
+    PUB_CRAWL_EVENT_FIELDS,
+    PUB_CRAWL_SIGNUP_FIELDS,
+    TRIP_FIELDS,
+    TRIP_SIGNUP_FIELDS,
+    USER_BASIC_FIELDS as USER_ID_FIELDS, // Fallback if missing, or check fields.ts
+    DashboardStats,
+    DashboardStatsSchema,
+    Birthday,
+    BirthdaySchema,
+    RecentActivity,
+    RecentActivitySchema,
+    TopSticker,
+    TopStickerSchema
+} from "@salvemundi/validations";
 import { Pool } from "pg";
+import { createDirectus, staticToken, rest } from "@directus/sdk";
+import { AdminResource } from '@/shared/lib/permissions-config';
+import { getPermissions, hasPermission, type UserPermissions } from '@/shared/lib/permissions';
 import { getRedis } from "@/server/auth/redis-client";
 
 const pool = new Pool({
@@ -39,13 +56,11 @@ export async function checkAdminAccess() {
 
     const user = session.user as any;
 
-    // Enrich name if missing but first/last names exist
     if (!user.name && (user.first_name || user.last_name)) {
         user.name = `${user.first_name || ''} ${user.last_name || ''}`.trim();
     }
     const impersonation = (session as any).impersonatedBy || null;
 
-    // determine admin status for the LOGGED IN user (or the impersonated user if swapped)
     const isIct = user.isICT || false;
     const isBestuur = user.isAdmin || false; 
     const isAuthorized = isIct || isBestuur;
@@ -66,27 +81,24 @@ export async function getDashboardPermissions() {
     const { isAuthorized, user, isIct } = await checkAdminAccess();
     if (!isAuthorized) return { canAccessIntro: false, canAccessReis: false, canAccessLogging: false, canAccessSync: false, canAccessCoupons: false, canAccessPermissions: false, canAccessStickers: false };
 
-    // Placeholder until settings validation is synced properly, using fallbacks
-    const committees = (user as any).committees || [];
-    const names = committees.map((c: any) => (c.name || '').toLowerCase());
-    const isBestuurOrIct = names.some((n: string) => n.includes('ict') || n.includes('bestuur'));
-    const hasHighPrivilege = isBestuurOrIct || names.some((n: string) => n.includes('kandi'));
+    const permissions = (user as any) as UserPermissions;
+    // Removed duplicate isIct declaration
 
     return {
-        canAccessIntro: hasHighPrivilege,
-        canAccessReis: hasHighPrivilege,
-        canAccessLogging: isBestuurOrIct,
-        canAccessSync: isBestuurOrIct,
-        canAccessCoupons: hasHighPrivilege,
-        canAccessStickers: isBestuurOrIct,
-        canAccessPermissions: isBestuurOrIct,
+        canAccessIntro: permissions.canAccessIntro || false,
+        canAccessReis: permissions.canAccessReis || false,
+        canAccessLogging: permissions.canAccessLogging || false,
+        canAccessSync: permissions.canAccessSync || false,
+        canAccessCoupons: permissions.canAccessCoupons || false,
+        canAccessStickers: permissions.canAccessStickers || false,
+        canAccessPermissions: permissions.canAccessPermissions || false,
         isIct
     };
 }
 
 export async function getDashboardStats(): Promise<DashboardStats> {
     const { isAuthorized } = await checkAdminAccess();
-    if (!isAuthorized) throw new Error("Unauthorized");
+    if (!isAuthorized) throw new Error("Geen toegang");
     try {
         const now = new Date();
         const today = now.toISOString().split('T')[0];
@@ -112,8 +124,8 @@ export async function getDashboardStats(): Promise<DashboardStats> {
             getSystemDirectus().request(aggregate('system_logs' as any, { aggregate: { count: '*' }, query: { filter: { status: { _eq: 'FAILED' } } } })).catch(e => { console.error("Stats: logs fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
             getSystemDirectus().request(aggregate('Stickers' as any, { aggregate: { count: '*' } })).catch(e => { console.error("Stats: Stickers fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
             getSystemDirectus().request(aggregate('Stickers' as any, { aggregate: { count: '*' }, query: { filter: { date_created: { _gte: lastWeek } } } })).catch(e => { console.error("Stats: recent Stickers fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
-            getSystemDirectus().request(readItems('pub_crawl_events', { fields: ['id', 'date'], sort: ['-date'] })).catch(() => []),
-            getSystemDirectus().request(readItems('trips', { fields: ['id', 'start_date', 'end_date', 'event_date'], filter: { status: { _eq: 'published' } }, sort: ['-start_date'] })).catch(() => [])
+            getSystemDirectus().request(readItems('pub_crawl_events', { fields: [...PUB_CRAWL_EVENT_FIELDS], sort: ['-date'] })).catch(() => []),
+            getSystemDirectus().request(readItems('trips', { fields: [...TRIP_FIELDS, 'status'], filter: { status: { _eq: 'published' } }, sort: ['-start_date'] })).catch(() => [])
         ]);
 
         let pubCrawlSignups = 0;
@@ -172,7 +184,7 @@ export async function getUpcomingBirthdays(): Promise<Birthday[]> {
     if (!isAuthorized) return [];
     try {
         const users = await getSystemDirectus().request(readUsers({
-            fields: ['id', 'first_name', 'last_name', 'date_of_birth'],
+            fields: [...USER_BASIC_FIELDS, 'date_of_birth' as any],
             filter: { date_of_birth: { _nnull: true } },
             limit: -1
         }));
@@ -219,7 +231,7 @@ export async function getRecentActivities(): Promise<RecentActivity[]> {
     const { isAuthorized } = await checkAdminAccess();
     if (!isAuthorized) return [];
     try {
-        const events = await getSystemDirectus().request(readItems('events', { fields: ['id', 'name', 'event_date'], sort: ['-event_date'], limit: 4 }));
+        const events = await getSystemDirectus().request(readItems('events', { fields: [...EVENT_FIELDS], sort: ['-event_date'], limit: 4 }));
         const eventsWithSignups = await Promise.all(
             events.map(async (ev: any) => {
                 const signups: any = await getSystemDirectus().request(aggregate('event_signups' as any, { aggregate: { count: '*' }, query: { filter: { event_id: { _eq: ev.id } } } })).catch(() => [{ count: 0 }]);
@@ -242,7 +254,7 @@ export async function getTopStickers(): Promise<TopSticker[]> {
     if (!isAuthorized) return [];
     try {
         const stickers = await getSystemDirectus().request(readItems('Stickers' as any, {
-            fields: ['user_created.id', 'user_created.first_name', 'user_created.last_name'] as any,
+            fields: [{ user_created: ['id', 'first_name', 'last_name'] }] as any,
             limit: -1
         }));
         const counts: Record<string, TopSticker> = {};
@@ -265,26 +277,21 @@ export async function getTopStickers(): Promise<TopSticker[]> {
 
 export async function setImpersonateToken(token: string) {
     const { isAuthorized } = await checkAdminAccess();
-    if (!isAuthorized) throw new Error("Unauthorized");
-
+    if (!isAuthorized) throw new Error("Geen toegang");
     try {
-        // 1. TEST DE TOKEN: Probeer de gebruiker en hun permissies op te halen
-        const directusUrl = process.env.DIRECTUS_SERVICE_URL!;
-        const { createDirectus, rest, staticToken, readMe } = (await import("@directus/sdk")) as any;
-        
+        const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL || process.env.DIRECTUS_URL || "https://cms.salvemundi.nl";
         const testClient = createDirectus(directusUrl)
             .with(staticToken(token))
             .with(rest());
             
         const user = await testClient.request(readMe({ 
-            fields: ['id', 'first_name', 'last_name', 'email', 'avatar', { role: ['name'] }] 
+            fields: [...USER_ID_FIELDS, 'first_name', 'last_name', 'email', 'avatar', { role: ['name'] }] 
         } as any)) as unknown as DirectusUser;
         
         if (!user) {
             return { success: false, error: "Token is ongeldig." };
         }
 
-        // 2. TOKEN IS GELDIG: Sla op in cookies
         const cookieStore = await cookies();
         cookieStore.set(TEST_TOKEN_COOKIE, token, {
             path: '/',
@@ -293,35 +300,29 @@ export async function setImpersonateToken(token: string) {
             secure: process.env.NODE_ENV === 'production',
         });
 
-        // Cache the impersonation info IMMEDIATELY
-        let impCommittees: string[] = [];
+        let impCommittees: any[] = [];
         try {
             const { rows } = await pool.query(
-                `SELECT c.name 
+                `SELECT c.id, c.name, c.azure_group_id
                  FROM committee_members m 
                  JOIN committees c ON m.committee_id = c.id 
                  WHERE m.user_id = $1`,
                 [user.id]
             );
-            impCommittees = rows.map((r: any) => r.name).filter(Boolean);
+            impCommittees = rows;
         } catch (e) {
             console.error("[setImpersonateToken] Failed to fetch committees:", e);
         }
 
         const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
-
-        // Admin status based purely on names
-        const normallyAdmin = impCommittees.some(n => {
-            const l = n.toLowerCase();
-            return l.includes('ict') || l.includes('bestuur') || l.includes('kandi');
-        });
+        const normallyAdmin = hasPermission(impCommittees, AdminResource.Intro);
         
         const info = {
             id: user.id,
             name: fullName || user.first_name || user.last_name || user.email || 'Onbekende gebruiker',
             email: user.email,
             avatar: user.avatar,
-            committees: impCommittees,
+            committees: impCommittees.map(c => c.name),
             isNormallyAdmin: normallyAdmin
         };
         
@@ -332,7 +333,6 @@ export async function setImpersonateToken(token: string) {
             secure: process.env.NODE_ENV === 'production',
         });
 
-        // FORCE Redis cache invalidation for this session AND the impersonation data
         const sessionToken = cookieStore.get('better-auth.session-token')?.value;
         const redis = await getRedis();
         
@@ -361,7 +361,6 @@ export async function clearImpersonateToken() {
     cookieStore.delete(TEST_TOKEN_COOKIE);
     cookieStore.delete(IMPERSONATION_INFO_COOKIE);
 
-    // FORCE Redis cache invalidation for this session AND the impersonation data
     const sessionToken = cookieStore.get('better-auth.session-token')?.value;
     const redis = await getRedis();
     

@@ -11,7 +11,7 @@ interface AttendanceOfficer {
 
 /**
  * Generate a stable token for a signup.
- * Legacy Prefix: r-
+ * QR Token Prefix: r-
  */
 export function generateQRToken(signupId: number | string, eventId: number | string) {
     const rand = Math.random().toString(36).substring(2, 15);
@@ -39,7 +39,7 @@ export async function generateQRCode(data: string): Promise<string> {
 }
 
 /**
- * Legacy Attendance Logic (adapted for V7 fetch)
+ * Attendance Logic
  */
 export async function updateSignupWithQRToken(signupId: number | string, token: string) {
     try {

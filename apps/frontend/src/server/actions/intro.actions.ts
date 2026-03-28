@@ -1,6 +1,13 @@
 'use server';
 
-import { introSignupFormSchema, introParentSignupFormSchema, type IntroSignupForm, type IntroParentSignupForm } from '@salvemundi/validations';
+import { 
+    introSignupFormSchema, 
+    introParentSignupFormSchema, 
+    type IntroSignupForm, 
+    type IntroParentSignupForm,
+    FEATURE_FLAG_FIELDS, 
+    INTRO_PARENT_SIGNUP_FIELDS 
+} from '@salvemundi/validations';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 
@@ -21,15 +28,17 @@ const getServiceHeaders = (): HeadersInit => {
 
 export async function getIntroSettings() {
     try {
-        const items = await getSystemDirectus().request(readItems('site_settings', {
-            filter: { id: { _eq: 'intro' } }
+        const items = await getSystemDirectus().request(readItems('feature_flags', {
+            filter: { route_match: { _eq: '/intro' } },
+            fields: [...FEATURE_FLAG_FIELDS],
+            limit: 1
         }));
 
         const data = items?.[0];
 
         return {
-            show: data?.show ?? false,
-            disabled_message: data?.disabled_message ?? 'De inschrijvingen voor de introweek zijn momenteel gesloten.',
+            show: data?.is_active ?? false,
+            disabled_message: data?.message ?? 'De inschrijvingen voor de introweek zijn momenteel gesloten.',
         };
     } catch {
         return { show: false, disabled_message: 'De inschrijvingen voor de introweek zijn momenteel gesloten.' };
@@ -45,7 +54,8 @@ export async function hasParentSignup(): Promise<boolean> {
 
     try {
         const items = await getSystemDirectus().request(readItems('intro_parent_signups' as any, {
-            filter: { user_id: { _eq: session.user.id } }
+            filter: { user_id: { _eq: session.user.id } },
+            fields: [...INTRO_PARENT_SIGNUP_FIELDS]
         }));
 
         return Array.isArray(items) && items.length > 0;
@@ -83,7 +93,7 @@ export async function submitIntroSignup(data: IntroSignupForm) {
     try {
         await getSystemDirectus().request(createItem('intro_signups' as any, payload as any));
     } catch (e) {
-        console.error('[IntroAction] Mislukt bij Directus creatie:', e);
+        console.error('[IntroAction] Failed in Directus creation:', e);
         throw new Error('Er is een fout opgetreden bij je inschrijving');
     }
 
@@ -124,8 +134,6 @@ export async function submitIntroParentSignup(data: IntroParentSignupForm) {
     if (!parsed.success) {
         throw new Error('Validatie mislukt');
     }
-
-    // Aanname: de user object structuur heeft name
     const payload = {
         user_id: session.user.id,
         first_name: session.user.name?.split(' ')[0] || session.user.name,
@@ -141,7 +149,7 @@ export async function submitIntroParentSignup(data: IntroParentSignupForm) {
         revalidatePath('/beheer/intro');
         return { success: true };
     } catch (e) {
-        console.error('[IntroParentAction] Mislukt:', e);
+        console.error('[IntroParentAction] Failed:', e);
         throw new Error('Er is een fout opgetreden tijdens de intro-ouder inschrijving');
     }
 }

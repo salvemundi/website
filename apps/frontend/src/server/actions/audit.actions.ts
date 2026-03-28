@@ -11,13 +11,15 @@ import {
     updateSingleton,
     createItem
 } from "@directus/sdk";
-import { PendingSignup } from "@salvemundi/validations";
+import { 
+    PendingSignup, 
+    EVENT_SIGNUP_FIELDS,
+    TRIP_SIGNUP_FIELDS,
+    PUB_CRAWL_SIGNUP_FIELDS,
+    SYSTEM_LOG_FIELDS
+} from "@salvemundi/validations";
 import { isSuperAdmin } from "@/lib/auth-utils";
 
-/**
- * Helper to log admin actions to the system_logs collection.
- * This is the new designated logging collection.
- */
 export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' | 'INFO', payload?: any) {
     try {
         const session = await auth.api.getSession({ headers: await headers() });
@@ -59,48 +61,48 @@ export async function getPendingSignupsAction() {
         // Fetch from all 3 collections
         // 1. Events
         const eventSignups = (await getSystemDirectus().request(readItems('event_signups', {
-            fields: ['id', 'date_created', 'participant_name', 'participant_email', 'approval_status', 'payment_status', { event_id: ['name'] }] as any,
-            filter: { approval_status: { _eq: 'pending' } },
-            sort: ['-date_created']
+            fields: [...EVENT_SIGNUP_FIELDS, { event_id: ['name'] }] as any,
+            filter: { payment_status: { _eq: 'open' } },
+            sort: ['-created_at'] as any
         }))) as any[];
 
         // 2. Pub Crawl
         const pubCrawlSignups = (await getSystemDirectus().request(readItems('pub_crawl_signups' as any, {
-            fields: ['id', 'date_created', 'name', 'email', 'approval_status', 'payment_status', { pub_crawl_event_id: ['name'] }] as any,
-            filter: { approval_status: { _eq: 'pending' } },
-            sort: ['-date_created']
+            fields: [...PUB_CRAWL_SIGNUP_FIELDS, { pub_crawl_event_id: ['name'] }] as any,
+            filter: { payment_status: { _eq: 'open' } },
+            sort: ['-created_at'] as any
         }))) as any[];
 
         // 3. Trips
         const tripSignups = (await getSystemDirectus().request(readItems('trip_signups' as any, {
-            fields: ['id', 'date_created', 'first_name', 'last_name', 'email', 'approval_status', 'payment_status', { trip_id: ['name'] }] as any,
-            filter: { approval_status: { _eq: 'pending' } },
-            sort: ['-date_created']
+            fields: [...TRIP_SIGNUP_FIELDS, { trip_id: ['name'] }] as any,
+            filter: { status: { _eq: 'registered' } },
+            sort: ['-created_at'] as any
         }))) as any[];
 
         // Aggregate and map
         const aggregated: PendingSignup[] = [
             ...eventSignups.map((s: any) => ({
                 id: s.id.toString(),
-                created_at: s.date_created,
+                created_at: s.created_at,
                 email: s.participant_email,
                 first_name: s.participant_name.split(' ')[0],
                 last_name: s.participant_name.split(' ').slice(1).join(' '),
                 product_name: s.event_id?.name || 'Onbekend Event',
-                amount: 0, // In V7 prices are on the event, not the signup
-                approval_status: s.approval_status as any,
+                amount: 0,
+                approval_status: 'pending' as any,
                 payment_status: s.payment_status,
                 type: 'event' as const
             })),
             ...pubCrawlSignups.map((s: any) => ({
                 id: s.id.toString(),
-                created_at: s.date_created,
+                created_at: s.created_at,
                 email: s.email,
                 first_name: s.name.split(' ')[0],
                 last_name: s.name.split(' ').slice(1).join(' '),
                 product_name: s.pub_crawl_event_id?.name || 'Kroegentocht',
                 amount: 0,
-                approval_status: s.approval_status as any,
+                approval_status: 'pending' as any,
                 payment_status: s.payment_status,
                 type: 'pub_crawl' as const
             })),
@@ -134,7 +136,6 @@ export async function approveSignupAction(id: string, type: string) {
     try {
         await getSystemDirectus().request(updateItem(collection as any, id as any, { approval_status: 'approved' }));
         
-        // Log the approval
         await logAdminAction('signup_approved', 'SUCCESS', { 
             signup_id: id, 
             type: type 
@@ -157,7 +158,6 @@ export async function rejectSignupAction(id: string, type: string) {
     try {
         await getSystemDirectus().request(updateItem(collection as any, id as any, { approval_status: 'rejected' }));
         
-        // Log the rejection
         await logAdminAction('signup_rejected', 'SUCCESS', { 
             signup_id: id, 
             type: type 
@@ -235,7 +235,6 @@ export async function updateAuditSettingsAction(manualApproval: boolean) {
             });
         }
         
-        // Log the change
         await logAdminAction('settings_change', 'SUCCESS', { 
             setting: 'manual_approval', 
             value: manualApproval 
@@ -249,16 +248,13 @@ export async function updateAuditSettingsAction(manualApproval: boolean) {
     }
 }
 
-/**
- * Fetches recent system logs for the audit dashboard.
- */
 export async function getSystemLogsAction(limit: number = 50) {
     const admin = await checkAuditAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
         const logs = await getSystemDirectus().request(readItems('system_logs' as any, {
-            fields: ['id', 'type', 'status', 'payload', 'created_at'],
+            fields: [...SYSTEM_LOG_FIELDS],
             sort: ['-created_at'],
             limit
         }));

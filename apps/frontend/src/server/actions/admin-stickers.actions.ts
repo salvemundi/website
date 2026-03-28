@@ -6,17 +6,10 @@ import { revalidateTag, revalidatePath } from "next/cache";
 import { logAdminAction } from "./audit.actions";
 import { isSuperAdmin } from "@/lib/auth-utils";
 
-/**
- * Access the internal Directus URL for improved performance and security
- * within the cluster/VPS environment.
- */
 import { getSystemDirectus } from "@/lib/directus";
 import { readItems, deleteItem, updateItem } from "@directus/sdk";
+import { STICKER_FIELDS } from "@salvemundi/validations";
 
-/**
- * Ensures the user is logged in and belongs to a committee with administrative 
- * access to sticker moderation (ICT or Bestuur).
- */
 async function requireStickerAdmin() {
     const session = await auth.api.getSession({
         headers: await headers()
@@ -32,30 +25,25 @@ async function requireStickerAdmin() {
     return session.user;
 }
 
-/**
- * Fetches all stickers for moderation, including creator details.
- * We fetch all stickers (-1 limit) as the total volume is currently manageable.
- */
 export async function getStickers() {
     await requireStickerAdmin();
     
     try {
         const stickers = await getSystemDirectus().request(readItems('Stickers', {
-            fields: ['id', 'location_name', 'date_created', 'latitude', 'longitude', 'city', 'country', 'address', 'image', { user_created: ['id', 'first_name', 'last_name', 'avatar'] }],
+            fields: [
+                ...STICKER_FIELDS, 
+                { user_created: ['id', 'first_name', 'last_name', 'avatar'] }
+            ],
             sort: ['-date_created'],
             limit: -1
         }));
         return stickers || [];
     } catch (e) {
         console.error('[AdminStickers] Fetch failed:', e);
-        throw new Error('Kon stickers niet ophalen');
+        throw new Error('Could not fetch stickers');
     }
 }
 
-/**
- * Deletes a sticker from the system.
- * Triggers a revalidation of the 'stickers' tag to update the admin table and public map.
- */
 export async function deleteSticker(id: number) {
     const session = await requireStickerAdmin();
 
@@ -65,20 +53,15 @@ export async function deleteSticker(id: number) {
         revalidatePath('/stickers');
         revalidateTag('stickers', 'max');
         
-        // Log the deletion
         await logAdminAction('sticker_deleted', 'SUCCESS', { sticker_id: id });
 
         return { success: true };
     } catch (error) {
         console.error('[AdminStickers] Delete failed:', error);
-        throw new Error('Kon sticker niet verwijderen');
+        throw new Error('Could not delete sticker');
     }
 }
 
-/**
- * Updates sticker data (e.g., status or coordinates).
- * Revalidation is required to ensure consistent state across the board.
- */
 export async function updateSticker(id: number, data: any) {
     const session = await requireStickerAdmin();
 
@@ -90,7 +73,7 @@ export async function updateSticker(id: number, data: any) {
         return updated;
     } catch (e) {
         console.error('[AdminStickers] Update failed:', e);
-        throw new Error('Kon sticker niet bijwerken');
+        throw new Error('Could not update sticker');
     }
 }
 

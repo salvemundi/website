@@ -7,7 +7,11 @@ import {
     pubCrawlEventSchema, 
     pubCrawlSignupSchema, 
     type PubCrawlEvent, 
-    type PubCrawlSignup 
+    type PubCrawlSignup,
+    PUB_CRAWL_EVENT_FIELDS,
+    PUB_CRAWL_SIGNUP_FIELDS,
+    PUB_CRAWL_TICKET_FIELDS,
+    FEATURE_FLAG_FIELDS
 } from '@salvemundi/validations';
 import { isSuperAdmin } from "@/lib/auth-utils";
 
@@ -17,25 +21,21 @@ import {
     readItem, 
     updateItem, 
     deleteItem, 
-    createItem 
+    createItem,
+    uploadFiles 
 } from '@directus/sdk';
 
-/**
- * Access check for Pub Crawl Admin
- */
 async function requireKroegAdmin() {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) throw new Error('Niet ingelogd');
 
-    const user = session.user as any;
-    if (!isSuperAdmin(user.committees)) {
+    if (!isSuperAdmin((session.user as any).committees)) {
         throw new Error('Geen toegang tot Kroegentocht beheer: SuperAdmin rechten vereist');
     }
 
     return session;
 }
 
-// ── Events ──────────────────────────────────────────────────────────────────
 
 export async function getPubCrawlEvents(): Promise<PubCrawlEvent[]> {
     await requireKroegAdmin();
@@ -43,9 +43,13 @@ export async function getPubCrawlEvents(): Promise<PubCrawlEvent[]> {
         const items = await getSystemDirectus().request(readItems('pub_crawl_events', {
             sort: ['-date'],
             limit: 100,
-            fields: ['id', 'name', 'date', 'price', 'max_tickets_per_person']
+            fields: [...PUB_CRAWL_EVENT_FIELDS]
         }));
-        return (items ?? []).map((e: any) => pubCrawlEventSchema.parse(e));
+        return (items ?? []).map((e: any) => {
+            e.price = 1;
+            e.max_tickets_per_person = 10;
+            return pubCrawlEventSchema.parse(e);
+        });
     } catch (e) {
         console.error('[AdminKroegentocht] Fetch events failed:', e);
         throw new Error('Kon events niet ophalen');
@@ -56,9 +60,12 @@ export async function getPubCrawlEvent(id: string | number): Promise<PubCrawlEve
     await requireKroegAdmin();
     try {
         const item = await getSystemDirectus().request(readItem('pub_crawl_events', id, {
-            fields: ['id', 'name', 'date', 'price', 'max_tickets_per_person']
+            fields: [...PUB_CRAWL_EVENT_FIELDS]
         }));
-        return pubCrawlEventSchema.parse(item);
+        const event = item as any;
+        event.price = 1;
+        event.max_tickets_per_person = 10;
+        return pubCrawlEventSchema.parse(event);
     } catch (e) {
         console.error('[AdminKroegentocht] Fetch event failed:', e);
         throw new Error('Kon event niet ophalen');
@@ -67,7 +74,7 @@ export async function getPubCrawlEvent(id: string | number): Promise<PubCrawlEve
 
 export async function upsertPubCrawlEvent(data: Partial<PubCrawlEvent>) {
     const session = await requireKroegAdmin();
-    const { id, ...payload } = data;
+    const { id, ...payload } = data as any;
     
     try {
         const client = getSystemDirectus();
@@ -85,7 +92,18 @@ export async function upsertPubCrawlEvent(data: Partial<PubCrawlEvent>) {
     }
 }
 
-// ── Signups ────────────────────────────────────────────────────────────────
+export async function uploadPubCrawlImage(formData: FormData) {
+    await requireKroegAdmin();
+    try {
+        const client = getSystemDirectus();
+        const response = await client.request(uploadFiles(formData));
+        return response;
+    } catch (e) {
+        console.error('[AdminKroegentocht] Upload failed:', e);
+        throw new Error('Afbeelding uploaden mislukt');
+    }
+}
+
 
 export async function getPubCrawlSignups(eventId: number) {
     await requireKroegAdmin();
@@ -93,13 +111,11 @@ export async function getPubCrawlSignups(eventId: number) {
         const items = await getSystemDirectus().request(readItems('pub_crawl_signups', {
             filter: { pub_crawl_event_id: { _eq: eventId } },
             fields: [
-                'id', 'pub_crawl_event_id', 'name', 'email', 'association', 
-                'amount_tickets', 'name_initials', 'payment_status', 'approval_status', 
-                'date_created',
-                { tickets: ['id', 'name', 'initial', 'qr_token', 'checked_in'] }
+                ...PUB_CRAWL_SIGNUP_FIELDS,
+                { tickets: [...PUB_CRAWL_TICKET_FIELDS] }
             ] as any,
             limit: 1000,
-            sort: ['-date_created'],
+            sort: ['-id'],
         }));
 
         return (items ?? []).map((s: any) => ({
@@ -117,10 +133,8 @@ export async function getPubCrawlSignup(id: number) {
     try {
         const item = await getSystemDirectus().request(readItem('pub_crawl_signups', id, {
             fields: [
-                'id', 'pub_crawl_event_id', 'name', 'email', 'association', 
-                'amount_tickets', 'name_initials', 'payment_status', 'approval_status', 
-                'date_created',
-                { tickets: ['id', 'name', 'initial', 'qr_token', 'checked_in'] }
+                ...PUB_CRAWL_SIGNUP_FIELDS,
+                { tickets: [...PUB_CRAWL_TICKET_FIELDS] }
             ] as any
         }));
         return item;
@@ -154,38 +168,53 @@ export async function updatePubCrawlSignup(id: number, eventId: number, data: an
     }
 }
 
-// ── Settings ───────────────────────────────────────────────────────────────
 
 export async function toggleKroegentochtVisibility(current: boolean) {
-    const session = await requireKroegAdmin();
-    const key = 'kroegentocht';
-    const payload = { id: key, show: !current };
+    await requireKroegAdmin();
+    const route = '/kroegentocht';
     
     try {
-        // Try update first
-        await getSystemDirectus().request(updateItem('site_settings', key, payload));
-    } catch (e) {
-        // If update fails, try create
-        try {
-            await getSystemDirectus().request(createItem('site_settings', payload));
-        } catch (postErr) {
-            console.error('[AdminKroegentocht] Toggle visibility failed:', postErr);
-            throw new Error('Bijwerken mislukt');
+        const client = getSystemDirectus();
+        const existing = await client.request(readItems('feature_flags', {
+            filter: { route_match: { _eq: route } },
+            fields: [...FEATURE_FLAG_FIELDS],
+            limit: 1
+        }));
+
+        if (existing && existing.length > 0) {
+            await client.request(updateItem('feature_flags', existing[0].id as unknown as string, { is_active: !current }));
+        } else {
+            await client.request(createItem('feature_flags', { 
+                name: 'Kroegentocht Inschrijving',
+                route_match: route, 
+                is_active: !current 
+            }));
         }
+    } catch (e) {
+        console.error('[AdminKroegentocht] Toggle visibility failed:', e);
+        throw new Error('Bijwerken mislukt');
     }
 
-    revalidateTag('site_settings', 'default');
+    revalidateTag('feature_flags', 'default');
     return { success: true, show: !current };
 }
 
 export async function getKroegentochtSettings() {
     await requireKroegAdmin();
     try {
-        const item = await getSystemDirectus().request(readItem('site_settings', 'kroegentocht'));
-        return item;
+        const items = await getSystemDirectus().request(readItems('feature_flags', {
+            filter: { route_match: { _eq: '/kroegentocht' } },
+            fields: [...FEATURE_FLAG_FIELDS],
+            limit: 1
+        }));
+        
+        if (items && items.length > 0) {
+            return { show: !!items[0].is_active };
+        }
+        return { show: false };
     } catch (e) {
         console.error('[AdminKroegentocht] Get settings failed:', e);
-        return { show: true };
+        return { show: false };
     }
 }
 

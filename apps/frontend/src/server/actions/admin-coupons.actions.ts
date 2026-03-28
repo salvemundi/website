@@ -12,16 +12,18 @@ import {
     deleteItem, 
     createItem 
 } from '@directus/sdk';
+import { COUPON_FIELDS } from '@salvemundi/validations';
 
-const ALLOWED_ROLES = ['ictcommissie', 'ict', 'bestuur', 'kascommissie', 'kas', 'kandidaatbestuur', 'kandi'];
+import { AdminResource } from '@/shared/lib/permissions-config';
+import { hasPermission } from '@/shared/lib/permissions';
 
 async function checkAccess() {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) throw new Error('Niet ingelogd');
     
     const user = session.user as any;
-    if (!isSuperAdmin(user.committees)) {
-        throw new Error('Geen toegang: SuperAdmin rechten vereist voor coupon beheer');
+    if (!hasPermission(user.committees, AdminResource.Coupons)) {
+        throw new Error('Geen toegang: onvoldoende rechten voor coupon beheer');
     }
     
     return session;
@@ -48,7 +50,7 @@ export async function getCoupons(): Promise<Coupon[]> {
         const items = await getSystemDirectus().request(readItems('coupons', {
             sort: ['-id'],
             limit: 500,
-            fields: ['id', 'coupon_code', 'discount_type', 'discount_value', 'usage_count', 'usage_limit', 'valid_from', 'valid_until', 'is_active', 'date_created']
+            fields: [...COUPON_FIELDS]
         }));
         return (items ?? []) as Coupon[];
     } catch (e) {
@@ -74,19 +76,28 @@ export async function createCoupon(formData: FormData): Promise<{ success: boole
 
     const discountValue = parseFloat(discountValueRaw.replace(',', '.'));
     if (isNaN(discountValue) || discountValue <= 0) {
-        return { success: false, error: 'Ongeldige kortingswaarde' };
+        return { success: false, error: 'Ongeldige kortingswaarde: moet een positief getal zijn' };
     }
-    if (discountType === 'percentage' && discountValue > 100) {
-        return { success: false, error: 'Percentage kan niet hoger zijn dan 100%' };
+    
+    if (discountType === 'percentage' && (discountValue > 100 || discountValue <= 0)) {
+        return { success: false, error: 'Percentage moet tussen 0.01% en 100% liggen' };
+    }
+
+    let usageLimit: number | null = null;
+    if (usageLimitRaw) {
+        usageLimit = parseInt(usageLimitRaw);
+        if (isNaN(usageLimit) || usageLimit < 1) {
+            return { success: false, error: 'Gebruikslimiet moet minimaal 1 zijn (of leeg voor onbeperkt)' };
+        }
     }
 
     const payload: Record<string, unknown> = {
-        coupon_code: code.toUpperCase(),
+        coupon_code: code.trim().toUpperCase(),
         discount_type: discountType,
         discount_value: discountValue,
         is_active: isActive,
         usage_count: 0,
-        usage_limit: usageLimitRaw ? parseInt(usageLimitRaw) : null,
+        usage_limit: usageLimit,
         valid_from: validFrom || null,
         valid_until: validUntil || null,
     };

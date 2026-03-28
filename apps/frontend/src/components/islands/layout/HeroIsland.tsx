@@ -142,7 +142,7 @@ export function HeroIsland({ banners, activiteiten }: HeroIslandProps) {
                                     {/* Ingelogd + volgend evenement beschikbaar */}
                                     {(mounted && !authLoading && !showMembershipLink && nextEvent) && (
                                         <Link
-                                            href={`/activiteiten/${nextEvent.id}`}
+                                            href={(nextEvent as any).custom_url || `/activiteiten/${nextEvent.id}`}
                                             className="block w-full transition-transform hover:scale-[1.02] group/event"
                                         >
                                             <div className="w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-4 sm:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-4 min-h-[90px] sm:min-h-[100px]">

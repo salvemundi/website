@@ -6,26 +6,21 @@ import { headers } from 'next/headers';
 
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
+import { SAFE_HAVEN_FIELDS } from '@salvemundi/validations';
 
-/**
- * Interne helper die de data uit Directus ophaalt.
- * Deze functie is volledig statisch voor de cache en mag GEEN dynamic metadata (headers, cookies) bevatten.
- */
 async function fetchSafeHavensFromDirectus(): Promise<SafeHaven[]> {
     try {
         const rawData = await getSystemDirectus().request(readItems('safe_havens', {
-            fields: ['id', 'contact_name', 'email', 'phone_number', 'image'],
+            fields: [...SAFE_HAVEN_FIELDS],
             limit: 10
         }));
 
-        // Mapping van DB velden naar Zod Schema velden
-        const mappedData = rawData.map((item: any) => ({
-            id: item.id ?? '',
-            naam: item.contact_name ?? '',
-            email: item.email ?? null,
-            telefoon: item.phone_number ?? null,
-            beschrijving: null, // Beschrijving ontbreekt in huidige DB
-            afbeelding_id: item.image ?? null,
+        const mappedData = (rawData as any[]).map((item) => ({
+            id: item.id,
+            naam: item.contact_name,
+            email: item.email,
+            telefoon: item.phone_number,
+            afbeelding_id: item.image,
             status: 'published',
             sort: item.sort ?? 0,
         }));
@@ -45,25 +40,11 @@ async function fetchSafeHavensFromDirectus(): Promise<SafeHaven[]> {
     }
 }
 
-/**
- * Haalt alle vertrouwenspersonen (safe_havens) op uit Directus.
- * 
- * Beveiligingslogica conform V7:
- * - Gebruikt fetchSafeHavensFromDirectus via 'use cache' voor de data-opslag.
- * - Controleert de Better Auth sessie op de server (DYNAMIC).
- * - Filtert email en telefoon weg indien de bezoeker niet is ingelogd.
- */
 export async function getSafeHavens(): Promise<SafeHaven[]> {
-    // 1. Controleer authenticatie op de server (Dynamic — buiten 'use cache')
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
-    const isAuthenticated = !!session;
-
-    // 2. Haal de gecachte data op
+    const session = await auth.api.getSession({ headers: await headers() });
+    const isAuthenticated = !!session?.user;
     const allHavens = await fetchSafeHavensFromDirectus();
 
-    // 3. Server-side filtering van gevoelige gegevens (email/telefoon) voor niet-leden
     return allHavens.map((haven) => ({
         ...haven,
         email: isAuthenticated ? haven.email : null,

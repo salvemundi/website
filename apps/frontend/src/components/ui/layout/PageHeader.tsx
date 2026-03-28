@@ -90,7 +90,7 @@ export default function PageHeader({
                                 </React.Fragment>
                             ))}
                         </h1>
-                        {description && <div className="mt-4 text-center mx-auto">{typeof description === 'string' ? stripHtml(description) : description}</div>}
+                        {description && <div className="mt-4 text-center mx-auto text-[var(--text-main)]">{typeof description === 'string' ? stripHtml(description) : description}</div>}
                         {children}
                     </>
                 ) : (

@@ -1,13 +1,17 @@
 'use server';
 
 import {
-    pubCrawlEventSchema,
-    pubCrawlSignupSchema,
-    pubCrawlTicketSchema,
+    type PubCrawlTicket,
     type PubCrawlEvent,
-    type PubCrawlSignup,
-    type PubCrawlTicket
+    pubCrawlEventSchema,
+    pubCrawlTicketSchema,
+    pubCrawlSignupSchema,
+    PUB_CRAWL_EVENT_FIELDS,
+    PUB_CRAWL_SIGNUP_FIELDS,
+    PUB_CRAWL_TICKET_FIELDS,
+    EVENT_FIELDS
 } from '@salvemundi/validations';
+const EVENT_ID_FIELDS = ['id'] as const;
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { revalidateTag } from 'next/cache';
@@ -26,9 +30,6 @@ const getInternalHeaders = () => {
     };
 };
 
-/**
- * Helper voor Fetch met timeout (for Finance Service)
- */
 async function fetchWithTimeout(url: string, options: RequestInit & { timeout?: number } = {}) {
     const { timeout = 10000, ...fetchOptions } = options;
     const controller = new AbortController();
@@ -47,9 +48,6 @@ async function fetchWithTimeout(url: string, options: RequestInit & { timeout?: 
     }
 }
 
-/**
- * Haalt het eerstvolgende Kroegentocht evenement op.
- */
 export async function getKroegentochtEvent(): Promise<PubCrawlEvent | null> {
     const today = new Date().toISOString().split('T')[0];
     
@@ -58,11 +56,15 @@ export async function getKroegentochtEvent(): Promise<PubCrawlEvent | null> {
             filter: { date: { _gte: today } },
             sort: ['date'],
             limit: 1,
-            fields: ['id', 'name', 'date', 'price', 'max_tickets_per_person']
+            fields: [...PUB_CRAWL_EVENT_FIELDS]
         }));
 
-        const event = data?.[0];
+        const event = data?.[0] as any;
         if (!event) return null;
+
+        // Hardcode price and tickets per user request
+        event.price = 1;
+        event.max_tickets_per_person = 10;
 
         const parsed = pubCrawlEventSchema.safeParse(event);
         return parsed.success ? parsed.data : null;
@@ -72,9 +74,6 @@ export async function getKroegentochtEvent(): Promise<PubCrawlEvent | null> {
     }
 }
 
-/**
- * Haalt de betaalde tickets op voor een specifiek e-mailadres.
- */
 export async function getKroegentochtTickets(email: string): Promise<PubCrawlTicket[]> {
     try {
         const data = await getSystemDirectus().request(readItems('pub_crawl_tickets', {
@@ -85,7 +84,7 @@ export async function getKroegentochtTickets(email: string): Promise<PubCrawlTic
                 } as any
             },
             fields: [
-                'id', 'signup_id', 'name', 'initial', 'qr_token', 'checked_in', 'checked_in_at',
+                ...PUB_CRAWL_TICKET_FIELDS,
                 { signup_id: [{ pub_crawl_event_id: ['name'] }] }
             ] as any
         }));
@@ -98,22 +97,17 @@ export async function getKroegentochtTickets(email: string): Promise<PubCrawlTic
     }
 }
 
-/**
- * Start een inschrijving en betaling voor de Kroegentocht.
- */
 export async function initiateKroegentochtPayment(formData: any) {
-    // 1. Validatie
     const parsed = pubCrawlSignupSchema.safeParse(formData);
     if (!parsed.success) {
         return { success: false, errors: parsed.error.flatten().fieldErrors };
     }
 
     try {
-        // 2. Dynamische prijs en limiet ophalen
         const event = await getSystemDirectus().request(readItems('pub_crawl_events', {
             filter: { id: { _eq: parsed.data.pub_crawl_event_id as any } },
             limit: 1,
-            fields: ['id', 'price', 'max_tickets_per_person']
+            fields: [...EVENT_ID_FIELDS]
         }));
         
         const eventData = event?.[0];
@@ -121,17 +115,16 @@ export async function initiateKroegentochtPayment(formData: any) {
             return { success: false, error: 'Evenement niet gevonden' };
         }
 
-        const price = Number(eventData.price || 1.00);
-        const maxPerPerson = Number(eventData.max_tickets_per_person || 10);
+        const price = 1;
+        const maxPerPerson = 10;
 
-        // 3. Dubbele check op ticket limiet
         const existingSignups = await getSystemDirectus().request(readItems('pub_crawl_signups', {
             filter: {
                 email: { _eq: parsed.data.email },
                 pub_crawl_event_id: { _eq: parsed.data.pub_crawl_event_id },
                 payment_status: { _eq: 'paid' }
             },
-            fields: ['amount_tickets']
+            fields: ['amount_tickets' as any]
         }));
         
         const existingCount = (existingSignups || []).reduce((sum: number, s: any) => sum + (s.amount_tickets || 0), 0);
@@ -140,7 +133,7 @@ export async function initiateKroegentochtPayment(formData: any) {
             return { success: false, error: `Je hebt al ${existingCount} tickets. Maximaal ${maxPerPerson} per persoon/groep.` };
         }
 
-        // 4. Signup aanmaken
+        // 4. Create signup
         const { id: _, ...signupData } = parsed.data;
         const signup = await getSystemDirectus().request(createItem('pub_crawl_signups', {
             ...signupData,
@@ -148,9 +141,9 @@ export async function initiateKroegentochtPayment(formData: any) {
             payment_status: 'open'
         }));
         
-        const signupId = signup.id;
+        const signupId = signup.id as number;
 
-        // 5. Betaling initiëren via Finance Service
+        // 5. Initiate payment via Finance Service
         const financeUrl = `${getFinanceServiceUrl()}/api/payments/create`;
         const paymentRes = await fetchWithTimeout(financeUrl, {
             method: 'POST',
@@ -181,17 +174,12 @@ export async function initiateKroegentochtPayment(formData: any) {
     }
 }
 
-/**
- * Checkt de status van een inschrijving.
- */
 export async function getKroegentochtStatus(signupId: string) {
     try {
         const data = await getSystemDirectus().request(readItems('pub_crawl_signups', {
             filter: { id: { _eq: signupId as any } },
             fields: [
-                'id', 'pub_crawl_event_id', 'name', 'email', 'association', 
-                'amount_tickets', 'name_initials', 'payment_status', 'approval_status', 
-                'date_created',
+                ...PUB_CRAWL_SIGNUP_FIELDS,
                 { pub_crawl_event_id: ['name'] }
             ] as any,
             limit: 1

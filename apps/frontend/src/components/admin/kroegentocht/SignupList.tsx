@@ -87,6 +87,9 @@ export default function SignupList({
                             placeholder="Zoek op naam, email of vereniging..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
+                            autoComplete="off"
+                            spellCheck={false}
+                            suppressHydrationWarning={true}
                             className="w-full pl-12 pr-4 py-3 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-medium text-sm text-[var(--text-main)]"
                         />
                     </div>

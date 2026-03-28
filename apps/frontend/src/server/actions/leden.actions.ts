@@ -7,6 +7,7 @@ import { getSystemDirectus } from "@/lib/directus";
 import { readItems, updateItem, updateUser, readUsers, readUser } from "@directus/sdk";
 import { isSuperAdmin } from "@/lib/auth-utils";
 import { logAdminAction } from "./audit.actions";
+import { USER_FULL_FIELDS, COMMITTEE_FIELDS, USER_ID_FIELDS } from "@salvemundi/validations";
 
 const AZURE_MGMT_URL = process.env.AZURE_MANAGEMENT_SERVICE_URL;
 const AZURE_SYNC_URL = process.env.AZURE_SYNC_SERVICE_URL;
@@ -33,7 +34,6 @@ export async function manageAzureMembershipAction(userId: string, azureGroupId: 
     if (!azureGroupId) return { success: false, error: "Dit comité is niet gekoppeld aan Azure." };
 
     try {
-        // 1. Call Azure Management Service
         const mgmtEndpoint = action === 'add' 
             ? `${AZURE_MGMT_URL}/api/groups/${encodeURIComponent(azureGroupId)}/members`
             : `${AZURE_MGMT_URL}/api/groups/${encodeURIComponent(azureGroupId)}/members/${encodeURIComponent(userId)}`;
@@ -77,9 +77,6 @@ export async function manageAzureMembershipAction(userId: string, azureGroupId: 
     }
 }
 
-/**
- * Legacy support / Membership reminders
- */
 export async function sendMembershipReminderAction(daysBeforeExpiry: number = 30) {
     const user = await checkAdminAccess();
     if (!user) return { success: false, error: "Unauthorized" };
@@ -119,7 +116,6 @@ export async function updateMemberProfileAction(
     const admin = await checkAdminAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
 
-    // Strip empty strings to avoid overwriting with blank
     const payload: Record<string, string> = {};
     if (data.first_name !== undefined && data.first_name.trim()) payload.first_name = data.first_name.trim();
     if (data.last_name !== undefined && data.last_name.trim()) payload.last_name = data.last_name.trim();
@@ -131,12 +127,10 @@ export async function updateMemberProfileAction(
     }
 
     try {
-        // 1. Update Directus
         await getSystemDirectus().request(updateUser(directusUserId, payload));
 
-        // 2. Sync to Azure AD if entra_id exists
         const user: any = await getSystemDirectus().request(readUser(directusUserId, {
-            fields: ['entra_id']
+            fields: [...USER_ID_FIELDS]
         }));
 
         if (user?.entra_id && AZURE_MGMT_URL && INTERNAL_TOKEN) {
@@ -180,9 +174,8 @@ export async function renewMembershipAction(
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
-        // 1. Update Directus
         const users: any = await getSystemDirectus().request(readUsers({
-            fields: ['membership_expiry', 'entra_id'] as any,
+            fields: [...USER_FULL_FIELDS] as any,
             filter: { id: { _eq: directusUserId } } as any,
             limit: 1
         }));
@@ -199,12 +192,10 @@ export async function renewMembershipAction(
 
         await getSystemDirectus().request(updateUser(directusUserId, { membership_expiry: newExpiryStr } as any));
 
-        // 2. Update Azure AD (Leden_Actief_Lidmaatschap)
         if (user.entra_id && AZURE_MGMT_URL && INTERNAL_TOKEN) {
-            // First, find the Azure group ID for 'Leden_Actief_Lidmaatschap'
             const committees: any = await getSystemDirectus().request(readItems('committees', {
                 filter: { name: { _eq: 'Leden_Actief_Lidmaatschap' } },
-                fields: ['azure_group_id'],
+                fields: [...COMMITTEE_FIELDS],
                 limit: 1
             }));
             const activeGroupId = committees?.[0]?.azure_group_id;
@@ -218,7 +209,6 @@ export async function renewMembershipAction(
             }
         }
 
-        // 3. Trigger targeted Sync
         if (AZURE_SYNC_URL && INTERNAL_TOKEN) {
             fetch(`${AZURE_SYNC_URL}/api/sync/run/${encodeURIComponent(directusUserId)}`, {
                 method: 'POST',
@@ -251,14 +241,12 @@ export async function provisionAzureAccountAction(directusUserId: string) {
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
-        // 1. Get full member data from Directus
         const user: any = await getSystemDirectus().request(readUser(directusUserId, {
-            fields: ['email', 'first_name', 'last_name', 'phone_number', 'date_of_birth']
+            fields: [...USER_FULL_FIELDS]
         }));
 
         if (!user || !user.email) return { success: false, error: "Lid niet gevonden of geen e-mailadres." };
 
-        // 2. Call Management Service
         const res = await fetch(`${AZURE_MGMT_URL}/api/provisioning/user`, {
             method: 'POST',
             headers: {

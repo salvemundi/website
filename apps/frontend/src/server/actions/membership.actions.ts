@@ -1,10 +1,11 @@
 'use server';
 
-import {
-    signupSchema,
-    validateCouponSchema,
-    transactionStatusSchema,
-    type SignupFormData
+import { 
+    signupSchema, 
+    validateCouponSchema, 
+    transactionStatusSchema, 
+    type SignupFormData,
+    TRANSACTION_FIELDS 
 } from '@salvemundi/validations';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
@@ -25,9 +26,6 @@ const getInternalHeaders = () => {
     };
 };
 
-/**
- * Validates a coupon code against the Finance microservice.
- */
 export async function validateCouponAction(formData: FormData) {
     const couponCode = formData.get('couponCode') as string;
     const parsed = validateCouponSchema.safeParse({ couponCode });
@@ -70,9 +68,6 @@ export async function validateCouponAction(formData: FormData) {
     }
 }
 
-/**
- * Initiates a membership payment (signup or renewal).
- */
 export async function initiateMembershipPaymentAction(formData: SignupFormData) {
     const parsed = signupSchema.safeParse(formData);
 
@@ -93,8 +88,6 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
     const user = session?.user as any;
     const isExpired = user && user.membership_status !== 'active';
 
-    // Determine base amount (simplified logic based on legacy)
-    // In a real V7 app, we would verify committee status via Azure Groups or Directus
     const baseAmount = 20.00;
 
     const url = `${getFinanceServiceUrl()}/api/payments/create`;
@@ -132,9 +125,6 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
     }
 }
 
-/**
- * Fetches the status of a transaction for the confirmation page.
- */
 export async function getTransactionStatusAction(transactionId: string) {
     const parsed = transactionStatusSchema.safeParse({ id: transactionId });
 
@@ -144,7 +134,7 @@ export async function getTransactionStatusAction(transactionId: string) {
 
     try {
         const transaction = await getSystemDirectus().request(readItem('transactions', parsed.data.id, {
-            fields: ['id', 'user_id', 'payment_status', 'amount', 'date_created']
+            fields: [...TRANSACTION_FIELDS]
         }));
 
         if (transaction?.payment_status === 'paid') {
