@@ -214,7 +214,17 @@ export async function signupForActivity(data: EventSignupForm) {
             if (paymentRes.ok && paymentData.checkoutUrl) {
                 return { success: true, checkoutUrl: paymentData.checkoutUrl };
             }
+            
+            // Cleanup on Failure
             console.error('[Activities] Payment service error:', paymentData);
+            try {
+                const { deleteItem } = await import('@directus/sdk');
+                await getSystemDirectus().request(deleteItem('event_signups', signupId));
+                console.log(`[Activities] Cleaned up failed signup ${signupId}`);
+            } catch (cleanupErr) {
+                console.error(`[Activities] Cleanup failed for ${signupId}:`, cleanupErr);
+            }
+
             return { success: false, error: 'Er kon geen betaling worden aangemaakt voor deze inschrijving.' };
         } else {
             const { getRedis } = await import('@/server/auth/redis-client');

@@ -35,7 +35,10 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 },
                 description,
                 redirectUrl,
-                webhookUrl: `${process.env.PUBLIC_URL}/api/finance/webhook/mollie`,
+                // Only provide webhookUrl if it's not localhost (Mollie requirement)
+                ...(process.env.PUBLIC_URL && !process.env.PUBLIC_URL.includes('localhost') ? {
+                    webhookUrl: `${process.env.PUBLIC_URL}/api/finance/webhook/mollie`
+                } : {}),
                 metadata: {
                     registrationId,
                     registrationType,

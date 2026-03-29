@@ -120,6 +120,8 @@ export class GraphService {
             displayName?: string;
             phoneNumber?: string;
             dateOfBirth?: string;
+            membershipExpiry?: string;
+            originalPaymentDate?: string;
         }
     ) {
         const client = this.getClient(token);
@@ -127,7 +129,7 @@ export class GraphService {
 
         if (data.displayName) payload.displayName = data.displayName;
 
-        if (data.phoneNumber || data.dateOfBirth) {
+        if (data.phoneNumber || data.dateOfBirth || data.membershipExpiry || data.originalPaymentDate) {
             payload.customSecurityAttributes = {
                 SalveMundiLidmaatschap: {
                     "@odata.type": "#Microsoft.DirectoryServices.CustomSecurityAttributeValue",
@@ -137,6 +139,14 @@ export class GraphService {
             if (data.dateOfBirth) {
                 const cleanDob = data.dateOfBirth.replace(/-/g, '');
                 payload.customSecurityAttributes.SalveMundiLidmaatschap.Geboortedatum = cleanDob;
+            }
+            if (data.membershipExpiry) {
+                const cleanExpiry = data.membershipExpiry.replace(/-/g, '');
+                payload.customSecurityAttributes.SalveMundiLidmaatschap.VerloopdatumStr = cleanExpiry;
+            }
+            if (data.originalPaymentDate) {
+                const cleanPaidDate = data.originalPaymentDate.replace(/-/g, '');
+                payload.customSecurityAttributes.SalveMundiLidmaatschap.OrigineleBetaalDatumStr = cleanPaidDate;
             }
         }
 

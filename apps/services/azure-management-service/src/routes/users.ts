@@ -20,11 +20,11 @@ export default async function userRoutes(fastify: FastifyInstance) {
     // Update user profile
     fastify.patch('/:entraId', async (request: any, reply) => {
         const { entraId } = request.params;
-        const { displayName, phoneNumber, dateOfBirth } = request.body;
+        const { displayName, phoneNumber, dateOfBirth, membershipExpiry, originalPaymentDate } = request.body;
 
         try {
             const token = await TokenService.getAccessToken();
-            await GraphService.updateUser(entraId, token, { displayName, phoneNumber, dateOfBirth });
+            await GraphService.updateUser(entraId, token, { displayName, phoneNumber, dateOfBirth, membershipExpiry, originalPaymentDate });
             return { success: true, message: 'User updated in Microsoft Entra ID' };
         } catch (err: any) {
             fastify.log.error(`[USERS] Failed to update user ${entraId}:`, err.message);

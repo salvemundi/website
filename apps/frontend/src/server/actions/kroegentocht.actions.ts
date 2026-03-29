@@ -165,7 +165,16 @@ export async function initiateKroegentochtPayment(formData: any) {
             return { success: true, checkoutUrl: paymentData.checkoutUrl };
         }
  
+        // 6. Cleanup on Failure
         console.error('[kroegentocht.actions#initiatePayment] Payment service error:', paymentData);
+        try {
+            const { deleteItem } = await import('@directus/sdk');
+            await getSystemDirectus().request(deleteItem('pub_crawl_signups', signupId));
+            console.log(`[kroegentocht.actions#initiatePayment] Cleaned up failed signup ${signupId}`);
+        } catch (cleanupErr) {
+            console.error(`[kroegentocht.actions#initiatePayment] Cleanup failed for ${signupId}:`, cleanupErr);
+        }
+
         return { success: false, error: 'Het aanmaken van de betaling is mislukt. Probeer het later opnieuw.' };
 
     } catch (error) {

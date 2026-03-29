@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { timingSafeCompare, PaymentSuccessEventSchema } from '@salvemundi/validations';
 import { DirectusRetryService } from '../services/directus-retry.service.js';
+import { AzureRetryService } from '../services/azure-retry.service.js';
 
 export default async function mollieRoutes(fastify: FastifyInstance) {
     /**
@@ -46,7 +47,14 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
             // 3. Trigger Cache Invalidation for Next.js
             const { CacheInvalidationService } = await import('../services/cache-invalidation.js');
 
-            const metadata = payment.metadata as { userId?: string; registrationId?: string | number; registrationType?: string; email?: string } | null;
+            const metadata = payment.metadata as { 
+                userId?: string; 
+                registrationId?: string | number; 
+                registrationType?: string; 
+                email?: string;
+                isContribution?: boolean;
+                paymentType?: string;
+            } | null;
             const userId = metadata?.userId;
 
             if (userId) {
@@ -76,7 +84,35 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
 
                 fastify.log.info(`[FINANCE] Published PAYMENT_SUCCESS event for payment ${id}`);
 
-                // Use DirectusRetryService for reliability
+                // Handle Membership (isContribution)
+                const isContribution = metadata?.isContribution;
+                if (isContribution && userId) {
+                    try {
+                        const { createDirectus, rest, staticToken, readUser } = await import('@directus/sdk');
+                        const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL!;
+                        const directusToken = process.env.DIRECTUS_STATIC_TOKEN!;
+                        const directus = createDirectus(directusUrl).with(staticToken(directusToken)).with(rest());
+
+                        const user = await directus.request(readUser(userId, { fields: ['id', 'entra_id'] }));
+                        
+                        if (user?.entra_id) {
+                            const now = new Date();
+                            const expiry = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+                            
+                            await AzureRetryService.queueUpdate(fastify.redis, user.entra_id, {
+                                membershipExpiry: expiry.toISOString().split('T')[0],
+                                originalPaymentDate: now.toISOString().split('T')[0]
+                            });
+                            fastify.log.info(`[FINANCE] Queued Azure membership update for user ${userId} (${user.entra_id})`);
+                        } else {
+                            fastify.log.warn(`[FINANCE] Membership payment for user ${userId} but no Entra ID found.`);
+                        }
+                    } catch (dErr) {
+                        fastify.log.error({ err: dErr }, `[FINANCE] Failed to fetch user ${userId} for Azure update`);
+                    }
+                }
+
+                // Handle regular registrations (Pub Crawl, Events, Trips)
                 if (registrationId && registrationType) {
                     const collectionMap: Record<string, string> = {
                         'event_signup': 'event_signups',
@@ -87,12 +123,25 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
                     const targetCollection = collectionMap[registrationType];
 
                     if (targetCollection) {
+                        let updateData: any = { payment_status: 'paid' };
+
+                        if (registrationType === 'trip_signup' && metadata?.paymentType) {
+                            if (metadata.paymentType === 'deposit') {
+                                updateData = { 
+                                    deposit_paid: true, 
+                                    deposit_paid_at: new Date().toISOString() 
+                                };
+                            } else if (metadata.paymentType === 'final') {
+                                updateData = { 
+                                    full_payment_paid: true, 
+                                    full_payment_paid_at: new Date().toISOString() 
+                                };
+                            }
+                        }
+
                         try {
-                            // Queue for background retry to ensure "paid" status always syncs
-                            await DirectusRetryService.queueUpdate(fastify.redis, targetCollection, registrationId, {
-                                payment_status: 'paid'
-                            });
-                            fastify.log.info(`[FINANCE] Queued Directus update for ${targetCollection} ${registrationId} to paid`);
+                            await DirectusRetryService.queueUpdate(fastify.redis, targetCollection, registrationId, updateData);
+                            fastify.log.info(`[FINANCE] Queued Directus update for ${targetCollection} ${registrationId}`);
                         } catch (qErr: any) {
                             fastify.log.error(`[FINANCE] Failed to queue Directus update for ${registrationId}:`, qErr);
                         }
