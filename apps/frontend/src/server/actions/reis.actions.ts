@@ -235,7 +235,6 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
         role: isCommitteeMember ? 'crew' : 'participant' as any,
         deposit_paid: false,
         full_payment_paid: false,
-        directus_relations: userId || null,
     } as any;
 
     try {

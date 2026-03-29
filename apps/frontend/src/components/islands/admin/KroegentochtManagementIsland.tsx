@@ -70,8 +70,11 @@ export default function KroegentochtManagementIsland({
     const handleToggleVisibility = () => {
         startTransition(async () => {
             try {
-                const result = await toggleKroegentochtVisibility(settings.show);
-                setSettings({ show: result.show });
+                const result = await toggleKroegentochtVisibility();
+                if (result.success) {
+                    setSettings({ show: result.show ?? false });
+                    router.refresh(); // Force re-fetch of layout data (like navbar)
+                }
             } catch (err) {
                 console.error(err);
             }

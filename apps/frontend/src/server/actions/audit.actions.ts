@@ -176,19 +176,16 @@ export async function getAuditSettingsAction() {
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
-        const url = `${process.env.DIRECTUS_SERVICE_URL}/items/feature_flags?filter[name][_eq]=manual_approval&fields=id,is_active`;
-        const res = await fetch(url, {
-            headers: { Authorization: `Bearer ${process.env.DIRECTUS_STATIC_TOKEN}` },
-            cache: 'no-store'
-        });
+        const items = await getSystemDirectus().request(readItems('feature_flags', {
+            filter: { name: { _eq: 'manual_approval' } },
+            fields: ['id', 'is_active'],
+            limit: 1
+        }));
         
-        if (res.ok) {
-            const data = await res.json();
-            const flag = data.data?.[0];
-            return { success: true, data: { manual_approval: !!flag?.is_active } };
-        }
-        return { success: true, data: { manual_approval: false } };
-    } catch {
+        const flag = items?.[0];
+        return { success: true, data: { manual_approval: !!flag?.is_active } };
+    } catch (e) {
+        console.error("[AuditAction] Settings fetch error:", e);
         return { success: true, data: { manual_approval: false } };
     }
 }
@@ -198,41 +195,26 @@ export async function updateAuditSettingsAction(manualApproval: boolean) {
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
-        const token = process.env.DIRECTUS_STATIC_TOKEN;
-        const baseUrl = process.env.DIRECTUS_SERVICE_URL;
+        const client = getSystemDirectus();
         
         // 1. Find the flag
-        const listUrl = `${baseUrl}/items/feature_flags?filter[name][_eq]=manual_approval&fields=id`;
-        const listRes = await fetch(listUrl, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        const listData = await listRes.json();
-        const flagId = listData.data?.[0]?.id;
+        const items = await client.request(readItems('feature_flags', {
+            filter: { name: { _eq: 'manual_approval' } },
+            fields: ['id'],
+            limit: 1
+        }));
+        const flagId = items?.[0]?.id;
 
         if (flagId) {
             // 2a. Update existing
-            await fetch(`${baseUrl}/items/feature_flags/${flagId}`, {
-                method: 'PATCH',
-                headers: { 
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ is_active: manualApproval })
-            });
+            await client.request(updateItem('feature_flags', flagId as any, { is_active: manualApproval }));
         } else {
             // 2b. Create new
-            await fetch(`${baseUrl}/items/feature_flags`, {
-                method: 'POST',
-                headers: { 
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ 
-                    name: 'manual_approval', 
-                    is_active: manualApproval,
-                    route_match: 'SYSTEM'
-                })
-            });
+            await client.request(createItem('feature_flags', { 
+                name: 'manual_approval', 
+                is_active: manualApproval,
+                route_match: 'SYSTEM'
+            }));
         }
         
         await logAdminAction('settings_change', 'SUCCESS', { 

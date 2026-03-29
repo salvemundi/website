@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getWhatsAppGroups } from '@/server/actions/profiel.actions';
@@ -37,3 +38,4 @@ async function WhatsAppGroupsFetcher() {
 
     return <WhatsAppGroupsIsland groups={groups} gedragscodeUrl={gedragscodeUrl} />;
 }
+

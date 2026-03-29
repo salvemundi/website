@@ -102,7 +102,7 @@ export async function createManualSignupAction(eventId: number, eventName: strin
         };
 
         if (signupType === 'member') {
-            payload.directus_relations = memberData.id;
+            // payload.directus_relations = memberData.id; (removed)
             payload.participant_name = `${memberData.first_name} ${memberData.last_name || ''}`.trim();
             payload.participant_email = memberData.email;
         } else {

@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { Suspense } from 'react';
 import { Loader2, MapPin } from 'lucide-react';
 import { getPublicStickers } from '@/server/actions/stickers.actions';
@@ -59,3 +60,4 @@ export default async function StickersPage() {
         </main>
     );
 }
+

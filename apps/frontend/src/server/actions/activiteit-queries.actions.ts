@@ -186,20 +186,30 @@ export async function getMyTickets() {
     if (!userId) return [];
 
     try {
-        const query = {
+        const directus = getSystemDirectus();
+        
+        // Fetch transactions for this user to identify signups
+        const transactions = await directus.request(readItems('transactions', {
+            filter: { user_id: { _eq: userId } },
+            fields: ['id', 'registration', 'pub_crawl_signup'] as any,
+            limit: -1
+        }));
+
+        const registrationIds = transactions.map(tx => tx.registration).filter(Boolean);
+        if (registrationIds.length === 0) return [];
+
+        const signupRes = await getSystemDirectus().request(readItems('event_signups', {
             filter: {
-                directus_relations: {
-                    _eq: userId
-                }
+                id: { _in: registrationIds },
+                payment_status: { _eq: 'paid' }
             },
             fields: [...EVENT_SIGNUP_FIELDS, { event_id: ['id', 'name', 'event_date', 'location'] }] as any,
             sort: ['-created_at']
-        };
-        
-        // Explicitly cast query to any to bypass SDK internal tuple-widening issues with spread constants
-        return await getSystemDirectus().request(readItems('event_signups', query as any)) as unknown as DbEventSignup[];
+        })) as unknown as DbEventSignup[];
+
+        return signupRes;
     } catch (error) {
-        console.error('[Activities] Error fetching user tickets:', error);
+        console.error('[Activities] getMyTickets failed:', error);
         return [];
     }
 }

@@ -2,10 +2,11 @@
  
 import { connection } from 'next/server';
 
-import { documentenSchema, type Document, DOCUMENT_FIELDS, FEATURE_FLAG_FIELDS } from '@salvemundi/validations';
-
+import { documentenSchema, type Document, DOCUMENT_FIELDS } from '@salvemundi/validations';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
+import { getDisabledRoutes, FLAGS_CACHE_KEY } from '@/lib/feature-flags';
+export { getDisabledRoutes };
 
 export async function getDocumenten(): Promise<Document[]> {
     try {
@@ -31,19 +32,3 @@ export async function getDocumenten(): Promise<Document[]> {
     }
 }
 
-export async function getDisabledRoutes(): Promise<string[]> {
-    await connection();
-    try {
-        const result = await getSystemDirectus().request(readItems('feature_flags', {
-            filter: { is_active: { _eq: false } },
-            fields: [...FEATURE_FLAG_FIELDS]
-        }));
-
-        return result
-            .map((flag: any) => flag.route_match)
-            .filter((route: string | null | undefined): route is string => Boolean(route));
-    } catch (err) {
-        console.error('[website.actions#getDisabledRoutes] Error:', err);
-        return [];
-    }
-}
