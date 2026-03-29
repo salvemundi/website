@@ -340,6 +340,9 @@ export interface DbPubCrawlEvent {
     date?: string | null;
     description?: string | null;
     pub_crawl_signups?: any | null;
+    // Ephemeral fields hardcoded in frontend per user request
+    price?: number;
+    max_tickets_per_person?: number;
 }
 
 export interface DbPubCrawlSignup {
@@ -353,6 +356,8 @@ export interface DbPubCrawlSignup {
     amount_tickets?: number | null;
     payment_status?: string | null;
     name_initials?: string | null;
+    // Relation to associated tickets for this signup
+    tickets?: DbPubCrawlTicket[] | null;
     transactions?: any | null;
 }
 
@@ -621,6 +626,8 @@ export interface DbDirectusUser {
     admin_access?: boolean | null;
     lidmaatschap_verloopdatum?: string | null;
     originele_betaaldatum?: string | null;
+    // M2M relation to committees via committee_members
+    committees?: any[] | null;
 }
 
 export interface DirectusSchema {

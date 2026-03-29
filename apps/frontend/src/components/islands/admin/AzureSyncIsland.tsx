@@ -440,7 +440,7 @@ function FilterTab({ active, label, count, onClick, color = 'indigo' }: { active
 }
 
 function ResultsList({ filter, status }: { filter: string; status: SyncStatus }) {
-    let items: React.ReactNode[] = [];
+    const items: React.ReactNode[] = [];
 
     if (filter === 'all' || filter === 'success') {
         items.push(...status.successfulUsers.map((u, i) => (
