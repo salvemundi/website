@@ -10,8 +10,7 @@ import {
     type PubCrawlSignup,
     PUB_CRAWL_EVENT_FIELDS,
     PUB_CRAWL_SIGNUP_FIELDS,
-    PUB_CRAWL_TICKET_FIELDS,
-    FEATURE_FLAG_FIELDS
+    PUB_CRAWL_TICKET_FIELDS
 } from '@salvemundi/validations';
 import { isSuperAdmin } from "@/lib/auth-utils";
 import { getRedis } from '@/server/auth/redis-client';
