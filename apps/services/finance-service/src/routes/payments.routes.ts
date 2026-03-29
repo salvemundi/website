@@ -49,13 +49,24 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
             });
 
             // 2. Store transaction in PostgreSQL
+            // Map registrationType to the product_type enum value used in Directus
+            const productTypeMap: Record<string, string> = {
+                'pub_crawl_signup': 'pub_crawl',
+                'trip_signup': 'trip',
+                'event_signup': 'event'
+            };
+            const productType = registrationType
+                ? (productTypeMap[registrationType] || registrationType)
+                : (isContribution ? 'membership' : 'other');
+
             let regColumnStr = '';
-            let valTokens = '$1, $2, $3, $4, $5, $6, $7, $8';
-            let params = [
+            let valTokens = '$1, $2, $3, $4, $5, $6, $7, $8, $9';
+            let params: any[] = [
                 payment.id,
                 amount,
                 'open',
                 description,
+                productType,
                 userId || null,
                 email || null,
                 firstName || null,
@@ -70,14 +81,14 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 };
                 const colName = colMap[registrationType] || 'registration';
                 regColumnStr = `, ${colName}`;
-                valTokens += ', $9';
+                valTokens += ', $10';
                 params.push(registrationId);
             }
 
             // We use the exact Directus fields
             await fastify.db.query(
                 `INSERT INTO transactions (
-                    mollie_id, amount, payment_status, product_name, 
+                    mollie_id, amount, payment_status, product_name, product_type,
                     user_id, email, first_name, last_name${regColumnStr},
                     created_at, updated_at
                 ) VALUES (${valTokens}, NOW(), NOW())`,
