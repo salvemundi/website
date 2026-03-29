@@ -6,11 +6,12 @@ import PageHeader from '@/components/ui/layout/PageHeader';
 import AdminReisDashboardSkeleton from '@/components/ui/admin/AdminReisDashboardSkeleton';
 import AdminReisSelectorIsland from '@/components/islands/admin/AdminReisSelectorIsland';
 import AdminReisTableIsland from '@/components/islands/admin/AdminReisTableIsland';
-import { Plane, Plus } from 'lucide-react';
+import { Plane, Plus, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
+import { getReisSiteSettings } from '@/server/actions/reis.actions';
 
 interface AdminReisPageProps {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -64,13 +65,21 @@ async function AdminReisDashboardContent({ searchParams }: AdminReisPageProps) {
     const tripIdParam = typeof resolvedSearchParams.tripId === 'string' ? resolvedSearchParams.tripId : undefined;
 
     let trips: any[] = [];
+    let reisSettings = { show: true };
+    
     try {
-        trips = await getSystemDirectus().request(readItems('trips', {
-            fields: ['id', 'name', 'event_date', 'start_date', 'end_date', 'allow_final_payments'] as any,
-            sort: ['-event_date']
-        }));
+        const [tripsRes, settingsRes] = await Promise.all([
+            getSystemDirectus().request(readItems('trips', {
+                fields: ['id', 'name', 'event_date', 'start_date', 'end_date', 'allow_final_payments'] as any,
+                sort: ['-event_date']
+            })),
+            getReisSiteSettings()
+        ]);
+        
+        trips = tripsRes || [];
+        reisSettings = settingsRes || { show: true };
     } catch (e) {
-        console.error('[AdminReisPage] Error fetching trips:', e);
+        console.error('[AdminReisPage] Error fetching dashboard data:', e);
     }
 
     if (!trips || trips.length === 0) {
@@ -93,7 +102,10 @@ async function AdminReisDashboardContent({ searchParams }: AdminReisPageProps) {
         <div className="min-h-screen">
             <PageHeader title={`Reis: ${activeTrip.name}`} />
             <div className="container mx-auto px-4 py-8 max-w-6xl">
-                <AdminReisSelectorIsland trips={trips} />
+                <AdminReisSelectorIsland 
+                    trips={trips} 
+                    initialSettings={reisSettings}
+                />
                 
                 {/* Nested suspense for the signups table to allow the selector to render early */}
                 <Suspense fallback={<AdminReisDashboardSkeleton />} key={activeTrip.id}>

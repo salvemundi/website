@@ -16,6 +16,9 @@ import {
     TRIP_ID_FIELDS
 } from '@salvemundi/validations';
 
+import { getRedis } from '@/server/auth/redis-client';
+import { FLAGS_CACHE_KEY } from '@/lib/feature-flags';
+import { query } from '@/lib/db';
 import { isSuperAdmin } from '@/lib/auth-utils';
 import { getSystemDirectus } from '@/lib/directus';
 import { 
@@ -578,6 +581,60 @@ export async function deleteTrip(id: number) {
     } catch (error) {
         console.error('[AdminReisActions#deleteTrip] Error:', error);
         return { success: false, error: error instanceof Error ? error.message : 'Internal server error' };
+    }
+}
+
+export async function toggleReisVisibility(): Promise<{ success: boolean; show?: boolean; error?: string }> {
+    await requireReisAdmin();
+    const flagName = 'trip_registration';
+
+    try {
+        const sql = 'SELECT id, is_active FROM feature_flags WHERE name = $1 LIMIT 1';
+        const { rows } = await query(sql, [flagName]);
+        
+        const flag = rows?.[0];
+        const oldStatus = flag ? !!flag.is_active : true;
+        const newStatus = !oldStatus;
+        
+        if (flag) {
+            await query('UPDATE feature_flags SET is_active = $1 WHERE id = $2', [newStatus, flag.id]);
+            console.log(`[AdminReis] Toggle (SQL): DB was ${oldStatus}, setting to ${newStatus} (ID: ${flag.id})`);
+        } else {
+            await query('INSERT INTO feature_flags (name, route_match, is_active) VALUES ($1, $2, $3)', 
+                [flagName, '/reis', newStatus]);
+            console.log(`[AdminReis] Toggle (SQL): Created new flag for ${flagName} with is_active: ${newStatus}`);
+        }
+
+        // 1. Immediate clear for Proxy
+        try {
+            const redis = await getRedis();
+            await redis.del(FLAGS_CACHE_KEY);
+            console.log(`[AdminReis] Initial Redis cache clear (immediate)`);
+        } catch (e) {
+            console.error('[AdminReis] Initial Redis clear failed:', e);
+        }
+
+        // 2. Consistency wait
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        console.log(`[AdminReis] Revalidating: feature_flags (profile: default)`);
+        revalidateTag('feature_flags', 'default');
+        revalidatePath('/', 'layout');
+        revalidatePath('/beheer/reis');
+
+        // 3. Final clear
+        try {
+            const redis = await getRedis();
+            const deletedRows = await redis.del(FLAGS_CACHE_KEY);
+            console.log(`[AdminReis] Final Redis cache clear. Keys deleted: ${deletedRows}`);
+        } catch (e) {
+            console.error('[AdminReis] Final Redis clear failed:', e);
+        }
+        
+        return { success: true, show: newStatus };
+    } catch (e) {
+        console.error('[AdminReis] Toggle visibility failed:', e);
+        return { success: false, error: 'Bijwerken mislukt' };
     }
 }
 

@@ -8,6 +8,8 @@ import AdminReisSelectorIsland from '@/components/islands/admin/AdminReisSelecto
 import AdminReisDataFetcher from '@/components/ui/admin/AdminReisDataFetcher';
 import AdminReisDashboardSkeleton from '@/components/ui/admin/AdminReisDashboardSkeleton';
 
+import { getReisSiteSettings } from '@/server/actions/reis.actions';
+
 import type { Trip } from '@salvemundi/validations';
 
 interface AdminReisTripsFetcherProps {
@@ -19,11 +21,17 @@ export default async function AdminReisTripsFetcher({ searchParams }: AdminReisT
     const tripIdParam = typeof resolvedSearchParams.tripId === 'string' ? resolvedSearchParams.tripId : undefined;
 
     let trips: Trip[] = [];
+    let reisSettings = { show: true };
     try {
-        trips = await getTrips();
+        const [tripsRes, settingsRes] = await Promise.all([
+            getTrips(),
+            getReisSiteSettings()
+        ]);
+        trips = tripsRes || [];
+        reisSettings = settingsRes || { show: true };
     } catch (e) {
         const message = e instanceof Error ? e.message : 'Onbekende fout';
-        console.error('[AdminReisTripsFetcher] Error fetching trips:', message);
+        console.error('[AdminReisTripsFetcher] Error fetching data:', message);
         // Do not throw to prevent build failures, return empty
     }
 
@@ -60,7 +68,10 @@ export default async function AdminReisTripsFetcher({ searchParams }: AdminReisT
     return (
         <div className="container mx-auto px-4 py-8 max-w-6xl">
             {/* 2. Dropdown and controls */}
-            <AdminReisSelectorIsland trips={trips} />
+            <AdminReisSelectorIsland 
+                trips={trips} 
+                initialSettings={reisSettings}
+            />
 
             {/* 3. Granular Streaming: The heavy data fetch and table rendering is suspended */}
             <Suspense fallback={<AdminReisDashboardSkeleton />} key={activeTrip.id}>
