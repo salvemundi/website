@@ -308,14 +308,33 @@ export async function getSignupStatus(id?: string, transactionId?: string) {
         }
     } else if (id) {
         try {
+            // 1. Try event_signups first
             const signups = await getSystemDirectus().request(readItems('event_signups', {
                 fields: [...EVENT_SIGNUP_FIELDS, { event_id: ['id', 'name'] }] as any,
                 filter: { id: { _eq: id as any } },
                 limit: 1
             }));
-            const signup = signups?.[0];
-            if (!signup) return { status: 'error' };
-            return { status: (signup as any).payment_status || 'open', signup };
+            
+            if (signups && signups.length > 0) {
+                return { status: (signups[0] as any).payment_status || 'open', signup: signups[0] };
+            }
+
+            // 2. Try pub_crawl_signups as fallback
+            const pubCrawlSignups = await getSystemDirectus().request(readItems('pub_crawl_signups', {
+                fields: [...PUB_CRAWL_SIGNUP_FIELDS, { pub_crawl_event_id: ['id', 'name'] as any }, { tickets: ['id', 'name', 'qr_token'] as any }] as any,
+                filter: { id: { _eq: id as any } },
+                limit: 1
+            }));
+
+            if (pubCrawlSignups && pubCrawlSignups.length > 0) {
+                const signup = pubCrawlSignups[0];
+                if (signup) {
+                    (signup as any).amount_tickets = (signup as any).tickets?.length || 1;
+                }
+                return { status: (signup as any).payment_status || 'open', signup };
+            }
+
+            return { status: 'error' };
         } catch (e) {
             console.error('[Activities] Error fetching signup status:', e);
             return { status: 'error' };
