@@ -6,13 +6,13 @@ import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 
 interface PageProps {
-    searchParams: Promise<{ id?: string; transaction_id?: string }>;
+    searchParams: Promise<{ id?: string; transaction_id?: string; t?: string }>;
 }
 
 export default async function ActiviteitenConfirmationPage({ searchParams }: PageProps) {
-    const { id, transaction_id } = await searchParams;
+    const { id, transaction_id, t } = await searchParams;
 
-    if (!id && !transaction_id) notFound();
+    if (!id && !transaction_id && !t) notFound();
 
     const session = await auth.api.getSession({
         headers: await headers()
@@ -35,7 +35,7 @@ export default async function ActiviteitenConfirmationPage({ searchParams }: Pag
                 }>
                     <ConfirmationIsland 
                         initialId={id} 
-                        initialTransactionId={transaction_id} 
+                        initialTransactionId={transaction_id || t} 
                         isLoggedIn={!!session?.user} 
                     />
                 </Suspense>

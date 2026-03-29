@@ -133,16 +133,23 @@ export async function initiateKroegentochtPayment(formData: any) {
             return { success: false, error: `Je hebt al ${existingCount} tickets. Maximaal ${maxPerPerson} per persoon/groep.` };
         }
 
+        // 0. Get session
+        const session = await auth.api.getSession({ headers: await headers() });
+        const userId = session?.user?.id;
+
         // 4. Create signup
-        const { id: _, ...signupData } = parsed.data;
         const signupResponse = await getSystemDirectus().request(createItem('pub_crawl_signups', {
-            ...signupData,
+            name: parsed.data.name,
+            email: parsed.data.email,
+            association: parsed.data.association,
+            amount_tickets: parsed.data.amount_tickets,
+            name_initials: parsed.data.name_initials,
             pub_crawl_event_id: parsed.data.pub_crawl_event_id as any,
-            payment_status: 'open'
+            payment_status: 'open',
+            directus_relations: userId || null
         }));
         
-        const validatedSignup = pubCrawlSignupSchema.parse(signupResponse);
-        const signupId = validatedSignup.id!;
+        const signupId = (signupResponse as any).id;
 
         // 5. Initiate payment via Finance Service
         const financeUrl = `${getFinanceServiceUrl()}/api/payments/create`;
@@ -157,12 +164,18 @@ export async function initiateKroegentochtPayment(formData: any) {
                 email: parsed.data.email,
                 firstName: parsed.data.name, 
                 isContribution: false,
-                redirectUrl: `${process.env.PUBLIC_URL}/kroegentocht/bevestiging?id=${signupId}`
+                redirectUrl: `${process.env.PUBLIC_URL}/kroegentocht/bevestiging?id=${signupId}`,
+                webhookUrl: `${process.env.PUBLIC_URL}/api/finance/webhook/mollie`
             })
         });
 
         const paymentData = await paymentRes.json();
         if (paymentRes.ok && paymentData.checkoutUrl) {
+            // Update the redirect URL to include the transaction ID (Mollie ID) as a security token
+            const secureRedirectUrl = `${process.env.PUBLIC_URL}/kroegentocht/bevestiging?id=${signupId}&t=${paymentData.mollie_id}`;
+            
+            // We can't update the Mollie payment redirect URL once created easily without re-creating, 
+            // but we can redirect the user to our confirmation page with the token.
             return { success: true, checkoutUrl: paymentData.checkoutUrl };
         }
  

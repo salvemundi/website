@@ -34,13 +34,18 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
             console.log(`[FINANCE] Creating Mollie payment with webhookUrl: ${webhookUrl}`);
 
             // 1. Create payment in Mollie
+            // Generate a random access_token for guest security (IDOR mitigation)
+            const accessToken = crypto.randomUUID();
+            const separator = redirectUrl.includes('?') ? '&' : '?';
+            const finalRedirectUrl = `${redirectUrl}${separator}t=${accessToken}`;
+
             const payment = await mollie.payments.create({
                 amount: {
                     currency: 'EUR',
                     value: amount.toFixed(2)
                 },
                 description,
-                redirectUrl,
+                redirectUrl: finalRedirectUrl,
                 // Only provide webhookUrl if it's not localhost (Mollie requirement)
                 ...(webhookUrl ? { webhookUrl } : {}),
                 metadata: {
@@ -64,7 +69,7 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 : (isContribution ? 'membership' : 'other');
 
             let regColumnStr = '';
-            let valTokens = '$1, $2, $3, $4, $5, $6, $7, $8, $9';
+            let valTokens = '$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11';
             let params: any[] = [
                 payment.id,
                 amount,
@@ -74,26 +79,30 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 userId || null,
                 email || null,
                 firstName || null,
-                lastName || null
+                lastName || null,
+                accessToken,
+                null
             ];
 
-            if (registrationId && registrationType) {
-                const colMap: Record<string, string> = {
-                    'pub_crawl_signup': 'pub_crawl_signup',
-                    'trip_signup': 'trip_signup',
-                    'event_signup': 'registration'
-                };
-                const colName = colMap[registrationType] || 'registration';
-                regColumnStr = `, ${colName}`;
-                valTokens += ', $10';
-                params.push(registrationId);
+            if (registrationType === 'event_signup') {
+                regColumnStr = ', registration';
+                params[10] = registrationId;
+            } else if (registrationType === 'trip_signup') {
+                regColumnStr = ', trip_signup';
+                params[10] = registrationId;
+            } else if (registrationType === 'pub_crawl_signup') {
+                regColumnStr = ', pub_crawl_signup';
+                params[10] = registrationId;
+            } else if (registrationType === 'membership') {
+                regColumnStr = ', membership';
+                params[10] = registrationId;
             }
 
             // 2. Store transaction in PostgreSQL
             const dbResult = await fastify.db.query(
                 `INSERT INTO transactions (
                     mollie_id, amount, payment_status, product_name, product_type,
-                    user_id, email, first_name, last_name${regColumnStr},
+                    user_id, email, first_name, last_name, access_token${regColumnStr},
                     created_at, updated_at
                 ) VALUES (${valTokens}, NOW(), NOW()) RETURNING id`,
                 params
@@ -111,7 +120,7 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 fastify.log.info(`[FINANCE] Linked transaction ${transactionDbId} to pub_crawl_signup ${registrationId}`);
             }
 
-            return { checkoutUrl: payment.getCheckoutUrl() };
+            return { checkoutUrl: payment.getCheckoutUrl(), mollie_id: payment.id, access_token: accessToken };
         } catch (err: any) {
             fastify.log.error({ err, message: err?.message, code: err?.code, detail: err?.detail }, '[FINANCE] Error creating payment');
             return reply.status(500).send({ error: 'Failed to create payment', message: err.message });
