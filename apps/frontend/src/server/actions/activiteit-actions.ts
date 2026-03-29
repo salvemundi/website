@@ -265,7 +265,7 @@ export async function getActivitySignups(eventId: string) {
     }
 }
 
-export async function getSignupStatus(id?: string, transactionId?: string) {
+export async function getSignupStatus(id?: string, transactionId?: string, cacheBuster?: string) {
     if (transactionId) {
         try {
             const transactions = await getSystemDirectus().request(readItems('transactions', {

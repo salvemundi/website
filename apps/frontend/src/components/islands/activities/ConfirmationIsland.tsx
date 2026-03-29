@@ -41,7 +41,7 @@ export default function ConfirmationIsland({
          */
         const checkStatus = async () => {
             try {
-                const res = await getSignupStatus(initialId, initialTransactionId);
+                const res = await getSignupStatus(initialId, initialTransactionId, new Date().getTime().toString());
                 
                 if (res.status === 'paid') {
                     setSignupData(res.signup);
@@ -49,7 +49,7 @@ export default function ConfirmationIsland({
                     setStatus('paid');
                 } else if (res.status === 'failed' || res.status === 'canceled' || res.status === 'expired') {
                     setStatus('failed');
-                } else if (retryCount < 15) {
+                } else if (retryCount < 30) {
                     setTimeout(() => setRetryCount(prev => prev + 1), 2000);
                 } else {
                     setStatus('open');
