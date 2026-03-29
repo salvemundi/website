@@ -271,21 +271,30 @@ export async function getSignupStatus(id?: string, transactionId?: string, cache
         try {
             // Find transaction by either database ID or our secure access_token (token t)
             // Find transaction by either database ID or our secure access_token (token t)
+            const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(transactionId);
+            const isNumeric = /^\d+$/.test(transactionId);
+
+            const filter: any = { _or: [] };
+            if (isUuid) {
+                filter._or.push({ access_token: { _eq: transactionId } });
+                filter._or.push({ mollie_id: { _eq: transactionId } });
+            }
+            if (isNumeric) {
+                filter._or.push({ id: { _eq: parseInt(transactionId) } });
+            }
+            
+            // If neither matches (e.g. short text), at least try mollie_id if it doesn't crash
+            if (filter._or.length === 0) {
+                filter._or.push({ mollie_id: { _eq: transactionId } });
+            }
+
             const transactions = await getSystemDirectus().request(readItems('transactions', {
                 fields: TRANSACTION_FIELDS as any,
-                filter: { 
-                    _or: [
-                        { id: { _eq: transactionId } },
-                        { mollie_id: { _eq: transactionId } },
-                        { access_token: { _eq: transactionId } }
-                    ]
-                } as any,
+                filter,
                 limit: 1,
-                // Aggressive cache busting
-                params: {
-                    t: Date.now().toString()
-                }
-            } as any));
+                params: { t: Date.now().toString() }
+            } as any)) as any[];
+
             const trans = transactions?.[0];
 
             if (!trans) return { status: 'error' };
