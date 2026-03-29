@@ -184,9 +184,9 @@ export async function signupForActivity(data: EventSignupForm) {
             participant_email: parsed.data.email,
             participant_phone: parsed.data.phoneNumber,
             payment_status: (price ?? 0) > 0 ? 'open' : 'paid',
-            qr_token: qrToken
+            qr_token: qrToken,
+            directus_relations: userId || null
         };
-        if (userId) payload.directus_relations = userId;
 
         const signupResponse = await directus.request(createItem('event_signups', payload));
 
@@ -398,21 +398,21 @@ export async function getMyTickets() {
     try {
         // 1. Fetch event signups
         const eventSignups = await getSystemDirectus().request(readItems('event_signups', {
-            filter: { directus_relations: { _eq: userId } },
+            filter: { directus_relations: { _eq: userId } } as any,
             fields: [...EVENT_SIGNUP_FIELDS, { event_id: ['id', 'name', 'event_date', 'location'] }] as any,
             sort: ['-created_at']
         }));
 
         // 2. Fetch pub crawl signups
         const pubCrawlSignups = await getSystemDirectus().request(readItems('pub_crawl_signups', {
-            filter: { directus_relations: { _eq: userId } },
+            filter: { directus_relations: { _eq: userId } } as any,
             fields: [...PUB_CRAWL_SIGNUP_FIELDS, { pub_crawl_event_id: ['id', 'name', 'event_date', 'location'] as any }, { tickets: ['id', 'name', 'qr_token'] as any }] as any,
             sort: ['-created_at']
         }));
 
         // 3. Fetch trip signups
         const tripSignups = await getSystemDirectus().request(readItems('trip_signups', {
-            filter: { directus_relations: { _eq: userId } },
+            filter: { directus_relations: { _eq: userId } } as any,
             fields: ['id', 'status', 'created_at', 'first_name', 'last_name', { trip_id: ['id', 'title', 'event_date'] }] as any,
             sort: ['-created_at']
         }));
@@ -440,8 +440,8 @@ export async function getMyTickets() {
             type: 'trip'
         }));
 
-        return [...formattedEvents, ...formattedPubCrawl, ...formattedTrips].sort((a, b) => 
-            new Date(b.created_at as any).getTime() - new Date(a.created_at as any).getTime()
+        return [...formattedEvents, ...formattedPubCrawl, ...formattedTrips].sort((a: any, b: any) => 
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         );
     } catch (error) {
         console.error('[Activities] Error fetching user tickets:', error);
