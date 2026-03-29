@@ -269,6 +269,7 @@ export async function getSignupStatus(id?: string, transactionId?: string, cache
     if (transactionId) {
         try {
             // Find transaction by either database ID or our secure access_token (token t)
+            // Find transaction by either database ID or our secure access_token (token t)
             const transactions = await getSystemDirectus().request(readItems('transactions', {
                 fields: [...TRANSACTION_FIELDS, 'access_token' as any],
                 filter: { 
@@ -278,8 +279,12 @@ export async function getSignupStatus(id?: string, transactionId?: string, cache
                         { access_token: { _eq: transactionId } }
                     ]
                 } as any,
-                limit: 1
-            }));
+                limit: 1,
+                // Aggressive cache busting
+                params: {
+                    t: Date.now().toString()
+                }
+            } as any));
             const trans = transactions?.[0];
 
             if (!trans) return { status: 'error' };
@@ -291,8 +296,9 @@ export async function getSignupStatus(id?: string, transactionId?: string, cache
                     limit: 1
                 }));
                 const signup = signups?.[0];
-                console.log(`[Activities] Signup status for transaction ${transactionId}: ${trans.payment_status}`);
-                return { status: trans.payment_status, signup, transaction: trans };
+                const status = (signup as any)?.payment_status === 'paid' ? 'paid' : trans.payment_status;
+                console.log(`[Activities] Signup status for transaction ${transactionId}: ${status}`);
+                return { status, signup, transaction: trans };
             } else if ((trans.product_type as any) === 'pub_crawl_signup') {
                 const signups = await getSystemDirectus().request(readItems('pub_crawl_signups', {
                     fields: [...PUB_CRAWL_SIGNUP_FIELDS, { pub_crawl_event_id: ['name'] as any }, { tickets: ['id', 'name', 'qr_token'] as any }] as any,

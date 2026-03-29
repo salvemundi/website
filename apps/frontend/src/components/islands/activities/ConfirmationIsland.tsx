@@ -43,7 +43,8 @@ export default function ConfirmationIsland({
          */
         const checkStatus = async () => {
             try {
-                const res = await getSignupStatus(initialId, initialTransactionId, new Date().getTime().toString());
+                // Use a high-resolution timestamp for cache busting
+                const res = await getSignupStatus(initialId, initialTransactionId, Date.now().toString());
                 
                 if (res.status === 'paid') {
                     setSignupData(res.signup);
@@ -52,8 +53,9 @@ export default function ConfirmationIsland({
                     setStatus('paid');
                 } else if (res.status === 'failed' || res.status === 'canceled' || res.status === 'expired') {
                     setStatus('failed');
-                } else if (retryCount < 30) {
-                    setTimeout(() => setRetryCount(prev => prev + 1), 2000);
+                } else if (retryCount < 50) { // Increased max retries for longer wait if needed
+                    // Poll faster (every 1s) to show result immediately after bank confirmation
+                    setTimeout(() => setRetryCount(prev => prev + 1), 1000);
                 } else {
                     setStatus('open');
                 }
