@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { Suspense } from 'react';
 import PageHeader from '@/components/ui/layout/PageHeader';
 import { getKroegentochtEvent, getKroegentochtTickets } from '@/server/actions/kroegentocht.actions';
@@ -183,3 +184,4 @@ export default function KroegentochtPage() {
         </div>
     );
 }
+

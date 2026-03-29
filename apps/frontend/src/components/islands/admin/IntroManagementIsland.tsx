@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { Users, Heart, FileText, Calendar, Download, Mail, Plus, Trash2, Edit, Save, X, Search, Bell, ChevronDown, ChevronUp, Loader2, LayoutGrid, List, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
@@ -52,6 +53,7 @@ interface Props {
 }
 
 export default function IntroManagementIsland({ initialSignups, initialParents, initialBlogs, initialPlanning, initialIntroVisible }: Props) {
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState<TabType>('signups');
 
     // Data
@@ -172,10 +174,20 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
 
     const handleToggleVisibility = async () => {
         setTogglingVisibility(true);
-        const res = await toggleIntroVisibility(introVisible);
-        if (res.success) setIntroVisible(res.show ?? !introVisible);
-        else alert(res.error || 'Bijwerken mislukt');
-        setTogglingVisibility(false);
+        try {
+            const res = await toggleIntroVisibility();
+            if (res.success) {
+                setIntroVisible(res.show ?? false);
+                router.refresh(); // Refresh layout data
+            } else {
+                alert(res.error || 'Bijwerken mislukt');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Er is een onverwachte fout opgetreden');
+        } finally {
+            setTogglingVisibility(false);
+        }
     };
 
     const handleSendNotification = async () => {

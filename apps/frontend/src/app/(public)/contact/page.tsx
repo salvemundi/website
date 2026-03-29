@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import type { Metadata } from 'next';
 import ContactInfoCard from '@/components/ui/social/ContactInfoCard';
 import PageHeader from '@/components/ui/layout/PageHeader';
@@ -103,4 +104,5 @@ export default function ContactPage() {
         </div>
     );
 }
+
 

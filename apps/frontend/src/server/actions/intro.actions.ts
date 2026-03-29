@@ -13,7 +13,7 @@ import { headers } from 'next/headers';
 
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems, createItem } from '@directus/sdk';
-import { revalidatePath } from 'next/cache';
+import { revalidateTag, revalidatePath, unstable_noStore as noStore } from 'next/cache';
 
 const getMailUrl = () => process.env.MAIL_SERVICE_URL;
 
@@ -27,6 +27,7 @@ const getServiceHeaders = (): HeadersInit => {
 };
 
 export async function getIntroSettings() {
+    noStore();
     try {
         const items = await getSystemDirectus().request(readItems('feature_flags', {
             filter: { route_match: { _eq: '/intro' } },

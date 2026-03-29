@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { Suspense } from 'react';
 import PageHeader from '@/components/ui/layout/PageHeader';
 import ActivitiesBannerIsland from '@/components/islands/activities/ActivitiesBannerIsland';
@@ -95,3 +96,4 @@ export default function ActivitiesPage() {
         </div>
     );
 }
+

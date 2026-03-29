@@ -1,7 +1,7 @@
 'use server';
 
 import { auth } from '@/server/auth/auth';
-import { revalidateTag, revalidatePath } from "next/cache";
+import { revalidateTag, revalidatePath, unstable_noStore as noStore } from "next/cache";
 import { isSuperAdmin } from "@/lib/auth-utils";
 import { headers } from 'next/headers';
 import type { IntroBlog, IntroPlanningItem } from '@salvemundi/validations';
@@ -23,6 +23,8 @@ import {
 } from '@salvemundi/validations';
 
 import { AdminResource } from '@/shared/lib/permissions-config';
+import { getRedis } from '@/server/auth/redis-client';
+import { FLAGS_CACHE_KEY } from '@/lib/feature-flags';
 import { hasPermission } from '@/shared/lib/permissions';
 
 async function checkIntroAdminAccess() {
@@ -255,7 +257,7 @@ export async function deleteIntroPlanning(id: number): Promise<{ success: boolea
 }
 
 
-export async function toggleIntroVisibility(current: boolean): Promise<{ success: boolean; show?: boolean; error?: string }> {
+export async function toggleIntroVisibility(): Promise<{ success: boolean; show?: boolean; error?: string }> {
     await checkIntroAdminAccess();
     const route = '/intro';
 
@@ -264,26 +266,44 @@ export async function toggleIntroVisibility(current: boolean): Promise<{ success
         const existing = await client.request(readItems('feature_flags', {
             filter: { route_match: { _eq: route } },
             fields: [...FEATURE_FLAG_FIELDS],
-            limit: 1
+            limit: 1,
+            params: { _t: Date.now() }
         }));
 
-        if (existing && existing.length > 0) {
-            await client.request(updateItem('feature_flags', Number(existing[0].id), { is_active: !current }));
+        const flag = existing?.[0];
+        const oldStatus = flag ? !!flag.is_active : true;
+        const newStatus = !oldStatus;
+
+        if (flag) {
+            await client.request(updateItem('feature_flags', Number(flag.id), { is_active: newStatus }));
+            console.log(`[AdminIntro] Toggle: DB was ${oldStatus}, setting to ${newStatus} (ID: ${flag.id})`);
         } else {
             await client.request(createItem('feature_flags', { 
                 name: 'Intro Inschrijving',
                 route_match: route, 
-                is_active: !current 
+                is_active: newStatus 
             }));
+            console.log(`[AdminIntro] Toggle: Created new flag for ${route} with is_active: ${newStatus}`);
         }
+
+        revalidateTag('feature_flags', 'default');
+        revalidatePath('/', 'layout');
+        revalidatePath('/beheer/intro');
+
+        // Invalidate feature flags cache in Redis to ensure immediate update in proxy
+        try {
+            const redis = await getRedis();
+            const deletedRows = await redis.del(FLAGS_CACHE_KEY);
+            console.log(`[AdminIntro] Redis cache cleared. Keys deleted: ${deletedRows}`);
+        } catch (e) {
+            console.error('[AdminIntro] Failed to clear Redis cache:', e);
+        }
+        
+        return { success: true, show: newStatus };
     } catch (e) {
         console.error('[AdminIntro] Toggle visibility failed:', e);
         return { success: false, error: 'Bijwerken mislukt' };
     }
-
-    revalidateTag('feature_flags', 'default');
-    revalidatePath('/beheer/intro');
-    return { success: true, show: !current };
 }
 
 

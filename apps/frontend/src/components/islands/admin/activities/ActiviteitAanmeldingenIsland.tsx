@@ -276,11 +276,6 @@ export default function ActiviteitAanmeldingenIsland({ event, initialSignups }: 
                                             </td>
                                             <td className="px-6 py-5">
                                                 <div className="font-extrabold text-slate-900 dark:text-white text-base mb-1">{name}</div>
-                                                {signup.directus_relations && (
-                                                    <span className="inline-block px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-purple-100 text-purple-700 dark:bg-purple-500/10 dark:text-purple-400">
-                                                        Bestigend Lid
-                                                    </span>
-                                                )}
                                             </td>
                                             <td className="px-6 py-5 space-y-1.5">
                                                 <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 font-medium">

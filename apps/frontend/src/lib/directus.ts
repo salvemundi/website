@@ -22,7 +22,6 @@ export function getSystemDirectus() {
                     ...options,
                     cache: 'no-store', // Always fetch fresh data from Directus to avoid frozen status polling
                     signal: AbortSignal.timeout(10000),
-                    next: Object.keys(nextOptions).length > 0 ? nextOptions : undefined
                 } as RequestInit);
             }
         }

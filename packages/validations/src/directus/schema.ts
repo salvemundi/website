@@ -122,11 +122,11 @@ export interface DbDocument {
 }
 
 export interface DbEventSignup {
+    id: number | null;
     event_id?: number | DbEvent | null;
     submission_file_url?: string | null;
     created_at?: string | null;
     qr_token?: string | null;
-    checked_in?: boolean | null;
     checked_in?: boolean | null;
     checked_in_at?: string | null;
     participant_name?: string | null;

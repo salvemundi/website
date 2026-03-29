@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getHeroBanners, getUpcomingActiviteiten, getSponsors } from '@/server/actions/home.actions';
@@ -70,3 +71,4 @@ export default function HomePage() {
         </main>
     );
 }
+

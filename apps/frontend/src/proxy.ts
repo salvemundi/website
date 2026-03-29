@@ -3,54 +3,9 @@ import type { NextRequest } from 'next/server';
 
 import { PUBLIC_ROUTES } from '@/lib/routes';
 import { getRedis } from '@/server/auth/redis-client';
+import { getSystemDirectus } from '@/lib/directus';
+import { getDisabledRoutes, FLAGS_CACHE_KEY } from '@/lib/feature-flags';
 
-// Runtime configuration for Node.js is now implicit for Proxies in Next.js 16
-// Do NOT export const runtime = 'nodejs' here.
-
-// In-memory cache voor feature flags
-let cachedDisabledRoutes: string[] | null = null;
-let cacheTimestamp = 0;
-const CACHE_TTL = 60 * 1000; // 60 seconden
-
-/**
- * Haalt de lijst met uitgeschakelde routes op vanuit de Directus feature_flags collectie.
- */
-async function getDisabledRoutes(): Promise<string[]> {
-    const now = Date.now();
-    if (cachedDisabledRoutes && (now - cacheTimestamp < CACHE_TTL)) {
-        return cachedDisabledRoutes;
-    }
-
-    try {
-        const directusUrl = process.env.DIRECTUS_SERVICE_URL;
-        const token = process.env.DIRECTUS_STATIC_TOKEN;
-
-        if (!token) return cachedDisabledRoutes || [];
-
-        cacheTimestamp = now;
-
-        const url = `${directusUrl}/items/feature_flags?filter[is_active][_eq]=false&fields=route_match`;
-        const res = await fetch(url, {
-            headers: { Authorization: `Bearer ${token}` },
-            cache: 'no-store',
-            signal: AbortSignal.timeout(10000), 
-        });
-
-        if (res.ok) {
-            const data = await res.json();
-            if (data && Array.isArray(data.data)) {
-                const routes = data.data.map((f: any) => f.route_match).filter(Boolean);
-                cachedDisabledRoutes = routes;
-                return routes;
-            }
-        }
-    } catch (e) {
-        if (!cachedDisabledRoutes) {
-            console.error('[Proxy] Feature flags initial fetch failed:', e instanceof Error ? e.message : e);
-        }
-    }
-    return cachedDisabledRoutes || [];
-}
 
 /**
  * Direct Provider Proxy (V7)

@@ -3,22 +3,21 @@
     "version": "1.0.0",
     "private": true,
     "scripts": {
-        "dev": "next dev",
-        "build": "next build",
+        "dev": "cross-env NODE_OPTIONS='--no-deprecation' next dev",
+        "build": "cross-env NODE_OPTIONS='--no-deprecation' next build",
         "start": "next start",
         "lint": "eslint src",
         "check-lint": "eslint src"
     },
     "dependencies": {
-
         "@directus/sdk": "^21.1.0",
         "@hookform/resolvers": "^5.2.2",
         "@salvemundi/validations": "workspace:*",
         "better-auth": "1.5.5",
         "date-fns": "^4.1.0",
-
         "framer-motion": "^12.34.5",
         "html5-qrcode": "^2.3.8",
+        "ioredis": "^5.6.0",
         "isomorphic-dompurify": "^3.3.0",
         "lucide-react": "^0.475.0",
         "maplibre-gl": "^5.21.0",
@@ -30,26 +29,25 @@
         "react-dom": "19.2.0",
         "react-hook-form": "^7.71.2",
         "react-map-gl": "^8.1.0",
-        "ioredis": "^5.6.0",
         "swiper": "^12.1.2",
         "xlsx": "^0.18.5",
         "zod": "^3.23.8"
     },
     "devDependencies": {
+        "@better-auth/cli": "^1.4.19",
         "@eslint/eslintrc": "3.3.0",
         "@tailwindcss/postcss": "^4.0.0",
-
         "@types/node": "^22.0.0",
         "@types/pg": "^8.16.0",
         "@types/qrcode": "^1.5.6",
         "@types/qrcode.react": "^3.0.0",
         "@types/react": "^19.0.0",
         "@types/react-dom": "^19.0.0",
+        "cross-env": "^10.1.0",
         "eslint": "^9.23.0",
         "eslint-config-next": "15.1.0",
         "postcss": "^8.5.6",
         "tailwindcss": "^4.2.1",
-        "typescript": "5.7.3",
-        "@better-auth/cli": "^1.4.19"
+        "typescript": "5.7.3"
     }
 }

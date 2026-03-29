@@ -67,12 +67,12 @@ async function LidDataLoader({ id }: { id: string }) {
         console.error("[LidDataLoader] Failed to fetch committees:", e.message, e?.errors || e);
     }
 
-    // Fetch Activity History (Signups)
+    // Fetch Activity History (Signups) via email
     let signups: any[] = [];
     try {
         signups = await getSystemDirectus().request(
             dReadItems<any, any, any>('event_signups', {
-                filter: { directus_relations: { _eq: id } },
+                filter: { participant_email: { _eq: member.email } },
                 // Limit fields to those known to work with system token (based on activities.actions.ts)
                 fields: ['id', 'payment_status', { event_id: ['id', 'name', 'event_date'] }],
                 limit: 20

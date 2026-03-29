@@ -2,7 +2,7 @@
 
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
-import { revalidateTag } from 'next/cache';
+import { revalidateTag, revalidatePath, unstable_noStore as noStore } from 'next/cache';
 import { 
     pubCrawlEventSchema, 
     pubCrawlSignupSchema, 
@@ -14,6 +14,8 @@ import {
     FEATURE_FLAG_FIELDS
 } from '@salvemundi/validations';
 import { isSuperAdmin } from "@/lib/auth-utils";
+import { getRedis } from '@/server/auth/redis-client';
+import { FLAGS_CACHE_KEY } from '@/lib/feature-flags';
 
 import { getSystemDirectus } from "@/lib/directus";
 import { 
@@ -169,7 +171,7 @@ export async function updatePubCrawlSignup(id: number, eventId: number, data: an
 }
 
 
-export async function toggleKroegentochtVisibility(current: boolean) {
+export async function toggleKroegentochtVisibility(): Promise<{ success: boolean; show?: boolean; error?: string }> {
     await requireKroegAdmin();
     const route = '/kroegentocht';
     
@@ -178,43 +180,63 @@ export async function toggleKroegentochtVisibility(current: boolean) {
         const existing = await client.request(readItems('feature_flags', {
             filter: { route_match: { _eq: route } },
             fields: [...FEATURE_FLAG_FIELDS],
-            limit: 1
+            limit: 1,
+            params: { _t: Date.now() }
         }));
 
-        if (existing && existing.length > 0) {
-            await client.request(updateItem('feature_flags', existing[0].id as unknown as string, { is_active: !current }));
+        const flag = existing?.[0];
+        const oldStatus = flag ? !!flag.is_active : true; // Default to true if not exists
+        const newStatus = !oldStatus;
+
+        if (flag) {
+            await client.request(updateItem('feature_flags', flag.id as unknown as string, { is_active: newStatus }));
+            console.log(`[AdminKroegentocht] Toggle: DB was ${oldStatus}, setting to ${newStatus} (ID: ${flag.id})`);
         } else {
             await client.request(createItem('feature_flags', { 
                 name: 'Kroegentocht Inschrijving',
                 route_match: route, 
-                is_active: !current 
+                is_active: newStatus 
             }));
+            console.log(`[AdminKroegentocht] Toggle: Created new flag for ${route} with is_active: ${newStatus}`);
         }
+
+        revalidateTag('feature_flags', 'default');
+        revalidatePath('/', 'layout');
+        
+        // Invalidate feature flags cache in Redis to ensure immediate update in proxy
+        try {
+            const redis = await getRedis();
+            const deletedRows = await redis.del(FLAGS_CACHE_KEY);
+            console.log(`[AdminKroegentocht] Redis cache cleared. Keys deleted: ${deletedRows}`);
+        } catch (e) {
+            console.error('[AdminKroegentocht] Failed to clear Redis cache:', e);
+        }
+
+        return { success: true, show: newStatus };
     } catch (e) {
         console.error('[AdminKroegentocht] Toggle visibility failed:', e);
-        throw new Error('Bijwerken mislukt');
+        return { success: false, error: 'Bijwerken mislukt' };
     }
-
-    revalidateTag('feature_flags', 'default');
-    return { success: true, show: !current };
 }
 
 export async function getKroegentochtSettings() {
+    noStore();
     await requireKroegAdmin();
     try {
         const items = await getSystemDirectus().request(readItems('feature_flags', {
             filter: { route_match: { _eq: '/kroegentocht' } },
             fields: [...FEATURE_FLAG_FIELDS],
-            limit: 1
+            limit: 1,
+            params: { _t: Date.now() } // Hard bypass for Next.js cache
         }));
         
-        if (items && items.length > 0) {
-            return { show: !!items[0].is_active };
-        }
-        return { show: false };
+        const isVisible = items && items.length > 0 ? !!items[0].is_active : true;
+        console.log(`[AdminKroegentocht] getKroegentochtSettings: isVisible=${isVisible} (from Directus)`);
+        
+        return { show: isVisible };
     } catch (e) {
         console.error('[AdminKroegentocht] Get settings failed:', e);
-        return { show: false };
+        return { show: true };
     }
 }
 

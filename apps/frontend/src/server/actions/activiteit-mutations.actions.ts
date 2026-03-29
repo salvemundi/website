@@ -57,8 +57,7 @@ export async function signupForActivity(data: EventSignupForm) {
             participant_email: parsed.data.email,
             participant_phone: parsed.data.phoneNumber,
             payment_status: (price ?? 0) > 0 ? ('open' as const) : ('paid' as const),
-            qr_token: qrToken,
-            directus_relations: userId || null
+            qr_token: qrToken
         };
 
         const signupResponse = await directus.request(createItem('event_signups', payload));
