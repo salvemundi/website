@@ -66,15 +66,17 @@ export class MailWorkerService {
                     } catch (error: any) {
                         console.error(`[MailWorker] Failed dispatch to ${task.to}:`, error.message);
                         
-                        // 3. Handle Retry (Exponential Backoff)
+                        // 3. Handle Retry (Exponential Backoff with 60s base)
                         task.retries += 1;
                         if (task.retries >= task.maxRetries) {
                             console.error(`[MailWorker] MAX RETRIES reached for ${task.to}. Removing task.`);
                             await redis.zrem(this.QUEUE_KEY, taskJson);
                             await AuditService.logMail(task.to, task.templateId, 'FAILED', `Max retries reached: ${error.message}`);
                         } else {
-                            // Backoff: 10s, 40s, 90s, 160s... (base 10s * retries^2)
-                            const delay = 10000 * Math.pow(task.retries, 2);
+                            // Backoff: 1m, 4m, 9m, 16m... up to 50 retries which covers > 24 hours
+                            // Formula: 60s * retries^2. 
+                            // At retry 38, delay is ~24 hours.
+                            const delay = 60000 * Math.pow(task.retries, 2);
                             const newScore = Date.now() + delay;
                             
                             // Remove old and add updated
