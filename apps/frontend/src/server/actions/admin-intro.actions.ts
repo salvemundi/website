@@ -26,6 +26,7 @@ import { AdminResource } from '@/shared/lib/permissions-config';
 import { getRedis } from '@/server/auth/redis-client';
 import { FLAGS_CACHE_KEY } from '@/lib/feature-flags';
 import { hasPermission } from '@/shared/lib/permissions';
+import { query } from '@/lib/db';
 
 async function checkIntroAdminAccess() {
     const session = await auth.api.getSession({ headers: await headers() });
@@ -262,41 +263,46 @@ export async function toggleIntroVisibility(): Promise<{ success: boolean; show?
     const route = '/intro';
 
     try {
-        const client = getSystemDirectus();
-        const existing = await client.request(readItems('feature_flags', {
-            filter: { route_match: { _eq: route } },
-            fields: [...FEATURE_FLAG_FIELDS],
-            limit: 1,
-            params: { _t: Date.now() }
-        }));
-
-        const flag = existing?.[0];
+        const sql = 'SELECT id, is_active FROM feature_flags WHERE route_match = $1 LIMIT 1';
+        const { rows } = await query(sql, [route]);
+        
+        const flag = rows?.[0];
         const oldStatus = flag ? !!flag.is_active : true;
         const newStatus = !oldStatus;
-
+        
         if (flag) {
-            await client.request(updateItem('feature_flags', Number(flag.id), { is_active: newStatus }));
-            console.log(`[AdminIntro] Toggle: DB was ${oldStatus}, setting to ${newStatus} (ID: ${flag.id})`);
+            await query('UPDATE feature_flags SET is_active = $1 WHERE id = $2', [newStatus, flag.id]);
+            console.log(`[AdminIntro] Toggle (SQL): DB was ${oldStatus}, setting to ${newStatus} (ID: ${flag.id})`);
         } else {
-            await client.request(createItem('feature_flags', { 
-                name: 'Intro Inschrijving',
-                route_match: route, 
-                is_active: newStatus 
-            }));
-            console.log(`[AdminIntro] Toggle: Created new flag for ${route} with is_active: ${newStatus}`);
+            await query('INSERT INTO feature_flags (name, route_match, is_active) VALUES ($1, $2, $3)', 
+                ['Intro Inschrijving', route, newStatus]);
+            console.log(`[AdminIntro] Toggle (SQL): Created new flag for ${route} with is_active: ${newStatus}`);
         }
 
+        // 1. Immediate clear to disrupt any current stale requests
+        try {
+            const redis = await getRedis();
+            await redis.del(FLAGS_CACHE_KEY);
+            console.log(`[AdminIntro] Initial Redis cache clear (immediate)`);
+        } catch (e) {
+            console.error('[AdminIntro] Initial Redis clear failed:', e);
+        }
+
+        // 2. Wait for Directus DB/Cache consistency if other systems read via API
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        console.log(`[AdminIntro] Revalidating: feature_flags (profile: default)`);
         revalidateTag('feature_flags', 'default');
         revalidatePath('/', 'layout');
         revalidatePath('/beheer/intro');
 
-        // Invalidate feature flags cache in Redis to ensure immediate update in proxy
+        // 3. Final clear to ensure concurrent requests that fetched stale data are purged
         try {
             const redis = await getRedis();
             const deletedRows = await redis.del(FLAGS_CACHE_KEY);
-            console.log(`[AdminIntro] Redis cache cleared. Keys deleted: ${deletedRows}`);
+            console.log(`[AdminIntro] Final Redis cache clear. Keys deleted: ${deletedRows}`);
         } catch (e) {
-            console.error('[AdminIntro] Failed to clear Redis cache:', e);
+            console.error('[AdminIntro] Final Redis clear failed:', e);
         }
         
         return { success: true, show: newStatus };
