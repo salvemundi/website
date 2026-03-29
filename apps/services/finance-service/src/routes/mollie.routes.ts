@@ -38,9 +38,9 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
             const mollie = getMollieClient();
             const payment = await mollie.payments.get(id);
 
-            // 2. Update status in PostgreSQL
+            // 2. Update payment_status in PostgreSQL (matches Directus schema)
             await fastify.db.query(
-                `UPDATE transactions SET status = $1, updated_at = NOW() WHERE mollie_id = $2`,
+                `UPDATE transactions SET payment_status = $1, updated_at = NOW() WHERE mollie_id = $2`,
                 [payment.status, id]
             );
 
