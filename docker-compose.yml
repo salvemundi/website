@@ -53,6 +53,7 @@ services:
       - DIRECTUS_STATIC_TOKEN=${DIRECTUS_STATIC_TOKEN}
       - DIRECTUS_SERVICE_URL=${INTERNAL_DIRECTUS_URL}
       - REDIS_URL=${REDIS_URL}
+      - PUBLIC_URL=${PUBLIC_URL}
     networks:
       - salve-mundi-v7-shared
 
