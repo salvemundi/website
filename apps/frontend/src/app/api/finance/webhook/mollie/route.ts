@@ -19,18 +19,21 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-        const body = await request.text();
+        const formData = await request.formData();
+        const id = formData.get('id');
+
+        if (!id) {
+            return NextResponse.json({ error: 'Missing payment ID' }, { status: 400 });
+        }
 
         const response = await fetch(`${financeServiceUrl}/api/finance/webhook/mollie`, {
             method: 'POST',
             headers: {
-                'Content-Type': request.headers.get('content-type') || 'application/x-www-form-urlencoded',
-                // Forward any Mollie-specific headers
-                ...(request.headers.get('x-webhook-secret') && {
-                    'x-webhook-secret': request.headers.get('x-webhook-secret')!
-                }),
+                'Content-Type': 'application/json',
+                // Forward the internal token for authentication
+                'Authorization': `Bearer ${process.env.INTERNAL_SERVICE_TOKEN}`,
             },
-            body,
+            body: JSON.stringify({ id }),
         });
 
         const text = await response.text();

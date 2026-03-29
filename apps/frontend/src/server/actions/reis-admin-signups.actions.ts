@@ -33,7 +33,7 @@ export async function getTripSignups(tripId: number) {
 
         const sanitized = (signups ?? []).map(s => ({
             ...s,
-            date_created: s.created_at,
+            created_at: s.created_at,
             deposit_paid: !!s.deposit_paid,
             full_payment_paid: !!s.full_payment_paid,
             willing_to_drive: !!s.willing_to_drive,
@@ -62,7 +62,7 @@ export async function getTripSignup(id: number): Promise<TripSignup | null> {
         })) as unknown as DbTripSignup;
 
         if (!signup) return null;
-        const sanitized = { ...signup, date_created: signup.created_at };
+        const sanitized = { ...signup, created_at: signup.created_at };
         return tripSignupSchema.parse(sanitized);
     } catch (error) {
         console.error('[AdminReisActions#getTripSignup] Error:', error);
