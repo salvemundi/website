@@ -17,6 +17,8 @@ fastify.get('/health', async () => {
 import dbPlugin from './plugins/db.js';
 import redisPlugin from './plugins/redis.js';
 import mollieRoutes from './routes/mollie.routes.js';
+import paymentsRoutes from './routes/payments.routes.js';
+import couponsRoutes from './routes/coupons.routes.js';
 
 // Register Plugins
 fastify.register(dbPlugin);
@@ -24,15 +26,20 @@ fastify.register(redisPlugin);
 
 // Register Routes
 fastify.register(mollieRoutes, { prefix: '/api/finance' });
+fastify.register(paymentsRoutes, { prefix: '/api/payments' });
+fastify.register(couponsRoutes, { prefix: '/api/coupons' });
 
 const start = async () => {
     try {
         await fastify.listen({ port: 3001, host: '0.0.0.0' });
         console.log('Finance Service listening on port 3001');
 
-        // Start the Cache Invalidation Worker (background loop)
+        // Start background workers
         const { CacheInvalidationService } = await import('./services/cache-invalidation.js');
+        const { DirectusRetryService } = await import('./services/directus-retry.service.js');
+        
         CacheInvalidationService.startWorker(fastify.redis);
+        DirectusRetryService.startWorker(fastify.redis);
     } catch (err) {
         fastify.log.error(err);
         process.exit(1);

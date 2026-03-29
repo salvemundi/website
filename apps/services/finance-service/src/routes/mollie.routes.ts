@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { timingSafeCompare, PaymentSuccessEventSchema } from '@salvemundi/validations';
+import { DirectusRetryService } from '../services/directus-retry.service.js';
 
 export default async function mollieRoutes(fastify: FastifyInstance) {
     /**
@@ -75,7 +76,7 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
 
                 fastify.log.info(`[FINANCE] Published PAYMENT_SUCCESS event for payment ${id}`);
 
-                // Direct Update to Directus for reliability
+                // Use DirectusRetryService for reliability
                 if (registrationId && registrationType) {
                     const collectionMap: Record<string, string> = {
                         'event_signup': 'event_signups',
@@ -86,21 +87,14 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
                     const targetCollection = collectionMap[registrationType];
 
                     if (targetCollection) {
-                        const { createDirectus, rest, staticToken, updateItem } = await import('@directus/sdk');
-                        const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL!;
-                        const directusToken = process.env.DIRECTUS_STATIC_TOKEN!;
-                        
-                        const directus = createDirectus(directusUrl)
-                            .with(staticToken(directusToken))
-                            .with(rest());
-
                         try {
-                            await directus.request(updateItem(targetCollection as any, registrationId as any, {
+                            // Queue for background retry to ensure "paid" status always syncs
+                            await DirectusRetryService.queueUpdate(fastify.redis, targetCollection, registrationId, {
                                 payment_status: 'paid'
-                            }));
-                            fastify.log.info(`[FINANCE] Directly updated Directus ${targetCollection} ${registrationId} to paid`);
-                        } catch (dErr: any) {
-                            fastify.log.error(`[FINANCE] Failed to update Directus directly for ${registrationId}:`, dErr);
+                            });
+                            fastify.log.info(`[FINANCE] Queued Directus update for ${targetCollection} ${registrationId} to paid`);
+                        } catch (qErr: any) {
+                            fastify.log.error(`[FINANCE] Failed to queue Directus update for ${registrationId}:`, qErr);
                         }
                     }
                 }
