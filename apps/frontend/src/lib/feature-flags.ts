@@ -1,5 +1,4 @@
 import { getRedis } from '@/server/auth/redis-client';
-import { FEATURE_FLAG_FIELDS } from '@salvemundi/validations';
 import { unstable_noStore as noStore } from 'next/cache';
 import { query } from '@/lib/db';
 
@@ -19,9 +18,7 @@ export async function getDisabledRoutes(): Promise<string[]> {
         const cached = await redis.get(FLAGS_CACHE_KEY);
         
         if (cached) {
-            const routes = JSON.parse(cached);
-            console.log(`[Feature-Flags] Cache HIT: [${routes.join(', ')}] (Count: ${routes.length})`);
-            return routes;
+            return JSON.parse(cached);
         }
 
         console.log(`[Feature-Flags] Cache MISS. Fetching fresh from Postgres...`);

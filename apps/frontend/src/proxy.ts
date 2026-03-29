@@ -3,7 +3,6 @@ import type { NextRequest } from 'next/server';
 
 import { PUBLIC_ROUTES } from '@/lib/routes';
 import { getRedis } from '@/server/auth/redis-client';
-import { getSystemDirectus } from '@/lib/directus';
 import { getDisabledRoutes, FLAGS_CACHE_KEY } from '@/lib/feature-flags';
 
 
@@ -12,8 +11,6 @@ import { getDisabledRoutes, FLAGS_CACHE_KEY } from '@/lib/feature-flags';
  */
 async function proxy(request: NextRequest) {
     const { pathname, origin } = request.nextUrl;
-    console.log(`[Proxy] Processing request: ${pathname}`);
-    
     const nonce = btoa(crypto.randomUUID()).substring(0, 16);
 
     const withSecurity = (res: NextResponse) => {
