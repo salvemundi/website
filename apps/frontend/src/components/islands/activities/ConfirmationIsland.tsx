@@ -33,7 +33,7 @@ export default function ConfirmationIsland({
     const [isTrip, setIsTrip] = useState(false);
     const [retryCount, setRetryCount] = useState(0);
 
-    const isPubCrawl = signupData?.pub_crawl_event_id !== undefined || signupData?.tickets !== undefined;
+    const isPubCrawl = !!signupData?.pub_crawl_event_id || (Array.isArray(signupData?.tickets) && signupData.tickets.length > 0);
 
     useEffect(() => {
         /**
@@ -43,24 +43,30 @@ export default function ConfirmationIsland({
          */
         const checkStatus = async () => {
             try {
-                // Use a high-resolution timestamp for cache busting
-                const res = await getSignupStatus(initialId, initialTransactionId, Date.now().toString());
+                const ts = Date.now().toString();
+                console.log(`[StatusCheck] Polling status (retry: ${retryCount})...`);
+                
+                const res = await getSignupStatus(initialId, initialTransactionId, ts);
+                console.log(`[StatusCheck] Server response:`, res.status);
                 
                 if (res.status === 'paid') {
+                    console.log(`[StatusCheck] SUCCESS: Payment confirmed!`);
                     setSignupData(res.signup);
                     setIsMembership(!!res.isMembership);
                     setIsTrip(!!res.isTrip);
                     setStatus('paid');
                 } else if (res.status === 'failed' || res.status === 'canceled' || res.status === 'expired') {
+                    console.warn(`[StatusCheck] FAILED: Payment status is ${res.status}`);
                     setStatus('failed');
-                } else if (retryCount < 50) { // Increased max retries for longer wait if needed
+                } else if (retryCount < 60) { 
                     // Poll faster (every 1s) to show result immediately after bank confirmation
                     setTimeout(() => setRetryCount(prev => prev + 1), 1000);
                 } else {
+                    console.error(`[StatusCheck] TIMEOUT: No success after max retries.`);
                     setStatus('open');
                 }
             } catch (err) {
-                console.error('Error checking status:', err);
+                console.error('[StatusCheck] Error checking status:', err);
                 setStatus('error');
             }
         };
@@ -110,9 +116,9 @@ export default function ConfirmationIsland({
                 );
             }
 
-            const isPubCrawl = !!signupData?.pub_crawl_event_id;
-            const amount = signupData?.amount_tickets || 1;
-            const eventName = isPubCrawl ? signupData.pub_crawl_event_id.name : signupData?.event_id?.name;
+            const isPubCrawlInternal = !!signupData?.pub_crawl_event_id;
+            const amount = signupData?.amount_tickets || (signupData?.tickets?.length) || 1;
+            const eventName = isPubCrawlInternal ? signupData.pub_crawl_event_id?.name : signupData?.event_id?.name || signupData?.trip_id?.name || 'Evenement';
 
             return (
                 <div className="space-y-12 animate-in zoom-in-95 duration-500">
@@ -155,12 +161,12 @@ export default function ConfirmationIsland({
                                     <div className="flex flex-col items-center gap-4">
                                         <p className="text-[10px] font-black text-[var(--theme-purple)] uppercase tracking-[0.2em]">TICKET {i + 1} / {amount}</p>
                                         <div className="p-4 bg-white rounded-3xl shadow-lg ring-1 ring-black/5">
-                                            <QRDisplay qrToken={signupData.tickets?.[i]?.qr_token || `${signupData.qr_token}${amount > 1 ? `#${i}` : ''}`} size={180} />
+                                            <QRDisplay qrToken={signupData?.tickets?.[i]?.qr_token || `${signupData?.qr_token}${amount > 1 ? `#${i}` : ''}`} size={180} />
                                         </div>
                                         <div className="text-center">
                                             <h3 className="font-black text-[var(--text-main)] uppercase tracking-tight">{eventName}</h3>
                                             <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest opacity-60">
-                                                #{signupData.id}{amount > 1 ? `-${i+1}` : ''}
+                                                #{signupData?.id}{amount > 1 ? `-${i+1}` : ''}
                                             </p>
                                         </div>
                                     </div>
