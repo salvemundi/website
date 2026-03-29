@@ -11,8 +11,10 @@ import { getDisabledRoutes, FLAGS_CACHE_KEY } from '@/lib/feature-flags';
  * Direct Provider Proxy (V7)
  */
 async function proxy(request: NextRequest) {
-    const nonce = btoa(crypto.randomUUID()).substring(0, 16);
     const { pathname, origin } = request.nextUrl;
+    console.log(`[Proxy] Processing request: ${pathname}`);
+    
+    const nonce = btoa(crypto.randomUUID()).substring(0, 16);
 
     const withSecurity = (res: NextResponse) => {
         const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL || '';
@@ -60,6 +62,7 @@ async function proxy(request: NextRequest) {
 
     const disabledRoutes = await getDisabledRoutes();
     if (disabledRoutes.some(r => pathname === r || pathname.startsWith(`${r}/`))) {
+        console.warn(`[Proxy] BLOCKED: Route ${pathname} is disabled. Rewriting to /404`);
         return withSecurity(NextResponse.rewrite(new URL('/404', request.url)));
     }
 

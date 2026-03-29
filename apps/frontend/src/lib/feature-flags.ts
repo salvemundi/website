@@ -21,7 +21,7 @@ export async function getDisabledRoutes(): Promise<string[]> {
         
         if (cached) {
             const routes = JSON.parse(cached);
-            console.log(`[Feature-Flags] Cache HIT: ${routes.join(', ')}`);
+            console.log(`[Feature-Flags] Cache HIT: [${routes.join(', ')}] (Count: ${routes.length})`);
             return routes;
         }
 
@@ -36,7 +36,7 @@ export async function getDisabledRoutes(): Promise<string[]> {
             .map((flag: any) => flag.route_match)
             .filter((route: string | null | undefined): route is string => Boolean(route));
 
-        console.log(`[Feature-Flags] Fetched fresh from Directus: ${routes.join(', ')}`);
+        console.log(`[Feature-Flags] Fetched fresh from Directus: [${routes.join(', ')}] (Count: ${routes.length})`);
         
         // Update Redis cache
         await redis.set(FLAGS_CACHE_KEY, JSON.stringify(routes), 'EX', CACHE_TTL);
