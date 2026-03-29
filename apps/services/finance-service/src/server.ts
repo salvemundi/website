@@ -19,6 +19,7 @@ import redisPlugin from './plugins/redis.js';
 import mollieRoutes from './routes/mollie.routes.js';
 import paymentsRoutes from './routes/payments.routes.js';
 import couponsRoutes from './routes/coupons.routes.js';
+import tripRoutes from './routes/trip.routes.js';
 
 // Register Plugins
 fastify.register(dbPlugin);
@@ -28,6 +29,7 @@ fastify.register(redisPlugin);
 fastify.register(mollieRoutes, { prefix: '/api/finance' });
 fastify.register(paymentsRoutes, { prefix: '/api/payments' });
 fastify.register(couponsRoutes, { prefix: '/api/coupons' });
+fastify.register(tripRoutes, { prefix: '/api/finance' });
 
 const start = async () => {
     try {
@@ -37,9 +39,11 @@ const start = async () => {
         // Start background workers
         const { CacheInvalidationService } = await import('./services/cache-invalidation.js');
         const { DirectusRetryService } = await import('./services/directus-retry.service.js');
+        const { AzureRetryService } = await import('./services/azure-retry.service.js');
         
         CacheInvalidationService.startWorker(fastify.redis);
         DirectusRetryService.startWorker(fastify.redis);
+        AzureRetryService.startWorker(fastify.redis);
     } catch (err) {
         fastify.log.error(err);
         process.exit(1);
