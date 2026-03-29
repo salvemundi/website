@@ -97,7 +97,9 @@ export const USER_BASIC_FIELDS = [
 
 export const USER_FULL_FIELDS = [
     ...USER_BASIC_FIELDS,
-    'phone_number', 'date_of_birth', 'entra_id', 'membership_expiry', 'description', 'location', 'title', 'tags', 'github_handle', 'linkedin_url', 'website_url', 'committees'
+    // Essential for Azure AD synchronization and auth flows
+    'phone_number', 'date_of_birth', 'entra_id', 'membership_expiry', 'description', 
+    'location', 'title', 'tags', 'admin_access', 'committees'
 ] as const;
 
 export const HERO_BANNER_FIELDS = [
@@ -109,7 +111,9 @@ export const SPONSOR_FIELDS = [
 ] as const;
 
 export const TRANSACTION_FIELDS = [
-    'id', 'user_id', 'payment_status', 'amount', 'created_at', 'registration', 'pub_crawl_signup', 'trip_signup', 'product_type'
+    'id', 'user_id', 'payment_status', 'amount', 'created_at', 'registration', 
+    'pub_crawl_signup', 'trip_signup', 'product_type', 'mollie_id', 'transaction_id', 
+    'first_name', 'last_name', 'email', 'coupon_code'
 ] as const;
 
 export const WHATSAPP_GROUP_FIELDS = [

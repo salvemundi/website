@@ -432,6 +432,8 @@ export interface DbTransaction {
     created_at?: string | null;
     updated_at?: string | null;
     transaction_id?: string | null;
+    // Unique identifier from Mollie API for webhook processing and status lookups
+    mollie_id?: string | null;
     product_name?: string | null;
     email?: string | null;
     amount?: number | null;
