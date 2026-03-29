@@ -185,7 +185,7 @@ export async function signupForActivity(data: EventSignupForm) {
             participant_phone: parsed.data.phoneNumber,
             payment_status: (price ?? 0) > 0 ? 'open' : 'paid',
             qr_token: qrToken,
-            directus_relations: userId || null
+            // directus_relations removed: now linking via transactions
         };
 
         const signupResponse = await directus.request(createItem('event_signups', payload));

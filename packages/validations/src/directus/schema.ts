@@ -125,9 +125,8 @@ export interface DbEventSignup {
     event_id?: number | DbEvent | null;
     submission_file_url?: string | null;
     created_at?: string | null;
-    id: number | null;
-    directus_relations?: string | null;
     qr_token?: string | null;
+    checked_in?: boolean | null;
     checked_in?: boolean | null;
     checked_in_at?: string | null;
     participant_name?: string | null;
@@ -359,7 +358,6 @@ export interface DbPubCrawlSignup {
     // Relation to associated tickets for this signup
     tickets?: DbPubCrawlTicket[] | null;
     transactions?: any | null;
-    directus_relations?: string | null;
 }
 
 export interface DbPubCrawlSignupsTransaction {
@@ -507,7 +505,6 @@ export interface DbTripSignup {
     deposit_email_sent?: boolean | null;
     final_email_sent?: boolean | null;
     document_number?: string | null;
-    directus_relations?: string | null;
 }
 
 export interface DbTrip {

@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { headers } from 'next/headers';
-import { getUserEventSignups } from '@/server/actions/profiel.actions';
+import { getUserEventSignups, getUserPubCrawlSignups } from '@/server/actions/profiel.actions';
 import { checkAdminAccess } from '@/server/actions/admin.actions';
 
 import { ProfielSkeleton } from '@/components/ui/account/ProfielSkeleton';
@@ -33,12 +33,16 @@ async function ProfielFetcher() {
     // Fallback if somehow not authenticated (though proxy handles this)
     if (!user) return null;
 
-    // Fetch user event signups (respecting current identity)
-    const signups = await getUserEventSignups(user.id);
+    // Fetch user event signups and pub crawl signups
+    const [signups, pubCrawlSignups] = await Promise.all([
+        getUserEventSignups(user.id),
+        getUserPubCrawlSignups(user.id)
+    ]);
     
     return (
         <ProfielIsland 
             initialSignups={signups} 
+            pubCrawlSignups={pubCrawlSignups}
             user={user as any} 
         />
     );
