@@ -24,7 +24,7 @@ export const getActivities = cache(async (): Promise<Activiteit[]> => {
             fields: [
                 ...EVENT_FIELDS,
                 { committee_id: ['name'] }
-            ] as unknown /* TODO: REVIEW-ANY */, // Cast required for nested fields support in Directus SDK
+            ] as any, // Cast required for nested fields support in Directus SDK
             filter: { status: { _eq: 'published' } },
             limit: -1
         }));
@@ -45,7 +45,7 @@ export const getActivities = cache(async (): Promise<Activiteit[]> => {
             contact: item.contact ?? null,
             event_time: item.event_time ?? null,
             event_time_end: item.event_time_end ?? null,
-            committee_name: typeof item.committee_id === 'object' ? (item.committee_id as unknown /* TODO: REVIEW-ANY */)?.name || null : null,
+            committee_name: typeof item.committee_id === 'object' ? (item.committee_id as any)?.name || null : null,
         }));
 
         const parsed = activiteitenSchema.safeParse(mappedData);
@@ -67,7 +67,7 @@ export const getActivityById = cache(async (id: string): Promise<Activiteit | nu
             fields: [
                 ...EVENT_FIELDS,
                 { committee_id: ['id', 'name'] }
-            ] as unknown /* TODO: REVIEW-ANY */, // Cast required for nested fields support in Directus SDK
+            ] as any, // Cast required for nested fields support in Directus SDK
             filter: { id: { _eq: id } },
             limit: 1
         })));
@@ -91,7 +91,7 @@ export const getActivityById = cache(async (id: string): Promise<Activiteit | nu
             contact: item.contact ?? null,
             event_time: item.event_time ?? null,
             event_time_end: item.event_time_end ?? null,
-            committee_name: typeof item.committee_id === 'object' ? (item.committee_id as unknown /* TODO: REVIEW-ANY */)?.name || null : null,
+            committee_name: typeof item.committee_id === 'object' ? (item.committee_id as any)?.name || null : null,
         };
 
         const parsed = activiteitenSchema.element.safeParse(mapped);
@@ -109,7 +109,7 @@ export async function getActivitySignups(eventId: string) {
     try {
         return await getSystemDirectus().request(readItems('event_signups', {
             filter: { event_id: { _eq: eventId } },
-            fields: EVENT_SIGNUP_FIELDS as unknown /* TODO: REVIEW-ANY */
+            fields: EVENT_SIGNUP_FIELDS as any
         })) as unknown as DbEventSignup[];
     } catch (error) {
         console.error(`[Activities] Error fetching signups for ${eventId}:`, error);
@@ -133,7 +133,7 @@ export async function getSignupStatus(id?: string, transactionId?: string) {
             // Use explicit comparison with product_type, which is now correctly recognized via DbTransaction
             if (trans.product_type === 'event_signup') {
                 const signups = await getSystemDirectus().request(readItems('event_signups', {
-                    fields: ['id', 'payment_status', 'participant_name', { event_id: ['id', 'name'] }] as unknown /* TODO: REVIEW-ANY */,
+                    fields: ['id', 'payment_status', 'participant_name', { event_id: ['id', 'name'] }] as any,
                     filter: { id: { _eq: trans.registration } },
                     limit: 1
                 }));
@@ -141,7 +141,7 @@ export async function getSignupStatus(id?: string, transactionId?: string) {
                 return { status: trans.payment_status, signup, transaction: trans };
             } else if (trans.product_type === 'pub_crawl_signup') {
                 const signups = await getSystemDirectus().request(readItems('pub_crawl_signups', {
-                    fields: [...PUB_CRAWL_SIGNUP_FIELDS, { pub_crawl_event_id: ['name'] }, { tickets: ['id', 'name', 'qr_token'] }] as unknown /* TODO: REVIEW-ANY */,
+                    fields: [...PUB_CRAWL_SIGNUP_FIELDS, { pub_crawl_event_id: ['name'] }, { tickets: ['id', 'name', 'qr_token'] }] as any,
                     filter: { id: { _eq: trans.pub_crawl_signup } },
                     limit: 1
                 }));
@@ -164,7 +164,7 @@ export async function getSignupStatus(id?: string, transactionId?: string) {
     } else if (id) {
         try {
             const signups = await getSystemDirectus().request(readItems('event_signups', {
-                fields: [...EVENT_SIGNUP_FIELDS, { event_id: ['id', 'name'] }] as unknown /* TODO: REVIEW-ANY */,
+                fields: [...EVENT_SIGNUP_FIELDS, { event_id: ['id', 'name'] }] as any,
                 filter: { id: { _eq: id } },
                 limit: 1
             }));
@@ -192,12 +192,12 @@ export async function getMyTickets() {
                     _eq: userId
                 }
             },
-            fields: [...EVENT_SIGNUP_FIELDS, { event_id: ['id', 'name', 'event_date', 'location'] }] as unknown /* TODO: REVIEW-ANY */,
+            fields: [...EVENT_SIGNUP_FIELDS, { event_id: ['id', 'name', 'event_date', 'location'] }] as any,
             sort: ['-created_at']
         };
         
         // Explicitly cast query to any to bypass SDK internal tuple-widening issues with spread constants
-        return await getSystemDirectus().request(readItems('event_signups', query as unknown /* TODO: REVIEW-ANY */)) as unknown as DbEventSignup[];
+        return await getSystemDirectus().request(readItems('event_signups', query as any)) as unknown as DbEventSignup[];
     } catch (error) {
         console.error('[Activities] Error fetching user tickets:', error);
         return [];

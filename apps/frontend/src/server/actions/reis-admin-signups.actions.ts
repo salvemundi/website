@@ -26,8 +26,8 @@ export async function getTripSignups(tripId: number) {
     try {
         const signups = await getSystemDirectus().request(readItems('trip_signups', {
             filter: { trip_id: { _eq: tripId } },
-            fields: TRIP_SIGNUP_FIELDS as unknown /* TODO: REVIEW-ANY */,
-            sort: ['-created_at'] as unknown /* TODO: REVIEW-ANY */,
+            fields: TRIP_SIGNUP_FIELDS as any,
+            sort: ['-created_at'] as any,
             limit: -1
         })) as unknown as DbTripSignup[];
 
@@ -58,7 +58,7 @@ export async function getTripSignup(id: number): Promise<TripSignup | null> {
 
     try {
         const signup = await getSystemDirectus().request(readItem('trip_signups', id, {
-            fields: TRIP_SIGNUP_FIELDS as unknown /* TODO: REVIEW-ANY */
+            fields: TRIP_SIGNUP_FIELDS as any
         })) as unknown as DbTripSignup;
 
         if (!signup) return null;
@@ -110,7 +110,7 @@ export async function updateTripSignup(id: number, prevState: unknown, formData:
     };
 
     try {
-        await getSystemDirectus().request(updateItem('trip_signups', id, data as Record<string, unknown> /* TODO: REVIEW-ANY */));
+        await getSystemDirectus().request(updateItem('trip_signups', id, data as any));
 
         revalidatePath('/beheer/reis');
         revalidatePath(`/beheer/reis/deelnemer/${id}`);
@@ -132,7 +132,7 @@ export async function getSignupActivities(signupId: number) {
                 'trip_signup_id', 
                 { trip_activity_id: ['id', 'name', 'price', 'options'] }, 
                 'selected_options'
-            ] as unknown /* TODO: REVIEW-ANY */
+            ] as any
         })) as unknown as TripSignupActivity[];
 
         const parsed = z.array(tripSignupActivitySchema).safeParse(activities);
@@ -155,7 +155,7 @@ export async function getActivitySignups(activityId: number) {
     try {
         const signups = await getSystemDirectus().request(readItems('trip_signup_activities', {
             filter: { trip_activity_id: { _eq: activityId } },
-            fields: ['id', 'selected_options', { trip_signup_id: ['id', 'first_name', 'last_name', 'email'] }] as unknown /* TODO: REVIEW-ANY */
+            fields: ['id', 'selected_options', { trip_signup_id: ['id', 'first_name', 'last_name', 'email'] }] as any
         })) as unknown as (TripSignupActivity & { trip_signup_id: { id: string, first_name: string, last_name: string, email: string } })[];
 
         return signups ?? [];

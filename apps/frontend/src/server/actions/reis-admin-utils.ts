@@ -12,7 +12,7 @@ export async function requireReisAdmin() {
     }
 
     const user = session.user;
-    if (!isSuperAdmin((user as unknown /* TODO: REVIEW-ANY */).committees ?? [])) {
+    if (!isSuperAdmin((user as any).committees ?? [])) {
         throw new Error('Forbidden: SuperAdmin rechten vereist voor reisbeheer');
     }
 
