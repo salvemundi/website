@@ -111,9 +111,12 @@ export const SPONSOR_FIELDS = [
 ] as const;
 
 export const TRANSACTION_FIELDS = [
-    'id', 'user_id', 'payment_status', 'amount', 'created_at', 'registration', 
-    'pub_crawl_signup', 'trip_signup', 'product_type', 'mollie_id', 'transaction_id', 
-    'first_name', 'last_name', 'email', 'coupon_code'
+    'id', 'user_id', 'payment_status', 'amount', 'created_at', 
+    'registration.id', 'registration.event_id.name', 'registration.qr_token',
+    'pub_crawl_signup.id', 'pub_crawl_signup.pub_crawl_event_id.name', 'pub_crawl_signup.amount_tickets', 'pub_crawl_signup.qr_token',
+    'trip_signup.id', 'trip_signup.trip_id.name', 'trip_signup.first_name', 'trip_signup.last_name',
+    'product_type', 'mollie_id', 'transaction_id', 
+    'first_name', 'last_name', 'email', 'coupon_code', 'access_token'
 ] as const;
 
 export const WHATSAPP_GROUP_FIELDS = [
