@@ -244,22 +244,26 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-7xl">
-            {/* Visibility Toggle */}
-            <div className="flex items-center justify-between mb-6 bg-[var(--bg-card)] rounded-2xl px-6 py-4 ring-1 ring-[var(--border-color)]">
+            <div className="flex flex-wrap items-center justify-between mb-10 gap-6 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-2xl)] p-6">
                 <div>
-                    <p className="font-bold text-[var(--text-main)]">Intro zichtbaar voor publiek</p>
-                    <p className="text-xs text-[var(--text-muted)] mt-0.5">Toggle of de intro sectie en inschrijfpagina zichtbaar zijn.</p>
+                    <h2 className="text-xl font-black text-[var(--text-main)] tracking-tight uppercase italic">Zichtbaarheid</h2>
+                    <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mt-1">Beheer of de introductie pagina's en inschrijvingen publiekelijk toegankelijk zijn.</p>
                 </div>
-                <button
-                    onClick={handleToggleVisibility}
-                    disabled={togglingVisibility}
-                    className={`relative w-14 h-7 rounded-full transition-colors disabled:opacity-50 ${introVisible ? 'bg-[var(--theme-purple)]' : 'bg-[var(--border-color)]'}`}
-                >
-                    {togglingVisibility
-                        ? <Loader2 className="h-4 w-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-spin text-white" />
-                        : <span className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow transition-all ${introVisible ? 'left-8' : 'left-1'}`} />
-                    }
-                </button>
+
+                <div className="flex items-center gap-3 px-4 py-2 bg-[var(--bg-main)]/50 border border-[var(--border-color)] rounded-[var(--radius-xl)]">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-subtle)]">Status</span>
+                    <button
+                        onClick={handleToggleVisibility}
+                        disabled={togglingVisibility}
+                        className={`w-12 h-6 rounded-full p-1 transition-colors relative flex items-center ${introVisible ? 'bg-green-500' : 'bg-red-500'} disabled:opacity-50`}
+                    >
+                        {togglingVisibility ? (
+                            <Loader2 className="h-4 w-4 animate-spin text-white mx-auto" />
+                        ) : (
+                            <div className={`w-4 h-4 bg-white rounded-full transition-transform ${introVisible ? 'translate-x-[1.5rem]' : 'translate-x-0'}`} />
+                        )}
+                    </button>
+                </div>
             </div>
 
             {/* Tabs */}
