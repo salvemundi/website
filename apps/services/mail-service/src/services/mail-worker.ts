@@ -23,7 +23,7 @@ export class MailWorkerService {
             templateId,
             data,
             retries: 0,
-            maxRetries: 5
+            maxRetries: 20
         };
 
         await redis.zadd(this.QUEUE_KEY, Date.now(), JSON.stringify(task));
