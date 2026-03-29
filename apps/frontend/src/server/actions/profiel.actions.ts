@@ -27,17 +27,36 @@ export async function getUserEventSignups(overrideUserId?: string): Promise<Even
 
     try {
         const client = getSystemDirectus();
-        const res = await client.request(readItems('event_signups' as any, {
-            filter: { directus_relations: { _eq: targetUserId } },
+        
+        // We now fetch signups via transactions that are linked to this user
+        // This is more reliable than directus_relations since it directly links to the payment record
+        const res = await client.request(readItems('transactions' as any, {
+            filter: { 
+                user_id: { _eq: targetUserId },
+                registration: { _neq: null }
+            },
             fields: [
-                ...EVENT_SIGNUP_FIELDS, 
-                { event_id: ['id', 'name', 'event_date', 'description', 'image', 'contact'] }
+                { 
+                    registration: [
+                        ...EVENT_SIGNUP_FIELDS, 
+                        { event_id: ['id', 'name', 'event_date', 'description', 'image', 'contact'] }
+                    ] 
+                }
             ] as any,
             sort: ['-created_at'],
             limit: -1
         }));
 
-        const parsed = eventSignupSchema.array().safeParse(res);
+        // Extract unique registrations from transactions
+        const registrationsMap = new Map<number, any>();
+        (res as any[]).forEach(tx => {
+            if (tx.registration && tx.registration.id) {
+                registrationsMap.set(tx.registration.id, tx.registration);
+            }
+        });
+        
+        const registrations = Array.from(registrationsMap.values());
+        const parsed = eventSignupSchema.array().safeParse(registrations);
 
         if (!parsed.success) {
             console.error('[profiel.actions#getUserEventSignups] Validation failed:', parsed.error.flatten());
@@ -47,6 +66,50 @@ export async function getUserEventSignups(overrideUserId?: string): Promise<Even
         return parsed.data;
     } catch (err) {
         console.error('[profiel.actions#getUserEventSignups] failed:', err);
+        return [];
+    }
+}
+
+
+export async function getUserPubCrawlSignups(overrideUserId?: string): Promise<any[]> {
+    const session = await auth.api.getSession({ headers: await headers() });
+    const user = session?.user;
+
+    const targetUserId = overrideUserId || user?.id;
+    if (!targetUserId) return [];
+
+    try {
+        const client = getSystemDirectus();
+        
+        // Fetch Pub Crawl signups via transactions
+        const res = await client.request(readItems('transactions' as any, {
+            filter: { 
+                user_id: { _eq: targetUserId },
+                pub_crawl_signup: { _neq: null }
+            },
+            fields: [
+                { 
+                    pub_crawl_signup: [
+                        'id', 'name', 'email', 'amount_tickets', 'payment_status', 'created_at',
+                        { pub_crawl_event_id: ['id', 'name', 'date', 'description', 'image'] }
+                    ] 
+                }
+            ] as any,
+            sort: ['-created_at'],
+            limit: -1
+        }));
+
+        // Extract unique signups from transactions
+        const signupsMap = new Map<number, any>();
+        (res as any[]).forEach(tx => {
+            if (tx.pub_crawl_signup && tx.pub_crawl_signup.id) {
+                signupsMap.set(tx.pub_crawl_signup.id, tx.pub_crawl_signup);
+            }
+        });
+        
+        return Array.from(signupsMap.values());
+    } catch (err) {
+        console.error('[profiel.actions#getUserPubCrawlSignups] failed:', err);
         return [];
     }
 }

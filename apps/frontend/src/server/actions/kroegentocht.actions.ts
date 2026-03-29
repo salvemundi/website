@@ -17,7 +17,7 @@ import { headers } from 'next/headers';
 import { revalidateTag } from 'next/cache';
 
 import { getSystemDirectus } from '@/lib/directus';
-import { readItems, createItem, readUser } from '@directus/sdk';
+import { readItems, createItem } from '@directus/sdk';
 
 const getFinanceServiceUrl = () =>
     process.env.FINANCE_SERVICE_URL;
@@ -136,21 +136,10 @@ export async function initiateKroegentochtPayment(formData: any) {
         // 0. Get session
         const session = await auth.api.getSession({ headers: await headers() });
         const userId = session?.user?.id;
-        
-        // Robustness check: Ensure userId exists in directus_users to avoid Foreign Key errors
-        // This is necessary because Better-Auth users might not be synced to Directus (identity management gap)
-        let verifiedUserId = null;
-        if (userId) {
-            try {
-                // We use a simple readUser to check for existence. If it fails (404), verifiedUserId stays null.
-                const user = await getSystemDirectus().request(readUser(userId, { fields: ['id'] }));
-                if (user) verifiedUserId = userId;
-            } catch (e) {
-                console.warn(`[kroegentocht.actions#initiatePayment] User ${userId} not found in directus_users, skipping relation to avoid FK error.`);
-            }
-        }
 
         // 4. Create signup
+        // Note: For now we remove directus_relations here because it is causing a Foreign Key violation in some environments.
+        // The user link is still maintained via the transaction record which is created later.
         const signupResponse = await getSystemDirectus().request(createItem('pub_crawl_signups', {
             name: parsed.data.name,
             email: parsed.data.email,
@@ -159,7 +148,7 @@ export async function initiateKroegentochtPayment(formData: any) {
             name_initials: parsed.data.name_initials,
             pub_crawl_event_id: parsed.data.pub_crawl_event_id as any,
             payment_status: 'open',
-            directus_relations: verifiedUserId
+            // directus_relations: userId || null (Temporarily disabled due to schema mismatch on acceptance)
         } as any));
         
         const signupId = (signupResponse as any).id;

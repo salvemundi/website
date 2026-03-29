@@ -11,7 +11,7 @@ export const EVENT_FIELDS = [
 ] as const;
 
 export const EVENT_SIGNUP_FIELDS = [
-    'id', 'event_id', 'participant_name', 'participant_email', 'participant_phone', 'payment_status', 'checked_in', 'checked_in_at', 'qr_token', 'directus_relations', 'created_at'
+    'id', 'event_id', 'participant_name', 'participant_email', 'participant_phone', 'payment_status', 'checked_in', 'checked_in_at', 'qr_token', 'created_at'
 ] as const;
 
 export const EVENT_ADMIN_FIELDS = [
@@ -27,7 +27,7 @@ export const PUB_CRAWL_EVENT_FIELDS = [
 
 export const PUB_CRAWL_SIGNUP_FIELDS = [
     'id', 'name', 'email', 'association', 'amount_tickets', 
-    'name_initials', 'payment_status', 'pub_crawl_event_id', 'created_at', 'directus_relations'
+    'name_initials', 'payment_status', 'pub_crawl_event_id', 'created_at'
 ] as const;
 
 export const PUB_CRAWL_TICKET_FIELDS = [
@@ -73,7 +73,7 @@ export const TRIP_FIELDS = [
 export const TRIP_ID_FIELDS = ['id'] as const;
 
 export const TRIP_SIGNUP_FIELDS = [
-    'id', 'trip_id', 'directus_relations', 'first_name', 'last_name', 
+    'id', 'trip_id', 'first_name', 'last_name', 
     'email', 'phone_number', 'date_of_birth', 'id_document', 
     'document_number', 'allergies', 'special_notes', 'willing_to_drive', 
     'status', 'deposit_paid', 'deposit_paid_at', 'full_payment_paid', 

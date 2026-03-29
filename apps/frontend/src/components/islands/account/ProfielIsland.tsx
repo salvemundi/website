@@ -47,6 +47,7 @@ type SessionUser = {
 
 interface ProfielIslandProps {
     initialSignups: EventSignup[];
+    pubCrawlSignups: any[];
     user: SessionUser;
     impersonation?: { 
         name: string; 
@@ -122,7 +123,7 @@ function QuickLink({
     return <button type="button" onClick={onClick} className={common}>{inner}</button>;
 }
 
-export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, user: initialUser }) => {
+export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, pubCrawlSignups, user: initialUser }) => {
     const [mounted, setMounted] = useState(false);
     const { data: session, refetch } = authClient.useSession();
 
@@ -257,21 +258,32 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
     const isCommitteeMember = Array.isArray(optimisticUser.committees) && optimisticUser.committees.length > 0;
     
     const filteredSignups = useMemo(() => {
-        if (!eventSignups) return [];
-        if (showPastEvents) return eventSignups;
-
         const todayStart = startOfDay(new Date());
+        
+        // Merge regular signups and pub crawl signups
+        const allSignups = [
+            ...(eventSignups || []).map(s => ({ ...s, _type: 'event' as const })),
+            ...(pubCrawlSignups || []).map(s => ({ ...s, _type: 'pub_crawl' as const }))
+        ];
 
-        return eventSignups.filter((s) => {
+        if (showPastEvents) return allSignups;
+
+        return allSignups.filter((s: any) => {
             try {
-                if (!s?.event_id?.event_date) return true;
-                const eventDate = startOfDay(new Date(s.event_id.event_date));
+                let eventDate;
+                if (s._type === 'event') {
+                    if (!s?.event_id?.event_date) return true;
+                    eventDate = startOfDay(new Date(s.event_id.event_date));
+                } else {
+                    if (!s?.pub_crawl_event_id?.date) return true;
+                    eventDate = startOfDay(new Date(s.pub_crawl_event_id.date));
+                }
                 return !isBefore(eventDate, todayStart);
             } catch {
                 return true;
             }
         });
-    }, [eventSignups, showPastEvents]);
+    }, [eventSignups, pubCrawlSignups, showPastEvents]);
 
     const membershipStatus = useMemo(() => {
         const isLeader = !!optimisticUser.isLeader;
@@ -619,20 +631,26 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-                            {filteredSignups.map((signup) => {
-                                    if (!signup.event_id) return null;
+                            {filteredSignups.map((signup: any) => {
+                                    const isEvent = signup._type === 'event';
+                                    const eventData = isEvent ? signup.event_id : signup.pub_crawl_event_id;
+                                    const eventDateStr = isEvent ? eventData?.event_date : eventData?.date;
+                                    const detailHref = isEvent ? `/activiteiten/${eventData.id}` : `/kroegentocht`;
+                                    const icon = isEvent ? <Calendar className="h-7 w-7" /> : <CreditCard className="h-7 w-7" />;
+
+                                    if (!eventData) return null;
 
                                     const isPast = (() => {
                                         try {
-                                            if (!signup.event_id?.event_date) return false;
-                                            return isBefore(startOfDay(new Date(signup.event_id.event_date)), startOfDay(new Date()));
+                                            if (!eventDateStr) return false;
+                                            return isBefore(startOfDay(new Date(eventDateStr)), startOfDay(new Date()));
                                         } catch { return false; }
                                     })();
 
                                     return (
                                         <Link
-                                            key={signup.id}
-                                            href={`/activiteiten/${signup.event_id.id}`}
+                                            key={`${signup._type}-${signup.id}`}
+                                            href={detailHref}
                                             className={`group h-full flex items-center justify-between gap-4 rounded-3xl p-5 text-left transition-all border shadow-sm ${
                                                 isPast 
                                                 ? "bg-slate-50 dark:bg-black/10 opacity-60 grayscale border-slate-200 dark:border-white/5" 
@@ -641,15 +659,22 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
                                         >
                                             <div className="flex items-center gap-4">
                                                 <div className="shrink-0 h-16 w-16 flex items-center justify-center rounded-2xl bg-[var(--color-purple-100)] text-[var(--color-purple-500)] shadow-sm">
-                                                     <Calendar className="h-7 w-7" />
+                                                     {icon}
                                                 </div>
                                                 <div>
-                                                    <h3 className="text-lg font-bold text-[var(--color-purple-700)] dark:text-white line-clamp-1">
-                                                        {signup.event_id.name}
-                                                    </h3>
+                                                    <div className="flex items-center gap-2">
+                                                        <h3 className="text-lg font-bold text-[var(--color-purple-700)] dark:text-white line-clamp-1">
+                                                            {eventData.name}
+                                                        </h3>
+                                                        {!isEvent && (
+                                                            <span className="px-2 py-0.5 rounded-full bg-[var(--color-purple-100)] text-[10px] font-black uppercase text-[var(--color-purple-600)]">
+                                                                Tickets: {signup.amount_tickets}
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                     <p className="mt-1 flex items-center gap-2 text-xs font-bold text-[var(--text-muted)]">
                                                         <Calendar className="h-3.5 w-3.5" />
-                                                        {signup.event_id.event_date && format(new Date(signup.event_id.event_date), "d MMM yyyy", { locale: nl })}
+                                                        {eventDateStr && format(new Date(eventDateStr), "d MMM yyyy", { locale: nl })}
                                                     </p>
                                                 </div>
                                             </div>
