@@ -27,7 +27,7 @@ export const PUB_CRAWL_EVENT_FIELDS = [
 
 export const PUB_CRAWL_SIGNUP_FIELDS = [
     'id', 'name', 'email', 'association', 'amount_tickets', 
-    'name_initials', 'payment_status', 'pub_crawl_event_id', 'created_at'
+    'name_initials', 'payment_status', 'pub_crawl_event_id', 'created_at', 'directus_relations'
 ] as const;
 
 export const PUB_CRAWL_TICKET_FIELDS = [
@@ -73,7 +73,7 @@ export const TRIP_FIELDS = [
 export const TRIP_ID_FIELDS = ['id'] as const;
 
 export const TRIP_SIGNUP_FIELDS = [
-    'id', 'trip_id', 'user_id', 'first_name', 'last_name', 
+    'id', 'trip_id', 'directus_relations', 'first_name', 'last_name', 
     'email', 'phone_number', 'date_of_birth', 'id_document', 
     'document_number', 'allergies', 'special_notes', 'willing_to_drive', 
     'status', 'deposit_paid', 'deposit_paid_at', 'full_payment_paid', 
@@ -112,9 +112,9 @@ export const SPONSOR_FIELDS = [
 
 export const TRANSACTION_FIELDS = [
     'id', 'user_id', 'payment_status', 'amount', 'created_at', 
-    'registration.id', 'registration.event_id.name', 'registration.qr_token',
-    'pub_crawl_signup.id', 'pub_crawl_signup.pub_crawl_event_id.name', 'pub_crawl_signup.amount_tickets', 'pub_crawl_signup.qr_token',
-    'trip_signup.id', 'trip_signup.trip_id.name', 'trip_signup.first_name', 'trip_signup.last_name',
+    { registration: ['id', { event_id: ['name'] }, 'qr_token'] },
+    { pub_crawl_signup: ['id', { pub_crawl_event_id: ['name'] }, 'amount_tickets', 'qr_token'] },
+    { trip_signup: ['id', { trip_id: ['name'] }, 'first_name', 'last_name'] },
     'product_type', 'mollie_id', 'transaction_id', 
     'first_name', 'last_name', 'email', 'coupon_code', 'access_token'
 ] as const;

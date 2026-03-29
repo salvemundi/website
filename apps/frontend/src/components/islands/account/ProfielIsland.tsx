@@ -620,41 +620,43 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, us
                     ) : (
                         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
                             {filteredSignups.map((signup) => {
-                                const isPast = (() => {
-                                    try {
-                                        if (!signup.event_id?.event_date) return false;
-                                        return isBefore(startOfDay(new Date(signup.event_id.event_date)), startOfDay(new Date()));
-                                    } catch { return false; }
-                                })();
+                                    if (!signup.event_id) return null;
 
-                                return (
-                                    <Link
-                                        key={signup.id}
-                                        href={`/activiteiten/${signup.event_id.id}`}
-                                        className={`group h-full flex items-center justify-between gap-4 rounded-3xl p-5 text-left transition-all border shadow-sm ${
-                                            isPast 
-                                            ? "bg-slate-50 dark:bg-black/10 opacity-60 grayscale border-slate-200 dark:border-white/5" 
-                                            : "bg-slate-50 dark:bg-black/20 border-slate-200 dark:border-white/10 hover:shadow-lg hover:-translate-y-0.5"
-                                        }`}
-                                    >
-                                        <div className="flex items-center gap-4">
-                                            <div className="shrink-0 h-16 w-16 flex items-center justify-center rounded-2xl bg-[var(--color-purple-100)] text-[var(--color-purple-500)] shadow-sm">
-                                                 <Calendar className="h-7 w-7" />
+                                    const isPast = (() => {
+                                        try {
+                                            if (!signup.event_id?.event_date) return false;
+                                            return isBefore(startOfDay(new Date(signup.event_id.event_date)), startOfDay(new Date()));
+                                        } catch { return false; }
+                                    })();
+
+                                    return (
+                                        <Link
+                                            key={signup.id}
+                                            href={`/activiteiten/${signup.event_id.id}`}
+                                            className={`group h-full flex items-center justify-between gap-4 rounded-3xl p-5 text-left transition-all border shadow-sm ${
+                                                isPast 
+                                                ? "bg-slate-50 dark:bg-black/10 opacity-60 grayscale border-slate-200 dark:border-white/5" 
+                                                : "bg-slate-50 dark:bg-black/20 border-slate-200 dark:border-white/10 hover:shadow-lg hover:-translate-y-0.5"
+                                            }`}
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className="shrink-0 h-16 w-16 flex items-center justify-center rounded-2xl bg-[var(--color-purple-100)] text-[var(--color-purple-500)] shadow-sm">
+                                                     <Calendar className="h-7 w-7" />
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-lg font-bold text-[var(--color-purple-700)] dark:text-white line-clamp-1">
+                                                        {signup.event_id.name}
+                                                    </h3>
+                                                    <p className="mt-1 flex items-center gap-2 text-xs font-bold text-[var(--text-muted)]">
+                                                        <Calendar className="h-3.5 w-3.5" />
+                                                        {signup.event_id.event_date && format(new Date(signup.event_id.event_date), "d MMM yyyy", { locale: nl })}
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <h3 className="text-lg font-bold text-[var(--color-purple-700)] dark:text-white line-clamp-1">
-                                                    {signup.event_id.name}
-                                                </h3>
-                                                <p className="mt-1 flex items-center gap-2 text-xs font-bold text-[var(--text-muted)]">
-                                                    <Calendar className="h-3.5 w-3.5" />
-                                                    {format(new Date(signup.event_id.event_date), "d MMM yyyy", { locale: nl })}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <ChevronRight className="h-6 w-6 shrink-0 text-[var(--color-purple-200)] transition-transform group-hover:translate-x-1" />
-                                    </Link>
-                                );
-                            })}
+                                            <ChevronRight className="h-6 w-6 shrink-0 text-[var(--color-purple-200)] transition-transform group-hover:translate-x-1" />
+                                        </Link>
+                                    );
+                                })}
                         </div>
                     )}
                 </Tile>
