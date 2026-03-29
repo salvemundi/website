@@ -122,7 +122,7 @@ export interface DbDocument {
 }
 
 export interface DbEventSignup {
-    event_id?: number | null;
+    event_id?: number | DbEvent | null;
     submission_file_url?: string | null;
     created_at?: string | null;
     id: number | null;
@@ -350,7 +350,7 @@ export interface DbPubCrawlSignup {
     association?: string | null;
     created_at?: string | null;
     updated_at?: string | null;
-    pub_crawl_event_id?: number | null;
+    pub_crawl_event_id?: number | DbPubCrawlEvent | null;
     email?: string | null;
     name?: string | null;
     amount_tickets?: number | null;
@@ -359,6 +359,7 @@ export interface DbPubCrawlSignup {
     // Relation to associated tickets for this signup
     tickets?: DbPubCrawlTicket[] | null;
     transactions?: any | null;
+    directus_relations?: string | null;
 }
 
 export interface DbPubCrawlSignupsTransaction {
@@ -443,18 +444,19 @@ export interface DbTransaction {
     email?: string | null;
     amount?: number | null;
     payment_status?: string | null;
-    registration?: number | null;
+    registration?: number | DbEventSignup | null;
     environment?: string | null;
     approval_status?: string | null;
     approved_by?: string | null;
     approved_at?: string | null;
     first_name?: string | null;
     last_name?: string | null;
-    pub_crawl_signup?: number | null;
-    trip_signup?: number | null;
+    pub_crawl_signup?: number | DbPubCrawlSignup | null;
+    trip_signup?: number | DbTripSignup | null;
     coupon_code?: string | null;
-    product_type?: string | null;
+    product_type?: 'event_signup' | 'pub_crawl_signup' | 'membership' | 'trip_signup' | string | null;
     pub_crawl_signups?: any | null;
+    access_token?: string | null;
 }
 
 export interface DbTripActivitie {
@@ -485,7 +487,7 @@ export interface DbTripSignup {
     id: number | null;
     created_at?: string | null;
     updated_at?: string | null;
-    trip_id?: number | null;
+    trip_id?: number | DbTrip | null;
     first_name?: string | null;
     last_name?: string | null;
     email?: string | null;
@@ -505,6 +507,7 @@ export interface DbTripSignup {
     deposit_email_sent?: boolean | null;
     final_email_sent?: boolean | null;
     document_number?: string | null;
+    directus_relations?: string | null;
 }
 
 export interface DbTrip {

@@ -121,7 +121,7 @@ export async function getSignupStatus(id?: string, transactionId?: string) {
     if (transactionId) {
         try {
             const transactions = await getSystemDirectus().request(readItems('transactions', {
-                fields: TRANSACTION_FIELDS,
+                fields: TRANSACTION_FIELDS as any,
                 filter: { id: { _eq: transactionId } },
                 limit: 1
             })) as unknown as DbTransaction[]; // Forced cast to satisfy compiler overlap checks with SDK return type
