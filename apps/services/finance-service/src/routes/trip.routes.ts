@@ -54,6 +54,10 @@ export default async function tripRoutes(fastify: FastifyInstance) {
             }
 
             // 3. Create Mollie Payment
+            const accessToken = crypto.randomUUID();
+            const baseRedirectUrl = `${process.env.PUBLIC_URL}/activiteiten/bevestiging?id=${signupId}`;
+            const finalRedirectUrl = `${baseRedirectUrl}&t=${accessToken}`;
+
             const mollie = getMollieClient();
             const payment = await mollie.payments.create({
                 amount: {
@@ -61,16 +65,31 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                     value: amount.toFixed(2)
                 },
                 description,
-                redirectUrl: `${process.env.PUBLIC_URL}/reis/betaling-bevestiging?id=${signupId}`,
+                redirectUrl: finalRedirectUrl,
                 webhookUrl: `${process.env.PUBLIC_URL}/api/finance/webhook/mollie`,
                 metadata: {
                     registrationId: signupId,
                     registrationType: 'trip_signup',
                     paymentType, // 'deposit' or 'final'
                     tripId,
-                    email: signup.email
+                    email: signup.email,
+                    userId: signup.directus_relations || null // Link to user if available
                 }
             });
+
+            // 4. Store transaction in PostgreSQL
+            await fastify.db.query(
+                `INSERT INTO transactions (
+                    mollie_id, amount, payment_status, product_name, product_type,
+                    user_id, email, first_name, last_name, access_token, trip_signup,
+                    created_at, updated_at
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW())`,
+                [
+                    payment.id, amount, 'open', description, 'trip_signup',
+                    signup.directus_relations || null, signup.email, signup.first_name || '', signup.last_name || '',
+                    accessToken, signupId
+                ]
+            );
 
             // 4. Send Email via Mail Service
             const mailServiceUrl = process.env.MAIL_SERVICE_URL;

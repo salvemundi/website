@@ -268,9 +268,16 @@ export async function getActivitySignups(eventId: string) {
 export async function getSignupStatus(id?: string, transactionId?: string, cacheBuster?: string) {
     if (transactionId) {
         try {
+            // Find transaction by either database ID or our secure access_token (token t)
             const transactions = await getSystemDirectus().request(readItems('transactions', {
-                fields: [...TRANSACTION_FIELDS],
-                filter: { id: { _eq: transactionId } },
+                fields: [...TRANSACTION_FIELDS, 'access_token' as any],
+                filter: { 
+                    _or: [
+                        { id: { _eq: transactionId } },
+                        { mollie_id: { _eq: transactionId } },
+                        { access_token: { _eq: transactionId } }
+                    ]
+                } as any,
                 limit: 1
             }));
             const trans = transactions?.[0];
@@ -302,8 +309,18 @@ export async function getSignupStatus(id?: string, transactionId?: string, cache
                 console.log(`[Activities] Membership status for transaction ${transactionId}: ${trans.payment_status}`);
                 return { status: trans.payment_status, transaction: trans, isMembership: true };
             } else if ((trans.product_type as any) === 'trip_signup') {
+                const signups = await getSystemDirectus().request(readItems('trip_signups', {
+                    fields: ['id', 'status', 'first_name', 'last_name', { trip_id: ['id', 'title'] }] as any,
+                    filter: { id: { _eq: trans.trip_signup as any } },
+                    limit: 1
+                }));
+                const signup = signups?.[0];
+                if (signup) {
+                    // Map trip_id.title to event_id.name for UI consistency in ConfirmationIsland
+                    (signup as any).event_id = { name: (signup as any).trip_id?.title || 'Reis' };
+                }
                 console.log(`[Activities] Trip status for transaction ${transactionId}: ${trans.payment_status}`);
-                return { status: trans.payment_status, transaction: trans, isTrip: true };
+                return { status: trans.payment_status, signup, transaction: trans, isTrip: true };
             }
             console.log(`[Activities] Generic status for transaction ${transactionId}: ${trans.payment_status}`);
             return { status: trans.payment_status, transaction: trans };
@@ -313,27 +330,48 @@ export async function getSignupStatus(id?: string, transactionId?: string, cache
         }
     } else if (id) {
         try {
+            const session = await auth.api.getSession({ headers: await headers() });
+            const userId = session?.user?.id;
+            const isAdmin = (session?.user as any)?.role === 'admin' || (session?.user as any)?.role === '06e78cf9-f9c3-4f9e-a86d-1907de634567'; // UUID for admin role if applicable
+
             // 1. Try event_signups first
             const signups = await getSystemDirectus().request(readItems('event_signups', {
-                fields: [...EVENT_SIGNUP_FIELDS, { event_id: ['id', 'name'] }] as any,
+                fields: [...EVENT_SIGNUP_FIELDS, 'directus_relations', { event_id: ['id', 'name'] }] as any,
                 filter: { id: { _eq: id as any } },
                 limit: 1
             }));
             
             if (signups && signups.length > 0) {
-                console.log(`[Activities] Signup status for ID ${id} (event): ${signups[0].payment_status}`);
-                return { status: (signups[0] as any).payment_status || 'open', signup: signups[0] };
+                const signup = signups[0];
+                
+                // Security check
+                const isOwner = userId && (signup as any).directus_relations === userId;
+                if (!isAdmin && !isOwner) {
+                    console.warn(`[Activities] Unauthorized access attempt to event signup ${id} by user ${userId}`);
+                    return { status: 'unauthorized' };
+                }
+
+                console.log(`[Activities] Signup status for ID ${id} (event): ${signup.payment_status}`);
+                return { status: (signup as any).payment_status || 'open', signup };
             }
 
             // 2. Try pub_crawl_signups as fallback
             const pubCrawlSignups = await getSystemDirectus().request(readItems('pub_crawl_signups', {
-                fields: [...PUB_CRAWL_SIGNUP_FIELDS, { pub_crawl_event_id: ['id', 'name'] as any }, { tickets: ['id', 'name', 'qr_token'] as any }] as any,
+                fields: [...PUB_CRAWL_SIGNUP_FIELDS, 'directus_relations', { pub_crawl_event_id: ['id', 'name'] as any }, { tickets: ['id', 'name', 'qr_token'] as any }] as any,
                 filter: { id: { _eq: id as any } },
                 limit: 1
             }));
 
             if (pubCrawlSignups && pubCrawlSignups.length > 0) {
                 const signup = pubCrawlSignups[0];
+                
+                // Security check
+                const isOwner = userId && (signup as any).directus_relations === userId;
+                if (!isAdmin && !isOwner) {
+                    console.warn(`[Activities] Unauthorized access attempt to pub crawl signup ${id} by user ${userId}`);
+                    return { status: 'unauthorized' };
+                }
+
                 if (signup) {
                     (signup as any).amount_tickets = (signup as any).tickets?.length || 1;
                 }
@@ -358,17 +396,53 @@ export async function getMyTickets() {
     if (!userId) return [];
 
     try {
-        const query: any = {
-            filter: {
-                directus_relations: {
-                    _eq: userId
-                }
-            },
+        // 1. Fetch event signups
+        const eventSignups = await getSystemDirectus().request(readItems('event_signups', {
+            filter: { directus_relations: { _eq: userId } },
             fields: [...EVENT_SIGNUP_FIELDS, { event_id: ['id', 'name', 'event_date', 'location'] }] as any,
             sort: ['-created_at']
-        };
-        
-        return await getSystemDirectus().request(readItems('event_signups', query));
+        }));
+
+        // 2. Fetch pub crawl signups
+        const pubCrawlSignups = await getSystemDirectus().request(readItems('pub_crawl_signups', {
+            filter: { directus_relations: { _eq: userId } },
+            fields: [...PUB_CRAWL_SIGNUP_FIELDS, { pub_crawl_event_id: ['id', 'name', 'event_date', 'location'] as any }, { tickets: ['id', 'name', 'qr_token'] as any }] as any,
+            sort: ['-created_at']
+        }));
+
+        // 3. Fetch trip signups
+        const tripSignups = await getSystemDirectus().request(readItems('trip_signups', {
+            filter: { directus_relations: { _eq: userId } },
+            fields: ['id', 'status', 'created_at', 'first_name', 'last_name', { trip_id: ['id', 'title', 'event_date'] }] as any,
+            sort: ['-created_at']
+        }));
+
+        // 4. Formatter/Mapper to make them consistent for the UI
+        const formattedPubCrawl = pubCrawlSignups.map(s => ({
+            ...s,
+            id: s.id,
+            event_id: (s as any).pub_crawl_event_id,
+            type: 'pub_crawl'
+        }));
+
+        const formattedEvents = eventSignups.map(s => ({
+            ...s,
+            type: 'event'
+        }));
+
+        const formattedTrips = tripSignups.map(s => ({
+            ...s,
+            event_id: { 
+                id: (s as any).trip_id?.id, 
+                name: (s as any).trip_id?.title,
+                event_date: (s as any).trip_id?.event_date 
+            },
+            type: 'trip'
+        }));
+
+        return [...formattedEvents, ...formattedPubCrawl, ...formattedTrips].sort((a, b) => 
+            new Date(b.created_at as any).getTime() - new Date(a.created_at as any).getTime()
+        );
     } catch (error) {
         console.error('[Activities] Error fetching user tickets:', error);
         return [];
