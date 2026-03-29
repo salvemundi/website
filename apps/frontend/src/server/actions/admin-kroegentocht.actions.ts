@@ -200,21 +200,30 @@ export async function toggleKroegentochtVisibility(): Promise<{ success: boolean
             console.log(`[AdminKroegentocht] Toggle: Created new flag for ${route} with is_active: ${newStatus}`);
         }
 
-        // Extended delay to allow Directus internal caches and DB to fully commit
-        console.log(`[AdminKroegentocht] Waiting for DB consistency (200ms)...`);
-        await new Promise(resolve => setTimeout(resolve, 200));
+        // 1. Immediate clear to disrupt any current stale requests
+        try {
+            const redis = await getRedis();
+            await redis.del(FLAGS_CACHE_KEY);
+            console.log(`[AdminKroegentocht] Initial Redis cache clear (immediate)`);
+        } catch (e) {
+            console.error('[AdminKroegentocht] Initial Redis clear failed:', e);
+        }
+
+        // 2. Wait for Directus DB/Cache consistency. 200ms was too short based on logs.
+        console.log(`[AdminKroegentocht] Waiting for Directus consistency (1000ms)...`);
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
         console.log(`[AdminKroegentocht] Revalidating: feature_flags (profile: default)`);
         revalidateTag('feature_flags', 'default');
         revalidatePath('/', 'layout');
         
-        // Invalidate feature flags cache in Redis to ensure immediate update in proxy
+        // 3. Final clear to ensure any concurrent requests that fetched stale data are purged
         try {
             const redis = await getRedis();
             const deletedRows = await redis.del(FLAGS_CACHE_KEY);
-            console.log(`[AdminKroegentocht] Redis cache cleared. Keys deleted: ${deletedRows}`);
+            console.log(`[AdminKroegentocht] Final Redis cache clear. Keys deleted: ${deletedRows}`);
         } catch (e) {
-            console.error('[AdminKroegentocht] Failed to clear Redis cache:', e);
+            console.error('[AdminKroegentocht] Final Redis clear failed:', e);
         }
 
         return { success: true, show: newStatus };
