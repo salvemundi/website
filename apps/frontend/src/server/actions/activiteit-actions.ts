@@ -338,7 +338,7 @@ export async function getMyTickets() {
                 }
             },
             fields: [...EVENT_SIGNUP_FIELDS, { event_id: ['id', 'name', 'event_date', 'location'] }] as any,
-            sort: ['-date_created']
+            sort: ['-created_at']
         };
         
         return await getSystemDirectus().request(readItems('event_signups', query));
