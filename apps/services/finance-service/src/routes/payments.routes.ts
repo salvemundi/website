@@ -27,6 +27,12 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
         try {
             const mollie = getMollieClient();
             
+            const webhookUrl = process.env.PUBLIC_URL && !process.env.PUBLIC_URL.includes('localhost') 
+                ? `${process.env.PUBLIC_URL}/api/finance/webhook/mollie` 
+                : undefined;
+
+            console.log(`[FINANCE] Creating Mollie payment with webhookUrl: ${webhookUrl}`);
+
             // 1. Create payment in Mollie
             const payment = await mollie.payments.create({
                 amount: {
@@ -36,9 +42,7 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 description,
                 redirectUrl,
                 // Only provide webhookUrl if it's not localhost (Mollie requirement)
-                ...(process.env.PUBLIC_URL && !process.env.PUBLIC_URL.includes('localhost') ? {
-                    webhookUrl: `${process.env.PUBLIC_URL}/api/finance/webhook/mollie`
-                } : {}),
+                ...(webhookUrl ? { webhookUrl } : {}),
                 metadata: {
                     registrationId,
                     registrationType,
