@@ -49,26 +49,39 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
             });
 
             // 2. Store transaction in PostgreSQL
-            // We use the fields that the webhook (mollie.routes.ts) expects
+            let regColumnStr = '';
+            let valTokens = '$1, $2, $3, $4, $5, $6, $7, $8';
+            let params = [
+                payment.id,
+                amount,
+                'open',
+                description,
+                userId || null,
+                email || null,
+                firstName || null,
+                lastName || null
+            ];
+
+            if (registrationId && registrationType) {
+                const colMap: Record<string, string> = {
+                    'pub_crawl_signup': 'pub_crawl_signup',
+                    'trip_signup': 'trip_signup',
+                    'event_signup': 'registration'
+                };
+                const colName = colMap[registrationType] || 'registration';
+                regColumnStr = `, ${colName}`;
+                valTokens += ', $9';
+                params.push(registrationId);
+            }
+
+            // We use the exact Directus fields
             await fastify.db.query(
                 `INSERT INTO transactions (
-                    mollie_id, amount, status, description, 
-                    user_id, email, first_name, last_name,
-                    registration_id, registration_type,
+                    mollie_id, amount, payment_status, product_name, 
+                    user_id, email, first_name, last_name${regColumnStr},
                     created_at, updated_at
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW())`,
-                [
-                    payment.id,
-                    amount,
-                    'open',
-                    description,
-                    userId || null,
-                    email || null,
-                    firstName || null,
-                    lastName || null,
-                    registrationId || null,
-                    registrationType || null
-                ]
+                ) VALUES (${valTokens}, NOW(), NOW())`,
+                params
             );
 
             return { checkoutUrl: payment.getCheckoutUrl() };
