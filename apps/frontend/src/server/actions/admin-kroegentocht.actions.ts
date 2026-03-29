@@ -200,6 +200,8 @@ export async function toggleKroegentochtVisibility(): Promise<{ success: boolean
             console.log(`[AdminKroegentocht] Toggle: Created new flag for ${route} with is_active: ${newStatus}`);
         }
 
+        // Small delay to ensure Directus internal cache/DB consistency before revalidation
+        await new Promise(resolve => setTimeout(resolve, 50));
         revalidateTag('feature_flags', 'default');
         revalidatePath('/', 'layout');
         
