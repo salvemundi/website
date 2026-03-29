@@ -18,6 +18,7 @@ import { getRedis } from '@/server/auth/redis-client';
 import { FLAGS_CACHE_KEY } from '@/lib/feature-flags';
 
 import { getSystemDirectus } from "@/lib/directus";
+import { query } from '@/lib/db';
 import { 
     readItems, 
     readItem, 
@@ -176,28 +177,20 @@ export async function toggleKroegentochtVisibility(): Promise<{ success: boolean
     const route = '/kroegentocht';
     
     try {
-        const client = getSystemDirectus();
-        const existing = await client.request(readItems('feature_flags', {
-            filter: { route_match: { _eq: route } },
-            fields: [...FEATURE_FLAG_FIELDS],
-            limit: 1,
-            params: { _t: Date.now() }
-        }));
+        const sql = 'SELECT id, is_active FROM feature_flags WHERE route_match = $1 LIMIT 1';
+        const { rows } = await query(sql, [route]);
 
-        const flag = existing?.[0];
-        const oldStatus = flag ? !!flag.is_active : true; // Default to true if not exists
+        const flag = rows?.[0];
+        const oldStatus = flag ? !!flag.is_active : true;
         const newStatus = !oldStatus;
 
         if (flag) {
-            await client.request(updateItem('feature_flags', flag.id as unknown as string, { is_active: newStatus }));
-            console.log(`[AdminKroegentocht] Toggle: DB was ${oldStatus}, setting to ${newStatus} (ID: ${flag.id})`);
+            await query('UPDATE feature_flags SET is_active = $1 WHERE id = $2', [newStatus, flag.id]);
+            console.log(`[AdminKroegentocht] Toggle (SQL): DB was ${oldStatus}, setting to ${newStatus} (ID: ${flag.id})`);
         } else {
-            await client.request(createItem('feature_flags', { 
-                name: 'Kroegentocht Inschrijving',
-                route_match: route, 
-                is_active: newStatus 
-            }));
-            console.log(`[AdminKroegentocht] Toggle: Created new flag for ${route} with is_active: ${newStatus}`);
+            await query('INSERT INTO feature_flags (name, route_match, is_active) VALUES ($1, $2, $3)', 
+                ['Kroegentocht Inschrijving', route, newStatus]);
+            console.log(`[AdminKroegentocht] Toggle (SQL): Created new flag for ${route} with is_active: ${newStatus}`);
         }
 
         // 1. Immediate clear to disrupt any current stale requests
@@ -237,19 +230,14 @@ export async function getKroegentochtSettings() {
     noStore();
     await requireKroegAdmin();
     try {
-        const items = await getSystemDirectus().request(readItems('feature_flags', {
-            filter: { route_match: { _eq: '/kroegentocht' } },
-            fields: [...FEATURE_FLAG_FIELDS],
-            limit: 1,
-            params: { _t: Date.now() } // Hard bypass for Next.js cache
-        }));
+        const { rows } = await query('SELECT is_active FROM feature_flags WHERE route_match = $1 LIMIT 1', ['/kroegentocht']);
         
-        const isVisible = items && items.length > 0 ? !!items[0].is_active : true;
-        console.log(`[AdminKroegentocht] getKroegentochtSettings: isVisible=${isVisible} (from Directus)`);
+        const isVisible = rows && rows.length > 0 ? !!rows[0].is_active : true;
+        console.log(`[AdminKroegentocht] getKroegentochtSettings (SQL): isVisible=${isVisible}`);
         
         return { show: isVisible };
     } catch (e) {
-        console.error('[AdminKroegentocht] Get settings failed:', e);
+        console.error('[AdminKroegentocht] Get settings (SQL) failed:', e);
         return { show: true };
     }
 }
