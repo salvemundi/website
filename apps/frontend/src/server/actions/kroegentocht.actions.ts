@@ -135,13 +135,14 @@ export async function initiateKroegentochtPayment(formData: any) {
 
         // 4. Create signup
         const { id: _, ...signupData } = parsed.data;
-        const signup = await getSystemDirectus().request(createItem('pub_crawl_signups', {
+        const signupResponse = await getSystemDirectus().request(createItem('pub_crawl_signups', {
             ...signupData,
             pub_crawl_event_id: parsed.data.pub_crawl_event_id as any,
             payment_status: 'open'
         }));
         
-        const signupId = Number(signup.id);
+        const validatedSignup = pubCrawlSignupSchema.parse(signupResponse);
+        const signupId = validatedSignup.id!;
 
         // 5. Initiate payment via Finance Service
         const financeUrl = `${getFinanceServiceUrl()}/api/payments/create`;

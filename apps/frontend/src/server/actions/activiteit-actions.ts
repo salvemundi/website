@@ -8,7 +8,7 @@ import { cache } from 'react';
 
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems, createItem, updateItem } from '@directus/sdk';
-import { EVENT_FIELDS, EVENT_SIGNUP_FIELDS, TRANSACTION_FIELDS, PUB_CRAWL_SIGNUP_FIELDS } from '@salvemundi/validations';
+import { EVENT_FIELDS, EVENT_SIGNUP_FIELDS, TRANSACTION_FIELDS, PUB_CRAWL_SIGNUP_FIELDS, eventSignupSchema } from '@salvemundi/validations';
 
 const getFinanceServiceUrl = () =>
     process.env.FINANCE_SERVICE_URL;
@@ -188,9 +188,9 @@ export async function signupForActivity(data: EventSignupForm) {
         };
         if (userId) payload.directus_relations = userId;
 
-        const signup = await directus.request(createItem('event_signups', payload));
+        const signupResponse = await directus.request(createItem('event_signups', payload));
 
-        const signupId = signup.id as string | number;
+        const { id: signupId } = eventSignupSchema.pick({ id: true }).parse(signupResponse);
 
         revalidateTag(`event_signups_${parsed.data.event_id}`, 'default');
 
