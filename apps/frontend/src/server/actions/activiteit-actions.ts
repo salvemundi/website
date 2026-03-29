@@ -190,7 +190,7 @@ export async function signupForActivity(data: EventSignupForm) {
 
         const signup = await directus.request(createItem('event_signups', payload));
 
-        const signupId = signup.id;
+        const signupId = signup.id as string | number;
 
         revalidateTag(`event_signups_${parsed.data.event_id}`, 'default');
 
