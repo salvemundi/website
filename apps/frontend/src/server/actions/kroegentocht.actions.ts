@@ -147,7 +147,7 @@ export async function initiateKroegentochtPayment(formData: any) {
             pub_crawl_event_id: parsed.data.pub_crawl_event_id as any,
             payment_status: 'open',
             directus_relations: userId || null
-        }));
+        } as any));
         
         const signupId = (signupResponse as any).id;
 

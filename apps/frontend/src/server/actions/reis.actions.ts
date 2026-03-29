@@ -221,6 +221,7 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
     const shouldBeWaitlisted = participantsCount >= targetTrip.max_participants;
 
     const userId = session?.user?.id;
+    const isCommitteeMember = !!(session?.user as any)?.committees?.length;
 
     const payload = {
         trip_id: tripId,
@@ -235,7 +236,7 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
         deposit_paid: false,
         full_payment_paid: false,
         directus_relations: userId || null,
-    };
+    } as any;
 
     try {
         const directus = getSystemDirectus();
