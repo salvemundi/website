@@ -18,11 +18,13 @@ import QRDisplay from '@/shared/ui/QRDisplay';
 interface ConfirmationIslandProps {
     initialId?: string;
     initialTransactionId?: string;
+    isLoggedIn?: boolean;
 }
 
 export default function ConfirmationIsland({ 
     initialId, 
-    initialTransactionId 
+    initialTransactionId,
+    isLoggedIn = false
 }: ConfirmationIslandProps) {
     const [status, setStatus] = useState<'loading' | 'paid' | 'open' | 'failed' | 'error'>('loading');
     const [signupData, setSignupData] = useState<any>(null);
@@ -180,9 +182,11 @@ export default function ConfirmationIsland({
                         Je betaling staat nog open. Zodra we de bevestiging van de bank hebben, sturen we je ticket per e-mail.
                     </p>
                 </div>
-                <a href="/profiel/tickets" className="inline-flex h-14 px-10 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] font-black items-center justify-center gap-2 hover:bg-[var(--bg-soft)] transition-all uppercase tracking-widest">
-                    Check Mijn Tickets
-                </a>
+                {isLoggedIn && (
+                    <a href="/profiel/tickets" className="inline-flex h-14 px-10 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] font-black items-center justify-center gap-2 hover:bg-[var(--bg-soft)] transition-all uppercase tracking-widest">
+                        Check Mijn Tickets
+                    </a>
+                )}
             </div>
         );
     };

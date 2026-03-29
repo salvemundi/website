@@ -2,6 +2,8 @@ import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import PageHeader from '@/components/ui/layout/PageHeader';
 import ConfirmationIsland from '@/components/islands/activities/ConfirmationIsland';
+import { auth } from '@/server/auth/auth';
+import { headers } from 'next/headers';
 
 interface PageProps {
     searchParams: Promise<{ id?: string; transaction_id?: string }>;
@@ -11,6 +13,10 @@ export default async function KroegentochtConfirmationPage({ searchParams }: Pag
     const { id, transaction_id } = await searchParams;
 
     if (!id && !transaction_id) notFound();
+
+    const session = await auth.api.getSession({
+        headers: await headers()
+    });
 
     return (
         <main className="min-h-screen bg-[var(--bg-main)]">
@@ -27,7 +33,11 @@ export default async function KroegentochtConfirmationPage({ searchParams }: Pag
                         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Kroegentocht gegevens verifiëren...</p>
                     </div>
                 }>
-                    <ConfirmationIsland initialId={id} initialTransactionId={transaction_id} />
+                    <ConfirmationIsland 
+                        initialId={id} 
+                        initialTransactionId={transaction_id} 
+                        isLoggedIn={!!session?.user} 
+                    />
                 </Suspense>
             </div>
         </main>
