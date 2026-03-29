@@ -19,6 +19,7 @@ import {
 
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems, createItem, readUsers } from '@directus/sdk';
+import { query } from '@/lib/db';
 import { auth } from '@/server/auth/auth';
 import { headers as nextHeaders } from 'next/headers';
 
@@ -35,25 +36,18 @@ const getServiceHeaders = (): HeadersInit => {
 
 export async function getReisSiteSettings(): Promise<ReisSiteSettings | null> {
     try {
-        const directus = getSystemDirectus();
-        const data = await directus.request(readItems('feature_flags', {
-            filter: { name: { _eq: 'trip_registration' } },
-            fields: [...FEATURE_FLAG_FIELDS],
-            limit: 1
-        }));
+        const { rows } = await query('SELECT is_active, message FROM feature_flags WHERE name = $1 LIMIT 1', ['trip_registration']);
+        const flag = rows?.[0];
 
-        if (!data || data.length === 0) return null;
-        const flag = (data[0] as any);
+        if (!flag) return null;
 
         return {
             id: 'reis',
-            show: flag.is_active,
+            show: !!flag.is_active,
             disabled_message: flag.message
         };
     } catch (err: any) {
-        if (err?.response?.status !== 403) {
-            console.error('[reis.actions#getReisSiteSettings] Error:', err);
-        }
+        console.error('[reis.actions#getReisSiteSettings] SQL Error:', err);
         return null;
     }
 }

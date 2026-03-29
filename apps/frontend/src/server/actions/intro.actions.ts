@@ -13,6 +13,7 @@ import { headers } from 'next/headers';
 
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems, createItem } from '@directus/sdk';
+import { query } from '@/lib/db';
 import { revalidateTag, revalidatePath, unstable_noStore as noStore } from 'next/cache';
 
 const getMailUrl = () => process.env.MAIL_SERVICE_URL;
@@ -29,19 +30,15 @@ const getServiceHeaders = (): HeadersInit => {
 export async function getIntroSettings() {
     noStore();
     try {
-        const items = await getSystemDirectus().request(readItems('feature_flags', {
-            filter: { route_match: { _eq: '/intro' } },
-            fields: [...FEATURE_FLAG_FIELDS],
-            limit: 1
-        }));
-
-        const data = items?.[0];
+        const { rows } = await query('SELECT is_active, message FROM feature_flags WHERE route_match = $1 LIMIT 1', ['/intro']);
+        const data = rows?.[0];
 
         return {
             show: data?.is_active ?? false,
             disabled_message: data?.message ?? 'De inschrijvingen voor de introweek zijn momenteel gesloten.',
         };
-    } catch {
+    } catch (e) {
+        console.error('[IntroAction] getIntroSettings (SQL) failed:', e);
         return { show: false, disabled_message: 'De inschrijvingen voor de introweek zijn momenteel gesloten.' };
     }
 }

@@ -19,6 +19,7 @@ import {
     SYSTEM_LOG_FIELDS
 } from "@salvemundi/validations";
 import { isSuperAdmin } from "@/lib/auth-utils";
+import { query } from '@/lib/db';
 
 export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' | 'INFO', payload?: any) {
     try {
@@ -176,16 +177,12 @@ export async function getAuditSettingsAction() {
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
-        const items = await getSystemDirectus().request(readItems('feature_flags', {
-            filter: { name: { _eq: 'manual_approval' } },
-            fields: ['id', 'is_active'],
-            limit: 1
-        }));
+        const { rows } = await query('SELECT is_active FROM feature_flags WHERE name = $1 LIMIT 1', ['manual_approval']);
         
-        const flag = items?.[0];
+        const flag = rows?.[0];
         return { success: true, data: { manual_approval: !!flag?.is_active } };
     } catch (e) {
-        console.error("[AuditAction] Settings fetch error:", e);
+        console.error("[AuditAction] Settings fetch error (SQL):", e);
         return { success: true, data: { manual_approval: false } };
     }
 }
@@ -195,26 +192,16 @@ export async function updateAuditSettingsAction(manualApproval: boolean) {
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
-        const client = getSystemDirectus();
-        
-        // 1. Find the flag
-        const items = await client.request(readItems('feature_flags', {
-            filter: { name: { _eq: 'manual_approval' } },
-            fields: ['id'],
-            limit: 1
-        }));
-        const flagId = items?.[0]?.id;
+        const { rows } = await query('SELECT id FROM feature_flags WHERE name = $1 LIMIT 1', ['manual_approval']);
+        const flagId = rows?.[0]?.id;
 
         if (flagId) {
-            // 2a. Update existing
-            await client.request(updateItem('feature_flags', flagId as any, { is_active: manualApproval }));
+            await query('UPDATE feature_flags SET is_active = $1 WHERE id = $2', [manualApproval, flagId]);
+            console.log(`[AuditAction] Update setting (SQL): manual_approval = ${manualApproval}`);
         } else {
-            // 2b. Create new
-            await client.request(createItem('feature_flags', { 
-                name: 'manual_approval', 
-                is_active: manualApproval,
-                route_match: 'SYSTEM'
-            }));
+            await query('INSERT INTO feature_flags (name, is_active, route_match) VALUES ($1, $2, $3)', 
+                ['manual_approval', manualApproval, 'SYSTEM']);
+            console.log(`[AuditAction] Create setting (SQL): manual_approval = ${manualApproval}`);
         }
         
         await logAdminAction('settings_change', 'SUCCESS', { 
@@ -225,7 +212,7 @@ export async function updateAuditSettingsAction(manualApproval: boolean) {
         revalidateTag('audit_settings', 'default');
         return { success: true };
     } catch (error) {
-        console.error("[AuditAction] Settings update error:", error);
+        console.error("[AuditAction] Settings update error (SQL):", error);
         return { success: false, error: "Bijwerken instellingen mislukt." };
     }
 }
