@@ -86,7 +86,7 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
 
             return { checkoutUrl: payment.getCheckoutUrl() };
         } catch (err: any) {
-            fastify.log.error('[FINANCE] Error creating payment:', err);
+            fastify.log.error({ err, message: err?.message, code: err?.code, detail: err?.detail }, '[FINANCE] Error creating payment');
             return reply.status(500).send({ error: 'Failed to create payment', message: err.message });
         }
     });
