@@ -31,6 +31,8 @@ export default function ConfirmationIsland({
     const [isMembership, setIsMembership] = useState(false);
     const [retryCount, setRetryCount] = useState(0);
 
+    const isPubCrawl = signupData?.pub_crawl_event_id !== undefined || signupData?.tickets !== undefined;
+
     useEffect(() => {
         /**
          * We poll for the payment status because Mollie webhooks might take a few 
@@ -141,12 +143,14 @@ export default function ConfirmationIsland({
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                        <a href="/activiteiten" className="h-14 px-10 rounded-2xl bg-[var(--theme-purple)] text-white font-black flex items-center justify-center gap-2 hover:scale-105 transition-all shadow-xl shadow-[var(--theme-purple)]/20 uppercase tracking-widest">
+                        <a href={isPubCrawl ? "/kroegentocht" : "/activiteiten"} className="h-14 px-10 rounded-2xl bg-[var(--theme-purple)] text-white font-black flex items-center justify-center gap-2 hover:scale-105 transition-all shadow-xl shadow-[var(--theme-purple)]/20 uppercase tracking-widest">
                             TERUG NAAR OVERZICHT
                         </a>
-                        <a href="/profiel/tickets" className="h-14 px-10 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] font-black flex items-center justify-center gap-2 hover:bg-[var(--bg-soft)] transition-all uppercase tracking-widest">
-                            ALLE TICKETS
-                        </a>
+                        {isLoggedIn && (
+                            <a href="/profiel/tickets" className="h-14 px-10 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] font-black flex items-center justify-center gap-2 hover:bg-[var(--bg-soft)] transition-all uppercase tracking-widest">
+                                ALLE TICKETS
+                            </a>
+                        )}
                     </div>
                 </div>
             );
