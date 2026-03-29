@@ -21,8 +21,8 @@ export async function getTrips() {
 
     try {
         const trips = await getSystemDirectus().request(readItems('trips', {
-            fields: TRIP_FIELDS as unknown /* TODO: REVIEW-ANY */,
-            sort: ['-event_date'] as unknown /* TODO: REVIEW-ANY */
+            fields: TRIP_FIELDS as any,
+            sort: ['-event_date'] as any
         })) as unknown as DbTrip[];
 
         const sanitized = (trips ?? []).map(t => ({
@@ -78,7 +78,7 @@ export async function createTrip(prevState: unknown, formData: FormData) {
     }
 
     try {
-        await getSystemDirectus().request(createItem('trips', validated.data as Record<string, unknown> /* TODO: REVIEW-ANY */));
+        await getSystemDirectus().request(createItem('trips', validated.data as any));
 
         revalidatePath('/beheer/reis');
         return { success: true };
@@ -114,7 +114,7 @@ export async function updateTrip(id: number, prevState: unknown, formData: FormD
     }
 
     try {
-        await getSystemDirectus().request(updateItem('trips', id, validated.data as Record<string, unknown> /* TODO: REVIEW-ANY */));
+        await getSystemDirectus().request(updateItem('trips', id, validated.data as any));
 
         revalidatePath('/beheer/reis');
         return { success: true };

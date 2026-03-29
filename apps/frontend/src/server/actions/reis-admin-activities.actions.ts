@@ -22,8 +22,8 @@ export async function getTripActivities(tripId: number) {
     try {
         const activities = await getSystemDirectus().request(readItems('trip_activities', {
             filter: { trip_id: { _eq: tripId } },
-            fields: TRIP_ACTIVITY_FIELDS as unknown /* TODO: REVIEW-ANY */,
-            sort: ['display_order'] as unknown /* TODO: REVIEW-ANY */
+            fields: TRIP_ACTIVITY_FIELDS as any,
+            sort: ['display_order'] as any
         })) as unknown as TripActivity[];
 
         const sanitized = (activities ?? []).map(a => ({
@@ -55,7 +55,7 @@ export async function getTripActivities(tripId: number) {
 export async function createTripActivity(prevState: unknown, formData: FormData) {
     await requireReisAdmin();
 
-    const rawData: Record<string, unknown> /* TODO: REVIEW-ANY */ = {};
+    const rawData: any = {};
     formData.forEach((value, key) => {
         if (key === 'options') {
             try { rawData[key] = JSON.parse(value as string); } catch { rawData[key] = []; }
@@ -78,7 +78,7 @@ export async function createTripActivity(prevState: unknown, formData: FormData)
     }
 
     try {
-        await getSystemDirectus().request(createItem('trip_activities', validated.data as Record<string, unknown> /* TODO: REVIEW-ANY */));
+        await getSystemDirectus().request(createItem('trip_activities', validated.data as any));
         revalidateTag('trip_activities', 'default');
         return { success: true };
     } catch (error) {
@@ -91,7 +91,7 @@ export async function createTripActivity(prevState: unknown, formData: FormData)
 export async function updateTripActivity(id: number, prevState: unknown, formData: FormData) {
     await requireReisAdmin();
 
-    const rawData: Record<string, unknown> /* TODO: REVIEW-ANY */ = {};
+    const rawData: any = {};
     formData.forEach((value, key) => {
         if (key === 'options') {
             try { rawData[key] = JSON.parse(value as string); } catch { rawData[key] = []; }
@@ -114,7 +114,7 @@ export async function updateTripActivity(id: number, prevState: unknown, formDat
     }
 
     try {
-        await getSystemDirectus().request(updateItem('trip_activities', id, validated.data as Record<string, unknown> /* TODO: REVIEW-ANY */));
+        await getSystemDirectus().request(updateItem('trip_activities', id, validated.data as any));
         revalidateTag('trip_activities', 'default');
         return { success: true };
     } catch (error) {
