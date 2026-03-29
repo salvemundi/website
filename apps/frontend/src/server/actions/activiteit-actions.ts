@@ -3,7 +3,7 @@
 import { activiteitenSchema, type Activiteit, eventSignupFormSchema, type EventSignupForm } from '@salvemundi/validations';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
-import { revalidateTag } from 'next/cache';
+import { revalidateTag, unstable_noStore as noStore } from 'next/cache';
 import { cache } from 'react';
 
 import { getSystemDirectus } from '@/lib/directus';
@@ -266,12 +266,13 @@ export async function getActivitySignups(eventId: string) {
 }
 
 export async function getSignupStatus(id?: string, transactionId?: string, cacheBuster?: string) {
+    noStore(); // Block Next.js server action caching
     if (transactionId) {
         try {
             // Find transaction by either database ID or our secure access_token (token t)
             // Find transaction by either database ID or our secure access_token (token t)
             const transactions = await getSystemDirectus().request(readItems('transactions', {
-                fields: [...TRANSACTION_FIELDS, 'access_token' as any],
+                fields: TRANSACTION_FIELDS as any,
                 filter: { 
                     _or: [
                         { id: { _eq: transactionId } },
