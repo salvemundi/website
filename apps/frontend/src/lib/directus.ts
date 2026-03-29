@@ -27,6 +27,10 @@ export function getSystemDirectus() {
 
                 return fetch(url, {
                     ...options,
+                    headers: {
+                        ...(options as any)?.headers,
+                        'Cache-Control': 'no-cache', // Bypass Directus internal API cache
+                    },
                     cache: 'no-store', // Always fetch fresh data from Directus to avoid frozen status polling
                     next: nextOptions,
                     signal: AbortSignal.timeout(10000),
