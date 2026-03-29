@@ -284,6 +284,7 @@ export async function getSignupStatus(id?: string, transactionId?: string) {
                     limit: 1
                 }));
                 const signup = signups?.[0];
+                console.log(`[Activities] Signup status for transaction ${transactionId}: ${trans.payment_status}`);
                 return { status: trans.payment_status, signup, transaction: trans };
             } else if ((trans.product_type as any) === 'pub_crawl_signup') {
                 const signups = await getSystemDirectus().request(readItems('pub_crawl_signups', {
@@ -295,12 +296,16 @@ export async function getSignupStatus(id?: string, transactionId?: string) {
                 if (signup) {
                     (signup as any).amount_tickets = (signup as any).tickets?.length || 1;
                 }
+                console.log(`[Activities] Signup status for pub crawl transaction ${transactionId}: ${trans.payment_status}`);
                 return { status: trans.payment_status, signup, transaction: trans };
             } else if ((trans.product_type as any) === 'membership') {
+                console.log(`[Activities] Membership status for transaction ${transactionId}: ${trans.payment_status}`);
                 return { status: trans.payment_status, transaction: trans, isMembership: true };
             } else if ((trans.product_type as any) === 'trip_signup') {
+                console.log(`[Activities] Trip status for transaction ${transactionId}: ${trans.payment_status}`);
                 return { status: trans.payment_status, transaction: trans, isTrip: true };
             }
+            console.log(`[Activities] Generic status for transaction ${transactionId}: ${trans.payment_status}`);
             return { status: trans.payment_status, transaction: trans };
         } catch (e) {
             console.error('[Activities] Error resolving transaction:', e);
@@ -316,6 +321,7 @@ export async function getSignupStatus(id?: string, transactionId?: string) {
             }));
             
             if (signups && signups.length > 0) {
+                console.log(`[Activities] Signup status for ID ${id} (event): ${signups[0].payment_status}`);
                 return { status: (signups[0] as any).payment_status || 'open', signup: signups[0] };
             }
 
@@ -331,9 +337,11 @@ export async function getSignupStatus(id?: string, transactionId?: string) {
                 if (signup) {
                     (signup as any).amount_tickets = (signup as any).tickets?.length || 1;
                 }
+                console.log(`[Activities] Signup status for ID ${id} (pub crawl): ${signup.payment_status}`);
                 return { status: (signup as any).payment_status || 'open', signup };
             }
-
+            
+            console.warn(`[Activities] Signup ID ${id} not found in any collection.`);
             return { status: 'error' };
         } catch (e) {
             console.error('[Activities] Error fetching signup status:', e);

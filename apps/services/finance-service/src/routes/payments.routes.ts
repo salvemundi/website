@@ -89,15 +89,27 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 params.push(registrationId);
             }
 
-            // We use the exact Directus fields
-            await fastify.db.query(
+            // 2. Store transaction in PostgreSQL
+            const dbResult = await fastify.db.query(
                 `INSERT INTO transactions (
                     mollie_id, amount, payment_status, product_name, product_type,
                     user_id, email, first_name, last_name${regColumnStr},
                     created_at, updated_at
-                ) VALUES (${valTokens}, NOW(), NOW())`,
+                ) VALUES (${valTokens}, NOW(), NOW()) RETURNING id`,
                 params
             );
+
+            const transactionDbId = dbResult.rows[0].id;
+
+            // Handle M2M junction table for Pub Crawl
+            if (registrationType === 'pub_crawl_signup' && registrationId) {
+                await fastify.db.query(
+                    `INSERT INTO pub_crawl_signups_transactions (pub_crawl_signups_id, transactions_id)
+                     VALUES ($1, $2)`,
+                    [registrationId, transactionDbId]
+                );
+                fastify.log.info(`[FINANCE] Linked transaction ${transactionDbId} to pub_crawl_signup ${registrationId}`);
+            }
 
             return { checkoutUrl: payment.getCheckoutUrl() };
         } catch (err: any) {
