@@ -2,8 +2,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
-
-import PageHeader from '@/components/ui/layout/PageHeader';
+import { Beer, Users, Loader2 } from 'lucide-react';
 import IntroManagementIsland from '@/components/islands/admin/IntroManagementIsland';
 import { auth } from '@/server/auth/auth';
 import {
@@ -31,12 +30,23 @@ export default async function BeheerIntroPage() {
     ]);
 
     return (
-        <div className="min-h-screen bg-[var(--bg-main)]">
-            <PageHeader
-                title="Intro Beheer"
-                description="Beheer aanmeldingen, ouders, blogs en de introweek-planning."
-                backLink="/beheer"
-            />
+        <main className="min-h-screen bg-[var(--bg-main)]">
+            {/* Page Header Area - Replicated from Kroegentocht for premium consistency */}
+            <div className="bg-[var(--bg-card)] border-b border-[var(--border-color)]">
+                <div className="container mx-auto px-4 py-16 max-w-7xl">
+                    <div className="flex items-center gap-5 mb-4">
+                        <div className="h-14 w-14 rounded-[var(--radius-2xl)] bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] flex items-center justify-center shadow-2xl shadow-[var(--theme-purple)]/10 animate-pulse">
+                            <Users className="h-8 w-8" />
+                        </div>
+                        <h1 className="text-5xl font-black text-[var(--text-main)] tracking-widest uppercase">
+                            Intro<span className="text-[var(--theme-purple)]">ductie</span>
+                        </h1>
+                    </div>
+                    <p className="text-[var(--text-subtle)] text-xl max-w-3xl leading-relaxed font-medium">
+                        Beheer aanmeldingen, ouders, blogs en de introweek-planning.
+                    </p>
+                </div>
+            </div>
             <Suspense fallback={<IntroPageLoader />}>
                 <IntroManagementIsland
                     initialSignups={signups}
@@ -46,7 +56,7 @@ export default async function BeheerIntroPage() {
                     initialIntroVisible={settings.show ?? false}
                 />
             </Suspense>
-        </div>
+        </main>
     );
 }
 

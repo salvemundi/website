@@ -2,7 +2,32 @@
 
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Users, Heart, FileText, Calendar, Download, Mail, Plus, Trash2, Edit, Save, X, Search, Bell, ChevronDown, ChevronUp, Loader2, LayoutGrid, List, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import Link from 'next/link';
+import { 
+    Users, 
+    Heart, 
+    FileText, 
+    Calendar, 
+    Download, 
+    Mail, 
+    Plus, 
+    Trash2, 
+    Edit, 
+    Save, 
+    X, 
+    Search, 
+    Bell, 
+    ChevronDown, 
+    ChevronUp, 
+    Loader2, 
+    LayoutGrid, 
+    List, 
+    AlertCircle, 
+    Eye, 
+    EyeOff,
+    Beer,
+    ChevronLeft
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import type { IntroBlog, IntroPlanningItem } from '@salvemundi/validations';
@@ -243,25 +268,45 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
     }`;
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-7xl">
-            <div className="flex flex-wrap items-center justify-between mb-10 gap-6 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-2xl)] p-6">
-                <div>
-                    <h2 className="text-xl font-black text-[var(--text-main)] tracking-tight uppercase italic">Zichtbaarheid</h2>
-                    <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mt-1">Beheer of de introductie pagina's en inschrijvingen publiekelijk toegankelijk zijn.</p>
+        <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {/* Top Toolbar - Replicated from Kroegentocht style */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
+                <div className="flex items-center gap-4">
+                    <Link 
+                        href="/beheer" 
+                        className="p-3 rounded-[var(--radius-xl)] bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--theme-purple)] transition-all active:scale-90"
+                    >
+                        <ChevronLeft className="h-5 w-5" />
+                    </Link>
+                    <div>
+                        <h1 className="text-3xl font-black text-[var(--text-main)] tracking-tighter uppercase">Intro <span className="text-[var(--theme-purple)]">Beheer</span></h1>
+                        <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Aanmeldingen, ouders, blogs & planning</p>
+                    </div>
                 </div>
 
-                <div className="flex items-center gap-3 px-4 py-2 bg-[var(--bg-main)]/50 border border-[var(--border-color)] rounded-[var(--radius-xl)]">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-subtle)]">Status</span>
-                    <button
-                        onClick={handleToggleVisibility}
-                        disabled={togglingVisibility}
-                        className={`w-12 h-6 rounded-full p-1 transition-colors relative flex items-center ${introVisible ? 'bg-green-500' : 'bg-red-500'} disabled:opacity-50`}
+                <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                    {/* Visibility Toggle - Kroegentocht Style */}
+                    <div className="flex items-center gap-3 px-4 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-xl)]">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-subtle)]">Zichtbaarheid</span>
+                        <button
+                            onClick={handleToggleVisibility}
+                            disabled={togglingVisibility}
+                            className={`w-12 h-6 rounded-full p-1 transition-colors relative flex items-center ${introVisible ? 'bg-green-500' : 'bg-red-500'} disabled:opacity-50`}
+                        >
+                            {togglingVisibility ? (
+                                <Loader2 className="h-4 w-4 animate-spin text-white mx-auto" />
+                            ) : (
+                                <div className={`w-4 h-4 bg-white rounded-full transition-transform ${introVisible ? 'translate-x-[1.5rem]' : 'translate-x-0'}`} />
+                            )}
+                        </button>
+                    </div>
+
+                    <button 
+                        onClick={() => setShowNotifModal(true)}
+                        className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-[var(--theme-purple)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--radius-xl)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
                     >
-                        {togglingVisibility ? (
-                            <Loader2 className="h-4 w-4 animate-spin text-white mx-auto" />
-                        ) : (
-                            <div className={`w-4 h-4 bg-white rounded-full transition-transform ${introVisible ? 'translate-x-[1.5rem]' : 'translate-x-0'}`} />
-                        )}
+                        <Bell className="h-4 w-4" />
+                        Notificatie
                     </button>
                 </div>
             </div>
@@ -287,23 +332,31 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                 <div>
                     <div className="flex flex-col sm:flex-row gap-3 mb-5">
                         <div className="flex-1 relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)]" />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)]" />
                             <input
                                 type="text"
                                 placeholder="Zoek op naam, email of telefoon..."
                                 value={signupSearch}
                                 onChange={e => setSignupSearch(e.target.value)}
-                                className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] text-sm focus:ring-2 focus:ring-[var(--theme-purple)] focus:outline-none"
+                                className="w-full pl-11 pr-4 py-3 rounded-[var(--radius-xl)] bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] text-sm focus:ring-2 focus:ring-[var(--theme-purple)] focus:outline-none transition-all"
                             />
                         </div>
-                        <button onClick={() => {
-                            const emails = signups.map(s => s.email).join(',');
-                            window.location.href = `mailto:?bcc=${emails}&subject=Intro${encodeURIComponent(' Aanmeldingen')}`;
-                        }} className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold hover:opacity-90 transition">
-                            <Mail className="h-4 w-4" /> Mail BCC
+                        <button 
+                            onClick={() => {
+                                const emails = signups.map(s => s.email).join(',');
+                                window.location.href = `mailto:?bcc=${emails}&subject=Intro${encodeURIComponent(' Aanmeldingen')}`;
+                            }} 
+                            className="flex items-center justify-center gap-2 px-6 py-3 bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] rounded-[var(--radius-xl)] text-xs font-black uppercase tracking-widest hover:border-[var(--theme-purple)]/50 transition-all active:scale-95"
+                        >
+                            <Mail className="h-4 w-4 text-[var(--theme-purple)]" /> 
+                            Mail BCC
                         </button>
-                        <button onClick={exportSignupsToCSV} className="flex items-center gap-2 px-4 py-2.5 bg-[var(--theme-success,_#22c55e)] text-white rounded-xl text-sm font-bold hover:opacity-90 transition">
-                            <Download className="h-4 w-4" /> Export CSV
+                        <button 
+                            onClick={exportSignupsToCSV} 
+                            className="flex items-center justify-center gap-2 px-6 py-3 bg-[var(--theme-purple)] text-white rounded-[var(--radius-xl)] text-xs font-black uppercase tracking-widest shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
+                        >
+                            <Download className="h-4 w-4" /> 
+                            Export CSV
                         </button>
                     </div>
 
@@ -371,20 +424,28 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                 <div>
                     <div className="flex flex-col sm:flex-row gap-3 mb-5">
                         <div className="flex-1 relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)]" />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)]" />
                             <input
                                 type="text"
                                 placeholder="Zoek op naam of email..."
                                 value={parentSearch}
                                 onChange={e => setParentSearch(e.target.value)}
-                                className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] text-sm focus:ring-2 focus:ring-[var(--theme-purple)] focus:outline-none"
+                                className="w-full pl-11 pr-4 py-3 rounded-[var(--radius-xl)] bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] text-sm focus:ring-2 focus:ring-[var(--theme-purple)] focus:outline-none transition-all"
                             />
                         </div>
-                        <button onClick={() => setShowNotifModal(true)} className="flex items-center gap-2 px-4 py-2.5 bg-[var(--theme-purple)] text-white rounded-xl text-sm font-bold hover:opacity-90 transition">
-                            <Bell className="h-4 w-4" /> Notificatie sturen
+                        <button 
+                            onClick={() => setShowNotifModal(true)} 
+                            className="flex items-center justify-center gap-2 px-6 py-3 bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] rounded-[var(--radius-xl)] text-xs font-black uppercase tracking-widest hover:border-[var(--theme-purple)]/50 transition-all active:scale-95"
+                        >
+                            <Bell className="h-4 w-4 text-[var(--theme-purple)]" /> 
+                            Notificatie sturen
                         </button>
-                        <button onClick={exportParentsToCSV} className="flex items-center gap-2 px-4 py-2.5 bg-[var(--theme-success,_#22c55e)] text-white rounded-xl text-sm font-bold hover:opacity-90 transition">
-                            <Download className="h-4 w-4" /> Export CSV
+                        <button 
+                            onClick={exportParentsToCSV} 
+                            className="flex items-center justify-center gap-2 px-6 py-3 bg-[var(--theme-purple)] text-white rounded-[var(--radius-xl)] text-xs font-black uppercase tracking-widest shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
+                        >
+                            <Download className="h-4 w-4" /> 
+                            Export CSV
                         </button>
                     </div>
 
@@ -480,16 +541,20 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                                     <label htmlFor="blog-published" className="text-sm font-medium text-[var(--text-main)]">Gepubliceerd</label>
                                 </div>
                                 <div className="flex gap-3 pt-2">
-                                    <button onClick={handleSaveBlog} disabled={savingBlog} className="flex items-center gap-2 px-5 py-2.5 bg-[var(--theme-purple)] text-white rounded-xl font-bold text-sm hover:opacity-90 transition disabled:opacity-50">
-                                        {savingBlog ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Opslaan
+                                    <button onClick={handleSaveBlog} disabled={savingBlog} className="flex items-center justify-center gap-2 px-6 py-3 bg-[var(--theme-purple)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--radius-xl)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 disabled:opacity-50">
+                                        {savingBlog ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} 
+                                        Opslaan
                                     </button>
-                                    <button onClick={() => setEditingBlog(null)} className="px-5 py-2.5 rounded-xl text-sm font-bold text-[var(--text-muted)] hover:bg-[var(--border-color)] transition">Annuleren</button>
+                                    <button onClick={() => setEditingBlog(null)} className="px-6 py-3 rounded-[var(--radius-xl)] text-xs font-black uppercase tracking-widest text-[var(--text-muted)] hover:bg-[var(--bg-card-soft)] border border-transparent hover:border-[var(--border-color)] transition-all">
+                                        Annuleren
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     ) : (
-                        <button onClick={() => setEditingBlog({ title: '', content: '', blog_type: 'update', is_published: false })} className="flex items-center gap-2 px-5 py-2.5 bg-[var(--theme-purple)] text-white rounded-xl font-bold text-sm hover:opacity-90 transition mb-6">
-                            <Plus className="h-4 w-4" /> Nieuwe Blog
+                        <button onClick={() => setEditingBlog({ title: '', content: '', blog_type: 'update', is_published: false })} className="flex items-center justify-center gap-2 px-6 py-3 bg-[var(--theme-purple)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--radius-xl)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 mb-8">
+                            <Plus className="h-4 w-4" /> 
+                            Nieuwe Blog
                         </button>
                     )}
 
@@ -527,10 +592,11 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
             {/* ── Planning Tab ── */}
             {activeTab === 'planning' && (
                 <div>
-                    <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center justify-between mb-8">
                         {editingPlanning === null && (
-                            <button onClick={() => setEditingPlanning({ date: '', time_start: '', title: '', description: '' })} className="flex items-center gap-2 px-5 py-2.5 bg-[var(--theme-purple)] text-white rounded-xl font-bold text-sm hover:opacity-90 transition">
-                                <Plus className="h-4 w-4" /> Nieuw Item
+                            <button onClick={() => setEditingPlanning({ date: '', time_start: '', title: '', description: '' })} className="flex items-center justify-center gap-2 px-6 py-3 bg-[var(--theme-purple)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--radius-xl)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95">
+                                <Plus className="h-4 w-4" /> 
+                                Nieuw Item
                             </button>
                         )}
                         <div className="flex gap-1 bg-[var(--bg-card)] ring-1 ring-[var(--border-color)] rounded-xl p-1 ml-auto">
@@ -571,10 +637,13 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                                     <input type="text" value={editingPlanning.location || ''} onChange={e => setEditingPlanning({ ...editingPlanning, location: e.target.value })} className={inputClass} />
                                 </Field>
                                 <div className="flex gap-3 pt-2">
-                                    <button onClick={handleSavePlanning} disabled={savingPlanning} className="flex items-center gap-2 px-5 py-2.5 bg-[var(--theme-purple)] text-white rounded-xl font-bold text-sm hover:opacity-90 transition disabled:opacity-50">
-                                        {savingPlanning ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Opslaan
+                                    <button onClick={handleSavePlanning} disabled={savingPlanning} className="flex items-center justify-center gap-2 px-6 py-3 bg-[var(--theme-purple)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--radius-xl)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 disabled:opacity-50">
+                                        {savingPlanning ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} 
+                                        Opslaan
                                     </button>
-                                    <button onClick={() => setEditingPlanning(null)} className="px-5 py-2.5 rounded-xl text-sm font-bold text-[var(--text-muted)] hover:bg-[var(--border-color)] transition">Annuleren</button>
+                                    <button onClick={() => setEditingPlanning(null)} className="px-6 py-3 rounded-[var(--radius-xl)] text-xs font-black uppercase tracking-widest text-[var(--text-muted)] hover:bg-[var(--bg-card-soft)] border border-transparent hover:border-[var(--border-color)] transition-all">
+                                        Annuleren
+                                    </button>
                                 </div>
                             </div>
                         </div>
