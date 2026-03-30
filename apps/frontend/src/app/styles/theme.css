@@ -40,18 +40,20 @@
     --theme-purple-lighter: var(--color-purple-100);
     --theme-white: var(--color-white);
 
-    /* Admin UI token layer */
-    --theme-admin-card: var(--bg-card);
-    --theme-admin-card-soft: var(--bg-soft);
-    --theme-admin-text: var(--text-main);
-    --theme-admin-text-muted: var(--text-muted);
-    --theme-admin-border: var(--border-color);
-    --theme-admin-hover: rgba(0, 0, 0, 0.02);
-
-    /* Marker / sticker tokens */
-    --color-primary-200: var(--color-purple-200);
-    --color-primary-500: var(--color-purple-500);
-    --sticker-mine: var(--color-purple-500);
+    /* ── Beheer Page Tokens ────────────────────────────────────────── */
+    --beheer-active: #22c55e;        /* Green-500 */
+    --beheer-inactive: #ef4444;      /* Red-500 */
+    --beheer-accent: var(--theme-purple);
+    --beheer-card-bg: var(--bg-card);
+    --beheer-card-soft: var(--bg-soft);
+    --beheer-border: var(--border-color);
+    --beheer-text: var(--text-main);
+    --beheer-text-muted: var(--text-muted);
+    
+    /* Layout & Buttons */
+    --beheer-btn-px: 1.5rem;         /* 24px (px-6) */
+    --beheer-btn-py: 0.75rem;        /* 12px (py-3) */
+    --beheer-radius: var(--radius-xl);
 
     /* Legacy aliases — kept for old components, do not use in new code */
     --color-primary: var(--theme-purple);
@@ -65,10 +67,9 @@
 }
 
 .dark {
-    --theme-admin-card: var(--bg-card);
-    --theme-admin-card-soft: rgba(255, 255, 255, 0.02);
-    --theme-admin-text: var(--text-main);
-    --theme-admin-text-muted: var(--text-muted);
-    --theme-admin-border: rgba(255, 255, 255, 0.06);
-    --theme-admin-hover: rgba(255, 255, 255, 0.03);
+    --beheer-active: #4ade80;        /* Green-400 */
+    --beheer-inactive: #f87171;      /* Red-400 */
+    --beheer-card-bg: var(--bg-card);
+    --beheer-card-soft: rgba(255, 255, 255, 0.02);
+    --beheer-border: rgba(255, 255, 255, 0.06);
 }

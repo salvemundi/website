@@ -100,36 +100,39 @@ export default function KroegentochtManagementIsland({
                 <div className="flex items-center gap-4">
                     <Link 
                         href="/beheer" 
-                        className="p-3 rounded-[var(--radius-xl)] bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--theme-purple)] transition-all active:scale-90"
+                        className="p-3 rounded-[var(--beheer-radius)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text-muted)] hover:text-[var(--beheer-accent)] transition-all active:scale-90"
                     >
                         <ChevronLeft className="h-5 w-5" />
                     </Link>
                     <div>
-                        <h1 className="text-3xl font-black text-[var(--text-main)] tracking-tighter uppercase">Kroegentocht <span className="text-[var(--theme-purple)]">Beheer</span></h1>
-                        <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Aanmeldingen, tickets & event instellingen</p>
+                        <h1 className="text-3xl font-black text-[var(--beheer-text)] tracking-tighter uppercase">Kroegentocht <span className="text-[var(--beheer-accent)]">Beheer</span></h1>
+                        <p className="text-[10px] font-bold text-[var(--beheer-text-muted)] uppercase tracking-widest">Aanmeldingen, tickets & event instellingen</p>
                     </div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-                    <div className="flex items-center gap-3 px-4 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-xl)]">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-subtle)]">Zichtbaarheid</span>
+                    <div className="flex items-center gap-3 px-4 py-2 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] shadow-sm">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">Zichtbaarheid</span>
                         <button
                             onClick={handleToggleVisibility}
                             disabled={isPending}
-                            className={`w-12 h-6 rounded-full p-1 transition-colors relative ${settings.show ? 'bg-green-500' : 'bg-red-500'}`}
+                            className={`w-12 h-6 rounded-full p-1 transition-colors relative flex items-center ${settings.show ? 'bg-[var(--beheer-active)]' : 'bg-[var(--beheer-inactive)]'} disabled:opacity-50 hover:opacity-90 active:scale-95 transition-all`}
                         >
-                            <div className={`w-4 h-4 bg-white rounded-full transition-transform ${settings.show ? 'translate-x-6' : 'translate-x-0'}`} />
+                            {isPending ? (
+                                <Loader2 className="h-4 w-4 animate-spin text-white mx-auto" />
+                            ) : (
+                                <div className={`w-4 h-4 bg-white rounded-full transition-transform ${settings.show ? 'translate-x-[1.5rem]' : 'translate-x-0'} shadow-sm`} />
+                            )}
                         </button>
                     </div>
 
                     <Link 
                         href="/beheer/kroegentocht/nieuw"
-                        className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-[var(--theme-purple)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--radius-xl)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
+                        className="flex-1 md:flex-none flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
                     >
                         <Plus className="h-4 w-4" />
                         Nieuw Event
                     </Link>
-                    {/* # TODO: Implement Admin QR Scanner for Kroegentocht here */}
                 </div>
             </div>
 

@@ -1,9 +1,9 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import PageHeader from '@/components/ui/layout/PageHeader';
+import AnimatedBeheerHeader from '@/components/ui/admin/AnimatedBeheerHeader';
 import ReisDeelnemerDetailIsland from '@/components/islands/admin/ReisDeelnemerDetailIsland';
-import { Loader2 } from 'lucide-react';
+import { Loader2, User } from 'lucide-react';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 
@@ -38,9 +38,11 @@ export default async function DeelnemerDetailPage({ params }: PageProps) {
 
     return (
         <main className="min-h-screen bg-[var(--bg-main)]">
-            <PageHeader 
+            <AnimatedBeheerHeader 
                 title="Deelnemer Bewerken" 
+                subtitle="Bekijk en wijzig details, betalingen en activiteiten voor deze deelnemer."
                 backLink="/beheer/reis"
+                icon={<User className="h-8 w-8" />}
             />
             
             <Suspense fallback={<DeelnemerDetailLoader />}>
@@ -106,9 +108,9 @@ async function DeelnemerDataWrapper({ signupId }: { signupId: number }) {
 
 function DeelnemerDetailLoader() {
     return (
-        <div className="container mx-auto px-4 py-12 flex flex-col items-center justify-center">
-            <Loader2 className="h-12 w-12 animate-spin text-[var(--theme-purple)] mb-4" />
-            <p className="text-[var(--text-muted)] font-bold uppercase tracking-widest text-xs">Gegevens laden...</p>
+        <div className="container mx-auto px-4 py-32 flex flex-col items-center justify-center">
+            <Loader2 className="h-12 w-12 animate-spin text-[var(--beheer-accent)] mb-4" />
+            <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-xs">Deelnemer laden...</p>
         </div>
     );
 }

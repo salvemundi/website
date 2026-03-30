@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
-import PageHeader from '@/components/ui/layout/PageHeader';
+import { Settings } from 'lucide-react';
+import AnimatedBeheerHeader from '@/components/ui/admin/AnimatedBeheerHeader';
 import { 
     DashboardQuickStats, 
     QuickActions, 
@@ -19,10 +20,11 @@ export default async function BeheerPage() {
     const { user } = await checkAdminAccess();
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-900 pb-12">
-            <PageHeader
-                title="Beheer Dashboard"
-                description={`Welkom terug, ${user?.first_name || 'Admin'}`}
+        <main className="min-h-screen bg-[var(--bg-main)]">
+            <AnimatedBeheerHeader 
+                title="Beheer Dashboard" 
+                subtitle={`Welkom terug, ${user?.first_name || 'Admin'}. Beheer de vereniging en evenementen vanaf één plek.`}
+                icon={<Settings className="h-8 w-8" />}
             />
 
             <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -57,7 +59,7 @@ export default async function BeheerPage() {
                 </div>
 
             </div>
-        </div>
+        </main>
     );
 }
 
@@ -75,8 +77,8 @@ function StatsRowSkeleton() {
 
 function ActionsGridSkeleton() {
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 border border-slate-100 dark:border-slate-700">
-            <div className="h-7 w-32 bg-slate-200 dark:bg-slate-700 rounded mb-4" />
+        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-lg p-6 border border-[var(--beheer-border)] animate-pulse">
+            <div className="h-6 w-32 bg-[var(--beheer-border)]/50 rounded mb-6" />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[...Array(4)].map((_, i) => (
                     <ActionCardSkeleton key={i} />

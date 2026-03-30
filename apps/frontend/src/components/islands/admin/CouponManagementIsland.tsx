@@ -89,18 +89,18 @@ export default function CouponManagementIsland({ initialCoupons }: Props) {
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700">
-            {/* Top Toolbar - Replicated from Kroegentocht style */}
+            {/* Top Toolbar - Tokenized */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
                 <div className="flex items-center gap-4">
                     <Link 
                         href="/beheer" 
-                        className="p-3 rounded-[var(--radius-xl)] bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--theme-purple)] transition-all active:scale-90"
+                        className="p-3 rounded-[var(--beheer-radius)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text-muted)] hover:text-[var(--beheer-accent)] transition-all active:scale-90"
                     >
                         <ChevronLeft className="h-5 w-5" />
                     </Link>
                     <div>
-                        <h1 className="text-3xl font-black text-[var(--text-main)] tracking-tighter uppercase">Coupons <span className="text-[var(--theme-purple)]">Beheer</span></h1>
-                        <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Beheer kortingscodes en acties</p>
+                        <h1 className="text-3xl font-black text-[var(--beheer-text)] tracking-tighter uppercase">Coupons <span className="text-[var(--beheer-accent)]">Beheer</span></h1>
+                        <p className="text-[10px] font-bold text-[var(--beheer-text-muted)] uppercase tracking-widest">Beheer kortingscodes en acties</p>
                     </div>
                 </div>
 
@@ -108,7 +108,7 @@ export default function CouponManagementIsland({ initialCoupons }: Props) {
                     {showForm ? (
                         <button
                             onClick={() => { setShowForm(false); setFormError(null); }}
-                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-[var(--radius-xl)] bg-[var(--bg-card)] border border-[var(--border-color)] text-xs font-black uppercase tracking-widest text-[var(--text-muted)] hover:border-[var(--theme-purple)]/50 transition-all active:scale-95"
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] rounded-[var(--beheer-radius)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-xs font-black uppercase tracking-widest text-[var(--beheer-text-muted)] hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95"
                         >
                             <X className="h-4 w-4" /> 
                             Annuleren
@@ -116,7 +116,7 @@ export default function CouponManagementIsland({ initialCoupons }: Props) {
                     ) : (
                         <button
                             onClick={() => setShowForm(true)}
-                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-[var(--radius-xl)] bg-[var(--theme-purple)] text-white font-black text-xs uppercase tracking-widest shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] rounded-[var(--beheer-radius)] bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
                         >
                             <Plus className="h-4 w-4" /> 
                             Nieuwe Coupon
@@ -127,9 +127,9 @@ export default function CouponManagementIsland({ initialCoupons }: Props) {
 
             {/* Create Form */}
             {showForm && (
-                <form onSubmit={handleCreate} className="bg-[var(--bg-card)] ring-1 ring-[var(--border-color)] rounded-2xl p-6 mb-8 space-y-6 shadow-xl">
-                    <h3 className="font-bold text-lg text-[var(--text-main)] flex items-center gap-2">
-                        <Plus className="h-5 w-5 text-[var(--theme-purple)]" />
+                <form onSubmit={handleCreate} className="bg-[var(--beheer-card-bg)] ring-1 ring-[var(--beheer-border)] rounded-[var(--beheer-radius)] p-6 mb-8 space-y-6 shadow-xl">
+                    <h3 className="font-black text-lg text-[var(--beheer-text)] flex items-center gap-2 uppercase tracking-tighter">
+                        <Plus className="h-5 w-5 text-[var(--beheer-accent)]" />
                         Nieuwe Coupon Aanmaken
                     </h3>
 
@@ -223,18 +223,18 @@ export default function CouponManagementIsland({ initialCoupons }: Props) {
                         <label htmlFor="is_active" className="text-sm font-medium text-[var(--text-main)]">Direct actief</label>
                     </div>
 
-                    <div className="flex justify-end gap-3 pt-6 border-t border-[var(--border-color)]">
+                    <div className="flex justify-end gap-3 pt-6 border-t border-[var(--beheer-border)]">
                         <button 
                             type="button" 
                             onClick={() => { setShowForm(false); setFormError(null); }} 
-                            className="px-6 py-3 rounded-[var(--radius-xl)] text-xs font-black uppercase tracking-widest text-[var(--text-muted)] hover:bg-[var(--bg-card-soft)] border border-transparent hover:border-[var(--border-color)] transition-all"
+                            className="px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] rounded-[var(--beheer-radius)] text-xs font-black uppercase tracking-widest text-[var(--beheer-text-muted)] hover:bg-[var(--beheer-card-soft)] border border-transparent hover:border-[var(--beheer-border)] transition-all"
                         >
                             Annuleren
                         </button>
                         <button 
                             type="submit" 
                             disabled={isPending} 
-                            className="flex items-center justify-center gap-2 px-6 py-3 bg-[var(--theme-purple)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--radius-xl)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 disabled:opacity-50"
+                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 disabled:opacity-50"
                         >
                             {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                             {isPending ? 'Opslaan...' : 'Coupon Opslaan'}
@@ -453,18 +453,18 @@ function CouponRow({
             {/* Actions */}
             <td className="px-6 py-4 whitespace-nowrap text-right">
                 <div className="flex items-center justify-end gap-1">
-                    <button
-                        onClick={() => onToggle(coupon)}
-                        disabled={isToggling}
-                        title={coupon.is_active ? 'Deactiveren' : 'Activeren'}
-                        className="p-2 text-[var(--text-muted)] hover:text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/10 rounded-xl transition"
-                    >
-                        {isToggling
-                            ? <Loader2 className="h-4 w-4 animate-spin" />
-                            : coupon.is_active
-                                ? <ToggleRight className="h-4 w-4 text-green-500" />
-                                : <ToggleLeft className="h-4 w-4" />}
-                    </button>
+                        <button
+                            onClick={() => onToggle(coupon)}
+                            disabled={isToggling}
+                            title={coupon.is_active ? 'Deactiveren' : 'Activeren'}
+                            className="p-2 text-[var(--beheer-text-muted)] hover:text-[var(--beheer-accent)] hover:bg-[var(--beheer-accent)]/10 rounded-xl transition"
+                        >
+                            {isToggling
+                                ? <Loader2 className="h-4 w-4 animate-spin" />
+                                : coupon.is_active
+                                    ? <ToggleRight className="h-4 w-4 text-[var(--beheer-active)]" />
+                                    : <ToggleLeft className="h-4 w-4" />}
+                        </button>
                     <button
                         onClick={() => onDelete(coupon.id)}
                         disabled={isDeleting}

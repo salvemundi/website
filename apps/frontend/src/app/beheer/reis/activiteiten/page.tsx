@@ -1,8 +1,8 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import PageHeader from '@/components/ui/layout/PageHeader';
+import AnimatedBeheerHeader from '@/components/ui/admin/AnimatedBeheerHeader';
 import ReisActiviteitenIsland from '@/components/islands/admin/ReisActiviteitenIsland';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Layers } from 'lucide-react';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 import { notFound } from 'next/navigation';
@@ -35,15 +35,16 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
 
 export default async function ReisActiviteitenPage({ searchParams }: PageProps) {
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+        <main className="min-h-screen bg-[var(--bg-main)]">
             <Suspense fallback={
-                <div className="flex justify-center py-20">
-                    <Loader2 className="animate-spin h-10 w-10 text-purple-600" />
+                <div className="flex flex-col items-center justify-center py-32">
+                    <Loader2 className="animate-spin h-12 w-12 text-[var(--beheer-accent)] mb-4" />
+                    <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-xs">Activiteiten laden...</p>
                 </div>
             }>
                 <ReisActiviteitenLoader searchParams={searchParams} />
             </Suspense>
-        </div>
+        </main>
     );
 }
 
@@ -59,9 +60,9 @@ async function ReisActiviteitenLoader({ searchParams }: PageProps) {
     if (!trips || trips.length === 0) {
         return (
             <>
-                <PageHeader title="Trip Activiteiten Beheer" backLink="/beheer/reis" />
+                <AnimatedBeheerHeader title="Activiteiten Beheer" backLink="/beheer/reis" />
                 <div className="container mx-auto px-4 py-20 text-center">
-                    <p className="text-slate-500">Geen reizen gevonden.</p>
+                    <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-xs">Geen reizen gevonden.</p>
                 </div>
             </>
         );
@@ -102,12 +103,11 @@ async function ReisActiviteitenLoader({ searchParams }: PageProps) {
 
     return (
         <>
-            <PageHeader 
-                title={`Activiteiten: ${activeTrip.name}`} 
-                description="Beheer de optionele activiteiten en kosten voor reizen"
+            <AnimatedBeheerHeader 
+                title="Trip Activiteiten" 
+                subtitle={`Beheer activiteiten en inschrijvingen voor ${activeTrip.name}`}
                 backLink="/beheer/reis"
-                className="mb-0"
-                contentPadding="pt-0 pb-2 sm:pt-0 sm:pb-2"
+                icon={<Layers className="h-8 w-8" />}
             />
             <ReisActiviteitenIsland 
                 initialTrips={trips as any} 
