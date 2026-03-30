@@ -2,7 +2,6 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 
 // V7 Specifics
-import PageHeader from '@/components/ui/layout/PageHeader';
 import AdminReisDashboardSkeleton from '@/components/ui/admin/AdminReisDashboardSkeleton';
 import AdminReisSelectorIsland from '@/components/islands/admin/AdminReisSelectorIsland';
 import AdminReisTableIsland from '@/components/islands/admin/AdminReisTableIsland';
@@ -44,16 +43,16 @@ export async function generateMetadata({ searchParams }: AdminReisPageProps): Pr
 export default async function AdminReisPage({ searchParams }: AdminReisPageProps) {
     // We pass searchParams down to the content component which handles the actual fetching
     return (
-        <div className="min-h-screen bg-[var(--bg-main)]">
+        <main className="min-h-screen bg-[var(--bg-main)]">
             <Suspense fallback={
-                <div className="container mx-auto px-4 py-8 max-w-6xl">
-                    <PageHeader title="Reis Aanmeldingen" />
+                <div className="container mx-auto px-4 py-8 max-w-7xl">
+                    <div className="h-40 w-full animate-pulse bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] mb-8" />
                     <AdminReisDashboardSkeleton />
                 </div>
             }>
                 <AdminReisDashboardContent searchParams={searchParams} />
             </Suspense>
-        </div>
+        </main>
     );
 }
 
@@ -85,7 +84,18 @@ async function AdminReisDashboardContent({ searchParams }: AdminReisPageProps) {
     if (!trips || trips.length === 0) {
         return (
             <>
-                <PageHeader title="Reis Aanmeldingen" />
+                <div className="bg-[var(--beheer-card-bg)] border-b border-[var(--beheer-border)]">
+                    <div className="container mx-auto px-4 py-16 max-w-7xl">
+                        <div className="flex items-center gap-5 mb-4">
+                            <div className="h-14 w-14 rounded-[var(--radius-2xl)] bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] flex items-center justify-center shadow-2xl shadow-[var(--beheer-accent)]/10 animate-pulse">
+                                <Plane className="h-8 w-8 rotate-45" />
+                            </div>
+                            <h1 className="text-5xl font-black text-[var(--beheer-text)] tracking-widest uppercase">
+                                Reis <span className="text-[var(--beheer-accent)]">Beheer</span>
+                            </h1>
+                        </div>
+                    </div>
+                </div>
                 <NoTripsView />
             </>
         );
@@ -99,9 +109,25 @@ async function AdminReisDashboardContent({ searchParams }: AdminReisPageProps) {
     }
 
     return (
-        <div className="min-h-screen">
-            <PageHeader title={`Reis: ${activeTrip.name}`} />
-            <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <div className="min-h-screen pb-20">
+            {/* Page Header Area - Tokenized */}
+            <div className="bg-[var(--beheer-card-bg)] border-b border-[var(--beheer-border)] mb-10">
+                <div className="container mx-auto px-4 py-16 max-w-7xl">
+                    <div className="flex items-center gap-5 mb-4">
+                        <div className="h-14 w-14 rounded-[var(--radius-2xl)] bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] flex items-center justify-center shadow-2xl shadow-[var(--beheer-accent)]/10 animate-pulse">
+                            <Plane className="h-8 w-8 rotate-45" />
+                        </div>
+                        <h1 className="text-5xl font-black text-[var(--beheer-text)] tracking-widest uppercase">
+                            Reis: <span className="text-[var(--beheer-accent)]">{activeTrip.name}</span>
+                        </h1>
+                    </div>
+                    <p className="text-[var(--beheer-text-muted)] text-xl max-w-3xl leading-relaxed font-medium">
+                        Bekijk aanmeldingen, beheer betalingen en configureer reisactiviteiten.
+                    </p>
+                </div>
+            </div>
+
+            <div className="container mx-auto px-4 max-w-7xl">
                 <AdminReisSelectorIsland 
                     trips={trips} 
                     initialSettings={reisSettings}
@@ -178,19 +204,19 @@ async function AdminReisSignupsTable({ tripId, trip }: { tripId: number, trip: a
 function NoTripsView() {
     return (
         <div className="container mx-auto px-4 py-20 max-w-2xl text-center">
-            <div className="bg-[var(--bg-card)] rounded-[var(--radius-2xl)] p-12 shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)] animate-in fade-in zoom-in duration-500">
-                <div className="h-20 w-20 rounded-full bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] flex items-center justify-center mx-auto mb-6">
+            <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] p-12 shadow-xl border border-[var(--beheer-border)] animate-in fade-in zoom-in duration-500">
+                <div className="h-20 w-20 rounded-full bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] flex items-center justify-center mx-auto mb-6 shadow-glow">
                     <Plane className="h-10 w-10 rotate-45" />
                 </div>
-                <h2 className="text-2xl font-bold text-[var(--text-main)] italic mb-2">Geen reizen gevonden</h2>
-                <p className="text-[var(--text-muted)] font-medium mb-8">Er zijn momenteel geen actieve of geplande reizen in het systeem.</p>
+                <h2 className="text-3xl font-black text-[var(--beheer-text)] uppercase tracking-tighter mb-2">Geen reizen gevonden</h2>
+                <p className="text-[var(--beheer-text-muted)] font-bold uppercase tracking-widest text-xs mb-8">Er zijn momenteel geen actieve of geplande reizen in het systeem.</p>
                 
                 <Link 
                     href="/beheer/reis/instellingen"
-                    className="inline-flex items-center gap-2 px-8 py-4 bg-[var(--theme-purple)] text-white rounded-2xl font-bold shadow-xl shadow-[var(--theme-purple)]/20 transition-all hover:scale-[1.02] active:scale-95 group"
+                    className="inline-flex items-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white rounded-[var(--beheer-radius)] font-black uppercase tracking-widest text-xs shadow-[var(--shadow-glow)] transition-all hover:scale-[1.02] active:scale-95 group"
                 >
                     <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform" />
-                    <span className="italic uppercase tracking-wider text-sm">Nieuwe reis aanmaken</span>
+                    <span>Nieuwe reis aanmaken</span>
                 </Link>
             </div>
         </div>

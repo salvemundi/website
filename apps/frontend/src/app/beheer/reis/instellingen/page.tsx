@@ -1,8 +1,8 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import PageHeader from '@/components/ui/layout/PageHeader';
+import AnimatedBeheerHeader from '@/components/ui/admin/AnimatedBeheerHeader';
 import ReisInstellingenIsland from '@/components/islands/admin/ReisInstellingenIsland';
-import { Loader2 } from 'lucide-react';
+import { Settings, Loader2 } from 'lucide-react';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 
@@ -12,21 +12,23 @@ export const metadata: Metadata = {
 
 export default async function ReisInstellingenPage() {
     return (
-        <div className="min-h-screen bg-[var(--bg-main)]">
-            <PageHeader 
+        <main className="min-h-screen bg-[var(--bg-main)]">
+            <AnimatedBeheerHeader 
                 title="Reis Instellingen" 
-                description="Beheer reizen, configuratie en algemene instellingen"
+                subtitle="Beheer reizen, prijzen en algemene configuratie voor alle SV Salve Mundi evenementen."
                 backLink="/beheer/reis"
+                icon={<Settings className="h-8 w-8" />}
             />
             
             <Suspense fallback={
-                <div className="flex justify-center py-20">
-                    <Loader2 className="animate-spin h-10 w-10 text-[var(--theme-purple)]" />
+                <div className="flex flex-col items-center justify-center py-32">
+                    <Loader2 className="animate-spin h-12 w-12 text-[var(--beheer-accent)] mb-4" />
+                    <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-xs">Instellingen laden...</p>
                 </div>
             }>
                 <SettingsDataWrapper />
             </Suspense>
-        </div>
+        </main>
     );
 }
 

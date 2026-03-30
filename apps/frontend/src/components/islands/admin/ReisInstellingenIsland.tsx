@@ -89,17 +89,17 @@ export default function ReisInstellingenIsland({ initialTrips }: ReisInstellinge
         <div className="container mx-auto px-4 py-8 max-w-6xl animate-in fade-in duration-700">
             {/* Header Actions */}
             {!isAdding && !editingTrip && (
-                <div className="mb-10 flex justify-between items-center">
+                <div className="mb-10 flex justify-between items-center bg-[var(--beheer-card-bg)]/50 p-8 rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] shadow-sm">
                     <div>
-                        <h2 className="text-2xl font-bold text-[var(--text-main)] italic">Reizen Beheren</h2>
-                        <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mt-1">Configureer reis details en prijzen</p>
+                        <h2 className="text-3xl font-black text-[var(--beheer-text)] uppercase tracking-tighter">Reizen Beheren</h2>
+                        <p className="text-[10px] font-bold text-[var(--beheer-text-muted)] uppercase tracking-widest mt-1">Configureer reis details en prijzen</p>
                     </div>
                     <button
                         onClick={handleAdd}
-                        className="px-8 py-4 bg-[var(--theme-purple)] hover:opacity-95 text-white rounded-2xl font-bold shadow-xl shadow-[var(--theme-purple)]/20 transition-all active:scale-95 flex items-center gap-2 group"
+                        className="px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] hover:opacity-95 text-white rounded-[var(--beheer-radius)] font-black uppercase tracking-widest text-xs shadow-xl shadow-[var(--beheer-accent)]/20 transition-all active:scale-95 flex items-center gap-2 group"
                     >
-                        <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform" />
-                        <span className="italic">Nieuwe Reis</span>
+                        <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform" />
+                        <span>Nieuwe Reis</span>
                     </button>
                 </div>
             )}
@@ -123,22 +123,22 @@ export default function ReisInstellingenIsland({ initialTrips }: ReisInstellinge
 
             {/* Form (Add/Edit) */}
             {(isAdding || editingTrip) && (
-                <div className="mb-12 bg-[var(--bg-card)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)] overflow-hidden animate-in slide-in-from-bottom-8 duration-500">
-                    <div className="p-8 border-b border-[var(--border-color)]/20 bg-[var(--bg-main)]/30 backdrop-blur-sm flex justify-between items-center">
+                <div className="mb-12 bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] overflow-hidden animate-in slide-in-from-bottom-8 duration-500">
+                    <div className="p-8 border-b border-[var(--beheer-border)]/50 bg-[var(--bg-main)]/30 backdrop-blur-sm flex justify-between items-center">
                         <div className="flex items-center gap-4">
-                            <div className="h-12 w-12 rounded-2xl bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] flex items-center justify-center">
+                            <div className="h-12 w-12 rounded-2xl bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] flex items-center justify-center shadow-inner">
                                 {isAdding ? <Plus className="h-6 w-6" /> : <Edit2 className="h-6 w-6" />}
                             </div>
                             <div>
-                                <h2 className="text-xl font-bold text-[var(--text-main)] italic">
+                                <h2 className="text-xl font-black text-[var(--beheer-text)] uppercase tracking-tight">
                                     {isAdding ? 'Nieuwe Reis Toevoegen' : `${editingTrip?.name} Bewerken`}
                                 </h2>
-                                <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Vul alle verplichte velden in</p>
+                                <p className="text-[10px] font-bold text-[var(--beheer-text-muted)] uppercase tracking-widest">Vul alle verplichte velden in</p>
                             </div>
                         </div>
                         <button 
                             onClick={handleCancel}
-                            className="p-3 hover:bg-[var(--border-color)]/10 rounded-xl transition-colors text-[var(--text-muted)]"
+                            className="p-3 hover:bg-[var(--beheer-border)]/10 rounded-xl transition-colors text-[var(--beheer-text-muted)]"
                         >
                             <X className="h-6 w-6" />
                         </button>
@@ -202,21 +202,21 @@ export default function ReisInstellingenIsland({ initialTrips }: ReisInstellinge
                             </div>
                         </div>
 
-                        <div className="mt-10 pt-8 border-t border-[var(--border-color)]/10 flex justify-end gap-4">
+                        <div className="mt-10 pt-8 border-t border-[var(--beheer-border)]/30 flex justify-end gap-4">
                             <button
                                 type="button"
                                 onClick={handleCancel}
-                                className="px-8 py-4 text-[var(--text-muted)] hover:text-[var(--text-main)] font-bold transition-colors uppercase tracking-widest text-xs"
+                                className="px-8 py-4 text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] font-black uppercase tracking-widest text-xs transition-colors"
                             >
                                 Annuleren
                             </button>
                             <button
                                 type="submit"
                                 disabled={pending}
-                                className="px-12 py-4 bg-[var(--theme-purple)] hover:opacity-95 text-white rounded-2xl font-bold shadow-2xl shadow-[var(--theme-purple)]/30 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-3"
+                                className="px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] hover:opacity-95 text-white rounded-[var(--beheer-radius)] font-black uppercase tracking-widest text-xs shadow-2xl shadow-[var(--beheer-accent)]/30 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-3"
                             >
-                                {pending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
-                                <span className="italic">Gegevens Opslaan</span>
+                                {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                                <span>Gegevens Opslaan</span>
                             </button>
                         </div>
                     </form>
@@ -265,14 +265,14 @@ function TripCard({ trip, onEdit, onDelete, isDeleting }: any) {
     return (
         <div className="group bg-[var(--bg-card)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)] overflow-hidden flex flex-col transition-all hover:translate-y-[-4px] hover:shadow-2xl">
             {/* Trip Status Overlays */}
-            <div className="relative h-48 bg-[var(--border-color)]/5 flex items-center justify-center overflow-hidden">
-                <div className={`absolute top-4 left-4 z-10 px-3 py-1.5 rounded-xl backdrop-blur-md font-black italic text-[10px] uppercase tracking-widest ${
-                    trip.registration_open ? 'bg-[var(--theme-success)] text-white shadow-lg shadow-[var(--theme-success)]/20' : 'bg-[var(--theme-error)] text-white shadow-lg shadow-[var(--theme-error)]/20'
+            <div className="relative h-48 bg-[var(--beheer-border)]/5 flex items-center justify-center overflow-hidden">
+                <div className={`absolute top-4 left-4 z-10 px-3 py-1.5 rounded-xl backdrop-blur-md font-black italic text-[10px] uppercase tracking-widest shadow-lg ${
+                    trip.registration_open ? 'bg-[var(--beheer-active)] text-white shadow-[var(--beheer-active)]/20' : 'bg-[var(--beheer-inactive)] text-white shadow-[var(--beheer-inactive)]/20'
                 }`}>
                     {trip.registration_open ? 'Open' : 'Gesloten'}
                 </div>
                 {trip.is_bus_trip && (
-                    <div className="absolute top-4 right-4 z-10 px-3 py-1.5 rounded-xl bg-[var(--theme-info)] text-white shadow-lg shadow-[var(--theme-info)]/20 backdrop-blur-md font-black italic text-[10px] uppercase tracking-widest">
+                    <div className="absolute top-4 right-4 z-10 px-3 py-1.5 rounded-xl bg-blue-500 text-white shadow-lg shadow-blue-500/20 backdrop-blur-md font-black italic text-[10px] uppercase tracking-widest">
                         Busreis
                     </div>
                 )}
@@ -291,7 +291,7 @@ function TripCard({ trip, onEdit, onDelete, isDeleting }: any) {
             </div>
 
             <div className="p-6 flex-1 flex flex-col">
-                <h3 className="text-xl font-bold text-[var(--text-main)] italic mb-2 line-clamp-1 group-hover:text-[var(--theme-purple)] transition-colors">{trip.name}</h3>
+                <h3 className="text-xl font-black text-[var(--beheer-text)] tracking-tight mb-2 line-clamp-1 group-hover:text-[var(--beheer-accent)] transition-colors">{trip.name}</h3>
                 
                 <div className="space-y-3 mb-6 flex-1">
                     <div className="flex items-center gap-3 text-[var(--text-muted)]">
@@ -302,16 +302,16 @@ function TripCard({ trip, onEdit, onDelete, isDeleting }: any) {
                         <Users className="h-4 w-4" />
                         <span className="text-xs font-bold">{trip.max_participants} deelnemers {trip.max_crew > 0 && `(+${trip.max_crew} crew)`}</span>
                     </div>
-                    <div className="flex items-center gap-3 text-[var(--theme-purple)]">
+                    <div className="flex items-center gap-3 text-[var(--beheer-accent)]">
                         <DollarSign className="h-4 w-4" />
                         <span className="text-sm font-black italic">€{trip.base_price.toFixed(2)}</span>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 pt-4 border-t border-[var(--border-color)]/10">
+                <div className="grid grid-cols-2 gap-3 pt-4 border-t border-[var(--beheer-border)]/50">
                     <button
                         onClick={onEdit}
-                        className="flex items-center justify-center gap-2 px-4 py-3 bg-[var(--bg-main)] hover:bg-[var(--border-color)]/10 text-[var(--text-main)] rounded-xl text-xs font-black uppercase tracking-widest transition-all ring-1 ring-[var(--border-color)]/50"
+                        className="flex items-center justify-center gap-2 px-4 py-3 bg-[var(--bg-main)] hover:bg-[var(--beheer-border)]/10 text-[var(--beheer-text)] rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ring-1 ring-[var(--beheer-border)]/50"
                     >
                         <Edit2 className="h-3.5 w-3.5" />
                         Bewerken
@@ -319,7 +319,7 @@ function TripCard({ trip, onEdit, onDelete, isDeleting }: any) {
                     <button
                         onClick={onDelete}
                         disabled={isDeleting}
-                        className="flex items-center justify-center gap-2 px-4 py-3 bg-[var(--theme-error)]/5 hover:bg-[var(--theme-error)]/10 text-[var(--theme-error)] rounded-xl text-xs font-black uppercase tracking-widest transition-all ring-1 ring-[var(--theme-error)]/20"
+                        className="flex items-center justify-center gap-2 px-4 py-3 bg-[var(--beheer-inactive)]/5 hover:bg-[var(--beheer-inactive)]/10 text-[var(--beheer-inactive)] rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ring-1 ring-[var(--beheer-inactive)]/20"
                     >
                         {isDeleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
                         Wissen
@@ -343,7 +343,7 @@ function InputField({ label, name, type = 'text', defaultValue, placeholder, req
                 defaultValue={defaultValue}
                 placeholder={placeholder}
                 required={required}
-                className="w-full px-6 py-4 bg-[var(--bg-main)]/50 border-0 ring-1 ring-[var(--border-color)]/30 rounded-2xl text-sm text-[var(--text-main)] transition-all font-semibold focus:ring-2 focus:ring-[var(--theme-purple)]"
+                className="w-full px-6 py-4 bg-[var(--bg-main)]/50 border-0 ring-1 ring-[var(--beheer-border)]/50 rounded-2xl text-sm text-[var(--beheer-text)] transition-all font-semibold focus:ring-2 focus:ring-[var(--beheer-accent)]"
             />
         </div>
     );
@@ -352,7 +352,7 @@ function InputField({ label, name, type = 'text', defaultValue, placeholder, req
 function ToggleField({ label, name, defaultChecked }: any) {
     return (
         <label className="flex items-center justify-between cursor-pointer group">
-            <span className="text-xs font-bold text-[var(--text-main)] group-hover:text-[var(--theme-purple)] transition-colors">{label}</span>
+            <span className="text-xs font-bold text-[var(--beheer-text)] group-hover:text-[var(--beheer-accent)] transition-colors">{label}</span>
             <div className="relative">
                 <input 
                     type="checkbox" 
@@ -360,7 +360,7 @@ function ToggleField({ label, name, defaultChecked }: any) {
                     defaultChecked={defaultChecked}
                     className="sr-only peer"
                 />
-                <div className="w-12 h-6 bg-[var(--border-color)]/20 rounded-full peer peer-checked:bg-[var(--theme-purple)] transition-all after:content-[''] after:absolute after:top-1 after:left-1 after:bg-[var(--bg-card)] after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-6 shadow-inner ring-1 ring-[var(--border-color)]/30"></div>
+                <div className="w-12 h-6 bg-[var(--beheer-border)]/20 rounded-full peer peer-checked:bg-[var(--beheer-accent)] transition-all after:content-[''] after:absolute after:top-1 after:left-1 after:bg-[var(--beheer-card-bg)] after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-6 shadow-inner ring-1 ring-[var(--beheer-border)]/30"></div>
             </div>
         </label>
     );

@@ -207,97 +207,97 @@ export default function AdminReisTableIsland({ initialSignups, initialSignupActi
 
     const getPaymentStatus = (signup: TripSignup) => {
         if (signup.full_payment_paid) {
-            return { label: 'Volledig betaald', color: 'bg-[var(--theme-success)]/10 text-[var(--theme-success)]' };
+            return { label: 'Volledig betaald', color: 'bg-[var(--beheer-active)]/10 text-[var(--beheer-active)]' };
         } else if (signup.deposit_paid) {
-            return { label: 'Aanbetaling voldaan', color: 'bg-[var(--theme-warning)]/10 text-[var(--theme-warning)]' };
+            return { label: 'Aanbetaling voldaan', color: 'bg-yellow-500/10 text-yellow-600' };
         } else {
-            return { label: 'Nog geen betaling', color: 'bg-[var(--theme-error)]/10 text-[var(--theme-error)]' };
+            return { label: 'Nog geen betaling', color: 'bg-[var(--beheer-inactive)]/10 text-[var(--beheer-inactive)]' };
         }
     };
 
     const getStatusBadge = (status: string) => {
         const statusMap: Record<string, { label: string; color: string }> = {
-            registered: { label: 'Geregistreerd', color: 'bg-[var(--theme-info)]/10 text-[var(--theme-info)]' },
-            waitlist: { label: 'Wachtlijst', color: 'bg-[var(--theme-warning)]/10 text-[var(--theme-warning)]' },
-            confirmed: { label: 'Bevestigd', color: 'bg-[var(--theme-success)]/10 text-[var(--theme-success)]' },
-            cancelled: { label: 'Geannuleerd', color: 'bg-[var(--text-light)]/10 text-[var(--text-light)]' },
+            registered: { label: 'Geregistreerd', color: 'bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)]' },
+            waitlist: { label: 'Wachtlijst', color: 'bg-yellow-500/10 text-yellow-600' },
+            confirmed: { label: 'Bevestigd', color: 'bg-[var(--beheer-active)]/10 text-[var(--beheer-active)]' },
+            cancelled: { label: 'Geannuleerd', color: 'bg-[var(--beheer-inactive)]/10 text-[var(--beheer-inactive)]' },
         };
-        return statusMap[status] || { label: status, color: 'bg-[var(--text-light)]/10 text-[var(--text-light)]' };
+        return statusMap[status] || { label: status, color: 'bg-[var(--beheer-text-muted)]/10 text-[var(--beheer-text-muted)]' };
     };
 
     return (
         <>
-            {/* Statistics */}
+            {/* Statistics - Tokenized */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 mb-8">
-                <div className="bg-admin-card rounded-lg shadow p-4 sm:p-6 border-l-4 border-blue-500">
+                <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm p-4 sm:p-6 border-l-4 border-[var(--beheer-accent)]">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-admin-muted text-xs sm:text-sm">Totaal</p>
-                            <p className="text-xl sm:text-2xl font-bold text-admin">{stats.total}</p>
+                            <p className="text-[var(--beheer-text-muted)] text-[10px] font-black uppercase tracking-widest">Totaal</p>
+                            <p className="text-xl sm:text-2xl font-black text-[var(--beheer-text)]">{stats.total}</p>
                         </div>
-                        <Users className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500" />
+                        <Users className="h-6 w-6 sm:h-8 sm:w-8 text-[var(--beheer-accent)] opacity-20" />
                     </div>
                 </div>
 
-                <div className="bg-admin-card rounded-lg shadow p-4 sm:p-6 border-l-4 border-green-500">
+                <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm p-4 sm:p-6 border-l-4 border-[var(--beheer-active)]">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-admin-muted text-xs sm:text-sm">Bevestigd</p>
-                            <p className="text-xl sm:text-2xl font-bold text-admin">{stats.confirmed}</p>
+                            <p className="text-[var(--beheer-text-muted)] text-[10px] font-black uppercase tracking-widest">Bevestigd</p>
+                            <p className="text-xl sm:text-2xl font-black text-[var(--beheer-text)]">{stats.confirmed}</p>
                         </div>
-                        <UserCheck className="h-6 w-6 sm:h-8 sm:w-8 text-green-500" />
+                        <UserCheck className="h-6 w-6 sm:h-8 sm:w-8 text-[var(--beheer-active)] opacity-20" />
                     </div>
                 </div>
 
-                <div className="bg-admin-card rounded-lg shadow p-4 sm:p-6 border-l-4 border-orange-500">
+                <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm p-4 sm:p-6 border-l-4 border-yellow-500/50">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-admin-muted text-xs sm:text-sm">Wachtlijst</p>
-                            <p className="text-xl sm:text-2xl font-bold text-admin">{stats.waitlist}</p>
+                            <p className="text-[var(--beheer-text-muted)] text-[10px] font-black uppercase tracking-widest">Wachtlijst</p>
+                            <p className="text-xl sm:text-2xl font-black text-[var(--beheer-text)]">{stats.waitlist}</p>
                         </div>
-                        <UserX className="h-6 w-6 sm:h-8 sm:w-8 text-orange-500" />
+                        <UserX className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-500 opacity-20" />
                     </div>
                 </div>
 
-                <div className="bg-admin-card rounded-lg shadow p-4 sm:p-6 border-l-4 border-yellow-500">
+                <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm p-4 sm:p-6 border-l-4 border-[var(--beheer-accent)]/40">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-admin-muted text-xs sm:text-sm">Aanbetaling</p>
-                            <p className="text-xl sm:text-2xl font-bold text-admin">{stats.depositPaid}</p>
+                            <p className="text-[var(--beheer-text-muted)] text-[10px] font-black uppercase tracking-widest">Aanbetaling</p>
+                            <p className="text-xl sm:text-2xl font-black text-[var(--beheer-text)]">{stats.depositPaid}</p>
                         </div>
-                        <Plane className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-500" />
+                        <Plane className="h-6 w-6 sm:h-8 sm:w-8 text-[var(--beheer-accent)] opacity-20" />
                     </div>
                 </div>
 
-                <div className="bg-admin-card rounded-lg shadow p-4 sm:p-6 border-l-4 border-purple-500">
+                <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm p-4 sm:p-6 border-l-4 border-[var(--beheer-active)]/40">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-admin-muted text-xs sm:text-sm">Volledig betaald</p>
-                            <p className="text-xl sm:text-2xl font-bold text-admin">{stats.fullPaid}</p>
+                            <p className="text-[var(--beheer-text-muted)] text-[10px] font-black uppercase tracking-widest">Volledig betaald</p>
+                            <p className="text-xl sm:text-2xl font-black text-[var(--beheer-text)]">{stats.fullPaid}</p>
                         </div>
-                        <Plane className="h-6 w-6 sm:h-8 sm:w-8 text-purple-500" />
+                        <Plane className="h-6 w-6 sm:h-8 sm:w-8 text-[var(--beheer-active)] opacity-20" />
                     </div>
                 </div>
             </div>
 
-            {/* Filters and Actions */}
-            <div className="bg-admin-card rounded-lg shadow p-4 sm:p-6 mb-6">
+            {/* Filters and Actions - Tokenized */}
+            <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm p-4 sm:p-6 mb-6 border border-[var(--beheer-border)]">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4">
                     <div className="md:col-span-2 relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-admin-muted h-5 w-5" />
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--beheer-text-muted)] h-5 w-5" />
                         <input
                             type="text"
                             placeholder="Zoek op naam of e-mailadres..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
+                            className="w-full pl-10 pr-4 py-2 border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] focus:ring-2 focus:ring-[var(--beheer-accent)] focus:border-transparent transition-all"
                         />
                     </div>
                     <div>
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
-                            className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
+                            className="w-full px-4 py-2 border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] focus:ring-2 focus:ring-[var(--beheer-accent)] focus:border-transparent transition-all font-bold text-sm uppercase tracking-widest"
                         >
                             <option value="all">Alle statussen</option>
                             <option value="registered">Geregistreerd</option>
@@ -310,7 +310,7 @@ export default function AdminReisTableIsland({ initialSignups, initialSignupActi
                         <select
                             value={roleFilter}
                             onChange={(e) => setRoleFilter(e.target.value)}
-                            className="w-full px-4 py-2 border border-admin bg-admin-card text-admin rounded-lg focus:ring-2 focus:ring-theme-purple focus:border-transparent"
+                            className="w-full px-4 py-2 border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] focus:ring-2 focus:ring-[var(--beheer-accent)] focus:border-transparent transition-all font-bold text-sm uppercase tracking-widest"
                         >
                             <option value="all">Alle rollen</option>
                             <option value="participant">Deelnemer</option>
@@ -319,75 +319,76 @@ export default function AdminReisTableIsland({ initialSignups, initialSignupActi
                     </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mt-4">
+                <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mt-6">
                     <button
                         onClick={downloadExcel}
                         disabled={filteredSignups.length === 0}
-                        className="flex items-center justify-center gap-2 px-4 py-2 bg-[var(--theme-success)] text-white rounded-lg hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto">
-                        <Download className="h-5 w-5" />
+                        className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-active)] text-white rounded-[var(--beheer-radius)] font-black uppercase tracking-widest text-xs shadow-[var(--shadow-glow)] hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                    >
+                        <Download className="h-4 w-4" />
                         Export naar Excel
                     </button>
                     <button
                         onClick={() => router.push('/beheer/reis/instellingen')}
-                        className="flex items-center justify-center gap-2 px-4 py-2 bg-theme-purple text-white rounded-lg hover:bg-theme-purple-dark transition w-full sm:w-auto"
+                        className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white rounded-[var(--beheer-radius)] font-black uppercase tracking-widest text-xs shadow-[var(--shadow-glow)] hover:opacity-90 transition w-full sm:w-auto"
                     >
-                        <Edit className="h-5 w-5" />
+                        <Edit className="h-4 w-4" />
                         Reis Instellingen
                     </button>
                 </div>
             </div>
 
             {/* Signups Table */}
-            <div className="bg-admin-card rounded-lg shadow overflow-hidden">
+            <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] overflow-hidden">
                 {filteredSignups.length === 0 ? (
-                    <div className="text-center py-12">
-                        <AlertCircle className="h-12 w-12 text-admin-muted mx-auto mb-4" />
-                        <p className="text-admin-muted">Geen aanmeldingen gevonden</p>
+                    <div className="text-center py-20 px-4">
+                        <AlertCircle className="h-12 w-12 text-[var(--beheer-text-muted)] mx-auto mb-4 opacity-20" />
+                        <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-[10px]">Geen aanmeldingen gevonden</p>
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full">
-                            <thead className="bg-admin-card-soft border-b border-admin">
+                            <thead className="bg-[var(--bg-main)]/50 border-b border-[var(--beheer-border)]">
                                 <tr>
-                                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">Naam</th>
-                                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider hidden sm:table-cell">Geboortedatum</th>
-                                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider hidden md:table-cell">Rol</th>
-                                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider">Status</th>
-                                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-admin-muted uppercase tracking-wider hidden sm:table-cell">Betalingstatus</th>
-                                    <th className="px-2 sm:px-6 py-3 text-right text-xs font-medium text-admin-muted uppercase tracking-wider">Acties</th>
+                                    <th className="px-3 sm:px-6 py-5 text-left text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Naam</th>
+                                    <th className="px-3 sm:px-6 py-5 text-left text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest hidden sm:table-cell">Geboortedatum</th>
+                                    <th className="px-3 sm:px-6 py-5 text-left text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest hidden md:table-cell">Rol</th>
+                                    <th className="px-3 sm:px-6 py-5 text-left text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Status</th>
+                                    <th className="px-3 sm:px-6 py-5 text-left text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest hidden sm:table-cell">Betaling</th>
+                                    <th className="px-2 sm:px-6 py-5 text-right text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Acties</th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-admin-card divide-y divide-admin">
+                            <tbody className="divide-y divide-[var(--beheer-border)]/10">
                                 {filteredSignups.map(signup => {
                                     const paymentStatus = getPaymentStatus(signup);
                                     const statusBadge = getStatusBadge(signup.status);
 
                                     return (
                                         <Fragment key={signup.id}>
-                                            <tr onClick={() => toggleExpand(signup)} className="hover:bg-admin-hover cursor-pointer">
-                                                <td className="px-3 sm:px-6 py-3 sm:py-4">
-                                                    <div className="text-xs sm:text-sm font-medium text-admin">
+                                            <tr onClick={() => toggleExpand(signup)} className="hover:bg-[var(--beheer-accent)]/[0.02] cursor-pointer transition-colors group">
+                                                <td className="px-3 sm:px-6 py-4">
+                                                    <div className="text-sm font-black text-[var(--beheer-text)] uppercase tracking-tight group-hover:text-[var(--beheer-accent)] transition-colors">
                                                         {signup.first_name} {signup.last_name}
                                                     </div>
-                                                    <div className="text-xs sm:text-sm text-admin-muted">{signup.email}</div>
+                                                    <div className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">{signup.email}</div>
                                                 </td>
-                                                <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-admin hidden sm:table-cell">
+                                                <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-xs font-black text-[var(--beheer-text)] uppercase tracking-widest hidden sm:table-cell">
                                                     {signup.date_of_birth ? format(new Date(signup.date_of_birth), 'dd-MM-yyyy') : '-'}
                                                 </td>
-                                                <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap hidden md:table-cell">
-                                                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${signup.role === 'crew' ? 'bg-[var(--theme-purple)]/10 text-[var(--theme-purple)]' : 'bg-[var(--text-light)]/10 text-[var(--text-light)]'}`}>
-                                                        {signup.role === 'crew' ? 'Crew' : 'Deelnemer'}
+                                                <td className="px-3 sm:px-6 py-4 whitespace-nowrap hidden md:table-cell">
+                                                    <span className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full ${signup.role === 'crew' ? 'bg-[var(--beheer-accent)] text-white shadow-sm shadow-[var(--beheer-accent)]/20' : 'bg-[var(--bg-main)] text-[var(--beheer-text-muted)] border border-[var(--beheer-border)]/50'}`}>
+                                                        {signup.role === 'crew' ? 'Crew' : 'User'}
                                                     </span>
                                                 </td>
                                                 <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                                                     {actionStates.status.has(signup.id) ? (
-                                                        <Loader2 className="h-5 w-5 animate-spin text-theme-purple" />
+                                                        <Loader2 className="h-5 w-5 animate-spin text-[var(--beheer-accent)]" />
                                                     ) : (
                                                         <select
                                                             value={signup.status}
                                                             onClick={(e) => e.stopPropagation()}
                                                             onChange={(e) => handleStatusChange(signup.id, e.target.value)}
-                                                            className={`px-1.5 sm:px-2 py-1 text-xs font-semibold rounded-full border-0 ${statusBadge.color} dark:bg-opacity-20 w-full sm:w-auto`}>
+                                                            className={`px-1.5 sm:px-2 py-1 text-[10px] font-black uppercase tracking-widest rounded-full border-0 ${statusBadge.color} dark:bg-opacity-20 w-full sm:w-auto cursor-pointer focus:ring-2 focus:ring-[var(--beheer-accent)]`}>
                                                             <option value="registered">Geregistreerd</option>
                                                             <option value="confirmed">Bevestigd</option>
                                                             <option value="waitlist">Wachtlijst</option>
@@ -395,92 +396,110 @@ export default function AdminReisTableIsland({ initialSignups, initialSignupActi
                                                         </select>
                                                     )}
                                                 </td>
-                                                <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap hidden sm:table-cell">
-                                                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${paymentStatus.color}`}>
+                                                <td className="px-3 sm:px-6 py-4 whitespace-nowrap hidden sm:table-cell">
+                                                    <span className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full ${paymentStatus.color}`}>
                                                         {paymentStatus.label}
                                                     </span>
                                                 </td>
-                                                <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                    <div className="flex justify-end gap-1 sm:gap-2">
+                                                <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-right">
+                                                    <div className="flex justify-end gap-3">
                                                         <button 
                                                             onClick={(e) => { e.stopPropagation(); router.push(`/beheer/reis/deelnemer/${signup.id}`); }}
-                                                            className="text-theme-purple hover:text-theme-purple-dark p-1 sm:p-0" 
+                                                            className="text-[var(--beheer-accent)] hover:opacity-70 transition-all active:scale-90 p-2 bg-[var(--beheer-accent)]/5 rounded-xl border border-[var(--beheer-accent)]/10" 
                                                             title="Bewerken"
                                                         >
-                                                            <Edit className="h-4 w-4 sm:h-5 sm:w-5" />
+                                                            <Edit className="h-4 w-4" />
                                                         </button>
                                                         <button
                                                             onClick={(e) => { e.stopPropagation(); handleDelete(signup.id); }}
                                                             disabled={actionStates.delete.has(signup.id)}
-                                                            className="text-red-600 hover:text-red-800 p-1 sm:p-0 disabled:opacity-50"
+                                                            className="text-[var(--beheer-inactive)] hover:opacity-70 disabled:opacity-50 transition-all active:scale-90 p-2 bg-[var(--beheer-inactive)]/5 rounded-xl border border-[var(--beheer-inactive)]/10"
                                                             title="Verwijderen"
                                                         >
                                                             {actionStates.delete.has(signup.id) ? (
-                                                                <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
+                                                                <Loader2 className="h-4 w-4 animate-spin" />
                                                             ) : (
-                                                                <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
+                                                                <Trash2 className="h-4 w-4" />
                                                             )}
                                                         </button>
-                                                        <button className="text-admin-muted p-1 sm:p-0 focus:outline-none">
-                                                            <span className="text-xs sm:text-sm">{expandedIds.includes(signup.id) ? '▲' : '▼'}</span>
-                                                        </button>
+                                                        <div className="text-[var(--beheer-text-muted)] p-2 hover:text-[var(--beheer-text)] transition-colors">
+                                                            <span className="text-xs transition-transform duration-300 inline-block" style={{ transform: expandedIds.includes(signup.id) ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+                                                        </div>
                                                     </div>
                                                 </td>
                                             </tr>
                                             {expandedIds.includes(signup.id) && (
-                                                <tr className="bg-admin-card-soft">
-                                                    <td colSpan={6} className="px-6 py-4">
-                                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                                                            <div>
-                                                                <p className="text-sm font-semibold text-admin">Contact</p>
-                                                                <p className="text-sm text-admin"><span className="opacity-60">E-mailadres:</span> {signup.email}</p>
-                                                                <p className="text-sm text-admin"><span className="opacity-60">Telefoonnummer:</span> {signup.phone_number || '-'}</p>
-                                                                <p className="text-sm text-admin">ID Type: {signup.id_document === 'passport' ? 'Paspoort' : signup.id_document === 'id_card' ? 'ID Kaart' : (signup.id_document || '-')}</p>
-                                                                <p className="text-sm text-admin">Document nummer: {signup.document_number || '-'}</p>
+                                                <tr className="bg-[var(--bg-main)]/30">
+                                                    <td colSpan={6} className="px-8 py-6">
+                                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
+                                                            <div className="space-y-3">
+                                                                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-accent)]">Contact Gegevens</p>
+                                                                <div className="space-y-1">
+                                                                    <p className="text-xs font-black text-[var(--beheer-text)] uppercase tracking-tight">{signup.email}</p>
+                                                                    <p className="text-xs font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">{signup.phone_number || 'Geen telefoon'}</p>
+                                                                </div>
+                                                                <div className="pt-2">
+                                                                    <p className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">Document: <span className="text-[var(--beheer-text)]">{signup.id_document === 'passport' ? 'Paspoort' : signup.id_document === 'id_card' ? 'ID Kaart' : (signup.id_document || '-')}</span></p>
+                                                                    <p className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">Nummer: <span className="text-[var(--beheer-text)]">{signup.document_number || '-'}</span></p>
+                                                                </div>
                                                             </div>
-                                                            <div>
-                                                                <p className="text-sm font-semibold text-admin">Extra informatie</p>
-                                                                <p className="text-sm text-admin">Allergieën: {signup.allergies || '-'}</p>
-                                                                <p className="text-sm text-admin">Bijzonderheden: {signup.special_notes || '-'}</p>
+                                                            <div className="space-y-3">
+                                                                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-accent)]">Medisch & Info</p>
+                                                                <div>
+                                                                    <p className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] mb-1">Allergieën</p>
+                                                                    <p className="text-xs font-semibold text-[var(--beheer-text)]">{signup.allergies || 'Geen'}</p>
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] mb-1">Bijzonderheden</p>
+                                                                    <p className="text-xs font-semibold text-[var(--beheer-text)]">{signup.special_notes || 'Geen'}</p>
+                                                                </div>
                                                             </div>
-                                                            <div>
-                                                                <p className="text-sm font-semibold text-admin">Activiteiten</p>
-                                                                {signupActivitiesMap[signup.id] ? (
-                                                                    signupActivitiesMap[signup.id].length > 0 ? (
-                                                                        signupActivitiesMap[signup.id].map(a => (
-                                                                            <div key={a.id} className="flex items-center justify-between text-sm text-admin">
-                                                                                <span>{a.trip_activity_id?.name || 'Activiteit ID ' + a.trip_activity_id}</span>
-                                                                            </div>
-                                                                        ))
+                                                            <div className="space-y-3">
+                                                                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-accent)]">Activiteiten</p>
+                                                                <div className="space-y-2">
+                                                                    {signupActivitiesMap[signup.id] ? (
+                                                                        signupActivitiesMap[signup.id].length > 0 ? (
+                                                                            signupActivitiesMap[signup.id].map(a => (
+                                                                                <div key={a.id} className="flex items-center gap-2">
+                                                                                    <div className="h-1.5 w-1.5 rounded-full bg-[var(--beheer-accent)]"></div>
+                                                                                    <span className="text-xs font-black uppercase tracking-tight text-[var(--beheer-text)]">{a.trip_activity_id?.name || 'Activiteit'}</span>
+                                                                                </div>
+                                                                            ))
+                                                                        ) : (
+                                                                            <p className="text-xs text-[var(--beheer-text-muted)] italic">Geen selectie</p>
+                                                                        )
                                                                     ) : (
-                                                                        <p className="text-sm text-admin-muted">Geen activiteiten geselecteerd</p>
-                                                                    )
-                                                                ) : (
-                                                                    <p className="text-sm text-admin-muted">Geen data beschikbaar</p>
-                                                                )}
+                                                                        <p className="text-xs text-[var(--beheer-text-muted)] italic">Laden...</p>
+                                                                    )}
+                                                                </div>
                                                             </div>
                                                         </div>
-
-                                                        <div className="border-t border-admin pt-4 mt-4">
-                                                            <p className="text-sm font-semibold text-admin mb-2">Betaalverzoek versturen (internationaal)</p>
-                                                            <div className="flex flex-col sm:flex-row gap-2">
+ 
+                                                        <div className="border-t border-[var(--beheer-border)]/50 pt-6 mt-6">
+                                                            <p className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] mb-4">Betaalverzoek Handmatig Versturen</p>
+                                                            <div className="flex flex-wrap gap-3">
                                                                 <button
                                                                     onClick={(e) => { e.stopPropagation(); handleResendPaymentEmail(signup.id, 'deposit'); }}
                                                                     disabled={sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'deposit'}
-                                                                    className={`flex items-center justify-center gap-2 px-4 py-2 ${signup.deposit_email_sent ? 'bg-admin-hover text-admin' : 'bg-yellow-600 text-white'} text-sm rounded-lg hover:opacity-80 transition disabled:opacity-50 disabled:cursor-not-allowed`}
+                                                                    className={`flex items-center justify-center gap-3 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${signup.deposit_email_sent ? 'bg-[var(--beheer-card-bg)] text-[var(--beheer-text-muted)] border border-[var(--beheer-border)]' : 'bg-yellow-500/10 text-yellow-600 border border-yellow-500/20 hover:bg-yellow-500/20'}`}
                                                                 >
                                                                     {sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'deposit' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                                                                    Aanbetaling {signup.deposit_email_sent && <span className="ml-1 text-[10px] font-bold uppercase opacity-60">(Verzonden)</span>}
+                                                                    Aanbetaling {signup.deposit_email_sent && <span className="opacity-60">(OK)</span>}
                                                                 </button>
                                                                 <button
                                                                     onClick={(e) => { e.stopPropagation(); handleResendPaymentEmail(signup.id, 'final'); }}
                                                                     disabled={(sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'final') || !trip.allow_final_payments}
-                                                                    className={`flex items-center justify-center gap-2 px-4 py-2 ${signup.final_email_sent ? 'bg-admin-hover text-admin' : 'bg-green-600 text-white'} text-sm rounded-lg hover:opacity-80 transition disabled:opacity-50 disabled:cursor-not-allowed`}
+                                                                    className={`flex items-center justify-center gap-3 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${signup.final_email_sent ? 'bg-[var(--beheer-card-bg)] text-[var(--beheer-text-muted)] border border-[var(--beheer-border)]' : 'bg-[var(--beheer-active)]/10 text-[var(--beheer-active)] border border-[var(--beheer-active)]/20 hover:bg-[var(--beheer-active)]/20'}`}
                                                                 >
                                                                     {sendingEmailTo?.signupId === signup.id && sendingEmailTo?.type === 'final' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                                                                    Restbetaling {signup.final_email_sent && <span className="ml-1 text-[10px] font-bold uppercase opacity-60">(Verzonden)</span>}
+                                                                    Restbetaling {signup.final_email_sent && <span className="opacity-60">(OK)</span>}
                                                                 </button>
-                                                                {!trip.allow_final_payments && <span className="text-[10px] text-red-500 italic flex items-center">Restbetalingen nog niet geopend</span>}
+                                                                {!trip.allow_final_payments && (
+                                                                    <div className="flex items-center gap-2 text-[10px] font-black text-red-500/70 uppercase tracking-widest bg-red-500/5 px-4 py-2 rounded-lg border border-red-500/10">
+                                                                        <AlertCircle className="h-3 w-3" />
+                                                                        Restbetalingen Gesloten
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     </td>

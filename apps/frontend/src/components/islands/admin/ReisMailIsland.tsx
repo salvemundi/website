@@ -145,13 +145,13 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
                             <select 
                                 value={selectedTripId}
                                 onChange={handleTripChange}
-                                className="w-full pl-4 pr-10 py-3 bg-[var(--bg-main)] border-0 ring-1 ring-[var(--border-color)]/50 rounded-xl text-sm font-bold text-[var(--text-main)] focus:ring-2 focus:ring-[var(--theme-purple)] transition-all appearance-none cursor-pointer"
+                                className="w-full pl-4 pr-10 py-3 bg-[var(--bg-main)] border-0 ring-1 ring-[var(--beheer-border)]/50 rounded-xl text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text)] focus:ring-2 focus:ring-[var(--beheer-accent)] transition-all appearance-none cursor-pointer"
                             >
                                 {trips.map(trip => (
                                     <option key={trip.id} value={trip.id}>{trip.name}</option>
                                 ))}
                             </select>
-                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)] pointer-events-none group-hover:text-[var(--theme-purple)] transition-colors" />
+                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--beheer-text-muted)] pointer-events-none group-hover:text-[var(--beheer-accent)] transition-colors" />
                         </div>
                     </Card>
 
@@ -177,25 +177,25 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
                                 <option value="full_paid">Volledig OK</option>
                             </FilterField>
                             <div className="relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--text-muted)]" />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--beheer-text-muted)]" />
                                 <input 
                                     type="text" 
                                     placeholder="Zoek deelnemer..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2 bg-[var(--bg-main)] hover:bg-[var(--border-color)]/5 ring-1 ring-[var(--border-color)]/50 rounded-xl text-[10px] uppercase font-bold tracking-widest text-[var(--text-main)] placeholder:text-[var(--text-muted)] focus:ring-2 focus:ring-[var(--theme-purple)] transition-all"
+                                    className="w-full pl-10 pr-4 py-2.5 bg-[var(--bg-main)] hover:bg-[var(--beheer-border)]/5 border-0 ring-1 ring-[var(--beheer-border)]/50 rounded-xl text-[10px] uppercase font-black tracking-widest text-[var(--beheer-text)] placeholder:text-[var(--beheer-text-muted)] focus:ring-2 focus:ring-[var(--beheer-accent)] transition-all"
                                 />
                             </div>
                         </div>
                     </Card>
 
                     {/* Summary */}
-                    <div className="bg-[var(--theme-purple)]/5 rounded-[var(--radius-xl)] ring-1 ring-[var(--theme-purple)]/20 p-6 shadow-sm">
-                        <div className="flex items-center gap-3 mb-2 text-[var(--theme-purple)]">
+                    <div className="bg-[var(--beheer-accent)]/5 rounded-[var(--beheer-radius)] border border-[var(--beheer-accent)]/20 p-6 shadow-sm">
+                        <div className="flex items-center gap-3 mb-2 text-[var(--beheer-accent)]">
                             <Users className="h-5 w-5" />
                             <span className="text-2xl font-black italic">{filteredRecipients.length}</span>
                         </div>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">
                             Ontvangers geselecteerd
                         </p>
                     </div>
@@ -203,20 +203,20 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
 
                 {/* Right Column: Content Editor */}
                 <div className="lg:col-span-3 space-y-8">
-                    <div className="bg-[var(--bg-card)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)] overflow-hidden">
+                    <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] overflow-hidden">
                         {/* Editor Header */}
-                        <div className="p-8 border-b border-[var(--border-color)]/20 bg-[var(--bg-main)]/30 backdrop-blur-sm">
+                        <div className="p-8 border-b border-[var(--beheer-border)]/50 bg-[var(--bg-main)]/30 backdrop-blur-sm">
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                                 <div className="flex items-center gap-4">
-                                    <div className="h-12 w-12 rounded-2xl bg-[var(--theme-purple)] text-white flex items-center justify-center shadow-lg shadow-[var(--theme-purple)]/20">
+                                    <div className="h-12 w-12 rounded-2xl bg-[var(--beheer-accent)] text-white flex items-center justify-center shadow-lg shadow-[var(--beheer-accent)]/20">
                                         <Mail className="h-6 w-6" />
                                     </div>
                                     <div>
-                                        <h2 className="text-xl font-bold text-[var(--text-main)] italic">Bericht Componeren</h2>
-                                        <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Verzend bulk communicatie</p>
+                                        <h2 className="text-xl font-black text-[var(--beheer-text)] uppercase tracking-tight">Bericht Componeren</h2>
+                                        <p className="text-[10px] font-bold text-[var(--beheer-text-muted)] uppercase tracking-widest">Verzend bulk communicatie</p>
                                     </div>
                                 </div>
-                                <div className="flex bg-[var(--bg-main)] p-1.5 rounded-2xl ring-1 ring-[var(--border-color)]/50 shadow-inner">
+                                <div className="flex bg-[var(--bg-main)]/50 p-2 rounded-2xl border border-[var(--beheer-border)]/30 shadow-inner">
                                     <TypeTab active={emailType === 'custom'} onClick={() => setEmailType('custom')}>Custom</TypeTab>
                                     <TypeTab active={emailType === 'deposit_request'} onClick={() => setEmailType('deposit_request')}>Deposit</TypeTab>
                                     <TypeTab active={emailType === 'final_request'} onClick={() => setEmailType('final_request')}>Final</TypeTab>
@@ -235,7 +235,7 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
                                             placeholder="Bijv: Belangrijke update over de reis"
                                             value={subject}
                                             onChange={(e) => setSubject(e.target.value)}
-                                            className="w-full px-6 py-4 bg-[var(--bg-main)]/50 border-0 ring-1 ring-[var(--border-color)]/30 rounded-2xl text-base text-[var(--text-main)] focus:ring-2 focus:ring-[var(--theme-purple)] transition-all font-semibold"
+                                            className="w-full px-6 py-4 bg-[var(--bg-main)]/50 border-0 ring-1 ring-[var(--beheer-border)]/30 rounded-2xl text-base text-[var(--beheer-text)] focus:ring-2 focus:ring-[var(--beheer-accent)] transition-all font-semibold"
                                         />
                                     </div>
                                     <div className="space-y-2">
@@ -245,7 +245,7 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
                                             placeholder="Typ hier je bericht..."
                                             value={message}
                                             onChange={(e) => setMessage(e.target.value)}
-                                            className="w-full px-6 py-4 bg-[var(--bg-main)]/50 border-0 ring-1 ring-[var(--border-color)]/30 rounded-2xl text-base text-[var(--text-main)] focus:ring-2 focus:ring-[var(--theme-purple)] transition-all resize-none custom-scrollbar"
+                                            className="w-full px-6 py-4 bg-[var(--bg-main)]/50 border-0 ring-1 ring-[var(--beheer-border)]/30 rounded-2xl text-base text-[var(--beheer-text)] focus:ring-2 focus:ring-[var(--beheer-accent)] transition-all resize-none custom-scrollbar"
                                         />
                                     </div>
                                 </div>
@@ -278,10 +278,10 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
                                 <button
                                     onClick={handleSend}
                                     disabled={sending || filteredRecipients.length === 0 || (emailType === 'custom' && (!subject.trim() || !message.trim()))}
-                                    className="px-12 py-5 bg-[var(--theme-purple)] hover:opacity-95 text-white rounded-2xl font-bold shadow-2xl shadow-[var(--theme-purple)]/30 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-3 group"
+                                    className="px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] hover:opacity-95 text-white rounded-[var(--beheer-radius)] font-black uppercase tracking-widest text-lg shadow-2xl shadow-[var(--beheer-accent)]/30 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-4 group"
                                 >
                                     {sending ? <Loader2 className="h-6 w-6 animate-spin" /> : <Send className="h-6 w-6 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />}
-                                    <span className="text-xl italic">Verzenden</span>
+                                    <span className="italic">Verzenden</span>
                                 </button>
                             </div>
                         </div>
@@ -294,10 +294,10 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
 
 function Card({ title, icon, children }: any) {
     return (
-        <div className="bg-[var(--bg-card)] rounded-[var(--radius-xl)] shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)] p-6">
-            <div className="flex items-center gap-2 mb-4 text-[var(--text-muted)]">
+        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-lg border border-[var(--beheer-border)] p-6">
+            <div className="flex items-center gap-2 mb-4 text-[var(--beheer-text-muted)]">
                 {icon}
-                <span className="text-[10px] font-bold uppercase tracking-widest">{title}</span>
+                <span className="text-[10px] font-black uppercase tracking-widest">{title}</span>
             </div>
             {children}
         </div>
@@ -312,11 +312,11 @@ function FilterField({ label, value, onChange, children }: any) {
                 <select 
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
-                    className="w-full pl-3 pr-8 py-2 bg-[var(--bg-main)] border-0 ring-1 ring-[var(--border-color)]/30 rounded-xl text-xs font-bold text-[var(--text-subtle)] focus:ring-2 focus:ring-[var(--theme-purple)] transition-all appearance-none cursor-pointer"
+                    className="w-full pl-3 pr-8 py-2.5 bg-[var(--bg-main)] border-0 ring-1 ring-[var(--beheer-border)]/50 rounded-xl text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text)] focus:ring-2 focus:ring-[var(--beheer-accent)] transition-all appearance-none cursor-pointer"
                 >
                     {children}
                 </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-light)] pointer-events-none group-hover:text-[var(--theme-purple)] transition-colors" />
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--beheer-text-muted)] pointer-events-none group-hover:text-[var(--beheer-accent)] transition-colors" />
             </div>
         </div>
     );
@@ -326,10 +326,10 @@ function TypeTab({ active, onClick, children }: any) {
     return (
         <button 
             onClick={onClick}
-            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+            className={`px-4 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
                 active 
-                    ? 'bg-[var(--bg-card)] shadow-sm text-[var(--theme-purple)] ring-1 ring-[var(--border-color)]/20' 
-                    : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'
+                    ? 'bg-[var(--beheer-accent)] shadow-sm text-white' 
+                    : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)]'
             }`}
         >
             {children}

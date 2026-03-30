@@ -79,23 +79,23 @@ export default function ReisActiviteitenIsland({
     return (
         <div className="container mx-auto px-4 py-8 max-w-6xl animate-in fade-in duration-500">
             {/* Trip Selector Card */}
-            <div className="bg-[var(--bg-card)]/80 backdrop-blur-md rounded-[var(--radius-2xl)] shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)] p-6 mb-8 transition-all hover:shadow-[var(--shadow-glow)]">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="bg-[var(--beheer-card-bg)]/80 backdrop-blur-md rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] p-8 mb-10 transition-all hover:shadow-[var(--shadow-glow)]">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
                     <div className="flex-1">
-                        <label className="block text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-2 px-1">
+                        <label className="block text-[10px] font-bold uppercase tracking-widest text-[var(--beheer-text-muted)] mb-3 px-1">
                             Selecteer Reis
                         </label>
                         <div className="relative group">
                             <select
                                 value={selectedTripId}
                                 onChange={handleTripChange}
-                                className="w-full pl-4 pr-10 py-3 bg-[var(--bg-main)] border-0 ring-1 ring-[var(--border-color)] rounded-[var(--radius-xl)] text-[var(--text-main)] font-semibold focus:ring-2 focus:ring-[var(--theme-purple)] transition-all appearance-none cursor-pointer"
+                                className="w-full pl-6 pr-12 py-4 bg-[var(--bg-main)] border-0 ring-1 ring-[var(--beheer-border)]/50 rounded-[var(--radius-xl)] text-[var(--beheer-text)] font-black uppercase tracking-widest text-xs focus:ring-2 focus:ring-[var(--beheer-accent)] transition-all appearance-none cursor-pointer"
                             >
                                 {trips.map(trip => (
                                     <option key={trip.id} value={trip.id}>{trip.name}</option>
                                 ))}
                             </select>
-                            <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 rotate-90 h-5 w-5 text-[var(--text-muted)] pointer-events-none group-hover:text-[var(--theme-purple)] transition-colors" />
+                            <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 rotate-90 h-5 w-5 text-[var(--beheer-text-muted)] pointer-events-none group-hover:text-[var(--beheer-accent)] transition-colors" />
                         </div>
                     </div>
                     
@@ -104,9 +104,9 @@ export default function ReisActiviteitenIsland({
                             setIsAddingNew(true);
                             setEditingActivity(null);
                         }}
-                        className="flex items-center justify-center gap-2 px-8 py-4 bg-[var(--theme-purple)] hover:opacity-90 text-white rounded-[var(--radius-xl)] font-bold shadow-lg shadow-[var(--theme-purple)]/20 transition-all active:scale-95"
+                        className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] hover:opacity-90 text-white rounded-[var(--beheer-radius)] font-black uppercase tracking-widest text-xs shadow-lg shadow-[var(--beheer-accent)]/20 transition-all active:scale-95"
                     >
-                        <Plus className="h-5 w-5" />
+                        <Plus className="h-4 w-4" />
                         Nieuwe Activiteit
                     </button>
                 </div>
@@ -170,7 +170,7 @@ export default function ReisActiviteitenIsland({
 
 function ActivityCard({ activity, signupCount, onEdit, onDelete, onViewSignups }: any) {
     return (
-        <div className="group bg-[var(--bg-card)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)] overflow-hidden flex flex-col transition-all hover:ring-[var(--theme-purple)]/50 hover:shadow-[var(--shadow-glow)]">
+        <div className="group bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-lg border border-[var(--beheer-border)] overflow-hidden flex flex-col transition-all hover:ring-[var(--beheer-accent)]/50 hover:shadow-[var(--shadow-glow)]">
             {activity.image && (
                 <div className="relative h-48 w-full overflow-hidden bg-[var(--bg-main)]">
                     <img 
@@ -179,7 +179,7 @@ function ActivityCard({ activity, signupCount, onEdit, onDelete, onViewSignups }
                         className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" 
                     />
                     {!activity.is_active && (
-                        <div className="absolute top-4 right-4 px-3 py-1 bg-[var(--bg-card)]/80 text-[var(--text-main)] text-[10px] font-bold uppercase tracking-widest rounded-full backdrop-blur-sm ring-1 ring-[var(--border-color)]/20">
+                        <div className="absolute top-4 right-4 px-3 py-1 bg-[var(--beheer-card-bg)]/80 text-[var(--beheer-text)] text-[10px] font-black uppercase tracking-widest rounded-full backdrop-blur-sm border border-[var(--beheer-border)]/20">
                             Inactief
                         </div>
                     )}
@@ -188,14 +188,14 @@ function ActivityCard({ activity, signupCount, onEdit, onDelete, onViewSignups }
 
             <div className="p-6 flex-1 flex flex-col">
                 <div className="flex justify-between items-start mb-3">
-                    <h3 className="text-lg font-bold text-[var(--text-main)] leading-tight">{activity.name}</h3>
-                    <div className="px-3 py-1 bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] text-sm font-bold rounded-lg shrink-0">
+                    <h3 className="text-xl font-black text-[var(--beheer-text)] tracking-tight leading-tight group-hover:text-[var(--beheer-accent)] transition-colors">{activity.name}</h3>
+                    <div className="px-3 py-1 bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] text-sm font-black italic rounded-lg shrink-0">
                         €{activity.price.toFixed(2)}
                     </div>
                 </div>
 
                 {activity.description && (
-                    <p className="text-sm text-[var(--text-subtle)] mb-6 line-clamp-2">
+                    <p className="text-sm text-[var(--beheer-text-muted)] mb-6 line-clamp-2">
                         {activity.description}
                     </p>
                 )}
@@ -203,23 +203,23 @@ function ActivityCard({ activity, signupCount, onEdit, onDelete, onViewSignups }
                 <div className="mt-auto space-y-3">
                     <button
                         onClick={onViewSignups}
-                        className="w-full flex items-center justify-center gap-2 py-3 bg-[var(--bg-main)] hover:bg-[var(--theme-purple)]/10 text-[var(--text-subtle)] hover:text-[var(--theme-purple)] rounded-[var(--radius-xl)] font-bold text-sm transition-all ring-1 ring-[var(--border-color)] hover:ring-[var(--theme-purple)]/30"
+                        className="w-full flex items-center justify-center gap-2 py-3 bg-[var(--bg-main)] hover:bg-[var(--beheer-accent)]/10 text-[var(--beheer-text-muted)] hover:text-[var(--beheer-accent)] rounded-[var(--beheer-radius)] font-black uppercase tracking-widest text-[10px] transition-all border border-[var(--beheer-border)] hover:border-[var(--beheer-accent)]/30"
                     >
-                        <Users className="h-4 w-4" />
+                        <Users className="h-3.5 w-3.5" />
                         Inschrijvingen ({signupCount})
                     </button>
                     
                     <div className="flex gap-2">
                         <button
                             onClick={onEdit}
-                            className="flex-1 flex items-center justify-center gap-2 py-3 border-2 border-[var(--bg-main)] hover:border-[var(--theme-purple)]/30 text-[var(--text-light)] hover:text-[var(--theme-purple)] rounded-[var(--radius-xl)] font-bold text-sm transition-all"
+                            className="flex-1 flex items-center justify-center gap-2 py-3 bg-[var(--bg-main)] hover:bg-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] font-black uppercase tracking-widest text-[10px] transition-all border border-[var(--beheer-border)]"
                         >
-                            <Edit2 className="h-4 w-4" />
+                            <Edit2 className="h-3.5 w-3.5" />
                             Bewerken
                         </button>
                         <button
                             onClick={onDelete}
-                            className="p-3 border-2 border-[var(--bg-main)] hover:border-red-500/30 text-[var(--text-light)] hover:text-red-500 rounded-[var(--radius-xl)] transition-all"
+                            className="p-3 bg-[var(--beheer-inactive)]/5 hover:bg-[var(--beheer-inactive)]/10 text-[var(--beheer-inactive)] rounded-[var(--beheer-radius)] transition-all border border-[var(--beheer-inactive)]/20"
                         >
                             <Trash2 className="h-4 w-4" />
                         </button>
@@ -251,15 +251,15 @@ function ActivityForm({ activity, tripId, onCancel, onSuccess }: any) {
     }, [state?.success, onSuccess]);
 
     return (
-        <form action={formAction} className="bg-[var(--bg-card)] rounded-[var(--radius-2xl)] shadow-2xl ring-1 ring-[var(--border-color)] p-8 animate-in slide-in-from-bottom-4 duration-500">
+        <form action={formAction} className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-2xl border border-[var(--beheer-border)] p-8 animate-in slide-in-from-bottom-4 duration-500">
             <input type="hidden" name="trip_id" value={tripId} />
             <input type="hidden" name="options" value={JSON.stringify(options)} />
 
-            <div className="flex items-center justify-between mb-8 pb-4 border-b border-[var(--border-color)]/30">
-                <h2 className="text-2xl font-bold text-[var(--text-main)]">
+            <div className="flex items-center justify-between mb-8 pb-4 border-b border-[var(--beheer-border)]/30">
+                <h2 className="text-2xl font-black text-[var(--beheer-text)] uppercase tracking-tight">
                     {activity ? 'Activiteit Bewerken' : 'Nieuwe Activiteit'}
                 </h2>
-                <button type="button" onClick={onCancel} className="p-2 text-[var(--text-light)] hover:text-[var(--text-main)] transition-colors">
+                <button type="button" onClick={onCancel} className="p-2 text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] transition-colors">
                     <X className="h-6 w-6" />
                 </button>
             </div>
@@ -472,46 +472,46 @@ function ActivityForm({ activity, tripId, onCancel, onSuccess }: any) {
 function SignupsModal({ activity, signups, onClose }: any) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--bg-main)]/60 backdrop-blur-md animate-in fade-in duration-300">
-            <div className="bg-[var(--bg-card)] w-full max-w-2xl rounded-[var(--radius-2xl)] shadow-2xl overflow-hidden flex flex-col max-h-[85vh] ring-1 ring-[var(--border-color)] animate-in zoom-in-95 duration-300">
-                <div className="p-6 border-b border-[var(--border-color)]/30 flex items-center justify-between">
+            <div className="bg-[var(--beheer-card-bg)] w-full max-w-2xl rounded-[var(--beheer-radius)] shadow-2xl overflow-hidden flex flex-col max-h-[85vh] border border-[var(--beheer-border)] animate-in zoom-in-95 duration-300">
+                <div className="p-6 border-b border-[var(--beheer-border)]/30 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-[var(--radius-xl)] bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] flex items-center justify-center">
+                        <div className="h-10 w-10 rounded-[var(--radius-xl)] bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] flex items-center justify-center">
                             <Users className="h-6 w-6" />
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold text-[var(--text-main)] leading-tight">Inschrijvingen</h2>
-                            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">{activity.name}</p>
+                            <h2 className="text-xl font-black text-[var(--beheer-text)] uppercase tracking-tight leading-tight">Inschrijvingen</h2>
+                            <p className="text-[10px] font-bold text-[var(--beheer-text-muted)] uppercase tracking-widest">{activity.name}</p>
                         </div>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-[var(--bg-main)] rounded-xl transition-colors">
-                        <X className="h-6 w-6 text-[var(--text-light)]" />
+                        <X className="h-6 w-6 text-[var(--beheer-text-muted)]" />
                     </button>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-6">
                     {signups.length === 0 ? (
                         <div className="text-center py-20">
-                            <Info className="h-10 w-10 text-[var(--text-light)]/50 mx-auto mb-4" />
-                            <p className="text-[var(--text-muted)] font-medium">Nog geen inschrijvingen voor deze activiteit.</p>
+                            <Info className="h-10 w-10 text-[var(--beheer-text-muted)]/50 mx-auto mb-4" />
+                            <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-[10px]">Nog geen inschrijvingen voor deze activiteit.</p>
                         </div>
                     ) : (
                         <div className="space-y-3">
                             {signups.map((s: any) => (
-                                <div key={s.id} className="p-4 bg-[var(--bg-main)]/50 rounded-[var(--radius-xl)] ring-1 ring-[var(--border-color)]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:bg-[var(--bg-main)]">
+                                <div key={s.id} className="p-4 bg-[var(--bg-main)]/50 rounded-[var(--radius-xl)] border border-[var(--beheer-border)]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:bg-[var(--bg-main)]">
                                     <div>
-                                        <p className="font-bold text-[var(--text-main)]">
+                                        <p className="font-black text-[var(--beheer-text)] uppercase tracking-tight text-sm">
                                             {s.trip_signup_id?.first_name} {s.trip_signup_id?.last_name}
                                         </p>
-                                        <p className="text-xs text-[var(--text-muted)]">{s.trip_signup_id?.email}</p>
+                                        <p className="text-[10px] font-bold text-[var(--beheer-text-muted)] uppercase tracking-widest">{s.trip_signup_id?.email}</p>
                                     </div>
                                     {s.selected_options && (
                                         <div className="flex flex-wrap gap-2">
                                             {Array.isArray(s.selected_options) ? s.selected_options.map((opt: string, i: number) => (
-                                                <span key={i} className="px-2 py-1 bg-[var(--bg-card)] text-[10px] font-bold text-[var(--theme-purple)] rounded-lg ring-1 ring-[var(--theme-purple)]/20 uppercase">
+                                                <span key={i} className="px-2 py-1 bg-[var(--beheer-card-bg)] text-[10px] font-black text-[var(--beheer-accent)] rounded-lg border border-[var(--beheer-accent)]/20 uppercase tracking-widest">
                                                     {opt}
                                                 </span>
                                             )) : (
-                                                <span className="px-2 py-1 bg-[var(--bg-card)] text-[10px] font-bold text-[var(--theme-purple)] rounded-lg ring-1 ring-[var(--theme-purple)]/20 uppercase">
+                                                <span className="px-2 py-1 bg-[var(--beheer-card-bg)] text-[10px] font-black text-[var(--beheer-accent)] rounded-lg border border-[var(--beheer-accent)]/20 uppercase tracking-widest">
                                                     {s.selected_options}
                                                 </span>
                                             )}
@@ -523,11 +523,11 @@ function SignupsModal({ activity, signups, onClose }: any) {
                     )}
                 </div>
 
-                <div className="p-6 border-t border-[var(--border-color)]/30 flex items-center justify-between bg-[var(--bg-main)]/50">
-                    <div className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">
-                        Totaal: <span className="text-[var(--text-main)]">{signups.length}</span>
+                <div className="p-6 border-t border-[var(--beheer-border)]/30 flex items-center justify-between bg-[var(--bg-main)]/50">
+                    <div className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">
+                        Totaal: <span className="text-[var(--beheer-text)]">{signups.length}</span>
                     </div>
-                    <button onClick={onClose} className="px-6 py-2 bg-[var(--border-color)]/20 hover:bg-[var(--border-color)]/40 text-[var(--text-main)] rounded-xl font-bold text-sm transition-all">
+                    <button onClick={onClose} className="px-6 py-2 bg-[var(--beheer-border)]/20 hover:bg-[var(--beheer-border)]/40 text-[var(--beheer-text)] rounded-xl font-black uppercase tracking-widest text-[10px] transition-all">
                         Sluiten
                     </button>
                 </div>

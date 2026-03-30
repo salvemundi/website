@@ -1,8 +1,8 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import PageHeader from '@/components/ui/layout/PageHeader';
+import AnimatedBeheerHeader from '@/components/ui/admin/AnimatedBeheerHeader';
 import ReisMailIsland from '@/components/islands/admin/ReisMailIsland';
-import { Loader2 } from 'lucide-react';
+import { Send, Loader2 } from 'lucide-react';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 import { notFound } from 'next/navigation';
@@ -17,21 +17,23 @@ export const metadata: Metadata = {
 
 export default async function ReisMailPage({ searchParams }: PageProps) {
     return (
-        <div className="min-h-screen bg-[var(--bg-main)]">
-            <PageHeader 
+        <main className="min-h-screen bg-[var(--bg-main)]">
+            <AnimatedBeheerHeader 
                 title="Bulk Mail: Reis" 
-                description="Verstuur e-mails naar groepen deelnemers"
+                subtitle="Verstuur gepersonaliseerde e-mails of betalingsherinneringen naar groepen deelnemers."
                 backLink="/beheer/reis"
+                icon={<Send className="h-8 w-8" />}
             />
             
             <Suspense fallback={
-                <div className="flex justify-center py-20">
-                    <Loader2 className="animate-spin h-10 w-10 text-[var(--theme-purple)]" />
+                <div className="flex flex-col items-center justify-center py-32">
+                    <Loader2 className="animate-spin h-12 w-12 text-[var(--beheer-accent)] mb-4" />
+                    <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-xs">Mailsysteem laden...</p>
                 </div>
             }>
                 <MailDataWrapper searchParams={searchParams} />
             </Suspense>
-        </div>
+        </main>
     );
 }
 

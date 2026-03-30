@@ -285,25 +285,25 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-                    {/* Visibility Toggle - Kroegentocht Style */}
-                    <div className="flex items-center gap-3 px-4 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-xl)]">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-subtle)]">Zichtbaarheid</span>
+                    {/* Visibility Toggle - Beheer Page Tokens */}
+                    <div className="flex items-center gap-3 px-4 py-2 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] shadow-sm">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">Zichtbaarheid</span>
                         <button
                             onClick={handleToggleVisibility}
                             disabled={togglingVisibility}
-                            className={`w-12 h-6 rounded-full p-1 transition-colors relative flex items-center ${introVisible ? 'bg-green-500' : 'bg-red-500'} disabled:opacity-50`}
+                            className={`w-12 h-6 rounded-full p-1 transition-colors relative flex items-center ${introVisible ? 'bg-[var(--beheer-active)]' : 'bg-[var(--beheer-inactive)]'} disabled:opacity-50 hover:opacity-90 active:scale-95 transition-all`}
                         >
                             {togglingVisibility ? (
                                 <Loader2 className="h-4 w-4 animate-spin text-white mx-auto" />
                             ) : (
-                                <div className={`w-4 h-4 bg-white rounded-full transition-transform ${introVisible ? 'translate-x-[1.5rem]' : 'translate-x-0'}`} />
+                                <div className={`w-4 h-4 bg-white rounded-full transition-transform ${introVisible ? 'translate-x-[1.5rem]' : 'translate-x-0'} shadow-sm`} />
                             )}
                         </button>
                     </div>
 
                     <button 
                         onClick={() => setShowNotifModal(true)}
-                        className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-[var(--theme-purple)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--radius-xl)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
+                        className="flex-1 md:flex-none flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
                     >
                         <Bell className="h-4 w-4" />
                         Notificatie
@@ -311,18 +311,46 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                 </div>
             </div>
 
-            {/* Tabs */}
-            <div className="flex flex-wrap gap-0 border-b border-[var(--border-color)] mb-8">
-                <button onClick={() => setActiveTab('signups')} className={tabClass('signups')}>
+            {/* Tabs - Tokenized */}
+            <div className="flex flex-wrap gap-0 border-b border-[var(--beheer-border)] mb-8">
+                <button 
+                    onClick={() => setActiveTab('signups')} 
+                    className={`flex items-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] font-black text-xs uppercase tracking-widest transition-all border-b-2 ${
+                        activeTab === 'signups' 
+                            ? 'text-[var(--beheer-accent)] border-[var(--beheer-accent)]' 
+                            : 'text-[var(--beheer-text-muted)] border-transparent hover:text-[var(--beheer-text)]'
+                    }`}
+                >
                     <Users className="h-4 w-4" /> Aanmeldingen ({signups.length})
                 </button>
-                <button onClick={() => setActiveTab('parents')} className={tabClass('parents')}>
+                <button 
+                    onClick={() => setActiveTab('parents')} 
+                    className={`flex items-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] font-black text-xs uppercase tracking-widest transition-all border-b-2 ${
+                        activeTab === 'parents' 
+                            ? 'text-[var(--beheer-accent)] border-[var(--beheer-accent)]' 
+                            : 'text-[var(--beheer-text-muted)] border-transparent hover:text-[var(--beheer-text)]'
+                    }`}
+                >
                     <Heart className="h-4 w-4" /> Ouders ({parents.length})
                 </button>
-                <button onClick={() => setActiveTab('blogs')} className={tabClass('blogs')}>
+                <button 
+                    onClick={() => setActiveTab('blogs')} 
+                    className={`flex items-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] font-black text-xs uppercase tracking-widest transition-all border-b-2 ${
+                        activeTab === 'blogs' 
+                            ? 'text-[var(--beheer-accent)] border-[var(--beheer-accent)]' 
+                            : 'text-[var(--beheer-text-muted)] border-transparent hover:text-[var(--beheer-text)]'
+                    }`}
+                >
                     <FileText className="h-4 w-4" /> Blogs ({blogs.length})
                 </button>
-                <button onClick={() => setActiveTab('planning')} className={tabClass('planning')}>
+                <button 
+                    onClick={() => setActiveTab('planning')} 
+                    className={`flex items-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] font-black text-xs uppercase tracking-widest transition-all border-b-2 ${
+                        activeTab === 'planning' 
+                            ? 'text-[var(--beheer-accent)] border-[var(--beheer-accent)]' 
+                            : 'text-[var(--beheer-text-muted)] border-transparent hover:text-[var(--beheer-text)]'
+                    }`}
+                >
                     <Calendar className="h-4 w-4" /> Planning ({planning.length})
                 </button>
             </div>
@@ -332,13 +360,13 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                 <div>
                     <div className="flex flex-col sm:flex-row gap-3 mb-5">
                         <div className="flex-1 relative">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)]" />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--beheer-text-muted)]" />
                             <input
                                 type="text"
                                 placeholder="Zoek op naam, email of telefoon..."
                                 value={signupSearch}
                                 onChange={e => setSignupSearch(e.target.value)}
-                                className="w-full pl-11 pr-4 py-3 rounded-[var(--radius-xl)] bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] text-sm focus:ring-2 focus:ring-[var(--theme-purple)] focus:outline-none transition-all"
+                                className="w-full pl-11 pr-4 py-3 rounded-[var(--beheer-radius)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] text-sm focus:ring-2 focus:ring-[var(--beheer-accent)] focus:outline-none transition-all"
                             />
                         </div>
                         <button 
@@ -346,14 +374,14 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                                 const emails = signups.map(s => s.email).join(',');
                                 window.location.href = `mailto:?bcc=${emails}&subject=Intro${encodeURIComponent(' Aanmeldingen')}`;
                             }} 
-                            className="flex items-center justify-center gap-2 px-6 py-3 bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] rounded-[var(--radius-xl)] text-xs font-black uppercase tracking-widest hover:border-[var(--theme-purple)]/50 transition-all active:scale-95"
+                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-xs font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95"
                         >
-                            <Mail className="h-4 w-4 text-[var(--theme-purple)]" /> 
+                            <Mail className="h-4 w-4 text-[var(--beheer-accent)]" /> 
                             Mail BCC
                         </button>
                         <button 
                             onClick={exportSignupsToCSV} 
-                            className="flex items-center justify-center gap-2 px-6 py-3 bg-[var(--theme-purple)] text-white rounded-[var(--radius-xl)] text-xs font-black uppercase tracking-widest shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
+                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white rounded-[var(--beheer-radius)] text-xs font-black uppercase tracking-widest shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
                         >
                             <Download className="h-4 w-4" /> 
                             Export CSV
