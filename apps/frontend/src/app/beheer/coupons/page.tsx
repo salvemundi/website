@@ -1,8 +1,9 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
+import { Ticket, Loader2 } from 'lucide-react';
 
-import PageHeader from '@/components/ui/layout/PageHeader';
 import CouponManagementIsland from '@/components/islands/admin/CouponManagementIsland';
 import { auth } from '@/server/auth/auth';
 import { getCoupons } from '@/server/actions/admin-coupons.actions';
@@ -18,13 +19,36 @@ export default async function BeheerCouponsPage() {
     const coupons = await getCoupons().catch(() => []);
 
     return (
-        <div className="min-h-screen bg-[var(--bg-main)]">
-            <PageHeader
-                title="Coupons Beheer"
-                description="Beheer kortingscodes en acties voor het lidmaatschap."
-                backLink="/beheer"
-            />
-            <CouponManagementIsland initialCoupons={coupons} />
+        <main className="min-h-screen bg-[var(--bg-main)]">
+            {/* Page Header Area - Premium Consistency */}
+            <div className="bg-[var(--bg-card)] border-b border-[var(--border-color)]">
+                <div className="container mx-auto px-4 py-16 max-w-7xl">
+                    <div className="flex items-center gap-5 mb-4">
+                        <div className="h-14 w-14 rounded-[var(--radius-2xl)] bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] flex items-center justify-center shadow-2xl shadow-[var(--theme-purple)]/10 animate-pulse">
+                            <Ticket className="h-8 w-8" />
+                        </div>
+                        <h1 className="text-5xl font-black text-[var(--text-main)] tracking-widest uppercase">
+                            Cou<span className="text-[var(--theme-purple)]">pons</span>
+                        </h1>
+                    </div>
+                    <p className="text-[var(--text-subtle)] text-xl max-w-3xl leading-relaxed font-medium">
+                        Beheer kortingscodes en acties voor het lidmaatschap.
+                    </p>
+                </div>
+            </div>
+            
+            <Suspense fallback={<CouponPageLoader />}>
+                <CouponManagementIsland initialCoupons={coupons} />
+            </Suspense>
+        </main>
+    );
+}
+
+function CouponPageLoader() {
+    return (
+        <div className="container mx-auto px-4 py-16 flex flex-col items-center justify-center">
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-[var(--theme-purple)]/20 border-t-[var(--theme-purple)] mb-4" />
+            <p className="text-[var(--text-muted)] font-bold uppercase tracking-widest text-xs">Coupons laden...</p>
         </div>
     );
 }

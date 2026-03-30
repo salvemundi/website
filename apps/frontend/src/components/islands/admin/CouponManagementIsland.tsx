@@ -1,9 +1,13 @@
 'use client';
 
-import { useState, useTransition, useMemo } from 'react';
+import { 
+    useState, useTransition, useMemo 
+} from 'react';
+import Link from 'next/link';
 import {
     Ticket, Plus, Percent, CheckCircle, XCircle, Trash2, Euro, Calendar,
-    Loader2, X, AlertCircle, Save, ToggleLeft, ToggleRight
+    Loader2, X, AlertCircle, Save, ToggleLeft, ToggleRight,
+    ChevronLeft
 } from 'lucide-react';
 import type { Coupon } from '@/server/actions/admin-coupons.actions';
 import { getComputedCouponStatus } from '@/lib/coupon-utils';
@@ -84,24 +88,41 @@ export default function CouponManagementIsland({ initialCoupons }: Props) {
     };
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-7xl">
-            {/* Header action bar */}
-            <div className="flex justify-end mb-6">
-                {showForm ? (
-                    <button
-                        onClick={() => { setShowForm(false); setFormError(null); }}
-                        className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-[var(--border-color)] text-[var(--text-muted)] font-bold text-sm hover:bg-[var(--border-color)] transition"
+        <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {/* Top Toolbar - Replicated from Kroegentocht style */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
+                <div className="flex items-center gap-4">
+                    <Link 
+                        href="/beheer" 
+                        className="p-3 rounded-[var(--radius-xl)] bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--theme-purple)] transition-all active:scale-90"
                     >
-                        <X className="h-4 w-4" /> Annuleren
-                    </button>
-                ) : (
-                    <button
-                        onClick={() => setShowForm(true)}
-                        className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[var(--theme-purple)] text-white font-bold text-sm shadow-md hover:shadow-lg hover:-translate-y-0.5 transition"
-                    >
-                        <Plus className="h-4 w-4" /> Nieuwe Coupon
-                    </button>
-                )}
+                        <ChevronLeft className="h-5 w-5" />
+                    </Link>
+                    <div>
+                        <h1 className="text-3xl font-black text-[var(--text-main)] tracking-tighter uppercase">Coupons <span className="text-[var(--theme-purple)]">Beheer</span></h1>
+                        <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Beheer kortingscodes en acties</p>
+                    </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                    {showForm ? (
+                        <button
+                            onClick={() => { setShowForm(false); setFormError(null); }}
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-[var(--radius-xl)] bg-[var(--bg-card)] border border-[var(--border-color)] text-xs font-black uppercase tracking-widest text-[var(--text-muted)] hover:border-[var(--theme-purple)]/50 transition-all active:scale-95"
+                        >
+                            <X className="h-4 w-4" /> 
+                            Annuleren
+                        </button>
+                    ) : (
+                        <button
+                            onClick={() => setShowForm(true)}
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-[var(--radius-xl)] bg-[var(--theme-purple)] text-white font-black text-xs uppercase tracking-widest shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
+                        >
+                            <Plus className="h-4 w-4" /> 
+                            Nieuwe Coupon
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* Create Form */}
@@ -202,11 +223,19 @@ export default function CouponManagementIsland({ initialCoupons }: Props) {
                         <label htmlFor="is_active" className="text-sm font-medium text-[var(--text-main)]">Direct actief</label>
                     </div>
 
-                    <div className="flex justify-end gap-3 pt-2 border-t border-[var(--border-color)]">
-                        <button type="button" onClick={() => { setShowForm(false); setFormError(null); }} className="px-5 py-2.5 rounded-full text-sm font-bold text-[var(--text-muted)] hover:bg-[var(--border-color)] transition">
+                    <div className="flex justify-end gap-3 pt-6 border-t border-[var(--border-color)]">
+                        <button 
+                            type="button" 
+                            onClick={() => { setShowForm(false); setFormError(null); }} 
+                            className="px-6 py-3 rounded-[var(--radius-xl)] text-xs font-black uppercase tracking-widest text-[var(--text-muted)] hover:bg-[var(--bg-card-soft)] border border-transparent hover:border-[var(--border-color)] transition-all"
+                        >
                             Annuleren
                         </button>
-                        <button type="submit" disabled={isPending} className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-[var(--theme-purple)] text-white font-bold text-sm shadow hover:shadow-lg hover:-translate-y-0.5 transition disabled:opacity-60 disabled:translate-y-0">
+                        <button 
+                            type="submit" 
+                            disabled={isPending} 
+                            className="flex items-center justify-center gap-2 px-6 py-3 bg-[var(--theme-purple)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--radius-xl)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 disabled:opacity-50"
+                        >
                             {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                             {isPending ? 'Opslaan...' : 'Coupon Opslaan'}
                         </button>
