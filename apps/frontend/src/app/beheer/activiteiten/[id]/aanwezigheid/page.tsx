@@ -1,8 +1,14 @@
 import { Suspense } from 'react';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getActivityById } from '@/server/actions/activiteit-actions';
 import AttendanceIsland from '@/components/islands/activities/AttendanceIsland';
-import PageHeader from '@/components/ui/layout/PageHeader';
+import AnimatedBeheerHeader from '@/components/ui/admin/AnimatedBeheerHeader';
+import { ClipboardCheck, Loader2 } from 'lucide-react';
+
+export const metadata: Metadata = {
+    title: 'Aanwezigheidsbeheer | SV Salve Mundi',
+};
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -10,18 +16,17 @@ interface PageProps {
 
 async function AttendanceData({ id }: { id: string }) {
     const activity = await getActivityById(id);
-    if (!activity) notFound();
+    if (!activity) return notFound();
 
     return (
-        <div className="w-full space-y-8">
-            <PageHeader 
-                title="Aanwezigheidsbeheer"
-                description={activity.titel}
-                variant="centered"
-                contentPadding="py-12"
-                backgroundImage="/img/backgrounds/Kroto2025.jpg"
+        <div className="w-full">
+            <AnimatedBeheerHeader 
+                title="Aanwezigheid"
+                subtitle={`Beheer de aanwezigheid voor "${activity.titel}".`}
+                backLink={`/beheer/activiteiten/${id}/aanmeldingen`}
+                icon={<ClipboardCheck className="h-10 w-10" />}
             />
-            <div className="max-w-7xl mx-auto px-4 pb-20">
+            <div className="max-w-7xl mx-auto px-4 pb-24">
                 <AttendanceIsland eventId={id} eventName={activity.titel} />
             </div>
         </div>
@@ -33,9 +38,15 @@ export default async function AttendancePage({ params }: PageProps) {
 
     return (
         <main className="min-h-screen bg-[var(--bg-main)]">
-            <Suspense fallback={<div className="p-20 text-center animate-pulse text-[var(--theme-purple)] font-black">LADEN...</div>}>
+            <Suspense fallback={
+                <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+                    <Loader2 className="h-12 w-12 animate-spin text-[var(--beheer-accent)]" />
+                    <span className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-sm">Laden...</span>
+                </div>
+            }>
                 <AttendanceData id={id} />
             </Suspense>
         </main>
     );
 }
+

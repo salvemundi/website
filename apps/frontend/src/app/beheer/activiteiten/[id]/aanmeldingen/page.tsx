@@ -1,8 +1,9 @@
 import { Suspense } from 'react';
-import PageHeader from '@/components/ui/layout/PageHeader';
+import type { Metadata } from 'next';
+import AnimatedBeheerHeader from '@/components/ui/admin/AnimatedBeheerHeader';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
-import { ShieldAlert, ArrowLeft } from 'lucide-react';
+import { ShieldAlert, ArrowLeft, Users } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ActiviteitAanmeldingenIsland from '@/components/islands/admin/activities/ActiviteitAanmeldingenIsland';
@@ -10,15 +11,19 @@ import AanmeldingenListSkeleton from '@/components/ui/admin/activities/Aanmeldin
 import { getSystemDirectus } from '@/lib/directus';
 import { readItem, readItems } from '@directus/sdk';
 
+export const metadata: Metadata = {
+    title: 'Activiteit Aanmeldingen | SV Salve Mundi',
+};
+
 export default async function AanmeldingenPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;
     
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+        <main className="min-h-screen bg-[var(--bg-main)]">
             <Suspense fallback={<AanmeldingenListSkeleton />}>
                 <SignupsDataLoader id={resolvedParams.id} />
             </Suspense>
-        </div>
+        </main>
     );
 }
 
@@ -75,7 +80,7 @@ async function SignupsDataLoader({ id }: { id: string }) {
                     'checked_in',
                     'checked_in_at'
                 ],
-                sort: ['-id'], // Use id for sorting instead of date_created if needed
+                sort: ['-id'],
                 limit: -1
             })
         );
@@ -85,43 +90,45 @@ async function SignupsDataLoader({ id }: { id: string }) {
 
     return (
         <>
-            <PageHeader
+            <AnimatedBeheerHeader
                 title={event.name || 'Aanmeldingen'}
-                description="Bekijk alle aanmeldingen voor deze activiteit"
+                subtitle="Bekijk alle aanmeldingen en check deelnemers in voor deze activiteit."
                 backLink="/beheer/activiteiten"
-                className="mb-0"
-                contentPadding="pt-0 pb-2 sm:pt-0 sm:pb-2"
-                titleClassName="text-sm sm:text-base md:text-xl"
+                icon={<Users className="h-10 w-10" />}
             />
-            <ActiviteitAanmeldingenIsland event={event} initialSignups={signups} />
+            <div className="pb-20">
+                <ActiviteitAanmeldingenIsland event={event} initialSignups={signups} />
+            </div>
         </>
     );
 }
 
 function UnauthorizedAccess({ specific = false }: { specific?: boolean }) {
     return (
-        <>
-            <PageHeader title="Geen Toegang" description="Onvoldoende rechten" />
-            <div className="container mx-auto px-4 py-12 max-w-2xl">
-                <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl p-8 text-center ring-1 ring-slate-200 dark:ring-slate-700">
-                    <div className="mb-6 flex justify-center">
-                        <div className="rounded-full bg-red-100 dark:bg-red-900/30 p-6">
-                            <ShieldAlert className="h-16 w-16 text-red-600 dark:text-red-400" />
-                        </div>
-                    </div>
-                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Toegang Geweigerd</h1>
-                    <p className="text-lg text-slate-500 dark:text-slate-400 mb-8">
-                        {specific 
-                            ? "Je hebt geen rechten om deze aanmeldingen te bekijken."
-                            : "Je hebt geen rechten om activiteiten te beheren."}
-                    </p>
-                    <div className="flex justify-center">
-                        <Link href="/beheer/activiteiten" className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200 px-8 py-3 font-semibold hover:bg-slate-200 dark:hover:bg-slate-600 transition-all">
-                            <ArrowLeft className="h-5 w-5" /> Terug
-                        </Link>
+        <div className="container mx-auto px-4 py-20 max-w-2xl">
+            <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl p-12 text-center border border-[var(--beheer-border)]">
+                <div className="mb-8 flex justify-center">
+                    <div className="rounded-full bg-red-500/10 p-8 shadow-glow-red">
+                        <ShieldAlert className="h-20 w-20 text-red-500" />
                     </div>
                 </div>
+                <h1 className="text-4xl font-black text-[var(--beheer-text)] uppercase tracking-tighter mb-4">Toegang Geweigerd</h1>
+                <p className="text-xl text-[var(--beheer-text-muted)] font-medium mb-10 leading-relaxed">
+                    {specific 
+                        ? "Je hebt geen rechten om deze aanmeldingen te bekijken. Dit gedeelte is alleen voor organisatoren, bestuur of ICT."
+                        : "Je hebt geen rechten om activiteiten te beheren."}
+                </p>
+                <div className="flex justify-center">
+                    <Link 
+                        href="/beheer/activiteiten" 
+                        className="inline-flex items-center justify-center gap-3 bg-[var(--beheer-border)] text-[var(--beheer-text)] px-10 py-4 rounded-full font-black uppercase tracking-widest text-xs hover:bg-[var(--beheer-accent)] hover:text-white transition-all active:scale-95 group"
+                    >
+                        <ArrowLeft className="h-5 w-5 group-hover:-translate-x-1 transition-transform" /> 
+                        <span>Ga Terug</span>
+                    </Link>
+                </div>
             </div>
-        </>
+        </div>
     );
 }
+

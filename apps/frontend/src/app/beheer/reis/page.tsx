@@ -5,7 +5,8 @@ import type { Metadata } from 'next';
 import AdminReisDashboardSkeleton from '@/components/ui/admin/AdminReisDashboardSkeleton';
 import AdminReisSelectorIsland from '@/components/islands/admin/AdminReisSelectorIsland';
 import AdminReisTableIsland from '@/components/islands/admin/AdminReisTableIsland';
-import { Plane, Plus, Loader2 } from 'lucide-react';
+import AnimatedBeheerHeader from '@/components/ui/admin/AnimatedBeheerHeader';
+import { Plane, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getSystemDirectus } from '@/lib/directus';
@@ -84,18 +85,12 @@ async function AdminReisDashboardContent({ searchParams }: AdminReisPageProps) {
     if (!trips || trips.length === 0) {
         return (
             <>
-                <div className="bg-[var(--beheer-card-bg)] border-b border-[var(--beheer-border)]">
-                    <div className="container mx-auto px-4 py-16 max-w-7xl">
-                        <div className="flex items-center gap-5 mb-4">
-                            <div className="h-14 w-14 rounded-[var(--radius-2xl)] bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] flex items-center justify-center shadow-2xl shadow-[var(--beheer-accent)]/10 animate-pulse">
-                                <Plane className="h-8 w-8 rotate-45" />
-                            </div>
-                            <h1 className="text-5xl font-black text-[var(--beheer-text)] tracking-widest uppercase">
-                                Reis <span className="text-[var(--beheer-accent)]">Beheer</span>
-                            </h1>
-                        </div>
-                    </div>
-                </div>
+                <AnimatedBeheerHeader
+                    title="Reis Beheer"
+                    subtitle="Bekijk en beheer alle reizen van SV Salve Mundi."
+                    backLink="/beheer"
+                    icon={<Plane className="h-10 w-10 rotate-45" />}
+                />
                 <NoTripsView />
             </>
         );
@@ -111,21 +106,12 @@ async function AdminReisDashboardContent({ searchParams }: AdminReisPageProps) {
     return (
         <div className="min-h-screen pb-20">
             {/* Page Header Area - Tokenized */}
-            <div className="bg-[var(--beheer-card-bg)] border-b border-[var(--beheer-border)] mb-10">
-                <div className="container mx-auto px-4 py-16 max-w-7xl">
-                    <div className="flex items-center gap-5 mb-4">
-                        <div className="h-14 w-14 rounded-[var(--radius-2xl)] bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] flex items-center justify-center shadow-2xl shadow-[var(--beheer-accent)]/10 animate-pulse">
-                            <Plane className="h-8 w-8 rotate-45" />
-                        </div>
-                        <h1 className="text-5xl font-black text-[var(--beheer-text)] tracking-widest uppercase">
-                            Reis: <span className="text-[var(--beheer-accent)]">{activeTrip.name}</span>
-                        </h1>
-                    </div>
-                    <p className="text-[var(--beheer-text-muted)] text-xl max-w-3xl leading-relaxed font-medium">
-                        Bekijk aanmeldingen, beheer betalingen en configureer reisactiviteiten.
-                    </p>
-                </div>
-            </div>
+            <AnimatedBeheerHeader
+                title={`Reis: ${activeTrip.name}`}
+                subtitle="Bekijk aanmeldingen, beheer betalingen en configureer reisactiviteiten."
+                backLink="/beheer"
+                icon={<Plane className="h-10 w-10 rotate-45" />}
+            />
 
             <div className="container mx-auto px-4 max-w-7xl">
                 <AdminReisSelectorIsland 
@@ -141,6 +127,7 @@ async function AdminReisDashboardContent({ searchParams }: AdminReisPageProps) {
         </div>
     );
 }
+
 
 async function AdminReisSignupsTable({ tripId, trip }: { tripId: number, trip: any }) {
     // Fetch signups and their activities in parallel

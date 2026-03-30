@@ -1,32 +1,29 @@
 import { Suspense } from 'react';
-import PageHeader from '@/components/ui/layout/PageHeader';
+import type { Metadata } from 'next';
+import AnimatedBeheerHeader from '@/components/ui/admin/AnimatedBeheerHeader';
 import ActiviteitBewerkenIsland from '@/components/islands/admin/activities/ActiviteitBewerkenIsland';
 import ActiviteitBewerkenSkeleton from '@/components/ui/admin/activities/ActiviteitBewerkenSkeleton';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
-import { ShieldAlert, ArrowLeft } from 'lucide-react';
+import { ShieldAlert, ArrowLeft, Edit } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 
+export const metadata: Metadata = {
+    title: 'Activiteit Bewerken | SV Salve Mundi',
+};
+
 export default async function BewerkenActiviteitPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;
     
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-            <PageHeader
-                title="Activiteit Bewerken"
-                description="Wijzig de gegevens van deze activiteit"
-                backLink="/beheer/activiteiten"
-                className="mb-0"
-                contentPadding="pt-0 pb-2 sm:pt-0 sm:pb-2"
-                titleClassName="text-sm sm:text-base md:text-xl"
-            />
+        <main className="min-h-screen bg-[var(--bg-main)]">
             <Suspense fallback={<ActiviteitBewerkenSkeleton />}>
                 <EditFormLoader id={resolvedParams.id} />
             </Suspense>
-        </div>
+        </main>
     );
 }
 
@@ -89,31 +86,47 @@ async function EditFormLoader({ id }: { id: string }) {
             ? cleanedCommittees 
             : cleanedCommittees.filter((c: any) => memberships.some((m: any) => String(m.id) === String(c.id)));
 
-        return <ActiviteitBewerkenIsland event={eventData as any} committees={allowedCommitteesForDropdown as any} />;
+        return (
+            <>
+                <AnimatedBeheerHeader
+                    title="Bewerk Activiteit"
+                    subtitle={`Wijzig de gegevens van "${eventData.name}".`}
+                    backLink="/beheer/activiteiten"
+                    icon={<Edit className="h-10 w-10" />}
+                />
+                <div className="pb-20">
+                    <ActiviteitBewerkenIsland event={eventData as any} committees={allowedCommitteesForDropdown as any} />
+                </div>
+            </>
+        );
     } catch (e) {
         console.error("Error loading edit form:", e);
-        return <div className="p-8 text-center text-red-500">Er is een fout opgetreden bij het laden van de gegevens.</div>;
+        return <div className="p-8 text-center text-red-500 font-bold">Er is een fout opgetreden bij het laden van de gegevens. Probeer het later opnieuw.</div>;
     }
 }
 
 function UnauthorizedAccess({ specific = false }: { specific?: boolean }) {
     return (
-        <div className="container mx-auto px-4 py-12 max-w-2xl">
-            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl p-8 text-center ring-1 ring-slate-200 dark:ring-slate-700">
-                <div className="mb-6 flex justify-center">
-                    <div className="rounded-full bg-red-100 dark:bg-red-900/30 p-6">
-                        <ShieldAlert className="h-16 w-16 text-red-600 dark:text-red-400" />
+        <div className="container mx-auto px-4 py-20 max-w-2xl">
+            <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl p-12 text-center border border-[var(--beheer-border)]">
+                <div className="mb-8 flex justify-center">
+                    <div className="rounded-full bg-red-500/10 p-8 shadow-glow-red">
+                        <ShieldAlert className="h-20 w-20 text-red-500" />
                     </div>
                 </div>
-                <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Toegang Geweigerd</h1>
-                <p className="text-lg text-slate-500 dark:text-slate-400 mb-8">
+                <h1 className="text-4xl font-black text-[var(--beheer-text)] uppercase tracking-tighter mb-4">Toegang Geweigerd</h1>
+                <p className="text-xl text-[var(--beheer-text-muted)] font-medium mb-10 leading-relaxed">
                     {specific 
                         ? "Je hebt geen rechten om deze specifieke activiteit te bewerken. Dit kan alleen als je lid bent van de organiserende commissie, het bestuur of de ICT-commissie."
                         : "Je hebt geen rechten om activiteiten te bewerken. Dit kan alleen als je lid bent van een commissie, het bestuur of de ICT-commissie."}
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <Link href="/beheer/activiteiten" className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200 px-8 py-3 font-semibold hover:bg-slate-200 dark:hover:bg-slate-600 transition-all cursor-pointer">
-                        <ArrowLeft className="h-5 w-5" /> Terug
+                <div className="flex justify-center">
+                    <Link 
+                        href="/beheer/activiteiten" 
+                        className="inline-flex items-center justify-center gap-3 bg-[var(--beheer-border)] text-[var(--beheer-text)] px-10 py-4 rounded-full font-black uppercase tracking-widest text-xs hover:bg-[var(--beheer-accent)] hover:text-white transition-all active:scale-95 group"
+                    >
+                        <ArrowLeft className="h-5 w-5 group-hover:-translate-x-1 transition-transform" /> 
+                        <span>Ga Terug</span>
                     </Link>
                 </div>
             </div>
