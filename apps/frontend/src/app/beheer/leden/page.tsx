@@ -30,17 +30,15 @@ const EXCLUDED_EMAILS = [
 export default async function LedenPage({ 
     searchParams 
 }: { 
-    searchParams: Promise<{ search?: string; tab?: string }> 
+    searchParams: Promise<{ tab?: string }> 
 }) {
     const params = await searchParams;
-    const search = params.search || '';
     const tab = (params.tab as 'active' | 'inactive') || 'active';
 
     return (
         <div className="min-h-screen bg-[var(--bg-main)]">
-            <Suspense key={search + "-" + tab} fallback={<MemberListSkeleton />}>
+            <Suspense key={tab} fallback={<MemberListSkeleton />}>
                 <LedenDataLoader 
-                    search={search} 
                     tab={tab} 
                 />
             </Suspense>
@@ -48,7 +46,7 @@ export default async function LedenPage({
     );
 }
 
-async function LedenDataLoader({ search, tab }: { search: string, tab: 'active' | 'inactive' }) {
+async function LedenDataLoader({ tab }: { tab: 'active' | 'inactive' }) {
     const session = await auth.api.getSession({
         headers: await headers()
     });
@@ -67,8 +65,6 @@ async function LedenDataLoader({ search, tab }: { search: string, tab: 'active' 
         );
     }
 
-    const todayStr = new Date().toISOString().substring(0, 10);
-
     let members: any[] = [];
     let totalCount = 0;
 
@@ -86,16 +82,6 @@ async function LedenDataLoader({ search, tab }: { search: string, tab: 'active' 
             }
         };
 
-        if (search) {
-            query.filter._and.push({
-                _or: [
-                    { first_name: { _icontains: search } },
-                    { last_name: { _icontains: search } },
-                    { email: { _icontains: search } }
-                ]
-            });
-        }
-
         const res = await getSystemDirectus().request(readUsers(query));
         
         if (Array.isArray(res)) {
@@ -104,8 +90,6 @@ async function LedenDataLoader({ search, tab }: { search: string, tab: 'active' 
         }
     } catch (e: any) {
         console.error("Failed to fetch members:", e);
-        // We still return so it doesn't crash the whole beheer dashboard, 
-        // but we show a small error in the context.
         return (
             <div className="container mx-auto px-4 py-8">
                 <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-6 text-amber-700 dark:text-amber-400 flex items-center gap-4">
@@ -123,7 +107,7 @@ async function LedenDataLoader({ search, tab }: { search: string, tab: 'active' 
         <LedenOverzichtIsland 
             members={members as any} 
             totalCount={totalCount} 
-            searchQuery={search}
+            searchQuery=""
         />
     );
 }
