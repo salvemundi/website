@@ -45,40 +45,24 @@ export default function LedenOverzichtIsland({
     const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
     const [isSendingReminder, setIsSendingReminder] = useState(false);
     const [activeTab, setActiveTab] = useState<'active' | 'inactive'>('active');
-
-    // Debounce search update
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            if (searchQuery !== initialSearchQuery) {
-                updateUrl({ search: searchQuery });
-            }
-        }, 300);
-        return () => clearTimeout(timer);
-    }, [searchQuery, initialSearchQuery]);
-
-    function updateUrl(params: { search?: string }) {
-        const url = new URL(window.location.href);
-        if (params.search !== undefined) {
-            if (params.search) url.searchParams.set('search', params.search);
-            else url.searchParams.delete('search');
-        }
-        // Always clear page param if it somehow exists
-        url.searchParams.delete('page');
-        
-        startTransition(() => {
-            router.push(url.pathname + url.search);
-        });
-    }
-
     const isMembershipActive = (m: Member) => {
         if (!m.membership_expiry) return false;
         const todayStr = new Date().toISOString().substring(0, 10);
         return m.membership_expiry.substring(0, 10) >= todayStr;
     };
 
+    // Local search filtering
     const filteredMembers = members.filter(m => {
         const active = isMembershipActive(m);
-        return activeTab === 'active' ? active : !active;
+        const matchesTab = activeTab === 'active' ? active : !active;
+        
+        if (!searchQuery) return matchesTab;
+
+        const searchLower = searchQuery.toLowerCase();
+        const fullName = `${m.first_name} ${m.last_name}`.toLowerCase();
+        const email = (m.email || '').toLowerCase();
+        
+        return matchesTab && (fullName.includes(searchLower) || email.includes(searchLower));
     });
 
     const formatDate = (dateString: string | null) => {
