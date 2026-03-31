@@ -13,7 +13,6 @@ interface Member {
     first_name: string;
     last_name: string;
     email: string;
-    date_of_birth: string | null;
     membership_expiry: string | null;
     status: string;
 }
@@ -41,7 +40,6 @@ export default function LedenTable({
                         <tr className="border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[10px] uppercase font-black tracking-widest text-[var(--beheer-text-muted)]">
                             <th className="px-8 py-4">Lid</th>
                             <th className="px-8 py-4">Contactgegevens</th>
-                            <th className="px-8 py-4">Geboortedatum</th>
                             <th className="px-8 py-4">Validiteit</th>
                             <th className="px-8 py-4 text-right">Beheer</th>
                         </tr>
@@ -67,9 +65,6 @@ export default function LedenTable({
                                         <Mail className="h-4 w-4 text-slate-300 dark:text-slate-600" />
                                         <a href={`mailto:${member.email}`} className="hover:text-primary transition-colors">{member.email}</a>
                                     </div>
-                                </td>
-                                <td className="px-8 py-5 text-sm font-medium text-slate-500 dark:text-slate-400">
-                                    {formatDate(member.date_of_birth)}
                                 </td>
                                 <td className="px-8 py-5">
                                     <span suppressHydrationWarning className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase ${isMembershipActive(member)

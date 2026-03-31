@@ -10,7 +10,7 @@ import MemberListSkeleton from '@/components/ui/admin/leden/MemberListSkeleton';
 import { getSystemDirectus } from '@/lib/directus';
 import { getImageUrl } from '@/lib/image-utils';
 import { readUsers, readRoles } from '@directus/sdk';
-import { isSuperAdmin } from '@/lib/auth-utils';
+import { isSuperAdmin, isMemberAdmin } from '@/lib/auth-utils';
 
 const EXCLUDED_EMAILS = [
     'youtube@salvemundi.nl',
@@ -54,7 +54,7 @@ async function LedenDataLoader({ tab }: { tab: 'active' | 'inactive' }) {
     if (!session || !session.user) return <AdminUnauthorized />;
 
     const user = session.user as any;
-    const hasPriv = isSuperAdmin(user.committees);
+    const hasPriv = isMemberAdmin(user.committees);
 
     if (!hasPriv) {
         return (
@@ -71,7 +71,7 @@ async function LedenDataLoader({ tab }: { tab: 'active' | 'inactive' }) {
     try {
         // Simple filter first to avoid operator issues on directus_users
         const query: any = {
-            fields: ['id', 'first_name', 'last_name', 'email', 'date_of_birth', 'membership_expiry', 'status'],
+            fields: ['id', 'first_name', 'last_name', 'email', 'membership_expiry', 'status'],
             limit: -1, // Fetch all members for counting and filtering
             sort: ['last_name', 'first_name'],
             filter: {

@@ -20,6 +20,18 @@ export function isSuperAdmin(committees: Committee[] | null | undefined): boolea
 }
 
 /**
+ * Checks if a user has permission to manage members and users.
+ * 
+ * @param committees List of committees
+ * @returns boolean
+ */
+export function isMemberAdmin(committees: Committee[] | null | undefined): boolean {
+    if (!committees || !Array.isArray(committees)) return false;
+    
+    return hasPermission(committees, AdminResource.Users);
+}
+
+/**
  * Checks if a user is a member of any committee.
  * 
  * @param committees List of committees
