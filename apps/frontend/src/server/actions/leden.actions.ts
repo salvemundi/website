@@ -1,5 +1,6 @@
 'use server';
 
+import { z } from "zod";
 import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
@@ -8,6 +9,17 @@ import { readItems, updateItem, updateUser, readUsers, readUser } from "@directu
 import { isSuperAdmin } from "@/lib/auth-utils";
 import { logAdminAction } from "./audit.actions";
 import { USER_FULL_FIELDS, COMMITTEE_FIELDS, USER_ID_FIELDS } from "@salvemundi/validations";
+
+const updateMemberSchema = z.object({
+    first_name: z.string().min(1).optional(),
+    last_name: z.string().min(1).optional(),
+    phone_number: z.string().optional(),
+    date_of_birth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
+});
+
+const renewMembershipSchema = z.object({
+    months: z.number().int().min(1).max(60),
+});
 
 const AZURE_MGMT_URL = process.env.AZURE_MANAGEMENT_SERVICE_URL;
 const AZURE_SYNC_URL = process.env.AZURE_SYNC_SERVICE_URL;
@@ -81,13 +93,16 @@ export async function sendMembershipReminderAction(daysBeforeExpiry: number = 30
     const user = await checkAdminAccess();
     if (!user) return { success: false, error: "Unauthorized" };
 
+    const validated = z.number().int().min(1).max(365).safeParse(daysBeforeExpiry);
+    if (!validated.success) return { success: false, error: "Ongeldig aantal dagen" };
+
     const siteUrl = process.env.PUBLIC_URL || process.env.NEXT_PUBLIC_APP_URL || '';
 
     try {
         const res = await fetch(`${siteUrl}/api/notifications/send-membership-reminder`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ daysBeforeExpiry })
+            body: JSON.stringify({ daysBeforeExpiry: validated.data })
         });
 
         if (!res.ok) {
@@ -106,22 +121,17 @@ export async function sendMembershipReminderAction(daysBeforeExpiry: number = 30
  */
 export async function updateMemberProfileAction(
     directusUserId: string,
-    data: {
-        first_name?: string;
-        last_name?: string;
-        phone_number?: string;
-        date_of_birth?: string;
-    }
+    data: z.infer<typeof updateMemberSchema>
 ) {
     const admin = await checkAdminAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
 
-    const payload: Record<string, string> = {};
-    if (data.first_name !== undefined && data.first_name.trim()) payload.first_name = data.first_name.trim();
-    if (data.last_name !== undefined && data.last_name.trim()) payload.last_name = data.last_name.trim();
-    if (data.phone_number !== undefined) payload.phone_number = data.phone_number.trim();
-    if (data.date_of_birth !== undefined && data.date_of_birth) payload.date_of_birth = data.date_of_birth;
+    const validated = updateMemberSchema.safeParse(data);
+    if (!validated.success) {
+        return { success: false, error: "Validatie mislukt", fieldErrors: validated.error.flatten().fieldErrors };
+    }
 
+    const payload = validated.data;
     if (Object.keys(payload).length === 0) {
         return { success: false, error: "Geen wijzigingen opgegeven" };
     }
@@ -172,6 +182,11 @@ export async function renewMembershipAction(
 ): Promise<{ success: boolean; newExpiry?: string; error?: string }> {
     const admin = await checkAdminAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
+
+    const validated = renewMembershipSchema.safeParse({ months });
+    if (!validated.success) {
+        return { success: false, error: "Ongeldig aantal maanden (1-60)" };
+    }
 
     try {
         const users: any = await getSystemDirectus().request(readUsers({

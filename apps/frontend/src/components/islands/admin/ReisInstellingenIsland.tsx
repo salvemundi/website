@@ -24,7 +24,7 @@ import {
     createTrip, 
     updateTrip, 
     deleteTrip 
-} from '@/server/actions/admin-reis.actions';
+} from '@/server/actions/reis-admin-core.actions';
 import { getImageUrl } from '@/lib/image-utils';
 import type { Trip } from '@salvemundi/validations';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';

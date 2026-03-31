@@ -4,8 +4,7 @@ import { z } from 'zod';
 import { revalidateTag } from 'next/cache';
 import {
     tripActivitySchema,
-    TRIP_ACTIVITY_FIELDS,
-    type TripActivity
+    TRIP_ACTIVITY_FIELDS
 } from '@salvemundi/validations';
 import { getSystemDirectus } from '@/lib/directus';
 import { 
@@ -24,38 +23,38 @@ export async function getTripActivities(tripId: number) {
             filter: { trip_id: { _eq: tripId } },
             fields: TRIP_ACTIVITY_FIELDS as any,
             sort: ['display_order'] as any
-        })) as unknown as TripActivity[];
+        }));
 
-        const sanitized = (activities ?? []).map(a => ({
+        const sanitized = (activities ?? []).map((a: any) => ({
             ...a,
             price: a.price !== null ? Number(a.price) : a.price,
             display_order: a.display_order !== null ? Number(a.display_order) : a.display_order,
             max_participants: a.max_participants !== null ? Number(a.max_participants) : a.max_participants,
             is_active: !!a.is_active,
-            options: Array.isArray(a.options) ? a.options.map((o: Record<string, unknown> & { price?: number | string | null }) => ({
+            options: Array.isArray(a.options) ? a.options.map((o: any) => ({
                 ...o,
-                price: o.price !== null && o.price !== undefined ? Number(o.price) : o.price
+                price: o.price !== null ? Number(o.price) : o.price
             })) : a.options
         }));
 
         const parsed = z.array(tripActivitySchema).safeParse(sanitized);
 
         if (!parsed.success) {
-            console.error('[AdminReisActions#getTripActivities] Zod validation failed:', parsed.error.flatten().fieldErrors);
+            console.error('[AdminReisActivities#getTripActivities] Zod validation failed:', parsed.error.flatten().fieldErrors);
             return [];
         }
 
         return parsed.data;
     } catch (error) {
-        console.error('[AdminReisActions#getTripActivities] Error:', error);
+        console.error('[AdminReisActivities#getTripActivities] Error:', error);
         return [];
     }
 }
 
-export async function createTripActivity(prevState: unknown, formData: FormData) {
+export async function createTripActivity(prevState: any, formData: FormData) {
     await requireReisAdmin();
 
-    const rawData: any = {};
+    const rawData: Record<string, any> = {};
     formData.forEach((value, key) => {
         if (key === 'options') {
             try { rawData[key] = JSON.parse(value as string); } catch { rawData[key] = []; }
@@ -83,15 +82,15 @@ export async function createTripActivity(prevState: unknown, formData: FormData)
         return { success: true };
     } catch (error) {
         const message = error instanceof Error ? error.message : 'Onbekende fout';
-        console.error('[AdminReisActions#createTripActivity] Error:', error);
+        console.error('[AdminReisActivities#createTripActivity] Error:', error);
         return { success: false, error: message };
     }
 }
 
-export async function updateTripActivity(id: number, prevState: unknown, formData: FormData) {
+export async function updateTripActivity(id: number, prevState: any, formData: FormData) {
     await requireReisAdmin();
 
-    const rawData: any = {};
+    const rawData: Record<string, any> = {};
     formData.forEach((value, key) => {
         if (key === 'options') {
             try { rawData[key] = JSON.parse(value as string); } catch { rawData[key] = []; }
@@ -119,7 +118,7 @@ export async function updateTripActivity(id: number, prevState: unknown, formDat
         return { success: true };
     } catch (error) {
         const message = error instanceof Error ? error.message : 'Onbekende fout';
-        console.error('[AdminReisActions#updateTripActivity] Error:', error);
+        console.error('[AdminReisActivities#updateTripActivity] Error:', error);
         return { success: false, error: message };
     }
 }
@@ -133,7 +132,23 @@ export async function deleteTripActivity(id: number) {
         return { success: true };
     } catch (error) {
         const message = error instanceof Error ? error.message : 'Onbekende fout';
-        console.error('[AdminReisActions#deleteTripActivity] Error:', error);
+        console.error('[AdminReisActivities#deleteTripActivity] Error:', error);
         return { success: false, error: message };
+    }
+}
+
+export async function getActivitySignups(activityId: number) {
+    await requireReisAdmin();
+
+    try {
+        const signups = await getSystemDirectus().request(readItems('trip_signup_activities', {
+            filter: { trip_activity_id: { _eq: activityId } },
+            fields: ['id', 'selected_options', { trip_signup_id: ['id', 'first_name', 'last_name', 'email'] }] as any
+        }));
+
+        return signups ?? [];
+    } catch (error) {
+        console.error('[AdminReisActivities#getActivitySignups] Error:', error);
+        return [];
     }
 }

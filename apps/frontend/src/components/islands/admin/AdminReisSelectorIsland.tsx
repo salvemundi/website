@@ -6,7 +6,7 @@ import type { Trip } from '@salvemundi/validations';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { useState, useTransition } from 'react';
-import { toggleReisVisibility } from '@/server/actions/admin-reis.actions';
+import { toggleReisVisibility } from '@/server/actions/reis-admin-core.actions';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminVisibilityToggle from '@/components/ui/admin/AdminVisibilityToggle';
 

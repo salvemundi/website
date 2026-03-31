@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
-import { getTrips } from '@/server/actions/admin-reis.actions';
+import { getTrips } from '@/server/actions/reis-admin-core.actions';
 import Link from 'next/link';
 import { Plane, Plus } from 'lucide-react';
 
