@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
-import { ShieldAlert } from 'lucide-react';
+import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 import ActiviteitNieuwIsland from '@/components/islands/admin/activities/ActiviteitNieuwIsland';
@@ -59,11 +59,10 @@ export default async function ActivityCreatePage() {
 
     if (!session || !session.user) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-8">
-                <ShieldAlert className="h-16 w-16 text-red-500 mb-4" />
-                <h1 className="text-2xl font-bold mb-2">Toegang Geweigerd</h1>
-                <p className="text-slate-500">Je moet ingelogd zijn om deze pagina te bekijken.</p>
-            </div>
+            <AdminUnauthorized 
+                title="Activiteit Aanmaken"
+                description="Je moet ingelogd zijn met een Salve Mundi account om activiteiten te kunnen aanmaken."
+            />
         );
     }
 
