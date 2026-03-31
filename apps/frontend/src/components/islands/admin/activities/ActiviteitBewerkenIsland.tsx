@@ -1,3 +1,5 @@
+'use client';
+
 import { auth } from '@/server/auth/auth';
 import { useState, useRef, useOptimistic, useActionState } from 'react';
 import { useRouter } from 'next/navigation';
