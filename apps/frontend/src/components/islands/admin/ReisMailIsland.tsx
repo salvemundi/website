@@ -24,7 +24,7 @@ import {
 import { 
     sendBulkTripEmail, 
     sendBulkPaymentEmails 
-} from '@/server/actions/admin-reis.actions';
+} from '@/server/actions/reis-admin-signups.actions';
 import type { Trip, TripSignup } from '@salvemundi/validations';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';

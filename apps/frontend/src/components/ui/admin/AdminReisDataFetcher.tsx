@@ -1,4 +1,4 @@
-import { getTripSignups, getSignupActivities } from '@/server/actions/admin-reis.actions';
+import { getTripSignups, getSignupActivities } from '@/server/actions/reis-admin-signups.actions';
 import AdminReisTableIsland from '@/components/islands/admin/AdminReisTableIsland';
 import type { Trip } from '@salvemundi/validations';
 

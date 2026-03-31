@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import type { Trip, TripSignup, TripSignupActivity } from '@salvemundi/validations';
-import { updateSignupStatus, deleteTripSignup, sendPaymentEmail } from '@/server/actions/admin-reis.actions';
+import { updateSignupStatus, deleteTripSignup, sendPaymentEmail } from '@/server/actions/reis-admin-signups.actions';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import { Plane, Users, UserCheck, UserX } from 'lucide-react';
 import ReisFilters from '@/components/admin/reis/ReisFilters';

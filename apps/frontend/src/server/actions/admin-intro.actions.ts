@@ -1,10 +1,21 @@
 'use server';
 
+import { z } from 'zod';
 import { auth } from '@/server/auth/auth';
 import { revalidateTag, revalidatePath, unstable_noStore as noStore } from "next/cache";
 import { isSuperAdmin } from "@/lib/auth-utils";
 import { headers } from 'next/headers';
-import type { IntroBlog, IntroPlanningItem } from '@salvemundi/validations';
+import { 
+    INTRO_BLOG_FIELDS, 
+    INTRO_PLANNING_FIELDS,
+    FEATURE_FLAG_FIELDS,
+    INTRO_SIGNUP_FIELDS,
+    INTRO_PARENT_SIGNUP_FIELDS,
+    introBlogSchema,
+    introPlanningSchema,
+    type IntroBlog,
+    type IntroPlanningItem
+} from '@salvemundi/validations';
 
 import { getSystemDirectus } from "@/lib/directus";
 import { 
@@ -14,13 +25,12 @@ import {
     createItem,
     aggregate 
 } from '@directus/sdk';
-import { 
-    INTRO_BLOG_FIELDS, 
-    INTRO_PLANNING_FIELDS,
-    FEATURE_FLAG_FIELDS,
-    INTRO_SIGNUP_FIELDS,
-    INTRO_PARENT_SIGNUP_FIELDS
-} from '@salvemundi/validations';
+
+const introNotificationSchema = z.object({
+    title: z.string().min(1, 'Titel is verplicht'),
+    body: z.string().min(1, 'Inhoud is verplicht'),
+    includeParents: z.boolean().default(false),
+});
 
 import { AdminResource } from '@/shared/lib/permissions-config';
 import { getRedis } from '@/server/auth/redis-client';
@@ -144,9 +154,15 @@ export async function getIntroBlogs() {
     }
 }
 
-export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ success: boolean; data?: IntroBlog; error?: string }> {
+export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ success: boolean; data?: IntroBlog; error?: string; fieldErrors?: any }> {
     const session = await checkIntroAdminAccess();
-    const { id, ...payload } = blog;
+
+    const validated = introBlogSchema.partial().safeParse(blog);
+    if (!validated.success) {
+        return { success: false, error: 'Validatie mislukt', fieldErrors: validated.error.flatten().fieldErrors };
+    }
+
+    const { id, ...payload } = validated.data;
     
     try {
         let result;
@@ -210,9 +226,15 @@ export async function getIntroPlanning() {
     }
 }
 
-export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Promise<{ success: boolean; data?: IntroPlanningItem; error?: string }> {
+export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Promise<{ success: boolean; data?: IntroPlanningItem; error?: string; fieldErrors?: any }> {
     const session = await checkIntroAdminAccess();
-    const { id, date, ...rest } = item;
+
+    const validated = introPlanningSchema.partial().safeParse(item);
+    if (!validated.success) {
+        return { success: false, error: 'Validatie mislukt', fieldErrors: validated.error.flatten().fieldErrors };
+    }
+
+    const { id, date, ...rest } = validated.data;
 
     let day = rest.day;
     if (date) {
@@ -319,6 +341,12 @@ export async function sendIntroCustomNotification(
     includeParents: boolean
 ): Promise<{ success: boolean; sent?: number; error?: string }> {
     await checkIntroAdminAccess();
+
+    const validated = introNotificationSchema.safeParse({ title, body, includeParents });
+    if (!validated.success) {
+        return { success: false, error: 'Validatie mislukt' };
+    }
+
     const notificationApiUrl = process.env.NEXT_PUBLIC_NOTIFICATION_API_URL;
     if (!notificationApiUrl) return { success: false, error: 'Notification API niet geconfigureerd' };
 
@@ -326,7 +354,7 @@ export async function sendIntroCustomNotification(
         const res = await fetch(`${notificationApiUrl}/api/notifications/send-intro-custom`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title, body, includeParents }),
+            body: JSON.stringify(validated.data),
         });
         if (!res.ok) return { success: false, error: 'Verzenden mislukt' };
         const json = await res.json();
