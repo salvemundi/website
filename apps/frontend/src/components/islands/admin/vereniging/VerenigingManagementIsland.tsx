@@ -31,9 +31,10 @@ const normalizeName = (name: string) =>
 
 interface Props {
     initialCommittees: Committee[];
+    totalUniqueMembers: number;
 }
 
-export default function VerenigingManagementIsland({ initialCommittees }: Props) {
+export default function VerenigingManagementIsland({ initialCommittees, totalUniqueMembers }: Props) {
     const [committees, setCommittees] = useState<Committee[]>(initialCommittees);
     const [selected, setSelected] = useState<Committee | null>(null);
     const [members, setMembers] = useState<CommitteeMember[]>([]);
@@ -148,10 +149,13 @@ export default function VerenigingManagementIsland({ initialCommittees }: Props)
     };
 
     const adminStats = useMemo(() => [
-        { label: 'Commissies', value: committees.length, icon: Users, theme: 'blue' },
-        { label: 'Beheerders', value: members.filter(m => m.isLeader).length, icon: Users, theme: 'emerald' },
-        { label: 'Leden', value: members.length, icon: Users, theme: 'indigo' },
-    ], [committees, members]);
+        { 
+            label: selected ? 'Commissie Leden' : 'Actieve Leden', 
+            value: selected ? members.length : totalUniqueMembers, 
+            icon: Users, 
+            theme: 'indigo' 
+        },
+    ], [selected, members.length, totalUniqueMembers]);
 
     return (
         <div className="min-h-screen bg-[var(--bg-main)]">

@@ -176,7 +176,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
     return (
         <header
             ref={headerRef}
-            className="fixed top-0 z-40 w-full backdrop-blur-md shadow-sm transition-all duration-300 bg-[color-mix(in_srgb,var(--bg-main)_80%,transparent)]"
+            className="fixed top-0 z-50 w-full backdrop-blur-md shadow-sm transition-all duration-300 bg-[color-mix(in_srgb,var(--bg-main)_80%,transparent)]"
         >
             {/* Schaduw-overlay bij scrollen */}
             <div
