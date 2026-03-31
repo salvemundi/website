@@ -13,7 +13,6 @@ import {
     DollarSign,
     Loader2,
     Info,
-    CheckCircle,
     AlertCircle,
     ChevronDown,
     Image as ImageIcon
@@ -28,8 +27,6 @@ import {
 import { getImageUrl } from '@/lib/image-utils';
 import type { Trip } from '@salvemundi/validations';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
-import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
-import { Bus, Clock } from 'lucide-react';
 
 interface ReisInstellingenIslandProps {
     initialTrips: Trip[];
@@ -88,16 +85,6 @@ export default function ReisInstellingenIsland({ initialTrips }: ReisInstellinge
         window.location.reload();
     }
 
-    const upcomingCount = trips.filter(t => new Date(t.event_date || t.start_date!) >= new Date()).length;
-    const openCount = trips.filter(t => t.registration_open).length;
-    const busCount = trips.filter(t => t.is_bus_trip).length;
-
-    const adminStats = [
-        { label: 'Reizen', value: trips.length, icon: Calendar, trend: 'Totaal' },
-        { label: 'Aankomend', value: upcomingCount, icon: Clock, trend: 'Toekomst' },
-        { label: 'Inschrijving Open', value: openCount, icon: CheckCircle, trend: 'Actief' },
-        { label: 'Busreizen', value: busCount, icon: Bus, trend: 'Logistiek' },
-    ];
 
     return (
         <>
@@ -119,7 +106,6 @@ export default function ReisInstellingenIsland({ initialTrips }: ReisInstellinge
             />
 
             <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700">
-                <AdminStatsBar stats={adminStats} />
 
             {/* Error Display */}
             {state?.error && (
