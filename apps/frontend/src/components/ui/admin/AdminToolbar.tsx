@@ -22,7 +22,7 @@ export default function AdminToolbar({
     actions
 }: AdminToolbarProps) {
     return (
-        <header className="bg-[var(--beheer-card-bg)] border-b border-[var(--beheer-border)] sticky top-[var(--header-total-height,72px)] z-40 w-full transition-all">
+        <header className="bg-[var(--beheer-card-bg)] border-b border-[var(--beheer-border)] sticky top-[var(--header-total-height,72px)] z-30 w-full transition-all">
             <div className="container mx-auto px-4 py-6 max-w-7xl">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div className="flex items-center gap-4">

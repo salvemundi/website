@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import AnimatedBeheerHeader from '@/components/ui/admin/AnimatedBeheerHeader';
 import ReisActiviteitenIsland from '@/components/islands/admin/ReisActiviteitenIsland';
 import { Loader2, Layers } from 'lucide-react';
+import { getTrips, getTripActivities } from '@/server/queries/admin-reis.queries';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 import { notFound } from 'next/navigation';
@@ -52,10 +53,7 @@ async function ReisActiviteitenLoader({ searchParams }: PageProps) {
     const resolvedSearchParams = await searchParams;
     const tripIdParam = typeof resolvedSearchParams.tripId === 'string' ? resolvedSearchParams.tripId : undefined;
 
-    const trips = await getSystemDirectus().request(readItems('trips', {
-        fields: ['id', 'name'] as any,
-        sort: ['-event_date']
-    }));
+    const trips = await getTrips();
 
     if (!trips || trips.length === 0) {
         return (
@@ -74,11 +72,7 @@ async function ReisActiviteitenLoader({ searchParams }: PageProps) {
 
     // Parallel fetch activities and all their signups for this trip
     const [activities, allSignups] = await Promise.all([
-        getSystemDirectus().request(readItems('trip_activities', {
-            filter: { trip_id: { _eq: activeTripId } },
-            fields: ['id', 'name', 'description', 'price', 'display_order', 'max_participants', 'max_selections', 'is_active', 'image', 'options'] as any,
-            sort: ['display_order', 'name']
-        })),
+        getTripActivities(activeTripId),
         getSystemDirectus().request(readItems('trip_signup_activities', {
             filter: { 
                 trip_activity_id: { 

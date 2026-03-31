@@ -61,7 +61,7 @@ export default function TripActivityCard({ activity, onEdit, onDelete, onViewSig
                 <div className="flex justify-between items-end mt-auto mb-8">
                     <div className="flex flex-col">
                         <span className="text-[9px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-1 opacity-60">Basisprijs</span>
-                        <span className="text-2xl font-black text-[var(--beheer-accent)]">€{activity.price.toFixed(2)}</span>
+                        <span className="text-2xl font-black text-[var(--beheer-accent)]">€{Number(activity.price || 0).toFixed(2)}</span>
                     </div>
                     {activity.max_participants && (
                         <div className="flex flex-col items-end">

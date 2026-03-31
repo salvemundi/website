@@ -322,7 +322,7 @@ function TripCard({ trip, onEdit, onDelete, isDeleting }: any) {
                     </div>
                     <div className="flex items-center gap-3 text-[var(--beheer-accent)]">
                         <DollarSign className="h-4 w-4" />
-                        <span className="text-sm font-black italic">€{trip.base_price.toFixed(2)}</span>
+                        <span className="text-sm font-black italic">€{Number(trip.base_price || 0).toFixed(2)}</span>
                     </div>
                 </div>
 

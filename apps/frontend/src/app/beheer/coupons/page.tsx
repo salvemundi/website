@@ -6,7 +6,7 @@ import { Ticket, Loader2 } from 'lucide-react';
 
 import CouponManagementIsland from '@/components/islands/admin/coupons/CouponManagementIsland';
 import { auth } from '@/server/auth/auth';
-import { getCoupons } from '@/server/actions/admin-coupons.actions';
+import { getCoupons } from '@/server/queries/admin-coupon.queries';
 
 export const metadata: Metadata = {
     title: 'Coupons Beheer | SV Salve Mundi',

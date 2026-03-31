@@ -6,8 +6,17 @@ import { headers } from 'next/headers';
 
 import { isSuperAdmin } from '@/lib/auth-utils';
 import { getSystemDirectus } from '@/lib/directus';
-import { readItems, updateItem, readUsers } from '@directus/sdk';
-import { COMMITTEE_FIELDS, COMMITTEE_MEMBER_FIELDS, USER_ID_FIELDS } from '@salvemundi/validations';
+import { updateItem, readUsers } from '@directus/sdk';
+import { USER_ID_FIELDS } from '@salvemundi/validations';
+import { 
+    getCommitteesInternal, 
+    getCommitteeMembersInternal, 
+    getUniqueCommitteeMembersCountInternal,
+    type Committee,
+    type CommitteeMember
+} from '@/server/queries/admin-vereniging.queries';
+
+export type { Committee, CommitteeMember };
 
 const getAzureManagementUrl = () => process.env.AZURE_MANAGEMENT_SERVICE_URL;
 
@@ -29,86 +38,39 @@ async function checkAccess() {
     return session;
 }
 
-export type Committee = {
-    id: number;
-    name: string;
-    email?: string | null;
-    azure_group_id?: string | null;
-    description?: string | null;
-    short_description?: string | null;
-    image?: string | null;
-};
-
-export type CommitteeMember = {
-    directusMembershipId?: number;
-    entraId: string;
-    displayName: string;
-    email: string;
-    isLeader: boolean;
-};
-
+/**
+ * SERVER ACTIONS: Exposable to Client Components.
+ */
 
 export async function getCommittees(): Promise<Committee[]> {
     await checkAccess();
-    try {
-        const items = await getSystemDirectus().request(readItems('committees', {
-            limit: 200,
-            fields: [...COMMITTEE_FIELDS],
-            sort: ['name']
-        }));
-        return (items ?? []).map(i => ({
-            ...i,
-            id: Number(i.id),
-            name: i.name || '',
-        })) as Committee[];
-    } catch (e) {
-        console.error('[AdminCommittees] Fetch failed:', e);
-        throw new Error('Kon commissies niet ophalen');
-    }
+    return getCommitteesInternal();
+}
+
+export async function getCommitteeMembers(committeeId: string): Promise<CommitteeMember[]> {
+    await checkAccess();
+    return getCommitteeMembersInternal(committeeId);
+}
+
+export async function getUniqueCommitteeMembersCount(): Promise<number> {
+    await checkAccess();
+    return getUniqueCommitteeMembersCountInternal();
 }
 
 export async function updateCommitteeDetails(
     committeeId: string,
     payload: { short_description?: string; description?: string; image?: string }
 ): Promise<{ success: boolean; error?: string }> {
-    const session = await checkAccess();
+    await checkAccess();
     
     try {
         await getSystemDirectus().request(updateItem('committees', committeeId, payload));
-    revalidatePath(`/beheer/committees/${committeeId}`);
-    revalidatePath('/beheer/committees');
-    return { success: true };
+        revalidatePath(`/beheer/committees/${committeeId}`);
+        revalidatePath('/beheer/committees');
+        return { success: true };
     } catch (e) {
         console.error('[AdminCommittees] Update failed:', e);
         return { success: false, error: 'Opslaan mislukt' };
-    }
-}
-
-
-export async function getCommitteeMembers(committeeId: string): Promise<CommitteeMember[]> {
-    await checkAccess();
-    try {
-        const items = await getSystemDirectus().request(readItems('committee_members' as any, {
-            filter: { committee_id: { _eq: committeeId } },
-            fields: [
-                ...COMMITTEE_MEMBER_FIELDS,
-                { user_id: ['id', 'entra_id', 'first_name', 'last_name', 'email'] }
-            ] as any,
-            limit: 200
-        }));
-
-        return (items ?? [])
-            .filter((r: any) => r.user_id)
-            .map((r: any) => ({
-                directusMembershipId: r.id,
-                entraId: r.user_id.entra_id || r.user_id.id,
-                displayName: `${r.user_id.first_name || ''} ${r.user_id.last_name || ''}`.trim() || r.user_id.email,
-                email: r.user_id.email || '',
-                isLeader: r.is_leader || false,
-            }));
-    } catch (e) {
-        console.error('[AdminCommittees] Fetch members failed:', e);
-        return [];
     }
 }
 
@@ -166,7 +128,7 @@ export async function toggleCommitteeLeader(
     azureGroupId: string | null | undefined,
     entraId: string
 ): Promise<{ success: boolean; error?: string }> {
-    const session = await checkAccess();
+    await checkAccess();
 
     try {
         await getSystemDirectus().request(updateItem('committee_members' as any, membershipId, { is_leader: !currentIsLeader }));

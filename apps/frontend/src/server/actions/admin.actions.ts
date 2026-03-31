@@ -33,6 +33,8 @@ import { createDirectus, staticToken, rest } from "@directus/sdk";
 import { AdminResource } from '@/shared/lib/permissions-config';
 import { getPermissions, hasPermission, type UserPermissions } from '@/shared/lib/permissions';
 import { getRedis } from "@/server/auth/redis-client";
+import { getCoupons } from "@/server/queries/admin-coupon.queries";
+import { getComputedCouponStatus } from "@/lib/coupon-utils";
 
 const pool = new Pool({
     user: process.env.DB_USER,
@@ -120,7 +122,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
             getSystemDirectus().request(aggregate('events', { aggregate: { count: '*' }, query: { filter: { event_date: { _gte: today } } } })).catch(e => { console.error("Stats: events fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
             getSystemDirectus().request(aggregate('event_signups', { aggregate: { count: '*' }, query: { filter: { event_id: { event_date: { _gte: today } } } } })).catch(e => { console.error("Stats: signups fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
             getSystemDirectus().request(aggregate('intro_signups', { aggregate: { count: '*' } })).catch(e => { console.error("Stats: intro fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
-            getSystemDirectus().request(aggregate('coupons', { aggregate: { count: '*' }, query: { filter: { is_active: { _eq: true } } } })).catch(e => { console.error("Stats: coupons fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
+            getCoupons().catch(e => { console.error("Stats: coupons fail", e instanceof Error ? e.message : e); return []; }),
             getSystemDirectus().request(aggregate('system_logs' as any, { aggregate: { count: '*' }, query: { filter: { status: { _eq: 'FAILED' } } } })).catch(e => { console.error("Stats: logs fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
             getSystemDirectus().request(aggregate('Stickers' as any, { aggregate: { count: '*' } })).catch(e => { console.error("Stats: Stickers fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
             getSystemDirectus().request(aggregate('Stickers' as any, { aggregate: { count: '*' }, query: { filter: { date_created: { _gte: lastWeek } } } })).catch(e => { console.error("Stats: recent Stickers fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
@@ -156,7 +158,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
             pendingSignupsCount: Number(signupsCount?.[0]?.count || 0),
             systemErrors: Number(activityCount?.[0]?.count || 0),
             introSignups: Number(introCount?.[0]?.count || 0),
-            totalCoupons: Number(couponsCount?.[0]?.count || 0),
+            totalCoupons: (couponsCount as any[]).filter(c => getComputedCouponStatus(c).type === 'active').length,
             pubCrawlSignups,
             reisSignups,
             stickerGrowthRate
