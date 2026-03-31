@@ -38,13 +38,6 @@ export default async function DeelnemerDetailPage({ params }: PageProps) {
 
     return (
         <main className="min-h-screen bg-[var(--bg-main)]">
-            <AnimatedBeheerHeader 
-                title="Deelnemer Bewerken" 
-                subtitle="Bekijk en wijzig details, betalingen en activiteiten voor deze deelnemer."
-                backLink="/beheer/reis"
-                icon={<User className="h-8 w-8" />}
-            />
-            
             <Suspense fallback={<DeelnemerDetailLoader />}>
                 <DeelnemerDataWrapper signupId={signupId} />
             </Suspense>

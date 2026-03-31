@@ -1,35 +1,15 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { 
     Users, 
     Heart, 
     FileText, 
     Calendar, 
-    Download, 
-    Mail, 
-    Plus, 
-    Trash2, 
-    Edit, 
-    Save, 
-    X, 
-    Search, 
-    Bell, 
-    ChevronDown, 
-    ChevronUp, 
-    Loader2, 
-    LayoutGrid, 
-    List, 
-    AlertCircle, 
-    Eye, 
-    EyeOff,
-    Beer,
-    ChevronLeft
+    Bell 
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { nl } from 'date-fns/locale';
 import type { IntroBlog, IntroPlanningItem } from '@salvemundi/validations';
 import {
     getIntroSignups,
@@ -45,6 +25,16 @@ import {
     toggleIntroVisibility,
     sendIntroCustomNotification,
 } from '@/server/actions/admin-intro.actions';
+import AdminToolbar from '@/components/ui/admin/AdminToolbar';
+import AdminVisibilityToggle from '@/components/ui/admin/AdminVisibilityToggle';
+import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
+
+// Modular Sub-components
+import IntroSignupsTab from './intro/IntroSignupsTab';
+import IntroParentsTab from './intro/IntroParentsTab';
+import IntroBlogsTab from './intro/IntroBlogsTab';
+import IntroPlanningTab from './intro/IntroPlanningTab';
+import IntroNotificationModal from './intro/IntroNotificationModal';
 
 type TabType = 'signups' | 'parents' | 'blogs' | 'planning';
 
@@ -88,49 +78,18 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
     const [planning, setPlanning] = useState(initialPlanning);
     const [introVisible, setIntroVisible] = useState(initialIntroVisible);
 
-    // Search state
-    const [signupSearch, setSignupSearch] = useState('');
-    const [parentSearch, setParentSearch] = useState('');
-
-    // Expand rows
-    const [expandedSignups, setExpandedSignups] = useState<number[]>([]);
-    const [expandedParents, setExpandedParents] = useState<number[]>([]);
-
-    // Blog editing
-    const [editingBlog, setEditingBlog] = useState<Partial<IntroBlog> | null>(null);
+    // Global UI state
+    const [showNotifModal, setShowNotifModal] = useState(false);
     const [savingBlog, setSavingBlog] = useState(false);
-
-    // Planning editing
-    const [editingPlanning, setEditingPlanning] = useState<Partial<IntroPlanningItem> | null>(null);
     const [savingPlanning, setSavingPlanning] = useState(false);
-    const [planningView, setPlanningView] = useState<'calendar' | 'list'>('list');
-
-    // Loading states
-    const [deletingSignup, setDeletingSignup] = useState<number | null>(null);
-    const [deletingParent, setDeletingParent] = useState<number | null>(null);
-    const [deletingBlog, setDeletingBlog] = useState<number | null>(null);
-    const [deletingPlanning, setDeletingPlanning] = useState<number | null>(null);
+    const [sendingNotif, setSendingNotif] = useState(false);
     const [togglingVisibility, setTogglingVisibility] = useState(false);
 
-    // Notification modal
-    const [showNotifModal, setShowNotifModal] = useState(false);
-    const [notif, setNotif] = useState({ title: '', body: '', includeParents: false });
-    const [sendingNotif, setSendingNotif] = useState(false);
-
-    // Filtered data
-    const filteredSignups = signups.filter(s => {
-        if (!signupSearch) return true;
-        const q = signupSearch.toLowerCase();
-        return `${s.first_name} ${s.last_name}`.toLowerCase().includes(q) ||
-            s.email.toLowerCase().includes(q) || s.phone_number.includes(q);
-    });
-
-    const filteredParents = parents.filter(p => {
-        if (!parentSearch) return true;
-        const q = parentSearch.toLowerCase();
-        return `${p.first_name || ''} ${p.last_name || ''}`.toLowerCase().includes(q) ||
-            (p.email || '').toLowerCase().includes(q);
-    });
+    // Global loading IDs
+    const [deletingSignupId, setDeletingSignupId] = useState<number | null>(null);
+    const [deletingParentId, setDeletingParentId] = useState<number | null>(null);
+    const [deletingBlogId, setDeletingBlogId] = useState<number | null>(null);
+    const [deletingPlanningId, setDeletingPlanningId] = useState<number | null>(null);
 
     // Reload helpers
     const reloadSignups = useCallback(async () => setSignups(await getIntroSignups()), []);
@@ -138,63 +97,57 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
     const reloadBlogs = useCallback(async () => setBlogs(await getIntroBlogs()), []);
     const reloadPlanning = useCallback(async () => setPlanning(await getIntroPlanning()), []);
 
+    // Handlers
     const handleDeleteSignup = async (id: number) => {
         if (!confirm('Weet je zeker dat je deze aanmelding wilt verwijderen?')) return;
-        setDeletingSignup(id);
+        setDeletingSignupId(id);
         const res = await deleteIntroSignup(id);
         if (res.success) setSignups(prev => prev.filter(s => s.id !== id));
         else alert(res.error || 'Verwijderen mislukt');
-        setDeletingSignup(null);
+        setDeletingSignupId(null);
     };
 
     const handleDeleteParent = async (id: number) => {
         if (!confirm('Weet je zeker dat je deze aanmelding wilt verwijderen?')) return;
-        setDeletingParent(id);
+        setDeletingParentId(id);
         const res = await deleteIntroParentSignup(id);
         if (res.success) setParents(prev => prev.filter(p => p.id !== id));
         else alert(res.error || 'Verwijderen mislukt');
-        setDeletingParent(null);
+        setDeletingParentId(null);
     };
 
-    const handleSaveBlog = async () => {
-        if (!editingBlog) return;
-        if (!editingBlog.title || !editingBlog.content) { alert('Vul titel en content in.'); return; }
+    const handleSaveBlog = async (blog: Partial<IntroBlog>) => {
         setSavingBlog(true);
-        const res = await upsertIntroBlog(editingBlog);
-        if (res.success) { await reloadBlogs(); setEditingBlog(null); }
+        const res = await upsertIntroBlog(blog);
+        if (res.success) await reloadBlogs();
         else alert(res.error || 'Opslaan mislukt');
         setSavingBlog(false);
     };
 
     const handleDeleteBlog = async (id: number) => {
         if (!confirm('Weet je zeker dat je deze blog wilt verwijderen?')) return;
-        setDeletingBlog(id);
+        setDeletingBlogId(id);
         const res = await deleteIntroBlog(id);
         if (res.success) setBlogs(prev => prev.filter(b => b.id !== id));
         else alert(res.error || 'Verwijderen mislukt');
-        setDeletingBlog(null);
+        setDeletingBlogId(null);
     };
 
-    const handleSavePlanning = async () => {
-        if (!editingPlanning) return;
-        if (!editingPlanning.date || !editingPlanning.time_start || !editingPlanning.title || !editingPlanning.description) {
-            alert('Datum, starttijd, titel en beschrijving zijn verplicht.');
-            return;
-        }
+    const handleSavePlanning = async (item: Partial<IntroPlanningItem>) => {
         setSavingPlanning(true);
-        const res = await upsertIntroPlanning(editingPlanning);
-        if (res.success) { await reloadPlanning(); setEditingPlanning(null); }
+        const res = await upsertIntroPlanning(item);
+        if (res.success) await reloadPlanning();
         else alert(res.error || 'Opslaan mislukt');
         setSavingPlanning(false);
     };
 
     const handleDeletePlanning = async (id: number) => {
         if (!id || !confirm('Weet je zeker dat je dit planning item wilt verwijderen?')) return;
-        setDeletingPlanning(id);
+        setDeletingPlanningId(id);
         const res = await deleteIntroPlanning(id);
         if (res.success) setPlanning(prev => prev.filter(p => p.id !== id));
         else alert(res.error || 'Verwijderen mislukt');
-        setDeletingPlanning(null);
+        setDeletingPlanningId(null);
     };
 
     const handleToggleVisibility = async () => {
@@ -203,10 +156,8 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
             const res = await toggleIntroVisibility();
             if (res.success) {
                 setIntroVisible(res.show ?? false);
-                router.refresh(); // Refresh layout data
-            } else {
-                alert(res.error || 'Bijwerken mislukt');
-            }
+                router.refresh();
+            } else alert(res.error || 'Bijwerken mislukt');
         } catch (err) {
             console.error(err);
             alert('Er is een onverwachte fout opgetreden');
@@ -215,21 +166,19 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
         }
     };
 
-    const handleSendNotification = async () => {
-        if (!notif.title || !notif.body) { alert('Vul een titel en bericht in'); return; }
+    const handleSendNotification = async (title: string, body: string, includeParents: boolean) => {
         setSendingNotif(true);
-        const res = await sendIntroCustomNotification(notif.title, notif.body, notif.includeParents);
+        const res = await sendIntroCustomNotification(title, body, includeParents);
         if (res.success) {
             alert(`Notificatie verstuurd naar ${res.sent ?? 0} gebruiker(s)!`);
             setShowNotifModal(false);
-            setNotif({ title: '', body: '', includeParents: false });
         } else alert(res.error || 'Verzenden mislukt');
         setSendingNotif(false);
     };
 
     const exportSignupsToCSV = () => {
         const rows = [
-            ['Voornaam', 'Tussenvoegsel', 'Achternaam', 'Email', 'Telefoon', 'Geboortedatum', 'Favoriete GIF', 'Aangemeld op'],
+            ['Voornaam', 'Achternaam', 'Email', 'Telefoon', 'Geboortedatum', 'Favoriete GIF'],
             ...signups.map(s => [
                 s.first_name, s.last_name, s.email, s.phone_number,
                 s.date_of_birth || '', s.favorite_gif || '',
@@ -246,7 +195,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
 
     const exportParentsToCSV = () => {
         const rows = [
-            ['Voornaam', 'Achternaam', 'Email', 'Telefoon', 'Motivatie', 'Aangemeld op'],
+            ['Voornaam', 'Achternaam', 'Email', 'Telefoon', 'Motivatie'],
             ...parents.map(p => [
                 p.first_name || '', p.last_name || '', p.email || '', p.phone_number || '',
                 p.motivation || '',
@@ -261,536 +210,108 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
         a.click();
     };
 
-    const tabClass = (tab: TabType) => `flex items-center gap-2 px-5 py-3 font-semibold text-sm transition-colors border-b-2 ${
-        activeTab === tab
-            ? 'text-[var(--theme-purple)] border-[var(--theme-purple)]'
-            : 'text-[var(--text-muted)] border-transparent hover:text-[var(--text-main)]'
-    }`;
+    const adminStats = [
+        { label: 'Deelnemers', value: signups.length, icon: Users, theme: 'blue' },
+        { label: 'Ouders', value: parents.length, icon: Heart, theme: 'pink' },
+        { label: 'Blogs', value: blogs.length, icon: FileText, theme: 'emerald' },
+        { label: 'Planning', value: planning.length, icon: Calendar, theme: 'amber' },
+    ];
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700">
-            {/* Top Toolbar - Replicated from Kroegentocht style */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
-                <div className="flex items-center gap-4">
-                    <Link 
-                        href="/beheer" 
-                        className="p-3 rounded-[var(--radius-xl)] bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--theme-purple)] transition-all active:scale-90"
-                    >
-                        <ChevronLeft className="h-5 w-5" />
-                    </Link>
-                    <div>
-                        <h1 className="text-3xl font-black text-[var(--text-main)] tracking-tighter uppercase">Intro <span className="text-[var(--theme-purple)]">Beheer</span></h1>
-                        <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Aanmeldingen, ouders, blogs & planning</p>
-                    </div>
-                </div>
+        <>
+            <AdminToolbar 
+                title="Introductie"
+                subtitle="Beheer aanmeldingen, ouders, blogs & planning"
+                backHref="/beheer"
+                actions={
+                    <>
+                        <AdminVisibilityToggle 
+                            isVisible={introVisible}
+                            onToggle={handleToggleVisibility}
+                            isPending={togglingVisibility}
+                        />
 
-                <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-                    {/* Visibility Toggle - Beheer Page Tokens */}
-                    <div className="flex items-center gap-3 px-4 py-2 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] shadow-sm">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">Zichtbaarheid</span>
-                        <button
-                            onClick={handleToggleVisibility}
-                            disabled={togglingVisibility}
-                            className={`w-12 h-6 rounded-full p-1 transition-colors relative flex items-center ${introVisible ? 'bg-[var(--beheer-active)]' : 'bg-[var(--beheer-inactive)]'} disabled:opacity-50 hover:opacity-90 active:scale-95 transition-all`}
+                        <button 
+                            onClick={() => setShowNotifModal(true)}
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
                         >
-                            {togglingVisibility ? (
-                                <Loader2 className="h-4 w-4 animate-spin text-white mx-auto" />
-                            ) : (
-                                <div className={`w-4 h-4 bg-white rounded-full transition-transform ${introVisible ? 'translate-x-[1.5rem]' : 'translate-x-0'} shadow-sm`} />
-                            )}
+                            <Bell className="h-4 w-4" />
+                            Notificatie
                         </button>
-                    </div>
+                    </>
+                }
+            />
 
-                    <button 
-                        onClick={() => setShowNotifModal(true)}
-                        className="flex-1 md:flex-none flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
-                    >
-                        <Bell className="h-4 w-4" />
-                        Notificatie
-                    </button>
+            <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <AdminStatsBar stats={adminStats} />
+
+                {/* Tabs - Tokenized */}
+                <div className="flex flex-wrap gap-0 border-b border-[var(--beheer-border)] mb-8">
+                    {[
+                        { id: 'signups', label: 'Aanmeldingen', count: signups.length, icon: Users },
+                        { id: 'parents', label: 'Ouders', count: parents.length, icon: Heart },
+                        { id: 'blogs', label: 'Blogs', count: blogs.length, icon: FileText },
+                        { id: 'planning', label: 'Planning', count: planning.length, icon: Calendar }
+                    ].map(tab => (
+                        <button 
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id as TabType)} 
+                            className={`flex items-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] font-black text-xs uppercase tracking-widest transition-all border-b-2 ${
+                                activeTab === tab.id 
+                                    ? 'text-[var(--beheer-accent)] border-[var(--beheer-accent)]' 
+                                    : 'text-[var(--beheer-text-muted)] border-transparent hover:text-[var(--beheer-text)]'
+                            }`}
+                        >
+                            <tab.icon className="h-4 w-4" /> {tab.label} ({tab.count})
+                        </button>
+                    ))}
                 </div>
+
+                {/* Tab Content */}
+                {activeTab === 'signups' && (
+                    <IntroSignupsTab 
+                        signups={signups} 
+                        onDelete={handleDeleteSignup} 
+                        onExport={exportSignupsToCSV}
+                        deletingId={deletingSignupId}
+                    />
+                )}
+                {activeTab === 'parents' && (
+                    <IntroParentsTab 
+                        parents={parents} 
+                        onDelete={handleDeleteParent} 
+                        onExport={exportParentsToCSV}
+                        deletingId={deletingParentId}
+                    />
+                )}
+                {activeTab === 'blogs' && (
+                    <IntroBlogsTab 
+                        blogs={blogs} 
+                        onSave={handleSaveBlog} 
+                        onDelete={handleDeleteBlog}
+                        saving={savingBlog}
+                        deletingId={deletingBlogId}
+                    />
+                )}
+                {activeTab === 'planning' && (
+                    <IntroPlanningTab 
+                        planning={planning} 
+                        onSave={handleSavePlanning} 
+                        onDelete={handleDeletePlanning}
+                        saving={savingPlanning}
+                        deletingId={deletingPlanningId}
+                    />
+                )}
+
+                {/* Modals */}
+                {showNotifModal && (
+                    <IntroNotificationModal 
+                        onClose={() => setShowNotifModal(false)}
+                        onSend={handleSendNotification}
+                        sending={sendingNotif}
+                    />
+                )}
             </div>
-
-            {/* Tabs - Tokenized */}
-            <div className="flex flex-wrap gap-0 border-b border-[var(--beheer-border)] mb-8">
-                <button 
-                    onClick={() => setActiveTab('signups')} 
-                    className={`flex items-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] font-black text-xs uppercase tracking-widest transition-all border-b-2 ${
-                        activeTab === 'signups' 
-                            ? 'text-[var(--beheer-accent)] border-[var(--beheer-accent)]' 
-                            : 'text-[var(--beheer-text-muted)] border-transparent hover:text-[var(--beheer-text)]'
-                    }`}
-                >
-                    <Users className="h-4 w-4" /> Aanmeldingen ({signups.length})
-                </button>
-                <button 
-                    onClick={() => setActiveTab('parents')} 
-                    className={`flex items-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] font-black text-xs uppercase tracking-widest transition-all border-b-2 ${
-                        activeTab === 'parents' 
-                            ? 'text-[var(--beheer-accent)] border-[var(--beheer-accent)]' 
-                            : 'text-[var(--beheer-text-muted)] border-transparent hover:text-[var(--beheer-text)]'
-                    }`}
-                >
-                    <Heart className="h-4 w-4" /> Ouders ({parents.length})
-                </button>
-                <button 
-                    onClick={() => setActiveTab('blogs')} 
-                    className={`flex items-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] font-black text-xs uppercase tracking-widest transition-all border-b-2 ${
-                        activeTab === 'blogs' 
-                            ? 'text-[var(--beheer-accent)] border-[var(--beheer-accent)]' 
-                            : 'text-[var(--beheer-text-muted)] border-transparent hover:text-[var(--beheer-text)]'
-                    }`}
-                >
-                    <FileText className="h-4 w-4" /> Blogs ({blogs.length})
-                </button>
-                <button 
-                    onClick={() => setActiveTab('planning')} 
-                    className={`flex items-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] font-black text-xs uppercase tracking-widest transition-all border-b-2 ${
-                        activeTab === 'planning' 
-                            ? 'text-[var(--beheer-accent)] border-[var(--beheer-accent)]' 
-                            : 'text-[var(--beheer-text-muted)] border-transparent hover:text-[var(--beheer-text)]'
-                    }`}
-                >
-                    <Calendar className="h-4 w-4" /> Planning ({planning.length})
-                </button>
-            </div>
-
-            {/* ── Signups Tab ── */}
-            {activeTab === 'signups' && (
-                <div>
-                    <div className="flex flex-col sm:flex-row gap-3 mb-5">
-                        <div className="flex-1 relative">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--beheer-text-muted)]" />
-                            <input
-                                type="text"
-                                placeholder="Zoek op naam, email of telefoon..."
-                                value={signupSearch}
-                                onChange={e => setSignupSearch(e.target.value)}
-                                className="w-full pl-11 pr-4 py-3 rounded-[var(--beheer-radius)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] text-sm focus:ring-2 focus:ring-[var(--beheer-accent)] focus:outline-none transition-all"
-                            />
-                        </div>
-                        <button 
-                            onClick={() => {
-                                const emails = signups.map(s => s.email).join(',');
-                                window.location.href = `mailto:?bcc=${emails}&subject=Intro${encodeURIComponent(' Aanmeldingen')}`;
-                            }} 
-                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-xs font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95"
-                        >
-                            <Mail className="h-4 w-4 text-[var(--beheer-accent)]" /> 
-                            Mail BCC
-                        </button>
-                        <button 
-                            onClick={exportSignupsToCSV} 
-                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white rounded-[var(--beheer-radius)] text-xs font-black uppercase tracking-widest shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
-                        >
-                            <Download className="h-4 w-4" /> 
-                            Export CSV
-                        </button>
-                    </div>
-
-                    <div className="bg-[var(--bg-card)] rounded-2xl ring-1 ring-[var(--border-color)] overflow-hidden">
-                        {filteredSignups.length === 0 ? (
-                            <div className="py-16 text-center text-[var(--text-muted)]">
-                                <AlertCircle className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                                <p>Geen aanmeldingen gevonden</p>
-                            </div>
-                        ) : (
-                            <table className="w-full text-sm">
-                                <thead className="bg-[var(--bg-card-soft,_#f8f8f8)] border-b border-[var(--border-color)]">
-                                    <tr>
-                                        <th className="px-5 py-3 text-left font-semibold text-[var(--text-muted)] text-xs uppercase tracking-wider">Naam</th>
-                                        <th className="px-5 py-3 text-left font-semibold text-[var(--text-muted)] text-xs uppercase tracking-wider hidden sm:table-cell">Email</th>
-                                        <th className="px-5 py-3 text-left font-semibold text-[var(--text-muted)] text-xs uppercase tracking-wider hidden md:table-cell">Telefoon</th>
-                                        <th className="px-5 py-3 text-right font-semibold text-[var(--text-muted)] text-xs uppercase tracking-wider">Acties</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-[var(--border-color)]">
-                                    {filteredSignups.map(s => (
-                                        <>
-                                            <tr key={s.id} className="hover:bg-[var(--bg-card-soft,_#f8f8f8)] transition-colors">
-                                                <td className="px-5 py-3">
-                                                    <button
-                                                        onClick={() => setExpandedSignups(prev => prev.includes(s.id) ? prev.filter(x => x !== s.id) : [...prev, s.id])}
-                                                        className="flex items-center gap-1.5 text-[var(--text-main)] font-medium hover:text-[var(--theme-purple)]"
-                                                    >
-                                                        {expandedSignups.includes(s.id) ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-                                                        {s.first_name} {s.last_name}
-                                                    </button>
-                                                </td>
-                                                <td className="px-5 py-3 text-[var(--text-muted)] hidden sm:table-cell">{s.email}</td>
-                                                <td className="px-5 py-3 text-[var(--text-muted)] hidden md:table-cell">{s.phone_number}</td>
-                                                <td className="px-5 py-3 text-right">
-                                                    <button
-                                                        onClick={() => handleDeleteSignup(s.id)}
-                                                        disabled={deletingSignup === s.id}
-                                                        className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition"
-                                                    >
-                                                        {deletingSignup === s.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                            {expandedSignups.includes(s.id) && (
-                                                <tr key={`${s.id}-expanded`} className="bg-[var(--bg-card-soft,_#f8f8f8)]">
-                                                    <td colSpan={5} className="px-8 py-3 text-sm text-[var(--text-muted)] space-y-1">
-                                                        {s.date_of_birth && <p><strong>Geboortedatum:</strong> {s.date_of_birth}</p>}
-                                                        {s.favorite_gif && <p><strong>Favoriete GIF:</strong> <a href={s.favorite_gif} target="_blank" rel="noopener noreferrer" className="text-[var(--theme-purple)] hover:underline">Bekijk</a></p>}
-                                                        <p className="block sm:hidden"><strong>Email:</strong> {s.email}</p>
-                                                    </td>
-                                                </tr>
-                                            )}
-                                        </>
-                                    ))}
-                                </tbody>
-                            </table>
-                        )}
-                    </div>
-                </div>
-            )}
-
-            {/* ── Parents Tab ── */}
-            {activeTab === 'parents' && (
-                <div>
-                    <div className="flex flex-col sm:flex-row gap-3 mb-5">
-                        <div className="flex-1 relative">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)]" />
-                            <input
-                                type="text"
-                                placeholder="Zoek op naam of email..."
-                                value={parentSearch}
-                                onChange={e => setParentSearch(e.target.value)}
-                                className="w-full pl-11 pr-4 py-3 rounded-[var(--radius-xl)] bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] text-sm focus:ring-2 focus:ring-[var(--theme-purple)] focus:outline-none transition-all"
-                            />
-                        </div>
-                        <button 
-                            onClick={() => setShowNotifModal(true)} 
-                            className="flex items-center justify-center gap-2 px-6 py-3 bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] rounded-[var(--radius-xl)] text-xs font-black uppercase tracking-widest hover:border-[var(--theme-purple)]/50 transition-all active:scale-95"
-                        >
-                            <Bell className="h-4 w-4 text-[var(--theme-purple)]" /> 
-                            Notificatie sturen
-                        </button>
-                        <button 
-                            onClick={exportParentsToCSV} 
-                            className="flex items-center justify-center gap-2 px-6 py-3 bg-[var(--theme-purple)] text-white rounded-[var(--radius-xl)] text-xs font-black uppercase tracking-widest shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
-                        >
-                            <Download className="h-4 w-4" /> 
-                            Export CSV
-                        </button>
-                    </div>
-
-                    <div className="bg-[var(--bg-card)] rounded-2xl ring-1 ring-[var(--border-color)] overflow-hidden">
-                        {filteredParents.length === 0 ? (
-                            <div className="py-16 text-center text-[var(--text-muted)]">
-                                <AlertCircle className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                                <p>Geen ouder-aanmeldingen gevonden</p>
-                            </div>
-                        ) : (
-                            <table className="w-full text-sm">
-                                <thead className="bg-[var(--bg-card-soft,_#f8f8f8)] border-b border-[var(--border-color)]">
-                                    <tr>
-                                        <th className="px-5 py-3 text-left font-semibold text-[var(--text-muted)] text-xs uppercase tracking-wider">Naam</th>
-                                        <th className="px-5 py-3 text-left font-semibold text-[var(--text-muted)] text-xs uppercase tracking-wider hidden sm:table-cell">Email</th>
-                                        <th className="px-5 py-3 text-left font-semibold text-[var(--text-muted)] text-xs uppercase tracking-wider hidden md:table-cell">Telefoon</th>
-                                        <th className="px-5 py-3 text-right font-semibold text-[var(--text-muted)] text-xs uppercase tracking-wider">Acties</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-[var(--border-color)]">
-                                    {filteredParents.map(p => (
-                                        <>
-                                            <tr key={p.id} className="hover:bg-[var(--bg-card-soft,_#f8f8f8)] transition-colors">
-                                                <td className="px-5 py-3">
-                                                    <button
-                                                        onClick={() => setExpandedParents(prev => prev.includes(p.id) ? prev.filter(x => x !== p.id) : [...prev, p.id])}
-                                                        className="flex items-center gap-1.5 text-[var(--text-main)] font-medium hover:text-[var(--theme-purple)]"
-                                                    >
-                                                        {expandedParents.includes(p.id) ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-                                                        {p.first_name} {p.last_name}
-                                                    </button>
-                                                </td>
-                                                <td className="px-5 py-3 text-[var(--text-muted)] hidden sm:table-cell">{p.email}</td>
-                                                <td className="px-5 py-3 text-[var(--text-muted)] hidden md:table-cell">{p.phone_number}</td>
-                                                <td className="px-5 py-3 text-right">
-                                                    <button
-                                                        onClick={() => handleDeleteParent(p.id)}
-                                                        disabled={deletingParent === p.id}
-                                                        className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition"
-                                                    >
-                                                        {deletingParent === p.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                            {expandedParents.includes(p.id) && p.motivation && (
-                                                <tr key={`${p.id}-expanded`} className="bg-[var(--bg-card-soft,_#f8f8f8)]">
-                                                    <td colSpan={4} className="px-8 py-3 text-sm text-[var(--text-muted)]">
-                                                        <strong>Motivatie:</strong> {p.motivation}
-                                                    </td>
-                                                </tr>
-                                            )}
-                                        </>
-                                    ))}
-                                </tbody>
-                            </table>
-                        )}
-                    </div>
-                </div>
-            )}
-
-            {/* ── Blogs Tab ── */}
-            {activeTab === 'blogs' && (
-                <div>
-                    {/* Blog Form */}
-                    {editingBlog !== null ? (
-                        <div className="bg-[var(--bg-card)] rounded-2xl ring-1 ring-[var(--border-color)] p-6 mb-6">
-                            <h3 className="font-bold text-lg text-[var(--text-main)] mb-5">
-                                {editingBlog.id ? 'Blog Bewerken' : 'Nieuwe Blog'}
-                            </h3>
-                            <div className="space-y-4">
-                                <Field label="Titel *">
-                                    <input type="text" value={editingBlog.title || ''} onChange={e => setEditingBlog({ ...editingBlog, title: e.target.value })} className={inputClass} />
-                                </Field>
-                                <Field label="Slug">
-                                    <input type="text" value={editingBlog.slug || ''} onChange={e => setEditingBlog({ ...editingBlog, slug: e.target.value })} className={inputClass} />
-                                </Field>
-                                <Field label="Excerpt">
-                                    <textarea value={editingBlog.excerpt || ''} onChange={e => setEditingBlog({ ...editingBlog, excerpt: e.target.value })} rows={2} className={inputClass} />
-                                </Field>
-                                <Field label="Content *">
-                                    <textarea value={editingBlog.content || ''} onChange={e => setEditingBlog({ ...editingBlog, content: e.target.value })} rows={6} className={inputClass} />
-                                </Field>
-                                <Field label="Type">
-                                    <select value={editingBlog.blog_type || 'update'} onChange={e => setEditingBlog({ ...editingBlog, blog_type: e.target.value as any })} className={inputClass}>
-                                        <option value="update">Update</option>
-                                        <option value="pictures">Foto's</option>
-                                        <option value="event">Event</option>
-                                        <option value="announcement">Aankondiging</option>
-                                    </select>
-                                </Field>
-                                <div className="flex items-center gap-2">
-                                    <input type="checkbox" id="blog-published" checked={editingBlog.is_published || false} onChange={e => setEditingBlog({ ...editingBlog, is_published: e.target.checked })} className="rounded" />
-                                    <label htmlFor="blog-published" className="text-sm font-medium text-[var(--text-main)]">Gepubliceerd</label>
-                                </div>
-                                <div className="flex gap-3 pt-2">
-                                    <button onClick={handleSaveBlog} disabled={savingBlog} className="flex items-center justify-center gap-2 px-6 py-3 bg-[var(--theme-purple)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--radius-xl)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 disabled:opacity-50">
-                                        {savingBlog ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} 
-                                        Opslaan
-                                    </button>
-                                    <button onClick={() => setEditingBlog(null)} className="px-6 py-3 rounded-[var(--radius-xl)] text-xs font-black uppercase tracking-widest text-[var(--text-muted)] hover:bg-[var(--bg-card-soft)] border border-transparent hover:border-[var(--border-color)] transition-all">
-                                        Annuleren
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    ) : (
-                        <button onClick={() => setEditingBlog({ title: '', content: '', blog_type: 'update', is_published: false })} className="flex items-center justify-center gap-2 px-6 py-3 bg-[var(--theme-purple)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--radius-xl)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 mb-8">
-                            <Plus className="h-4 w-4" /> 
-                            Nieuwe Blog
-                        </button>
-                    )}
-
-                    <div className="grid gap-4">
-                        {blogs.map(blog => (
-                            <div key={blog.id} className="bg-[var(--bg-card)] rounded-2xl ring-1 ring-[var(--border-color)] p-5 flex items-start justify-between gap-4">
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <h4 className="font-bold text-[var(--text-main)] truncate">{blog.title}</h4>
-                                        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${blog.is_published ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                                            {blog.is_published ? 'Gepubliceerd' : 'Concept'}
-                                        </span>
-                                    </div>
-                                    <p className="text-xs text-[var(--text-muted)]">{blog.blog_type}</p>
-                                    {blog.excerpt && <p className="text-sm text-[var(--text-muted)] mt-1 line-clamp-2">{blog.excerpt}</p>}
-                                </div>
-                                <div className="flex gap-2 flex-shrink-0">
-                                    <button onClick={() => setEditingBlog(blog)} className="p-2 text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/10 rounded-lg transition"><Edit className="h-4 w-4" /></button>
-                                    <button onClick={() => handleDeleteBlog(blog.id!)} disabled={deletingBlog === blog.id} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition">
-                                        {deletingBlog === blog.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                        {blogs.length === 0 && (
-                            <div className="py-16 text-center text-[var(--text-muted)]">
-                                <FileText className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                                <p>Nog geen blogs aangemaakt</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
-
-            {/* ── Planning Tab ── */}
-            {activeTab === 'planning' && (
-                <div>
-                    <div className="flex items-center justify-between mb-8">
-                        {editingPlanning === null && (
-                            <button onClick={() => setEditingPlanning({ date: '', time_start: '', title: '', description: '' })} className="flex items-center justify-center gap-2 px-6 py-3 bg-[var(--theme-purple)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--radius-xl)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95">
-                                <Plus className="h-4 w-4" /> 
-                                Nieuw Item
-                            </button>
-                        )}
-                        <div className="flex gap-1 bg-[var(--bg-card)] ring-1 ring-[var(--border-color)] rounded-xl p-1 ml-auto">
-                            <button onClick={() => setPlanningView('list')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold transition ${planningView === 'list' ? 'bg-[var(--theme-purple)] text-white' : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'}`}>
-                                <List className="h-4 w-4" /> Lijst
-                            </button>
-                            <button onClick={() => setPlanningView('calendar')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold transition ${planningView === 'calendar' ? 'bg-[var(--theme-purple)] text-white' : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'}`}>
-                                <LayoutGrid className="h-4 w-4" /> Kalender
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Planning Form */}
-                    {editingPlanning !== null && (
-                        <div className="bg-[var(--bg-card)] rounded-2xl ring-1 ring-[var(--border-color)] p-6 mb-6">
-                            <h3 className="font-bold text-lg text-[var(--text-main)] mb-5">
-                                {editingPlanning.id ? 'Planning Bewerken' : 'Nieuw Planning Item'}
-                            </h3>
-                            <div className="space-y-4">
-                                <Field label="Datum *">
-                                    <input type="date" value={editingPlanning.date || ''} onChange={e => setEditingPlanning({ ...editingPlanning, date: e.target.value })} className={inputClass} />
-                                </Field>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <Field label="Starttijd *">
-                                        <input type="time" value={editingPlanning.time_start || ''} onChange={e => setEditingPlanning({ ...editingPlanning, time_start: e.target.value })} className={inputClass} />
-                                    </Field>
-                                    <Field label="Eindtijd">
-                                        <input type="time" value={editingPlanning.time_end || ''} onChange={e => setEditingPlanning({ ...editingPlanning, time_end: e.target.value })} className={inputClass} />
-                                    </Field>
-                                </div>
-                                <Field label="Titel *">
-                                    <input type="text" value={editingPlanning.title || ''} onChange={e => setEditingPlanning({ ...editingPlanning, title: e.target.value })} className={inputClass} />
-                                </Field>
-                                <Field label="Beschrijving *">
-                                    <textarea value={editingPlanning.description || ''} onChange={e => setEditingPlanning({ ...editingPlanning, description: e.target.value })} rows={3} className={inputClass} />
-                                </Field>
-                                <Field label="Locatie">
-                                    <input type="text" value={editingPlanning.location || ''} onChange={e => setEditingPlanning({ ...editingPlanning, location: e.target.value })} className={inputClass} />
-                                </Field>
-                                <div className="flex gap-3 pt-2">
-                                    <button onClick={handleSavePlanning} disabled={savingPlanning} className="flex items-center justify-center gap-2 px-6 py-3 bg-[var(--theme-purple)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--radius-xl)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 disabled:opacity-50">
-                                        {savingPlanning ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} 
-                                        Opslaan
-                                    </button>
-                                    <button onClick={() => setEditingPlanning(null)} className="px-6 py-3 rounded-[var(--radius-xl)] text-xs font-black uppercase tracking-widest text-[var(--text-muted)] hover:bg-[var(--bg-card-soft)] border border-transparent hover:border-[var(--border-color)] transition-all">
-                                        Annuleren
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* List view */}
-                    {planningView === 'list' && (
-                        <div className="grid gap-3">
-                            {planning.map(item => (
-                                <div key={item.id} className="bg-[var(--bg-card)] rounded-2xl ring-1 ring-[var(--border-color)] p-5 flex items-start justify-between gap-4">
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <span className="text-xs font-bold text-[var(--theme-purple)] uppercase">{item.day || ''}</span>
-                                            {item.date && <span className="text-xs text-[var(--text-muted)]">{format(new Date(item.date), 'd MMM yyyy', { locale: nl })}</span>}
-                                        </div>
-                                        <h4 className="font-bold text-[var(--text-main)]">{item.title}</h4>
-                                        <p className="text-xs text-[var(--text-muted)] mt-0.5">{item.time_start}{item.time_end ? ` - ${item.time_end}` : ''}{item.location ? ` · ${item.location}` : ''}</p>
-                                        {item.description && <p className="text-sm text-[var(--text-muted)] mt-1">{item.description}</p>}
-                                    </div>
-                                    <div className="flex gap-2 flex-shrink-0">
-                                        <button onClick={() => setEditingPlanning(item)} className="p-2 text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/10 rounded-lg transition"><Edit className="h-4 w-4" /></button>
-                                        <button onClick={() => handleDeletePlanning(item.id!)} disabled={deletingPlanning === item.id} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition">
-                                            {deletingPlanning === item.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                            {planning.length === 0 && (
-                                <div className="py-16 text-center text-[var(--text-muted)]">
-                                    <Calendar className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                                    <p>Geen planning items aangemaakt</p>
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {/* Calendar view - day-based grid */}
-                    {planningView === 'calendar' && planning.length > 0 && (() => {
-                        const dayOrder = ['maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag', 'zondag'];
-                        const byDay = planning.reduce((acc, item) => {
-                            const key = (item.day || 'overig').toLowerCase();
-                            if (!acc[key]) acc[key] = [];
-                            acc[key].push(item);
-                            return acc;
-                        }, {} as Record<string, IntroPlanningItem[]>);
-                        const sorted = Object.keys(byDay).sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b));
-                        return (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {sorted.map(day => (
-                                    <div key={day} className="bg-[var(--bg-card)] rounded-2xl ring-1 ring-[var(--border-color)] p-4">
-                                        <h3 className="font-black text-[var(--theme-purple)] uppercase text-sm mb-3 capitalize">{day}</h3>
-                                        <div className="space-y-2">
-                                            {byDay[day].sort((a, b) => (a.time_start || '').localeCompare(b.time_start || '')).map(item => (
-                                                <div key={item.id} className="bg-[var(--bg-card-soft,_#f8f8f8)] rounded-xl p-3">
-                                                    <div className="flex items-start justify-between gap-1">
-                                                        <div>
-                                                            <p className="font-bold text-sm text-[var(--text-main)]">{item.title}</p>
-                                                            <p className="text-xs text-[var(--text-muted)]">{item.time_start}{item.time_end ? ` - ${item.time_end}` : ''}</p>
-                                                        </div>
-                                                        <div className="flex gap-1">
-                                                            <button onClick={() => setEditingPlanning(item)} className="p-1 text-[var(--theme-purple)] hover:opacity-70 transition"><Edit className="h-3.5 w-3.5" /></button>
-                                                            <button onClick={() => handleDeletePlanning(item.id!)} className="p-1 text-red-500 hover:opacity-70 transition"><Trash2 className="h-3.5 w-3.5" /></button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        );
-                    })()}
-                </div>
-            )}
-
-            {/* Notification Modal */}
-            {showNotifModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-[var(--bg-card)] rounded-2xl shadow-2xl max-w-md w-full p-6">
-                        <div className="flex items-center justify-between mb-5">
-                            <h3 className="font-bold text-lg text-[var(--text-main)]">Push Notificatie Sturen</h3>
-                            <button onClick={() => setShowNotifModal(false)} className="p-2 text-[var(--text-muted)] hover:text-[var(--text-main)] rounded-lg transition"><X className="h-5 w-5" /></button>
-                        </div>
-                        <div className="space-y-4">
-                            <Field label="Titel">
-                                <input type="text" value={notif.title} onChange={e => setNotif({ ...notif, title: e.target.value })} placeholder="Notificatie titel" className={inputClass} />
-                            </Field>
-                            <Field label="Bericht">
-                                <textarea value={notif.body} onChange={e => setNotif({ ...notif, body: e.target.value })} rows={4} placeholder="Notificatie bericht" className={inputClass} />
-                            </Field>
-                            <div className="flex items-center gap-2">
-                                <input type="checkbox" id="include-parents" checked={notif.includeParents} onChange={e => setNotif({ ...notif, includeParents: e.target.checked })} className="rounded" />
-                                <label htmlFor="include-parents" className="text-sm text-[var(--text-main)]">Verstuur naar Intro Ouders (met account)</label>
-                            </div>
-                            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-3 text-xs text-yellow-700 dark:text-yellow-300">
-                                Intro aanmeldingen zijn anoniem; notificaties gaan alleen naar ingelogde Intro Ouders.
-                            </div>
-                        </div>
-                        <div className="flex gap-3 mt-6">
-                            <button onClick={handleSendNotification} disabled={sendingNotif || !notif.includeParents} className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 bg-[var(--theme-purple)] text-white rounded-xl font-bold text-sm hover:opacity-90 transition disabled:opacity-40">
-                                {sendingNotif ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bell className="h-4 w-4" />}
-                                {sendingNotif ? 'Verzenden...' : 'Versturen'}
-                            </button>
-                            <button onClick={() => setShowNotifModal(false)} disabled={sendingNotif} className="px-5 py-2.5 rounded-xl text-sm font-bold text-[var(--text-muted)] border border-[var(--border-color)] hover:bg-[var(--border-color)] transition">Annuleren</button>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-}
-
-const inputClass = 'w-full px-4 py-2.5 rounded-xl bg-[var(--bg-main,_#f4f4f5)] border border-[var(--border-color)] text-[var(--text-main)] text-sm focus:ring-2 focus:ring-[var(--theme-purple)] focus:outline-none transition';
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-    return (
-        <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">{label}</label>
-            {children}
-        </div>
+        </>
     );
 }

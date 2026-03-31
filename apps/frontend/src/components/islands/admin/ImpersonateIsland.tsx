@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { Check, Save, Trash2, Key, Loader2, AlertCircle } from 'lucide-react';
+import { Check, Save, Trash2, Key, Loader2, AlertCircle, Shield, User, Lock, Activity } from 'lucide-react';
 import { setImpersonateToken, clearImpersonateToken } from '@/server/actions/admin.actions';
+import AdminToolbar from '@/components/ui/admin/AdminToolbar';
+import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 
 interface Props {
     activeToken: string | null;
@@ -40,93 +42,125 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
         });
     };
 
+    const adminStats = [
+        { label: 'Status', value: activeToken ? 'Testen' : 'Normaal', icon: Activity, trend: activeToken ? 'Impersonating' : 'Direct Access' },
+        { label: 'Doel', value: impersonatedName || 'Zelf', icon: User, trend: 'Identity' },
+        { label: 'Rechten', value: impersonatedCommittees?.length || 0, icon: Shield, trend: 'Committees' },
+        { label: 'Beveiliging', value: activeToken ? 'Override' : 'Secure', icon: Lock, trend: 'Layer' },
+    ];
+
     return (
-        <div className="space-y-8">
-            {/* Active Status Box */}
-            <div className={`p-6 rounded-2xl border transition-all duration-500 ${activeToken ? 'bg-green-500/10 border-green-500/20' : 'bg-white/5 border-white/10'}`}>
-                <div className="flex items-start justify-between gap-4">
-                    <div>
-                        <h2 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
-                            Status: {activeToken ? (
-                                <span className="text-green-400">Actief ({impersonatedName})</span>
-                            ) : (
-                                <span className="text-theme-purple-lighter/40">Inactief</span>
-                            )}
-                        </h2>
-                        <p className="text-sm text-theme-purple-lighter/70">
-                            {activeToken
-                                ? `Je navigeert nu over de website met de rechten van ${impersonatedName}.`
-                                : 'Voer hieronder een Directus Statische Token in om de website te bekijken als die gebruiker.'}
-                        </p>
-                        {activeToken && impersonatedCommittees.length > 0 && (
-                            <div className="mt-3 flex flex-wrap gap-2">
-                                {impersonatedCommittees.map(c => (
-                                    <span key={c} className="text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-md bg-green-500/20 text-green-400 border border-green-500/20">
-                                        {c}
-                                    </span>
-                                ))}
-                            </div>
-                        )}
-                        {activeToken && (
-                            <div className="mt-4 flex items-center gap-2 font-mono text-xs bg-black/40 p-2 rounded-lg text-theme-purple-lighter/80">
-                                <Key className="w-3 h-3" />
-                                <span>{activeToken.substring(0, 10)}...{activeToken.substring(activeToken.length - 10)}</span>
-                            </div>
-                        )}
-                    </div>
-                    {activeToken && (
+        <>
+            <AdminToolbar 
+                title="Test Modus"
+                subtitle="Imiteer een andere gebruiker"
+                backHref="/beheer"
+                actions={
+                    activeToken ? (
                         <button
                             onClick={handleClear}
                             disabled={isPending}
-                            className="flex items-center gap-2 rounded-xl bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-400 hover:bg-red-500/20 border border-red-500/20 transition-all disabled:opacity-50"
+                            className="flex items-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-inactive)]/10 text-[var(--beheer-inactive)] border border-[var(--beheer-inactive)]/20 rounded-[var(--beheer-radius)] text-xs font-black uppercase tracking-widest hover:bg-[var(--beheer-inactive)] hover:text-white transition-all active:scale-95 disabled:opacity-50"
                         >
-                            {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                            {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                             Stop Testen
                         </button>
-                    )}
-                </div>
-            </div>
+                    ) : null
+                }
+            />
 
-            {/* Token Input Form */}
-            {!activeToken && (
-                <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <label className="block text-sm font-medium text-theme-purple-lighter/80 ml-1">
-                        Directus Statische Token
-                    </label>
-                    <div className="relative group">
-                        <input
-                            type="password"
-                            value={token}
-                            onChange={(e) => setToken(e.target.value)}
-                            placeholder="Plak hier de token..."
-                            className={`w-full bg-black/30 border rounded-2xl px-6 py-4 text-white placeholder:text-white/20 focus:outline-none focus:ring-2 transition-all ${status === 'error' ? 'border-red-500/50 focus:ring-red-500/50' : 'border-white/10 focus:ring-theme-purple/50 focus:border-theme-purple/50'}`}
-                            disabled={isPending}
-                            autoComplete="off"
-                            suppressHydrationWarning
-                        />
-                    </div>
+            <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700">
+                <AdminStatsBar stats={adminStats} />
 
-                    {status === 'error' && (
-                        <div className="flex items-center gap-2 text-red-400 text-sm ml-1 animate-in fade-in slide-in-from-top-2">
-                            <AlertCircle className="w-4 h-4" />
-                            {errorMessage}
+                {/* Active Status Box */}
+                {activeToken && (
+                    <div className="p-8 rounded-[var(--beheer-radius)] bg-[var(--beheer-accent)]/5 border border-[var(--beheer-accent)]/20 shadow-sm">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            <div>
+                                <h3 className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-accent)] mb-2 flex items-center gap-2">
+                                    <Shield className="h-3.5 w-3.5" />
+                                    Actieve Sessie
+                                </h3>
+                                <p className="text-sm font-bold text-[var(--beheer-text)] mb-4">
+                                    Je navigeert nu over de website met de rechten van <span className="text-[var(--beheer-accent)]">{impersonatedName}</span>.
+                                </p>
+                                
+                                {impersonatedCommittees.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 mb-4">
+                                        {impersonatedCommittees.map(c => (
+                                            <span key={c} className="text-[10px] uppercase font-black tracking-widest px-2.5 py-1 rounded-lg bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] border border-[var(--beheer-accent)]/10">
+                                                {c}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                                
+                                <div className="flex items-center gap-2 font-mono text-[10px] bg-[var(--beheer-card-soft)] p-2.5 rounded-xl text-[var(--beheer-text-muted)] border border-[var(--beheer-border)] w-fit">
+                                    <Key className="h-3 w-3" />
+                                    <span>{activeToken.substring(0, 12)}...{activeToken.substring(activeToken.length - 12)}</span>
+                                </div>
+                            </div>
                         </div>
-                    )}
-                    <button
-                        onClick={handleSave}
-                        disabled={!token || isPending}
-                        className="w-full py-4 rounded-2xl bg-theme-purple text-white font-bold text-lg shadow-xl shadow-theme-purple/20 hover:bg-theme-purple-dark hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                    >
-                        {isPending ? (
-                            <><Loader2 className="w-5 h-5 animate-spin" /> Bezig met valideren...</>
-                        ) : status === 'success' ? (
-                            <><Check className="w-5 h-5" /> Token Geaccepteerd!</>
-                        ) : (
-                            <><Save className="w-5 h-5" /> Start Testen</>
+                    </div>
+                )}
+
+                {/* Token Input Form */}
+                {!activeToken && (
+                    <div className="max-w-xl space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div>
+                            <label className="block text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] mb-3 ml-1">
+                                Directus Statische Token
+                            </label>
+                            <div className="relative group">
+                                <input
+                                    type="password"
+                                    value={token}
+                                    onChange={(e) => setToken(e.target.value)}
+                                    placeholder="Plak hier de token..."
+                                    className={`w-full bg-[var(--beheer-card-bg)] border rounded-2xl px-6 py-4 text-[var(--beheer-text)] font-semibold placeholder:text-[var(--beheer-text-muted)] focus:outline-none focus:ring-2 transition-all ${status === 'error' ? 'border-[var(--beheer-inactive)]/50 focus:ring-[var(--beheer-inactive)]/20' : 'border-[var(--beheer-border)] focus:ring-[var(--beheer-accent)]/20 focus:border-[var(--beheer-accent)]'}`}
+                                    disabled={isPending}
+                                    autoComplete="off"
+                                    suppressHydrationWarning
+                                />
+                            </div>
+                        </div>
+
+                        {status === 'error' && (
+                            <div className="flex items-center gap-2 text-[var(--beheer-inactive)] text-xs font-bold ml-1 animate-in fade-in slide-in-from-top-2">
+                                <AlertCircle className="h-4 w-4" />
+                                {errorMessage}
+                            </div>
                         )}
-                    </button>
-                </div>
-            )}
-        </div>
+                        <button
+                            onClick={handleSave}
+                            disabled={!token || isPending}
+                            className="w-full py-4 rounded-2xl bg-[var(--beheer-accent)] text-white font-black uppercase tracking-widest text-sm shadow-[var(--shadow-glow)] hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                        >
+                            {isPending ? (
+                                <><Loader2 className="h-5 w-5 animate-spin" /> Controleren...</>
+                            ) : status === 'success' ? (
+                                <><Check className="h-5 w-5" /> Token Actief!</>
+                            ) : (
+                                <><Save className="h-5 w-5" /> Start Testen</>
+                            )}
+                        </button>
+                        
+                        {/* Instructies */}
+                        <div className="p-8 rounded-[var(--beheer-radius)] bg-[var(--beheer-card-soft)] border border-[var(--beheer-border)]">
+                            <h3 className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text)] mb-4 flex items-center gap-2">
+                                <Shield className="h-3.5 w-3.5 text-[var(--beheer-accent)]" />
+                                Hoe werkt het?
+                            </h3>
+                            <ul className="text-xs text-[var(--beheer-text-muted)] space-y-3 font-bold">
+                                <li className="flex gap-3"><span className="text-[var(--beheer-accent)]">•</span> Ga naar Directus &gt; User Settings &gt; Token.</li>
+                                <li className="flex gap-3"><span className="text-[var(--beheer-accent)]">•</span> Kopieer de statische token van de user die je wilt testen.</li>
+                                <li className="flex gap-3"><span className="text-[var(--beheer-accent)]">•</span> Plak deze hierboven en klik op 'Start Testen'.</li>
+                                <li className="flex gap-3 text-[var(--beheer-inactive)] opacity-80"><span className="text-[var(--beheer-inactive)] font-black italic">!</span> Dit overschrijft tijdelijk je eigen rechten in de datalaag.</li>
+                            </ul>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </>
     );
-}
+}

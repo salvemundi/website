@@ -11,15 +11,21 @@ import {
     Calendar,
     Mail,
     Bell,
-    Loader2,
-    Download,
     ChevronLeft,
-    ChevronRight as ChevronRightIcon
+    ChevronRight as ChevronRightIcon,
+    ShieldAlert,
+    Clock,
+    UserPlus,
+    Download,
+    Loader2
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { sendMembershipReminderAction } from '@/server/actions/leden.actions';
-import { format } from 'date-fns';
+import { format, isAfter } from 'date-fns';
 import { nl } from 'date-fns/locale';
+import AdminToolbar from '@/components/ui/admin/AdminToolbar';
+import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
+import AdminVisibilityToggle from '@/components/ui/admin/AdminVisibilityToggle';
 
 interface Member {
     id: string;
@@ -126,76 +132,93 @@ export default function LedenOverzichtIsland({
         XLSX.writeFile(wb, `Leden_Overzicht_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
     };
 
+    const activeCount = members.filter(m => isMembershipActive(m)).length;
+    const inactiveCount = members.filter(m => !isMembershipActive(m)).length;
     const totalPages = Math.ceil(totalCount / pageSize);
 
-    return (
-        <div className="container mx-auto px-4 py-8 max-w-7xl">
-            {/* Filters & Search */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm ring-1 ring-slate-200 dark:ring-slate-700/50 p-4 mb-8 flex flex-col lg:flex-row gap-4 items-center justify-between">
-                <div className="flex p-1 bg-slate-100 dark:bg-slate-900/50 rounded-xl w-full lg:w-auto">
-                    <button
-                        onClick={() => setActiveTab('active')}
-                        className={`flex-1 lg:flex-none px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'active'
-                            ? 'bg-white dark:bg-slate-800 text-primary shadow-sm ring-1 ring-slate-200 dark:ring-slate-700'
-                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
-                            }`}
-                    >
-                        <UserCheck className="h-4 w-4" />
-                        Actief
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('inactive')}
-                        className={`flex-1 lg:flex-none px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'inactive'
-                            ? 'bg-white dark:bg-slate-800 text-primary shadow-sm ring-1 ring-slate-200 dark:ring-slate-700'
-                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
-                            }`}
-                    >
-                        <UserMinus className="h-4 w-4" />
-                        Niet Actief
-                    </button>
-                </div>
+    const adminStats = [
+        { label: 'Leden', value: totalCount, icon: Users, trend: 'Totaal' },
+        { label: 'Actief', value: activeCount, icon: UserCheck, trend: 'Lidmaatschap' },
+        { label: 'Verlopen', value: inactiveCount, icon: UserMinus, trend: 'Niet Actief' },
+        { label: 'Herinneringen', value: '30d', icon: Bell, trend: 'Trigger' },
+    ];
 
-                <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center w-full lg:w-auto">
-                    <div className="relative flex-1 lg:w-96">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+    return (
+        <>
+            <AdminToolbar 
+                title="Leden Overzicht"
+                subtitle="Beheer alle Salve Mundi leden en lidmaatschappen"
+                backHref="/beheer"
+                actions={
+                    <div className="flex gap-2">
+                        <button
+                            onClick={exportToXLSX}
+                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-xs font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95"
+                            title="Exporteer naar Excel"
+                        >
+                            <Download className="h-4 w-4" />
+                            Export
+                        </button>
+                        <button
+                            onClick={handleSendReminder}
+                            disabled={isSendingReminder}
+                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 disabled:opacity-50"
+                        >
+                            {isSendingReminder ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bell className="h-4 w-4" />}
+                            Reminder
+                        </button>
+                    </div>
+                }
+            />
+
+            <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700">
+                <AdminStatsBar stats={adminStats} />
+
+                {/* Filters & Search */}
+                <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm ring-1 ring-[var(--beheer-border)] p-4 mb-8 flex flex-col lg:flex-row gap-4 items-center justify-between">
+                    <div className="flex p-1 bg-[var(--beheer-card-soft)] rounded-xl w-full lg:w-auto border border-[var(--beheer-border)]">
+                        <button
+                            onClick={() => setActiveTab('active')}
+                            className={`flex-1 lg:flex-none px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${activeTab === 'active'
+                                ? 'bg-[var(--beheer-card-bg)] text-[var(--beheer-accent)] shadow-sm ring-1 ring-[var(--beheer-border)]'
+                                : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)]'
+                                }`}
+                        >
+                            <UserCheck className="h-3.5 w-3.5" />
+                            Actief
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('inactive')}
+                            className={`flex-1 lg:flex-none px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${activeTab === 'inactive'
+                                ? 'bg-[var(--beheer-card-bg)] text-[var(--beheer-accent)] shadow-sm ring-1 ring-[var(--beheer-border)]'
+                                : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)]'
+                                }`}
+                        >
+                            <UserMinus className="h-3.5 w-3.5" />
+                            Verlopen
+                        </button>
+                    </div>
+
+                    <div className="relative flex-1 lg:w-96 group">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--beheer-text-muted)] group-focus-within:text-[var(--beheer-accent)] transition-colors" />
                         <input
                             type="text"
                             placeholder="Zoek op naam of email..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-12 pr-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border-none ring-1 ring-slate-200 dark:ring-slate-700/50 text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary outline-none transition-all font-medium"
+                            className="w-full pl-11 pr-5 py-3 rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] placeholder:text-[var(--beheer-text-muted)] focus:ring-2 focus:ring-[var(--beheer-accent)]/20 focus:border-[var(--beheer-accent)] outline-none transition-all shadow-sm font-bold uppercase tracking-widest text-[10px]"
                             suppressHydrationWarning
                         />
-                        {isPending && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-primary" />}
-                    </div>
-                    
-                    <div className="flex gap-2">
-                        <button
-                            onClick={exportToXLSX}
-                            className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl font-bold transition-all"
-                            title="Exporteer naar Excel"
-                        >
-                            <Download className="h-5 w-5" />
-                            <span className="hidden sm:inline">Export</span>
-                        </button>
-                        <button
-                            onClick={handleSendReminder}
-                            disabled={isSendingReminder}
-                            className="flex items-center justify-center gap-2 px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl shadow-lg shadow-orange-500/20 font-bold transition-all disabled:opacity-50 hover:-translate-y-0.5"
-                        >
-                            {isSendingReminder ? <Loader2 className="h-5 w-5 animate-spin" /> : <Bell className="h-5 w-5" />}
-                            <span className="hidden sm:inline">Herinnering</span>
-                        </button>
+                        {isPending && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-[var(--beheer-accent)]" />}
                     </div>
                 </div>
-            </div>
 
             {/* Main List */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm ring-1 ring-slate-200 dark:ring-slate-700/50 overflow-hidden">
+            <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm ring-1 ring-[var(--beheer-border)] overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse min-w-[800px]">
                         <thead>
-                            <tr className="border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30 text-[10px] uppercase font-black tracking-[0.2em] text-slate-400 dark:text-slate-500">
+                            <tr className="border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[10px] uppercase font-black tracking-widest text-[var(--beheer-text-muted)]">
                                 <th className="px-8 py-4">Lid</th>
                                 <th className="px-8 py-4">Contactgegevens</th>
                                 <th className="px-8 py-4">Geboortedatum</th>
@@ -283,6 +306,7 @@ export default function LedenOverzichtIsland({
                     </div>
                 )}
             </div>
-        </div>
+            </div>
+        </>
     );
 }

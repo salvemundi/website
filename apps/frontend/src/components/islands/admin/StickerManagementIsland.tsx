@@ -5,12 +5,16 @@ import {
     MapPin, 
     ChevronLeft, 
     RefreshCcw,
-    AlertCircle
+    AlertCircle,
+    Globe,
+    Clock,
+    UserCircle,
+    CheckCircle
 } from 'lucide-react';
 import Link from 'next/link';
 import { deleteSticker } from '@/server/actions/admin-stickers.actions';
-
-import StickerStats from '@/components/admin/stickers/StickerStats';
+import AdminToolbar from '@/components/ui/admin/AdminToolbar';
+import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import StickersTable from '@/components/admin/stickers/StickersTable';
 
 interface StickerManagementIslandProps {
@@ -41,42 +45,45 @@ export default function StickerManagementIsland({
         });
     };
 
+    const publishedCount = stickers.filter(s => s.status === 'published').length;
+    const draftCount = stickers.filter(s => s.status === 'draft' || !s.status).length;
+    const countryCount = new Set(stickers.map(s => s.country).filter(Boolean)).size;
+
+    const adminStats = [
+        { label: 'Stickers', value: stickers.length, icon: MapPin, trend: 'Totaal' },
+        { label: 'Gepubliceerd', value: publishedCount, icon: CheckCircle, trend: 'Live' },
+        { label: 'Landen', value: countryCount, icon: Globe, trend: 'Wereldwijd' },
+        { label: 'Afwachting', value: draftCount, icon: Clock, trend: 'Moderatie' },
+    ];
+
     return (
-        <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700">
-            {/* Top Toolbar */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
-                <div className="flex items-center gap-4">
-                    <Link 
-                        href="/beheer" 
-                        className="p-3 rounded-[var(--radius-xl)] bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--theme-purple)] transition-all active:scale-90"
+        <>
+            <AdminToolbar 
+                title="Sticker Beheer"
+                subtitle="Moderatie van locaties wereldwijd"
+                backHref="/beheer"
+                actions={
+                    <button
+                        onClick={handleRefresh}
+                        disabled={isPending}
+                        className="flex items-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-xs font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50"
                     >
-                        <ChevronLeft className="h-5 w-5" />
-                    </Link>
-                    <div>
-                        <h1 className="text-3xl font-black text-[var(--text-main)] tracking-tighter uppercase">Sticker <span className="text-[var(--theme-purple)]">Beheer</span></h1>
-                        <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Moderatie van geplakte stickers wereldwijd</p>
-                    </div>
-                </div>
+                        <RefreshCcw className={`h-4 w-4 ${isPending ? 'animate-spin' : ''}`} />
+                        Refresh
+                    </button>
+                }
+            />
 
-                <button
-                    onClick={handleRefresh}
-                    disabled={isPending}
-                    className="flex items-center gap-2 px-6 py-3 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-xl)] text-xs font-black uppercase tracking-widest text-[var(--text-subtle)] hover:border-[var(--theme-purple)]/50 transition-all active:scale-95 disabled:opacity-50"
-                >
-                    <RefreshCcw className={`h-4 w-4 ${isPending ? 'animate-spin' : ''}`} />
-                    Vernieuwen
-                </button>
-            </div>
+            <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700">
+                <AdminStatsBar stats={adminStats} />
 
-            {/* Stats */}
-            <StickerStats stickers={stickers} />
 
             {/* Table */}
             <div className="animate-in fade-in zoom-in-95 duration-500">
                 <div className="flex items-center gap-3 mb-6">
-                    <MapPin className="h-6 w-6 text-[var(--theme-purple)]" />
-                    <h2 className="text-2xl font-black text-[var(--text-main)] tracking-tight uppercase">
-                        Geregistreerde <span className="text-[var(--theme-purple)]">Locaties</span>
+                    <MapPin className="h-5 w-5 text-[var(--beheer-accent)]" />
+                    <h2 className="text-lg font-black text-[var(--beheer-text)] tracking-tight uppercase tracking-widest">
+                        Geregistreerde <span className="text-[var(--beheer-accent)]">Locaties</span>
                     </h2>
                 </div>
 
@@ -86,13 +93,14 @@ export default function StickerManagementIsland({
                         onDelete={handleDelete} 
                     />
                 ) : (
-                    <div className="text-center py-32 bg-[var(--bg-card)]/40 rounded-[var(--radius-2xl)] border-2 border-dashed border-[var(--border-color)]/30">
-                        <AlertCircle className="h-16 w-16 text-[var(--text-muted)] opacity-20 mx-auto mb-4" />
-                        <h2 className="text-xl font-black text-[var(--text-main)] uppercase tracking-tight">Geen stickers gevonden</h2>
-                        <p className="text-sm text-[var(--text-subtle)] mt-2">Er zijn nog geen stickers geregistreerd in het systeem.</p>
+                    <div className="text-center py-32 bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-dashed border-[var(--beheer-border)]">
+                        <AlertCircle className="h-16 w-16 text-[var(--beheer-text-muted)] opacity-20 mx-auto mb-4" />
+                        <h2 className="text-xl font-black text-[var(--beheer-text)] uppercase tracking-tight">Geen stickers gevonden</h2>
+                        <p className="text-sm text-[var(--beheer-text-muted)] mt-2 font-bold uppercase tracking-widest text-xs">Er zijn nog geen stickers geregistreerd in het systeem.</p>
                     </div>
                 )}
             </div>
-        </div>
+            </div>
+        </>
     );
 }

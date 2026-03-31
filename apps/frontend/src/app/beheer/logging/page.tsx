@@ -28,22 +28,17 @@ export default async function AuditLoggingPage() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-900 pb-20">
-            <PageHeader
-                title="Audit & Goedkeuring"
-                description="Beheer inschrijvingen, logboek en handmatige goedkeuringsflow."
-            />
-
-            <div className="container mx-auto px-4 -mt-8 max-w-6xl relative z-10">
-                <Suspense fallback={
-                    <div className="flex flex-col items-center justify-center py-24 bg-white dark:bg-slate-800 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-700 animate-pulse">
-                        <Loader2 className="h-12 w-12 text-slate-300 dark:text-slate-600 animate-spin mb-4" />
-                        <p className="text-slate-400 dark:text-slate-500 font-medium font-inter">Audit interface laden...</p>
+        <main className="min-h-screen bg-[var(--bg-main)]">
+            <Suspense fallback={
+                <div className="container mx-auto px-4 py-32">
+                    <div className="flex flex-col items-center justify-center py-24 bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] animate-pulse">
+                        <Loader2 className="h-12 w-12 text-[var(--beheer-text-muted)] animate-spin mb-4" />
+                        <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-xs">Audit interface laden...</p>
                     </div>
-                }>
-                    <AuditLogIsland />
-                </Suspense>
-            </div>
-        </div>
+                </div>
+            }>
+                <AuditLogIsland />
+            </Suspense>
+        </main>
     );
 }

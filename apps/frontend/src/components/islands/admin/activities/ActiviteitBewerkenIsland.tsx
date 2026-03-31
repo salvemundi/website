@@ -1,10 +1,10 @@
-'use client';
-
+import { auth } from '@/server/auth/auth';
 import { useState, useRef, useOptimistic, useActionState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save, Upload, X, Loader2 } from 'lucide-react';
 import { updateActivityAction } from '@/server/actions/activiteiten.actions';
 import { getImageUrl } from '@/lib/image-utils';
+import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 
 interface Committee {
     id: number;
@@ -112,177 +112,207 @@ export default function ActiviteitBewerkenIsland({ event, committees }: { event:
     const formErrors = state.fieldErrors || {};
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-4xl overflow-x-hidden">
-            <button
-                type="button"
-                onClick={() => router.back()}
-                className="mb-6 flex items-center gap-2 text-slate-700 dark:text-slate-200 hover:text-primary transition font-medium"
-            >
-                <ArrowLeft className="h-5 w-5" />
-                Terug
-            </button>
+        <>
+            <AdminToolbar 
+                title="Bewerk Activiteit"
+                subtitle={`Wijzig de gegevens van "${event.name}"`}
+                backHref="/beheer/activiteiten"
+            />
+            <div className="container mx-auto px-4 py-12 max-w-4xl overflow-x-hidden animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <form action={formAction} className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-2xl p-6 sm:p-10 space-y-8 text-[var(--beheer-text)] border border-[var(--beheer-border)] relative overflow-hidden">
+                    {/* Glow effect */}
+                    <div className="absolute -top-24 -right-24 h-48 w-48 bg-[var(--beheer-accent)]/5 blur-3xl rounded-full" />
 
-            <form action={formAction} className="bg-white dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 sm:p-8 space-y-6 text-slate-900 dark:text-white border border-slate-100 dark:border-slate-700/50">
-                {/* Basic Info */}
-                <div>
-                    <label htmlFor="name" className="block text-sm font-bold text-slate-600 dark:text-slate-300 mb-2">Naam *</label>
-                    <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        defaultValue={event.name}
-                        autoComplete="off"
-                        className={`w-full px-4 py-3 rounded-lg border bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white ${formErrors.name ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'} focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition`}
-                        placeholder="Bijv. Borrel: Back to School"
-                    />
-                    {formErrors.name && <p className="text-red-500 text-sm mt-1 font-medium">{formErrors.name[0]}</p>}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div className="lg:col-span-2">
-                        <label htmlFor="event_date" className="block text-sm font-bold text-slate-600 dark:text-slate-300 mb-2">Startdatum *</label>
+                    {/* Basic Info */}
+                    <div className="relative z-10">
+                        <label htmlFor="name" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Naam *</label>
                         <input
-                            type="date"
-                            id="event_date"
-                            name="event_date"
-                            defaultValue={formatDate(event.event_date)}
-                            className={`w-full px-4 py-3 rounded-lg border bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white ${formErrors.event_date ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'} focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition`}
+                            type="text"
+                            id="name"
+                            name="name"
+                            defaultValue={event.name}
+                            autoComplete="off"
+                            className={`w-full px-5 py-4 rounded-xl border bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] placeholder:text-[var(--beheer-text-muted)] ${formErrors.name ? 'border-red-500 ring-4 ring-red-500/10' : 'border-[var(--beheer-border)]'} focus:border-[var(--beheer-accent)] focus:ring-4 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all font-bold`}
+                            placeholder="Bijv. Borrel: Back to School"
                         />
-                        {formErrors.event_date && <p className="text-red-500 text-sm mt-1 font-medium">{formErrors.event_date[0]}</p>}
+                        {formErrors.name && <p className="text-red-500 text-[10px] font-black uppercase tracking-widest mt-2">{formErrors.name[0]}</p>}
                     </div>
-                    <div className="lg:col-span-2">
-                        <label htmlFor="event_time" className="block text-sm font-bold text-slate-600 dark:text-slate-300 mb-2">Starttijd</label>
-                        <input type="time" id="event_time" name="event_time" defaultValue={event.event_time?.slice(0, 5) || ''} className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition" />
-                    </div>
-                    <div className="lg:col-span-2">
-                        <label htmlFor="event_date_end" className="block text-sm font-bold text-slate-600 dark:text-slate-300 mb-2">Einddatum</label>
-                        <input type="date" id="event_date_end" name="event_date_end" defaultValue={formatDate(event.event_date_end)} className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition" />
-                    </div>
-                    <div className="lg:col-span-2">
-                        <label htmlFor="event_time_end" className="block text-sm font-bold text-slate-600 dark:text-slate-300 mb-2">Eindtijd</label>
-                        <input type="time" id="event_time_end" name="event_time_end" defaultValue={event.event_time_end?.slice(0, 5) || ''} className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition" />
-                    </div>
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label htmlFor="registration_deadline" className="block text-sm font-bold text-slate-600 dark:text-slate-300 mb-2">Inschrijfdeadline</label>
-                        <input type="datetime-local" id="registration_deadline" name="registration_deadline" defaultValue={formatDateTime(event.registration_deadline)} className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition" />
-                    </div>
-                    <div>
-                        <label htmlFor="location" className="block text-sm font-bold text-slate-600 dark:text-slate-300 mb-2">Locatie</label>
-                        <input type="text" id="location" name="location" defaultValue={event.location || ''} className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition" placeholder="Bijv. Fontys R10" />
-                    </div>
-                </div>
-
-                <div>
-                    <label htmlFor="description" className="block text-sm font-bold text-slate-600 dark:text-slate-300 mb-2">Beschrijving *</label>
-                    <textarea id="description" name="description" rows={5} defaultValue={event.description} className={`w-full px-4 py-3 rounded-lg border bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white ${formErrors.description ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'} focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition`} placeholder="Beschrijving van de activiteit" />
-                    {formErrors.description && <p className="text-red-500 text-sm mt-1 font-medium">{formErrors.description[0]}</p>}
-                </div>
-
-                <div>
-                    <label htmlFor="description_logged_in" className="block text-sm font-bold text-slate-600 dark:text-slate-300 mb-2">Extra beschrijving (alleen ingelogd)</label>
-                    <textarea id="description_logged_in" name="description_logged_in" rows={3} defaultValue={event.description_logged_in || ''} className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition" />
-                </div>
-
-                {/* Capacity & Pricing */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label htmlFor="max_sign_ups" className="block text-sm font-bold text-slate-600 dark:text-slate-300 mb-2">Capaciteit</label>
-                        <input type="number" id="max_sign_ups" name="max_sign_ups" defaultValue={event.max_sign_ups || ''} min="0" className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition" placeholder="Max deelnemers" />
-                    </div>
-                    <div>
-                        <label htmlFor="price_members" className="block text-sm font-bold text-slate-600 dark:text-slate-300 mb-2">Prijs Leden (€)</label>
-                        <input type="number" id="price_members" name="price_members" defaultValue={event.price_members !== null && event.price_members !== undefined ? event.price_members : ''} min="0" step="0.01" className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition" placeholder="0.00" />
-                    </div>
-                    <div>
-                        <label htmlFor="price_non_members" className="block text-sm font-bold text-slate-600 dark:text-slate-300 mb-2">Prijs Niet-leden (€)</label>
-                        <input type="number" id="price_non_members" name="price_non_members" defaultValue={event.price_non_members !== null && event.price_non_members !== undefined ? event.price_non_members : ''} min="0" step="0.01" className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition" placeholder="0.00" />
-                    </div>
-                </div>
-
-                {/* Committee & Contact */}
-                <div>
-                    <label htmlFor="committee_id" className="block text-sm font-bold text-slate-600 dark:text-slate-300 mb-2">Commissie</label>
-                    <select id="committee_id" name="committee_id" defaultValue={event.committee_id || ''} className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition">
-                        <option value="">Selecteer een commissie...</option>
-                        {committees.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    </select>
-                </div>
-                <div>
-                    <label htmlFor="contact" className="block text-sm font-bold text-slate-600 dark:text-slate-300 mb-2">Contact (email of telefoon)</label>
-                    <input type="text" id="contact" name="contact" defaultValue={event.contact || ''} className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition" placeholder="naam@salvemundi.nl" />
-                </div>
-
-                {/* Image Upload */}
-                <div>
-                    <label className="block text-sm font-bold text-slate-600 dark:text-slate-300 mb-2">Afbeelding</label>
-                    {!imagePreview ? (
-                        <div onClick={() => fileInputRef.current?.click()} className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg cursor-pointer hover:border-primary hover:bg-primary/5 transition bg-slate-50 dark:bg-slate-900/50 text-slate-500">
-                            <Upload className="h-8 w-8 mb-2" />
-                            <span className="text-sm">Klik om een afbeelding te uploaden of wijzigen</span>
-                            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
+                        <div className="lg:col-span-2">
+                            <label htmlFor="event_date" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Startdatum *</label>
+                            <input
+                                type="date"
+                                id="event_date"
+                                name="event_date"
+                                defaultValue={formatDate(event.event_date)}
+                                className={`w-full px-5 py-4 rounded-xl border bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] ${formErrors.event_date ? 'border-red-500 ring-4 ring-red-500/10' : 'border-[var(--beheer-border)]'} focus:border-[var(--beheer-accent)] focus:ring-4 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all font-bold`}
+                            />
+                            {formErrors.event_date && <p className="text-red-500 text-[10px] font-black uppercase tracking-widest mt-2">{formErrors.event_date[0]}</p>}
                         </div>
-                    ) : (
-                        <div className="relative group">
-                            <img src={imagePreview} alt="Preview" className="w-full h-48 object-cover rounded-lg ring-1 ring-slate-200 dark:ring-slate-700" />
-                            <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button type="button" onClick={() => fileInputRef.current?.click()} className="bg-white text-slate-900 p-2 rounded-full hover:bg-slate-100 transition shadow-lg cursor-pointer"><Upload className="h-4 w-4" /></button>
-                                <button type="button" onClick={handleRemoveImage} className="bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition shadow-lg cursor-pointer"><X className="h-4 w-4" /></button>
-                            </div>
-                            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                        <div className="lg:col-span-2">
+                            <label htmlFor="event_time" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Starttijd</label>
+                            <input type="time" id="event_time" name="event_time" defaultValue={event.event_time?.slice(0, 5) || ''} className="w-full px-5 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] focus:border-[var(--beheer-accent)] focus:ring-4 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all font-bold" />
                         </div>
-                    )}
-                </div>
+                        <div className="lg:col-span-2">
+                            <label htmlFor="event_date_end" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Einddatum</label>
+                            <input type="date" id="event_date_end" name="event_date_end" defaultValue={formatDate(event.event_date_end)} className="w-full px-5 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] focus:border-[var(--beheer-accent)] focus:ring-4 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all font-bold" />
+                        </div>
+                        <div className="lg:col-span-2">
+                            <label htmlFor="event_time_end" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Eindtijd</label>
+                            <input type="time" id="event_time_end" name="event_time_end" defaultValue={event.event_time_end?.slice(0, 5) || ''} className="w-full px-5 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] focus:border-[var(--beheer-accent)] focus:ring-4 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all font-bold" />
+                        </div>
+                    </div>
 
-                {/* Status & Options */}
-                <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-6 space-y-4 bg-slate-50 dark:bg-slate-900/30">
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">Publicatie Instellingen</h3>
-                    <div className="space-y-4">
-                        <label className="flex items-center gap-3 cursor-pointer group">
-                            <input type="radio" value="published" checked={status === 'published'} onChange={() => setStatus('published')} className="w-5 h-5 text-primary focus:ring-primary/20 border-slate-300 dark:border-slate-600" />
-                            <span className="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-primary transition">Direct publiceren</span>
-                        </label>
-                        <label className="flex items-center gap-3 cursor-pointer group">
-                            <input type="radio" value="draft" checked={status === 'draft'} onChange={() => setStatus('draft')} className="w-5 h-5 text-primary focus:ring-primary/20 border-slate-300 dark:border-slate-600" />
-                            <span className="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-primary transition">Concept opslaan</span>
-                        </label>
-                        <label className="flex items-start gap-3 cursor-pointer group">
-                            <input type="radio" value="scheduled" checked={status === 'scheduled'} onChange={() => setStatus('scheduled')} className="w-5 h-5 text-primary focus:ring-primary/20 border-slate-300 dark:border-slate-600 mt-1" />
-                            <div className="flex-1">
-                                <span className="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-primary transition">Plannen voor later</span>
-                                {status === 'scheduled' && (
-                                    <input type="datetime-local" name="publish_date" defaultValue={formatDateTime(event.publish_date)} className="mt-2 w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-primary outline-none transition" />
-                                )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                        <div>
+                            <label htmlFor="registration_deadline" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Inschrijfdeadline</label>
+                            <input type="datetime-local" id="registration_deadline" name="registration_deadline" defaultValue={formatDateTime(event.registration_deadline)} className="w-full px-5 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] focus:border-[var(--beheer-accent)] focus:ring-4 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all font-bold" />
+                        </div>
+                        <div>
+                            <label htmlFor="location" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Locatie</label>
+                            <input type="text" id="location" name="location" defaultValue={event.location || ''} className="w-full px-5 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] focus:border-[var(--beheer-accent)] focus:ring-4 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all font-bold" placeholder="Bijv. Fontys R10" />
+                        </div>
+                    </div>
+
+                    <div className="relative z-10">
+                        <label htmlFor="description" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Beschrijving *</label>
+                        <textarea id="description" name="description" rows={5} defaultValue={event.description} className={`w-full px-5 py-4 rounded-xl border bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] ${formErrors.description ? 'border-red-500 ring-4 ring-red-500/10' : 'border-[var(--beheer-border)]'} focus:border-[var(--beheer-accent)] focus:ring-4 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all font-medium resize-none text-[15px] leading-relaxed`} placeholder="Beschrijving van de activiteit" />
+                        {formErrors.description && <p className="text-red-500 text-[10px] font-black uppercase tracking-widest mt-2">{formErrors.description[0]}</p>}
+                    </div>
+
+                    <div className="relative z-10">
+                        <label htmlFor="description_logged_in" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Extra beschrijving (alleen ingelogd)</label>
+                        <textarea id="description_logged_in" name="description_logged_in" rows={3} defaultValue={event.description_logged_in || ''} className="w-full px-5 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] focus:border-[var(--beheer-accent)] focus:ring-4 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all font-medium resize-none text-[15px] leading-relaxed" />
+                    </div>
+
+                    {/* Capacity & Pricing */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
+                        <div>
+                            <label htmlFor="max_sign_ups" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Capaciteit</label>
+                            <input type="number" id="max_sign_ups" name="max_sign_ups" defaultValue={event.max_sign_ups || ''} min="0" className="w-full px-5 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] focus:border-[var(--beheer-accent)] focus:ring-4 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all font-bold" placeholder="Max deelnemers" />
+                        </div>
+                        <div>
+                            <label htmlFor="price_members" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Prijs Leden (€)</label>
+                            <input type="number" id="price_members" name="price_members" defaultValue={event.price_members !== null && event.price_members !== undefined ? event.price_members : ''} min="0" step="0.01" className="w-full px-5 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] focus:border-[var(--beheer-accent)] focus:ring-4 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all font-bold" placeholder="0.00" />
+                        </div>
+                        <div>
+                            <label htmlFor="price_non_members" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Prijs Niet-leden (€)</label>
+                            <input type="number" id="price_non_members" name="price_non_members" defaultValue={event.price_non_members !== null && event.price_non_members !== undefined ? event.price_non_members : ''} min="0" step="0.01" className="w-full px-5 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] focus:border-[var(--beheer-accent)] focus:ring-4 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all font-bold" placeholder="0.00" />
+                        </div>
+                    </div>
+
+                    {/* Committee & Contact */}
+                    <div className="relative z-10">
+                        <label htmlFor="committee_id" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Commissie</label>
+                        <select id="committee_id" name="committee_id" defaultValue={event.committee_id || ''} className="w-full px-5 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] focus:border-[var(--beheer-accent)] focus:ring-4 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all font-bold cursor-pointer">
+                            <option value="">Selecteer een commissie...</option>
+                            {committees.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        </select>
+                    </div>
+                    <div className="relative z-10">
+                        <label htmlFor="contact" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Contact (email of telefoon)</label>
+                        <input type="text" id="contact" name="contact" defaultValue={event.contact || ''} className="w-full px-5 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] focus:border-[var(--beheer-accent)] focus:ring-4 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all font-bold" placeholder="naam@salvemundi.nl" />
+                    </div>
+
+                    {/* Image Upload */}
+                    <div className="relative z-10">
+                        <label className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Afbeelding</label>
+                        {!imagePreview ? (
+                            <div onClick={() => fileInputRef.current?.click()} className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-[var(--beheer-border)] rounded-[var(--beheer-radius)] cursor-pointer hover:border-[var(--beheer-accent)] hover:bg-[var(--beheer-accent)]/5 transition-all bg-[var(--beheer-card-soft)] group">
+                                <Upload className="h-8 w-8 mb-3 text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)] transition-colors" />
+                                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)] transition-colors text-center px-4">Klik om een afbeelding te uploaden of wijzigen</span>
+                                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
                             </div>
-                        </label>
+                        ) : (
+                            <div className="relative group overflow-hidden rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] max-w-2xl">
+                                <img src={imagePreview} alt="Preview" className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-700" />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                                    <button type="button" onClick={() => fileInputRef.current?.click()} className="bg-white text-slate-900 p-3 rounded-2xl hover:scale-110 transition shadow-xl cursor-pointer"><Upload className="h-5 w-5" /></button>
+                                    <button type="button" onClick={handleRemoveImage} className="bg-red-500 text-white p-3 rounded-2xl hover:scale-110 transition shadow-xl cursor-pointer"><X className="h-5 w-5" /></button>
+                                </div>
+                                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                            </div>
+                        )}
                     </div>
-                </div>
 
-                <div className="flex items-center gap-3">
-                    <input type="checkbox" id="only_members" checked={onlyMembers} onChange={(e) => setOnlyMembers(e.target.checked)} className="w-6 h-6 text-primary rounded-md border-slate-300 dark:border-slate-600 focus:ring-primary/20 cursor-pointer" />
-                    <label htmlFor="only_members" className="text-sm font-bold text-slate-700 dark:text-slate-300 cursor-pointer hover:text-primary transition">Alleen voor leden</label>
-                </div>
-
-                {/* Submit */}
-                <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                    <button type="submit" disabled={optimisticSaving} className="flex-1 bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-full font-bold shadow-lg shadow-primary/20 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed disabled:scale-100">
-                        {optimisticSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
-                        {optimisticSaving ? 'Opslaan...' : 'Wijzigingen Opslaan'}
-                    </button>
-                    <button type="button" onClick={() => router.back()} className="px-8 py-4 rounded-full font-bold border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer">Annuleren</button>
-                </div>
-            </form>
-
-            {/* Toast */}
-            {toast && (
-                <div className="fixed bottom-6 right-6 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
-                    <div className={`px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 border ${toast.type === 'success' ? 'bg-green-500 border-green-600 text-white' : 'bg-red-500 border-red-600 text-white'}`}>
-                        <span className="font-bold">{toast.message}</span>
+                    {/* Status & Options */}
+                    <div className="border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] p-8 space-y-6 bg-[var(--beheer-card-soft)] relative z-10">
+                        <h3 className="text-sm font-black text-[var(--beheer-text)] uppercase tracking-tight">Publicatie Instellingen</h3>
+                        <div className="space-y-4">
+                            <label className="flex items-center gap-4 cursor-pointer group">
+                                <div className="relative flex items-center justify-center">
+                                    <input type="radio" value="published" checked={status === 'published'} onChange={() => setStatus('published')} className="peer sr-only" />
+                                    <div className="w-6 h-6 border-2 border-[var(--beheer-border)] rounded-full peer-checked:border-[var(--beheer-accent)] peer-checked:bg-[var(--beheer-accent)] transition-all"></div>
+                                    <div className="absolute w-2 h-2 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                                </div>
+                                <span className="text-[10px] font-black text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-text)] uppercase tracking-widest transition-colors">Direct publiceren</span>
+                            </label>
+                            <label className="flex items-center gap-4 cursor-pointer group">
+                                <div className="relative flex items-center justify-center">
+                                    <input type="radio" value="draft" checked={status === 'draft'} onChange={() => setStatus('draft')} className="peer sr-only" />
+                                    <div className="w-6 h-6 border-2 border-[var(--beheer-border)] rounded-full peer-checked:border-[var(--beheer-accent)] peer-checked:bg-[var(--beheer-accent)] transition-all"></div>
+                                    <div className="absolute w-2 h-2 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                                </div>
+                                <span className="text-[10px] font-black text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-text)] uppercase tracking-widest transition-colors">Concept opslaan</span>
+                            </label>
+                            <label className="flex items-start gap-4 cursor-pointer group">
+                                <div className="relative flex items-center justify-center mt-1">
+                                    <input type="radio" value="scheduled" checked={status === 'scheduled'} onChange={() => setStatus('scheduled')} className="peer sr-only" />
+                                    <div className="w-6 h-6 border-2 border-[var(--beheer-border)] rounded-full peer-checked:border-[var(--beheer-accent)] peer-checked:bg-[var(--beheer-accent)] transition-all"></div>
+                                    <div className="absolute w-2 h-2 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                                </div>
+                                <div className="flex-1">
+                                    <span className="text-[10px] font-black text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-text)] uppercase tracking-widest transition-colors">Plannen voor later</span>
+                                    {status === 'scheduled' && (
+                                        <input type="datetime-local" name="publish_date" defaultValue={formatDateTime(event.publish_date)} className="mt-4 w-full px-5 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] focus:ring-4 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all font-bold" />
+                                    )}
+                                </div>
+                            </label>
+                        </div>
                     </div>
-                </div>
-            )}
-        </div>
+
+                    <div className="flex items-center gap-4 relative z-10 p-2">
+                        <div className="relative flex items-center justify-center">
+                            <input type="checkbox" id="only_members" checked={onlyMembers} onChange={(e) => setOnlyMembers(e.target.checked)} className="peer sr-only" />
+                            <div className="w-6 h-6 border-2 border-[var(--beheer-border)] rounded peer-checked:border-[var(--beheer-accent)] peer-checked:bg-[var(--beheer-accent)] transition-all"></div>
+                            <X className="absolute h-4 w-4 text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
+                        </div>
+                        <label htmlFor="only_members" className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest cursor-pointer hover:text-[var(--beheer-text)] transition-colors">Alleen voor leden</label>
+                    </div>
+
+                    {/* Submit */}
+                    <div className="flex flex-col sm:flex-row gap-4 pt-6 relative z-10">
+                        <button 
+                            type="submit" 
+                            disabled={optimisticSaving} 
+                            className="flex-1 bg-[var(--beheer-accent)] text-white px-10 py-5 rounded-2xl font-black uppercase tracking-widest text-xs shadow-[var(--shadow-glow)] hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-3 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {optimisticSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
+                            <span>{optimisticSaving ? 'Opslaan...' : 'Wijzigingen Opslaan'}</span>
+                        </button>
+                        <button 
+                            type="button" 
+                            onClick={() => router.back()} 
+                            className="px-10 py-5 rounded-2xl font-black uppercase tracking-widest text-xs border border-[var(--beheer-border)] text-[var(--beheer-text)] hover:bg-[var(--beheer-card-soft)] transition-all cursor-pointer"
+                        >
+                            Annuleren
+                        </button>
+                    </div>
+                </form>
+
+                {/* Toast */}
+                {toast && (
+                    <div className="fixed bottom-10 right-10 z-[100] animate-in fade-in slide-in-from-bottom-8 duration-500">
+                        <div className={`px-8 py-5 rounded-3xl shadow-2xl flex items-center gap-4 border-l-8 backdrop-blur-md ${toast.type === 'success' ? 'bg-[var(--beheer-card-bg)] border-emerald-500 text-[var(--beheer-text)]' : 'bg-[var(--beheer-card-bg)] border-red-500 text-[var(--beheer-text)]'}`}>
+                            <div className={`h-10 w-10 rounded-2xl flex items-center justify-center font-black text-xl ${toast.type === 'success' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
+                                {toast.type === 'success' ? '✓' : '!'}
+                            </div>
+                            <span className="font-black uppercase tracking-widest text-[10px]">{toast.message}</span>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </>
     );
 }

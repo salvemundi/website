@@ -30,16 +30,7 @@ export default async function AzureSyncPage() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-900 pb-20">
-            <PageHeader
-                title="Azure AD Synchronisatie"
-                description="Synchroniseer gebruikersgegevens en commissierechten met Microsoft Azure AD."
-                backLink="/beheer"
-                className="mb-0"
-                contentPadding="pt-0 pb-2 sm:pt-0 sm:pb-2"
-                titleClassName="text-sm sm:text-base md:text-xl"
-            />
-
+        <div className="min-h-screen bg-[var(--bg-main)]">
             <div className="container mx-auto px-4 py-8 max-w-7xl relative z-10">
                 <Suspense fallback={<SyncSkeleton />}>
                     <AzureSyncIsland />

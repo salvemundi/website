@@ -1,9 +1,8 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import AnimatedBeheerHeader from '@/components/ui/admin/AnimatedBeheerHeader';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
-import { ShieldAlert, ArrowLeft, Users } from 'lucide-react';
+import { ShieldAlert, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ActiviteitAanmeldingenIsland from '@/components/islands/admin/activities/ActiviteitAanmeldingenIsland';
@@ -89,17 +88,9 @@ async function SignupsDataLoader({ id }: { id: string }) {
     }
 
     return (
-        <>
-            <AnimatedBeheerHeader
-                title={event.name || 'Aanmeldingen'}
-                subtitle="Bekijk alle aanmeldingen en check deelnemers in voor deze activiteit."
-                backLink="/beheer/activiteiten"
-                icon={<Users className="h-10 w-10" />}
-            />
-            <div className="pb-20">
-                <ActiviteitAanmeldingenIsland event={event} initialSignups={signups} />
-            </div>
-        </>
+        <div className="pb-20">
+            <ActiviteitAanmeldingenIsland event={event} initialSignups={signups} />
+        </div>
     );
 }
 

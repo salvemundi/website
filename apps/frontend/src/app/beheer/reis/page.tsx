@@ -5,7 +5,6 @@ import type { Metadata } from 'next';
 import AdminReisDashboardSkeleton from '@/components/ui/admin/AdminReisDashboardSkeleton';
 import AdminReisSelectorIsland from '@/components/islands/admin/AdminReisSelectorIsland';
 import AdminReisTableIsland from '@/components/islands/admin/AdminReisTableIsland';
-import AnimatedBeheerHeader from '@/components/ui/admin/AnimatedBeheerHeader';
 import { Plane, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -47,7 +46,6 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
         <main className="min-h-screen bg-[var(--bg-main)]">
             <Suspense fallback={
                 <div className="container mx-auto px-4 py-8 max-w-7xl">
-                    <div className="h-40 w-full animate-pulse bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] mb-8" />
                     <AdminReisDashboardSkeleton />
                 </div>
             }>
@@ -85,12 +83,7 @@ async function AdminReisDashboardContent({ searchParams }: AdminReisPageProps) {
     if (!trips || trips.length === 0) {
         return (
             <>
-                <AnimatedBeheerHeader
-                    title="Reis Beheer"
-                    subtitle="Bekijk en beheer alle reizen van SV Salve Mundi."
-                    backLink="/beheer"
-                    icon={<Plane className="h-10 w-10 rotate-45" />}
-                />
+                {/* Toolbar is now part of the island or dashboard skeleton should handle it */}
                 <NoTripsView />
             </>
         );
@@ -105,13 +98,6 @@ async function AdminReisDashboardContent({ searchParams }: AdminReisPageProps) {
 
     return (
         <div className="min-h-screen pb-20">
-            {/* Page Header Area - Tokenized */}
-            <AnimatedBeheerHeader
-                title={`Reis: ${activeTrip.name}`}
-                subtitle="Bekijk aanmeldingen, beheer betalingen en configureer reisactiviteiten."
-                backLink="/beheer"
-                icon={<Plane className="h-10 w-10 rotate-45" />}
-            />
 
             <div className="container mx-auto px-4 max-w-7xl">
                 <AdminReisSelectorIsland 

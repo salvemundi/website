@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { Ticket, Loader2 } from 'lucide-react';
 
-import CouponManagementIsland from '@/components/islands/admin/CouponManagementIsland';
+import CouponManagementIsland from '@/components/islands/admin/coupons/CouponManagementIsland';
 import { auth } from '@/server/auth/auth';
 import { getCoupons } from '@/server/actions/admin-coupons.actions';
 
@@ -20,23 +20,6 @@ export default async function BeheerCouponsPage() {
 
     return (
         <main className="min-h-screen bg-[var(--bg-main)]">
-            {/* Page Header Area - Tokenized */}
-            <div className="bg-[var(--beheer-card-bg)] border-b border-[var(--beheer-border)]">
-                <div className="container mx-auto px-4 py-16 max-w-7xl">
-                    <div className="flex items-center gap-5 mb-4">
-                        <div className="h-14 w-14 rounded-[var(--radius-2xl)] bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] flex items-center justify-center shadow-2xl shadow-[var(--beheer-accent)]/10 animate-pulse">
-                            <Ticket className="h-8 w-8" />
-                        </div>
-                        <h1 className="text-5xl font-black text-[var(--beheer-text)] tracking-widest uppercase">
-                            Cou<span className="text-[var(--beheer-accent)]">pons</span>
-                        </h1>
-                    </div>
-                    <p className="text-[var(--beheer-text-muted)] text-xl max-w-3xl leading-relaxed font-medium">
-                        Beheer kortingscodes en acties voor het lidmaatschap.
-                    </p>
-                </div>
-            </div>
-            
             <Suspense fallback={<CouponPageLoader />}>
                 <CouponManagementIsland initialCoupons={coupons} />
             </Suspense>

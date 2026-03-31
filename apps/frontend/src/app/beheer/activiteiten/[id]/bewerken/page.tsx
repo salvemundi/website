@@ -1,15 +1,14 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import AnimatedBeheerHeader from '@/components/ui/admin/AnimatedBeheerHeader';
-import ActiviteitBewerkenIsland from '@/components/islands/admin/activities/ActiviteitBewerkenIsland';
-import ActiviteitBewerkenSkeleton from '@/components/ui/admin/activities/ActiviteitBewerkenSkeleton';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
-import { ShieldAlert, ArrowLeft, Edit } from 'lucide-react';
+import { ShieldAlert, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
+import ActiviteitBewerkenIsland from '@/components/islands/admin/activities/ActiviteitBewerkenIsland';
+import ActiviteitBewerkenSkeleton from '@/components/ui/admin/activities/ActiviteitBewerkenSkeleton';
 
 export const metadata: Metadata = {
     title: 'Activiteit Bewerken | SV Salve Mundi',
@@ -87,17 +86,9 @@ async function EditFormLoader({ id }: { id: string }) {
             : cleanedCommittees.filter((c: any) => memberships.some((m: any) => String(m.id) === String(c.id)));
 
         return (
-            <>
-                <AnimatedBeheerHeader
-                    title="Bewerk Activiteit"
-                    subtitle={`Wijzig de gegevens van "${eventData.name}".`}
-                    backLink="/beheer/activiteiten"
-                    icon={<Edit className="h-10 w-10" />}
-                />
-                <div className="pb-20">
-                    <ActiviteitBewerkenIsland event={eventData as any} committees={allowedCommitteesForDropdown as any} />
-                </div>
-            </>
+            <div className="pb-20">
+                <ActiviteitBewerkenIsland event={eventData as any} committees={allowedCommitteesForDropdown as any} />
+            </div>
         );
     } catch (e) {
         console.error("Error loading edit form:", e);
