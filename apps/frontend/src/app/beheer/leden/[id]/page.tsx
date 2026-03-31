@@ -1,14 +1,13 @@
 import { Suspense } from 'react';
-import PageHeader from '@/components/ui/layout/PageHeader';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
-import { ShieldAlert, ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
+import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
+import { UserCircle } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import LedenDetailIsland from '@/components/islands/admin/leden/LedenDetailIsland';
 import MemberDetailSkeleton from '@/components/ui/admin/leden/MemberDetailSkeleton';
+import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import { getSystemDirectus } from '@/lib/directus';
-
 
 // Correct Directus SDK imports
 import { readUser, readItems as dReadItems } from '@directus/sdk';
@@ -16,11 +15,11 @@ import { readUser, readItems as dReadItems } from '@directus/sdk';
 export default async function LidDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+        <main className="min-h-screen bg-[var(--bg-main)]">
             <Suspense fallback={<MemberDetailSkeleton />}>
                 <LidDataLoader id={resolvedParams.id} />
             </Suspense>
-        </div>
+        </main>
     );
 }
 
@@ -28,7 +27,7 @@ async function LidDataLoader({ id }: { id: string }) {
     const session = await auth.api.getSession({
         headers: await headers()
     });
-    if (!session || !session.user) return <UnauthorizedAccess />;
+    if (!session || !session.user) return <AdminUnauthorized title="Lid Detail" />;
 
     const user = session.user as any;
     const memberships = user.committees || [];
@@ -37,7 +36,14 @@ async function LidDataLoader({ id }: { id: string }) {
         return name.includes('bestuur') || name.includes('ict') || name.includes('kandi');
     });
 
-    if (!hasPriv) return <UnauthorizedAccess />;
+    if (!hasPriv) {
+        return (
+            <AdminUnauthorized 
+                title="Lid Detail"
+                description="Je hebt geen rechten om persoonsgegevens van dit lid te bekijken. Dit is een beperkte sectie voor het Bestuur en ICT."
+            />
+        );
+    }
 
     // Fetch Member Data
     let member;
@@ -99,47 +105,28 @@ async function LidDataLoader({ id }: { id: string }) {
 
     return (
         <>
-            <PageHeader
+            <AdminToolbar 
                 title={`${member.first_name} ${member.last_name}`}
-                description="Beheer profiel, lidmaatschappen en historie"
-                backLink="/beheer/leden"
-                className="mb-0"
-                contentPadding="pt-0 pb-2 sm:pt-0 sm:pb-2"
-                titleClassName="text-sm sm:text-base md:text-xl"
+                subtitle="Beheer profiel, lidmaatschappen en historie"
+                backHref="/beheer/leden"
+                actions={
+                    <div className="p-3 bg-[var(--beheer-card-soft)] rounded-xl border border-[var(--beheer-border)]">
+                        <UserCircle className="h-5 w-5 text-[var(--beheer-accent)]" />
+                    </div>
+                }
             />
-            <LedenDetailIsland 
-                member={member as any} 
-                initialMemberships={userCommittees as any} 
-                signups={signups as any}
-                allCommittees={allCommittees as any}
-                isAdmin={hasPriv}
-            />
-        </>
-    );
-}
 
-function UnauthorizedAccess() {
-    return (
-        <>
-            <PageHeader title="Geen Toegang" description="Onvoldoende rechten" backLink="/beheer/leden" />
-            <div className="container mx-auto px-4 py-12 max-w-2xl">
-                <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl p-8 text-center ring-1 ring-slate-200 dark:ring-slate-700">
-                    <div className="mb-6 flex justify-center">
-                        <div className="rounded-full bg-red-100 dark:bg-red-900/30 p-6">
-                            <ShieldAlert className="h-16 w-16 text-red-600 dark:text-red-400" />
-                        </div>
-                    </div>
-                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Toegang Geweigerd</h1>
-                    <p className="text-lg text-slate-500 dark:text-slate-400 mb-8">
-                        Je hebt geen rechten om persoonsgegevens van dit lid te bekijken.
-                    </p>
-                    <div className="flex justify-center">
-                        <Link href="/beheer/leden" className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200 px-8 py-3 font-semibold hover:bg-slate-200 dark:hover:bg-slate-600 transition-all">
-                            <ArrowLeft className="h-5 w-5" /> Terug naar Overzicht
-                        </Link>
-                    </div>
-                </div>
+            <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <LedenDetailIsland 
+                    member={member as any} 
+                    initialMemberships={userCommittees as any} 
+                    signups={signups as any}
+                    allCommittees={allCommittees as any}
+                    isAdmin={hasPriv}
+                />
             </div>
         </>
     );
 }
+
+

@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import PageHeader from '@/components/ui/layout/PageHeader';
+import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { AlertCircle, ShieldAlert, ArrowLeft } from 'lucide-react';
@@ -56,12 +56,20 @@ async function LedenDataLoader({ search, page, tab }: { search: string, page: nu
     const session = await auth.api.getSession({
         headers: await headers()
     });
-    if (!session || !session.user) return <UnauthorizedAccess />;
+    
+    if (!session || !session.user) return <AdminUnauthorized />;
 
     const user = session.user as any;
     const hasPriv = isSuperAdmin(user.committees);
 
-    if (!hasPriv) return <UnauthorizedAccess />;
+    if (!hasPriv) {
+        return (
+            <AdminUnauthorized 
+                title="Leden Beheer"
+                description="Je hebt geen rechten om (persoons)gegevens van leden te bekijken. Dit is een beperkte sectie voor het Bestuur en ICT."
+            />
+        );
+    }
 
     const todayStr = new Date().toISOString().substring(0, 10);
 
@@ -126,25 +134,4 @@ async function LedenDataLoader({ search, page, tab }: { search: string, page: nu
     );
 }
 
-function UnauthorizedAccess() {
-    return (
-        <div className="container mx-auto px-4 py-12 max-w-2xl">
-            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl p-8 text-center ring-1 ring-slate-200 dark:ring-slate-700">
-                <div className="mb-6 flex justify-center">
-                    <div className="rounded-full bg-red-100 dark:bg-red-900/30 p-6">
-                        <ShieldAlert className="h-16 w-16 text-red-600 dark:text-red-400" />
-                    </div>
-                </div>
-                <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Toegang Geweigerd</h1>
-                <p className="text-lg text-slate-500 dark:text-slate-400 mb-8">
-                    Je hebt geen rechten om (persoons)gegevens van leden te bekijken.
-                </p>
-                <div className="flex justify-center">
-                    <Link href="/beheer" className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200 px-8 py-3 font-semibold hover:bg-slate-200 dark:hover:bg-slate-600 transition-all">
-                        <ArrowLeft className="h-5 w-5" /> Terug naar Dashboard
-                    </Link>
-                </div>
-            </div>
-        </div>
-    );
-}
+

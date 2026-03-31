@@ -2,7 +2,8 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
-import { ShieldAlert, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getSystemDirectus } from '@/lib/directus';
@@ -30,7 +31,7 @@ async function EditFormLoader({ id }: { id: string }) {
     const session = await auth.api.getSession({
         headers: await headers()
     });
-    if (!session || !session.user) return <UnauthorizedAccess />;
+    if (!session || !session.user) return <AdminUnauthorized title="Activiteit Bewerken" />;
 
     const user = session.user as any;
     const memberships = user.committees || [];
@@ -78,7 +79,14 @@ async function EditFormLoader({ id }: { id: string }) {
             hasAccess = eventData.committee_id ? memberships.some((c: any) => String(c.id) === String(eventData.committee_id)) : false;
         }
 
-        if (!hasAccess) return <UnauthorizedAccess specific={true} />;
+        if (!hasAccess) {
+            return (
+                <AdminUnauthorized 
+                    title="Activiteit Bewerken"
+                    description="Je hebt geen rechten om deze specifieke activiteit te bewerken. Dit kan alleen als je lid bent van de organiserende commissie, het bestuur of de ICT-commissie."
+                />
+            );
+        }
 
         // Filter allowed committees for the dropdown (only if not powerful, otherwise show all)
         const allowedCommitteesForDropdown = isPowerful 
@@ -96,31 +104,4 @@ async function EditFormLoader({ id }: { id: string }) {
     }
 }
 
-function UnauthorizedAccess({ specific = false }: { specific?: boolean }) {
-    return (
-        <div className="container mx-auto px-4 py-20 max-w-2xl">
-            <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl p-12 text-center border border-[var(--beheer-border)]">
-                <div className="mb-8 flex justify-center">
-                    <div className="rounded-full bg-red-500/10 p-8 shadow-glow-red">
-                        <ShieldAlert className="h-20 w-20 text-red-500" />
-                    </div>
-                </div>
-                <h1 className="text-4xl font-black text-[var(--beheer-text)] uppercase tracking-tighter mb-4">Toegang Geweigerd</h1>
-                <p className="text-xl text-[var(--beheer-text-muted)] font-medium mb-10 leading-relaxed">
-                    {specific 
-                        ? "Je hebt geen rechten om deze specifieke activiteit te bewerken. Dit kan alleen als je lid bent van de organiserende commissie, het bestuur of de ICT-commissie."
-                        : "Je hebt geen rechten om activiteiten te bewerken. Dit kan alleen als je lid bent van een commissie, het bestuur of de ICT-commissie."}
-                </p>
-                <div className="flex justify-center">
-                    <Link 
-                        href="/beheer/activiteiten" 
-                        className="inline-flex items-center justify-center gap-3 bg-[var(--beheer-border)] text-[var(--beheer-text)] px-10 py-4 rounded-full font-black uppercase tracking-widest text-xs hover:bg-[var(--beheer-accent)] hover:text-white transition-all active:scale-95 group"
-                    >
-                        <ArrowLeft className="h-5 w-5 group-hover:-translate-x-1 transition-transform" /> 
-                        <span>Ga Terug</span>
-                    </Link>
-                </div>
-            </div>
-        </div>
-    );
-}
+
