@@ -32,17 +32,13 @@ interface Member {
 interface LedenOverzichtIslandProps {
     members: Member[];
     totalCount: number;
-    currentPage: number;
     searchQuery: string;
-    pageSize: number;
 }
 
 export default function LedenOverzichtIsland({ 
     members, 
     totalCount, 
-    currentPage, 
-    searchQuery: initialSearchQuery,
-    pageSize
+    searchQuery: initialSearchQuery
 }: LedenOverzichtIslandProps) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
@@ -54,22 +50,20 @@ export default function LedenOverzichtIsland({
     useEffect(() => {
         const timer = setTimeout(() => {
             if (searchQuery !== initialSearchQuery) {
-                updateUrl({ search: searchQuery, page: 1 });
+                updateUrl({ search: searchQuery });
             }
         }, 300);
         return () => clearTimeout(timer);
     }, [searchQuery, initialSearchQuery]);
 
-    function updateUrl(params: { search?: string, page?: number }) {
+    function updateUrl(params: { search?: string }) {
         const url = new URL(window.location.href);
         if (params.search !== undefined) {
             if (params.search) url.searchParams.set('search', params.search);
             else url.searchParams.delete('search');
         }
-        if (params.page !== undefined) {
-            if (params.page > 1) url.searchParams.set('page', params.page.toString());
-            else url.searchParams.delete('page');
-        }
+        // Always clear page param if it somehow exists
+        url.searchParams.delete('page');
         
         startTransition(() => {
             router.push(url.pathname + url.search);
@@ -126,7 +120,6 @@ export default function LedenOverzichtIsland({
 
     const activeCount = members.filter(m => isMembershipActive(m)).length;
     const inactiveCount = members.filter(m => !isMembershipActive(m)).length;
-    const totalPages = Math.ceil(totalCount / pageSize);
 
     const adminStats = [
         { label: 'Totaal', value: totalCount, icon: Users, trend: 'Accounts' },
@@ -175,11 +168,7 @@ export default function LedenOverzichtIsland({
 
                 <LedenTable 
                     members={filteredMembers}
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalCount={totalCount}
                     isPending={isPending}
-                    onPageChange={(page) => updateUrl({ page })}
                     formatDate={formatDate}
                     isMembershipActive={isMembershipActive}
                 />

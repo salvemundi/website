@@ -5,9 +5,7 @@ import { useRouter } from 'next/navigation';
 import { 
     Users, 
     Mail, 
-    ChevronRight, 
-    ChevronLeft, 
-    ChevronRight as ChevronRightIcon 
+    ChevronRight
 } from 'lucide-react';
 
 interface Member {
@@ -22,22 +20,14 @@ interface Member {
 
 interface LedenTableProps {
     members: Member[];
-    currentPage: number;
-    totalPages: number;
-    totalCount: number;
     isPending: boolean;
-    onPageChange: (page: number) => void;
     formatDate: (dateString: string | null) => string;
     isMembershipActive: (m: Member) => boolean;
 }
 
 export default function LedenTable({
     members,
-    currentPage,
-    totalPages,
-    totalCount,
     isPending,
-    onPageChange,
     formatDate,
     isMembershipActive
 }: LedenTableProps) {
@@ -108,31 +98,6 @@ export default function LedenTable({
                     <Users className="h-16 w-16 text-slate-200 dark:text-slate-700 mx-auto mb-4" />
                     <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">Geen leden gevonden</h3>
                     <p className="text-slate-500 dark:text-slate-400 font-medium">Pas de filters aan of probeer een andere zoekterm.</p>
-                </div>
-            )}
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-                <div className="px-8 py-6 border-t border-slate-100 dark:border-slate-700/50 flex items-center justify-between bg-slate-50/30 dark:bg-slate-900/10">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                        Pagina {currentPage} van {totalPages} <span className="mx-2">|</span> {totalCount} leden totaal
-                    </p>
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => onPageChange(currentPage - 1)}
-                            disabled={currentPage === 1 || isPending}
-                            className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 disabled:opacity-30 hover:bg-white dark:hover:bg-slate-800 transition-all cursor-pointer"
-                        >
-                            <ChevronLeft className="h-5 w-5" />
-                        </button>
-                        <button
-                            onClick={() => onPageChange(currentPage + 1)}
-                            disabled={currentPage === totalPages || isPending}
-                            className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 disabled:opacity-30 hover:bg-white dark:hover:bg-slate-800 transition-all cursor-pointer"
-                        >
-                            <ChevronRightIcon className="h-5 w-5" />
-                        </button>
-                    </div>
                 </div>
             )}
         </div>
