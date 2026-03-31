@@ -12,8 +12,6 @@ import { getImageUrl } from '@/lib/image-utils';
 import { readUsers, readRoles } from '@directus/sdk';
 import { isSuperAdmin } from '@/lib/auth-utils';
 
-const PAGE_SIZE = 25;
-
 const EXCLUDED_EMAILS = [
     'youtube@salvemundi.nl',
     'github@salvemundi.nl',
@@ -32,19 +30,17 @@ const EXCLUDED_EMAILS = [
 export default async function LedenPage({ 
     searchParams 
 }: { 
-    searchParams: Promise<{ search?: string; page?: string; tab?: string }> 
+    searchParams: Promise<{ search?: string; tab?: string }> 
 }) {
     const params = await searchParams;
-    const page = parseInt(params.page || '1');
     const search = params.search || '';
     const tab = (params.tab as 'active' | 'inactive') || 'active';
 
     return (
         <div className="min-h-screen bg-[var(--bg-main)]">
-            <Suspense key={search + "-" + page + "-" + tab} fallback={<MemberListSkeleton />}>
+            <Suspense key={search + "-" + tab} fallback={<MemberListSkeleton />}>
                 <LedenDataLoader 
                     search={search} 
-                    page={page} 
                     tab={tab} 
                 />
             </Suspense>
@@ -52,7 +48,7 @@ export default async function LedenPage({
     );
 }
 
-async function LedenDataLoader({ search, page, tab }: { search: string, page: number, tab: 'active' | 'inactive' }) {
+async function LedenDataLoader({ search, tab }: { search: string, tab: 'active' | 'inactive' }) {
     const session = await auth.api.getSession({
         headers: await headers()
     });
@@ -127,9 +123,7 @@ async function LedenDataLoader({ search, page, tab }: { search: string, page: nu
         <LedenOverzichtIsland 
             members={members as any} 
             totalCount={totalCount} 
-            currentPage={page} 
             searchQuery={search}
-            pageSize={PAGE_SIZE}
         />
     );
 }
