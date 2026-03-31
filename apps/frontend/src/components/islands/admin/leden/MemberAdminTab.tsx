@@ -14,6 +14,8 @@ import {
     RefreshCw 
 } from 'lucide-react';
 import { cleanName } from './LedenSharedComponents';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 
 interface Member {
     id: string;
@@ -42,10 +44,10 @@ interface Props {
     member: Member;
     optimisticMemberships: CommitteeMembership[];
     availableCommittees: Committee[];
-    onProvision: () => Promise<string | null>;
+    onProvision: () => Promise<{ success: boolean, message: string } | null>;
     onMembershipChange: (groupId: string, action: 'add' | 'remove', name: string) => Promise<void>;
-    onRenew: (months: number) => Promise<string | null>;
-    onSync: () => Promise<string | null>;
+    onRenew: (months: number) => Promise<{ success: boolean, message: string } | null>;
+    onSync: () => Promise<{ success: boolean, message: string } | null>;
     isActionInProgress: string | null;
 }
 
@@ -59,32 +61,36 @@ export default function MemberAdminTab({
     onSync,
     isActionInProgress
 }: Props) {
+    const { toast, showToast, hideToast } = useAdminToast();
     const [provisioningLoading, setProvisioningLoading] = useState(false);
-    const [provisioningResult, setProvisioningResult] = useState<string | null>(null);
     const [renewMonths, setRenewMonths] = useState(12);
     const [renewLoading, setRenewLoading] = useState(false);
-    const [renewResult, setRenewResult] = useState<string | null>(null);
     const [syncLoading, setSyncLoading] = useState(false);
-    const [syncResult, setSyncResult] = useState<string | null>(null);
 
     const handleProvision = async () => {
         setProvisioningLoading(true);
         const res = await onProvision();
-        setProvisioningResult(res);
+        if (res) {
+            showToast(res.message, res.success ? 'success' : 'error');
+        }
         setProvisioningLoading(false);
     };
 
     const handleRenew = async () => {
         setRenewLoading(true);
         const res = await onRenew(renewMonths);
-        setRenewResult(res);
+        if (res) {
+            showToast(res.message, res.success ? 'success' : 'error');
+        }
         setRenewLoading(false);
     };
 
     const handleSync = async () => {
         setSyncLoading(true);
         const res = await onSync();
-        setSyncResult(res);
+        if (res) {
+            showToast(res.message, res.success ? 'success' : 'error');
+        }
         setSyncLoading(false);
     };
 
@@ -116,12 +122,6 @@ export default function MemberAdminTab({
                         {provisioningLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
                         Azure AD Account Aanmaken
                     </button>
-                    {provisioningResult && (
-                        <div className={`mt-6 p-4 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 border ${provisioningResult.startsWith('✓') ? 'bg-green-500/5 text-green-500 border-green-500/20' : 'bg-red-500/5 text-red-500 border-red-500/20'}`}>
-                            {provisioningResult.startsWith('✓') ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-                            {provisioningResult}
-                        </div>
-                    )}
                 </div>
             )}
 
@@ -213,13 +213,8 @@ export default function MemberAdminTab({
                         {renewLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CalendarPlus className="h-4 w-4" />}
                         Verlengen
                     </button>
+                    <AdminToast toast={toast} onClose={hideToast} />
                 </div>
-                {renewResult && (
-                    <div className={`mt-6 p-4 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 border ${renewResult.startsWith('✓') ? 'bg-green-500/5 text-green-500 border-green-500/20' : 'bg-red-500/5 text-red-500 border-red-500/20'}`}>
-                        {renewResult.startsWith('✓') ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-                        {renewResult}
-                    </div>
-                )}
             </div>
 
             {/* Force Sync */}
@@ -239,12 +234,6 @@ export default function MemberAdminTab({
                             Synchroniseer
                         </button>
                     </div>
-                    {syncResult && (
-                        <div className={`mt-6 p-4 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 border ${syncResult.startsWith('✓') ? 'bg-green-500/5 text-green-500 border-green-500/20' : 'bg-red-500/5 text-red-500 border-red-500/20'}`}>
-                            {syncResult.startsWith('✓') ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-                            {syncResult}
-                        </div>
-                    )}
                 </div>
             )}
         </div>

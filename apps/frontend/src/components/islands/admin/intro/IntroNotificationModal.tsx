@@ -12,14 +12,15 @@ interface Props {
     onClose: () => void;
     onSend: (title: string, body: string, includeParents: boolean) => Promise<void>;
     sending: boolean;
+    showToast: (message: string, type: 'success' | 'error' | 'info') => void;
 }
 
-export default function IntroNotificationModal({ onClose, onSend, sending }: Props) {
+export default function IntroNotificationModal({ onClose, onSend, sending, showToast }: Props) {
     const [notif, setNotif] = useState({ title: '', body: '', includeParents: false });
 
     const handleSend = async () => {
         if (!notif.title || !notif.body) {
-            alert('Vul een titel en bericht in');
+            showToast('Vul een titel en bericht in', 'error');
             return;
         }
         await onSend(notif.title, notif.body, notif.includeParents);

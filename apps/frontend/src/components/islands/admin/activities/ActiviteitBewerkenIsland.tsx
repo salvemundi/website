@@ -7,6 +7,8 @@ import { ArrowLeft, Save, Upload, X, Loader2 } from 'lucide-react';
 import { updateActivityAction } from '@/server/actions/activiteiten.actions';
 import { getImageUrl } from '@/lib/image-utils';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 
 interface Committee {
     id: number;
@@ -37,13 +39,12 @@ interface EventProps {
 
 export default function ActiviteitBewerkenIsland({ event, committees }: { event: EventProps, committees: Committee[] }) {
     const router = useRouter();
+    const { toast, showToast, hideToast } = useAdminToast();
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [removeExistingImage, setRemoveExistingImage] = useState(false);
     
     // Set initial image preview if event has an image
     const [imagePreview, setImagePreview] = useState<string | null>(getImageUrl(event.image));
-    
-    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
     
     // Initialize controlled UI state correctly handling draft vs scheduled vs published
     const determineStatus = () => {
@@ -55,11 +56,6 @@ export default function ActiviteitBewerkenIsland({ event, committees }: { event:
     const [onlyMembers, setOnlyMembers] = useState(!!event.only_members);
     
     const fileInputRef = useRef<HTMLInputElement>(null);
-
-    const showToast = (message: string, type: 'success' | 'error') => {
-        setToast({ message, type });
-        setTimeout(() => setToast(null), 5000);
-    };
 
     // React 19 useActionState
     const [state, formAction, isPending] = useActionState(async (prevState: any, formData: FormData) => {
@@ -303,17 +299,7 @@ export default function ActiviteitBewerkenIsland({ event, committees }: { event:
                     </div>
                 </form>
 
-                {/* Toast */}
-                {toast && (
-                    <div className="fixed bottom-10 right-10 z-[100] animate-in fade-in slide-in-from-bottom-8 duration-500">
-                        <div className={`px-8 py-5 rounded-3xl shadow-2xl flex items-center gap-4 border-l-8 backdrop-blur-md ${toast.type === 'success' ? 'bg-[var(--beheer-card-bg)] border-emerald-500 text-[var(--beheer-text)]' : 'bg-[var(--beheer-card-bg)] border-red-500 text-[var(--beheer-text)]'}`}>
-                            <div className={`h-10 w-10 rounded-2xl flex items-center justify-center font-black text-xl ${toast.type === 'success' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
-                                {toast.type === 'success' ? '✓' : '!'}
-                            </div>
-                            <span className="font-black uppercase tracking-widest text-[10px]">{toast.message}</span>
-                        </div>
-                    </div>
-                )}
+                <AdminToast toast={toast} onClose={hideToast} />
             </div>
         </>
     );

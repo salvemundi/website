@@ -28,6 +28,8 @@ import {
 import type { Trip, TripSignup } from '@salvemundi/validations';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 
 interface ReisMailIslandProps {
     trips: Trip[];
@@ -37,6 +39,7 @@ interface ReisMailIslandProps {
 
 export default function ReisMailIsland({ trips, initialSignups, initialSelectedTripId }: ReisMailIslandProps) {
     const router = useRouter();
+    const { toast, showToast, hideToast } = useAdminToast();
     const [selectedTripId, setSelectedTripId] = useState<number>(initialSelectedTripId);
     const [signups, setSignups] = useState<TripSignup[]>(initialSignups);
     const [sending, setSending] = useState(false);
@@ -102,11 +105,11 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
                     message
                 });
                 if (res.success) {
-                    setSuccess(`Email succesvol verzonden naar ${filteredRecipients.length} deelnemers!`);
+                    showToast(`Email succesvol verzonden naar ${filteredRecipients.length} deelnemers!`, 'success');
                     setSubject('');
                     setMessage('');
                 } else {
-                    setError(res.error || 'Fout bij het verzenden');
+                    showToast(res.error || 'Fout bij het verzenden', 'error');
                 }
             } else {
                 const res = await sendBulkPaymentEmails(
@@ -115,13 +118,13 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
                     emailType === 'deposit_request' ? 'deposit' : 'final'
                 );
                 if (res.success) {
-                    setSuccess(`${filteredRecipients.length} betalingsverzoeken succesvol verstuurd!`);
+                    showToast(`${filteredRecipients.length} betalingsverzoeken succesvol verstuurd!`, 'success');
                 } else {
-                    setError(`Verzenden voltooid: ${res.successCount || 0} gelukt, ${res.failCount || 0} mislukt.`);
+                    showToast(`Verzenden voltooid: ${res.successCount || 0} gelukt, ${res.failCount || 0} mislukt.`, 'info');
                 }
             }
         } catch (err) {
-            setError('Er is een onverwachte fout opgetreden');
+            showToast('Er is een onverwachte fout opgetreden', 'error');
         } finally {
             setSending(false);
         }
@@ -155,19 +158,6 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
 
             <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700">
                 <AdminStatsBar stats={adminStats} />
-            {/* Alerts */}
-            {success && (
-                <div className="mb-6 p-4 bg-[var(--theme-success)]/10 text-[var(--theme-success)] rounded-[var(--radius-xl)] border border-[var(--theme-success)]/20 flex items-center gap-3 animate-in slide-in-from-top-4">
-                    <CheckCircle className="h-5 w-5" />
-                    <p className="font-semibold">{success}</p>
-                </div>
-            )}
-            {error && (
-                <div className="mb-6 p-4 bg-[var(--theme-error)]/10 text-[var(--theme-error)] rounded-[var(--radius-xl)] border border-[var(--theme-error)]/20 flex items-center gap-3 animate-in slide-in-from-top-4">
-                    <AlertCircle className="h-5 w-5" />
-                    <p className="font-semibold">{error}</p>
-                </div>
-            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 {/* Left Column: Config & Filters */}
@@ -316,8 +306,9 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
                     </div>
                 </div>
             </div>
-        </div>
-    </>
+            </div>
+            <AdminToast toast={toast} onClose={hideToast} />
+        </>
     );
 }
 

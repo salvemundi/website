@@ -15,8 +15,11 @@ import {
 import { PendingSignup } from '@salvemundi/validations';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 
 export default function AuditLogIsland() {
+    const { toast, showToast, hideToast } = useAdminToast();
     const [activeTab, setActiveTab] = useState<'pending' | 'logs'>('pending');
     const [signups, setSignups] = useState<PendingSignup[]>([]);
     const [logs, setLogs] = useState<any[]>([]);
@@ -42,6 +45,7 @@ export default function AuditLogIsland() {
             if (logsRes.success && logsRes.data) setLogs(logsRes.data);
         } catch (err) {
             console.error("Failed to load audit data", err);
+            showToast('Fout bij laden audit data', 'error');
         } finally {
             setIsLoading(false);
         }
@@ -62,10 +66,15 @@ export default function AuditLogIsland() {
             const res = await approveSignupAction(id, type);
             if (res.success) {
                 setSignups(prev => prev.filter(s => s.id !== id));
+                showToast('Inschrijving goedgekeurd', 'success');
                 // Reload logs to show the approval
                 const logsRes = await getSystemLogsAction(50);
                 if (logsRes.success && logsRes.data) setLogs(logsRes.data);
+            } else {
+                showToast(res.error || 'Goedkeuren mislukt', 'error');
             }
+        } catch (err) {
+            showToast('Er is een fout opgetreden', 'error');
         } finally {
             setIsProcessing(null);
         }
@@ -78,10 +87,15 @@ export default function AuditLogIsland() {
             const res = await rejectSignupAction(id, type);
             if (res.success) {
                 setSignups(prev => prev.filter(s => s.id !== id));
+                showToast('Inschrijving afgewezen', 'info');
                 // Reload logs to show the rejection
                 const logsRes = await getSystemLogsAction(50);
                 if (logsRes.success && logsRes.data) setLogs(logsRes.data);
+            } else {
+                showToast(res.error || 'Afwijzen mislukt', 'error');
             }
+        } catch (err) {
+            showToast('Er is een fout opgetreden', 'error');
         } finally {
             setIsProcessing(null);
         }
@@ -90,10 +104,16 @@ export default function AuditLogIsland() {
     const toggleManualApproval = async () => {
         const newValue = !manualApproval;
         setManualApproval(newValue);
-        await updateAuditSettingsAction(newValue);
-        // Reload logs
-        const logsRes = await getSystemLogsAction(50);
-        if (logsRes.success && logsRes.data) setLogs(logsRes.data);
+        const res = await updateAuditSettingsAction(newValue);
+        if (res.success) {
+            showToast(`Automatische goedkeuring ${newValue ? 'uitgeschakeld' : 'ingeschakeld'}`, 'success');
+            // Reload logs
+            const logsRes = await getSystemLogsAction(50);
+            if (logsRes.success && logsRes.data) setLogs(logsRes.data);
+        } else {
+            showToast('Fout bij bijwerken instellingen', 'error');
+            setManualApproval(!newValue); // revert
+        }
     };
 
     const toggleSelectAll = () => {
@@ -377,6 +397,7 @@ export default function AuditLogIsland() {
             )}
                 </div>
             </div>
+            <AdminToast toast={toast} onClose={hideToast} />
         </>
     );
 }

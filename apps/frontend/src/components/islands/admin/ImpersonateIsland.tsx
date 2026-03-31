@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { Check, Save, Trash2, Key, Loader2, AlertCircle, Shield, User, Lock, Activity } from 'lucide-react';
+import { Check, Save, Trash2, Key, Loader2, Shield, User, Lock, Activity } from 'lucide-react';
 import { setImpersonateToken, clearImpersonateToken } from '@/server/actions/admin.actions';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 
 interface Props {
     activeToken: string | null;
@@ -13,23 +15,23 @@ interface Props {
 }
 
 export default function ImpersonateIsland({ activeToken, impersonatedName, impersonatedCommittees }: Props) {
+    const { toast, showToast, hideToast } = useAdminToast();
     const [token, setToken] = useState('');
     const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
-    const [errorMessage, setErrorMessage] = useState('');
     const [isPending, startTransition] = useTransition();
 
     const handleSave = () => {
         if (!token) return;
-        setErrorMessage('');
         startTransition(async () => {
             const result = await setImpersonateToken(token);
             if (result && result.success) {
                 setStatus('success');
                 setToken('');
+                showToast('Test modus succesvol geactiveerd', 'success');
                 setTimeout(() => setStatus('idle'), 3000);
             } else {
                 setStatus('error');
-                setErrorMessage(result?.error || 'Er ging iets mis met valideren.');
+                showToast(result?.error || 'Ongeldige token of fout bij valideren.', 'error');
                 setTimeout(() => setStatus('idle'), 4000);
             }
         });
@@ -38,6 +40,7 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
     const handleClear = () => {
         startTransition(async () => {
             await clearImpersonateToken();
+            showToast('Test modus gedeactiveerd', 'info');
             setStatus('idle');
         });
     };
@@ -125,12 +128,6 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                             </div>
                         </div>
 
-                        {status === 'error' && (
-                            <div className="flex items-center gap-2 text-[var(--beheer-inactive)] text-xs font-bold ml-1 animate-in fade-in slide-in-from-top-2">
-                                <AlertCircle className="h-4 w-4" />
-                                {errorMessage}
-                            </div>
-                        )}
                         <button
                             onClick={handleSave}
                             disabled={!token || isPending}
@@ -161,6 +158,7 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                     </div>
                 )}
             </div>
+            <AdminToast toast={toast} onClose={hideToast} />
         </>
     );
-}
+}

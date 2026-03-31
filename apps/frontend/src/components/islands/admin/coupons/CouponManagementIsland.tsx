@@ -14,12 +14,15 @@ import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 
 import CouponRow from './CouponRow';
 import CouponForm from './CouponForm';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 
 interface Props {
     initialCoupons: Coupon[];
 }
 
 export default function CouponManagementIsland({ initialCoupons }: Props) {
+    const { toast, showToast, hideToast } = useAdminToast();
     const [coupons, setCoupons] = useState<Coupon[]>(initialCoupons);
     const [showForm, setShowForm] = useState(false);
     const [formError, setFormError] = useState<string | null>(null);
@@ -65,16 +68,24 @@ export default function CouponManagementIsland({ initialCoupons }: Props) {
         if (!confirm('Weet je zeker dat je deze coupon wilt verwijderen?')) return;
         setDeletingId(id);
         const res = await deleteCoupon(id);
-        if (res.success) setCoupons(prev => prev.filter(c => c.id !== id));
-        else alert(res.error ?? 'Verwijderen mislukt');
+        if (res.success) {
+            setCoupons(prev => prev.filter(c => c.id !== id));
+            showToast('Coupon succesvol verwijderd', 'success');
+        } else {
+            showToast(res.error ?? 'Verwijderen mislukt', 'error');
+        }
         setDeletingId(null);
     };
 
     const handleToggle = async (coupon: Coupon) => {
         setTogglingId(coupon.id);
         const res = await toggleCouponActive(coupon.id, coupon.is_active);
-        if (res.success) setCoupons(prev => prev.map(c => c.id === coupon.id ? { ...c, is_active: !c.is_active } : c));
-        else alert(res.error ?? 'Bijwerken mislukt');
+        if (res.success) {
+            setCoupons(prev => prev.map(c => c.id === coupon.id ? { ...c, is_active: !c.is_active } : c));
+            showToast(`Coupon ${coupon.is_active ? 'gedeactiveerd' : 'geactiveerd'}`, 'success');
+        } else {
+            showToast(res.error ?? 'Bijwerken mislukt', 'error');
+        }
         setTogglingId(null);
     };
 
@@ -209,6 +220,7 @@ export default function CouponManagementIsland({ initialCoupons }: Props) {
                     )}
                 </div>
             </div>
+            <AdminToast toast={toast} onClose={hideToast} />
         </>
     );
 }

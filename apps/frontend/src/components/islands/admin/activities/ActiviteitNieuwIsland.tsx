@@ -1,10 +1,20 @@
 'use client';
 
-import { useState, useRef, useOptimistic, useActionState } from 'react';
+import { useState, useRef, useOptimistic, useActionState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Save, Upload, X, Loader2, Calendar, Clock, MapPin, Users, Euro, Mail, Image as ImageIcon } from 'lucide-react';
+import { 
+    Image as ImageIcon, 
+    Users, 
+    Euro, 
+    Save, 
+    Upload, 
+    X, 
+    Loader2 
+} from 'lucide-react';
 import { createActivityAction } from '@/server/actions/activiteiten.actions';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 
 interface Committee {
     id: number;
@@ -20,20 +30,15 @@ interface ActionState {
 
 export default function ActiviteitNieuwIsland({ committees }: { committees: Committee[] }) {
     const router = useRouter();
+    const { toast, showToast, hideToast } = useAdminToast();
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
-    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
     
     // Status states
     const [status, setStatus] = useState<'published' | 'draft' | 'scheduled'>('published');
     const [onlyMembers, setOnlyMembers] = useState(false);
     
     const fileInputRef = useRef<HTMLInputElement>(null);
-
-    const showToast = (message: string, type: 'success' | 'error') => {
-        setToast({ message, type });
-        setTimeout(() => setToast(null), 5000);
-    };
 
     // React 19 useActionState
     const [state, formAction, isPending] = useActionState<ActionState, FormData>(
@@ -43,22 +48,23 @@ export default function ActiviteitNieuwIsland({ committees }: { committees: Comm
             formData.set('only_members', onlyMembers ? 'on' : 'off');
 
             const res = await createActivityAction(prevState, formData);
-            
-            if (res.success && res.id) {
-                const createdId = res.id;
-                showToast('Activiteit succesvol aangemaakt!', 'success');
-                // Redirect after a short delay
-                setTimeout(() => {
-                    router.push(`/beheer/activiteiten/${createdId}/bewerken`);
-                }, 1000);
-            } else if (!res.success) {
-                showToast(res.error || 'Er is een fout opgetreden', 'error');
-            }
-            
             return res as ActionState;
         }, 
         { success: false }
     );
+
+    // Effect to handle state changes (toasts and redirects)
+    useEffect(() => {
+        if (state.success && state.id) {
+            showToast('Activiteit succesvol aangemaakt!', 'success');
+            const timer = setTimeout(() => {
+                router.push(`/beheer/activiteiten/${state.id}/bewerken`);
+            }, 1000);
+            return () => clearTimeout(timer);
+        } else if (state.error) {
+            showToast(state.error, 'error');
+        }
+    }, [state, showToast, router]);
 
     // Optimistic UI for the saving state
     const [optimisticSaving, setOptimisticSaving] = useOptimistic(isPending);
@@ -317,17 +323,7 @@ export default function ActiviteitNieuwIsland({ committees }: { committees: Comm
                     </div>
                 </form>
 
-                {/* Premium Toast System */}
-                {toast && (
-                    <div className="fixed bottom-10 right-10 z-[100] animate-in fade-in slide-in-from-right-8 duration-500">
-                        <div className={`px-8 py-5 rounded-3xl shadow-2xl flex items-center gap-4 backdrop-blur-md border border-l-[12px] ${toast.type === 'success' ? 'bg-[var(--beheer-card-bg)]/90 border-emerald-500 text-[var(--beheer-text)]' : 'bg-[var(--beheer-card-bg)]/90 border-red-500 text-[var(--beheer-text)]'}`}>
-                            <div className={`h-12 w-12 rounded-2xl flex items-center justify-center font-black text-2xl ${toast.type === 'success' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
-                                {toast.type === 'success' ? '✓' : '!'}
-                            </div>
-                            <span className="font-black uppercase tracking-widest text-[10px]">{toast.message}</span>
-                        </div>
-                    </div>
-                )}
+                <AdminToast toast={toast} onClose={hideToast} />
             </div>
         </>
     );

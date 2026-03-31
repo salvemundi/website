@@ -9,6 +9,8 @@ import { useState, useTransition } from 'react';
 import { toggleReisVisibility } from '@/server/actions/reis-admin-core.actions';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminVisibilityToggle from '@/components/ui/admin/AdminVisibilityToggle';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 
 interface AdminReisSelectorIslandProps {
     trips: Trip[];
@@ -17,6 +19,7 @@ interface AdminReisSelectorIslandProps {
 
 export default function AdminReisSelectorIsland({ trips, initialSettings }: AdminReisSelectorIslandProps) {
     const router = useRouter();
+    const { toast, showToast, hideToast } = useAdminToast();
     const searchParams = useSearchParams();
     const [isPending, startTransition] = useTransition();
     const [settings, setSettings] = useState(initialSettings);
@@ -36,10 +39,14 @@ export default function AdminReisSelectorIsland({ trips, initialSettings }: Admi
                 const result = await toggleReisVisibility();
                 if (result.success) {
                     setSettings({ show: result.show ?? false });
+                    showToast(`Reis is nu ${result.show ? 'zichtbaar' : 'verborgen'}`, 'success');
                     router.refresh();
+                } else {
+                    showToast(result.error || 'Fout bij bijwerken zichtbaarheid', 'error');
                 }
             } catch (err) {
                 console.error(err);
+                showToast('Er is een onverwachte fout opgetreden', 'error');
             }
         });
     };
@@ -47,6 +54,7 @@ export default function AdminReisSelectorIsland({ trips, initialSettings }: Admi
     const activeTrip = trips.find(t => t.id === selectedId) || trips[0];
 
     return (
+        <>
         <AdminToolbar 
             title={activeTrip?.name || 'Reis Beheer'}
             subtitle="Bekijk aanmeldingen, beheer betalingen & configuratie"
@@ -111,5 +119,7 @@ export default function AdminReisSelectorIsland({ trips, initialSettings }: Admi
                 </>
             }
         />
+        <AdminToast toast={toast} onClose={hideToast} />
+        </>
     );
 }

@@ -14,6 +14,8 @@ import {
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminVisibilityToggle from '@/components/ui/admin/AdminVisibilityToggle';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { 
@@ -35,6 +37,7 @@ export default function KroegentochtManagementIsland({
     initialSettings
 }: KroegentochtManagementIslandProps) {
     const router = useRouter();
+    const { toast, showToast, hideToast } = useAdminToast();
     const [events] = useState(initialEvents);
     const [selectedEvent, setSelectedEvent] = useState<any | null>(
         initialEvents.find(e => new Date(e.date) >= new Date()) || initialEvents[0] || null
@@ -55,7 +58,7 @@ export default function KroegentochtManagementIsland({
             setSignups(data);
         } catch (err) {
             console.error(err);
-            setError('Kon aanmeldingen niet laden. Controleer je verbinding of probeer het later opnieuw.');
+            showToast('Kon aanmeldingen niet laden. Controleer je verbinding.', 'error');
         } finally {
             setIsLoadingSignups(false);
         }
@@ -77,10 +80,12 @@ export default function KroegentochtManagementIsland({
                 const result = await toggleKroegentochtVisibility();
                 if (result.success) {
                     setSettings({ show: result.show ?? false });
+                    showToast(`Kroegentocht is nu ${result.show ? 'zichtbaar' : 'verborgen'}`, 'success');
                     router.refresh(); // Force re-fetch of layout data (like navbar)
                 }
             } catch (err) {
                 console.error(err);
+                showToast('Fout bij bijwerken zichtbaarheid', 'error');
             }
         });
     };
@@ -92,8 +97,9 @@ export default function KroegentochtManagementIsland({
         try {
             await deletePubCrawlSignup(id, selectedEvent.id);
             setSignups(prev => prev.filter(s => s.id !== id));
+            showToast('Inschrijving succesvol verwijderd', 'success');
         } catch (err) {
-            alert('Fout bij verwijderen: ' + err);
+            showToast('Fout bij verwijderen: ' + err, 'error');
         }
     };
 
@@ -163,19 +169,6 @@ export default function KroegentochtManagementIsland({
 
                     <AdminStatsBar stats={adminStats} />
 
-                    {error && (
-                        <div className="flex flex-col items-center justify-center py-16 bg-red-50 dark:bg-red-900/10 rounded-[var(--radius-2xl)] border border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 mb-8">
-                            <AlertCircle className="h-10 w-10 mb-3" />
-                            <p className="text-sm font-bold uppercase tracking-wider">{error}</p>
-                            <button 
-                                onClick={() => selectedEvent && loadSignups(selectedEvent.id)}
-                                className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-red-700 transition"
-                            >
-                                Opnieuw Proberen
-                            </button>
-                        </div>
-                    )}
-
                     {isLoadingSignups ? (
                         <div className="flex flex-col items-center justify-center py-32 bg-[var(--bg-card)]/40 rounded-[var(--radius-2xl)] border-2 border-dashed border-[var(--border-color)]/30">
                             <Loader2 className="h-10 w-10 animate-spin text-[var(--theme-purple)] mb-4" />
@@ -199,6 +192,7 @@ export default function KroegentochtManagementIsland({
                 </div>
             )}
             </div>
+            <AdminToast toast={toast} onClose={hideToast} />
         </>
     );
 }

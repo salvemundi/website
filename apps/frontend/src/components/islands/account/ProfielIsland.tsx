@@ -10,6 +10,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { updateUserProfile } from '@/server/actions/profiel-update.actions';
 import { z } from 'zod';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 
 import ProfielHeader from './profile/ProfielHeader';
 import ProfielDetails from './profile/ProfielDetails';
@@ -56,6 +58,7 @@ interface ProfielIslandProps {
 }
 
 export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, pubCrawlSignups, user: initialUser }) => {
+    const { toast, showToast, hideToast } = useAdminToast();
     const [mounted, setMounted] = useState(false);
     const { data: session, refetch } = authClient.useSession();
 
@@ -146,9 +149,10 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, pu
             if (result.success) {
                 router.refresh();
                 await refetch();
+                showToast('Minecraft username succesvol bijgewerkt!', 'success');
                 setIsEditingMinecraft(false);
             } else {
-                alert(result.error || 'Het bijwerken van je Minecraft username is mislukt.');
+                showToast(result.error || 'Het bijwerken van je Minecraft username is mislukt.', 'error');
             }
         });
     };
@@ -164,9 +168,10 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, pu
             if (result.success) {
                 router.refresh();
                 await refetch();
+                showToast('Telefoonnummer succesvol bijgewerkt!', 'success');
                 setIsEditingPhoneNumber(false);
             } else {
-                alert(result.error || 'Het bijwerken van je telefoonnummer is mislukt.');
+                showToast(result.error || 'Het bijwerken van je telefoonnummer is mislukt.', 'error');
             }
         });
     };
@@ -289,6 +294,7 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, pu
                     setShowPastEvents={setShowPastEvents}
                 />
             </div>
+            <AdminToast toast={toast} onClose={hideToast} />
         </div>
     );
 };

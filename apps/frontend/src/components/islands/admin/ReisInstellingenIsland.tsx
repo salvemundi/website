@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useActionState } from 'react';
+import { useState, useTransition, useActionState, useEffect } from 'react';
 import { 
     Plus, 
     Edit2, 
@@ -15,7 +15,9 @@ import {
     Info,
     AlertCircle,
     ChevronDown,
-    Image as ImageIcon
+    Image as ImageIcon,
+    CalendarPlus, 
+    Settings 
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
@@ -27,12 +29,15 @@ import {
 import { getImageUrl } from '@/lib/image-utils';
 import type { Trip } from '@salvemundi/validations';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 
 interface ReisInstellingenIslandProps {
     initialTrips: Trip[];
 }
 
 export default function ReisInstellingenIsland({ initialTrips }: ReisInstellingenIslandProps) {
+    const { toast, showToast, hideToast } = useAdminToast();
     const [trips, setTrips] = useState<Trip[]>(initialTrips);
     const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
     const [isAdding, setIsAdding] = useState(false);
@@ -67,11 +72,12 @@ export default function ReisInstellingenIsland({ initialTrips }: ReisInstellinge
             const res = await deleteTrip(id);
             if (res.success) {
                 setTrips(prev => prev.filter(t => t.id !== id));
+                showToast('Reis succesvol verwijderd', 'success');
             } else {
-                alert(res.error || 'Verwijderen mislukt');
+                showToast(res.error || 'Verwijderen mislukt', 'error');
             }
         } catch (err) {
-            alert('Er is een fout opgetreden');
+            showToast('Er is een fout opgetreden', 'error');
         } finally {
             setIsDeleting(null);
         }
@@ -84,6 +90,13 @@ export default function ReisInstellingenIsland({ initialTrips }: ReisInstellinge
         // Refresh and close on success
         window.location.reload();
     }
+
+    // Effect to show toast when state changes (for useActionState)
+    useEffect(() => {
+        if (state?.error && !pending) {
+            showToast(state.error, 'error');
+        }
+    }, [state, pending, showToast]);
 
 
     return (
@@ -106,23 +119,6 @@ export default function ReisInstellingenIsland({ initialTrips }: ReisInstellinge
             />
 
             <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700">
-
-            {/* Error Display */}
-            {state?.error && (
-                <div className="mb-8 p-4 bg-[var(--theme-error)]/10 text-[var(--theme-error)] rounded-2xl border border-[var(--theme-error)]/20 flex items-center gap-3 animate-in slide-in-from-top-4">
-                    <AlertCircle className="h-5 w-5 flex-shrink-0" />
-                    <div>
-                        <p className="font-bold">{state.error}</p>
-                        {state.fieldErrors && (
-                            <ul className="text-xs mt-1 list-disc list-inside opacity-80">
-                                {Object.entries(state.fieldErrors).map(([field, msgs]: any) => (
-                                    <li key={field}>{field}: {msgs.join(', ')}</li>
-                                ))}
-                            </ul>
-                        )}
-                    </div>
-                </div>
-            )}
 
             {/* Form (Add/Edit) */}
             {(isAdding || editingTrip) && (
@@ -247,6 +243,7 @@ export default function ReisInstellingenIsland({ initialTrips }: ReisInstellinge
                 </div>
             )}
             </div>
+            <AdminToast toast={toast} onClose={hideToast} />
         </>
     );
 }
