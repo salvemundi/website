@@ -226,17 +226,8 @@ export default function AdminReisTableIsland({ initialSignups, initialSignupActi
         return statusMap[status] || { label: status, color: 'bg-[var(--beheer-text-muted)]/10 text-[var(--beheer-text-muted)]' };
     };
 
-    const adminStats = [
-        { label: 'Totaal', value: stats.total, icon: Users, trend: 'Aanmeldingen' },
-        { label: 'Bevestigd', value: stats.confirmed, icon: UserCheck, trend: 'Deelnemers' },
-        { label: 'Wachtlijst', value: stats.waitlist, icon: UserX, trend: 'Reserve' },
-        { label: 'Betaald', value: stats.fullPaid, icon: Plane, trend: 'Volledig' },
-    ];
-
     return (
         <>
-            <AdminStatsBar stats={adminStats} />
-
             <ReisFilters 
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
