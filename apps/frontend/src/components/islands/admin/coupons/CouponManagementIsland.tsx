@@ -34,7 +34,8 @@ export default function CouponManagementIsland({ initialCoupons }: Props) {
         
         coupons.forEach(c => {
             const status = getComputedCouponStatus(c);
-            if (status.type === 'active' || status.type === 'pending' || status.type === 'inactive') {
+            // Only 'active' and 'pending' are shown in the top section
+            if (status.type === 'active' || status.type === 'pending') {
                 valid.push(c);
             } else {
                 inactive.push(c);
@@ -78,10 +79,10 @@ export default function CouponManagementIsland({ initialCoupons }: Props) {
     };
 
     const adminStats = [
-        { label: 'Totaal', value: coupons.length, icon: Ticket, theme: 'blue' },
-        { label: 'Actief', value: coupons.filter(c => c.is_active).length, icon: CheckCircle, theme: 'emerald' },
-        { label: 'Verlopen', value: coupons.filter(c => getComputedCouponStatus(c).type === 'expired').length, icon: Clock, theme: 'amber' },
-        { label: 'Gebruikt', value: coupons.reduce((sum, c) => sum + (c.usage_count || 0), 0), icon: Ticket, theme: 'indigo' },
+        { label: 'Totaal', value: coupons.length, icon: Ticket, trend: 'Coupons' },
+        { label: 'Nu Actief', value: coupons.filter(c => getComputedCouponStatus(c).type === 'active').length, icon: CheckCircle, trend: 'Valid' },
+        { label: 'Verlopen', value: coupons.filter(c => getComputedCouponStatus(c).type === 'expired').length, icon: Clock, trend: 'Action' },
+        { label: 'Gebruikt', value: coupons.reduce((sum, c) => sum + (c.usage_count || 0), 0), icon: Ticket, trend: 'Usage' },
     ];
 
     return (
@@ -119,10 +120,10 @@ export default function CouponManagementIsland({ initialCoupons }: Props) {
 
                 {/* Main Table */}
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between border-l-4 border-emerald-500 pl-4 py-1">
+                    <div className="flex items-center justify-between border-l-4 border-[var(--beheer-active)] pl-4 py-1">
                         <h2 className="text-[10px] font-black text-[var(--beheer-text)] flex items-center gap-3 uppercase tracking-widest">
                             Geldige Coupons
-                            <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-[9px] shadow-sm">
+                            <span className="px-3 py-1 rounded-full bg-[var(--beheer-active)]/20 text-[var(--beheer-active)] text-[9px] shadow-sm border border-[var(--beheer-active)]/20">
                                 {validCoupons.length}
                             </span>
                         </h2>
@@ -174,7 +175,7 @@ export default function CouponManagementIsland({ initialCoupons }: Props) {
                         <h2 className="text-[10px] font-black flex items-center gap-3 uppercase tracking-widest">
                             {showExpired ? <ToggleRight className="h-5 w-5 text-[var(--beheer-accent)]" /> : <ToggleLeft className="h-5 w-5" />}
                             Inactief of Verlopen
-                            <span className="px-2 py-0.5 rounded-full bg-slate-500/10 text-slate-500 text-[9px]">
+                            <span className="px-3 py-1 rounded-full bg-slate-500/20 text-slate-500 text-[9px] border border-slate-500/20">
                                 {inactiveCoupons.length}
                             </span>
                         </h2>

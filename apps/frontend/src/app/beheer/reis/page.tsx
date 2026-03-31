@@ -99,12 +99,12 @@ async function AdminReisDashboardContent({ searchParams }: AdminReisPageProps) {
     return (
         <div className="min-h-screen pb-20">
 
-            <div className="container mx-auto px-4 max-w-7xl">
-                <AdminReisSelectorIsland 
-                    trips={trips} 
-                    initialSettings={reisSettings}
-                />
-                
+            <AdminReisSelectorIsland 
+                trips={trips} 
+                initialSettings={reisSettings}
+            />
+
+            <div className="container mx-auto px-4 py-8 max-w-7xl">
                 {/* Nested suspense for the signups table to allow the selector to render early */}
                 <Suspense fallback={<AdminReisDashboardSkeleton />} key={activeTrip.id}>
                     <AdminReisSignupsTable tripId={activeTrip.id} trip={activeTrip} />
