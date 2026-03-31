@@ -6,7 +6,7 @@ import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
 import { getSystemDirectus } from "@/lib/directus";
 import { readItems, updateItem, updateUser, readUsers, readUser } from "@directus/sdk";
-import { isSuperAdmin } from "@/lib/auth-utils";
+import { isSuperAdmin, isMemberAdmin } from "@/lib/auth-utils";
 import { logAdminAction } from "./audit.actions";
 import { USER_FULL_FIELDS, COMMITTEE_FIELDS, USER_ID_FIELDS } from "@salvemundi/validations";
 
@@ -32,7 +32,7 @@ async function checkAdminAccess() {
     if (!session || !session.user) return null;
     
     const user = session.user as any;
-    if (!isSuperAdmin(user.committees)) return null;
+    if (!isMemberAdmin(user.committees)) return null;
     return session;
 }
 

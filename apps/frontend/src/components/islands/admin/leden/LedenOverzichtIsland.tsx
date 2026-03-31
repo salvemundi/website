@@ -24,7 +24,6 @@ interface Member {
     first_name: string;
     last_name: string;
     email: string;
-    date_of_birth: string | null;
     membership_expiry: string | null;
     status: string;
 }
@@ -91,7 +90,6 @@ export default function LedenOverzichtIsland({
         const data = filteredMembers.map(m => ({
             Naam: `${m.first_name} ${m.last_name}`,
             Email: m.email,
-            Geboortedatum: formatDate(m.date_of_birth),
             'Lidmaatschap Tot': formatDate(m.membership_expiry),
             Status: isMembershipActive(m) ? 'Actief' : 'Niet Actief'
         }));

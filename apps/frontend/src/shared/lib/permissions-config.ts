@@ -12,7 +12,8 @@ export enum AdminResource {
     Stickers = 'admin:stickers',
     Logging = 'admin:logging',
     Sync = 'admin:sync',
-    Permissions = 'admin:permissions'
+    Permissions = 'admin:permissions',
+    Users = 'admin:users'
 }
 
 export interface PermissionRequirement {
@@ -62,6 +63,9 @@ export const RESOURCE_PERMISSIONS: Record<AdminResource, PermissionRequirement> 
         allowedCommitteeIds: [COMMITTEES.ICT, COMMITTEES.BESTUUR] 
     },
     [AdminResource.Permissions]: { 
+        allowedCommitteeIds: [COMMITTEES.ICT, COMMITTEES.BESTUUR] 
+    },
+    [AdminResource.Users]: { 
         allowedCommitteeIds: [COMMITTEES.ICT, COMMITTEES.BESTUUR] 
     },
 };
