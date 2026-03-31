@@ -19,6 +19,8 @@ import { differenceInYears } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 import { Shield, Clock, User, CreditCard } from 'lucide-react';
 
 import SignupForm from './reis/SignupForm';
@@ -38,6 +40,7 @@ export default function ReisDeelnemerDetailIsland({
     initialSelectedActivities 
 }: ReisDeelnemerDetailIslandProps) {
     const router = useRouter();
+    const { toast, showToast, hideToast } = useAdminToast();
     const [isPending, startTransition] = useTransition();
     const [state, formAction, isSaving] = useActionState(updateTripSignup.bind(null, initialSignup.id), null);
     const [selectedActivities, setSelectedActivities] = useState<number[]>(initialSelectedActivities);
@@ -55,10 +58,12 @@ export default function ReisDeelnemerDetailIsland({
         try {
             const res = await updateSignupActivities(initialSignup.id, selectedActivities);
             if (!res.success) {
-                setError(res.error || 'Fout bij het bijwerken van activiteiten');
+                showToast(res.error || 'Fout bij het bijwerken van activiteiten', 'error');
+            } else {
+                showToast('Activiteiten succesvol bijgewerkt', 'success');
             }
         } catch (err) {
-            setError('Geen verbinding met de server');
+            showToast('Geen verbinding met de server', 'error');
         } finally {
             setIsUpdatingActivities(false);
         }
@@ -72,7 +77,7 @@ export default function ReisDeelnemerDetailIsland({
             if (res.success) {
                 router.push('/beheer/reis');
             } else {
-                setError(res.error || 'Verwijderen mislukt');
+                showToast(res.error || 'Verwijderen mislukt', 'error');
             }
         });
     };
@@ -86,6 +91,14 @@ export default function ReisDeelnemerDetailIsland({
         { label: 'Betaling', value: paymentStatus, icon: CreditCard, trend: 'Financieel' },
         { label: 'Rol', value: initialSignup.role || 'Lid', icon: Shield, trend: 'Rechten' },
     ];
+
+    if (state?.success && !isSaving) {
+        showToast('Deelnemer details succesvol bijgewerkt', 'success');
+    }
+
+    if (state?.error && !isSaving) {
+        showToast(state.error, 'error');
+    }
 
     const selectedTrip = (trips || []).find(t => t.id === initialSignup.trip_id);
 
@@ -110,24 +123,6 @@ export default function ReisDeelnemerDetailIsland({
 
             <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700">
                 <AdminStatsBar stats={adminStats} />
-                
-                {state?.success && (
-                    <div className="mb-8 p-6 bg-[var(--beheer-active)]/10 text-[var(--beheer-active)] rounded-[var(--beheer-radius)] border border-[var(--beheer-active)]/20 flex items-center gap-4 animate-in slide-in-from-top-4 shadow-sm">
-                        <div className="h-10 w-10 rounded-xl bg-[var(--beheer-active)] text-white flex items-center justify-center shadow-lg shadow-[var(--beheer-active)]/20">
-                            <CheckCircle className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <p className="font-black uppercase tracking-tight text-sm">Update geslaagd!</p>
-                            <p className="text-[10px] font-black uppercase tracking-widest opacity-80">De wijzigingen zijn succesvol verwerkt.</p>
-                        </div>
-                    </div>
-                )}
-
-                {error && (
-                    <div className="mb-8 p-6 bg-red-500/10 text-red-500 rounded-[var(--beheer-radius)] border border-red-500/20 flex items-center gap-4">
-                        <p className="font-black uppercase tracking-tight text-sm">Fout: {error}</p>
-                    </div>
-                )}
 
                 <form action={formAction} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 space-y-8">
@@ -189,6 +184,7 @@ export default function ReisDeelnemerDetailIsland({
                     </div>
                 </form>
             </div>
+            <AdminToast toast={toast} onClose={hideToast} />
         </>
     );
 }

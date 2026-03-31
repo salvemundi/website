@@ -4,6 +4,8 @@ import React, { useTransition } from 'react';
 import DeletionTimer from '@/components/ui/account/DeletionTimer';
 import { initiateMembershipPaymentAction } from '@/server/actions/membership.actions';
 import type { SignupFormData } from '@salvemundi/validations';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 
 export interface MembershipUserData {
     id: string;
@@ -22,6 +24,7 @@ interface MembershipStatusIslandProps {
 }
 
 export default function MembershipStatusIsland({ user, baseAmount }: MembershipStatusIslandProps) {
+    const { toast, showToast, hideToast } = useAdminToast();
     const [isPending, startTransition] = useTransition();
     const isExpired = user.membership_status !== 'active';
 
@@ -42,7 +45,7 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
             if (result.success && result.checkoutUrl) {
                 window.location.href = result.checkoutUrl;
             } else {
-                alert(result.error || 'Er ging iets mis bij het starten van de betaling');
+                showToast(result.error || 'Er ging iets mis bij het starten van de betaling', 'error');
             }
         });
     };
@@ -121,6 +124,7 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
                     {isPending ? 'Verwerken...' : `Nu Verlengen (€${baseAmount.toFixed(2).replace('.', ',')})`}
                 </button>
             </div>
+            <AdminToast toast={toast} onClose={hideToast} />
         </div>
     );
 }

@@ -16,6 +16,8 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { upsertPubCrawlEvent, uploadPubCrawlImage } from '@/server/actions/admin-kroegentocht.actions';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 
 interface EventFormProps {
     event?: any;
@@ -23,6 +25,7 @@ interface EventFormProps {
 
 export default function EventForm({ event }: EventFormProps) {
     const router = useRouter();
+    const { toast, showToast, hideToast } = useAdminToast();
     const [isPending, startTransition] = useTransition();
     const [formData, setFormData] = useState({
         name: event?.name || '',
@@ -47,8 +50,9 @@ export default function EventForm({ event }: EventFormProps) {
         try {
             const result = await uploadPubCrawlImage(uploadData);
             setFormData(prev => ({ ...prev, image: result.id }));
+            showToast('Afbeelding succesvol geüpload', 'success');
         } catch (err) {
-            alert('Upload mislukt: ' + err);
+            showToast('Upload mislukt: ' + err, 'error');
         } finally {
             setUploading(false);
         }
@@ -62,15 +66,17 @@ export default function EventForm({ event }: EventFormProps) {
                     ...formData,
                     id: event?.id
                 });
+                showToast('Event succesvol opgeslagen', 'success');
                 router.push('/beheer/kroegentocht');
                 router.refresh();
             } catch (err) {
-                alert('Fout bij opslaan: ' + err);
+                showToast('Fout bij opslaan: ' + err, 'error');
             }
         });
     };
 
     return (
+        <>
         <form onSubmit={handleSubmit} className="space-y-8 max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="bg-[var(--bg-card)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)]/30 overflow-hidden">
                 <div className="p-8 border-b border-[var(--border-color)]/30 bg-[var(--bg-main)]/30">
@@ -220,5 +226,7 @@ export default function EventForm({ event }: EventFormProps) {
                 </button>
             </div>
         </form>
+        <AdminToast toast={toast} onClose={hideToast} />
+        </>
     );
 }

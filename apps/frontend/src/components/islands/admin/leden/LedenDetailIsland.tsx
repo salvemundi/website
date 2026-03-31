@@ -15,6 +15,8 @@ import {
 } from '@/server/actions/leden.actions';
 import { triggerUserSyncAction } from '@/server/actions/azure-sync.actions';
 import { getImageUrl } from '@/lib/image-utils';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 
 import MemberProfileTab from './MemberProfileTab';
 import MemberActivitiesTab from './MemberActivitiesTab';
@@ -70,6 +72,7 @@ export default function LedenDetailIsland({
     allCommittees,
     isAdmin 
 }: Props) {
+    const { toast, showToast, hideToast } = useAdminToast();
     const [activeTab, setActiveTab] = useState<'profiel' | 'activiteiten' | 'beheer'>('profiel');
     const [isPending, startTransition] = useTransition();
     const [isActionInProgress, setIsActionInProgress] = useState<string | null>(null);
@@ -122,7 +125,7 @@ export default function LedenDetailIsland({
 
     const handleMembershipChange = async (azureGroupId: string, action: 'add' | 'remove', committeeName: string) => {
         if (!localMember.entra_id) {
-            alert("Dit lid heeft geen gekoppeld Azure account!");
+            showToast("Dit lid heeft geen gekoppeld Azure account!", "error");
             setActiveTab('beheer');
             return;
         }
@@ -131,7 +134,8 @@ export default function LedenDetailIsland({
         setIsActionInProgress(`${action}-${azureGroupId}`);
         startTransition(async () => {
              const res = await manageAzureMembershipAction(localMember.entra_id!, azureGroupId, action, localMember.id);
-             if (!res.success) alert(res.error || "Fout bij het bijwerken van lidmaatschap");
+             if (!res.success) showToast(res.error || "Fout bij het bijwerken van lidmaatschap", "error");
+             else showToast(`Lidmaatschap succesvol ${action === 'add' ? 'toegevoegd' : 'verwijderd'}`, "success");
         });
         setIsActionInProgress(null);
     };
@@ -141,20 +145,20 @@ export default function LedenDetailIsland({
         const res = await renewMembershipAction(localMember.id, months);
         if (res.success) {
             setLocalMember(prev => ({ ...prev, membership_expiry: res.newExpiry ?? prev.membership_expiry }));
-            return `✓ Verlengd tot ${res.newExpiry}`;
+            return { success: true, message: `Verlengd tot ${res.newExpiry}` };
         }
-        return `✗ ${res.error}`;
+        return { success: false, message: res.error || 'Fout bij verlengen' };
     };
 
     const handleForceSync = async () => {
         const res = await triggerUserSyncAction(localMember.id);
-        return res.success ? '✓ Synchronisatie gestart' : `✗ ${res.error}`;
+        return { success: res.success, message: res.success ? 'Synchronisatie gestart' : (res.error || 'Sync mislukt') };
     };
 
     const handleProvisionAzure = async () => {
         if (!confirm(`Weet je zeker dat je een Azure account wilt aanmaken?`)) return null;
         const res = await provisionAzureAccountAction(localMember.id);
-        return res.success ? '✓ Aanvraag ingediend!' : `✗ ${res.error}`;
+        return { success: res.success, message: res.success ? 'Aanvraag ingediend!' : (res.error || 'Provisioning mislukt') };
     };
 
     const availableCommittees = useMemo(() => {
@@ -246,6 +250,7 @@ export default function LedenDetailIsland({
                     />
                 )}
             </div>
+            <AdminToast toast={toast} onClose={hideToast} />
         </div>
     );
 }

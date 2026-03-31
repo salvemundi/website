@@ -12,6 +12,8 @@ import {
     CheckCircle
 } from 'lucide-react';
 import Link from 'next/link';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 import { deleteSticker } from '@/server/actions/admin-stickers.actions';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
@@ -24,6 +26,7 @@ interface StickerManagementIslandProps {
 export default function StickerManagementIsland({
     initialStickers
 }: StickerManagementIslandProps) {
+    const { toast, showToast, hideToast } = useAdminToast();
     const [stickers, setStickers] = useState(initialStickers);
     const [isPending, startTransition] = useTransition();
 
@@ -31,8 +34,9 @@ export default function StickerManagementIsland({
         try {
             await deleteSticker(id);
             setStickers(prev => prev.filter(s => s.id !== id));
+            showToast('Sticker succesvol verwijderd', 'success');
         } catch (err) {
-            alert('Fout bij verwijderen: ' + err);
+            showToast('Fout bij verwijderen: ' + err, 'error');
         }
     };
 
@@ -101,6 +105,7 @@ export default function StickerManagementIsland({
                 )}
             </div>
             </div>
+            <AdminToast toast={toast} onClose={hideToast} />
         </>
     );
 }

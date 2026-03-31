@@ -17,6 +17,8 @@ import {
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { InfoRow, CommitteeCard, GroupCard, EmptyState, cleanName } from './LedenSharedComponents';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 
 interface Member {
     id: string;
@@ -56,6 +58,7 @@ export default function MemberProfileTab({
     isAdmin, 
     onUpdateProfile 
 }: Props) {
+    const { toast, showToast, hideToast } = useAdminToast();
     const [isEditing, setIsEditing] = useState(false);
     const [editData, setEditData] = useState({
         first_name: member.first_name,
@@ -64,14 +67,16 @@ export default function MemberProfileTab({
         date_of_birth: member.date_of_birth || '',
     });
     const [saving, setSaving] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
     const handleSave = async () => {
         setSaving(true);
-        setError(null);
         const success = await onUpdateProfile(editData);
-        if (success) setIsEditing(false);
-        else setError('Opslaan mislukt');
+        if (success) {
+            setIsEditing(false);
+            showToast('Profiel succesvol bijgewerkt', 'success');
+        } else {
+            showToast('Opslaan mislukt', 'error');
+        }
         setSaving(false);
     };
 
@@ -100,7 +105,6 @@ export default function MemberProfileTab({
 
                     {isEditing ? (
                         <div className="space-y-5">
-                            {error && <p className="text-xs text-red-500 bg-red-500/10 px-3 py-3 rounded-xl border border-red-500/20">{error}</p>}
                             {[
                                 { key: 'first_name', label: 'Voornaam', type: 'text' },
                                 { key: 'last_name', label: 'Achternaam', type: 'text' },
@@ -184,6 +188,7 @@ export default function MemberProfileTab({
                     )}
                 </div>
             </div>
+            <AdminToast toast={toast} onClose={hideToast} />
         </div>
     );
 }

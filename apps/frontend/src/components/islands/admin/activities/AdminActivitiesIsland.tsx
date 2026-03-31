@@ -22,6 +22,8 @@ import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import ActivityCard from './ActivityCard';
 import ActivityFilters from './ActivityFilters';
 import ActivityNotificationModal from './ActivityNotificationModal';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 
 interface AdminActivity {
     id: number;
@@ -57,6 +59,7 @@ export default function AdminActivitiesIsland({
     initialFilter = 'all'
 }: Props) {
     const router = useRouter();
+    const { toast, showToast, hideToast } = useAdminToast();
     const [events, setEvents] = useState(initialEvents);
     const [searchQuery, setSearchQuery] = useState(initialSearch);
     const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>(initialFilter);
@@ -102,8 +105,9 @@ export default function AdminActivitiesIsland({
             const res = await deleteActivity(id);
             if (res.success) {
                 setEvents(prev => prev.filter(e => e.id !== id));
+                showToast(`"${name}" is succesvol verwijderd`, 'success');
             } else {
-                alert(res.error);
+                showToast(res.error || 'Fout bij verwijderen', 'error');
             }
         });
     };
@@ -113,8 +117,8 @@ export default function AdminActivitiesIsland({
         setIsSending(true);
         const res = await sendActivityReminder(id);
         setIsSending(false);
-        if (res.success) alert(`Herinnering verstuurd naar ${res.sent} deelnemers!`);
-        else alert(res.error);
+        if (res.success) showToast(`Herinnering verstuurd naar ${res.sent} deelnemers!`, 'success');
+        else showToast(res.error || 'Fout bij versturen reminder', 'error');
     };
 
     const handleSendCustomNotify = async () => {
@@ -126,10 +130,10 @@ export default function AdminActivitiesIsland({
         );
         setIsSending(false);
         if (res.success) {
-            alert(`Notificatie verstuurd naar ${res.sent} deelnemers!`);
+            showToast(`Notificatie verstuurd naar ${res.sent} deelnemers!`, 'success');
             setShowModal(false);
         } else {
-            alert(res.error);
+            showToast(res.error || 'Fout bij versturen notificatie', 'error');
         }
     };
 
@@ -216,6 +220,7 @@ export default function AdminActivitiesIsland({
                     isSending={isSending}
                 />
             </div>
+            <AdminToast toast={toast} onClose={hideToast} />
         </>
     );
 }

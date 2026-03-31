@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import { createStickerPublic, uploadFileAction } from '@/server/actions/stickers.actions';
 import StickerMap from '@/components/ui/maps/StickerMap';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 
 interface StickerMapIslandProps {
     initialStickers: any[];
@@ -26,6 +28,7 @@ export default function StickerMapIsland({
     initialStickers,
     user
 }: StickerMapIslandProps) {
+    const { toast, showToast, hideToast } = useAdminToast();
     const [stickers, setStickers] = useState(initialStickers);
     const [isPending, startTransition] = useTransition();
     const [isLocating, setIsLocating] = useState(false);
@@ -55,7 +58,7 @@ export default function StickerMapIsland({
         setIsLocating(true);
         
         if (!navigator.geolocation) {
-            alert("Je browser ondersteunt geen geolocatie.");
+            showToast("Je browser ondersteunt geen geolocatie.", 'error');
             setIsLocating(false);
             return;
         }
@@ -90,7 +93,7 @@ export default function StickerMapIsland({
             (error) => {
                 let msg = "Kon je locatie niet bepalen.";
                 if (error.code === 1) msg = "Locatie toegang geweigerd. Zet dit aan in je browser.";
-                alert(msg);
+                showToast(msg, 'error');
                 setIsLocating(false);
             },
             { enableHighAccuracy: true, timeout: 10000 }
@@ -139,9 +142,9 @@ export default function StickerMapIsland({
                 setSelectedLocation(null);
                 setFormData({ location_name: '', description: '', city: '', country: '', image: null });
                 setImagePreview(null);
-                alert('Sticker succesvol toegevoegd! 🎨');
+                showToast('Sticker succesvol toegevoegd! 🎨', 'success');
             } catch (err) {
-                alert('Fout bij toevoegen: ' + err);
+                showToast('Fout bij toevoegen: ' + err, 'error');
             }
         });
     };
@@ -328,6 +331,7 @@ export default function StickerMapIsland({
                     </div>
                 </div>
             )}
+            <AdminToast toast={toast} onClose={hideToast} />
         </div>
     );
 }

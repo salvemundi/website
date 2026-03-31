@@ -9,12 +9,15 @@ import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { validateCouponAction, initiateMembershipPaymentAction } from '@/server/actions/membership.actions';
 import { signupSchema, type SignupFormData } from '@salvemundi/validations';
 import { calculateDiscountedPrice } from '@/shared/lib/price-utils';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 
 interface MembershipFormIslandProps {
     baseAmount: number;
 }
 
 export default function MembershipFormIsland({ baseAmount }: MembershipFormIslandProps) {
+    const { toast, showToast, hideToast } = useAdminToast();
     const [isPending, startTransition] = useTransition();
     const [couponStatus, setCouponStatus] = useState<{ valid: boolean; message: string; discount?: number; type?: string } | null>(null);
 
@@ -70,7 +73,7 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
                 // Handle Zod server-side errors if any returned
                 console.error('Validation errors:', result.errors);
             } else {
-                alert(result.error || 'Er ging iets mis');
+                showToast(result.error || 'Er ging iets mis', 'error');
             }
         });
     };
@@ -173,6 +176,7 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
             <button type="submit" disabled={isPending} className="form-button mt-4 shadow-glow">
                 {isPending ? 'Verwerken...' : `Betalen en Inschrijven (€${total.toFixed(2).replace('.', ',')})`}
             </button>
+            <AdminToast toast={toast} onClose={hideToast} />
         </form>
     );
 }

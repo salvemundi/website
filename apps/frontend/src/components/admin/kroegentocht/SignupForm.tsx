@@ -16,6 +16,8 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { updatePubCrawlSignup } from '@/server/actions/admin-kroegentocht.actions';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 
 interface SignupFormProps {
     signup: any;
@@ -23,6 +25,7 @@ interface SignupFormProps {
 
 export default function SignupForm({ signup }: SignupFormProps) {
     const router = useRouter();
+    const { toast, showToast, hideToast } = useAdminToast();
     const [isPending, startTransition] = useTransition();
     const [formData, setFormData] = useState({
         name: signup?.name || '',
@@ -39,15 +42,17 @@ export default function SignupForm({ signup }: SignupFormProps) {
         startTransition(async () => {
             try {
                 await updatePubCrawlSignup(signup.id, signup.pub_crawl_event_id, formData);
+                showToast('Aanmelding succesvol bijgewerkt', 'success');
                 router.push('/beheer/kroegentocht');
                 router.refresh();
             } catch (err) {
-                alert('Fout bij opslaan: ' + err);
+                showToast('Fout bij opslaan: ' + err, 'error');
             }
         });
     };
 
     return (
+        <>
         <form onSubmit={handleSubmit} className="space-y-8 max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="bg-[var(--bg-card)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)]/30 overflow-hidden">
                 <div className="p-8 border-b border-[var(--border-color)]/30 bg-[var(--bg-main)]/30">
@@ -184,5 +189,7 @@ export default function SignupForm({ signup }: SignupFormProps) {
                 </button>
             </div>
         </form>
+        <AdminToast toast={toast} onClose={hideToast} />
+        </>
     );
 }

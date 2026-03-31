@@ -5,6 +5,8 @@ import { type PubCrawlTicket } from '@salvemundi/validations';
 import QRDisplay from '@/shared/ui/QRDisplay';
 import qrService from '@/lib/qr-service';
 import { Ticket, Download, CheckCircle2 } from 'lucide-react';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 
 interface KroegentochtTicketsIslandProps {
     initialTickets: PubCrawlTicket[];
@@ -12,6 +14,7 @@ interface KroegentochtTicketsIslandProps {
 }
 
 export default function KroegentochtTicketsIsland({ initialTickets, userEmail }: KroegentochtTicketsIslandProps) {
+    const { toast, showToast, hideToast } = useAdminToast();
     const [tickets] = useState<PubCrawlTicket[]>(initialTickets);
 
     const downloadTicketAsImage = async (ticket: PubCrawlTicket, index: number) => {
@@ -77,9 +80,10 @@ export default function KroegentochtTicketsIsland({ initialTickets, userEmail }:
             link.download = `Kroegentocht-Ticket-${ticket.name.replace(/\s+/g, '-')}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
+            showToast('Ticket succesvol gegenereerd', 'success');
         } catch (e) {
             console.error('Failed to download ticket:', e);
-            alert('Er is een fout opgetreden bij het genereren van je ticket.');
+            showToast('Er is een fout opgetreden bij het genereren van je ticket.', 'error');
         }
     };
 
@@ -134,6 +138,7 @@ export default function KroegentochtTicketsIsland({ initialTickets, userEmail }:
                     </div>
                 ))}
             </div>
+            <AdminToast toast={toast} onClose={hideToast} />
         </section>
     );
 }

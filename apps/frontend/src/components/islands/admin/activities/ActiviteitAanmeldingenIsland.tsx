@@ -10,6 +10,8 @@ import ManualSignupModal from './ManualSignupModal';
 import { useRouter } from 'next/navigation';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 import { Users, UserCheck, UserMinus, DollarSign } from 'lucide-react';
 
 interface Signup {
@@ -32,6 +34,7 @@ interface Signup {
 
 export default function ActiviteitAanmeldingenIsland({ event, initialSignups }: { event: any, initialSignups: Signup[] }) {
     const router = useRouter();
+    const { toast, showToast, hideToast } = useAdminToast();
     const [isPending, startTransition] = useTransition();
     const [searchQuery, setSearchQuery] = useState('');
     const [isManualModalOpen, setIsManualModalOpen] = useState(false);
@@ -154,7 +157,9 @@ export default function ActiviteitAanmeldingenIsland({ event, initialSignups }: 
             setOptimisticSignups({ id: signupId, checkedIn: newValue });
             const res = await toggleCheckInAction(signupId, event.id, newValue);
             if (!res.success) {
-                alert(res.error || 'Fout bij bijwerken check-in');
+                showToast(res.error || 'Fout bij bijwerken check-in', 'error');
+            } else {
+                showToast(`Check-in ${newValue ? 'voltooid' : 'ongedaan gemaakt'}`, 'success');
             }
         });
     }
@@ -167,8 +172,9 @@ export default function ActiviteitAanmeldingenIsland({ event, initialSignups }: 
         setIsDeleting(signupId);
         const res = await deleteSignupAction(signupId, event.id, email, event.name);
         if (!res.success) {
-            alert(res.error || 'Fout bij verwijderen');
+            showToast(res.error || 'Fout bij verwijderen', 'error');
         } else {
+            showToast('Aanmelding verwijderd', 'success');
             router.refresh();
         }
         setIsDeleting(null);
@@ -319,6 +325,7 @@ export default function ActiviteitAanmeldingenIsland({ event, initialSignups }: 
                 )}
                 </div>
             </div>
+            <AdminToast toast={toast} onClose={hideToast} />
         </>
     );
 }

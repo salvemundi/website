@@ -8,6 +8,8 @@ import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import { Plane, Users, UserCheck, UserX } from 'lucide-react';
 import ReisFilters from '@/components/admin/reis/ReisFilters';
 import ReisTable from '@/components/admin/reis/ReisTable';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 
 interface AdminReisTableIslandProps {
     initialSignups: TripSignup[];
@@ -23,6 +25,7 @@ interface AdminReisTableIslandProps {
 }
 
 export default function AdminReisTableIsland({ initialSignups, initialSignupActivities, trip, stats }: AdminReisTableIslandProps) {
+    const { toast, showToast, hideToast } = useAdminToast();
     const [signups, setSignups] = useState<TripSignup[]>(initialSignups);
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -75,12 +78,13 @@ export default function AdminReisTableIsland({ initialSignups, initialSignupActi
             const res = await updateSignupStatus(id, newStatus);
             if (res.success) {
                 setSignups(signups.map(s => s.id === id ? { ...s, status: newStatus as any } : s));
+                showToast(`Status succesvol bijgewerkt naar ${newStatus}`, 'success');
             } else {
-                alert(res.error || 'Er is een fout opgetreden bij het updaten van de status.');
+                showToast(res.error || 'Fout bij bijwerken status.', 'error');
             }
         } catch (error) {
             console.error('Failed to update status:', error);
-            alert('Er is een fout opgetreden bij het updaten van de status.');
+            showToast('Fout bij bijwerken status.', 'error');
         } finally {
             setActionStates(prev => {
                 const newSet = new Set(prev.status);
@@ -98,12 +102,13 @@ export default function AdminReisTableIsland({ initialSignups, initialSignupActi
             const res = await deleteTripSignup(id);
             if (res.success) {
                 setSignups(signups.filter(s => s.id !== id));
+                showToast('Aanmelding succesvol verwijderd', 'success');
             } else {
-                alert(res.error || 'Er is een fout opgetreden bij het verwijderen van de aanmelding.');
+                showToast(res.error || 'Fout bij verwijderen aanmelding.', 'error');
             }
         } catch (error) {
             console.error('Failed to delete signup:', error);
-            alert('Er is een fout opgetreden bij het verwijderen van de aanmelding.');
+            showToast('Fout bij verwijderen aanmelding.', 'error');
         } finally {
             setActionStates(prev => {
                 const newSet = new Set(prev.delete);
@@ -123,7 +128,7 @@ export default function AdminReisTableIsland({ initialSignups, initialSignupActi
 
         if (paymentType === 'final') {
             if (!signup.deposit_paid) {
-                alert('Deze persoon heeft de aanbetaling nog niet betaald. Stuur eerst een aanbetalingsverzoek.');
+                showToast('Aanbetaling nog niet betaald. Stuur eerst een aanbetalingsverzoek.', 'error');
                 return;
             }
             if (signup.full_payment_paid) {
@@ -137,7 +142,7 @@ export default function AdminReisTableIsland({ initialSignups, initialSignupActi
             const res = await sendPaymentEmail(signupId, trip.id, paymentType);
 
             if (res.success) {
-                alert(`${paymentType === 'deposit' ? 'Aanbetaling' : 'Restbetaling'}sverzoek is succesvol verzonden naar ${signup.email}`);
+                showToast(`${paymentType === 'deposit' ? 'Aanbetaling' : 'Restbetaling'}sverzoek succesvol verzonden naar ${signup.email}`, 'success');
                 setSignups(prev => prev.map(s => s.id === signupId ? {
                     ...s,
                     [paymentType === 'deposit' ? 'deposit_email_sent' : 'final_email_sent']: true
@@ -148,7 +153,7 @@ export default function AdminReisTableIsland({ initialSignups, initialSignupActi
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Onbekende fout';
             console.error('Failed to send payment email:', error);
-            alert(`Er is een fout opgetreden bij het verzenden van de email: ${message}`);
+            showToast(`Fout bij verzenden email: ${message}`, 'error');
         } finally {
             setSendingEmailTo(null);
         }
@@ -200,9 +205,10 @@ export default function AdminReisTableIsland({ initialSignups, initialSignupActi
             worksheet['!cols'] = colWidths;
 
             XLSX.writeFile(workbook, `reis-aanmeldingen-${trip.name || 'export'}-${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+            showToast('Excel bestand succesvol gegenereerd', 'success');
         } catch (error) {
             console.error('Failed to export excel:', error);
-            alert('Export mislukt - kon de Excel bibliotheek niet laden.');
+            showToast('Export mislukt - kon de Excel bibliotheek niet laden.', 'error');
         }
     };
 
@@ -253,6 +259,7 @@ export default function AdminReisTableIsland({ initialSignups, initialSignupActi
                 signupActivitiesMap={signupActivitiesMap}
                 allowFinalPayments={!!trip.allow_final_payments}
             />
+            <AdminToast toast={toast} onClose={hideToast} />
         </>
     );
 }

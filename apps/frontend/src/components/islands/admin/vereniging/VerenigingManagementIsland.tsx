@@ -19,6 +19,8 @@ import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 
 import CommitteeSidebar from './CommitteeSidebar';
 import CommitteeDetail from './CommitteeDetail';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 
 const STANDARD_COMMITTEES = [
     'feestcommissie', 'mediacommissie', 'introcommissie', 'kascommissie',
@@ -35,6 +37,7 @@ interface Props {
 }
 
 export default function VerenigingManagementIsland({ initialCommittees, totalUniqueMembers }: Props) {
+    const { toast, showToast, hideToast } = useAdminToast();
     const [committees, setCommittees] = useState<Committee[]>(initialCommittees);
     const [selected, setSelected] = useState<Committee | null>(null);
     const [members, setMembers] = useState<CommitteeMember[]>([]);
@@ -99,8 +102,10 @@ export default function VerenigingManagementIsland({ initialCommittees, totalUni
         const res = await addCommitteeMember(selected.azure_group_id, selected.id.toString(), newMemberEmail);
         if (!res.success) {
             setAddError(res.error ?? 'Toevoegen mislukt');
+            showToast(res.error ?? 'Toevoegen mislukt', 'error');
         } else {
             setNewMemberEmail('');
+            showToast('Lid succesvol toegevoegd aan de commissie', 'success');
             // Reload members after short delay
             setTimeout(() => handleSelectCommittee(selected), 2000);
         }
@@ -112,14 +117,18 @@ export default function VerenigingManagementIsland({ initialCommittees, totalUni
         if (!confirm(`Weet je zeker dat je ${member.displayName} wilt verwijderen?`)) return;
         setActionLoading(`remove-${member.entraId}`);
         const res = await removeCommitteeMember(selected.azure_group_id, member.entraId);
-        if (res.success) setMembers(prev => prev.filter(m => m.entraId !== member.entraId));
-        else alert(res.error ?? 'Verwijderen mislukt');
+        if (res.success) {
+            setMembers(prev => prev.filter(m => m.entraId !== member.entraId));
+            showToast('Lid succesvol verwijderd uit de commissie', 'success');
+        } else {
+            showToast(res.error ?? 'Verwijderen mislukt', 'error');
+        }
         setActionLoading(null);
     };
 
     const handleToggleLeader = async (member: CommitteeMember) => {
         if (!member.directusMembershipId) {
-            alert('Lidmaatschapsrecord niet gevonden.');
+            showToast('Lidmaatschapsrecord niet gevonden.', 'error');
             return;
         }
         setActionLoading(`leader-${member.entraId}`);
@@ -129,8 +138,12 @@ export default function VerenigingManagementIsland({ initialCommittees, totalUni
             selected?.azure_group_id,
             member.entraId
         );
-        if (res.success) setMembers(prev => prev.map(m => m.entraId === member.entraId ? { ...m, isLeader: !m.isLeader } : m));
-        else alert(res.error ?? 'Bijwerken mislukt');
+        if (res.success) {
+            setMembers(prev => prev.map(m => m.entraId === member.entraId ? { ...m, isLeader: !m.isLeader } : m));
+            showToast(`Status '${member.isLeader ? 'Lid' : 'Leider'}' succesvol bijgewerkt`, 'success');
+        } else {
+            showToast(res.error ?? 'Bijwerken mislukt', 'error');
+        }
         setActionLoading(null);
     };
 
@@ -144,7 +157,10 @@ export default function VerenigingManagementIsland({ initialCommittees, totalUni
         if (res.success) {
             setSelected(prev => prev ? { ...prev, short_description: editShortDesc, description: editDesc } : prev);
             setEditingDetail(false);
-        } else alert(res.error ?? 'Opslaan mislukt');
+            showToast('Commissie details succesvol bijgewerkt', 'success');
+        } else {
+            showToast(res.error ?? 'Opslaan mislukt', 'error');
+        }
         setSavingDetail(false);
     };
 
@@ -226,6 +242,7 @@ export default function VerenigingManagementIsland({ initialCommittees, totalUni
                     </div>
                 </div>
             </div>
+            <AdminToast toast={toast} onClose={hideToast} />
         </div>
     );
 }

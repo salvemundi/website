@@ -11,6 +11,8 @@ import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import SyncStatus from '@/components/admin/sync/SyncStatus';
 import SyncOverview from '@/components/admin/sync/SyncOverview';
 import SyncLogs from '@/components/admin/sync/SyncLogs';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 
 interface SyncStatus {
     jobId?: string;
@@ -45,12 +47,12 @@ const syncFieldOptions = [
 
 export default function AzureSyncIsland() {
     const [mounted, setMounted] = useState(false);
+    const { toast, showToast, hideToast } = useAdminToast();
     const [status, setStatus] = useState<SyncStatus | null>(null);
     const [isStartingSync, setIsStartingSync] = useState(false);
     const [isStopping, setIsStopping] = useState(false);
     const [isUserSyncLoading, setIsUserSyncLoading] = useState(false);
     const [userId, setUserId] = useState('');
-    const [error, setError] = useState<string | null>(null);
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -101,7 +103,6 @@ export default function AzureSyncIsland() {
 
     const handleFullSync = async () => {
         setIsStartingSync(true);
-        setError(null);
         try {
             const result = await triggerFullSyncAction({
                 fields: selectedSyncFields,
@@ -109,12 +110,13 @@ export default function AzureSyncIsland() {
                 activeOnly
             });
             if (!result.success) {
-                setError(result.error || 'Kon sync niet starten');
+                showToast(result.error || 'Kon sync niet starten', 'error');
             } else {
+                showToast('Azure synchronisatie gestart', 'success');
                 fetchStatus();
             }
         } catch (err) {
-            setError('Netwerkfout bij het starten van de sync.');
+            showToast('Netwerkfout bij het starten van de sync.', 'error');
         } finally {
             setIsStartingSync(false);
         }
@@ -122,16 +124,16 @@ export default function AzureSyncIsland() {
 
     const handleStopSync = async () => {
         setIsStopping(true);
-        setError(null);
         try {
             const result = await stopSyncAction();
             if (!result.success) {
-                setError(result.error || 'Kon sync niet stoppen');
+                showToast(result.error || 'Kon sync niet stoppen', 'error');
             } else {
+                showToast('Synchronisatie afgebroken', 'info');
                 fetchStatus();
             }
         } catch (err) {
-            setError('Netwerkfout bij het stoppen van de sync.');
+            showToast('Netwerkfout bij het stoppen van de sync.', 'error');
         } finally {
             setIsStopping(false);
         }
@@ -141,16 +143,16 @@ export default function AzureSyncIsland() {
         e.preventDefault();
         if (!userId.trim()) return;
         setIsUserSyncLoading(true);
-        setError(null);
         try {
             const result = await triggerUserSyncAction(userId.trim());
             if (!result.success) {
-                setError(result.error || 'Fout bij individuele sync');
+                showToast(result.error || 'Fout bij individuele sync', 'error');
             } else {
+                showToast(`Gebruiker ${userId} succesvol gesynchroniseerd`, 'success');
                 setUserId('');
             }
         } catch (err) {
-            setError('Netwerkfout bij het synchroniseren van de gebruiker.');
+            showToast('Netwerkfout bij het synchroniseren van de gebruiker.', 'error');
         } finally {
             setIsUserSyncLoading(false);
         }
@@ -194,17 +196,6 @@ export default function AzureSyncIsland() {
                 <AdminStatsBar stats={adminStats} />
 
                 <div className="space-y-8">
-                    {/* Global Error Banner */}
-                    {error && (
-                        <div className="flex items-center gap-3 p-4 bg-[var(--beheer-inactive)]/10 border border-[var(--beheer-inactive)]/20 rounded-[var(--beheer-radius)] text-[var(--beheer-inactive)] animate-in slide-in-from-top-2">
-                            <AlertCircle className="h-5 w-5 shrink-0" />
-                            <p className="text-[10px] font-black uppercase tracking-widest">{error}</p>
-                            <button onClick={() => setError(null)} className="ml-auto hover:bg-[var(--beheer-inactive)]/10 p-1 rounded-lg">
-                                <X className="h-4 w-4" />
-                            </button>
-                        </div>
-                    )}
-
                     <SyncOverview 
                         status={status}
                         selectedSyncFields={selectedSyncFields}
@@ -256,6 +247,7 @@ export default function AzureSyncIsland() {
                     </div>
                 </div>
             </div>
+            <AdminToast toast={toast} onClose={hideToast} />
         </>
     );
 }

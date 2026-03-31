@@ -18,6 +18,8 @@ import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import LedenFilters from './LedenFilters';
 import LedenTable from './LedenTable';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 
 interface Member {
     id: string;
@@ -40,6 +42,7 @@ export default function LedenOverzichtIsland({
     searchQuery: initialSearchQuery
 }: LedenOverzichtIslandProps) {
     const router = useRouter();
+    const { toast, showToast, hideToast } = useAdminToast();
     const [isPending, startTransition] = useTransition();
     const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
     const [isSendingReminder, setIsSendingReminder] = useState(false);
@@ -79,9 +82,9 @@ export default function LedenOverzichtIsland({
         setIsSendingReminder(true);
         const res = await sendMembershipReminderAction(30);
         if (res.success) {
-            alert(res.count === 0 ? 'Geen leden gevonden voor herinnering.' : `Herinnering verstuurd naar ${res.count} lid/leden!`);
+            showToast(res.count === 0 ? 'Geen leden gevonden voor herinnering.' : `Herinnering verstuurd naar ${res.count} lid/leden!`, res.count === 0 ? 'info' : 'success');
         } else {
-            alert(res.error || 'Fout bij versturen van herinneringen');
+            showToast(res.error || 'Fout bij versturen van herinneringen', 'error');
         }
         setIsSendingReminder(false);
     };
@@ -155,6 +158,7 @@ export default function LedenOverzichtIsland({
                     isMembershipActive={isMembershipActive}
                 />
             </div>
+            <AdminToast toast={toast} onClose={hideToast} />
         </>
     );
 }

@@ -28,6 +28,8 @@ import {
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminVisibilityToggle from '@/components/ui/admin/AdminVisibilityToggle';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 
 // Modular Sub-components
 import IntroSignupsTab from './intro/IntroSignupsTab';
@@ -69,6 +71,7 @@ interface Props {
 
 export default function IntroManagementIsland({ initialSignups, initialParents, initialBlogs, initialPlanning, initialIntroVisible }: Props) {
     const router = useRouter();
+    const { toast, showToast, hideToast } = useAdminToast();
     const [activeTab, setActiveTab] = useState<TabType>('signups');
 
     // Data
@@ -102,8 +105,12 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
         if (!confirm('Weet je zeker dat je deze aanmelding wilt verwijderen?')) return;
         setDeletingSignupId(id);
         const res = await deleteIntroSignup(id);
-        if (res.success) setSignups(prev => prev.filter(s => s.id !== id));
-        else alert(res.error || 'Verwijderen mislukt');
+        if (res.success) {
+            setSignups(prev => prev.filter(s => s.id !== id));
+            showToast('Aanmelding succesvol verwijderd', 'success');
+        } else {
+            showToast(res.error || 'Verwijderen mislukt', 'error');
+        }
         setDeletingSignupId(null);
     };
 
@@ -111,16 +118,24 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
         if (!confirm('Weet je zeker dat je deze aanmelding wilt verwijderen?')) return;
         setDeletingParentId(id);
         const res = await deleteIntroParentSignup(id);
-        if (res.success) setParents(prev => prev.filter(p => p.id !== id));
-        else alert(res.error || 'Verwijderen mislukt');
+        if (res.success) {
+            setParents(prev => prev.filter(p => p.id !== id));
+            showToast('Ouder aanmelding succesvol verwijderd', 'success');
+        } else {
+            showToast(res.error || 'Verwijderen mislukt', 'error');
+        }
         setDeletingParentId(null);
     };
 
     const handleSaveBlog = async (blog: Partial<IntroBlog>) => {
         setSavingBlog(true);
         const res = await upsertIntroBlog(blog);
-        if (res.success) await reloadBlogs();
-        else alert(res.error || 'Opslaan mislukt');
+        if (res.success) {
+            await reloadBlogs();
+            showToast('Blog succesvol opgeslagen', 'success');
+        } else {
+            showToast(res.error || 'Opslaan mislukt', 'error');
+        }
         setSavingBlog(false);
     };
 
@@ -128,16 +143,24 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
         if (!confirm('Weet je zeker dat je deze blog wilt verwijderen?')) return;
         setDeletingBlogId(id);
         const res = await deleteIntroBlog(id);
-        if (res.success) setBlogs(prev => prev.filter(b => b.id !== id));
-        else alert(res.error || 'Verwijderen mislukt');
+        if (res.success) {
+            setBlogs(prev => prev.filter(b => b.id !== id));
+            showToast('Blog succesvol verwijderd', 'success');
+        } else {
+            showToast(res.error || 'Verwijderen mislukt', 'error');
+        }
         setDeletingBlogId(null);
     };
 
     const handleSavePlanning = async (item: Partial<IntroPlanningItem>) => {
         setSavingPlanning(true);
         const res = await upsertIntroPlanning(item);
-        if (res.success) await reloadPlanning();
-        else alert(res.error || 'Opslaan mislukt');
+        if (res.success) {
+            await reloadPlanning();
+            showToast('Planning item succesvol opgeslagen', 'success');
+        } else {
+            showToast(res.error || 'Opslaan mislukt', 'error');
+        }
         setSavingPlanning(false);
     };
 
@@ -145,8 +168,12 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
         if (!id || !confirm('Weet je zeker dat je dit planning item wilt verwijderen?')) return;
         setDeletingPlanningId(id);
         const res = await deleteIntroPlanning(id);
-        if (res.success) setPlanning(prev => prev.filter(p => p.id !== id));
-        else alert(res.error || 'Verwijderen mislukt');
+        if (res.success) {
+            setPlanning(prev => prev.filter(p => p.id !== id));
+            showToast('Planning item succesvol verwijderd', 'success');
+        } else {
+            showToast(res.error || 'Verwijderen mislukt', 'error');
+        }
         setDeletingPlanningId(null);
     };
 
@@ -156,11 +183,14 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
             const res = await toggleIntroVisibility();
             if (res.success) {
                 setIntroVisible(res.show ?? false);
+                showToast(`Introductie is nu ${res.show ? 'zichtbaar' : 'verborgen'}`, 'success');
                 router.refresh();
-            } else alert(res.error || 'Bijwerken mislukt');
+            } else {
+                showToast(res.error || 'Bijwerken mislukt', 'error');
+            }
         } catch (err) {
             console.error(err);
-            alert('Er is een onverwachte fout opgetreden');
+            showToast('Er is een onverwachte fout opgetreden', 'error');
         } finally {
             setTogglingVisibility(false);
         }
@@ -170,9 +200,11 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
         setSendingNotif(true);
         const res = await sendIntroCustomNotification(title, body, includeParents);
         if (res.success) {
-            alert(`Notificatie verstuurd naar ${res.sent ?? 0} gebruiker(s)!`);
+            showToast(`Notificatie verstuurd naar ${res.sent ?? 0} gebruiker(s)!`, 'success');
             setShowNotifModal(false);
-        } else alert(res.error || 'Verzenden mislukt');
+        } else {
+            showToast(res.error || 'Verzenden mislukt', 'error');
+        }
         setSendingNotif(false);
     };
 
@@ -309,9 +341,11 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                         onClose={() => setShowNotifModal(false)}
                         onSend={handleSendNotification}
                         sending={sendingNotif}
+                        showToast={showToast}
                     />
                 )}
             </div>
+            <AdminToast toast={toast} onClose={hideToast} />
         </>
     );
 }

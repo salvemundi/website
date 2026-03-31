@@ -3,6 +3,8 @@
 import Image from 'next/image';
 import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider';
 import { Calendar } from 'lucide-react';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 
 interface ActiviteitCardProps {
     id: number | string;
@@ -49,6 +51,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     registrationDeadline,
     onlyMembers = false,
 }) => {
+    const { toast, showToast, hideToast } = useAdminToast();
     const { isAuthenticated, user } = useAuth();
     const { login: loginWithMicrosoft } = useAuthActions();
 
@@ -67,7 +70,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                 localStorage.setItem('auth_return_to', returnTo);
                 loginWithMicrosoft();
             } else {
-                alert('Deze activiteit is alleen voor leden.');
+                showToast('Deze activiteit is alleen voor leden.', 'error');
             }
             return;
         }
@@ -283,6 +286,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                     </div>
                 </div>
             </div>
+            <AdminToast toast={toast} onClose={hideToast} />
         </div>
     );
 };

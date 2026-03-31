@@ -2,8 +2,16 @@
 
 import { useState, useRef, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Save, Upload, X } from 'lucide-react';
+import { 
+    ArrowLeft, 
+    Upload, 
+    X, 
+    Save, 
+    Loader2 
+} from 'lucide-react';
 import { createActivityAction } from '@/server/actions/activiteiten.actions';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
 
 interface Committee {
     id: number;
@@ -12,22 +20,17 @@ interface Committee {
 
 export default function ActiviteitFormIsland({ committees }: { committees: Committee[] }) {
     const router = useRouter();
+    const { toast, showToast, hideToast } = useAdminToast();
     const [isPending, startTransition] = useTransition();
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [formErrors, setFormErrors] = useState<Record<string, string[]>>({});
-    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
     
     // Controlled inputs for some UX (like radio/checkboxes)
     const [status, setStatus] = useState('published');
     const [onlyMembers, setOnlyMembers] = useState(false);
     
     const fileInputRef = useRef<HTMLInputElement>(null);
-
-    const showToast = (message: string, type: 'success' | 'error') => {
-        setToast({ message, type });
-        setTimeout(() => setToast(null), 5000);
-    };
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -229,14 +232,7 @@ export default function ActiviteitFormIsland({ committees }: { committees: Commi
                 </div>
             </form>
 
-            {/* Toast */}
-            {toast && (
-                <div className="fixed bottom-4 right-4 z-50 animate-bounce">
-                    <div className={`px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 ${toast.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
-                        <span className="font-medium">{toast.message}</span>
-                    </div>
-                </div>
-            )}
+            <AdminToast toast={toast} onClose={hideToast} />
         </div>
     );
 }
