@@ -44,7 +44,7 @@ export default function MemberActivitiesTab({ signups }: Props) {
                     <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-xs">Nog geen activiteiten gevonden</p>
                 </div>
             ) : (
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto max-h-[60vh] overflow-y-auto scrollbar-thin scrollbar-thumb-[var(--beheer-border)]">
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-[var(--beheer-card-soft)]/50 text-[10px] uppercase font-black tracking-widest text-[var(--beheer-text-muted)] border-b border-[var(--beheer-border)]">

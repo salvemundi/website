@@ -31,7 +31,7 @@ export type CommitteeMember = {
 export async function getCommitteesInternal(): Promise<Committee[]> {
     try {
         const items = await getSystemDirectus().request(readItems('committees', {
-            limit: 200,
+            limit: -1,
             fields: [...COMMITTEE_FIELDS],
             sort: ['name']
         }));
@@ -54,7 +54,7 @@ export async function getCommitteeMembersInternal(committeeId: string): Promise<
                 ...COMMITTEE_MEMBER_FIELDS,
                 { user_id: ['id', 'entra_id', 'first_name', 'last_name', 'email'] }
             ] as any,
-            limit: 200
+            limit: -1
         }));
 
         return (items ?? [])
