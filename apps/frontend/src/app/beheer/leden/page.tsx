@@ -80,7 +80,7 @@ async function LedenDataLoader({ search, page, tab }: { search: string, page: nu
         // Simple filter first to avoid operator issues on directus_users
         const query: any = {
             fields: ['id', 'first_name', 'last_name', 'email', 'date_of_birth', 'membership_expiry', 'status'],
-            limit: 200, // Fetch enough to avoid pagination issues for now
+            limit: -1, // Fetch all members for counting and filtering
             sort: ['last_name', 'first_name'],
             filter: {
                 _and: [

@@ -129,10 +129,9 @@ export default function LedenOverzichtIsland({
     const totalPages = Math.ceil(totalCount / pageSize);
 
     const adminStats = [
-        { label: 'Leden', value: totalCount, icon: Users, trend: 'Totaal' },
-        { label: 'Actief', value: activeCount, icon: UserCheck, trend: 'Lidmaatschap' },
+        { label: 'Totaal', value: totalCount, icon: Users, trend: 'Accounts' },
+        { label: 'Actief', value: activeCount, icon: UserCheck, trend: 'Leden' },
         { label: 'Verlopen', value: inactiveCount, icon: UserMinus, trend: 'Niet Actief' },
-        { label: 'Herinneringen', value: '30d', icon: Bell, trend: 'Trigger' },
     ];
 
     return (

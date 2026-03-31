@@ -118,7 +118,17 @@ export async function getDashboardStats(): Promise<DashboardStats> {
             pubCrawlEvents,
             trips
         ] = await Promise.all([
-            getSystemDirectus().request(aggregate('directus_users', { aggregate: { count: '*' }, query: { filter: { status: { _eq: 'active' } } } })).catch(e => { console.error("Stats: users fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
+            getSystemDirectus().request(aggregate('directus_users', { 
+                aggregate: { count: '*' }, 
+                query: { 
+                    filter: { 
+                        _and: [
+                            { status: { _eq: 'active' } },
+                            { membership_expiry: { _gte: today } }
+                        ]
+                    } 
+                } 
+            })).catch(e => { console.error("Stats: users fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
             getSystemDirectus().request(aggregate('events', { aggregate: { count: '*' }, query: { filter: { event_date: { _gte: today } } } })).catch(e => { console.error("Stats: events fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
             getSystemDirectus().request(aggregate('event_signups', { aggregate: { count: '*' }, query: { filter: { event_id: { event_date: { _gte: today } } } } })).catch(e => { console.error("Stats: signups fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
             getSystemDirectus().request(aggregate('intro_signups', { aggregate: { count: '*' } })).catch(e => { console.error("Stats: intro fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
