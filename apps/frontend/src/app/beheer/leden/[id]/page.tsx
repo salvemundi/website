@@ -66,7 +66,7 @@ async function LidDataLoader({ id }: { id: string }) {
             dReadItems<any, any, any>('committee_members' as any, {
                 filter: { user_id: { _eq: id } },
                 fields: ['id', 'is_leader', { committee_id: ['id', 'name', 'email', 'azure_group_id', 'is_visible'] }],
-                limit: 50
+                limit: -1
             })
         );
     } catch (e: any) {
@@ -81,7 +81,7 @@ async function LidDataLoader({ id }: { id: string }) {
                 filter: { participant_email: { _eq: member.email } },
                 // Limit fields to those known to work with system token (based on activities.actions.ts)
                 fields: ['id', 'payment_status', { event_id: ['id', 'name', 'event_date'] }],
-                limit: 20
+                limit: -1
             })
         );
     } catch (e: any) {

@@ -36,7 +36,7 @@ export async function getCoupons(): Promise<Coupon[]> {
     try {
         const items = await getSystemDirectus().request(readItems('coupons', {
             sort: ['-id'],
-            limit: 500,
+            limit: -1,
             fields: [...COUPON_FIELDS]
         }));
         return (items ?? []).map(i => ({

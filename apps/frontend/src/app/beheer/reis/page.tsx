@@ -69,7 +69,8 @@ async function AdminReisDashboardContent({ searchParams }: AdminReisPageProps) {
         const [tripsRes, settingsRes] = await Promise.all([
             getSystemDirectus().request(readItems('trips', {
                 fields: ['id', 'name', 'event_date', 'start_date', 'end_date', 'allow_final_payments'] as any,
-                sort: ['-event_date']
+                sort: ['-event_date'],
+                limit: -1
             })),
             getReisSiteSettings()
         ]);
