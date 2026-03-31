@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { Settings } from 'lucide-react';
-import AnimatedBeheerHeader from '@/components/ui/admin/AnimatedBeheerHeader';
+import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import { 
     DashboardQuickStats, 
     QuickActions, 
@@ -21,13 +21,12 @@ export default async function BeheerPage() {
 
     return (
         <main className="min-h-screen bg-[var(--bg-main)]">
-            <AnimatedBeheerHeader 
+            <AdminToolbar 
                 title="Beheer Dashboard" 
                 subtitle={`Welkom terug, ${user?.first_name || 'Admin'}. Beheer de vereniging en evenementen vanaf één plek.`}
-                icon={<Settings className="h-8 w-8" />}
             />
 
-            <div className="container mx-auto px-4 py-8 max-w-7xl">
+            <div className="container mx-auto px-4 py-12 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700">
                 {/* 1. Core Statistics - Legacy "Standard 4" */}
                 <Suspense fallback={<StatsRowSkeleton />}>
                     <DashboardQuickStats />

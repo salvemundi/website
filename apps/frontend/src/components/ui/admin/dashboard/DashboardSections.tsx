@@ -66,8 +66,8 @@ export async function QuickActions() {
     const permissions = await getDashboardPermissions();
 
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 border border-slate-100 dark:border-slate-700">
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Snelle Acties</h3>
+        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm p-6 border border-[var(--beheer-border)]">
+            <h3 className="text-sm font-black text-[var(--beheer-text)] mb-6 uppercase tracking-widest">Snelle Acties</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <ActionCard title="Nieuwe" subtitle="Activiteit" icon={<Plus className="h-6 w-6" />} href="/beheer/activiteiten/nieuw" colorClass="purple" />
                 <ActionCard title="Nieuwe" subtitle="Intro Post" icon={<FileText className="h-6 w-6" />} href="/beheer/intro?tab=blogs&create=1" colorClass="blue" disabled={!permissions.canAccessIntro} />
@@ -89,21 +89,21 @@ export async function BirthdaysList() {
             {upcomingBirthdays.length > 0 ? (
                 <div className="space-y-3">
                     {upcomingBirthdays.map((person) => (
-                        <div key={person.id} className={`flex items-center justify-between p-3 rounded-xl ${person.isToday ? 'bg-gradient-to-r from-yellow-100 to-yellow-50 dark:from-yellow-900/40 dark:to-yellow-900/20 border-2 border-yellow-400 dark:border-yellow-600' : 'bg-slate-100 dark:bg-slate-700'}`}>
+                        <div key={person.id} className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${person.isToday ? 'bg-amber-500/10 border-amber-500/30' : 'bg-[var(--beheer-card-soft)] border-[var(--beheer-border)]'}`}>
                             <div>
-                                <p className={`font-semibold ${person.isToday ? 'text-yellow-900 dark:text-yellow-100' : 'text-slate-700 dark:text-slate-200'}`}>
+                                <p className={`text-sm font-black uppercase tracking-tight ${person.isToday ? 'text-amber-600' : 'text-[var(--beheer-text)]'}`}>
                                     {person.first_name} {person.last_name}
                                 </p>
-                                <p className={`text-sm ${person.isToday ? 'text-yellow-700 dark:text-yellow-300' : 'text-slate-500 dark:text-slate-400'}`}>
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--beheer-text-muted)]">
                                     {new Date(person.birthday).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' })}
                                 </p>
                             </div>
-                            <Cake className={`h-5 w-5 ${person.isToday ? 'text-yellow-600 dark:text-yellow-400' : 'text-purple-600 dark:text-purple-400'}`} />
+                            <Cake className={`h-5 w-5 ${person.isToday ? 'text-amber-500 animate-bounce' : 'text-[var(--beheer-accent)]'}`} />
                         </div>
                     ))}
                 </div>
             ) : (
-                <p className="text-slate-500 dark:text-slate-400 text-center py-4">Geen jarigen gevonden</p>
+                <p className="text-[var(--beheer-text-muted)] text-[10px] font-black uppercase tracking-widest text-center py-8">Geen jarigen gevonden</p>
             )}
         </ListCard>
     );
@@ -117,26 +117,26 @@ export async function TopStickersList() {
             {topStickers.length > 0 ? (
                 <div className="space-y-3">
                     {topStickers.map((person, index) => (
-                        <div key={person.id} className="flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-700 rounded-xl">
+                        <div key={person.id} className="flex items-center justify-between p-4 bg-[var(--beheer-card-soft)] border border-[var(--beheer-border)] rounded-2xl group hover:border-[var(--beheer-accent)]/30 transition-all">
                             <div className="flex items-center gap-3">
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-slate-400' : 'bg-orange-600'}`}>
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black text-white ${index === 0 ? 'bg-amber-500 shadow-lg shadow-amber-500/20' : index === 1 ? 'bg-slate-400' : 'bg-orange-600'}`}>
                                     {index + 1}
                                 </div>
                                 <div className="truncate">
-                                    <p className="font-semibold text-slate-700 dark:text-slate-200 truncate">
+                                    <p className="text-sm font-black text-[var(--beheer-text)] uppercase tracking-tight truncate">
                                         {person.first_name} {person.last_name}
                                     </p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
-                                <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">{person.count}</span>
-                                <Award className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                                <span className="text-xl font-black text-[var(--beheer-accent)] tracking-tighter">{person.count}</span>
+                                <Award className="h-4 w-4 text-[var(--beheer-accent)]" />
                             </div>
                         </div>
                     ))}
                 </div>
             ) : (
-                <p className="text-slate-500 dark:text-slate-400 text-center py-4">Geen stickers gevonden</p>
+                <p className="text-[var(--beheer-text-muted)] text-[10px] font-black uppercase tracking-widest text-center py-8">Geen stickers gevonden</p>
             )}
         </ListCard>
     );
@@ -146,14 +146,16 @@ export async function ActivitySignupsList() {
     const latestEventsWithSignups = await getRecentActivities();
 
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 border border-slate-100 dark:border-slate-700">
-            <div className="flex items-center justify-between mb-4">
-                <div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">Activiteiten aanmeldingen</h3>
+        <div className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] shadow-sm p-6 overflow-hidden">
+            <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                    <div className="bg-[var(--beheer-accent)]/10 p-2 rounded-xl text-[var(--beheer-accent)]">
+                        <Activity className="h-5 w-5" />
+                    </div>
+                    <h3 className="text-sm font-black text-[var(--beheer-text)] uppercase tracking-widest">Activiteiten aanmeldingen</h3>
                 </div>
-                <Activity className="h-6 w-6 text-purple-600 dark:text-purple-400" />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
                 {latestEventsWithSignups.length > 0 ? (
                     latestEventsWithSignups.map((ev) => {
                         const eventDate = ev.event_date ? new Date(ev.event_date) : null;
@@ -164,21 +166,21 @@ export async function ActivitySignupsList() {
                             <a
                                 key={ev.id}
                                 href={isPast ? undefined : `/beheer/activiteiten/${ev.id}/aanmeldingen`}
-                                className={`w-full flex items-center justify-between p-3 rounded-xl transition-all ${isPast ? 'bg-slate-50 dark:bg-slate-700/30 opacity-60 cursor-default' : 'bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 active:scale-[0.98]'}`}
+                                className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all group ${isPast ? 'bg-[var(--beheer-card-soft)]/50 border-[var(--beheer-border)] opacity-60 cursor-default' : 'bg-[var(--beheer-card-soft)] border-[var(--beheer-border)] hover:border-[var(--beheer-accent)]/30 hover:shadow-md cursor-pointer active:scale-[0.98]'}`}
                             >
                                 <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
-                                    <div className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">{ev.name}</div>
-                                    {isPast && <span className="text-[10px] bg-slate-400 text-white px-1.5 py-0.5 rounded-full uppercase font-bold">Past</span>}
+                                    <div className="text-sm font-black text-[var(--beheer-text)] uppercase tracking-tight truncate">{ev.name}</div>
+                                    {isPast && <span className="text-[8px] font-black bg-[var(--beheer-border)] text-[var(--beheer-text-muted)] px-1.5 py-0.5 rounded-full uppercase tracking-widest">Past</span>}
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <span className={`text-lg font-bold ${isPast ? 'text-slate-400' : 'text-purple-600 dark:text-purple-400'}`}>{ev.signups}</span>
-                                    <UserCheck className={`h-4 w-4 ${isPast ? 'text-slate-400' : 'text-purple-600 dark:text-purple-400'}`} />
+                                    <span className={`text-xl font-black tracking-tighter ${isPast ? 'text-[var(--beheer-text-muted)]' : 'text-[var(--beheer-accent)]'}`}>{ev.signups}</span>
+                                    <UserCheck className={`h-4 w-4 ${isPast ? 'text-[var(--beheer-text-muted)]' : 'text-[var(--beheer-accent)]'}`} />
                                 </div>
                             </a>
                         );
                     })
                 ) : (
-                    <p className="text-slate-500 dark:text-slate-400 text-sm text-center py-4">Geen recente activiteiten</p>
+                    <p className="text-[var(--beheer-text-muted)] text-[10px] font-black uppercase tracking-widest text-center py-8">Geen recente activiteiten</p>
                 )}
             </div>
         </div>

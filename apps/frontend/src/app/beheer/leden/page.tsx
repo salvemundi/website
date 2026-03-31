@@ -40,15 +40,7 @@ export default async function LedenPage({
     const tab = (params.tab as 'active' | 'inactive') || 'active';
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-            <PageHeader
-                title="Leden Overzicht"
-                description="Beheer alle Salve Mundi leden inclusief lidmaatschappen"
-                backLink="/beheer"
-                className="mb-0"
-                contentPadding="pt-0 pb-2 sm:pt-0 sm:pb-2"
-                titleClassName="text-sm sm:text-base md:text-xl"
-            />
+        <div className="min-h-screen bg-[var(--bg-main)]">
             <Suspense key={search + "-" + page + "-" + tab} fallback={<MemberListSkeleton />}>
                 <LedenDataLoader 
                     search={search} 

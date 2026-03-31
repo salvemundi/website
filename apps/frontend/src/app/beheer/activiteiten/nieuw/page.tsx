@@ -1,12 +1,11 @@
 import { Suspense } from 'react';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
+import { ShieldAlert } from 'lucide-react';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
-import { ShieldAlert } from 'lucide-react';
 import ActiviteitNieuwIsland from '@/components/islands/admin/activities/ActiviteitNieuwIsland';
 import ActiviteitNieuwSkeleton from '@/components/ui/admin/activities/ActiviteitNieuwSkeleton';
-import PageHeader from '@/components/ui/layout/PageHeader';
 
 export const experimental_ppr = true;
 
@@ -71,12 +70,7 @@ export default async function ActivityCreatePage() {
     const committees = await getCommittees(session.user);
 
     return (
-        <main className="min-h-screen bg-slate-50/50 dark:bg-slate-950 pb-20">
-            <PageHeader 
-                title="Nieuwe Activiteit" 
-                description="Maak een nieuwe activiteit aan voor de vereniging."
-            />
-            
+        <main className="min-h-screen bg-[var(--bg-main)] pb-20">
             <Suspense fallback={<ActiviteitNieuwSkeleton />}>
                 <ActiviteitNieuwIsland committees={committees as any} />
             </Suspense>

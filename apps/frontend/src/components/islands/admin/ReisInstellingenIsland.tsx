@@ -27,6 +27,9 @@ import {
 } from '@/server/actions/admin-reis.actions';
 import { getImageUrl } from '@/lib/image-utils';
 import type { Trip } from '@salvemundi/validations';
+import AdminToolbar from '@/components/ui/admin/AdminToolbar';
+import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
+import { Bus, Clock } from 'lucide-react';
 
 interface ReisInstellingenIslandProps {
     initialTrips: Trip[];
@@ -85,24 +88,38 @@ export default function ReisInstellingenIsland({ initialTrips }: ReisInstellinge
         window.location.reload();
     }
 
+    const upcomingCount = trips.filter(t => new Date(t.event_date || t.start_date!) >= new Date()).length;
+    const openCount = trips.filter(t => t.registration_open).length;
+    const busCount = trips.filter(t => t.is_bus_trip).length;
+
+    const adminStats = [
+        { label: 'Reizen', value: trips.length, icon: Calendar, trend: 'Totaal' },
+        { label: 'Aankomend', value: upcomingCount, icon: Clock, trend: 'Toekomst' },
+        { label: 'Inschrijving Open', value: openCount, icon: CheckCircle, trend: 'Actief' },
+        { label: 'Busreizen', value: busCount, icon: Bus, trend: 'Logistiek' },
+    ];
+
     return (
-        <div className="container mx-auto px-4 py-8 max-w-6xl animate-in fade-in duration-700">
-            {/* Header Actions */}
-            {!isAdding && !editingTrip && (
-                <div className="mb-10 flex justify-between items-center bg-[var(--beheer-card-bg)]/50 p-8 rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] shadow-sm">
-                    <div>
-                        <h2 className="text-3xl font-black text-[var(--beheer-text)] uppercase tracking-tighter">Reizen Beheren</h2>
-                        <p className="text-[10px] font-bold text-[var(--beheer-text-muted)] uppercase tracking-widest mt-1">Configureer reis details en prijzen</p>
-                    </div>
-                    <button
-                        onClick={handleAdd}
-                        className="px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] hover:opacity-95 text-white rounded-[var(--beheer-radius)] font-black uppercase tracking-widest text-xs shadow-xl shadow-[var(--beheer-accent)]/20 transition-all active:scale-95 flex items-center gap-2 group"
-                    >
-                        <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform" />
-                        <span>Nieuwe Reis</span>
-                    </button>
-                </div>
-            )}
+        <>
+            <AdminToolbar 
+                title="Reis Instellingen"
+                subtitle="Configureer reis details, prijzen en algemene instellingen"
+                backHref="/beheer/reis"
+                actions={
+                    <>
+                        <button
+                            onClick={handleAdd}
+                            className="px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] hover:opacity-90 text-white rounded-[var(--beheer-radius)] font-black uppercase tracking-widest text-xs shadow-[var(--shadow-glow)] transition-all active:scale-95 flex items-center gap-2 group"
+                        >
+                            <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform" />
+                            <span>Nieuw</span>
+                        </button>
+                    </>
+                }
+            />
+
+            <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700">
+                <AdminStatsBar stats={adminStats} />
 
             {/* Error Display */}
             {state?.error && (
@@ -243,7 +260,8 @@ export default function ReisInstellingenIsland({ initialTrips }: ReisInstellinge
                     )}
                 </div>
             )}
-        </div>
+            </div>
+        </>
     );
 }
 

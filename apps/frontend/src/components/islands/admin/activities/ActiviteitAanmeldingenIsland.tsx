@@ -8,6 +8,9 @@ import * as XLSX from 'xlsx';
 import { deleteSignupAction, toggleCheckInAction } from '@/server/actions/aanmeldingen.actions';
 import ManualSignupModal from './ManualSignupModal';
 import { useRouter } from 'next/navigation';
+import AdminToolbar from '@/components/ui/admin/AdminToolbar';
+import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
+import { Users, UserCheck, UserMinus, DollarSign } from 'lucide-react';
 
 interface Signup {
     id: number;
@@ -101,24 +104,24 @@ export default function ActiviteitAanmeldingenIsland({ event, initialSignups }: 
         switch (status) {
             case 'paid':
                 return (
-                    <span className="flex items-center gap-1.5 px-3 py-1 bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400 rounded-full text-xs font-bold uppercase tracking-wider">
-                        <CheckCircle className="h-3.5 w-3.5" />
+                    <span className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 text-emerald-500 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">
+                        <CheckCircle className="h-3 w-3" />
                         Betaald
                     </span>
                 );
             case 'failed':
             case 'canceled':
                 return (
-                    <span className="flex items-center gap-1.5 px-3 py-1 bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400 rounded-full text-xs font-bold uppercase tracking-wider">
-                        <XCircle className="h-3.5 w-3.5" />
+                    <span className="flex items-center gap-1.5 px-2.5 py-1 bg-red-500/10 text-red-500 rounded-full text-[10px] font-black uppercase tracking-widest border border-red-500/20">
+                        <XCircle className="h-3 w-3" />
                         Mislukt
                     </span>
                 );
             case 'open':
             default:
                 return (
-                    <span className="flex items-center gap-1.5 px-3 py-1 bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 rounded-full text-xs font-bold uppercase tracking-wider">
-                        <Clock className="h-3.5 w-3.5" />
+                    <span className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 text-amber-500 rounded-full text-[10px] font-black uppercase tracking-widest border border-amber-500/20">
+                        <Clock className="h-3 w-3" />
                         Open
                     </span>
                 );
@@ -171,59 +174,56 @@ export default function ActiviteitAanmeldingenIsland({ event, initialSignups }: 
         setIsDeleting(null);
     }
 
-    return (
-        <div className="container mx-auto px-4 py-8 max-w-7xl">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm ring-1 ring-slate-200 dark:ring-slate-700/50 p-6 flex flex-col justify-center transition-all hover:shadow-md h-32">
-                    <p className="text-slate-500 dark:text-slate-400 text-xs font-bold mb-2 uppercase tracking-widest">Totaal</p>
-                    <p className="text-4xl font-black text-slate-900 dark:text-white leading-none">{stats.total}</p>
-                </div>
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm ring-1 ring-slate-200 dark:ring-slate-700/50 p-6 flex flex-col justify-center transition-all hover:shadow-md h-32">
-                    <p className="text-slate-500 dark:text-slate-400 text-xs font-bold mb-2 uppercase tracking-widest">Betaald</p>
-                    <p className="text-4xl font-black text-green-600 dark:text-green-400 leading-none">{stats.paid}</p>
-                </div>
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm ring-1 ring-slate-200 dark:ring-slate-700/50 p-6 flex flex-col justify-center transition-all hover:shadow-md h-32">
-                    <p className="text-slate-500 dark:text-slate-400 text-xs font-bold mb-2 uppercase tracking-widest">Ingecheckt</p>
-                    <p className="text-4xl font-black text-blue-600 dark:text-blue-400 leading-none">{stats.checkedIn}</p>
-                </div>
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm ring-1 ring-slate-200 dark:ring-slate-700/50 p-6 flex flex-col justify-center transition-all hover:shadow-md h-32">
-                    <p className="text-slate-500 dark:text-slate-400 text-xs font-bold mb-2 uppercase tracking-widest">Nog Open</p>
-                    <p className="text-4xl font-black text-amber-500 dark:text-amber-400 leading-none">{stats.open}</p>
-                </div>
-            </div>
+    const adminStats = [
+        { label: 'Totaal', value: stats.total, icon: Users, trend: 'Aanmeldingen' },
+        { label: 'Betaald', value: stats.paid, icon: DollarSign, trend: 'Voldaan' },
+        { label: 'Ingecheckt', value: stats.checkedIn, icon: UserCheck, trend: 'Aanwezig' },
+        { label: 'Afwezig', value: stats.total - stats.checkedIn, icon: UserMinus, trend: 'Nog niet' },
+    ];
 
-            {/* Actions Bar */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm ring-1 ring-slate-200 dark:ring-slate-700/50 p-4 mb-8 flex flex-col sm:flex-row gap-4 backdrop-blur-sm bg-white/80 dark:bg-slate-800/80">
-                <div className="relative flex-1">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+    return (
+        <>
+            <AdminToolbar 
+                title={event.name || 'Aanmeldingen'}
+                subtitle="Deelnemerslijst en inchecken"
+                backHref="/beheer/activiteiten"
+                actions={
+                    <>
+                        <button
+                            onClick={exportToXLSX}
+                            disabled={filteredSignups.length === 0}
+                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-xs font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50"
+                        >
+                            <Download className="h-4 w-4" />
+                            Exporteer
+                        </button>
+                        <button
+                            onClick={() => setIsManualModalOpen(true)}
+                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
+                        >
+                            <UserPlus className="h-4 w-4" />
+                            Handmatig
+                        </button>
+                    </>
+                }
+            />
+
+            <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <AdminStatsBar stats={adminStats} />
+
+                {/* Search Bar */}
+                <div className="mb-10 relative group max-w-xl">
+                    <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none z-20">
+                        <Search className="h-4 w-4 text-[var(--beheer-text-muted)] group-focus-within:text-[var(--beheer-accent)] transition-colors" />
+                    </div>
                     <input
                         type="text"
                         placeholder="Zoek op naam, email of telefoon..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border-none ring-1 ring-slate-200 dark:ring-slate-700/50 text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary outline-none transition-all font-medium"
+                        className="w-full pl-11 pr-5 py-3 rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] placeholder:text-[var(--beheer-text-muted)] focus:ring-2 focus:ring-[var(--beheer-accent)]/20 focus:border-[var(--beheer-accent)] outline-none transition-all shadow-sm font-bold uppercase tracking-widest text-[10px]"
                     />
                 </div>
-                <div className="flex gap-3">
-                    <button
-                        onClick={exportToXLSX}
-                        disabled={filteredSignups.length === 0}
-                        className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl font-bold transition-all disabled:opacity-50 cursor-pointer"
-                    >
-                        <Download className="h-5 w-5" />
-                        <span className="hidden sm:inline">Exporteer</span>
-                    </button>
-                    <button
-                        onClick={() => setIsManualModalOpen(true)}
-                        className="flex items-center justify-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-white rounded-xl shadow-lg shadow-primary/20 font-bold transition-all hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
-                    >
-                        <UserPlus className="h-5 w-5" />
-                        <span className="hidden sm:inline">Handmatig</span>
-                        <span className="sm:hidden">Lid</span>
-                    </button>
-                </div>
-            </div>
 
             <ManualSignupModal
                 isOpen={isManualModalOpen}
@@ -234,30 +234,30 @@ export default function ActiviteitAanmeldingenIsland({ event, initialSignups }: 
             />
 
             {/* Table */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm ring-1 ring-slate-200 dark:ring-slate-700/50 overflow-hidden">
-                {filteredSignups.length === 0 ? (
-                    <div className="p-20 text-center">
-                        <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-slate-50 dark:bg-slate-900 mb-6">
-                            <Search className="h-10 w-10 text-slate-300 dark:text-slate-600" />
+                <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm ring-1 ring-[var(--beheer-border)] overflow-hidden">
+                    {filteredSignups.length === 0 ? (
+                        <div className="p-20 text-center">
+                            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[var(--beheer-card-soft)] mb-6">
+                                <Search className="h-10 w-10 text-[var(--beheer-text-muted)] opacity-20" />
+                            </div>
+                            <h3 className="text-xl font-black text-[var(--beheer-text)] mb-2 uppercase tracking-tighter">Geen resultaten</h3>
+                            <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-[10px] max-w-xs mx-auto">
+                                {searchQuery ? "We konden niemand vinden die voldoet aan je zoekopdracht." : "Er zijn nog geen aanmeldingen voor deze activiteit."}
+                            </p>
                         </div>
-                        <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">Geen resultaten</h3>
-                        <p className="text-slate-500 dark:text-slate-400 font-medium max-w-xs mx-auto">
-                            {searchQuery ? "We konden niemand vinden die voldoet aan je zoekopdracht." : "Er zijn nog geen aanmeldingen voor deze activiteit."}
-                        </p>
-                    </div>
-                ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse min-w-[800px]">
-                            <thead>
-                                <tr className="border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30 text-[10px] uppercase font-black tracking-[0.2em] text-slate-400 dark:text-slate-500">
-                                    <th className="px-6 py-4">Ingecheckt</th>
-                                    <th className="px-6 py-4">Deelnemer</th>
-                                    <th className="px-6 py-4">Contactgegevens</th>
-                                    <th className="px-6 py-4">Status & Datum</th>
-                                    <th className="px-6 py-4 text-right">Acties</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse min-w-[800px]">
+                                <thead>
+                                    <tr className="border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[10px] uppercase font-black tracking-widest text-[var(--beheer-text-muted)]">
+                                        <th className="px-6 py-4">Status</th>
+                                        <th className="px-6 py-4">Deelnemer</th>
+                                        <th className="px-6 py-4">Contact</th>
+                                        <th className="px-6 py-4">Betaling & Datum</th>
+                                        <th className="px-6 py-4 text-right">Acties</th>
+                                    </tr>
+                                </thead>
+                            <tbody className="divide-y divide-[var(--beheer-border)]">
                                 {filteredSignups.map(signup => {
                                     const name = getName(signup);
                                     const email = getEmail(signup);
@@ -265,27 +265,27 @@ export default function ActiviteitAanmeldingenIsland({ event, initialSignups }: 
                                     const isRowDeleting = isDeleting === signup.id;
                                     
                                     return (
-                                        <tr key={signup.id} className={`group hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition-colors ${isRowDeleting ? 'opacity-50 pointer-events-none' : ''}`}>
+                                        <tr key={signup.id} className={`group hover:bg-[var(--beheer-card-soft)] transition-colors ${isRowDeleting ? 'opacity-50 pointer-events-none' : ''}`}>
                                             <td className="px-6 py-5">
                                                 <button
                                                     onClick={() => handleToggleCheckIn(signup.id, !!signup.checked_in)}
-                                                    className={`p-2 rounded-xl transition-all cursor-pointer ${signup.checked_in ? 'bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400' : 'bg-slate-100 text-slate-300 dark:bg-slate-700 dark:text-slate-600 hover:text-blue-400 group-hover:scale-110'}`}
+                                                    className={`p-2 rounded-xl transition-all cursor-pointer ${signup.checked_in ? 'bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)]' : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] opacity-30 hover:opacity-100 hover:text-[var(--beheer-accent)] group-hover:scale-110'}`}
                                                 >
                                                     {signup.checked_in ? <CheckCircle2 className="h-6 w-6" /> : <Circle className="h-6 w-6" />}
                                                 </button>
                                             </td>
                                             <td className="px-6 py-5">
-                                                <div className="font-extrabold text-slate-900 dark:text-white text-base mb-1">{name}</div>
+                                                <div className="font-black text-[var(--beheer-text)] text-sm uppercase tracking-tight mb-1">{name}</div>
                                             </td>
                                             <td className="px-6 py-5 space-y-1.5">
-                                                <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 font-medium">
-                                                    <Mail className="h-4 w-4 text-slate-300 dark:text-slate-600" />
-                                                    <a href={`mailto:${email}`} className="hover:text-primary transition-colors">{email}</a>
+                                                <div className="flex items-center gap-2 text-xs text-[var(--beheer-text-muted)] font-black uppercase tracking-tight">
+                                                    <Mail className="h-3.5 w-3.5 opacity-50" />
+                                                    <a href={`mailto:${email}`} className="hover:text-[var(--beheer-accent)] transition-colors">{email}</a>
                                                 </div>
                                                 {phone && phone !== '-' && (
-                                                    <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 font-medium">
-                                                        <Phone className="h-4 w-4 text-slate-300 dark:text-slate-600" />
-                                                        <a href={`tel:${phone}`} className="hover:text-primary transition-colors">{phone}</a>
+                                                    <div className="flex items-center gap-2 text-xs text-[var(--beheer-text-muted)] font-black uppercase tracking-tight">
+                                                        <Phone className="h-3.5 w-3.5 opacity-50" />
+                                                        <a href={`tel:${phone}`} className="hover:text-[var(--beheer-accent)] transition-colors">{phone}</a>
                                                     </div>
                                                 )}
                                             </td>
@@ -293,14 +293,14 @@ export default function ActiviteitAanmeldingenIsland({ event, initialSignups }: 
                                                 <div className="mb-2">
                                                     {getStatusBadge(signup.payment_status || 'open')}
                                                 </div>
-                                                <div className="text-xs text-slate-400 dark:text-slate-500 font-bold">
+                                                <div className="text-[10px] text-[var(--beheer-text-muted)] font-bold uppercase tracking-widest">
                                                     {format(new Date(signup.created_at), 'dd MMM yyyy, HH:mm', { locale: nl })}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-5 text-right">
                                                 <button
                                                     onClick={() => handleDelete(signup.id, email)}
-                                                    className="inline-flex items-center justify-center w-10 h-10 rounded-xl text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 dark:text-slate-600 dark:hover:text-red-400 transition-all cursor-pointer"
+                                                    className="inline-flex items-center justify-center w-10 h-10 rounded-xl text-[var(--beheer-text-muted)] opacity-30 hover:opacity-100 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer"
                                                     title="Verwijder aanmelding"
                                                 >
                                                     {isRowDeleting ? (
@@ -317,7 +317,8 @@ export default function ActiviteitAanmeldingenIsland({ event, initialSignups }: 
                         </table>
                     </div>
                 )}
+                </div>
             </div>
-        </div>
+        </>
     );
 }

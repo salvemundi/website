@@ -18,25 +18,30 @@ export function ActionCard({
 }) {
     const isLink = !disabled && href;
     const Component = (isLink ? Link : 'div') as any;
+    
+    // Mapping color classes to beheer-accent or other semantic colors if possible, 
+    // but Keeping some specific tints for variety while using the token system.
     const colorMap: Record<string, string> = {
-        purple: 'bg-gradient-to-br from-purple-500 to-purple-600',
-        blue: 'bg-gradient-to-br from-blue-500 to-blue-600',
-        red: 'bg-gradient-to-br from-red-500 to-red-600',
-        green: 'bg-gradient-to-br from-green-500 to-green-600',
-        orange: 'bg-gradient-to-br from-orange-500 to-orange-600',
-        teal: 'bg-gradient-to-br from-teal-500 to-teal-600',
-        amber: 'bg-gradient-to-br from-amber-500 to-amber-600'
+        purple: 'text-[var(--beheer-accent)] bg-[var(--beheer-accent)]/5 border-[var(--beheer-accent)]/10',
+        blue: 'text-blue-500 bg-blue-500/5 border-blue-500/10',
+        red: 'text-red-500 bg-red-500/5 border-red-500/10',
+        green: 'text-green-500 bg-green-500/5 border-green-500/10',
+        orange: 'text-orange-500 bg-orange-500/5 border-orange-500/10',
+        teal: 'text-teal-500 bg-teal-500/5 border-teal-500/10',
+        amber: 'text-amber-500 bg-amber-500/5 border-amber-500/10'
     };
 
     return (
         <Component
             {...((isLink && href) ? { href } : {})}
-            className={`w-full flex items-center gap-4 p-3 rounded-2xl shadow-sm ${colorMap[colorClass]} text-white ${disabled ? 'opacity-60 cursor-not-allowed hover:scale-100' : 'hover:scale-[1.01] transition cursor-pointer'}`}
+            className={`w-full flex items-center gap-4 p-4 rounded-[var(--beheer-radius)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] shadow-sm ${disabled ? 'opacity-50 cursor-not-allowed shadow-none' : 'hover:border-[var(--beheer-accent)]/30 hover:shadow-md transition-all cursor-pointer active:scale-[0.98] group'}`}
         >
-            <div className={`${disabled ? 'p-2 bg-white/10' : 'p-2 bg-white/20'} rounded-lg flex items-center justify-center`}>{icon}</div>
-            <div className="text-left">
-                <p className="text-sm opacity-90">{title}</p>
-                {subtitle && <p className="font-bold text-lg">{subtitle}</p>}
+            <div className={`p-3 rounded-xl transition-colors ${colorMap[colorClass] || colorMap.purple} group-hover:bg-opacity-10`}>
+                {icon}
+            </div>
+            <div className="text-left flex-1 min-w-0">
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-text)] transition-colors">{title}</p>
+                {subtitle && <p className="font-black text-lg text-[var(--beheer-text)] uppercase tracking-tighter truncate">{subtitle}</p>}
             </div>
         </Component>
     );
@@ -64,34 +69,37 @@ export function StatCard({
     const isLink = !disabled && href;
     const Component = (isLink ? Link : 'div') as any;
 
-    const colorStyles = {
-        purple: { gradient: 'from-purple-500 to-purple-600', iconBg: 'bg-white/20', text: 'text-white', subtitleText: 'text-purple-100' },
-        orange: { gradient: 'from-orange-500 to-orange-600', iconBg: 'bg-white/20', text: 'text-white', subtitleText: 'text-orange-100' },
-        amber: { gradient: 'from-amber-500 to-amber-600', iconBg: 'bg-white/20', text: 'text-white', subtitleText: 'text-amber-100' },
-        teal: { gradient: 'from-teal-500 to-teal-600', iconBg: 'bg-white/20', text: 'text-white', subtitleText: 'text-teal-100' },
-        blue: { gradient: 'from-blue-500 to-blue-600', iconBg: 'bg-white/20', text: 'text-white', subtitleText: 'text-blue-100' },
-        green: { gradient: 'from-green-500 to-green-600', iconBg: 'bg-white/20', text: 'text-white', subtitleText: 'text-green-100' },
-        red: { gradient: 'from-red-500 to-red-600', iconBg: 'bg-white/20', text: 'text-white', subtitleText: 'text-red-100' }
+    const colors: Record<string, string> = {
+        purple: 'text-[var(--beheer-accent)] bg-[var(--beheer-accent)]/5',
+        orange: 'text-orange-500 bg-orange-500/5',
+        blue: 'text-blue-500 bg-blue-500/5',
+        green: 'text-green-500 bg-green-500/5',
+        red: 'text-red-500 bg-red-500/5',
+        amber: 'text-amber-500 bg-amber-500/5',
+        teal: 'text-teal-500 bg-teal-500/5',
     };
 
-    const colors = colorStyles[colorClass] || colorStyles.purple;
+    const color = colors[colorClass] || colors.purple;
 
     return (
         <Component
             {...((isLink && href) ? { href } : {})}
-            className={`block w-full bg-gradient-to-br ${colors.gradient} rounded-2xl shadow-lg p-4 sm:p-6 relative overflow-hidden ${!disabled && href ? 'hover:shadow-2xl transition-all cursor-pointer hover:-translate-y-1 hover:scale-[1.02]' : ''} ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
+            className={`block w-full bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] p-5 relative overflow-hidden transition-all ${!disabled && href ? 'hover:shadow-lg hover:border-[var(--beheer-accent)]/30 hover:-translate-y-1 group cursor-pointer' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
-            <div className={`absolute top-0 right-0 w-28 h-28 sm:w-32 sm:h-32 -mr-12 sm:-mr-16 -mt-12 sm:-mt-16 bg-white/10 rounded-full`} />
-            <div className="relative z-10">
-                <div className={`${nowrap ? 'flex flex-row items-center justify-between gap-2' : 'flex flex-col sm:flex-row items-center sm:items-start justify-between gap-3'} min-h-0`}>
-                    <div className={`flex-1 min-w-0 text-center sm:text-left sm:pr-2`}>
-                        <p className={`${colors.subtitleText} text-sm font-medium mb-2`}>{title}</p>
-                        <p className={`${typeof value === 'string' && value.length > 10 ? 'text-lg sm:text-xl' : 'text-3xl sm:text-4xl'} font-bold ${colors.text} mb-1 ${nowrap ? 'whitespace-normal sm:whitespace-nowrap' : 'break-words'}`}>{value}</p>
-                        {subtitle && <p className={`${colors.subtitleText} text-xs line-clamp-2`} title={subtitle}>{subtitle}</p>}
-                    </div>
-                    <div className={`hidden sm:block ${colors.iconBg} p-3 rounded-xl ${colors.text} backdrop-blur-sm flex-shrink-0 relative -mt-3 sm:-mt-4 z-20 self-start`}>
+            <div className="relative z-10 flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                    <div className={`p-2.5 rounded-xl ${color}`}>
                         {icon}
                     </div>
+                    {isLink && <div className="text-[10px] font-black text-[var(--beheer-accent)] opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-widest">Bekijken →</div>}
+                </div>
+                
+                <div className="space-y-1">
+                    <p className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">{title}</p>
+                    <p className="text-3xl font-black text-[var(--beheer-text)] tracking-tighter uppercase truncate">
+                        {value}
+                    </p>
+                    {subtitle && <p className="text-[10px] font-bold text-[var(--beheer-text-muted)] uppercase tracking-widest truncate">{subtitle}</p>}
                 </div>
             </div>
         </Component>
@@ -108,14 +116,18 @@ export function ListCard({
     children: React.ReactNode;
 }) {
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
-            <div className="flex items-center gap-3 mb-4">
-                <div className="bg-theme-purple/10 dark:bg-purple-500/20 p-2 rounded-xl text-purple-600 dark:text-purple-400">
-                    {icon}
+        <div className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] shadow-sm p-6 overflow-hidden">
+            <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                    <div className="bg-[var(--beheer-accent)]/10 p-2 rounded-xl text-[var(--beheer-accent)]">
+                        {icon}
+                    </div>
+                    <h3 className="text-sm font-black text-[var(--beheer-text)] uppercase tracking-widest">{title}</h3>
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">{title}</h3>
             </div>
-            {children}
+            <div className="space-y-1">
+                {children}
+            </div>
         </div>
     );
 }

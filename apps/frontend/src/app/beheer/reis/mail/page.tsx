@@ -18,13 +18,6 @@ export const metadata: Metadata = {
 export default async function ReisMailPage({ searchParams }: PageProps) {
     return (
         <main className="min-h-screen bg-[var(--bg-main)]">
-            <AnimatedBeheerHeader 
-                title="Bulk Mail: Reis" 
-                subtitle="Verstuur gepersonaliseerde e-mails of betalingsherinneringen naar groepen deelnemers."
-                backLink="/beheer/reis"
-                icon={<Send className="h-8 w-8" />}
-            />
-            
             <Suspense fallback={
                 <div className="flex flex-col items-center justify-center py-32">
                     <Loader2 className="animate-spin h-12 w-12 text-[var(--beheer-accent)] mb-4" />

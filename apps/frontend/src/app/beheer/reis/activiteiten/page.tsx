@@ -59,12 +59,9 @@ async function ReisActiviteitenLoader({ searchParams }: PageProps) {
 
     if (!trips || trips.length === 0) {
         return (
-            <>
-                <AnimatedBeheerHeader title="Activiteiten Beheer" backLink="/beheer/reis" />
-                <div className="container mx-auto px-4 py-20 text-center">
-                    <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-xs">Geen reizen gevonden.</p>
-                </div>
-            </>
+            <div className="container mx-auto px-4 py-20 text-center">
+                <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-xs">Geen reizen gevonden.</p>
+            </div>
         );
     }
 
@@ -102,19 +99,11 @@ async function ReisActiviteitenLoader({ searchParams }: PageProps) {
     });
 
     return (
-        <>
-            <AnimatedBeheerHeader 
-                title="Trip Activiteiten" 
-                subtitle={`Beheer activiteiten en inschrijvingen voor ${activeTrip.name}`}
-                backLink="/beheer/reis"
-                icon={<Layers className="h-8 w-8" />}
-            />
-            <ReisActiviteitenIsland 
-                initialTrips={trips as any} 
-                initialActivities={activities as any}
-                initialSelectedTripId={activeTripId}
-                initialSignupsByActivity={signupsByActivity}
-            />
-        </>
+        <ReisActiviteitenIsland 
+            initialTrips={trips as any} 
+            initialActivities={activities as any}
+            initialSelectedTripId={activeTripId}
+            initialSignupsByActivity={signupsByActivity}
+        />
     );
 }

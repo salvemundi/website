@@ -1,12 +1,10 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import AnimatedBeheerHeader from '@/components/ui/admin/AnimatedBeheerHeader';
-import { getAdminActivities } from '@/server/actions/activiteiten.actions';
-import AdminDashboardSkeleton from '@/components/ui/admin/AdminDashboardSkeleton';
-import AdminActivitiesIsland from '@/components/islands/admin/activities/AdminActivitiesIsland';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
-import { Calendar } from 'lucide-react';
+import AdminDashboardSkeleton from '@/components/ui/admin/AdminDashboardSkeleton';
+import AdminActivitiesIsland from '@/components/islands/admin/activities/AdminActivitiesIsland';
+import { getAdminActivities } from '@/server/actions/activiteiten.actions';
 
 export const metadata: Metadata = {
     title: 'Beheer Activiteiten | SV Salve Mundi',
@@ -22,18 +20,9 @@ export default async function AdminActiviteitenPage({
 
     return (
         <main className="min-h-screen bg-[var(--bg-main)]">
-            <AnimatedBeheerHeader 
-                title="Beheer Activiteiten"
-                subtitle="Bekijk, bewerk en verwijder activiteiten van SV Salve Mundi."
-                backLink="/beheer"
-                icon={<Calendar className="h-10 w-10" />}
-            />
-            
-            <div className="pb-20">
-                <Suspense fallback={<AdminDashboardSkeleton />}>
-                    <ActivitiesDataLoader searchParams={sParams} />
-                </Suspense>
-            </div>
+            <Suspense fallback={<AdminDashboardSkeleton />}>
+                <ActivitiesDataLoader searchParams={sParams} />
+            </Suspense>
         </main>
     );
 }

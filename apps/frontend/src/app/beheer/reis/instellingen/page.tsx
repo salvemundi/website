@@ -13,13 +13,6 @@ export const metadata: Metadata = {
 export default async function ReisInstellingenPage() {
     return (
         <main className="min-h-screen bg-[var(--bg-main)]">
-            <AnimatedBeheerHeader 
-                title="Reis Instellingen" 
-                subtitle="Beheer reizen, prijzen en algemene configuratie voor alle SV Salve Mundi evenementen."
-                backLink="/beheer/reis"
-                icon={<Settings className="h-8 w-8" />}
-            />
-            
             <Suspense fallback={
                 <div className="flex flex-col items-center justify-center py-32">
                     <Loader2 className="animate-spin h-12 w-12 text-[var(--beheer-accent)] mb-4" />

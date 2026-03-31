@@ -22,9 +22,12 @@ import {
     updateSignupActivities 
 } from '@/server/actions/admin-reis.actions';
 import type { Trip, TripSignup, TripActivity } from '@salvemundi/validations';
-import { format } from 'date-fns';
+import { format, differenceInYears } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { useRouter } from 'next/navigation';
+import AdminToolbar from '@/components/ui/admin/AdminToolbar';
+import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
+import { Shield, Clock } from 'lucide-react';
 
 interface ReisDeelnemerDetailIslandProps {
     initialSignup: TripSignup;
@@ -35,6 +38,7 @@ interface ReisDeelnemerDetailIslandProps {
 
 export default function ReisDeelnemerDetailIsland({ 
     initialSignup, 
+    trips,
     allActivities, 
     initialSelectedActivities 
 }: ReisDeelnemerDetailIslandProps) {
@@ -78,61 +82,54 @@ export default function ReisDeelnemerDetailIsland({
         });
     };
 
+    const age = initialSignup.date_of_birth ? differenceInYears(new Date(), new Date(initialSignup.date_of_birth)) : '?';
+    const paymentStatus = initialSignup.full_payment_paid ? 'Voldaan' : initialSignup.deposit_paid ? 'Aanbetaling' : 'Niet betaald';
+    
+    const adminStats = [
+        { label: 'Status', value: initialSignup.status === 'confirmed' ? 'Bevestigd' : 'Afwachtend', icon: CheckCircle, trend: 'Registratie' },
+        { label: 'Leeftijd', value: `${age} jaar`, icon: User, trend: 'Demografie' },
+        { label: 'Betaling', value: paymentStatus, icon: CreditCard, trend: 'Financieel' },
+        { label: 'Rol', value: initialSignup.role || 'Lid', icon: Shield, trend: 'Rechten' },
+    ];
+
+    const selectedTrip = (trips || []).find(t => t.id === initialSignup.trip_id);
+
     return (
-        <div className="container mx-auto px-4 py-8 max-w-5xl animate-in fade-in duration-700">
-            {state?.success && (
-                <div className="mb-8 p-6 bg-[var(--beheer-active)]/10 text-[var(--beheer-active)] rounded-[var(--beheer-radius)] border border-[var(--beheer-active)]/20 flex items-center gap-4 animate-in slide-in-from-top-4 shadow-sm">
-                    <div className="h-10 w-10 rounded-xl bg-[var(--beheer-active)] text-white flex items-center justify-center shadow-lg shadow-[var(--beheer-active)]/20">
-                        <CheckCircle className="h-6 w-6" />
-                    </div>
-                    <div>
-                        <p className="font-black uppercase tracking-tight text-sm">Update geslaagd!</p>
-                        <p className="text-[10px] font-black uppercase tracking-widest opacity-80">De wijzigingen zijn succesvol verwerkt.</p>
-                    </div>
-                </div>
-            )}
+        <>
+            <AdminToolbar 
+                title={`${initialSignup.first_name} ${initialSignup.last_name}`}
+                subtitle={`Beheer details voor deze deelnemer aan ${selectedTrip?.name || 'de reis'}`}
+                backHref="/beheer/reis"
+                actions={
+                    <button
+                        type="button"
+                        onClick={handleDelete}
+                        disabled={isPending}
+                        className="px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-inactive)]/10 text-[var(--beheer-inactive)] rounded-[var(--beheer-radius)] font-black uppercase tracking-widest text-[10px] border border-[var(--beheer-inactive)]/20 hover:bg-[var(--beheer-inactive)]/20 transition-all flex items-center gap-2"
+                    >
+                        {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                        Verwijderen
+                    </button>
+                }
+            />
 
-            {error && (
-                <div className="mb-6 p-4 bg-[var(--theme-error)]/10 text-[var(--theme-error)] rounded-[var(--radius-xl)] border border-[var(--theme-error)]/20 flex items-center gap-3 animate-in slide-in-from-top-4">
-                    <AlertCircle className="h-5 w-5" />
-                    <p className="font-semibold">{error}</p>
-                </div>
-            )}
-
-            <form action={formAction} className="space-y-8">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Left Column: Personal Info & Status */}
-                    <div className="lg:col-span-2 space-y-8">
-                        {/* Header Card */}
-                        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] p-8 overflow-hidden relative group">
-                            <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity">
-                                <User className="h-40 w-40" />
-                            </div>
-                            <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                                <div className="flex items-center gap-6">
-                                    <div className="h-20 w-20 rounded-3xl bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] flex items-center justify-center shadow-inner">
-                                        <User className="h-10 w-10" />
-                                    </div>
-                                    <div>
-                                        <h1 className="text-3xl font-black text-[var(--beheer-text)] uppercase tracking-tight">
-                                            {initialSignup.first_name} {initialSignup.last_name}
-                                        </h1>
-                                        <div className="flex items-center gap-2 mt-1">
-                                            <Mail className="h-3.5 w-3.5 text-[var(--beheer-text-muted)]" />
-                                            <span className="text-sm font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">{initialSignup.email}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div className="flex flex-col gap-3 shrink-0 sm:items-end">
-                                    <StatusBadge status={initialSignup.status} />
-                                    <span className="px-4 py-1.5 bg-[var(--bg-main)] rounded-xl text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest text-center border border-[var(--beheer-border)]/50 shadow-sm">
-                                        Rol: <span className="text-[var(--beheer-text)]">{initialSignup.role}</span>
-                                    </span>
-                                </div>
-                            </div>
+            <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700">
+                <AdminStatsBar stats={adminStats} />
+                
+                {state?.success && (
+                    <div className="mb-8 p-6 bg-[var(--beheer-active)]/10 text-[var(--beheer-active)] rounded-[var(--beheer-radius)] border border-[var(--beheer-active)]/20 flex items-center gap-4 animate-in slide-in-from-top-4 shadow-sm">
+                        <div className="h-10 w-10 rounded-xl bg-[var(--beheer-active)] text-white flex items-center justify-center shadow-lg shadow-[var(--beheer-active)]/20">
+                            <CheckCircle className="h-6 w-6" />
                         </div>
+                        <div>
+                            <p className="font-black uppercase tracking-tight text-sm">Update geslaagd!</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest opacity-80">De wijzigingen zijn succesvol verwerkt.</p>
+                        </div>
+                    </div>
+                )}
 
+                <form action={formAction} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="lg:col-span-2 space-y-8">
                         {/* Form Sections */}
                         <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] divide-y divide-[var(--beheer-border)]/30">
                             {/* Personal Details */}
@@ -329,9 +326,9 @@ export default function ReisDeelnemerDetailIsland({
                             </div>
                         </div>
                     </div>
-                </div>
-            </form>
-        </div>
+                </form>
+            </div>
+        </>
     );
 }
 

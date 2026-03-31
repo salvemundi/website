@@ -14,13 +14,20 @@ import {
     Search,
     Info,
     Layout,
-    Check
+    Check,
+    Calendar,
+    DollarSign,
+    UserCheck,
+    History,
+    Clock
 } from 'lucide-react';
 import { 
     sendBulkTripEmail, 
     sendBulkPaymentEmails 
 } from '@/server/actions/admin-reis.actions';
 import type { Trip, TripSignup } from '@salvemundi/validations';
+import AdminToolbar from '@/components/ui/admin/AdminToolbar';
+import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 
 interface ReisMailIslandProps {
     trips: Trip[];
@@ -120,8 +127,34 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
         }
     };
 
+    const confirmedCount = initialSignups.filter(s => s.status === 'confirmed').length;
+    const waitlistCount = initialSignups.filter(s => s.status === 'waitlist').length;
+    const unpaidCount = initialSignups.filter(s => !s.full_payment_paid).length;
+
+    const adminStats = [
+        { label: 'Deelnemers', value: initialSignups.length, icon: Users, trend: 'Totaal' },
+        { label: 'Bevestigd', value: confirmedCount, icon: UserCheck, trend: 'Zeker' },
+        { label: 'Wachtlijst', value: waitlistCount, icon: Clock, trend: 'Standby' },
+        { label: 'Niet Betaald', value: unpaidCount, icon: DollarSign, trend: 'Openstaand' },
+    ];
+
     return (
-        <div className="container mx-auto px-4 py-8 max-w-6xl animate-in fade-in duration-700">
+        <>
+            <AdminToolbar 
+                title="Bulk Mail"
+                subtitle="Verstuur e-mails naar groepen reizigers"
+                backHref="/beheer/reis"
+                actions={
+                    <div className="flex bg-[var(--beheer-card-soft)] p-1 rounded-xl border border-[var(--beheer-border)] shadow-inner">
+                        <TypeTab active={emailType === 'custom'} onClick={() => setEmailType('custom')}>Custom</TypeTab>
+                        <TypeTab active={emailType === 'deposit_request'} onClick={() => setEmailType('deposit_request')}>Deposit</TypeTab>
+                        <TypeTab active={emailType === 'final_request'} onClick={() => setEmailType('final_request')}>Final</TypeTab>
+                    </div>
+                }
+            />
+
+            <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700">
+                <AdminStatsBar stats={adminStats} />
             {/* Alerts */}
             {success && (
                 <div className="mb-6 p-4 bg-[var(--theme-success)]/10 text-[var(--theme-success)] rounded-[var(--radius-xl)] border border-[var(--theme-success)]/20 flex items-center gap-3 animate-in slide-in-from-top-4">
@@ -205,7 +238,7 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
                 <div className="lg:col-span-3 space-y-8">
                     <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] overflow-hidden">
                         {/* Editor Header */}
-                        <div className="p-8 border-b border-[var(--beheer-border)]/50 bg-[var(--bg-main)]/30 backdrop-blur-sm">
+                        <div className="p-8 border-b border-[var(--beheer-border)]/50 bg-[var(--beheer-card-soft)]">
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                                 <div className="flex items-center gap-4">
                                     <div className="h-12 w-12 rounded-2xl bg-[var(--beheer-accent)] text-white flex items-center justify-center shadow-lg shadow-[var(--beheer-accent)]/20">
@@ -215,11 +248,6 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
                                         <h2 className="text-xl font-black text-[var(--beheer-text)] uppercase tracking-tight">Bericht Componeren</h2>
                                         <p className="text-[10px] font-bold text-[var(--beheer-text-muted)] uppercase tracking-widest">Verzend bulk communicatie</p>
                                     </div>
-                                </div>
-                                <div className="flex bg-[var(--bg-main)]/50 p-2 rounded-2xl border border-[var(--beheer-border)]/30 shadow-inner">
-                                    <TypeTab active={emailType === 'custom'} onClick={() => setEmailType('custom')}>Custom</TypeTab>
-                                    <TypeTab active={emailType === 'deposit_request'} onClick={() => setEmailType('deposit_request')}>Deposit</TypeTab>
-                                    <TypeTab active={emailType === 'final_request'} onClick={() => setEmailType('final_request')}>Final</TypeTab>
                                 </div>
                             </div>
                         </div>
@@ -289,6 +317,7 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
                 </div>
             </div>
         </div>
+    </>
     );
 }
 
