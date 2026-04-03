@@ -7,15 +7,19 @@
     "node": ">=22.22.2"
   },
   "scripts": {
-    "dev": "pnpm -r run dev",
-    "build": "pnpm -r run build",
-    "start": "pnpm -r run start",
-    "lint": "pnpm -r --if-present run lint"
+    "dev": "pnpm -r dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint"
   },
   "pnpm": {
     "overrides": {
       "react": "^19.2.0",
-      "react-dom": "^19.2.0"
+      "react-dom": "^19.2.0",
+      "better-auth": "1.5.6",
+      "@better-auth/core": "1.5.6",
+      "@better-auth/cli": "1.4.21",
+      "@better-auth/utils": "0.4.0",
+      "@better-auth/telemetry": "1.5.6"
     },
     "peerDependencyRules": {
       "allowedVersions": {
@@ -23,5 +27,7 @@
         "react-dom": "^19.0.0"
       }
     }
+  },
+  "devDependencies": {
   }
 }

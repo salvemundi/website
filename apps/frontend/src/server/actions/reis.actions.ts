@@ -54,19 +54,32 @@ export async function getReisSiteSettings(): Promise<ReisSiteSettings | null> {
 
 export async function getCurrentUserProfileAction(): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
-        const session = await auth.api.getSession({ headers: await nextHeaders() });
+        const headers = await nextHeaders(); // Force dynamic
+        const session = await auth.api.getSession({ headers });
         if (!session || !session.user) return { success: false, error: "Niet ingelogd" };
 
         const directus = getSystemDirectus();
-        const userEmail = session.user.email;
+        const userEmail = session.user.email?.toLowerCase();
+
+        if (!userEmail) return { success: false, error: "Geen e-mailadres gevonden in sessie" };
 
         const users = await directus.request(readUsers({
-            filter: { email: { _eq: userEmail } },
-            fields: [...USER_FULL_FIELDS] as any,
+            filter: { 
+                email: { _icontains: userEmail } 
+            },
+            fields: [
+                'id', 'first_name', 'last_name', 'email', 'avatar', 
+                'membership_status', 'phone_number', 'date_of_birth', 
+                'entra_id', 'membership_expiry', 'description', 
+                'location', 'title', 'tags', 'admin_access'
+            ] as any,
             limit: 1
         }));
 
-        if (!users || users.length === 0) return { success: false, error: "Gebruiker niet gevonden" };
+        if (!users || users.length === 0) {
+            console.warn(`[ReisAction] User not found in Directus for email: ${userEmail}`);
+            return { success: false, error: "Gebruiker niet gevonden in Directus" };
+        }
 
         return { success: true, data: users[0] };
     } catch (err) {
@@ -77,6 +90,7 @@ export async function getCurrentUserProfileAction(): Promise<{ success: boolean;
 
 export async function getUpcomingTrips(): Promise<ReisTrip[]> {
     try {
+        await nextHeaders(); // Force dynamic
         const data = await getSystemDirectus().request(readItems('trips', {
             filter: {
                 _or: [
@@ -145,22 +159,28 @@ export async function getTripParticipantsCount(tripId: number): Promise<number> 
 
 export async function getUserTripSignup(tripId: number): Promise<ReisTripSignup | null> {
     try {
-        const session = await auth.api.getSession({ headers: await nextHeaders() });
+        const headers = await nextHeaders(); // Force dynamic
+        const session = await auth.api.getSession({ headers });
         if (!session || !session.user) return null;
 
-        const userEmail = session.user.email;
-        const data = await getSystemDirectus().request(readItems('trip_signups', {
+        const userId = session.user.id;
+
+        // Simplified filter that Directus understands better for relationship fields
+        const directus = getSystemDirectus();
+        const data = await directus.request(readItems('trip_signups', {
             filter: { 
-                _and: [
-                    { trip_id: { _eq: tripId } },
-                    { email: { _eq: userEmail } }
-                ]
-            },
+                trip_id: { _eq: tripId },
+                directus_relations: { _eq: userId },
+                status: { _neq: 'cancelled' }
+            } as any,
             fields: [...TRIP_SIGNUP_FIELDS] as any,
             limit: 1
         }));
 
-        if (!data || data.length === 0) return null;
+        if (!data || data.length === 0) {
+            return null;
+        }
+
         return data[0] as any;
     } catch (err) {
         console.error('[reis.actions#getUserTripSignup] Error:', err);
@@ -199,10 +219,16 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
 
     const { email } = parsed.data;
 
+    const userId = session?.user?.id;
+    if (!userId) {
+        return { success: false, message: 'Je moet ingelogd zijn om je in te schrijven.' };
+    }
+
     const existingSignups = await getTripSignups(tripId);
-    const existing = existingSignups.find(s => s.email.toLowerCase() === email.toLowerCase() && s.status !== 'cancelled');
+    const existing = existingSignups.find(s => s.directus_relations === userId && s.status !== 'cancelled');
+    
     if (existing) {
-        return { success: false, message: 'Er is al een actieve aanmelding gevonden met dit e-mailadres.' };
+        return { success: false, message: 'Je bent al aangemeld voor deze reis.' };
     }
 
     const trips = await getUpcomingTrips();
@@ -214,27 +240,30 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
     const participantsCount = existingSignups.filter(s => s.status === 'confirmed' || s.status === 'registered').length;
     const shouldBeWaitlisted = participantsCount >= targetTrip.max_participants;
 
-    const userId = session?.user?.id;
     const isCommitteeMember = !!(session?.user as any)?.committees?.length;
 
     const payload = {
-        trip_id: tripId,
+        trip_id: Number(tripId),
         first_name: parsed.data.first_name,
         last_name: parsed.data.last_name,
         email: parsed.data.email,
         phone_number: parsed.data.phone_number,
         date_of_birth: parsed.data.date_of_birth,
         terms_accepted: parsed.data.terms_accepted,
-        status: shouldBeWaitlisted ? 'waitlist' : 'registered' as any,
-        role: isCommitteeMember ? 'crew' : 'participant' as any,
+        directus_relations: userId, // Link to the user who created the signup (BetterAuth ID)
+        status: shouldBeWaitlisted ? ('waitlist' as const) : ('registered' as const),
+        role: isCommitteeMember ? ('crew' as const) : ('participant' as const),
         deposit_paid: false,
         full_payment_paid: false,
-    } as any;
-
+    };
+    
     try {
         const directus = getSystemDirectus();
         await directus.request(createItem('trip_signups', payload));
-
+        
+        // Ensure the path is revalidated immediately so the status page reflects the new record
+        const { revalidatePath, revalidateTag } = await import('next/cache');
+        revalidateTag('reis-status', 'max');
         revalidatePath('/reis');
         revalidatePath('/beheer/reis');
 
@@ -257,11 +286,23 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
         }).catch(e => console.error('[reis.actions#createTripSignup] Mail trigger failed', e));
 
         return { success: true };
-    } catch (err) {
-        console.error('[reis.actions#createTripSignup] Error:', err);
+    } catch (err: any) {
+        // Detailed error logging for Directus SDK failures
+        const errorDetails = err.errors ? JSON.stringify(err.errors, null, 2) : err.message;
+        console.error(`[reis.actions#createTripSignup] Directus Error:`, errorDetails);
+        
         return { success: false, message: 'Interne serverfout tijdens inschrijving.' };
     }
 }
 
-
-
+export async function revalidateReisAction() {
+    try {
+        const { revalidateTag, revalidatePath } = await import('next/cache');
+        revalidateTag('reis-status', 'max');
+        revalidatePath('/reis');
+        return { success: true };
+    } catch (err) {
+        console.error('[reis.actions#revalidateReisAction] Error:', err);
+        return { success: false };
+    }
+}

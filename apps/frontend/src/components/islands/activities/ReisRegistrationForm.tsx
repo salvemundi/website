@@ -32,30 +32,54 @@ export function ReisRegistrationForm({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Prefill form when Better Auth session is present
     useEffect(() => {
-        if (!currentUser) return;
+        const prefillData = async () => {
+            if (!currentUser) return;
 
-        async function prefill() {
+            // Helper to format date for input type="date" (YYYY-MM-DD)
+            const formatDateForInput = (dateStr?: string | null) => {
+                if (!dateStr) return '';
+                try {
+                    // Check if already in YYYY-MM-DD format to avoid timezone shifts
+                    if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) return dateStr;
+                    
+                    const date = new Date(dateStr);
+                    if (isNaN(date.getTime())) return '';
+                    return date.toISOString().split('T')[0];
+                } catch {
+                    return '';
+                }
+            };
+
+            // 1. Initial pre-fill from basic session data (prioritize this)
+            setForm(prev => {
+                const birthdateFromAuth = formatDateForInput((currentUser as any).date_of_birth);
+                const phoneFromAuth = (currentUser as any).phone_number || '';
+                
+                return {
+                    ...prev,
+                    last_name: prev.last_name || (currentUser as any).last_name || '',
+                    email: prev.email || currentUser?.email || '',
+                    phone_number: prev.phone_number || phoneFromAuth,
+                    date_of_birth: prev.date_of_birth || birthdateFromAuth,
+                };
+            });
+
+            // 2. Enrich with full profile from Directus (fallback/enhancement)
             const profile = await getCurrentUserProfileAction();
             if (profile.success && profile.data) {
                 setForm(prev => ({
                     ...prev,
+                    // First name is explicitly NOT pre-filled as requested
                     last_name: prev.last_name || profile.data.last_name || '',
                     email: prev.email || profile.data.email || '',
                     phone_number: prev.phone_number || profile.data.phone_number || '',
-                    date_of_birth: prev.date_of_birth || profile.data.date_of_birth || '',
-                }));
-            } else {
-                // Fallback to basic session data if directus fetch fails
-                setForm(prev => ({
-                    ...prev,
-                    email: prev.email || currentUser?.email || '',
+                    date_of_birth: prev.date_of_birth || formatDateForInput(profile.data.date_of_birth),
                 }));
             }
-        }
-        
-        prefill();
+        };
+
+        prefillData();
     }, [currentUser]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
