@@ -36,6 +36,7 @@ export const reisTripSignupSchema = z.object({
     date_of_birth: z.string().nullable().optional(),
     id_document: z.string().nullable().optional(),
     document_number: z.string().nullable().optional(),
+    directus_relations: z.string().nullable().optional(),
     terms_accepted: z.boolean().optional(),
     status: z.enum(['registered', 'waitlist', 'confirmed', 'cancelled']),
     role: z.enum(['participant', 'crew']).optional(),

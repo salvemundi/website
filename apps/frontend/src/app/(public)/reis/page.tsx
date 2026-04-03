@@ -16,13 +16,15 @@ interface ReisMainContentProps {
     siteSettings: ReisSiteSettings | null;
     participantsCount: number;
     userSignup: ReisTripSignup | null;
+    onRefresh: () => void;
 }
 
 function ReisMainContent({
     trips,
     siteSettings,
     participantsCount,
-    userSignup
+    userSignup,
+    onRefresh
 }: ReisMainContentProps) {
     const isReisEnabled = siteSettings?.show ?? true;
     const reisDisabledMessage = siteSettings?.disabled_message || 'De inschrijvingen voor de reis zijn momenteel gesloten.';
@@ -64,6 +66,7 @@ function ReisMainContent({
                         canSignUp={canSignUp}
                         registrationStartText={registrationStartText}
                         participantsCount={participantsCount}
+                        onRefresh={onRefresh}
                     />
                 </Suspense>
 
@@ -83,6 +86,7 @@ function ReisPageDataWrapper() {
         participantsCount: number;
         userSignup: ReisTripSignup | null;
     } | null>(null);
+    const [refreshKey, setRefreshKey] = useState(0);
 
     useEffect(() => {
         async function fetchData() {
@@ -106,7 +110,7 @@ function ReisPageDataWrapper() {
             setData({ trips, settings, participantsCount, userSignup });
         }
         fetchData();
-    }, []);
+    }, [refreshKey]);
 
     if (!data) return <div className="mx-auto max-w-app px-4 py-8 sm:py-10 md:py-12 flex flex-col lg:flex-row gap-8 items-start"><ReisFormSkeleton /><ReisInfoSkeleton /></div>;
 
@@ -115,7 +119,8 @@ function ReisPageDataWrapper() {
             trips={data.trips} 
             siteSettings={data.settings} 
             participantsCount={data.participantsCount} 
-            userSignup={data.userSignup} 
+            userSignup={data.userSignup}
+            onRefresh={() => setRefreshKey(prev => prev + 1)}
         />
     );
 }

@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
     output: 'standalone',
     // Uitgeschakeld vanwege instabiliteit op Acceptance (Eternal Skeletons)
     // cacheComponents: true,
-    productionBrowserSourceMaps: true,
+    productionBrowserSourceMaps: false,
     experimental: {
         ppr: false,
         serverSourceMaps: true,
@@ -57,6 +57,7 @@ const nextConfig: NextConfig = {
             },
         ];
     },
+    transpilePackages: ['better-auth'],
 };
 
 export default nextConfig;
