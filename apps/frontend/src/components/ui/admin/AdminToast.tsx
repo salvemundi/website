@@ -35,7 +35,7 @@ export default function AdminToast({ toast, onClose }: AdminToastProps) {
                           'bg-[var(--beheer-card-bg)]/90 border-l-[12px] border-l-[var(--beheer-accent)]'}
                     `}>
                         {/* Background Glow */}
-                        <div className={`absolute -right-10 -top-10 h-32 w-32 blur-[60px] opacity-20 rounded-full transition-colors duration-500 ${
+                        <div className={`absolute -right-10 -top-10 h-32 w-32 blur-[60px] opacity-20 rounded-full transition-colors duration-500 pointer-events-none ${
                             toast.type === 'success' ? 'bg-emerald-500' : 
                             toast.type === 'error' ? 'bg-red-500' : 
                             toast.type === 'loading' ? 'bg-amber-500' :
@@ -69,7 +69,7 @@ export default function AdminToast({ toast, onClose }: AdminToastProps) {
                         {onClose && (
                             <button 
                                 onClick={onClose}
-                                className="ml-4 p-2 rounded-xl text-[var(--beheer-text-muted)] hover:bg-white/5 transition-colors"
+                                className="ml-4 p-2 rounded-xl text-[var(--beheer-text-muted)] hover:bg-white/5 transition-colors cursor-pointer"
                             >
                                 <XCircle className="h-4 w-4 opacity-30 hover:opacity-100" />
                             </button>
