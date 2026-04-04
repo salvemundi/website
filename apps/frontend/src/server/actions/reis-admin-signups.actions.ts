@@ -75,7 +75,15 @@ export async function updateSignupStatus(signupId: number, status: string) {
 
     try {
         await getSystemDirectus().request(updateItem('trip_signups', signupId, { status }));
+        
+        const { revalidatePath, ...cacheFunctions } = await import('next/cache');
+        const cache = cacheFunctions as any;
+        if (cache.updateTag) cache.updateTag('reis-status');
+        else if (cache.revalidateTag) cache.revalidateTag('reis-status', 'max');
+
         revalidatePath('/beheer/reis');
+        revalidatePath('/reis');
+
         return { success: true };
     } catch (error) {
         console.error('[AdminReisActions#updateSignupStatus] Error:', error);
@@ -88,7 +96,15 @@ export async function deleteTripSignup(signupId: number) {
 
     try {
         await getSystemDirectus().request(deleteItem('trip_signups', signupId));
+        
+        const { revalidatePath, ...cacheFunctions } = await import('next/cache');
+        const cache = cacheFunctions as any;
+        if (cache.updateTag) cache.updateTag('reis-status');
+        else if (cache.revalidateTag) cache.revalidateTag('reis-status', 'max');
+
         revalidatePath('/beheer/reis');
+        revalidatePath('/reis');
+
         return { success: true };
     } catch (error) {
         console.error('[AdminReisActions#deleteTripSignup] Error:', error);
@@ -117,8 +133,15 @@ export async function updateTripSignup(id: number, prevState: unknown, formData:
     try {
         await getSystemDirectus().request(updateItem('trip_signups', id, validated.data as any));
 
+        const { revalidatePath, ...cacheFunctions } = await import('next/cache');
+        const cache = cacheFunctions as any;
+        if (cache.updateTag) cache.updateTag('reis-status');
+        else if (cache.revalidateTag) cache.revalidateTag('reis-status', 'max');
+
         revalidatePath('/beheer/reis');
         revalidatePath(`/beheer/reis/deelnemer/${id}`);
+        revalidatePath('/reis');
+
         return { success: true };
     } catch (error) {
         console.error('[AdminReisActions#updateTripSignup] Error:', error);

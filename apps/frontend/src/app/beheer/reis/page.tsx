@@ -12,6 +12,8 @@ import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 import { getReisSiteSettings } from '@/server/actions/reis.actions';
 
+export const dynamic = 'force-dynamic';
+
 interface AdminReisPageProps {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }

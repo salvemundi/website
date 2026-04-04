@@ -12,10 +12,14 @@ export function getSystemDirectus() {
         globals: {
             fetch: (url, options) => {
                 const urlObj = new URL(url.toString());
-                // Add a unique version query param to bypass any internal/proxy cache on the URL itself
-                urlObj.searchParams.set('v', Date.now().toString());
+                // Add a highly unique version query param to bypass any internal/proxy cache
+                const cacheBuster = `${Date.now()}_${Math.random().toString(36).substring(7)}`;
+                urlObj.searchParams.set('v', cacheBuster);
                 const urlStr = urlObj.toString();
                 
+                // Server-side logging to verify consistency during pentesting/debugging
+                console.log(`[DIRECTUS_FETCH] ${options?.method || 'GET'} ${urlStr}`);
+
                 // Add next tags for sticker-related items to enable granular revalidation
                 const nextOptions: any = (options as any)?.next || {};
                 const tags: string[] = nextOptions.tags || [];
@@ -30,9 +34,6 @@ export function getSystemDirectus() {
                     tags.push('reis-status');
                 }
 
-                nextOptions.tags = tags;
-                nextOptions.revalidate = 0; // Strictly bypass any Data Cache
-
                 return fetch(urlStr, {
                     ...options,
                     headers: {
@@ -41,12 +42,13 @@ export function getSystemDirectus() {
                         'Pragma': 'no-cache',
                         'Expires': '0',
                     },
-                    cache: 'no-store', // Always fetch fresh data from Directus to avoid frozen status polling
+                    cache: 'no-store', // Absolutely bypass Data Cache
                     next: {
                         ...nextOptions,
-                        revalidate: 0 // Strictly bypass any Data Cache
+                        tags,
+                        revalidate: 0 // Invalidate-on-demand behavior
                     },
-                    signal: AbortSignal.timeout(10000),
+                    signal: AbortSignal.timeout(15000), // Slightly more generous timeout for high load
                 } as any);
             }
         }
