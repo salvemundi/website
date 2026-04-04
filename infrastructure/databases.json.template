@@ -5,6 +5,7 @@
     "connectionType": "STANDALONE",
     "host": "v7-core-redis",
     "port": 6379,
-    "db": 0
+    "db": 0,
+    "password": "REDIS_PASSWORD_PLACEHOLDER"
   }
 ]
