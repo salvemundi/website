@@ -97,8 +97,8 @@ services:
       - REDISINSIGHT_HOST=v7-core-redis
       - REDISINSIGHT_PORT=6379
       - REDISINSIGHT_PASSWORD=${REDIS_PASSWORD}
+      - REDISINSIGHT_PROVISIONING_PATH=/db/databases.json
       - RI_PRE_SETUP_DATABASES_PATH=/db/databases.json
-      - REDISINSIGHT_PRE_SETUP_DATABASES_PATH=/db/databases.json
     volumes:
       - v7_core_redisinsight_data:/data
       - ./databases.json:/db/databases.json
