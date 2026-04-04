@@ -132,7 +132,7 @@ export async function fetchTripSignupActivitiesDb(tripId: number): Promise<any[]
     console.log(`[DB-DIRECT-FETCH] SignupActivities tripId: ${tripId}`);
     try {
         const res = await query(
-            `SELECT sa.*, a.name as activity_name, a.price as activity_price 
+            `SELECT sa.*, a.name as activity_name, a.price as activity_price, a.options as activity_options 
              FROM trip_signup_activities sa
              JOIN trip_activities a ON sa.trip_activity_id = a.id
              WHERE a.trip_id = $1`,

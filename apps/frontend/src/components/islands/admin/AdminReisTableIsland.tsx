@@ -159,7 +159,15 @@ export default function AdminReisTableIsland({ initialSignups, initialSignupActi
                 const idDocLabel = idDoc === 'passport' ? 'Paspoort' : idDoc === 'id_card' ? 'ID Kaart' : idDoc;
 
                 const activities = signupActivitiesMap[signup.id] || [];
-                const activitiesStr = activities.map(a => a.trip_activity_id?.name || a.trip_activity_id).join(', ');
+                const activitiesStr = activities.map(a => {
+                    const activity = a as any;
+                    const name = activity.activity_name || activity.trip_activity_id?.name || activity.trip_activity_id;
+                    const opts = activity.selected_options ? Object.keys(activity.selected_options) : [];
+                    const metaOpts = activity.activity_options || activity.trip_activity_id?.options || [];
+                    const optNames = opts.map(id => metaOpts.find((m: any) => m.id === id)?.name).filter(Boolean);
+                    
+                    return optNames.length > 0 ? `${name} (${optNames.join(', ')})` : name;
+                }).join(' | ');
 
                 return {
                     'Voornaam': signup.first_name,

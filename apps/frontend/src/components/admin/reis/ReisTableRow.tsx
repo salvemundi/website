@@ -132,15 +132,40 @@ export default function ReisTableRow({
                             </div>
                             <div className="space-y-3">
                                 <p className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-accent)]">Activiteiten</p>
-                                <div className="space-y-2">
+                                <div className="space-y-3">
                                     {activities ? (
                                         activities.length > 0 ? (
-                                            activities.map(a => (
-                                                <div key={a.id} className="flex items-center gap-2">
-                                                    <div className="h-1.5 w-1.5 rounded-full bg-[var(--beheer-accent)]"></div>
-                                                    <span className="text-xs font-black uppercase tracking-tight text-[var(--beheer-text)]">{a.trip_activity_id?.name || 'Activiteit'}</span>
-                                                </div>
-                                            ))
+                                            activities.map(a => {
+                                                const activity = a as any;
+                                                const name = activity.activity_name || activity.trip_activity_id?.name || 'Activiteit';
+                                                const rawOptions = activity.selected_options || {};
+                                                const metaOptions = activity.activity_options || activity.trip_activity_id?.options || [];
+                                                
+                                                // Map IDs to names
+                                                const selectedNames = Object.keys(rawOptions)
+                                                    .map(optId => metaOptions.find((m: any) => m.id === optId)?.name)
+                                                    .filter(Boolean);
+
+                                                return (
+                                                    <div key={a.id} className="space-y-1">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="h-1.5 w-1.5 rounded-full bg-[var(--beheer-accent)]"></div>
+                                                            <span className="text-xs font-black uppercase tracking-tight text-[var(--beheer-text)]">
+                                                                {name}
+                                                            </span>
+                                                        </div>
+                                                        {selectedNames.length > 0 && (
+                                                            <div className="ml-3.5 flex flex-wrap gap-1">
+                                                                {selectedNames.map((optName, idx) => (
+                                                                    <span key={idx} className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-[var(--beheer-accent)]/5 text-[var(--beheer-text-muted)] border border-[var(--beheer-border)]/30 uppercase tracking-tighter">
+                                                                        {optName}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })
                                         ) : (
                                             <p className="text-xs text-[var(--beheer-text-muted)] italic">Geen selectie</p>
                                         )
