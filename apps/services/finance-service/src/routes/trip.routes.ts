@@ -129,10 +129,10 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                             to: signup.email,
                             data: {
                                 firstName: signup.first_name,
-                                tripName: trip.title,
+                                tripName: trip.name,
                                 paymentType: paymentType === 'deposit' ? 'aanbetaling' : 'restbetaling',
                                 amount: amount.toFixed(2),
-                                checkoutUrl: payment.getCheckoutUrl(),
+                                checkoutUrl: payment._links?.checkout?.href,
                                 description
                             }
                         })
@@ -155,9 +155,9 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                 }
             }
 
-            return { success: true, checkoutUrl: payment.getCheckoutUrl() };
+            return { success: true, checkoutUrl: payment._links?.checkout?.href };
         } catch (err: any) {
-            fastify.log.error('[TRIP] Error creating payment request:', err);
+            fastify.log.error(err, '[TRIP] Error creating payment request');
             return reply.status(500).send({ error: 'Failed to create payment request', message: err.message });
         }
     });
