@@ -61,35 +61,41 @@ export function ReisSignupStatus({ userSignup, nextTrip, error }: ReisSignupStat
             </div>
 
             {userSignup.status === 'confirmed' && !userSignup.full_payment_paid && (
-                <div className="mt-4 pt-4 border-t border-theme-purple/20">
-                    {(!userSignup.deposit_paid || nextTrip?.allow_final_payments) ? (
+                <div className="mt-4 pt-4 border-t border-theme-purple/20 space-y-4">
+                    {!userSignup.deposit_paid ? (
                         <Link
-                            href={!userSignup.deposit_paid ? `/reis/aanbetaling/${userSignup.id}` : `/reis/restbetaling/${userSignup.id}`}
+                            href={`/reis/betalen/aanbetaling?id=${userSignup.id}`}
                             className="inline-flex items-center gap-2 px-6 py-2 bg-theme-purple text-white rounded-lg hover:bg-theme-purple-dark transition group"
                         >
                             <CreditCard className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                            Ga naar betaling
+                            Ga naar aanbetaling
                         </Link>
                     ) : (
-                        <p className="text-sm italic text-gray-500">
-                            Restbetaling is momenteel nog niet geopend. Je ontvangt bericht zodra dit mogelijk is.
-                        </p>
+                        <div className="space-y-4">
+                            {nextTrip?.allow_final_payments ? (
+                                <Link
+                                    href={`/reis/betalen/restbetaling?id=${userSignup.id}`}
+                                    className="inline-flex items-center gap-2 px-6 py-2 bg-theme-purple text-white rounded-lg hover:bg-theme-purple-dark transition group"
+                                >
+                                    <CreditCard className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                                    Afronden & Betalen
+                                </Link>
+                            ) : (
+                                <>
+                                    <Link
+                                        href={`/reis/betalen/restbetaling?id=${userSignup.id}`}
+                                        className="inline-flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition group"
+                                    >
+                                        <Utensils className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                                        Activiteiten beheren
+                                    </Link>
+                                    <p className="text-xs italic text-gray-500 leading-relaxed">
+                                        De restbetaling is momenteel nog niet geopend. Je kunt wel alvast je activiteiten doorgeven of wijzigen.
+                                    </p>
+                                </>
+                            )}
+                        </div>
                     )}
-                </div>
-            )}
-
-            {userSignup.status === 'confirmed' && userSignup.deposit_paid && !userSignup.full_payment_paid && (
-                <div className="mt-4 pt-4 border-t border-theme-purple/20">
-                    <Link
-                        href={`/reis/activiteiten/${userSignup.id}`}
-                        className="inline-flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition group"
-                    >
-                        <Utensils className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                        Activiteiten aanpassen
-                    </Link>
-                    <p className="text-xs text-theme-text-muted mt-2 italic">
-                        Je kunt je activiteiten aanpassen tot je de restbetaling hebt voldaan.
-                    </p>
                 </div>
             )}
         </div>

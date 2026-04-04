@@ -57,22 +57,16 @@ async function validateAccess(signupId: number, token?: string) {
         }));
 
         if (!signup || signup.length === 0) {
-            // TODO: REMOVE (Diagnostic Logging)
-            console.warn('[validateAccess] Signup not found for filter:', JSON.stringify(filter));
             return { authorized: false, error: 'Aanmelding niet gevonden of ongeldig token.' };
         }
 
         const validated = tripSignupSchema.safeParse(signup[0]);
         if (!validated.success) {
-            // TODO: REMOVE (Diagnostic Logging)
-            console.error('[validateAccess] Schema mismatch for signup:', signup[0].id, validated.error.format());
             return { authorized: false, error: 'Database inconsistentie: Ongeldige aanmelding.' };
         }
 
         return { authorized: true, signup: validated.data };
     } catch (err) {
-        // TODO: REMOVE (Diagnostic Logging)
-        console.error('[validateAccess] Error during access validation:', err);
         return { authorized: false, error: 'Interne fout bij autorisatie check.' };
     }
 }
@@ -138,31 +132,19 @@ export async function updateSignupDetails(signupId: number, data: ReisPaymentEnr
     try {
         const access = await validateAccess(signupId, token);
         if (!access.authorized || !access.signup) {
-            // TODO: REMOVE (Diagnostic Logging)
-            console.warn('[updateSignupDetails] Access denied:', access.error);
             return { success: false, error: access.error };
         }
 
         const validated = reisPaymentEnrichmentSchema.safeParse(data);
         if (!validated.success) {
-            // TODO: REMOVE (Diagnostic Logging)
-            console.warn('[updateSignupDetails] Validation failed:', JSON.stringify(validated.error.flatten().fieldErrors));
             return { success: false, error: 'Vul alle verplichte velden correct in.', fieldErrors: validated.error.flatten().fieldErrors };
         }
 
         const directus = getSystemDirectus();
-        
-        // TODO: REMOVE (Diagnostic Logging)
-        console.log(`[updateSignupDetails] Updating signup ${signupId}...`);
         await directus.request(updateItem('trip_signups', signupId, validated.data));
-        // TODO: REMOVE (Diagnostic Logging)
-        console.log(`[updateSignupDetails] Successfully updated signup ${signupId}.`);
 
         return { success: true };
     } catch (err: any) {
-        // TODO: REMOVE (Diagnostic Logging)
-        console.error('[reis-payment.actions#updateSignupDetails] Error:', err);
-        
         // Special mapping for common Directus/Database errors
         if (err.errors?.[0]?.extensions?.code === 'RECORD_NOT_FOUND') {
             return { success: false, error: 'Aanmelding niet gevonden.' };
