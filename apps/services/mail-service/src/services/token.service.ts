@@ -26,7 +26,7 @@ export class TokenService {
 
         // 2. Fetch fresh token from Azure AD
         if (!this.credential) {
-            const tenantId = process.env.AZURE_WEBSITEV7_TENANT_ID;
+            const tenantId = process.env.AZURE_TENANT_ID || process.env.AZURE_WEBSITEV7_TENANT_ID;
             const clientId = process.env.AZURE_MAIL_CLIENT_ID;
             const clientSecret = process.env.AZURE_MAIL_CLIENT_SECRET;
 
