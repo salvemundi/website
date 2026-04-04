@@ -93,4 +93,7 @@ jobs:
             docker network create salve-mundi-v7-shared || true
             docker compose -p v7-core up -d --remove-orphans
 
+            # RedisInsight config fix (herstart nodig na wijziging databases.json volume)
+            docker compose -p v7-core restart v7-core-redisinsight
+
             echo "--- Core Infrastructure Deployed to ${{ env.DOMAIN }} ---"
