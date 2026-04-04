@@ -8,6 +8,9 @@ import { TokenService } from './token.service.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+Handlebars.registerHelper('eq', (a, b) => a === b);
+Handlebars.registerHelper('neq', (a, b) => a !== b);
+
 export class MailerService {
     /**
      * Renders a Handlebars template with the provided data.

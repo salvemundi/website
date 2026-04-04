@@ -55,7 +55,7 @@ export async function sendBulkTripEmail(data: {
         throw new Error('Missing service token');
     }
 
-    const mailUrl = process.env.INTERNAL_MAIL_URL || process.env.MAIL_SERVICE_URL;
+    const mailUrl = process.env.MAIL_SERVICE_URL;
     
     try {
         const response = await fetch(`${mailUrl}/api/mail/send-bulk`, {
