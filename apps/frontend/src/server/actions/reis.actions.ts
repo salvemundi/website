@@ -13,6 +13,7 @@ import {
     FEATURE_FLAG_FIELDS,
     TRIP_FIELDS,
     TRIP_SIGNUP_FIELDS,
+    SAFE_TRIP_SIGNUP_FIELDS,
     USER_FULL_FIELDS,
     TRIP_ID_FIELDS
 } from '@salvemundi/validations';
@@ -22,6 +23,7 @@ import { readItems, createItem, readUsers } from '@directus/sdk';
 import { query } from '@/lib/db';
 import { auth } from '@/server/auth/auth';
 import { headers as nextHeaders } from 'next/headers';
+import { getRedis } from '@/server/auth/redis-client';
 
 const getMailUrl = () => process.env.MAIL_SERVICE_URL;
 
@@ -161,7 +163,10 @@ export async function getUserTripSignup(tripId: number): Promise<ReisTripSignup 
     try {
         const headers = await nextHeaders(); // Force dynamic
         const session = await auth.api.getSession({ headers });
-        if (!session || !session.user) return null;
+        
+        if (!session || !session.user) {
+            return null;
+        }
 
         const userId = session.user.id;
 
@@ -173,7 +178,7 @@ export async function getUserTripSignup(tripId: number): Promise<ReisTripSignup 
                 directus_relations: { _eq: userId },
                 status: { _neq: 'cancelled' }
             } as any,
-            fields: [...TRIP_SIGNUP_FIELDS] as any,
+            fields: [...SAFE_TRIP_SIGNUP_FIELDS] as any,
             limit: 1
         }));
 
@@ -188,7 +193,11 @@ export async function getUserTripSignup(tripId: number): Promise<ReisTripSignup 
     }
 }
 
-export async function getTripSignups(tripId: number): Promise<ReisTripSignup[]> {
+/**
+ * Fetches all signups for a specific trip.
+ * @internal This function is not exported to prevent it from becoming a public Server Action.
+ */
+async function getTripSignups(tripId: number): Promise<ReisTripSignup[]> {
     try {
         const data = await getSystemDirectus().request(readItems('trip_signups', {
             filter: { trip_id: { _eq: tripId } },
@@ -242,24 +251,60 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
 
     const isCommitteeMember = !!(session?.user as any)?.committees?.length;
 
-    const payload = {
-        trip_id: Number(tripId),
-        first_name: parsed.data.first_name,
-        last_name: parsed.data.last_name,
-        email: parsed.data.email,
-        phone_number: parsed.data.phone_number,
-        date_of_birth: parsed.data.date_of_birth,
-        terms_accepted: parsed.data.terms_accepted,
-        directus_relations: userId, // Link to the user who created the signup (BetterAuth ID)
-        status: shouldBeWaitlisted ? ('waitlist' as const) : ('registered' as const),
-        role: isCommitteeMember ? ('crew' as const) : ('participant' as const),
-        deposit_paid: false,
-        full_payment_paid: false,
-    };
-    
+    const redis = await getRedis();
+    const lockKey = `lock:trip:${tripId}:signup`;
+    const lockToken = Math.random().toString(36).substring(2);
+    let lockAcquired = false;
+
+    // Retry mechanism for the lock (spin-lock with backoff)
+    for (let i = 0; i < 10; i++) {
+        const result = await redis.set(lockKey, lockToken, 'PX', 10000, 'NX'); // 10s TTL
+        if (result === 'OK') {
+            lockAcquired = true;
+            break;
+        }
+        await new Promise(resolve => setTimeout(resolve, 200 + Math.random() * 300));
+    }
+
+    if (!lockAcquired) {
+        return { success: false, message: 'De server is momenteel erg druk. Probeer het over een paar seconden opnieuw.' };
+    }
+
     try {
+        // Re-fetch existing signups INSIDE the lock to ensure we have the absolute latest count
+        const existingSignups = await getTripSignups(tripId);
+        const existing = existingSignups.find(s => s.directus_relations === userId && s.status !== 'cancelled');
+        
+        if (existing) {
+            return { success: false, message: 'Je bent al aangemeld voor deze reis.' };
+        }
+
+        const trips = await getUpcomingTrips();
+        const targetTrip = trips.find(t => t.id === tripId);
+        if (!targetTrip) {
+            return { success: false, message: 'Reis niet gevonden.' };
+        }
+
+        const participantsCount = existingSignups.filter(s => s.status === 'confirmed' || s.status === 'registered').length;
+        const shouldBeWaitlisted = participantsCount >= targetTrip.max_participants;
+
+        const payload = {
+            trip_id: Number(tripId),
+            first_name: parsed.data.first_name,
+            last_name: parsed.data.last_name,
+            email: parsed.data.email,
+            phone_number: parsed.data.phone_number,
+            date_of_birth: parsed.data.date_of_birth,
+            terms_accepted: parsed.data.terms_accepted,
+            directus_relations: userId, // Link to the user who created the signup (BetterAuth ID)
+            status: shouldBeWaitlisted ? ('waitlist' as const) : ('registered' as const),
+            role: isCommitteeMember ? ('crew' as const) : ('participant' as const),
+            deposit_paid: false,
+            full_payment_paid: false,
+        };
+        
         const directus = getSystemDirectus();
-        await directus.request(createItem('trip_signups', payload));
+        const result = await directus.request(createItem('trip_signups', payload));
         
         // Ensure the path is revalidated immediately so the status page reflects the new record
         const { revalidatePath, revalidateTag } = await import('next/cache');
@@ -292,6 +337,12 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
         console.error(`[reis.actions#createTripSignup] Directus Error:`, errorDetails);
         
         return { success: false, message: 'Interne serverfout tijdens inschrijving.' };
+    } finally {
+        // Safe lock release: only delete if the token still matches (to avoid deleting someone else's lock if we timed out)
+        const currentToken = await redis.get(lockKey);
+        if (currentToken === lockToken) {
+            await redis.del(lockKey);
+        }
     }
 }
 

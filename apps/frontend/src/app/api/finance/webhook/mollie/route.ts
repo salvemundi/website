@@ -21,9 +21,11 @@ export async function POST(request: NextRequest) {
     try {
         const formData = await request.formData();
         const id = formData.get('id');
+        const idStr = typeof id === 'string' ? id : null;
 
-        if (!id) {
-            return NextResponse.json({ error: 'Missing payment ID' }, { status: 400 });
+        if (!idStr || !idStr.startsWith('tr_')) {
+            console.warn(`[webhook/mollie] Received invalid payment ID format: ${id}`);
+            return NextResponse.json({ error: 'Invalid payment ID' }, { status: 400 });
         }
 
         const response = await fetch(`${financeServiceUrl}/api/finance/webhook/mollie`, {

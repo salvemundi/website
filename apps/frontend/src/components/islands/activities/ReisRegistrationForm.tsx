@@ -7,6 +7,8 @@ import type { ReisTrip } from '@salvemundi/validations';
 import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
+import { useAdminToast } from '@/hooks/use-admin-toast';
+import AdminToast from '@/components/ui/admin/AdminToast';
 
 interface ReisRegistrationFormProps {
     nextTrip: ReisTrip | null;
@@ -30,7 +32,8 @@ export function ReisRegistrationForm({
         terms_accepted: false,
     });
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const { toast, showToast, hideToast } = useAdminToast();
+    const [localError, setLocalError] = useState<string | null>(null);
 
     useEffect(() => {
         const prefillData = async () => {
@@ -89,25 +92,25 @@ export function ReisRegistrationForm({
         } else {
             setForm({ ...form, [name]: value });
         }
-        if (error) setError(null);
+        if (localError) setLocalError(null);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError(null);
+        setLocalError(null);
 
         if (!form.first_name || !form.last_name || !form.email || !form.phone_number || !form.date_of_birth) {
-            setError('Vul alle verplichte velden in.');
+            setLocalError('Vul alle verplichte velden in.');
             return;
         }
 
         if (!form.terms_accepted) {
-            setError('Je moet de algemene voorwaarden accepteren om door te gaan.');
+            setLocalError('Je moet de algemene voorwaarden accepteren om door te gaan.');
             return;
         }
 
         if (!nextTrip) {
-            setError('Er is momenteel geen reis beschikbaar.');
+            setLocalError('Er is momenteel geen reis beschikbaar.');
             return;
         }
 
@@ -115,13 +118,16 @@ export function ReisRegistrationForm({
         try {
             const result = await createTripSignup(form as any, nextTrip.id);
             if (!result.success) {
-                setError(result.message || 'Fout bij inschrijven.');
+                showToast(result.message || 'Fout bij inschrijven.', 'error');
             } else {
-                window.scrollTo(0, 0);
-                window.location.reload();
+                showToast('Je bent succesvol ingeschreven! Pagina wordt herladen...', 'success');
+                setTimeout(() => {
+                    window.scrollTo(0, 0);
+                    window.location.reload();
+                }, 1500);
             }
         } catch {
-            setError('Er is een onverwachte fout opgetreden bij het verzenden.');
+            showToast('Er is een onverwachte fout opgetreden bij het verzenden.', 'error');
         } finally {
             setLoading(false);
         }
@@ -129,20 +135,20 @@ export function ReisRegistrationForm({
 
     return (
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-            {error && (
+            {localError && (
                 <div className="bg-white/20 text-white px-4 py-3 rounded">
-                    {error}
+                    {localError}
                 </div>
             )}
 
             {!canSignUp && nextTrip && (
-                <div className="bg-white/20 text-white px-4 py-3 rounded">
+                <div className="bg-theme-purple/20 text-theme-purple px-4 py-3 rounded-xl border border-theme-purple/20 font-medium">
                     De inschrijvingen voor deze reis zijn momenteel gesloten. Houd deze pagina in de gaten!
                 </div>
             )}
 
             {!nextTrip && (
-                <div className="bg-white/20 text-white px-4 py-3 rounded">
+                <div className="bg-theme-purple/20 text-theme-purple px-4 py-3 rounded-xl border border-theme-purple/20 font-medium">
                     Momenteel is er geen reis gepland. Houd deze pagina in de gaten voor nieuwe data!
                 </div>
             )}
@@ -153,7 +159,7 @@ export function ReisRegistrationForm({
 
             <div className="flex flex-col gap-4">
                 <div className="grid grid-cols-1 gap-4">
-                    <FormField label="Voornaam" required error={error && !form.first_name ? 'Verplicht' : undefined}>
+                    <FormField label="Voornaam" required error={localError && !form.first_name ? 'Verplicht' : undefined}>
                         <Input
                             name="first_name"
                             value={form.first_name}
@@ -168,7 +174,7 @@ export function ReisRegistrationForm({
                     </FormField>
                 </div>
 
-                <FormField label="Tussenvoegsel & Achternaam" required error={error && !form.last_name ? 'Verplicht' : undefined}>
+                <FormField label="Tussenvoegsel & Achternaam" required error={localError && !form.last_name ? 'Verplicht' : undefined}>
                     <Input
                         name="last_name"
                         value={form.last_name}
@@ -179,7 +185,7 @@ export function ReisRegistrationForm({
                     />
                 </FormField>
 
-                <FormField label="E-mailadres" required error={error && !form.email ? 'Verplicht' : undefined}>
+                <FormField label="E-mailadres" required error={localError && !form.email ? 'Verplicht' : undefined}>
                     <Input
                         type="email"
                         name="email"
@@ -191,7 +197,7 @@ export function ReisRegistrationForm({
                     />
                 </FormField>
 
-                <FormField label="Geboortedatum" required error={error && !form.date_of_birth ? 'Verplicht' : undefined}>
+                <FormField label="Geboortedatum" required error={localError && !form.date_of_birth ? 'Verplicht' : undefined}>
                     <Input
                         type="date"
                         name="date_of_birth"
@@ -202,7 +208,7 @@ export function ReisRegistrationForm({
                     />
                 </FormField>
 
-                <FormField label="Telefoonnummer" required error={error && !form.phone_number ? 'Verplicht' : undefined}>
+                <FormField label="Telefoonnummer" required error={localError && !form.phone_number ? 'Verplicht' : undefined}>
                     <PhoneInput
                         name="phone_number"
                         value={form.phone_number}
@@ -244,6 +250,7 @@ export function ReisRegistrationForm({
                 </span>
                 {!loading && (canSignUp && nextTrip) && <span className="group-hover:translate-x-1 transition-transform inline-block ml-2">→</span>}
             </button>
+            <AdminToast toast={toast} onClose={hideToast} />
         </form>
     );
 }
