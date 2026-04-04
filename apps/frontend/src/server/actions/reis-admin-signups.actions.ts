@@ -10,6 +10,8 @@ import {
     type DbTripSignup,
     type TripSignupActivity
 } from '@salvemundi/validations';
+import { requireReisAdmin } from './reis-admin-utils';
+import { fetchAllTripSignupsDb } from './reis-db.utils';
 import { getSystemDirectus } from '@/lib/directus';
 import { 
     readItems, 
@@ -18,12 +20,18 @@ import {
     deleteItem, 
     createItem
 } from '@directus/sdk';
-import { requireReisAdmin } from './reis-admin-utils';
 
 export async function getTripSignups(tripId: number) {
     await requireReisAdmin();
 
     try {
+        // 1. Direct DB fetch for absolute consistency in the list
+        const dbSignups = await fetchAllTripSignupsDb(tripId);
+        if (dbSignups.length > 0) {
+            return dbSignups as TripSignup[];
+        }
+
+        // 2. Fallback to Directus if DB query returns nothing or is empty
         const signups = await getSystemDirectus().request(readItems('trip_signups', {
             filter: { trip_id: { _eq: tripId } },
             fields: TRIP_SIGNUP_FIELDS as any,
@@ -42,7 +50,7 @@ export async function getTripSignups(tripId: number) {
         const parsed = z.array(tripSignupSchema).safeParse(sanitized);
 
         if (!parsed.success) {
-            console.error('[AdminReisActions#getTripSignups] Zod validation failed:', parsed.error.flatten().fieldErrors);
+            console.error('[AdminReisActions#getTripSignups] Zod validation failed on Directus fallback:', parsed.error.flatten().fieldErrors);
             return [];
         }
 

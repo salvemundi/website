@@ -23,6 +23,7 @@ import { readItems, createItem, readUsers } from '@directus/sdk';
 import { query } from '@/lib/db';
 import { auth } from '@/server/auth/auth';
 import { headers as nextHeaders } from 'next/headers';
+import { fetchUserSignupStatusDb } from './reis-db.utils';
 import { getRedis } from '@/server/auth/redis-client';
 import { randomUUID } from 'crypto';
 
@@ -143,17 +144,12 @@ export async function getUpcomingTrips(): Promise<ReisTrip[]> {
 
 export async function getTripParticipantsCount(tripId: number): Promise<number> {
     try {
-        const data = await getSystemDirectus().request(readItems('trip_signups', {
-            filter: { 
-                _and: [
-                    { trip_id: { _eq: tripId } },
-                    { status: { _in: ['registered', 'confirmed'] } }
-                ]
-            },
-            fields: [...TRIP_ID_FIELDS],
-            limit: -1
-        }));
-        return data?.length || 0;
+        const { rows } = await query(
+            `SELECT COUNT(*)::int as count FROM trip_signups 
+             WHERE trip_id = $1 AND status IN ('registered', 'confirmed')`,
+            [tripId]
+        );
+        return rows?.[0]?.count || 0;
     } catch (err) {
         console.error('[reis.actions#getTripParticipantsCount] Error:', err);
         return 0;
@@ -171,7 +167,11 @@ export async function getUserTripSignup(tripId: number): Promise<ReisTripSignup 
 
         const userId = session.user.id;
 
-        // Simplified filter that Directus understands better for relationship fields
+        // 1. Direct DB fetch for absolute consistency (Source of Truth)
+        const dbResult = await fetchUserSignupStatusDb(userId, tripId);
+        if (dbResult) return dbResult;
+
+        // 2. Fallback to Directus if DB query returns nothing or fails
         const directus = getSystemDirectus();
         const data = await directus.request(readItems('trip_signups', {
             filter: { 
