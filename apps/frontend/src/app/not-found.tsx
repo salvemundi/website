@@ -9,7 +9,7 @@ export default function NotFound() {
             {/* Header with Icon Box matching GlobalError */}
             <div className="relative mb-8 pt-10">
                 {/* Decorative background glow */}
-                <div className="absolute inset-x-0 top-0 h-40 w-40 mx-auto blur-3xl bg-[var(--color-purple-500)]/10 rounded-full" />
+                <div className="absolute inset-x-0 top-0 h-40 w-40 mx-auto blur-3xl bg-[var(--color-purple-500)]/10 rounded-full pointer-events-none" />
                 
                 {/* Icon Container */}
                 <div className="relative rounded-3xl bg-[var(--bg-card)] p-6 shadow-2xl border border-[var(--border-color)]/20 text-[var(--color-purple-500)] inline-block">

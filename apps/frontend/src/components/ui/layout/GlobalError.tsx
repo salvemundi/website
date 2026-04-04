@@ -23,7 +23,7 @@ export default function GlobalError({
     return (
         <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
             <div className="relative mb-8">
-                <div className="absolute inset-0 blur-3xl bg-[var(--color-purple-500)]/10 rounded-full" />
+                <div className="absolute inset-x-0 top-0 h-40 w-40 mx-auto blur-3xl bg-[var(--color-purple-500)]/10 rounded-full pointer-events-none" />
                 <div className="relative rounded-3xl bg-[var(--bg-card)] p-6 shadow-2xl border border-[var(--border-color)]/20 text-[var(--color-purple-500)]">
                     <AlertTriangle className="h-16 w-16" />
                 </div>

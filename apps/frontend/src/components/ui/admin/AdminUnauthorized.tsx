@@ -31,7 +31,7 @@ export default function AdminUnauthorized({
             <div className="container mx-auto px-4 py-20 max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-700">
                 <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-2xl p-12 text-center border border-[var(--beheer-border)] relative overflow-hidden group">
                     {/* Decorative glow */}
-                    <div className="absolute -top-24 -right-24 h-48 w-48 bg-red-500/5 blur-3xl rounded-full group-hover:bg-red-500/10 transition-colors duration-700" />
+                    <div className="absolute -top-24 -right-24 h-48 w-48 bg-red-500/5 blur-3xl rounded-full group-hover:bg-red-500/10 transition-colors duration-700 pointer-events-none" />
                     
                     <div className="mb-10 flex justify-center relative">
                         <div className="rounded-full bg-red-500/10 p-10 ring-8 ring-red-500/5 shadow-[0_0_50px_rgba(239,68,68,0.2)] animate-pulse">
