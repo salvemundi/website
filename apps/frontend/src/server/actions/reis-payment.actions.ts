@@ -31,41 +31,50 @@ import { getRedis } from '@/server/auth/redis-client';
  * or via a secure access_token (guest link from email).
  */
 async function validateAccess(signupId: number, token?: string) {
-    const directus = getSystemDirectus();
-    const headers = await nextHeaders();
-    const session = await auth.api.getSession({ headers });
+    try {
+        const directus = getSystemDirectus();
+        const headers = await nextHeaders();
+        const session = await auth.api.getSession({ headers });
 
-    const filter: any = { id: { _eq: signupId } };
-    
-    // If guest token provided, use it
-    if (token) {
-        filter.access_token = { _eq: token };
-    } 
-    // Otherwise, require session and check ownership
-    else if (session?.user?.id) {
-        filter.directus_relations = { _eq: session.user.id };
-    } 
-    else {
-        return { authorized: false, error: 'Geen toegang. Log in of gebruik de link uit de e-mail.' };
+        const filter: any = { id: { _eq: signupId } };
+        
+        // If guest token provided, use it
+        if (token) {
+            filter.access_token = { _eq: token };
+        } 
+        // Otherwise, require session and check ownership
+        else if (session?.user?.id) {
+            filter.directus_relations = { _eq: session.user.id };
+        } 
+        else {
+            return { authorized: false, error: 'Geen toegang. Log in of gebruik de link uit de e-mail.' };
+        }
+
+        const signup = await directus.request(readItems('trip_signups', {
+            filter,
+            fields: [...TRIP_SIGNUP_FIELDS] as any,
+            limit: 1
+        }));
+
+        if (!signup || signup.length === 0) {
+            // TODO: REMOVE (Diagnostic Logging)
+            console.warn('[validateAccess] Signup not found for filter:', JSON.stringify(filter));
+            return { authorized: false, error: 'Aanmelding niet gevonden of ongeldig token.' };
+        }
+
+        const validated = tripSignupSchema.safeParse(signup[0]);
+        if (!validated.success) {
+            // TODO: REMOVE (Diagnostic Logging)
+            console.error('[validateAccess] Schema mismatch for signup:', signup[0].id, validated.error.format());
+            return { authorized: false, error: 'Database inconsistentie: Ongeldige aanmelding.' };
+        }
+
+        return { authorized: true, signup: validated.data };
+    } catch (err) {
+        // TODO: REMOVE (Diagnostic Logging)
+        console.error('[validateAccess] Error during access validation:', err);
+        return { authorized: false, error: 'Interne fout bij autorisatie check.' };
     }
-
-    const signup = await directus.request(readItems('trip_signups', {
-        filter,
-        fields: [...TRIP_SIGNUP_FIELDS] as any,
-        limit: 1
-    }));
-
-    if (!signup || signup.length === 0) {
-        return { authorized: false, error: 'Aanmelding niet gevonden of ongeldig token.' };
-    }
-
-    const validated = tripSignupSchema.safeParse(signup[0]);
-    if (!validated.success) {
-        console.error('[reis-payment.actions#validateAccess] Schema mismatch:', validated.error.format());
-        return { authorized: false, error: 'Database inconsistentie: Ongeldige aanmelding.' };
-    }
-
-    return { authorized: true, signup: validated.data };
 }
 
 export async function getTripSignupByToken(signupId: number, token?: string) {
@@ -128,20 +137,38 @@ export async function getTripSignupByToken(signupId: number, token?: string) {
 export async function updateSignupDetails(signupId: number, data: ReisPaymentEnrichment, token?: string) {
     try {
         const access = await validateAccess(signupId, token);
-        if (!access.authorized || !access.signup) return { success: false, error: access.error };
+        if (!access.authorized || !access.signup) {
+            // TODO: REMOVE (Diagnostic Logging)
+            console.warn('[updateSignupDetails] Access denied:', access.error);
+            return { success: false, error: access.error };
+        }
 
         const validated = reisPaymentEnrichmentSchema.safeParse(data);
         if (!validated.success) {
-            return { success: false, error: 'Validatie mislukt.', fieldErrors: validated.error.flatten().fieldErrors };
+            // TODO: REMOVE (Diagnostic Logging)
+            console.warn('[updateSignupDetails] Validation failed:', JSON.stringify(validated.error.flatten().fieldErrors));
+            return { success: false, error: 'Vul alle verplichte velden correct in.', fieldErrors: validated.error.flatten().fieldErrors };
         }
 
         const directus = getSystemDirectus();
+        
+        // TODO: REMOVE (Diagnostic Logging)
+        console.log(`[updateSignupDetails] Updating signup ${signupId}...`);
         await directus.request(updateItem('trip_signups', signupId, validated.data));
+        // TODO: REMOVE (Diagnostic Logging)
+        console.log(`[updateSignupDetails] Successfully updated signup ${signupId}.`);
 
         return { success: true };
-    } catch (err) {
+    } catch (err: any) {
+        // TODO: REMOVE (Diagnostic Logging)
         console.error('[reis-payment.actions#updateSignupDetails] Error:', err);
-        return { success: false, error: 'Opslaan mislukt.' };
+        
+        // Special mapping for common Directus/Database errors
+        if (err.errors?.[0]?.extensions?.code === 'RECORD_NOT_FOUND') {
+            return { success: false, error: 'Aanmelding niet gevonden.' };
+        }
+
+        return { success: false, error: 'Opslaan mislukt door een serverfout.' };
     }
 }
 

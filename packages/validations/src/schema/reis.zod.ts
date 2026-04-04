@@ -60,6 +60,9 @@ export const reisSignupFormSchema = z.object({
 });
 
 export const reisPaymentEnrichmentSchema = z.object({
+    first_name: z.string().min(1, 'Voornaam is verplicht'),
+    last_name: z.string().min(1, 'Achternaam is verplicht'),
+    phone_number: z.string().min(5, 'Telefoonnummer is verplicht'),
     date_of_birth: z.string().min(1, 'Geboortedatum is verplicht'),
     id_document: z.string().min(1, 'ID-documenttype is verplicht'),
     document_number: z.string().optional().nullable(),

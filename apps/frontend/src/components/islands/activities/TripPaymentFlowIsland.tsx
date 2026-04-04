@@ -13,7 +13,9 @@ import {
     IdCard, 
     HeartPulse, 
     Bus,
-    ArrowRight
+    ArrowRight,
+    Phone,
+    FileText
 } from 'lucide-react';
 import type { 
     Trip, 
@@ -53,6 +55,9 @@ export default function TripPaymentFlowIsland({
 
     // Form State
     const [enrichment, setEnrichment] = useState<ReisPaymentEnrichment>({
+        first_name: signup.first_name || '',
+        last_name: signup.last_name || '',
+        phone_number: signup.phone_number || '',
         date_of_birth: signup.date_of_birth || '',
         id_document: signup.id_document || 'none',
         document_number: signup.document_number || '',
@@ -129,7 +134,9 @@ export default function TripPaymentFlowIsland({
 
             setStep(step + 1);
         } catch (err) {
-            setError('Er is een onverwachte fout opgetreden.');
+            // TODO: REMOVE (Diagnostic Logging)
+            console.error('[TripPaymentFlowIsland#handleNext] Unexpected error:', err);
+            setError('Er is een onverwachte fout opgetreden. Probeer het later opnieuw.');
         } finally {
             setLoading(false);
         }
@@ -182,74 +189,161 @@ export default function TripPaymentFlowIsland({
                 {/* Step Content */}
                 <div className="p-8 md:p-12">
                     {step === 1 && (
-                        <div className="space-y-8 animate-in fade-in duration-500">
+                        <div className="space-y-10 animate-in fade-in duration-500">
                             <div>
-                                <h2 className="text-3xl font-black text-white mb-2 uppercase italic tracking-tighter italic">Personalia Aanvullen</h2>
-                                <p className="text-gray-400">We hebben nog wat gegevens van je nodig voor de reis naar {trip.name}.</p>
+                                <h2 className="text-3xl font-black text-white mb-2 uppercase italic tracking-tighter italic">Gegevens voor de Aanbetaling</h2>
+                                <p className="text-gray-400">Controleer en vul je gegevens aan voor de aanbetaling van de reis naar {trip.name}.</p>
                             </div>
 
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <label className="text-xs font-black uppercase tracking-widest text-gray-500 flex items-center gap-2">
-                                        <Calendar className="w-3.5 h-3.5" /> Geboortedatum *
-                                    </label>
-                                    <input 
-                                        type="date"
-                                        value={enrichment.date_of_birth}
-                                        onChange={(e) => setEnrichment({...enrichment, date_of_birth: e.target.value})}
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500/50 transition-all"
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-xs font-black uppercase tracking-widest text-gray-500 flex items-center gap-2">
-                                        <IdCard className="w-3.5 h-3.5" /> ID Document Type *
-                                    </label>
-                                    <select 
-                                        value={enrichment.id_document}
-                                        onChange={(e) => setEnrichment({...enrichment, id_document: e.target.value})}
-                                        className="w-full bg-[#1A1A1A] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500/50 transition-all appearance-none"
-                                    >
-                                        <option value="none">Maak een keuze...</option>
-                                        <option value="ID-kaart">ID-kaart</option>
-                                        <option value="Paspoort">Paspoort</option>
-                                    </select>
-                                </div>
-
-                                {enrichment.id_document !== 'none' && (
-                                    <div className="space-y-2 md:col-span-2">
-                                        <label className="text-xs font-black uppercase tracking-widest text-gray-500">Documentnummer *</label>
-                                        <input 
-                                            type="text"
-                                            placeholder="Bijv. ABC123456"
-                                            value={enrichment.document_number || ''}
-                                            onChange={(e) => setEnrichment({...enrichment, document_number: e.target.value})}
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500/50 transition-all"
-                                        />
+                            <div className="space-y-12">
+                                {/* Group 1: Identity */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-500">
+                                            <User className="w-4 h-4" />
+                                        </div>
+                                        <h3 className="text-sm font-black uppercase tracking-wider text-white">Identiteit & Geboorte</h3>
                                     </div>
-                                )}
 
-                                <div className="space-y-2 md:col-span-2">
-                                    <label className="text-xs font-black uppercase tracking-widest text-gray-500 flex items-center gap-2">
-                                        <HeartPulse className="w-3.5 h-3.5" /> Allergieën & Medisch
-                                    </label>
-                                    <textarea 
-                                        placeholder="Bijv. Notenallergie, medicijngebruik..."
-                                        value={enrichment.allergies || ''}
-                                        onChange={(e) => setEnrichment({...enrichment, allergies: e.target.value})}
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500/50 transition-all min-h-[100px]"
-                                    />
+                                    {/* Identity Rule Notice */}
+                                    <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-start gap-3 animate-in slide-in-from-left-2 duration-500">
+                                        <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                                        <p className="text-[11px] text-blue-200/80 font-medium leading-relaxed uppercase tracking-tight">
+                                            <strong className="text-blue-300">Belangrijk:</strong> Je voor- en achternaam moeten <strong className="text-white">exact</strong> overeenkomen met de gegevens op je paspoort of ID-kaart voor de boeking.
+                                        </p>
+                                    </div>
+
+                                    <div className="grid md:grid-cols-2 gap-6 p-6 rounded-2xl bg-white/[0.02] border border-white/5">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Voornaam *</label>
+                                            <input 
+                                                type="text"
+                                                value={enrichment.first_name}
+                                                onChange={(e) => setEnrichment({...enrichment, first_name: e.target.value})}
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500/50 transition-all font-medium"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Achternaam *</label>
+                                            <input 
+                                                type="text"
+                                                value={enrichment.last_name}
+                                                onChange={(e) => setEnrichment({...enrichment, last_name: e.target.value})}
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500/50 transition-all font-medium"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 flex items-center gap-2">
+                                                <Calendar className="w-3 h-3" /> Geboortedatum *
+                                            </label>
+                                            <input 
+                                                type="date"
+                                                value={enrichment.date_of_birth}
+                                                onChange={(e) => setEnrichment({...enrichment, date_of_birth: e.target.value})}
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500/50 transition-all font-medium"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 flex items-center gap-2">
+                                                <IdCard className="w-3 h-3" /> ID Document Type *
+                                            </label>
+                                            <select 
+                                                value={enrichment.id_document}
+                                                onChange={(e) => setEnrichment({...enrichment, id_document: e.target.value})}
+                                                className="w-full bg-[#1A1A1A] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500/50 transition-all appearance-none font-medium"
+                                            >
+                                                <option value="none">Maak een keuze...</option>
+                                                <option value="ID-kaart">ID-kaart</option>
+                                                <option value="Paspoort">Paspoort</option>
+                                            </select>
+                                        </div>
+
+                                        {enrichment.id_document !== 'none' && (
+                                            <div className="space-y-2 md:col-span-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Documentnummer *</label>
+                                                <input 
+                                                    type="text"
+                                                    placeholder="Bijv. ABC123456"
+                                                    value={enrichment.document_number || ''}
+                                                    onChange={(e) => setEnrichment({...enrichment, document_number: e.target.value})}
+                                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500/50 transition-all font-medium"
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Group 2: Contact */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-500">
+                                            <Phone className="w-4 h-4" />
+                                        </div>
+                                        <h3 className="text-sm font-black uppercase tracking-wider text-white">Contactgegevens</h3>
+                                    </div>
+                                    <div className="grid md:grid-cols-1 gap-6 p-6 rounded-2xl bg-white/[0.02] border border-white/5">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 flex items-center gap-2">
+                                                Telefoonnummer *
+                                            </label>
+                                            <input 
+                                                type="tel"
+                                                placeholder="+31 6 12345678"
+                                                value={enrichment.phone_number}
+                                                onChange={(e) => setEnrichment({...enrichment, phone_number: e.target.value})}
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500/50 transition-all font-medium"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Group 3: Medical & Notes */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-500">
+                                            <HeartPulse className="w-4 h-4" />
+                                        </div>
+                                        <h3 className="text-sm font-black uppercase tracking-wider text-white">Medisch & Opmerkingen</h3>
+                                    </div>
+                                    <div className="grid md:grid-cols-1 gap-6 p-6 rounded-2xl bg-white/[0.02] border border-white/5">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 flex items-center gap-2">
+                                                Allergieën & Medisch
+                                            </label>
+                                            <textarea 
+                                                placeholder="Bijv. Notenallergie, medicijngebruik..."
+                                                value={enrichment.allergies || ''}
+                                                onChange={(e) => setEnrichment({...enrichment, allergies: e.target.value})}
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500/50 transition-all min-h-[100px] font-medium resize-none"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 flex items-center gap-2">
+                                                <FileText className="w-3 h-3" /> Speciale Opmerkingen
+                                            </label>
+                                            <textarea 
+                                                placeholder="Andere zaken waar we rekening mee moeten houden?"
+                                                value={enrichment.special_notes || ''}
+                                                onChange={(e) => setEnrichment({...enrichment, special_notes: e.target.value})}
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500/50 transition-all min-h-[100px] font-medium resize-none"
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {trip.is_bus_trip && (
-                                    <div className="md:col-span-2 p-4 rounded-2xl bg-orange-500/5 border border-orange-500/20 flex items-center justify-between">
+                                    <div className="p-6 rounded-2xl bg-orange-500/5 border border-orange-500/20 flex items-center justify-between animate-in zoom-in-95 duration-500">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500">
-                                                <Bus className="w-5 h-5" />
+                                            <div className="w-12 h-12 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500 shadow-glow-sm">
+                                                <Bus className="w-6 h-6" />
                                             </div>
                                             <div>
-                                                <p className="font-bold text-white text-sm">Vrijwillige Chauffeur?</p>
-                                                <p className="text-xs text-gray-500">Ben je bereid om een van de busjes te rijden?</p>
+                                                <p className="font-black text-white text-sm uppercase tracking-tight">Vrijwillige Chauffeur?</p>
+                                                <p className="text-xs text-gray-500 font-medium">Ben je bereid om een van de busjes te rijden?</p>
                                             </div>
                                         </div>
                                         <label className="relative inline-flex items-center cursor-pointer">
