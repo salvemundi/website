@@ -310,6 +310,7 @@ export async function setImpersonateToken(token: string) {
             maxAge: 7 * 24 * 60 * 60,
             sameSite: 'lax',
             secure: process.env.NODE_ENV === 'production',
+            httpOnly: true,
         });
 
         let impCommittees: any[] = [];
@@ -343,6 +344,7 @@ export async function setImpersonateToken(token: string) {
             maxAge: 7 * 24 * 60 * 60,
             sameSite: 'lax',
             secure: process.env.NODE_ENV === 'production',
+            httpOnly: true,
         });
 
         const sessionToken = cookieStore.get('better-auth.session-token')?.value;

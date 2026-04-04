@@ -1,3 +1,5 @@
+import 'server-only';
+import 'server-only';
 import { createDirectus, rest, staticToken } from '@directus/sdk';
 import { type DirectusSchema } from '@salvemundi/validations';
 

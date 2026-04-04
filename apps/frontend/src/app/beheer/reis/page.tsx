@@ -118,41 +118,20 @@ async function AdminReisDashboardContent({ searchParams }: AdminReisPageProps) {
 }
 
 
+import { getTripSignups, getTripSignupActivitiesAction } from '@/server/actions/reis-admin-signups.actions';
+
 async function AdminReisSignupsTable({ tripId, trip }: { tripId: number, trip: any }) {
-    // Fetch signups and their activities in parallel
+    // Fetch signups and their activities in parallel using the new direct-database actions
     let signups: any[] = [];
     let allSignupActivities: any[] = [];
     
     try {
         [signups, allSignupActivities] = await Promise.all([
-            getSystemDirectus().request(readItems('trip_signups', {
-                filter: { trip_id: { _eq: tripId } },
-                fields: [
-                    'id', 'first_name', 'last_name', 'email', 'phone_number', 
-                    'date_of_birth', 'id_document', 'document_number', 'allergies', 
-                    'special_notes', 'willing_to_drive', 'role', 'status', 'deposit_paid', 
-                    'deposit_paid_at', 'deposit_email_sent', 'full_payment_paid', 
-                    'full_payment_paid_at', 'final_email_sent', 'created_at'
-                ] as any,
-                sort: ['-id'],
-                limit: -1
-            })),
-            Promise.resolve([]) // Placeholder for proper sequential fetch
+            getTripSignups(tripId),
+            getTripSignupActivitiesAction(tripId)
         ]);
-
-        const signupIds = (signups || []).map(s => s.id);
-        if (signupIds.length > 0) {
-            allSignupActivities = await getSystemDirectus().request(readItems('trip_signup_activities', {
-                filter: { 
-                    trip_signup_id: { _in: signupIds } 
-                },
-                fields: ['id', 'trip_signup_id', 'selected_options', { trip_activity_id: ['id', 'name'] }] as any,
-                limit: -1
-            })).catch(() => []);
-        }
-
     } catch (e: any) {
-        console.error('[AdminReisSignupsTable] Error fetching signups data:', e.message, e?.errors || e);
+        console.error('[AdminReisSignupsTable] Error fetching signups data:', e.message);
     }
 
     // Initialize map for all signups to avoid "Loading..." state in UI

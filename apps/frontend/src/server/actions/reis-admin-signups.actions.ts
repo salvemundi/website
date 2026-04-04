@@ -11,7 +11,11 @@ import {
     type TripSignupActivity
 } from '@salvemundi/validations';
 import { requireReisAdmin } from './reis-admin-utils';
-import { fetchAllTripSignupsDb } from './reis-db.utils';
+import { 
+    fetchAllTripSignupsDb, 
+    fetchTripSignupByIdDb, 
+    fetchTripSignupActivitiesDb 
+} from './reis-db.utils';
 import { getSystemDirectus } from '@/lib/directus';
 import { 
     readItems, 
@@ -65,6 +69,13 @@ export async function getTripSignup(id: number): Promise<TripSignup | null> {
     await requireReisAdmin();
 
     try {
+        // 1. Direct DB fetch for absolute consistency
+        const dbSignup = await fetchTripSignupByIdDb(id);
+        if (dbSignup) {
+            return dbSignup as TripSignup;
+        }
+
+        // 2. Fallback to Directus
         const signup = await getSystemDirectus().request(readItem('trip_signups', id, {
             fields: TRIP_SIGNUP_FIELDS as any
         })) as unknown as DbTripSignup;
@@ -350,4 +361,17 @@ export async function sendBulkPaymentEmails(tripId: number, signupIds: number[],
         success: results.failCount === 0, 
         ...results 
     };
+}
+
+/**
+ * Fetches all activity selections for a specific trip directly from the database.
+ */
+export async function getTripSignupActivitiesAction(tripId: number) {
+    await requireReisAdmin();
+    try {
+        return await fetchTripSignupActivitiesDb(tripId);
+    } catch (error) {
+        console.error('[AdminReisActions#getTripSignupActivitiesAction] Error:', error);
+        return [];
+    }
 }

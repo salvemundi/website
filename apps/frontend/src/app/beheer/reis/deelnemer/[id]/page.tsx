@@ -45,47 +45,41 @@ export default async function DeelnemerDetailPage({ params }: PageProps) {
     );
 }
 
+import { getTripSignup, getTripSignupActivitiesAction } from '@/server/actions/reis-admin-signups.actions';
+
 async function DeelnemerDataWrapper({ signupId }: { signupId: number }) {
-    const directus = getSystemDirectus();
-
-    // 1. Fetch signup details
-    const signups = await directus.request(readItems('trip_signups', {
-        filter: { id: { _eq: signupId } },
-        fields: [
-            'id', 'first_name', 'last_name', 'email', 'phone_number', 
-            'date_of_birth', 'id_document', 'document_number', 'allergies', 
-            'special_notes', 'willing_to_drive', 'role', 'status', 'deposit_paid', 
-            'deposit_paid_at', 'full_payment_paid', 'full_payment_paid_at', 'created_at',
-            { trip_id: ['id', 'name'] }
-        ] as any,
-        limit: 1
-    }));
-
-    const signup = signups?.[0];
+    // 1. Fetch signup details using the direct-database action
+    const signup = await getTripSignup(signupId);
     
     if (!signup || !signup.trip_id) {
         notFound();
     }
 
-    const tripId = typeof (signup as any).trip_id === 'object' ? (signup as any).trip_id.id : (signup as any).trip_id;
+    const tripId = signup.trip_id;
 
     // 2. Fetch related data (trips for dropdown, activities for trip, and selected activities)
+    // We can still use Directus for static metadata like trips and activity definitions, 
+    // but we use the new action for the real-time signup activities.
     const [trips, activities, signupActivities] = await Promise.all([
-        directus.request(readItems('trips', {
+        getSystemDirectus().request(readItems('trips', {
             fields: ['id', 'name'] as any,
             sort: ['-event_date']
         })),
-        directus.request(readItems('trip_activities', {
+        getSystemDirectus().request(readItems('trip_activities', {
             filter: { trip_id: { _eq: tripId } },
             fields: ['id', 'name', 'price'] as any,
             sort: ['display_order']
         })),
-        directus.request(readItems('trip_signup_activities', {
-            filter: { trip_signup_id: { _eq: signupId } },
-            fields: ['trip_activity_id'] as any,
-            limit: -1
-        }))
+        getTripSignupActivitiesAction(tripId)
     ]);
+    
+    // Filter signupActivities for this specific participant
+    const participantActivities = signupActivities
+        .filter((sa: any) => {
+            const saSignupId = typeof sa.trip_signup_id === 'object' ? sa.trip_signup_id.id : sa.trip_signup_id;
+            return saSignupId === signupId;
+        })
+        .map((a: any) => typeof a.trip_activity_id === 'object' ? a.trip_activity_id.id : a.trip_activity_id);
 
     return (
         <ReisDeelnemerDetailIsland 

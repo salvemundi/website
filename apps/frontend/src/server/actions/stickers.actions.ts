@@ -56,6 +56,9 @@ export async function createStickerPublic(data: any) {
 
 export async function uploadFileAction(formData: FormData) {
     const session = await auth.api.getSession({ headers: await headers() });
+    if (!session?.user) {
+        throw new Error('Niet geautoriseerd: Je moet ingelogd zijn om bestanden te uploaden.');
+    }
     
     const { rateLimit } = await import('../utils/ratelimit');
     const { success } = await rateLimit('file-upload', 5, 300);

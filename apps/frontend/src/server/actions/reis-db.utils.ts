@@ -1,3 +1,6 @@
+'use server';
+
+import 'server-only';
 import { query } from '@/lib/db';
 import { 
     reisTripSignupSchema,
@@ -81,6 +84,82 @@ export async function fetchAllTripSignupsDb(tripId: number): Promise<ReisTripSig
         return parsed.data as ReisTripSignup[];
     } catch (error) {
         console.error('[ReisDbUtils#fetchAllTripSignupsDb] Error:', error);
+        return [];
+    }
+}
+
+/**
+ * Fetches a single signup by ID directly from the database.
+ */
+export async function fetchTripSignupByIdDb(signupId: number): Promise<ReisTripSignup | null> {
+    console.log(`[DB-DIRECT-FETCH] TripSignupById id: ${signupId}`);
+    try {
+        const res = await query(
+            `SELECT * FROM trip_signups WHERE id = $1 LIMIT 1`,
+            [signupId]
+        );
+
+        if (res.rowCount === 0) return null;
+
+        const raw = res.rows[0];
+        const sanitized = {
+            ...raw,
+            created_at: raw.created_at || new Date().toISOString(),
+            deposit_paid: !!raw.deposit_paid,
+            full_payment_paid: !!raw.full_payment_paid,
+            willing_to_drive: !!raw.willing_to_drive,
+            role: raw.role || 'participant',
+            status: raw.status || 'registered'
+        };
+
+        const parsed = reisTripSignupSchema.safeParse(sanitized);
+        if (!parsed.success) {
+            console.error('[ReisDbUtils#fetchTripSignupByIdDb] Zod validation failed:', parsed.error.flatten().fieldErrors);
+            return sanitized as ReisTripSignup;
+        }
+
+        return parsed.data as ReisTripSignup;
+    } catch (error) {
+        console.error('[ReisDbUtils#fetchTripSignupByIdDb] Error:', error);
+        return null;
+    }
+}
+
+/**
+ * Fetches activity selections for a specific trip directly from the database.
+ */
+export async function fetchTripSignupActivitiesDb(tripId: number): Promise<any[]> {
+    console.log(`[DB-DIRECT-FETCH] SignupActivities tripId: ${tripId}`);
+    try {
+        const res = await query(
+            `SELECT sa.*, a.name as activity_name, a.price as activity_price 
+             FROM trip_signup_activities sa
+             JOIN trip_activities a ON sa.trip_activity_id = a.id
+             WHERE a.trip_id = $1`,
+            [tripId]
+        );
+        return res.rows || [];
+    } catch (error) {
+        console.error('[ReisDbUtils#fetchTripSignupActivitiesDb] Error:', error);
+        return [];
+    }
+}
+
+/**
+ * Fetches all trips directly from the database for the admin selector.
+ */
+export async function fetchAllTripsDb(): Promise<any[]> {
+    console.log(`[DB-DIRECT-FETCH] AllTrips`);
+    try {
+        const res = await query(
+            `SELECT id, name, event_date, start_date, end_date, allow_final_payments 
+             FROM trips 
+             ORDER BY event_date DESC`,
+            []
+        );
+        return res.rows || [];
+    } catch (error) {
+        console.error('[ReisDbUtils#fetchAllTripsDb] Error:', error);
         return [];
     }
 }
