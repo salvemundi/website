@@ -244,3 +244,28 @@ export async function initiateTripPaymentAction(signupId: number, paymentType: '
         return { success: false, error: 'Interne fout bij starten betaling.' };
     }
 }
+
+/**
+ * Fetches the payment status for a specific Mollie ID from the finance service.
+ * @param mollieId The Mollie transaction ID (or session token depending on implementation)
+ */
+export async function getPaymentStatusAction(mollieId: string) {
+    try {
+        const FINANCE_SERVICE_URL = process.env.FINANCE_SERVICE_URL || 'http://finance-service:3001';
+        const response = await fetch(`${FINANCE_SERVICE_URL}/api/finance/status/${mollieId}`);
+        
+        if (!response.ok) {
+            console.error('[getPaymentStatusAction] Finance service returned error:', response.status);
+            return { success: false, error: 'Status ophalen mislukt bij betaalservice.' };
+        }
+
+        const data = await response.json();
+        return { 
+            success: true, 
+            payment_status: data.payment_status as 'paid' | 'open' | 'expired' | 'failed' | 'canceled'
+        };
+    } catch (err) {
+        console.error('[reis-payment.actions#getPaymentStatusAction] Error:', err);
+        return { success: false, error: 'Interne fout bij ophalen betaalstatus.' };
+    }
+}

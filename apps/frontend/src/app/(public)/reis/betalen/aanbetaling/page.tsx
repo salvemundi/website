@@ -75,17 +75,9 @@ async function PaymentDataWrapper({ signupId, token, paymentType }: { signupId: 
     // Redirection logic from legacy requirements:
     // "Als de aanbetaling al is voldaan, moet de gebruiker automatisch worden doorgestuurd naar de restbetalingspagina."
     if (paymentType === 'deposit' && signup.deposit_paid) {
+        const { redirect } = await import('next/navigation');
         const url = `/reis/betalen/restbetaling?id=${signupId}${token ? `&t=${token}` : ''}`;
-        // Note: Using a meta-refresh or simple link if redirect() is problematic in Suspense
-        return (
-            <div className="max-w-xl mx-auto py-32 px-6 text-center">
-                <h1 className="text-2xl font-black text-white uppercase italic mb-4">Aanbetaling al voldaan</h1>
-                <p className="text-gray-400 mb-8">Je hebt de aanbetaling voor deze reis al gedaan. Je wordt doorverwezen naar de restbetaling.</p>
-                <a href={url} className="inline-block px-8 py-4 bg-[var(--sm-orange)] text-white font-bold rounded-2xl">
-                    Ga naar Restbetaling
-                </a>
-            </div>
-        );
+        redirect(url);
     }
 
     return (

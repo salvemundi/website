@@ -229,16 +229,14 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
 
     const { email } = parsed.data;
 
-    const userId = session?.user?.id;
-    if (!userId) {
-        return { success: false, message: 'Je moet ingelogd zijn om je in te schrijven.' };
-    }
-
     const existingSignups = await getTripSignups(tripId);
-    const existing = existingSignups.find(s => s.directus_relations === userId && s.status !== 'cancelled');
-    
-    if (existing) {
-        return { success: false, message: 'Je bent al aangemeld voor deze reis.' };
+    const userId = session?.user?.id;
+    // Logged in users: check for existing signup
+    if (userId) {
+        const existing = existingSignups.find(s => s.directus_relations === userId && s.status !== 'cancelled');
+        if (existing) {
+            return { success: false, message: 'Je bent al aangemeld voor deze reis.' };
+        }
     }
 
     const trips = await getUpcomingTrips();
@@ -272,12 +270,14 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
     }
 
     try {
-        // Re-fetch existing signups INSIDE the lock to ensure we have the absolute latest count
         const existingSignups = await getTripSignups(tripId);
-        const existing = existingSignups.find(s => s.directus_relations === userId && s.status !== 'cancelled');
         
-        if (existing) {
-            return { success: false, message: 'Je bent al aangemeld voor deze reis.' };
+        // Re-check for logged-in users inside lock
+        if (userId) {
+            const existing = existingSignups.find(s => s.directus_relations === userId && s.status !== 'cancelled');
+            if (existing) {
+                return { success: false, message: 'Je bent al aangemeld voor deze reis.' };
+            }
         }
 
         const trips = await getUpcomingTrips();
@@ -297,7 +297,7 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
             phone_number: parsed.data.phone_number,
             date_of_birth: parsed.data.date_of_birth,
             terms_accepted: parsed.data.terms_accepted,
-            directus_relations: userId, // Link to the user who created the signup (BetterAuth ID)
+            directus_relations: userId || null, // Link to the user who created the signup (BetterAuth ID)
             status: shouldBeWaitlisted ? ('waitlist' as const) : ('registered' as const),
             role: isCommitteeMember ? ('crew' as const) : ('participant' as const),
             deposit_paid: false,
