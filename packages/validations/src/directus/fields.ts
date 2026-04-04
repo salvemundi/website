@@ -80,6 +80,12 @@ export const TRIP_SIGNUP_FIELDS = [
     'full_payment_paid_at', 'created_at', 'role'
 ] as const;
 
+export const SAFE_TRIP_SIGNUP_FIELDS = [
+    'id', 'trip_id', 'first_name', 'last_name', 'status', 
+    'deposit_paid', 'deposit_paid_at', 'full_payment_paid', 
+    'full_payment_paid_at', 'created_at', 'role'
+] as const;
+
 export const TRIP_ACTIVITY_FIELDS = [
     'id', 'trip_id', 'name', 'description', 'image', 'price', 
     'max_participants', 'display_order', 'is_active', 'options', 'max_selections'
