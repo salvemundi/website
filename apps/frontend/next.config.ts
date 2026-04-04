@@ -57,6 +57,20 @@ const nextConfig: NextConfig = {
             },
         ];
     },
+    async redirects() {
+        return [
+            {
+                source: '/reis/aanbetaling/:id',
+                destination: '/reis/betalen/aanbetaling?id=:id',
+                permanent: true,
+            },
+            {
+                source: '/reis/restbetaling/:id',
+                destination: '/reis/betalen/restbetaling?id=:id',
+                permanent: true,
+            },
+        ];
+    },
     transpilePackages: ['better-auth'],
 };
 

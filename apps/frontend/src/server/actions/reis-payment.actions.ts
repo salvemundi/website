@@ -212,7 +212,8 @@ export async function initiateTripPaymentAction(signupId: number, paymentType: '
             body: JSON.stringify({
                 signupId,
                 tripId: access.signup.trip_id,
-                paymentType
+                paymentType,
+                isConfirmedByUser: true
             })
         });
 
