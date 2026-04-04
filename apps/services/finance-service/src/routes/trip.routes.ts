@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { createDirectus, rest, staticToken, readItem } from '@directus/sdk';
+import { createDirectus, rest, staticToken, readItem, readItems, updateItem } from '@directus/sdk';
 import { getMollieClient } from '../services/mollie.service.js';
 import { TRIP_SIGNUP_FIELDS, TRIP_FIELDS } from '@salvemundi/validations';
 

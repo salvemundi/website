@@ -32,7 +32,7 @@ export default async function statusRoutes(fastify: FastifyInstance) {
 
             return result.rows[0];
         } catch (err) {
-            fastify.log.error(`[STATUS] Error fetching status for ${mollieId}:`, err);
+            fastify.log.error(err, `[STATUS] Error fetching status for ${id}`);
             return reply.status(500).send({ error: 'Internal server error' });
         }
     });
