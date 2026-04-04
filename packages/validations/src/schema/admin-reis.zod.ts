@@ -32,6 +32,8 @@ export const tripSignupSchema = z.object({
     allergies: z.string().nullable().optional(),
     special_notes: z.string().nullable().optional(),
     willing_to_drive: z.boolean().nullable().optional(),
+    terms_accepted: z.boolean().nullable().optional(),
+    directus_relations: z.string().nullable().optional(),
     role: z.string(),
     status: z.string(),
     deposit_paid: z.boolean(),
@@ -40,15 +42,16 @@ export const tripSignupSchema = z.object({
     full_payment_paid_at: z.string().nullable().optional(),
     deposit_email_sent: z.boolean().nullable().optional(),
     final_email_sent: z.boolean().nullable().optional(),
-    date_created: z.string().optional(),
+    created_at: z.string().optional(),
+    access_token: z.string().nullable().optional(),
     trip_id: z.coerce.number().int().nullable().optional(),
 });
 
 export const tripSignupActivitySchema = z.object({
     id: z.number().int().optional(),
     trip_signup_id: z.number().int(),
-    trip_activity_id: z.any(), // Kan een ID zijn of een genest object vanuit Directus
-    selected_options: z.any().nullable().optional(), // Array of strings meestal
+    trip_activity_id: z.any(), // Can be an ID (number) or a nested object from Directus
+    selected_options: z.record(z.any()).nullable().optional(),
 });
 
 export const tripActivitySchema = z.object({
@@ -62,6 +65,7 @@ export const tripActivitySchema = z.object({
     is_active: z.any().transform(v => !!v),
     display_order: z.coerce.number().int(),
     options: z.array(z.object({
+        id: z.string(),
         name: z.string(),
         price: z.coerce.number()
     })).nullable().optional(),

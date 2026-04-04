@@ -24,6 +24,7 @@ import { query } from '@/lib/db';
 import { auth } from '@/server/auth/auth';
 import { headers as nextHeaders } from 'next/headers';
 import { getRedis } from '@/server/auth/redis-client';
+import { randomUUID } from 'crypto';
 
 const getMailUrl = () => process.env.MAIL_SERVICE_URL;
 
@@ -301,6 +302,7 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
             role: isCommitteeMember ? ('crew' as const) : ('participant' as const),
             deposit_paid: false,
             full_payment_paid: false,
+            access_token: randomUUID(),
         };
         
         const directus = getSystemDirectus();

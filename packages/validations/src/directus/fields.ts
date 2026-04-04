@@ -77,7 +77,8 @@ export const TRIP_SIGNUP_FIELDS = [
     'email', 'phone_number', 'date_of_birth', 'id_document', 
     'document_number', 'terms_accepted', 'directus_relations', 'allergies', 'special_notes', 'willing_to_drive', 
     'status', 'deposit_paid', 'deposit_paid_at', 'full_payment_paid', 
-    'full_payment_paid_at', 'created_at', 'role'
+    'full_payment_paid_at', 'created_at', 'role', 'access_token',
+    'deposit_email_sent', 'final_email_sent'
 ] as const;
 
 export const SAFE_TRIP_SIGNUP_FIELDS = [
@@ -89,6 +90,10 @@ export const SAFE_TRIP_SIGNUP_FIELDS = [
 export const TRIP_ACTIVITY_FIELDS = [
     'id', 'trip_id', 'name', 'description', 'image', 'price', 
     'max_participants', 'display_order', 'is_active', 'options', 'max_selections'
+] as const;
+
+export const TRIP_SIGNUP_ACTIVITY_FIELDS = [
+    'id', 'trip_signup_id', 'trip_activity_id', 'selected_options'
 ] as const;
 
 export const STICKER_FIELDS = [
