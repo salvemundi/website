@@ -8,6 +8,9 @@ const password = process.env.REDIS_PASSWORD;
 let redisUrl = process.env.REDIS_URL;
 if (!redisUrl && host && password) {
     redisUrl = `redis://default:${password}@${host}:6379`;
+    console.log(`[AUTH-REDIS] Initializing with components (host: ${host}).`);
+} else if (redisUrl) {
+    console.log(`[AUTH-REDIS] Initializing with REDIS_URL.`);
 }
 
 let redisClient: Redis | null = null;
