@@ -91,9 +91,10 @@ jobs:
 
             # 3. Start de infra
             docker network create salve-mundi-v7-shared || true
+            # Force fresh RedisInsight state to ensure new config is loaded
+            # Note: This clears UI history but guarantees the injected connection works
+            docker compose -p v7-core stop v7-core-redisinsight || true
+            docker volume rm v7-core_v7_core_redisinsight_data || true
+            
             docker compose -p v7-core up -d --remove-orphans
-
-            # RedisInsight config fix (herstart nodig na wijziging databases.json volume)
-            docker compose -p v7-core restart v7-core-redisinsight
-
             echo "--- Core Infrastructure Deployed to ${{ env.DOMAIN }} ---"
