@@ -135,26 +135,36 @@ async function AdminReisSignupsTable({ tripId, trip }: { tripId: number, trip: a
                 sort: ['-id'],
                 limit: -1
             })),
-            getSystemDirectus().request(readItems('trip_signup_activities', {
+            Promise.resolve([]) // Placeholder for proper sequential fetch
+        ]);
+
+        const signupIds = (signups || []).map(s => s.id);
+        if (signupIds.length > 0) {
+            allSignupActivities = await getSystemDirectus().request(readItems('trip_signup_activities', {
                 filter: { 
-                    trip_signup_id: { 
-                        trip_id: { _eq: tripId }
-                    } 
+                    trip_signup_id: { _in: signupIds } 
                 },
                 fields: ['id', 'trip_signup_id', 'selected_options', { trip_activity_id: ['id', 'name'] }] as any,
                 limit: -1
-            }))
-        ]);
+            })).catch(() => []);
+        }
+
     } catch (e: any) {
         console.error('[AdminReisSignupsTable] Error fetching signups data:', e.message, e?.errors || e);
     }
 
-    // Group activities by signupId
+    // Initialize map for all signups to avoid "Loading..." state in UI
     const activitiesMap: Record<number, any[]> = {};
+    (signups || []).forEach(s => {
+        activitiesMap[s.id] = [];
+    });
+
+    // Group activities by signupId
     (allSignupActivities || []).forEach((sa: any) => {
         const signupId = typeof sa.trip_signup_id === 'object' ? (sa.trip_signup_id as any).id : sa.trip_signup_id;
-        if (!activitiesMap[signupId]) activitiesMap[signupId] = [];
-        activitiesMap[signupId].push(sa);
+        if (activitiesMap[signupId]) {
+            activitiesMap[signupId].push(sa);
+        }
     });
 
     const stats = {

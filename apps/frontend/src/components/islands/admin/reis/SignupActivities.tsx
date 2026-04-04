@@ -58,7 +58,7 @@ export default function SignupActivities({
                             <span className={`text-[10px] font-black uppercase tracking-widest ${
                                 selectedActivities.includes(activity.id) ? 'text-white/80' : 'text-[var(--beheer-accent)]'
                             }`}>
-                                €{activity.price.toFixed(2)}
+                                €{Number(activity.price || 0).toFixed(2)}
                             </span>
                             <input 
                                 type="checkbox" 
