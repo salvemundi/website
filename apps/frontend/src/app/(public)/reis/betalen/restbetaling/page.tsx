@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTripSignupByToken } from '@/server/actions/reis-payment.actions';
 import TripPaymentFlowIsland from '@/components/islands/activities/TripPaymentFlowIsland';
-import { Loader2, CheckCircle2 } from 'lucide-react';
+import { Loader2, CheckCircle2, Search, Home } from 'lucide-react';
 
 export const metadata: Metadata = {
     title: 'Restbetaling Reis | SV Salve Mundi',
@@ -39,15 +39,31 @@ async function PaymentDataWrapper({ signupId, token, paymentType }: { signupId: 
 
     if (!res.success || !res.data) {
         return (
-            <div className="max-w-xl mx-auto py-32 px-6 text-center">
-                <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center text-red-500 mx-auto mb-6">
-                    <path d="M12 9v4m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 14c-.77 1.333.192 3 1.732 3z" />
+            <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
+                <div className="relative mb-8 pt-10">
+                    <div className="absolute inset-x-0 top-0 h-40 w-40 mx-auto blur-3xl bg-[var(--color-purple-500)]/10 rounded-full pointer-events-none" />
+                    <div className="relative rounded-3xl bg-[var(--bg-card)] p-6 shadow-2xl border border-[var(--border-color)]/20 text-[var(--color-purple-500)] inline-block">
+                        <Search className="h-16 w-16" />
+                    </div>
                 </div>
-                <h1 className="text-2xl font-black text-white uppercase italic mb-4">Toegang Geweigerd</h1>
-                <p className="text-gray-400 mb-8">{res.error || 'Deze link is ongeldig of verlopen.'}</p>
-                <a href="/reis" className="inline-block px-8 py-4 bg-white text-black font-bold rounded-2xl hover:bg-orange-500 hover:text-white transition-all">
-                    Terug naar overzicht
-                </a>
+
+                <h2 className="text-4xl font-black text-[var(--text-main)] mb-3 tracking-tight italic uppercase">
+                    Toegang Geweigerd
+                </h2>
+                
+                <p className="text-[var(--text-muted)] max-w-md mx-auto mb-10 font-medium">
+                    {res.error || 'Deze link is ongeldig of verlopen. Gebruik de link uit de e-mail of log in op je account.'}
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+                    <a
+                        href="/reis"
+                        className="flex items-center gap-2 rounded-full bg-[var(--color-purple-500)] text-white px-8 py-3.5 font-bold shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:-translate-y-0.5 transition-all text-sm uppercase tracking-widest"
+                    >
+                        <Home className="h-4 w-4" />
+                        Terug naar Reizen
+                    </a>
+                </div>
             </div>
         );
     }

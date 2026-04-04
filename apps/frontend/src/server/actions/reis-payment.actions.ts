@@ -76,7 +76,7 @@ export async function getTripSignupByToken(signupId: number, token?: string) {
         const directus = getSystemDirectus();
         const signup = access.signup;
 
-        // Fetch Trip and Activities
+        // 2. Fetch Trip and Activities
         const [tripRaw, allActivitiesRaw, selectedActivitiesRaw] = await Promise.all([
             directus.request(readItem('trips', signup.trip_id as number, { fields: [...TRIP_FIELDS] as any })),
             directus.request(readItems('trip_activities', {
@@ -90,24 +90,38 @@ export async function getTripSignupByToken(signupId: number, token?: string) {
             }))
         ]);
 
-        // Strict Zod parsing of database results
-        const trip = tripSchema.parse(tripRaw);
-        const allActivities = tripActivitySchema.array().parse(allActivitiesRaw);
-        const selectedActivities = tripSignupActivitySchema.array().parse(selectedActivitiesRaw);
+        // 3. Robust Zod parsing
+        const tripVal = tripSchema.safeParse(tripRaw);
+        if (!tripVal.success) {
+            console.error('[getTripSignupByToken] Trip schema mismatch:', tripVal.error.format());
+            return { success: false, error: 'Reisgegevens zijn niet compatibel met de huidige websiteversie.' };
+        }
+
+        const activitiesVal = tripActivitySchema.array().safeParse(allActivitiesRaw);
+        if (!activitiesVal.success) {
+            console.error('[getTripSignupByToken] Activities schema mismatch:', activitiesVal.error.format());
+            return { success: false, error: 'Sommige reisactiviteiten bevatten ongeldige data.' };
+        }
+
+        const selectionsVal = tripSignupActivitySchema.array().safeParse(selectedActivitiesRaw);
+        if (!selectionsVal.success) {
+            console.error('[getTripSignupByToken] Selections schema mismatch:', selectionsVal.error.format());
+            return { success: false, error: 'Je eerdere activiteitskeuzes konden niet worden geladen.' };
+        }
 
         return {
             success: true,
             data: {
                 signup,
-                trip,
-                allActivities,
-                selectedActivities
+                trip: tripVal.data,
+                allActivities: activitiesVal.data,
+                selectedActivities: selectionsVal.data
             }
         };
 
-    } catch (err) {
+    } catch (err: any) {
         console.error('[reis-payment.actions#getTripSignupByToken] Error:', err);
-        return { success: false, error: 'Interne serverfout bij ophalen gegevens.' };
+        return { success: false, error: 'Er is een fout opgetreden bij het ophalen van je gegevens. Probeer het later opnieuw.' };
     }
 }
 

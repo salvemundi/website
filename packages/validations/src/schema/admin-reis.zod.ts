@@ -65,9 +65,9 @@ export const tripActivitySchema = z.object({
     is_active: z.any().transform(v => !!v),
     display_order: z.coerce.number().int(),
     options: z.array(z.object({
-        id: z.string(),
-        name: z.string(),
-        price: z.coerce.number()
+        id: z.string().optional().nullable(),
+        name: z.string().optional().nullable(),
+        price: z.coerce.number().optional().nullable()
     })).nullable().optional(),
     max_selections: z.coerce.number().int().nullable().optional(),
 });
