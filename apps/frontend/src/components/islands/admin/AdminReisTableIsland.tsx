@@ -232,8 +232,18 @@ export default function AdminReisTableIsland({ initialSignups, initialSignupActi
         return statusMap[status] || { label: status, color: 'bg-[var(--beheer-text-muted)]/10 text-[var(--beheer-text-muted)]' };
     };
 
+    const displayStats = [
+        { label: 'Aanmeldingen', value: stats.total, icon: Users },
+        { label: 'Wachtlijst', value: stats.waitlist, icon: UserX },
+        { label: 'Bevestigd', value: stats.confirmed, icon: UserCheck },
+        { label: 'Aanbetaling', value: stats.depositPaid, icon: Plane },
+        { label: 'Volledig', value: stats.fullPaid, icon: Plane }
+    ];
+
     return (
         <>
+            <AdminStatsBar stats={displayStats} />
+
             <ReisFilters 
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}

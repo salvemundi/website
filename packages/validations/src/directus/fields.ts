@@ -67,7 +67,7 @@ export const INTRO_PLANNING_FIELDS = [
 ] as const;
 
 export const TRIP_FIELDS = [
-    'id', 'name', 'description', 'image', 'event_date', 'start_date', 'end_date', 'registration_start_date', 'registration_open', 'max_participants', 'max_crew', 'base_price', 'crew_discount', 'deposit_amount', 'is_bus_trip', 'allow_final_payments', 'status'
+    'id', 'name', 'description', 'image', 'event_date', 'start_date', 'end_date', 'registration_start_date', 'registration_open', 'max_participants', 'max_crew', 'base_price', 'crew_discount', 'deposit_amount', 'is_bus_trip', 'allow_final_payments'
 ] as const;
 
 export const TRIP_ID_FIELDS = ['id'] as const;
