@@ -120,7 +120,7 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 fastify.log.info(`[FINANCE] Linked transaction ${transactionDbId} to pub_crawl_signup ${registrationId}`);
             }
 
-            return { checkoutUrl: payment.getCheckoutUrl(), mollie_id: payment.id, access_token: accessToken };
+            return { checkoutUrl: payment._links?.checkout?.href, mollie_id: payment.id, access_token: accessToken };
         } catch (err: any) {
             fastify.log.error({ err, message: err?.message, code: err?.code, detail: err?.detail }, '[FINANCE] Error creating payment');
             return reply.status(500).send({ error: 'Failed to create payment', message: err.message });
