@@ -49,6 +49,8 @@ export default async function ReisActiviteitenPage({ searchParams }: PageProps) 
     );
 }
 
+import { getTripSignupActivitiesAction } from '@/server/actions/reis-admin-signups.actions';
+
 async function ReisActiviteitenLoader({ searchParams }: PageProps) {
     const resolvedSearchParams = await searchParams;
     const tripIdParam = typeof resolvedSearchParams.tripId === 'string' ? resolvedSearchParams.tripId : undefined;
@@ -70,18 +72,10 @@ async function ReisActiviteitenLoader({ searchParams }: PageProps) {
         notFound();
     }
 
-    // Parallel fetch activities and all their signups for this trip
+    // Parallel fetch activities and all their signups for this trip using direct-database action
     const [activities, allSignups] = await Promise.all([
         getTripActivities(activeTripId),
-        getSystemDirectus().request(readItems('trip_signup_activities', {
-            filter: { 
-                trip_activity_id: { 
-                    trip_id: { _eq: activeTripId }
-                } 
-            },
-            fields: ['id', 'trip_activity_id', 'selected_options', { trip_signup_id: ['id', 'first_name', 'last_name', 'email'] }] as any,
-            limit: -1
-        }))
+        getTripSignupActivitiesAction(activeTripId)
     ]);
 
     // Group signups by activityId
