@@ -77,7 +77,7 @@ export const TRIP_SIGNUP_FIELDS = [
     'email', 'phone_number', 'date_of_birth', 'id_document', 
     'document_number', 'terms_accepted', 'directus_relations', 'allergies', 'special_notes', 'willing_to_drive', 
     'status', 'deposit_paid', 'deposit_paid_at', 'full_payment_paid', 
-    'full_payment_paid_at', 'created_at', 'role', 'access_token',
+    'full_payment_paid_at', 'created_at', 'role',
     'deposit_email_sent', 'final_email_sent'
 ] as const;
 

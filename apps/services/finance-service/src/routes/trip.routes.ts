@@ -6,10 +6,10 @@ import { TRIP_SIGNUP_FIELDS, TRIP_FIELDS } from '@salvemundi/validations';
 export default async function tripRoutes(fastify: FastifyInstance) {
     /**
      * POST /api/finance/trip-payment-request
-     * Triggered by admin to send a payment link for a trip (deposit or final).
+     * Handles both admin enrichment mail generation AND user payment creation.
      */
     fastify.post('/trip-payment-request', async (request: any, reply) => {
-        const { signupId, tripId, paymentType } = request.body;
+        const { signupId, tripId, paymentType, isConfirmedByUser } = request.body;
 
         if (!signupId || !tripId || !paymentType) {
             return reply.status(400).send({ error: 'Missing required fields (signupId, tripId, paymentType)' });
@@ -23,24 +23,50 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                 .with(staticToken(directusToken))
                 .with(rest());
 
-            // 1. Fetch Trip, Signup and Selected Activities data
-            const [signup, trip, signupActivities] = await Promise.all([
-                directus.request(readItem('trip_signups', signupId, { fields: [...TRIP_SIGNUP_FIELDS] })),
+            // 1. Fetch Trip and Activities
+            const [trip, signupActivities] = await Promise.all([
                 directus.request(readItem('trips', tripId, { fields: [...TRIP_FIELDS] })),
                 directus.request(readItems('trip_signup_activities', {
                     filter: { trip_signup_id: { _eq: signupId } },
                     fields: ['id', 'trip_activity_id', { trip_activity_id: ['id', 'price', 'name'] }] as any
                 }))
-            ]) as [any, any, any[]];
+            ]) as [any, any[]];
+
+            // 2. Fetch Signup (Expliciet om te voorkomen dat permissies op access_token de boel blokkeren)
+            let signup: any;
+            try {
+                // We proberen access_token mee te pakken, maar vallen terug op basisvelden als het failt
+                signup = await directus.request(readItem('trip_signups', signupId, { 
+                    fields: [...TRIP_SIGNUP_FIELDS, 'access_token' as any] 
+                }));
+            } catch (err) {
+                fastify.log.warn(`[TRIP] Could not read access_token from signup ${signupId}. Falling back to standard fields.`);
+                signup = await directus.request(readItem('trip_signups', signupId, { 
+                    fields: [...TRIP_SIGNUP_FIELDS] 
+                }));
+            }
 
             if (!signup || !trip) {
                 return reply.status(404).send({ error: 'Trip or Signup not found' });
             }
 
-            // 2. Calculate Total Price
+            // 3. Manage Access Token (Generate if missing)
+            let accessToken = signup.access_token;
+            if (!accessToken) {
+                accessToken = crypto.randomUUID();
+                try {
+                    await directus.request(updateItem('trip_signups', signupId, { 
+                        access_token: accessToken 
+                    }));
+                    fastify.log.info(`[TRIP] Generated and saved access_token for signup ${signupId}`);
+                } catch (updateErr: any) {
+                    fastify.log.error(updateErr, `[TRIP] Failed to update access_token for signup ${signupId}. Check Directus permissions!`);
+                }
+            }
+
+            // 4. Calculate Total Price
             const basePrice = Number(trip.base_price || 0);
             const crewDiscount = (signup.role === 'crew' ? Number(trip.crew_discount || 0) : 0);
-            
             const activitiesPrice = (signupActivities || []).reduce((sum, sa) => {
                 const price = Number(sa.trip_activity_id?.price || 0);
                 return sum + price;
@@ -48,57 +74,84 @@ export default async function tripRoutes(fastify: FastifyInstance) {
 
             const totalPrice = basePrice - crewDiscount + activitiesPrice;
             const depositAmount = Number(trip.deposit_amount || 0);
-
-            // 3. Calculate Final Amount based on paymentType
+            
             let amount = 0;
             let description = '';
             
             if (paymentType === 'deposit') {
                 amount = depositAmount;
-                description = `Aanbetaling: ${trip.name || 'Reis'}`;
-            } else if (paymentType === 'final') {
-                // Final payment = total - deposit
-                // We assume deposit was either paid or will be paid. 
-                // In a perfect system, we'd check actual transactions, but this follows the business logic provided.
+                description = `Aanbetaling: ${trip.name}`;
+            } else {
                 amount = totalPrice - depositAmount;
-                description = `Restbetaling: ${trip.name || 'Reis'}`;
-                
-                if (!trip.allow_final_payments && signup.role !== 'admin') {
+                description = `Restbetaling: ${trip.name}`;
+                if (!trip.allow_final_payments && signup.role !== 'admin' && !isConfirmedByUser) {
                     return reply.status(403).send({ error: 'Final payments are not yet enabled for this trip' });
                 }
-            } else {
-                return reply.status(400).send({ error: 'Invalid paymentType' });
             }
 
+            // 5. Case A: Admin just wants to send the enrichment mail
+            if (!isConfirmedByUser) {
+                const mailServiceUrl = process.env.MAIL_SERVICE_URL;
+                const internalToken = process.env.INTERNAL_SERVICE_TOKEN;
+                const enrichmentUrl = `${process.env.PUBLIC_URL}/reis/betalen/${paymentType}?id=${signupId}&t=${accessToken}`;
+
+                if (mailServiceUrl) {
+                    try {
+                        const mailPayload = {
+                            templateId: 'trip-payment-request',
+                            to: signup.email,
+                            data: {
+                                firstName: signup.first_name,
+                                tripName: trip.name,
+                                paymentType: paymentType === 'deposit' ? 'aanbetaling' : 'restbetaling',
+                                amount: amount.toFixed(2),
+                                checkoutUrl: enrichmentUrl,
+                                description
+                            }
+                        };
+                        
+                        await fetch(`${mailServiceUrl}/api/mail/send`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${internalToken}`
+                            },
+                                body: JSON.stringify(mailPayload)
+                        });
+                        
+                        const fieldToUpdate = paymentType === 'deposit' ? 'deposit_email_sent' : 'final_email_sent';
+                        await directus.request(updateItem('trip_signups', signupId, {
+                            [fieldToUpdate]: true
+                        }));
+                    } catch (mailErr) {
+                        fastify.log.error(mailErr, '[TRIP] Enrichment mail failed');
+                        return reply.status(500).send({ error: 'Mail delivery failed' });
+                    }
+                }
+                return { success: true, message: 'Enrichment email sent' };
+            }
+
+            // 6. Case B: User confirmed on frontend, create REAL Mollie payment
             if (amount <= 0) {
                 return reply.status(400).send({ error: 'Calculated amount is zero or negative' });
             }
 
-            // 3. Create Mollie Payment
-            const accessToken = crypto.randomUUID();
-            const baseRedirectUrl = `${process.env.PUBLIC_URL}/reis/bevestiging?id=${signupId}`;
-            const finalRedirectUrl = `${baseRedirectUrl}&t=${accessToken}`;
-
+            const confirmationUrl = `${process.env.PUBLIC_URL}/reis/bevestiging?id=${signupId}&t=${accessToken}`;
             const mollie = getMollieClient();
             const payment = await mollie.payments.create({
-                amount: {
-                    currency: 'EUR',
-                    value: amount.toFixed(2)
-                },
+                amount: { currency: 'EUR', value: amount.toFixed(2) },
                 description,
-                redirectUrl: finalRedirectUrl,
+                redirectUrl: confirmationUrl,
                 webhookUrl: `${process.env.PUBLIC_URL}/api/finance/webhook/mollie`,
                 metadata: {
                     registrationId: signupId,
                     registrationType: 'trip_signup',
-                    paymentType, // 'deposit' or 'final'
+                    paymentType, 
                     tripId,
-                    email: signup.email,
-                    userId: signup.directus_relations || null // Link to user if available
+                    email: signup.email
                 }
             });
 
-            // 4. Store transaction in PostgreSQL
             await fastify.db.query(
                 `INSERT INTO transactions (
                     mollie_id, amount, payment_status, product_name, product_type,
@@ -112,53 +165,10 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                 ]
             );
 
-            // 4. Send Email via Mail Service
-            const mailServiceUrl = process.env.MAIL_SERVICE_URL;
-            const internalToken = process.env.INTERNAL_SERVICE_TOKEN;
-
-            if (mailServiceUrl) {
-                try {
-                    await fetch(`${mailServiceUrl}/api/mail/send`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${internalToken}`
-                        },
-                        body: JSON.stringify({
-                            templateId: 'trip-payment-request',
-                            to: signup.email,
-                            data: {
-                                firstName: signup.first_name,
-                                tripName: trip.name,
-                                paymentType: paymentType === 'deposit' ? 'aanbetaling' : 'restbetaling',
-                                amount: amount.toFixed(2),
-                                checkoutUrl: payment._links?.checkout?.href,
-                                description
-                            }
-                        })
-                    });
-                } catch (mailErr) {
-                    fastify.log.error({ err: mailErr }, '[TRIP] Mail sending failed');
-                    // We don't fail the whole request if mail fails, but we log it
-                }
-
-                // 6. Update Directus with mail-sent status
-                try {
-                    const { updateItem } = await import('@directus/sdk');
-                    const fieldToUpdate = paymentType === 'deposit' ? 'deposit_email_sent' : 'final_email_sent';
-                    await directus.request(updateItem('trip_signups', signupId, {
-                        [fieldToUpdate]: true
-                    }));
-                    fastify.log.info(`[TRIP] Updated ${fieldToUpdate} for signup ${signupId}`);
-                } catch (directusErr) {
-                    fastify.log.error({ err: directusErr }, `[TRIP] Failed to update mail-sent status for signup ${signupId}`);
-                }
-            }
-
             return { success: true, checkoutUrl: payment._links?.checkout?.href };
         } catch (err: any) {
-            fastify.log.error(err, '[TRIP] Error creating payment request');
-            return reply.status(500).send({ error: 'Failed to create payment request', message: err.message });
+            fastify.log.error(err, '[TRIP] Error in payment flow');
+            return reply.status(500).send({ error: 'Internal server error', details: err.message });
         }
     });
 }
