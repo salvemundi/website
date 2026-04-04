@@ -137,7 +137,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
             getSystemDirectus().request(aggregate('Stickers' as any, { aggregate: { count: '*' } })).catch(e => { console.error("Stats: Stickers fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
             getSystemDirectus().request(aggregate('Stickers' as any, { aggregate: { count: '*' }, query: { filter: { date_created: { _gte: lastWeek } } } })).catch(e => { console.error("Stats: recent Stickers fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
             getSystemDirectus().request(readItems('pub_crawl_events', { fields: [...PUB_CRAWL_EVENT_FIELDS], sort: ['-date'] })).catch(() => []),
-            getSystemDirectus().request(readItems('trips', { fields: [...TRIP_FIELDS, 'status'], filter: { status: { _eq: 'published' } }, sort: ['-start_date'] })).catch(() => [])
+            getSystemDirectus().request(readItems('trips', { fields: TRIP_FIELDS, sort: ['-start_date'] })).catch(() => [])
         ]);
 
         let pubCrawlSignups = 0;

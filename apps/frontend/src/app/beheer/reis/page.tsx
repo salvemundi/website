@@ -158,7 +158,7 @@ async function AdminReisSignupsTable({ tripId, trip }: { tripId: number, trip: a
     });
 
     const stats = {
-        total: signups.length,
+        total: signups.filter((s: any) => s.status !== 'cancelled').length,
         confirmed: signups.filter((s: any) => s.status === 'confirmed' || s.status === 'registered').length,
         waitlist: signups.filter((s: any) => s.status === 'waitlist').length,
         depositPaid: signups.filter((s: any) => s.deposit_paid).length,

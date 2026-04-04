@@ -19,12 +19,17 @@ interface AdminStatsBarProps {
  * Automatically handles a 4-column layout.
  */
 export default function AdminStatsBar({ stats }: AdminStatsBarProps) {
-    // We only support up to 4 columns based on design requirements
-    const displayStats = stats.slice(0, 4);
+    const columnClass = {
+        1: 'lg:grid-cols-1',
+        2: 'lg:grid-cols-2',
+        3: 'lg:grid-cols-3',
+        4: 'lg:grid-cols-4',
+        5: 'lg:grid-cols-5',
+    }[Math.min(stats.length, 5) as 1 | 2 | 3 | 4 | 5] || 'lg:grid-cols-4';
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10 w-full">
-            {displayStats.map((stat, i) => (
+        <div className={`grid grid-cols-1 sm:grid-cols-2 ${columnClass} gap-4 mb-10 w-full`}>
+            {stats.map((stat, i) => (
                 <div 
                     key={i}
                     className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] p-6 shadow-sm hover:border-[var(--beheer-accent)]/30 transition-all group flex flex-col justify-between min-h-[120px]"
