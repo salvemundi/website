@@ -26,6 +26,12 @@ import {
     createItem,
     uploadFiles 
 } from '@directus/sdk';
+import { 
+    fetchPubCrawlEventsDb, 
+    fetchPubCrawlSignupsDb, 
+    fetchPubCrawlSignupByIdDb,
+    fetchPubCrawlTicketsDb
+} from './kroegentocht-db.utils';
 
 async function requireKroegAdmin() {
     const session = await auth.api.getSession({ headers: await headers() });
@@ -42,16 +48,8 @@ async function requireKroegAdmin() {
 export async function getPubCrawlEvents(): Promise<PubCrawlEvent[]> {
     await requireKroegAdmin();
     try {
-        const items = await getSystemDirectus().request(readItems('pub_crawl_events', {
-            sort: ['-date'],
-            limit: 100,
-            fields: [...PUB_CRAWL_EVENT_FIELDS]
-        }));
-        return (items ?? []).map((e: any) => {
-            e.price = 1;
-            e.max_tickets_per_person = 10;
-            return pubCrawlEventSchema.parse(e);
-        });
+        // Direct DB fetch to bypass API cache
+        return await fetchPubCrawlEventsDb();
     } catch (e) {
         console.error('[AdminKroegentocht] Fetch events failed:', e);
         throw new Error('Kon events niet ophalen');
@@ -110,20 +108,8 @@ export async function uploadPubCrawlImage(formData: FormData) {
 export async function getPubCrawlSignups(eventId: number) {
     await requireKroegAdmin();
     try {
-        const items = await getSystemDirectus().request(readItems('pub_crawl_signups', {
-            filter: { pub_crawl_event_id: { _eq: eventId } },
-            fields: [
-                ...PUB_CRAWL_SIGNUP_FIELDS,
-                { tickets: [...PUB_CRAWL_TICKET_FIELDS] }
-            ] as any,
-            limit: 1000,
-            sort: ['-id'],
-        }));
-
-        return (items ?? []).map((s: any) => ({
-            ...s,
-            participants: s.tickets?.map((t: any) => ({ name: t.name, initial: t.initial })) ?? []
-        }));
+        // Direct DB fetch to bypass API cache
+        return await fetchPubCrawlSignupsDb(eventId);
     } catch (e) {
         console.error('[AdminKroegentocht] Fetch signups failed:', e);
         throw new Error('Kon aanmeldingen niet ophalen');
@@ -133,13 +119,8 @@ export async function getPubCrawlSignups(eventId: number) {
 export async function getPubCrawlSignup(id: number) {
     await requireKroegAdmin();
     try {
-        const item = await getSystemDirectus().request(readItem('pub_crawl_signups', id, {
-            fields: [
-                ...PUB_CRAWL_SIGNUP_FIELDS,
-                { tickets: [...PUB_CRAWL_TICKET_FIELDS] }
-            ] as any
-        }));
-        return item;
+        // Direct DB fetch to bypass API cache
+        return await fetchPubCrawlSignupByIdDb(id);
     } catch (e) {
         console.error('[AdminKroegentocht] Fetch signup failed:', e);
         throw new Error('Kon aanmelding niet ophalen');

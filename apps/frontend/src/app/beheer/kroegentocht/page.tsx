@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { Beer, Loader2 } from 'lucide-react';
+import { unstable_noStore as noStore } from 'next/cache';
 import { getPubCrawlEvents, getKroegentochtSettings } from '@/server/actions/admin-kroegentocht.actions';
 import KroegentochtManagementIsland from '@/components/islands/admin/KroegentochtManagementIsland';
 
@@ -9,6 +10,7 @@ export const metadata = {
 };
 
 export default async function KroegentochtPage() {
+    noStore();
     // Fetch initial data on server (PPR / SSR)
     const [events, settings] = await Promise.all([
         getPubCrawlEvents().catch(() => []),

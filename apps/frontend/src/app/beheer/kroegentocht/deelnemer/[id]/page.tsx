@@ -4,6 +4,7 @@ import SignupForm from '@/components/admin/kroegentocht/SignupForm';
 import { User } from 'lucide-react';
 import { getPubCrawlSignup } from '@/server/actions/admin-kroegentocht.actions';
 import { notFound } from 'next/navigation';
+import { unstable_noStore as noStore } from 'next/cache';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
     return {
@@ -16,6 +17,7 @@ interface DeelnemerPageProps {
 }
 
 export default async function DeelnemerPage({ params }: DeelnemerPageProps) {
+    noStore();
     const { id } = await params;
     
     // Fetch signup data (including tickets)
