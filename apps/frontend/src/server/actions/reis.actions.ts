@@ -309,8 +309,11 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
         const result = await directus.request(createItem('trip_signups', payload));
         
         // Ensure the path is revalidated immediately so the status page reflects the new record
-        const { revalidatePath, revalidateTag } = await import('next/cache');
-        revalidateTag('reis-status', 'max');
+        const { revalidatePath, ...cacheFunctions } = await import('next/cache');
+        const cache = cacheFunctions as any;
+        if (cache.updateTag) cache.updateTag('reis-status');
+        else if (cache.revalidateTag) cache.revalidateTag('reis-status', 'max');
+        
         revalidatePath('/reis');
         revalidatePath('/beheer/reis');
 
@@ -350,9 +353,13 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
 
 export async function revalidateReisAction() {
     try {
-        const { revalidateTag, revalidatePath } = await import('next/cache');
-        revalidateTag('reis-status', 'max');
+        const { revalidatePath, ...cacheFunctions } = await import('next/cache');
+        const cache = cacheFunctions as any;
+        if (cache.updateTag) cache.updateTag('reis-status');
+        else if (cache.revalidateTag) cache.revalidateTag('reis-status', 'max');
+        
         revalidatePath('/reis');
+        revalidatePath('/beheer/reis');
         return { success: true };
     } catch (err) {
         console.error('[reis.actions#revalidateReisAction] Error:', err);
