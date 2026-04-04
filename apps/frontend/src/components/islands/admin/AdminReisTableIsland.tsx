@@ -179,7 +179,7 @@ export default function AdminReisTableIsland({ initialSignups, initialSignupActi
                     'Betalingstatus': getPaymentStatus(signup).label,
                     'Aanbetaling betaald op': signup.deposit_paid_at ? format(new Date(signup.deposit_paid_at), 'dd-MM-yyyy HH:mm') : '',
                     'Volledige betaling op': signup.full_payment_paid_at ? format(new Date(signup.full_payment_paid_at), 'dd-MM-yyyy HH:mm') : '',
-                    'Aangemeld op': signup.date_created ? format(new Date(signup.date_created), 'dd-MM-yyyy HH:mm') : '',
+                    'Aangemeld op': signup.created_at ? format(new Date(signup.created_at), 'dd-MM-yyyy HH:mm') : '',
                 };
             });
 

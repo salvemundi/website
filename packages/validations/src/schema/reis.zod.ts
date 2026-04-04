@@ -59,7 +59,25 @@ export const reisSignupFormSchema = z.object({
     }),
 });
 
+export const reisPaymentEnrichmentSchema = z.object({
+    date_of_birth: z.string().min(1, 'Geboortedatum is verplicht'),
+    id_document: z.string().min(1, 'ID-documenttype is verplicht'),
+    document_number: z.string().optional().nullable(),
+    allergies: z.string().optional().nullable(),
+    special_notes: z.string().optional().nullable(),
+    willing_to_drive: z.boolean().optional().nullable(),
+}).refine(data => {
+    if (data.id_document && data.id_document !== 'none') {
+        return !!data.document_number && data.document_number.length > 0;
+    }
+    return true;
+}, {
+    message: 'Documentnummer is verplicht bij een gekozen ID-document.',
+    path: ['document_number'],
+});
+
 export type ReisSiteSettings = z.infer<typeof reisSiteSettingsSchema>;
 export type ReisTrip = z.infer<typeof reisTripSchema>;
 export type ReisTripSignup = z.infer<typeof reisTripSignupSchema>;
 export type ReisSignupForm = z.infer<typeof reisSignupFormSchema>;
+export type ReisPaymentEnrichment = z.infer<typeof reisPaymentEnrichmentSchema>;

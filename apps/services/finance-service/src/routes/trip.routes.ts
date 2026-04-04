@@ -23,28 +23,49 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                 .with(staticToken(directusToken))
                 .with(rest());
 
-            // 1. Fetch Trip and Signup data
-            const [signup, trip] = await Promise.all([
+            // 1. Fetch Trip, Signup and Selected Activities data
+            const [signup, trip, signupActivities] = await Promise.all([
                 directus.request(readItem('trip_signups', signupId, { fields: [...TRIP_SIGNUP_FIELDS] })),
-                directus.request(readItem('trips', tripId, { fields: [...TRIP_FIELDS] }))
-            ]) as [any, any];
+                directus.request(readItem('trips', tripId, { fields: [...TRIP_FIELDS] })),
+                directus.request(readItems('trip_signup_activities', {
+                    filter: { trip_signup_id: { _eq: signupId } },
+                    fields: ['id', 'trip_activity_id', { trip_activity_id: ['id', 'price', 'name'] }] as any
+                }))
+            ]) as [any, any, any[]];
 
             if (!signup || !trip) {
                 return reply.status(404).send({ error: 'Trip or Signup not found' });
             }
 
-            // 2. Calculate Amount
+            // 2. Calculate Total Price
+            const basePrice = Number(trip.base_price || 0);
+            const crewDiscount = (signup.role === 'crew' ? Number(trip.crew_discount || 0) : 0);
+            
+            const activitiesPrice = (signupActivities || []).reduce((sum, sa) => {
+                const price = Number(sa.trip_activity_id?.price || 0);
+                return sum + price;
+            }, 0);
+
+            const totalPrice = basePrice - crewDiscount + activitiesPrice;
+            const depositAmount = Number(trip.deposit_amount || 0);
+
+            // 3. Calculate Final Amount based on paymentType
             let amount = 0;
             let description = '';
             
             if (paymentType === 'deposit') {
-                amount = Number(trip.deposit_amount);
-                description = `Aanbetaling: ${trip.title || 'Reis'}`;
+                amount = depositAmount;
+                description = `Aanbetaling: ${trip.name || 'Reis'}`;
             } else if (paymentType === 'final') {
-                // Final payment = base_price - deposit_amount (assuming deposit was already paid)
-                // In reality, it should probably be base_price - amount_already_paid
-                amount = Number(trip.base_price) - Number(trip.deposit_amount);
-                description = `Restbetaling: ${trip.title || 'Reis'}`;
+                // Final payment = total - deposit
+                // We assume deposit was either paid or will be paid. 
+                // In a perfect system, we'd check actual transactions, but this follows the business logic provided.
+                amount = totalPrice - depositAmount;
+                description = `Restbetaling: ${trip.name || 'Reis'}`;
+                
+                if (!trip.allow_final_payments && signup.role !== 'admin') {
+                    return reply.status(403).send({ error: 'Final payments are not yet enabled for this trip' });
+                }
             } else {
                 return reply.status(400).send({ error: 'Invalid paymentType' });
             }
@@ -55,7 +76,7 @@ export default async function tripRoutes(fastify: FastifyInstance) {
 
             // 3. Create Mollie Payment
             const accessToken = crypto.randomUUID();
-            const baseRedirectUrl = `${process.env.PUBLIC_URL}/activiteiten/bevestiging?id=${signupId}`;
+            const baseRedirectUrl = `${process.env.PUBLIC_URL}/reis/bevestiging?id=${signupId}`;
             const finalRedirectUrl = `${baseRedirectUrl}&t=${accessToken}`;
 
             const mollie = getMollieClient();

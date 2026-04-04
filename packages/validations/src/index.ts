@@ -57,12 +57,13 @@ export type Trip = z.infer<typeof tripSchema>;
 export type TripSignup = z.infer<typeof tripSignupSchema>;
 export type TripSignupActivity = z.infer<typeof tripSignupActivitySchema>;
 
-import { reisSiteSettingsSchema, reisTripSchema, reisTripSignupSchema, reisSignupFormSchema } from './schema/reis.zod.js';
+import { reisSiteSettingsSchema, reisTripSchema, reisTripSignupSchema, reisSignupFormSchema, reisPaymentEnrichmentSchema } from './schema/reis.zod.js';
 
 export type ReisSiteSettings = z.infer<typeof reisSiteSettingsSchema>;
 export type ReisTrip = z.infer<typeof reisTripSchema>;
 export type ReisTripSignup = z.infer<typeof reisTripSignupSchema>;
 export type ReisSignupForm = z.infer<typeof reisSignupFormSchema>;
+export type ReisPaymentEnrichment = z.infer<typeof reisPaymentEnrichmentSchema>;
 
 import {
     introSignupFormSchema,

@@ -20,6 +20,7 @@ import mollieRoutes from './routes/mollie.routes.js';
 import paymentsRoutes from './routes/payments.routes.js';
 import couponsRoutes from './routes/coupons.routes.js';
 import tripRoutes from './routes/trip.routes.js';
+import statusRoutes from './routes/status.routes.js';
 
 // Register Plugins
 fastify.register(dbPlugin);
@@ -30,6 +31,7 @@ fastify.register(mollieRoutes, { prefix: '/api/finance' });
 fastify.register(paymentsRoutes, { prefix: '/api/payments' });
 fastify.register(couponsRoutes, { prefix: '/api/coupons' });
 fastify.register(tripRoutes, { prefix: '/api/finance' });
+fastify.register(statusRoutes, { prefix: '/api/finance' });
 
 const start = async () => {
     try {
