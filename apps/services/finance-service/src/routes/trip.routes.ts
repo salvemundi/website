@@ -120,6 +120,18 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                     fastify.log.error({ err: mailErr }, '[TRIP] Mail sending failed');
                     // We don't fail the whole request if mail fails, but we log it
                 }
+
+                // 6. Update Directus with mail-sent status
+                try {
+                    const { updateItem } = await import('@directus/sdk');
+                    const fieldToUpdate = paymentType === 'deposit' ? 'deposit_email_sent' : 'final_email_sent';
+                    await directus.request(updateItem('trip_signups', signupId, {
+                        [fieldToUpdate]: true
+                    }));
+                    fastify.log.info(`[TRIP] Updated ${fieldToUpdate} for signup ${signupId}`);
+                } catch (directusErr) {
+                    fastify.log.error({ err: directusErr }, `[TRIP] Failed to update mail-sent status for signup ${signupId}`);
+                }
             }
 
             return { success: true, checkoutUrl: payment.getCheckoutUrl() };

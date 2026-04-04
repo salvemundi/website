@@ -290,7 +290,7 @@ export async function getSignupStatus(id?: string, transactionId?: string, cache
                 fields: TRANSACTION_FIELDS as any,
                 filter,
                 limit: 1,
-                params: { t: Date.now().toString() }
+                params: { t: Date.now().toString() + Math.random().toString(36).substring(7) }
             })) as unknown as DbTransaction[];
 
             const trans = transactions?.[0];
