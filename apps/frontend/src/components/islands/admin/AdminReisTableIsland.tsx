@@ -63,17 +63,6 @@ export default function AdminReisTableIsland({ initialSignups, initialSignupActi
         setActionStates(prev => ({ ...prev, status: new Set(prev.status).add(id) }));
         const signup = signups.find(s => s.id === id);
 
-        if (signup && newStatus === 'confirmed' && !signup.deposit_paid) {
-            if (!confirm(`Let op: Door de status naar 'Bevestigd' te wijzigen, wordt er automatisch een e-mail met het aanbetalingsverzoek naar ${signup.first_name} gestuurd.\n\nWeet je zeker dat je door wilt gaan?`)) {
-                setActionStates(prev => {
-                    const newSet = new Set(prev.status);
-                    newSet.delete(id);
-                    return { ...prev, status: newSet };
-                });
-                return;
-            }
-        }
-
         try {
             const res = await updateSignupStatus(id, newStatus);
             if (res.success) {
