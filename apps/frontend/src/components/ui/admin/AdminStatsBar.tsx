@@ -35,7 +35,7 @@ export default function AdminStatsBar({ stats }: AdminStatsBarProps) {
                     className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] p-6 shadow-sm hover:border-[var(--beheer-accent)]/30 transition-all group flex flex-col justify-between min-h-[120px]"
                 >
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-[0.2em] leading-tight pr-2">
+                        <span className="text-xs font-black text-[var(--beheer-text-muted)] uppercase tracking-[0.2em] leading-tight pr-2">
                             {stat.label}
                         </span>
                         {stat.icon && (
@@ -46,7 +46,7 @@ export default function AdminStatsBar({ stats }: AdminStatsBarProps) {
                     </div>
                     
                     <div className="flex items-baseline gap-2">
-                        <span className="text-4xl font-black text-[var(--beheer-text)] tracking-tighter leading-none">
+                        <span className="text-2xl font-black text-[var(--beheer-text)] tracking-tighter leading-none">
                             {stat.value}
                         </span>
                         {stat.trend && (

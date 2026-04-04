@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ShieldAlert, ArrowLeft } from 'lucide-react';
+import { ShieldAlert, ArrowLeft, Home } from 'lucide-react';
 import Link from 'next/link';
 import AdminToolbar from './AdminToolbar';
 
@@ -47,13 +47,21 @@ export default function AdminUnauthorized({
                         {description}
                     </p>
                     
-                    <div className="flex justify-center">
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                         <Link 
                             href={backHref} 
-                            className="inline-flex items-center justify-center gap-4 bg-[var(--beheer-accent)] text-white px-12 py-5 rounded-[var(--beheer-radius)] font-black uppercase tracking-widest text-xs shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 group"
+                            className="flex items-center gap-2 rounded-full bg-[var(--color-purple-500)] text-white px-8 py-3.5 font-bold shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:-translate-y-0.5 transition-all text-sm uppercase tracking-widest active:scale-95 group"
                         >
-                            <ArrowLeft className="h-5 w-5 group-hover:-translate-x-1 transition-transform" /> 
+                            <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" /> 
                             <span>Ga Terug</span>
+                        </Link>
+
+                        <Link
+                            href="/"
+                            className="flex items-center gap-2 rounded-full px-8 py-3.5 font-bold text-[var(--beheer-text)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] hover:bg-[var(--beheer-border)]/5 transition-all text-sm uppercase tracking-widest active:scale-95 group"
+                        >
+                            <Home className="h-4 w-4" />
+                            Naar Website
                         </Link>
                     </div>
                 </div>

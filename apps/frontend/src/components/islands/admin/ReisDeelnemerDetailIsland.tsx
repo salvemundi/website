@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useActionState } from 'react';
+import { useState, useTransition, useActionState, useEffect } from 'react';
 import { 
     Loader2, 
     Save, 
@@ -86,19 +86,19 @@ export default function ReisDeelnemerDetailIsland({
     const paymentStatus = initialSignup.full_payment_paid ? 'Voldaan' : initialSignup.deposit_paid ? 'Aanbetaling' : 'Niet betaald';
     
     const adminStats = [
-        { label: 'Status', value: initialSignup.status === 'confirmed' ? 'Bevestigd' : 'Afwachtend', icon: CheckCircle2, trend: 'Registratie' },
-        { label: 'Leeftijd', value: `${age} jaar`, icon: User, trend: 'Demografie' },
-        { label: 'Betaling', value: paymentStatus, icon: CreditCard, trend: 'Financieel' },
-        { label: 'Rol', value: initialSignup.role || 'Lid', icon: Shield, trend: 'Rechten' },
+        { label: 'Status', value: initialSignup.status === 'confirmed' ? 'Bevestigd' : 'Afwachtend', icon: CheckCircle2 },
+        { label: 'Leeftijd', value: `${age} jaar`, icon: User },
+        { label: 'Betaling', value: paymentStatus, icon: CreditCard },
+        { label: 'Rol', value: initialSignup.role || 'Lid', icon: Shield },
     ];
 
-    if (state?.success && !isSaving) {
-        showToast('Deelnemer details succesvol bijgewerkt', 'success');
-    }
-
-    if (state?.error && !isSaving) {
-        showToast(state.error, 'error');
-    }
+    useEffect(() => {
+        if (state?.success && !isSaving) {
+            showToast('Deelnemer details succesvol bijgewerkt', 'success');
+        } else if (state?.error && !isSaving) {
+            showToast(state.error, 'error');
+        }
+    }, [state, isSaving, showToast]);
 
     const selectedTrip = (trips || []).find(t => t.id === initialSignup.trip_id);
 
