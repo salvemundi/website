@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { Loader2, CheckCircle2, XCircle, RefreshCw, ChevronRight } from 'lucide-react';
 
+import { getPaymentStatusAction } from '@/server/actions/reis-payment.actions';
+
 interface PaymentStatusProps {
     mollieId: string;
     onSuccess?: () => void;
@@ -16,20 +18,22 @@ export default function PaymentStatusIsland({ mollieId, onSuccess, onExpire }: P
 
     const checkStatus = async () => {
         try {
-            const FINANCE_SERVICE_URL = process.env.NEXT_PUBLIC_FINANCE_SERVICE_URL || 'http://localhost:3001';
-            // Frontend should use a proxy or direct API if available. 
-            // In our architecture, it's safer to use a Server Action to wrap the finance-service call.
+            const res = await getPaymentStatusAction(mollieId);
             
-            const response = await fetch(`/api/finance/status/${mollieId}`);
-            if (!response.ok) throw new Error('Status fetch failed');
-            
-            const data = await response.json();
-            const currentStatus = data.payment_status;
+            if (!res.success) {
+                // If the server action fails, we treat it as a temporary error and keep polling
+                if (attempts < maxAttempts) {
+                    setAttempts(prev => prev + 1);
+                }
+                return;
+            }
+
+            const currentStatus = res.payment_status;
 
             if (currentStatus === 'paid') {
                 setStatus('paid');
                 onSuccess?.();
-            } else if (['expired', 'canceled', 'failed'].includes(currentStatus)) {
+            } else if (['expired', 'canceled', 'failed'].includes(currentStatus || '')) {
                 setStatus('failed');
                 onExpire?.();
             } else {
@@ -42,7 +46,6 @@ export default function PaymentStatusIsland({ mollieId, onSuccess, onExpire }: P
             }
         } catch (err) {
             console.error('[PaymentStatus] Check failed:', err);
-            // Don't fail immediately, just keep polling if attempts left
             if (attempts < maxAttempts) {
                 setAttempts(prev => prev + 1);
             }

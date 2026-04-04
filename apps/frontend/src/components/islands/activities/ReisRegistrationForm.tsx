@@ -15,14 +15,17 @@ interface ReisRegistrationFormProps {
     canSignUp: boolean;
     registrationStartText: string;
     currentUser: any;
+    onRefresh?: () => void;
 }
 
 export function ReisRegistrationForm({
     nextTrip,
     canSignUp,
     registrationStartText,
-    currentUser
+    currentUser,
+    onRefresh
 }: ReisRegistrationFormProps) {
+    const [isSuccess, setIsSuccess] = useState(false);
     const [form, setForm] = useState({
         first_name: '',
         last_name: '',
@@ -45,7 +48,7 @@ export function ReisRegistrationForm({
                 try {
                     // Check if already in YYYY-MM-DD format to avoid timezone shifts
                     if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) return dateStr;
-                    
+
                     const date = new Date(dateStr);
                     if (isNaN(date.getTime())) return '';
                     return date.toISOString().split('T')[0];
@@ -58,7 +61,7 @@ export function ReisRegistrationForm({
             setForm(prev => {
                 const birthdateFromAuth = formatDateForInput((currentUser as any).date_of_birth);
                 const phoneFromAuth = (currentUser as any).phone_number || '';
-                
+
                 return {
                     ...prev,
                     last_name: prev.last_name || (currentUser as any).last_name || '',
@@ -120,11 +123,15 @@ export function ReisRegistrationForm({
             if (!result.success) {
                 showToast(result.message || 'Fout bij inschrijven.', 'error');
             } else {
-                showToast('Je bent succesvol ingeschreven! Pagina wordt herladen...', 'success');
-                setTimeout(() => {
-                    window.scrollTo(0, 0);
-                    window.location.reload();
-                }, 1500);
+                setIsSuccess(true);
+                showToast('Je bent succesvol ingeschreven!', 'success');
+                
+                if (currentUser && onRefresh) {
+                    setTimeout(() => {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        onRefresh();
+                    }, 1000);
+                }
             }
         } catch {
             showToast('Er is een onverwachte fout opgetreden bij het verzenden.', 'error');
@@ -132,6 +139,32 @@ export function ReisRegistrationForm({
             setLoading(false);
         }
     };
+
+    if (isSuccess) {
+        return (
+            <div className="flex flex-col items-center justify-center py-10 px-4 text-center bg-theme-purple/5 rounded-2xl border border-theme-purple/10">
+                <div className="w-16 h-16 bg-theme-purple/20 rounded-full flex items-center justify-center mb-4">
+                    <svg className="w-8 h-8 text-theme-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+                <h2 className="text-2xl font-bold text-theme-purple dark:text-theme-white mb-2">Inschrijving Ontvangen!</h2>
+                <p className="text-theme-text-muted mb-6">
+                    {currentUser 
+                        ? 'Bedankt voor je inschrijving. Je status wordt nu bijgewerkt...' 
+                        : `Bedankt voor je inschrijving! We hebben een bevestigingsmail gestuurd naar ${form.email}. Check ook je spam-folder.`}
+                </p>
+                {!currentUser && (
+                    <button 
+                        onClick={() => setIsSuccess(false)}
+                        className="text-sm font-semibold text-theme-purple hover:underline"
+                    >
+                        Nog iemand inschrijven?
+                    </button>
+                )}
+            </div>
+        );
+    }
 
     return (
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
