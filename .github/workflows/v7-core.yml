@@ -25,6 +25,11 @@ jobs:
       - uses: actions/checkout@v4
 
 
+
+      - name: Inject Redis Password into databases.json
+        run: |
+          sed "s/REDIS_PASSWORD_PLACEHOLDER/${{ secrets.REDIS_PASSWORD }}/g" infrastructure/databases.json.template > infrastructure/databases.json
+
       - name: Copy Infrastructure files to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
