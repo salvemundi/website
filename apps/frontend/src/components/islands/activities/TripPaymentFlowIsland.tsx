@@ -15,7 +15,9 @@ import {
     Bus,
     ArrowRight,
     Phone,
-    FileText
+    FileText,
+    CheckCircle2,
+    Home
 } from 'lucide-react';
 import type { 
     Trip, 
@@ -130,12 +132,17 @@ export default function TripPaymentFlowIsland({
                     setLoading(false);
                     return;
                 }
+
+                // If final payment is not open, we stop here
+                if (paymentType === 'final' && !trip.allow_final_payments) {
+                    setStep(4);
+                    setLoading(false);
+                    return;
+                }
             }
 
             setStep(step + 1);
         } catch (err) {
-            // TODO: REMOVE (Diagnostic Logging)
-            console.error('[TripPaymentFlowIsland#handleNext] Unexpected error:', err);
             setError('Er is een onverwachte fout opgetreden. Probeer het later opnieuw.');
         } finally {
             setLoading(false);
@@ -416,48 +423,73 @@ export default function TripPaymentFlowIsland({
                             </div>
                         </div>
                     )}
+
+                    {step === 4 && (
+                        <div className="space-y-12 animate-in zoom-in-95 duration-500 py-12 text-center">
+                            <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center text-green-500 mx-auto shadow-2xl shadow-green-500/10">
+                                <CheckCircle2 className="w-12 h-12" />
+                            </div>
+                            
+                            <div className="space-y-4">
+                                <h2 className="text-4xl font-black text-white uppercase italic tracking-tighter italic">Activiteiten Opgeslagen!</h2>
+                                <p className="text-gray-400 max-w-md mx-auto leading-relaxed">
+                                    Je keuzes zijn succesvol verwerkt. Zodra de restbetaling voor <strong>{trip.name}</strong> wordt geopend, ontvang je van ons een e-mail om de betaling af te ronden.
+                                </p>
+                            </div>
+
+                            <a 
+                                href="/reis" 
+                                className="inline-flex items-center gap-3 px-10 py-5 bg-white text-black font-black uppercase tracking-widest text-sm rounded-2xl hover:bg-orange-500 hover:text-white transition-all shadow-xl shadow-white/5"
+                            >
+                                <Home className="w-5 h-5" />
+                                Terug naar Dashboard
+                            </a>
+                        </div>
+                    )}
                 </div>
 
                 {/* Navigation Bar */}
-                <div className="px-8 pb-8 md:px-12 md:pb-12 pt-0 flex flex-col md:flex-row gap-4">
-                    {step > 1 && !isProcessing && (
-                        <button 
-                            disabled={loading}
-                            onClick={() => setStep(step - 1)}
-                            className="px-8 py-4 rounded-2xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition-all flex items-center justify-center gap-2"
-                        >
-                            Vorige
-                        </button>
-                    )}
-                    
-                    {step < 3 ? (
-                        <button 
-                            disabled={loading}
-                            onClick={handleNext}
-                            className="flex-1 bg-white text-black py-4 rounded-2xl font-black uppercase tracking-widest text-sm flex items-center justify-center gap-3 hover:bg-gray-200 transition-all shadow-xl shadow-white/5 disabled:opacity-50"
-                        >
-                            {loading ? <Loader2 className="animate-spin w-5 h-5" /> : (
-                                <>
-                                    Opslaan & Volgende
-                                    <ChevronRight className="w-5 h-5" />
-                                </>
-                            )}
-                        </button>
-                    ) : (
-                        <button 
-                            disabled={isProcessing}
-                            onClick={handleStartPayment}
-                            className="flex-1 bg-white text-black py-5 rounded-2xl font-black uppercase tracking-widest text-sm flex items-center justify-center gap-3 hover:bg-[var(--sm-orange)] hover:text-white transition-all shadow-2xl shadow-orange-500/10 disabled:opacity-50"
-                        >
-                            {isProcessing ? <Loader2 className="animate-spin w-5 h-5" /> : (
-                                <>
-                                    Betaal nu met Mollie
-                                    <ArrowRight className="w-5 h-5" />
-                                </>
-                            )}
-                        </button>
-                    )}
-                </div>
+                {step < 4 && (
+                    <div className="px-8 pb-8 md:px-12 md:pb-12 pt-0 flex flex-col md:flex-row gap-4">
+                        {step > 1 && !isProcessing && (
+                            <button 
+                                disabled={loading}
+                                onClick={() => setStep(step - 1)}
+                                className="px-8 py-4 rounded-2xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition-all flex items-center justify-center gap-2"
+                            >
+                                Vorige
+                            </button>
+                        )}
+                        
+                        {step < 3 ? (
+                            <button 
+                                disabled={loading}
+                                onClick={handleNext}
+                                className="flex-1 bg-white text-black py-4 rounded-2xl font-black uppercase tracking-widest text-sm flex items-center justify-center gap-3 hover:bg-gray-200 transition-all shadow-xl shadow-white/5 disabled:opacity-50"
+                            >
+                                {loading ? <Loader2 className="animate-spin w-5 h-5" /> : (
+                                    <>
+                                        {step === 2 && paymentType === 'final' && !trip.allow_final_payments ? 'Keuzes Opslaan' : 'Opslaan & Volgende'}
+                                        <ChevronRight className="w-5 h-5" />
+                                    </>
+                                )}
+                            </button>
+                        ) : (
+                            <button 
+                                disabled={isProcessing}
+                                onClick={handleStartPayment}
+                                className="flex-1 bg-white text-black py-5 rounded-2xl font-black uppercase tracking-widest text-sm flex items-center justify-center gap-3 hover:bg-[var(--sm-orange)] hover:text-white transition-all shadow-2xl shadow-orange-500/10 disabled:opacity-50"
+                            >
+                                {isProcessing ? <Loader2 className="animate-spin w-5 h-5" /> : (
+                                    <>
+                                        Betaal nu met Mollie
+                                        <ArrowRight className="w-5 h-5" />
+                                    </>
+                                )}
+                            </button>
+                        )}
+                    </div>
+                )}
             </div>
 
             <div className="mt-8 flex items-center justify-center gap-2 text-gray-500 text-xs">
