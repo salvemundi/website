@@ -55,6 +55,7 @@ services:
       - REDIS_URL=${REDIS_URL}
       - PUBLIC_URL=${PUBLIC_URL}
       - MAIL_SERVICE_URL=http://mail-service:3003
+      - NEXT_APP_INTERNAL_URL=http://frontend:3000
     networks:
       - salve-mundi-v7-shared
 
