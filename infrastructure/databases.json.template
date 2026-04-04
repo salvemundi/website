@@ -1,6 +1,6 @@
 [
   {
-    "id": "v7-core-redis",
+    "id": "v7-core-redis-v7",
     "name": "V7 Core Redis",
     "connectionType": "STANDALONE",
     "host": "v7-core-redis",
