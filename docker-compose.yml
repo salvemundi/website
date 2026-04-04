@@ -54,6 +54,7 @@ services:
       - DIRECTUS_SERVICE_URL=${INTERNAL_DIRECTUS_URL}
       - REDIS_URL=${REDIS_URL}
       - PUBLIC_URL=${PUBLIC_URL}
+      - MAIL_SERVICE_URL=http://mail-service:3003
     networks:
       - salve-mundi-v7-shared
 

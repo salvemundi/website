@@ -257,7 +257,7 @@ export async function sendBulkTripEmail(data: {
     await requireReisAdmin();
 
     const INTERNAL_SERVICE_TOKEN = process.env.INTERNAL_SERVICE_TOKEN;
-    const mailUrl = process.env.INTERNAL_MAIL_URL;
+    const mailUrl = process.env.MAIL_SERVICE_URL;
 
     if (!INTERNAL_SERVICE_TOKEN) {
         throw new Error('Missing service token');
