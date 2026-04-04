@@ -2,21 +2,7 @@
 
 import React from 'react';
 import { Check, Info, Plus, X } from 'lucide-react';
-
-interface ActivityOption {
-    id: string;
-    name: string;
-    price?: number | null;
-}
-
-interface TripActivity {
-    id: number;
-    name: string;
-    description?: string | null;
-    price: number | string | null;
-    options?: ActivityOption[] | null;
-    max_selections?: number | null;
-}
+import type { TripActivity, TripSignupActivity } from '@salvemundi/validations';
 
 interface ActivitySelectorProps {
     activities: TripActivity[];
@@ -122,12 +108,13 @@ export default function ActivitySelector({ activities, selectedSelections, onCha
                                         Maak je keuze ({activity.max_selections === 1 ? 'één optie' : 'meerdere mogelijk'}):
                                     </p>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                        {activity.options?.map((opt) => {
-                                            const isOptSelected = !!selection?.options?.[opt.id];
+                                        {activity.options?.map((opt, idx) => {
+                                            const optId = opt.id || `opt-${idx}`;
+                                            const isOptSelected = !!selection?.options?.[optId];
                                             return (
                                                 <button
-                                                    key={opt.id}
-                                                    onClick={() => handleOptionToggle(activity.id, opt.id, activity.max_selections || 0)}
+                                                    key={optId}
+                                                    onClick={() => handleOptionToggle(activity.id, optId, activity.max_selections || 0)}
                                                     className={`flex items-center justify-between p-3 rounded-xl border text-sm font-medium transition-all ${
                                                         isOptSelected
                                                         ? 'bg-white/10 border-orange-500/50 text-white'
@@ -144,8 +131,8 @@ export default function ActivitySelector({ activities, selectedSelections, onCha
                                                         </div>
                                                         {opt.name}
                                                     </span>
-                                                    {opt.price && opt.price > 0 && (
-                                                        <span className="text-xs text-[var(--sm-orange)]">+€{opt.price.toFixed(2)}</span>
+                                                    {opt.price && Number(opt.price) > 0 && (
+                                                        <span className="text-xs text-[var(--sm-orange)]">+€{Number(opt.price).toFixed(2)}</span>
                                                     )}
                                                 </button>
                                             );

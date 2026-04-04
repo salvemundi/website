@@ -81,7 +81,8 @@ export default function TripPaymentFlowIsland({
             // Add sub-option prices if any
             if (activity.options && Array.isArray(activity.options)) {
                 activity.options.forEach(opt => {
-                    if (sel.options[opt.id]) {
+                    const optId = opt.id;
+                    if (optId && sel.options[optId]) {
                         total += Number(opt.price || 0);
                     }
                 });
