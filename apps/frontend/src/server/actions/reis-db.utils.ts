@@ -29,6 +29,8 @@ export async function fetchUserSignupStatusDb(userId: string, tripId: number): P
         // Ensure all required fields for ReisTripSignup are present and correctly typed
         const sanitized = {
             ...raw,
+            date_of_birth: raw.date_of_birth instanceof Date ? raw.date_of_birth.toISOString() : raw.date_of_birth,
+            date_created: raw.date_created instanceof Date ? raw.date_created.toISOString() : (raw.date_created || raw.created_at || new Date().toISOString()),
             created_at: raw.created_at || new Date().toISOString(),
             deposit_paid: !!raw.deposit_paid,
             full_payment_paid: !!raw.full_payment_paid,
@@ -67,6 +69,8 @@ export async function fetchAllTripSignupsDb(tripId: number): Promise<ReisTripSig
 
         const sanitized = (res.rows || []).map(raw => ({
             ...raw,
+            date_of_birth: raw.date_of_birth instanceof Date ? raw.date_of_birth.toISOString() : raw.date_of_birth,
+            date_created: raw.date_created instanceof Date ? raw.date_created.toISOString() : (raw.date_created || raw.created_at || new Date().toISOString()),
             created_at: raw.created_at || new Date().toISOString(),
             deposit_paid: !!raw.deposit_paid,
             full_payment_paid: !!raw.full_payment_paid,
@@ -104,6 +108,8 @@ export async function fetchTripSignupByIdDb(signupId: number): Promise<ReisTripS
         const raw = res.rows[0];
         const sanitized = {
             ...raw,
+            date_of_birth: raw.date_of_birth instanceof Date ? raw.date_of_birth.toISOString() : raw.date_of_birth,
+            date_created: raw.date_created instanceof Date ? raw.date_created.toISOString() : (raw.date_created || raw.created_at || new Date().toISOString()),
             created_at: raw.created_at || new Date().toISOString(),
             deposit_paid: !!raw.deposit_paid,
             full_payment_paid: !!raw.full_payment_paid,
