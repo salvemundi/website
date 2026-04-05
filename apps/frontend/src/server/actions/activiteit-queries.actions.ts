@@ -14,107 +14,28 @@ import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { cache } from 'react';
 
+import { 
+    getActivitiesInternal, 
+    getActivityByIdInternal, 
+    getActivitySignupsInternal 
+} from '@/server/queries/admin-event.queries';
+
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 import { checkAdminAccess } from './activiteit-utils';
 
 export const getActivities = cache(async (): Promise<Activiteit[]> => {
-    try {
-        const events = await getSystemDirectus().request(readItems('events', {
-            fields: [
-                ...EVENT_FIELDS,
-                { committee_id: ['name'] }
-            ] as any, // Cast required for nested fields support in Directus SDK
-            filter: { status: { _eq: 'published' } },
-            limit: -1
-        }));
-
-        const mappedData = events.map((item) => ({
-            id: String(item.id ?? ''),
-            titel: item.name ?? '',
-            beschrijving: item.description ?? null,
-            locatie: item.location ?? null,
-            datum_start: item.event_date ? new Date(item.event_date).toISOString() : new Date().toISOString(),
-            datum_eind: item.event_date_end ? new Date(item.event_date_end).toISOString() : null,
-            afbeelding_id: item.image ?? null,
-            status: item.status ?? undefined,
-            price_members: item.price_members != null ? Number(item.price_members) : 0,
-            price_non_members: item.price_non_members != null ? Number(item.price_non_members) : 0,
-            only_members: item.only_members ?? false,
-            registration_deadline: item.registration_deadline ?? null,
-            contact: item.contact ?? null,
-            event_time: item.event_time ?? null,
-            event_time_end: item.event_time_end ?? null,
-            committee_name: typeof item.committee_id === 'object' ? (item.committee_id as any)?.name || null : null,
-        }));
-
-        const parsed = activiteitenSchema.safeParse(mappedData);
-        if (!parsed.success) {
-            console.error('[Activities] Zod validation failed:', parsed.error.flatten().fieldErrors);
-            return [];
-        }
-
-        return parsed.data;
-    } catch (error) {
-        console.error('[Activities] Fetch failed:', error);
-        return [];
-    }
+    return getActivitiesInternal(true); // Public view, only published
 });
 
 export const getActivityById = cache(async (id: string): Promise<Activiteit | null> => {
-    try {
-        const items = await getSystemDirectus().request((readItems('events', {
-            fields: [
-                ...EVENT_FIELDS,
-                { committee_id: ['id', 'name'] }
-            ] as any, // Cast required for nested fields support in Directus SDK
-            filter: { id: { _eq: id } },
-            limit: 1
-        })));
-        
-        const item = items?.[0];
-        if (!item) return null;
-
-        const mapped = {
-            id: String(item.id ?? ''),
-            titel: item.name ?? '',
-            beschrijving: item.description ?? null,
-            locatie: item.location ?? null,
-            datum_start: item.event_date ? new Date(item.event_date).toISOString() : new Date().toISOString(),
-            datum_eind: item.event_date_end ? new Date(item.event_date_end).toISOString() : null,
-            afbeelding_id: item.image ?? null,
-            status: item.status ?? undefined,
-            price_members: item.price_members != null ? Number(item.price_members) : 0,
-            price_non_members: item.price_non_members != null ? Number(item.price_non_members) : 0,
-            only_members: item.only_members ?? false,
-            registration_deadline: item.registration_deadline ?? null,
-            contact: item.contact ?? null,
-            event_time: item.event_time ?? null,
-            event_time_end: item.event_time_end ?? null,
-            committee_name: typeof item.committee_id === 'object' ? (item.committee_id as any)?.name || null : null,
-        };
-
-        const parsed = activiteitenSchema.element.safeParse(mapped);
-        return parsed.success ? parsed.data : null;
-    } catch (error) {
-        console.error('[Activities] Fetch by ID failed:', error);
-        return null;
-    }
+    return getActivityByIdInternal(id);
 });
 
 export async function getActivitySignups(eventId: string) {
     const session = await checkAdminAccess();
     if (!session) return [];
-    
-    try {
-        return await getSystemDirectus().request(readItems('event_signups', {
-            filter: { event_id: { _eq: eventId } },
-            fields: EVENT_SIGNUP_FIELDS as any
-        })) as unknown as DbEventSignup[];
-    } catch (error) {
-        console.error(`[Activities] Error fetching signups for ${eventId}:`, error);
-        return [];
-    }
+    return getActivitySignupsInternal(eventId) as any;
 }
 
 export async function getSignupStatus(id?: string, transactionId?: string) {

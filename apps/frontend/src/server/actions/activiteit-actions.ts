@@ -214,7 +214,6 @@ export async function signupForActivity(data: EventSignupForm) {
                 return { success: true, checkoutUrl: paymentData.checkoutUrl };
             }
             
-            // Cleanup on Failure
             console.error('[Activities] Payment service error:', paymentData);
             try {
                 const { deleteItem } = await import('@directus/sdk');
@@ -265,10 +264,9 @@ export async function getActivitySignups(eventId: string) {
 }
 
 export async function getSignupStatus(id?: string, transactionId?: string, cacheBuster?: string) {
-    noStore(); // Block Next.js server action caching
+    noStore();
     if (transactionId) {
         try {
-            // Find transaction by either database ID or our secure access_token (token t)
             const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(transactionId);
             const isNumeric = /^\d+$/.test(transactionId);
 
@@ -281,10 +279,16 @@ export async function getSignupStatus(id?: string, transactionId?: string, cache
                 filter._or.push({ id: { _eq: parseInt(transactionId) } });
             }
             
-            // If neither matches (e.g. short text), at least try mollie_id if it doesn't crash
             if (filter._or.length === 0) {
                 filter._or.push({ mollie_id: { _eq: transactionId } });
             }
+
+            const FINANCE_SERVICE_URL = process.env.FINANCE_SERVICE_URL || 'http://finance-service:3001';
+            const finRes = await fetch(`${FINANCE_SERVICE_URL}/api/finance/status/${transactionId}`);
+            if (!finRes.ok) {
+                return { status: 'error' };
+            }
+            const finData = await finRes.json();
 
             const transactions = await getSystemDirectus().request(readItems('transactions', {
                 fields: TRANSACTION_FIELDS as any,
@@ -294,8 +298,10 @@ export async function getSignupStatus(id?: string, transactionId?: string, cache
             })) as unknown as DbTransaction[];
 
             const trans = transactions?.[0];
-
+            
             if (!trans) return { status: 'error' };
+
+            trans.payment_status = finData.payment_status || trans.payment_status;
 
             const productType = trans.product_type;
 
@@ -361,7 +367,6 @@ export async function getSignupStatus(id?: string, transactionId?: string, cache
             const user = session?.user as any;
             const isAdmin = user?.role === 'admin' || user?.role === '06e78cf9-f9c3-4f9e-a86d-1907de634567'; 
 
-            // 1. Try event_signups first
             const signups = await getSystemDirectus().request(readItems('event_signups', {
                 fields: [...EVENT_SIGNUP_FIELDS, { event_id: ['id', 'name'] }] as any,
                 filter: { id: { _eq: id } },
@@ -371,7 +376,6 @@ export async function getSignupStatus(id?: string, transactionId?: string, cache
             if (signups && signups.length > 0) {
                 const signup = signups[0];
                 
-                // Security check using Better-Auth userId and transactions
                 let isOwner = false;
                 if (userId) {
                     const txs = await getSystemDirectus().request(readItems('transactions', {
@@ -393,7 +397,6 @@ export async function getSignupStatus(id?: string, transactionId?: string, cache
                 return { status: signup.payment_status || 'open', signup };
             }
 
-            // 2. Try pub_crawl_signups as fallback
             const pubCrawlSignups = await getSystemDirectus().request(readItems('pub_crawl_signups', {
                 fields: [...PUB_CRAWL_SIGNUP_FIELDS, { pub_crawl_event_id: ['id', 'name'] }, { tickets: ['id', 'name', 'qr_token'] }] as any,
                 filter: { id: { _eq: id } },
@@ -403,7 +406,6 @@ export async function getSignupStatus(id?: string, transactionId?: string, cache
             if (pubCrawlSignups && pubCrawlSignups.length > 0) {
                 const signup = pubCrawlSignups[0];
                 
-                // Security check using Better-Auth userId and transactions
                 let isOwner = false;
                 if (userId) {
                     const txs = await getSystemDirectus().request(readItems('transactions', {
@@ -472,14 +474,12 @@ export async function getMyTickets() {
             sort: ['-created_at']
         })) as unknown as DbPubCrawlSignup[] : [];
 
-        // 4. Fetch trip signups
         const tripSignups = tripSignupIds.length > 0 ? await directus.request(readItems('trip_signups', {
             filter: { id: { _in: tripSignupIds } },
             fields: ['id', 'status', 'created_at', 'first_name', 'last_name', { trip_id: ['id', 'name', 'event_date'] }] as any,
             sort: ['-created_at']
         })) as unknown as DbTripSignup[] : [];
 
-        // 4. Formatter/Mapper to make them consistent for the UI
         const formattedPubCrawl = pubCrawlSignups.map(s => ({
             ...s,
             id: s.id,

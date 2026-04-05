@@ -17,13 +17,19 @@ import {
     type IntroPlanningItem
 } from '@salvemundi/validations';
 
+import { 
+    getIntroStatsInternal, 
+    getIntroSignupsInternal, 
+    getIntroParentSignupsInternal, 
+    getIntroBlogsInternal, 
+    getIntroPlanningInternal 
+} from '@/server/queries/admin-intro.queries';
+
 import { getSystemDirectus } from "@/lib/directus";
 import { 
-    readItems,
     deleteItem,
     updateItem,
     createItem,
-    aggregate 
 } from '@directus/sdk';
 
 const introNotificationSchema = z.object({
@@ -53,42 +59,13 @@ async function checkIntroAdminAccess() {
 
 export async function getIntroStats() {
     await checkIntroAdminAccess();
-    
-    try {
-        const client = getSystemDirectus();
-        const [s, p, b, pl] = await Promise.all([
-            client.request(aggregate('intro_signups', { aggregate: { count: '*' } })),
-            client.request(aggregate('intro_parent_signups', { aggregate: { count: '*' } })),
-            client.request(aggregate('intro_blogs', { aggregate: { count: '*' } })),
-            client.request(aggregate('intro_planning', { aggregate: { count: '*' } })),
-        ]);
-
-        return {
-            signups: Number(s?.[0]?.count ?? 0),
-            parents: Number(p?.[0]?.count ?? 0),
-            blogs: Number(b?.[0]?.count ?? 0),
-            planning: Number(pl?.[0]?.count ?? 0),
-        };
-    } catch (e) {
-        console.error('[AdminIntro] Get stats failed:', e);
-        return { signups: 0, parents: 0, blogs: 0, planning: 0 };
-    }
+    return getIntroStatsInternal();
 }
 
 
 export async function getIntroSignups() {
     await checkIntroAdminAccess();
-    try {
-        const items = await getSystemDirectus().request(readItems('intro_signups', {
-            sort: ['-id'],
-            limit: 1000,
-            fields: [...INTRO_SIGNUP_FIELDS]
-        }));
-        return (items ?? []) as any[];
-    } catch (e) {
-        console.error('[AdminIntro] Get signups failed:', e);
-        throw new Error('Kon aanmeldingen niet ophalen');
-    }
+    return getIntroSignupsInternal();
 }
 
 export async function deleteIntroSignup(id: number): Promise<{ success: boolean; error?: string }> {
@@ -106,17 +83,7 @@ export async function deleteIntroSignup(id: number): Promise<{ success: boolean;
 
 export async function getIntroParentSignups() {
     await checkIntroAdminAccess();
-    try {
-        const items = await getSystemDirectus().request(readItems('intro_parent_signups', {
-            sort: ['-id'],
-            limit: 1000,
-            fields: [...INTRO_PARENT_SIGNUP_FIELDS]
-        }));
-        return (items ?? []) as any[];
-    } catch (e) {
-        console.error('[AdminIntro] Get parent signups failed:', e);
-        throw new Error('Kon ouder-aanmeldingen niet ophalen');
-    }
+    return getIntroParentSignupsInternal();
 }
 
 export async function deleteIntroParentSignup(id: number): Promise<{ success: boolean; error?: string }> {
@@ -134,24 +101,7 @@ export async function deleteIntroParentSignup(id: number): Promise<{ success: bo
 
 export async function getIntroBlogs() {
     await checkIntroAdminAccess();
-    try {
-        const items = await getSystemDirectus().request(readItems('intro_blogs', {
-            sort: ['-id'],
-            limit: 200,
-            fields: [...INTRO_BLOG_FIELDS]
-        }));
-        return (items ?? []).map(i => ({
-            ...i,
-            id: Number(i.id),
-            title: i.title || '',
-            content: i.content || '',
-            blog_type: (i.blog_type || 'update') as any,
-            is_published: !!i.is_published
-        })) as IntroBlog[];
-    } catch (e) {
-        console.error('[AdminIntro] Get blogs failed:', e);
-        throw new Error('Kon blogs niet ophalen');
-    }
+    return getIntroBlogsInternal();
 }
 
 export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ success: boolean; data?: IntroBlog; error?: string; fieldErrors?: any }> {
@@ -206,24 +156,7 @@ export async function deleteIntroBlog(id: number): Promise<{ success: boolean; e
 
 export async function getIntroPlanning() {
     await checkIntroAdminAccess();
-    try {
-        const items = await getSystemDirectus().request(readItems('intro_planning', {
-            sort: ['date', 'time_start'],
-            limit: 200,
-            fields: [...INTRO_PLANNING_FIELDS]
-        }));
-        return (items ?? []).map(i => ({
-            ...i,
-            id: Number(i.id),
-            date: i.date || '',
-            time_start: i.time_start || '',
-            title: i.title || '',
-            description: i.description || ''
-        })) as IntroPlanningItem[];
-    } catch (e) {
-        console.error('[AdminIntro] Get planning failed:', e);
-        throw new Error('Kon planning niet ophalen');
-    }
+    return getIntroPlanningInternal();
 }
 
 export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Promise<{ success: boolean; data?: IntroPlanningItem; error?: string; fieldErrors?: any }> {

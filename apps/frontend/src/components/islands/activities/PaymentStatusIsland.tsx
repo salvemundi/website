@@ -9,9 +9,19 @@ interface PaymentStatusProps {
     mollieId: string;
     onSuccess?: () => void;
     onExpire?: () => void;
+    returnUrl?: string;
+    returnText?: string;
+    successText?: string;
 }
 
-export default function PaymentStatusIsland({ mollieId, onSuccess, onExpire }: PaymentStatusProps) {
+export default function PaymentStatusIsland({ 
+    mollieId, 
+    onSuccess, 
+    onExpire,
+    returnUrl = '/reis',
+    returnText = 'Terug naar Reizen',
+    successText = 'Je aanbetaling is succesvol verwerkt. Je ontvangt binnen enkele minuten een bevestiging in je e-mail.'
+}: PaymentStatusProps) {
     const [status, setStatus] = useState<'loading' | 'open' | 'paid' | 'expired' | 'failed'>('loading');
     const [attempts, setAttempts] = useState(0);
     const maxAttempts = 20;
@@ -91,13 +101,13 @@ export default function PaymentStatusIsland({ mollieId, onSuccess, onExpire }: P
                         Betaling Geslaagd!
                     </h2>
                     <p className="text-gray-400 max-w-sm mx-auto leading-relaxed mb-10">
-                        Je aanbetaling is succesvol verwerkt. Je ontvangt binnen enkele minuten een bevestiging in je e-mail.
+                        {successText}
                     </p>
                     <button 
-                        onClick={() => window.location.href = '/reis'}
+                        onClick={() => window.location.href = returnUrl}
                         className="px-10 py-5 rounded-2xl bg-white text-black font-black uppercase tracking-widest text-sm hover:bg-green-500 hover:text-white transition-all shadow-2xl shadow-green-500/10 flex items-center gap-2 mx-auto"
                     >
-                        Terug naar Reizen
+                        {returnText}
                         <ChevronRight className="w-5 h-5" />
                     </button>
                 </div>
@@ -123,7 +133,7 @@ export default function PaymentStatusIsland({ mollieId, onSuccess, onExpire }: P
                             Controleer Handmatig
                         </button>
                         <button 
-                            onClick={() => window.location.href = '/reis'}
+                            onClick={() => window.location.href = returnUrl}
                             className="text-gray-500 text-sm font-bold hover:text-white transition-all"
                         >
                             Ik check het later wel
