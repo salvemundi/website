@@ -37,6 +37,7 @@ export const activiteitSchema = z.object({
     committee_name: z.string().nullable().optional(),
     event_time: z.string().nullable().optional(),
     event_time_end: z.string().nullable().optional(),
+    custom_url: z.string().nullable().optional(),
 });
 
 export const activiteitenSchema = z.array(activiteitSchema);

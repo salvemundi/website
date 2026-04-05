@@ -30,10 +30,7 @@ export default function ConfirmationIsland({
     const [status, setStatus] = useState<'loading' | 'paid' | 'open' | 'failed' | 'error'>('loading');
     const [signupData, setSignupData] = useState<any>(null);
     const [isMembership, setIsMembership] = useState(false);
-    const [isTrip, setIsTrip] = useState(false);
     const [retryCount, setRetryCount] = useState(0);
-
-    const isPubCrawl = !!signupData?.pub_crawl_event_id || (Array.isArray(signupData?.tickets) && signupData.tickets.length > 0);
 
     useEffect(() => {
         /**
@@ -53,7 +50,6 @@ export default function ConfirmationIsland({
                     console.log(`[StatusCheck] SUCCESS: Payment confirmed!`);
                     setSignupData(res.signup);
                     setIsMembership(!!res.isMembership);
-                    setIsTrip(!!res.isTrip);
                     setStatus('paid');
                 } else if (res.status === 'failed' || res.status === 'canceled' || res.status === 'expired') {
                     console.warn(`[StatusCheck] FAILED: Payment status is ${res.status}`);
@@ -116,9 +112,8 @@ export default function ConfirmationIsland({
                 );
             }
 
-            const isPubCrawlInternal = !!signupData?.pub_crawl_event_id;
             const amount = signupData?.amount_tickets || (signupData?.tickets?.length) || 1;
-            const eventName = isPubCrawlInternal ? signupData.pub_crawl_event_id?.name : signupData?.event_id?.name || signupData?.trip_id?.name || 'Evenement';
+            const eventName = signupData?.event_id?.name || 'Evenement';
 
             return (
                 <div className="space-y-12 animate-in zoom-in-95 duration-500">
@@ -135,48 +130,27 @@ export default function ConfirmationIsland({
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 max-w-5xl mx-auto">
-                        {isTrip ? (
-                            <div className="col-span-full p-12 rounded-[3.5rem] bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xl text-center space-y-8 min-h-[400px] flex flex-col items-center justify-center relative overflow-hidden group">
-                                <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--theme-purple)]/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
-                                <div className="space-y-4 relative">
-                                    <h3 className="text-3xl font-black text-[var(--text-main)] uppercase tracking-tight italic">
-                                        Betaling <span className="text-[var(--theme-purple)]">Ontvangen</span>
-                                    </h3>
-                                    <p className="text-[var(--text-muted)] max-w-sm mx-auto font-medium">
-                                        Je betaling voor <strong>{eventName}</strong> is succesvol verwerkt. Je kunt de status van je reis live volgen in je profiel of via de e-mails die we sturen.
-                                    </p>
-                                </div>
-                                <div className="pt-4 flex flex-wrap justify-center gap-4 relative">
-                                    <Link 
-                                        href="/reis"
-                                        className="px-8 py-4 bg-[var(--theme-purple)] text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:scale-105 transition-transform shadow-lg shadow-purple-500/20"
-                                    >
-                                        Naar Reizen Overzicht
-                                    </Link>
-                                </div>
-                            </div>
-                        ) : (
-                            Array.from({ length: amount }).map((_, i) => (
-                                <div key={i} className="p-8 rounded-[3rem] bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xl space-y-6 relative overflow-hidden group">
-                                    <div className="flex flex-col items-center gap-4">
-                                        <p className="text-[10px] font-black text-[var(--theme-purple)] uppercase tracking-[0.2em]">TICKET {i + 1} / {amount}</p>
-                                        <div className="p-4 bg-white rounded-3xl shadow-lg ring-1 ring-black/5">
-                                            <QRDisplay qrToken={signupData?.tickets?.[i]?.qr_token || `${signupData?.qr_token}${amount > 1 ? `#${i}` : ''}`} size={180} />
-                                        </div>
-                                        <div className="text-center">
-                                            <h3 className="font-black text-[var(--text-main)] uppercase tracking-tight">{eventName}</h3>
-                                            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest opacity-60">
-                                                #{signupData?.id}{amount > 1 ? `-${i+1}` : ''}
-                                            </p>
-                                        </div>
+
+                        {Array.from({ length: amount }).map((_, i) => (
+                            <div key={i} className="p-8 rounded-[3rem] bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xl space-y-6 relative overflow-hidden group">
+                                <div className="flex flex-col items-center gap-4">
+                                    <p className="text-[10px] font-black text-[var(--theme-purple)] uppercase tracking-[0.2em]">TICKET {i + 1} / {amount}</p>
+                                    <div className="p-4 bg-white rounded-3xl shadow-lg ring-1 ring-black/5">
+                                        <QRDisplay qrToken={signupData?.tickets?.[i]?.qr_token || `${signupData?.qr_token}${amount > 1 ? `#${i}` : ''}`} size={180} />
+                                    </div>
+                                    <div className="text-center">
+                                        <h3 className="font-black text-[var(--text-main)] uppercase tracking-tight">{eventName}</h3>
+                                        <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest opacity-60">
+                                            #{signupData?.id}{amount > 1 ? `-${i+1}` : ''}
+                                        </p>
                                     </div>
                                 </div>
-                            ))
-                        )}
+                            </div>
+                        ))}
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                        <a href={isPubCrawl ? "/kroegentocht" : "/activiteiten"} className="h-14 px-10 rounded-2xl bg-[var(--theme-purple)] text-white font-black flex items-center justify-center gap-2 hover:scale-105 transition-all shadow-xl shadow-[var(--theme-purple)]/20 uppercase tracking-widest">
+                        <a href="/activiteiten" className="h-14 px-10 rounded-2xl bg-[var(--theme-purple)] text-white font-black flex items-center justify-center gap-2 hover:scale-105 transition-all shadow-xl shadow-[var(--theme-purple)]/20 uppercase tracking-widest">
                             TERUG NAAR OVERZICHT
                         </a>
                         {isLoggedIn && (

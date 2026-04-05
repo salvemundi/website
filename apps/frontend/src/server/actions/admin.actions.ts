@@ -6,7 +6,7 @@ import { headers, cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { getSystemDirectus } from "@/lib/directus";
 import { readMe, readItems, readUsers, aggregate } from "@directus/sdk";
-import { 
+import {
     type DbDirectusUser as DirectusUser,
     USER_BASIC_FIELDS,
     EVENT_FIELDS,
@@ -64,13 +64,13 @@ export async function checkAdminAccess() {
     const impersonation = (session as any).impersonatedBy || null;
 
     const isIct = user.isICT || false;
-    const isBestuur = user.isAdmin || false; 
+    const isBestuur = user.isAdmin || false;
     const isAuthorized = isIct || isBestuur;
 
-    return { 
-        isAuthorized, 
-        user, 
-        isIct, 
+    return {
+        isAuthorized,
+        user,
+        isIct,
         impersonation: impersonation ? {
             ...impersonation,
             // Add any missing banner-specific fields if needed
@@ -119,16 +119,16 @@ export async function getDashboardStats(): Promise<DashboardStats> {
             pubCrawlEvents,
             trips
         ] = await Promise.all([
-            getSystemDirectus().request(aggregate('directus_users', { 
-                aggregate: { count: '*' }, 
-                query: { 
-                    filter: { 
+            getSystemDirectus().request(aggregate('directus_users', {
+                aggregate: { count: '*' },
+                query: {
+                    filter: {
                         _and: [
                             { status: { _eq: 'active' } },
                             { membership_expiry: { _gte: today } }
                         ]
-                    } 
-                } 
+                    }
+                }
             })).catch(e => { console.error("Stats: users fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
             getSystemDirectus().request(aggregate('events', { aggregate: { count: '*' }, query: { filter: { event_date: { _gte: today } } } })).catch(e => { console.error("Stats: events fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
             getSystemDirectus().request(aggregate('event_signups', { aggregate: { count: '*' }, query: { filter: { event_id: { event_date: { _gte: today } } } } })).catch(e => { console.error("Stats: signups fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
@@ -296,11 +296,11 @@ export async function setImpersonateToken(token: string) {
         const testClient = createDirectus(directusUrl)
             .with(staticToken(token))
             .with(rest());
-            
-        const user = await testClient.request(readMe({ 
-            fields: [...USER_ID_FIELDS, 'first_name', 'last_name', 'email', 'avatar', { role: ['name'] }] 
+
+        const user = await testClient.request(readMe({
+            fields: [...USER_ID_FIELDS, 'first_name', 'last_name', 'email', 'avatar', { role: ['name'] }]
         } as any)) as unknown as DirectusUser;
-        
+
         if (!user) {
             return { success: false, error: "Token is ongeldig." };
         }
@@ -330,7 +330,7 @@ export async function setImpersonateToken(token: string) {
 
         const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
         const normallyAdmin = hasPermission(impCommittees, AdminResource.Intro);
-        
+
         const info = {
             id: user.id,
             name: fullName || user.first_name || user.last_name || user.email || 'Onbekende gebruiker',
@@ -339,7 +339,7 @@ export async function setImpersonateToken(token: string) {
             committees: impCommittees.map(c => c.name),
             isNormallyAdmin: normallyAdmin
         };
-        
+
         cookieStore.set(IMPERSONATION_INFO_COOKIE, Buffer.from(JSON.stringify(info)).toString('base64'), {
             path: '/',
             maxAge: 7 * 24 * 60 * 60,
@@ -350,7 +350,7 @@ export async function setImpersonateToken(token: string) {
 
         const sessionToken = cookieStore.get('better-auth.session-token')?.value;
         const redis = await getRedis();
-        
+
         if (sessionToken) {
             await redis.del(`session:${sessionToken}`);
         }
@@ -359,8 +359,8 @@ export async function setImpersonateToken(token: string) {
         revalidatePath('/beheer/impersonate');
         revalidatePath('/', 'layout');
 
-        return { 
-            success: true, 
+        return {
+            success: true,
             name: info.name
         };
     } catch (error) {
@@ -378,11 +378,11 @@ export async function clearImpersonateToken() {
 
     const sessionToken = cookieStore.get('better-auth.session-token')?.value;
     const redis = await getRedis();
-    
+
     if (sessionToken) {
         await redis.del(`session:${sessionToken}`);
     }
-    
+
     const testToken = cookieStore.get(TEST_TOKEN_COOKIE)?.value;
     if (testToken) {
         await redis.del(`impersonation:${testToken}`);
