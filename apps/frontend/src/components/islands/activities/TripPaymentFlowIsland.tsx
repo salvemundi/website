@@ -263,8 +263,8 @@ export default function TripPaymentFlowIsland({
                                                 className="w-full bg-[#1A1A1A] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500/50 transition-all appearance-none font-medium"
                                             >
                                                 <option value="none">Maak een keuze...</option>
-                                                <option value="ID-kaart">ID-kaart</option>
-                                                <option value="Paspoort">Paspoort</option>
+                                                <option value="id_card">ID-kaart</option>
+                                                <option value="passport">Paspoort</option>
                                             </select>
                                         </div>
 

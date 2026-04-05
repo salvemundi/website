@@ -76,7 +76,7 @@ async function DeelnemerDataWrapper({ signupId }: { signupId: number }) {
     // Filter signupActivities for this specific participant
     const participantActivities = signupActivities
         .filter((sa: any) => {
-            const saSignupId = typeof sa.trip_signup_id === 'object' ? sa.trip_signup_id.id : sa.trip_signup_id;
+            const saSignupId = (sa.trip_signup_id && typeof sa.trip_signup_id === 'object') ? sa.trip_signup_id.id : sa.trip_signup_id;
             return saSignupId === signupId;
         })
         .map((a: any) => typeof a.trip_activity_id === 'object' ? a.trip_activity_id.id : a.trip_activity_id);
