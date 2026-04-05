@@ -84,7 +84,7 @@ export function ReisSignupStatus({ userSignup, nextTrip, error }: ReisSignupStat
                                 <>
                                     <Link
                                         href={`/reis/betalen/restbetaling?id=${userSignup.id}`}
-                                        className="inline-flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition group"
+                                        className="inline-flex items-center gap-2 px-6 py-2 bg-theme-purple text-white rounded-lg hover:bg-theme-purple-dark transition group"
                                     >
                                         <Utensils className="h-5 w-5 group-hover:scale-110 transition-transform" />
                                         Activiteiten beheren
