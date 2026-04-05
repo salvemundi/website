@@ -34,6 +34,14 @@ const start = async () => {
         // Start the Event Listener
         const { EventListenerService } = await import('./services/event-listener.js');
         EventListenerService.start(fastify.redis);
+
+        // Start the Expiry Check Job
+        const { ExpiryCheckJob } = await import('./services/expiry-check.job.js');
+        ExpiryCheckJob.start(fastify.redis);
+
+        // Start the Event Reminder Job
+        const { EventReminderJob } = await import('./services/event-reminder.job.js');
+        EventReminderJob.start(fastify.redis);
     } catch (err) {
         fastify.log.error(err);
         process.exit(1);

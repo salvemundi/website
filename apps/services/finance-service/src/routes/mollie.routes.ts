@@ -74,6 +74,8 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
                     email: email,
                     registrationId: registrationId,
                     registrationType: registrationType,
+                    isContribution: !!metadata?.isContribution,
+                    isNewMember: (metadata as any)?.isNewMember === 'true' || (metadata as any)?.isNewMember === true,
                     timestamp: new Date().toISOString()
                 };
 

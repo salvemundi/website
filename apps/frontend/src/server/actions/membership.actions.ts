@@ -100,6 +100,7 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
                 amount: baseAmount,
                 description: isExpired ? 'Verlenging Salve Mundi Lidmaatschap' : 'Inschrijving Salve Mundi Lidmaatschap',
                 isContribution: true,
+                isNewMember: !isExpired,
                 userId: user?.id || null,
                 firstName: parsed.data.voornaam,
                 lastName: parsed.data.achternaam,
