@@ -408,6 +408,12 @@ export default function TripPaymentFlowIsland({
                                         <span className="text-white font-black uppercase text-xs tracking-widest">Totaalbedrag</span>
                                         <span className="text-xl font-black text-white uppercase italic">€{pricing.total.toFixed(2)}</span>
                                     </div>
+                                    {paymentType === 'final' && (
+                                        <div className="flex justify-between items-center text-sm pt-2">
+                                            <span className="text-green-500 italic">Reeds voldaan (Aanbetaling)</span>
+                                            <span className="text-green-500 font-bold">-€{pricing.deposit.toFixed(2)}</span>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="p-8 rounded-3xl bg-gradient-to-br from-orange-500 to-orange-600 shadow-xl shadow-orange-500/10 text-white">
