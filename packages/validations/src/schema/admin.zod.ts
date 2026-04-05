@@ -15,10 +15,10 @@ export const DashboardStatsSchema = z.object({
 export type DashboardStats = z.infer<typeof DashboardStatsSchema>;
 
 export const RecentActivitySchema = z.object({
-    id: z.number(),
+    id: z.coerce.number(),
     name: z.string(),
     event_date: z.string().nullable(),
-    signups: z.number()
+    signups: z.coerce.number()
 });
 
 export type RecentActivity = z.infer<typeof RecentActivitySchema>;
@@ -43,22 +43,26 @@ export const BirthdaySchema = z.object({
 export type Birthday = z.infer<typeof BirthdaySchema>;
 
 export const AdminActivitySchema = z.object({
-    id: z.number(),
+    id: z.coerce.number(),
     name: z.string(),
     event_date: z.string(),
     event_date_end: z.string().optional().nullable(),
     description: z.string().optional().nullable(),
     location: z.string().optional().nullable(),
-    max_sign_ups: z.number().optional().nullable(),
-    price_members: z.number().optional().nullable(),
-    price_non_members: z.number().optional().nullable(),
+    max_sign_ups: z.coerce.number().optional().nullable(),
+    price_members: z.coerce.number().optional().nullable(),
+    price_non_members: z.coerce.number().optional().nullable(),
     registration_deadline: z.string().optional().nullable(),
     contact: z.string().optional().nullable(),
-    image: z.object({ id: z.string() }).optional().nullable(),
-    committee_id: z.number().optional().nullable(),
+    image: z.union([
+        z.string(),
+        z.object({ id: z.string() })
+    ]).optional().nullable(),
+    committee_id: z.coerce.number().optional().nullable(),
+    committee_name: z.string().optional().nullable(),
     status: z.enum(['published', 'draft', 'archived', 'scheduled']).optional().nullable(),
     publish_date: z.string().optional().nullable(),
-    signup_count: z.number().optional().default(0)
+    signup_count: z.coerce.number().optional().default(0)
 });
 
 export type AdminActivity = z.infer<typeof AdminActivitySchema>;

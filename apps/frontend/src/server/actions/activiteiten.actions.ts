@@ -13,13 +13,14 @@ import {
     uploadFiles,
     aggregate
 } from "@directus/sdk";
+import { z } from 'zod';
 import { 
-    activityAdminSchema, 
-    EVENT_FIELDS, 
-    EVENT_ADMIN_FIELDS,
     AdminActivitySchema,
     type Activiteit
 } from "@salvemundi/validations";
+import { 
+    getActivitiesWithSignupCountsInternal 
+} from "@/server/queries/admin-event.queries";
 const EVENT_ID_FIELDS = ['id'] as const;
 import { logAdminAction } from "./audit.actions";
 import { isSuperAdmin } from "@/lib/auth-utils";
@@ -28,6 +29,19 @@ async function getSession() {
     return await auth.api.getSession({
         headers: await headers()
     });
+}
+
+async function checkAdminAccess() {
+    const session = await getSession();
+    if (!session || !session.user) return null;
+    
+    const user = session.user as any;
+    // Gebruik de bestaande admin/ict vlaggen voor brede beheer-toegang
+    if (user.isAdmin || user.isICT) return session;
+    
+    // Fallback voor specifieke commissie-rechten als die nodig zijn
+    if (user.committees && isSuperAdmin(user.committees)) return session;
+    return null;
 }
 
 const getNotificationUrl = (type: 'reminder' | 'custom') => {
@@ -39,66 +53,15 @@ const getNotificationUrl = (type: 'reminder' | 'custom') => {
     return url.toString();
 };
 
-async function checkAdminAccess() {
-    const session = await getSession();
-    if (!session || !session.user) return null;
-    
-    const user = session.user as any;
-    if (!isSuperAdmin(user.committees)) return null;
-    return session;
-}
-
 export const getAdminActivities = cache(async (search?: string, filter: 'all' | 'upcoming' | 'past' = 'all') => {
     const session = await checkAdminAccess();
     if (!session) throw new Error("Unauthorized");
 
     try {
-        const query: any = {
-            fields: [
-                ...EVENT_ADMIN_FIELDS,
-                { image: ['id'] }
-            ],
-            sort: ['-event_date'],
-            limit: -1,
-            filter: {}
-        };
-
-        if (search) {
-            query.filter._or = [
-                { name: { _icontains: search } },
-                { description: { _icontains: search } },
-                { location: { _icontains: search } }
-            ];
-        }
-
-        const now = new Date().toISOString();
-        if (filter === 'upcoming') {
-            query.filter.event_date = { _gte: now };
-        } else if (filter === 'past') {
-            query.filter.event_date = { _lt: now };
-        }
-
-        const events = await getSystemDirectus().request(readItems('events', query));
-        
-        const counts = await getSystemDirectus().request(
-            aggregate('event_signups', {
-                aggregate: { count: '*' },
-                groupBy: ['event_id']
-            })
-        );
-
-        const countMap = new Map((counts as any[]).map(c => [c.event_id, parseInt(c.count?.count || c.count || "0")]));
-        
-        const eventsWithCounts = events.map((event: any) => {
-            return {
-                ...event,
-                signup_count: countMap.get(event.id) || 0
-            };
-        });
-        
-        return AdminActivitySchema.array().parse(eventsWithCounts);
+        const eventsWithCounts = await getActivitiesWithSignupCountsInternal(search, filter);
+        const parsed = AdminActivitySchema.array().parse(eventsWithCounts);
+        return parsed;
     } catch (error) {
-        console.error('[AdminActivities] Fetch failed:', error);
         return [];
     }
 });
@@ -121,7 +84,6 @@ export async function sendActivityReminder(eventId: number) {
         
         return { success: true, sent: result.sent || 0 };
     } catch (error) {
-        console.error("Failed to send activity reminder:", error);
         return { success: false, error: "Herinnering versturen mislukt" };
     }
 }
@@ -152,7 +114,6 @@ export async function sendActivityCustomNotification(eventId: number, title: str
         
         return { success: true, sent: result.sent || 0 };
     } catch (error) {
-        console.error("Failed to send custom notification:", error);
         return { success: false, error: "Notificatie versturen mislukt" };
     }
 }
@@ -170,7 +131,6 @@ export async function deleteActivity(eventId: number) {
         revalidatePath('/beheer');
         return { success: true };
     } catch (error) {
-        console.error("Failed to delete activity:", error);
         return { success: false, error: "Verwijderen mislukt" };
     }
 }
@@ -193,7 +153,6 @@ export async function createActivityAction(prevState: any, formData: FormData): 
             const res = await getSystemDirectus().request(uploadFiles(fileData));
             imageId = res.id;
         } catch (e) {
-            console.error('Image upload failed', e);
         }
     }
 
@@ -202,7 +161,7 @@ export async function createActivityAction(prevState: any, formData: FormData): 
         if (key !== 'imageFile') rawData[key] = value;
     });
     
-    const validated = activityAdminSchema.safeParse(rawData);
+    const validated = AdminActivitySchema.safeParse(rawData);
     if (!validated.success) {
         return { 
             error: "Validatie mislukt", 
@@ -231,7 +190,6 @@ export async function createActivityAction(prevState: any, formData: FormData): 
         }
         return { success: true, id: res.id };
     } catch (error) {
-        console.error("Failed to create activity:", error);
         return { error: 'Fout bij opslaan in de database', success: false };
     }
 }
@@ -276,7 +234,7 @@ export async function updateActivityAction(eventId: number, prevState: any, form
             if (key !== 'imageFile' && key !== 'removeImage') rawData[key] = value;
         });
         
-        const validated = activityAdminSchema.safeParse(rawData);
+        const validated = AdminActivitySchema.safeParse(rawData);
         if (!validated.success) {
             return { 
                 error: "Validatie mislukt", 

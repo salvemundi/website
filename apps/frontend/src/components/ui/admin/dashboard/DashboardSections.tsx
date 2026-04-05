@@ -1,162 +1,185 @@
-import { Suspense } from 'react';
-import { Calendar, Users, Ticket, Activity, AlertCircle, UserCheck, Cake, Award, Plus, FileText, Shield, MapPin, Mail } from 'lucide-react';
-import { StatCard, ActionCard, ListCard } from './LegacyCards';
-import { getDashboardStats, getDashboardPermissions, getUpcomingBirthdays, getRecentActivities, getTopStickers } from '@/server/actions/admin.actions';
+import React from 'react';
+import { 
+    Calendar, 
+    FileText, 
+    Users, 
+    Ticket, 
+    Shield, 
+    MapPin, 
+    Mail, 
+    UserCheck,
+    Cake,
+    Award,
+    Activity,
+    Globe,
+    Zap,
+    Settings,
+    Layout
+} from 'lucide-react';
+import { 
+    ActionCard,
+    ListCard 
+} from './AdminCards';
+import { 
+    getDashboardStats, 
+    getUpcomingBirthdays, 
+    getRecentActivities, 
+    getTopStickers, 
+    getDashboardPermissions 
+} from '@/server/actions/admin.actions';
 
-export async function DashboardQuickStats() {
+/**
+ * Universal Dashboard Hub.
+ * Standardized across all sections to use the horizontal "Small Button" layout.
+ * Organized into 2 columns as requested.
+ */
+export async function DashboardHub() {
     const stats = await getDashboardStats();
-
-    return (
-        <div className="mb-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-                <StatCard 
-                    title="Activiteiten" 
-                    value={stats.upcomingEventsCount} 
-                    icon={<Calendar className="h-6 w-6" />} 
-                    subtitle="Aankomende events" 
-                    href="/beheer/activiteiten" 
-                    colorClass="purple" 
-                />
-                <StatCard 
-                    title="Intro" 
-                    value={stats.introSignups} 
-                    icon={<FileText className="h-6 w-6" />} 
-                    subtitle="Aanmeldingen" 
-                    href="/beheer/intro" 
-                    colorClass="blue" 
-                />
-                <StatCard 
-                    title="Leden" 
-                    value={stats.totalMembers} 
-                    icon={<Users className="h-6 w-6" />} 
-                    subtitle="Actieve leden" 
-                    href="/beheer/leden" 
-                    colorClass="green" 
-                />
-                <StatCard 
-                    title="Reis" 
-                    value={stats.reisSignups} 
-                    icon={<FileText className="h-6 w-6" />} 
-                    subtitle="Aanmeldingen" 
-                    href="/beheer/reis" 
-                    colorClass="teal" 
-                />
-                <StatCard 
-                    title="Kroegentocht" 
-                    value={stats.pubCrawlSignups} 
-                    icon={<Ticket className="h-6 w-6" />} 
-                    subtitle="Groepen" 
-                    href="/beheer/kroegentocht" 
-                    colorClass="orange" 
-                />
-                <StatCard 
-                    title="Coupons" 
-                    value={stats.totalCoupons} 
-                    icon={<Ticket className="h-6 w-6" />} 
-                    subtitle="Actieve codes" 
-                    href="/beheer/coupons" 
-                    colorClass="amber" 
-                />
-            </div>
-        </div>
-    );
-}
-
-export async function QuickActions() {
     const permissions = await getDashboardPermissions();
 
-    return (
-        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm p-6 border border-[var(--beheer-border)]">
-            <h3 className="text-sm font-black text-[var(--beheer-text)] mb-6 uppercase tracking-widest">Snelle Acties</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <ActionCard title="Nieuwe" subtitle="Activiteit" icon={<Plus className="h-6 w-6" />} href="/beheer/activiteiten/nieuw" colorClass="purple" />
-                <ActionCard title="Nieuwe" subtitle="Intro Post" icon={<FileText className="h-6 w-6" />} href="/beheer/intro?tab=blogs&create=1" colorClass="blue" disabled={!permissions.canAccessIntro} />
-                {permissions.canAccessSync && <ActionCard title="Sync" subtitle="Leden" icon={<Users className="h-6 w-6" />} href="/beheer/sync" colorClass="green" />}
-                {permissions.canAccessSync && <ActionCard title="Beheer" subtitle="Commissie" icon={<Shield className="h-6 w-6" />} href="/beheer/vereniging" colorClass="orange" />}
-                {permissions.canAccessLogging && <ActionCard title="Logboek" subtitle="Activiteiten" icon={<FileText className="h-6 w-6" />} href="/beheer/logging" colorClass="amber" />}
-                {permissions.canAccessStickers && <ActionCard title="Beheer" subtitle="Stickers" icon={<MapPin className="h-6 w-6" />} href="/beheer/stickers" colorClass="purple" />}
-                {permissions.isIct && <ActionCard title="Test Modus" subtitle="Impersonatie" icon={<Users className="h-6 w-6" />} href="/beheer/impersonate" colorClass="teal" />}
-                {permissions.canAccessMail && <ActionCard title="Mail" subtitle="Beheer" icon={<Mail className="h-6 w-6" />} href="/beheer/mail" colorClass="purple" />}
+    // Group 1: CONTENT
+    const contentItems = [
+        { title: "Activiteiten", value: stats.upcomingEventsCount, icon: <Calendar />, subtitle: "Aankomende Events", href: "/beheer/activiteiten", colorClass: "purple" as const },
+        { title: "Intro", value: stats.introSignups, icon: <FileText />, subtitle: "Aanmeldingen", href: "/beheer/intro", colorClass: "blue" as const, disabled: !permissions.canAccessIntro },
+        { title: "Reis", value: stats.reisSignups, icon: <Globe />, subtitle: "Aanmeldingen", href: "/beheer/reis", colorClass: "teal" as const },
+        { title: "Kroegentocht", value: stats.pubCrawlSignups, icon: <Ticket />, subtitle: "Groepen", href: "/beheer/kroegentocht", colorClass: "orange" as const },
+    ];
+
+    // Group 2: BEHEER
+    const manageItems = [
+        { title: "Leden", value: stats.totalMembers, icon: <Users />, subtitle: "Leden", href: "/beheer/leden", colorClass: "green" as const },
+        { title: "Commissies", value: "Beheer", icon: <Shield />, subtitle: "Vereniging", href: "/beheer/vereniging", colorClass: "orange" as const, disabled: !permissions.canAccessSync },
+        { title: "Stickers", value: "Beheer", icon: <MapPin />, subtitle: "Verzameling", href: "/beheer/stickers", colorClass: "purple" as const, disabled: !permissions.canAccessStickers },
+        { title: "Coupons", value: stats.totalCoupons, icon: <Ticket />, subtitle: "Actieve Codes", href: "/beheer/coupons", colorClass: "amber" as const },
+    ];
+
+    // Group 3: SYSTEEM
+    const systemItems = [
+        { title: "Mail", value: "Beheer", icon: <Mail />, subtitle: "Mailinglijsten", href: "/beheer/mail", colorClass: "purple" as const, disabled: !permissions.canAccessMail },
+        { title: "Logboek", value: "Bekijken", icon: <FileText />, subtitle: "Activiteiten", href: "/beheer/logging", colorClass: "amber" as const, disabled: !permissions.canAccessLogging },
+        { title: "Test Modus", value: "Inschakelen", icon: <UserCheck />, subtitle: "Impersonatie", href: "/beheer/impersonate", colorClass: "teal" as const, disabled: !permissions.isIct },
+    ];
+
+    const renderSection = (title: string, items: any[], icon: React.ReactNode) => {
+        const visibleItems = items.filter(i => !i.disabled);
+        if (visibleItems.length === 0) return null;
+
+        return (
+            <div className="space-y-5">
+                <div className="flex items-center gap-3 px-1">
+                    <div className="bg-[var(--beheer-accent)]/10 p-2 rounded-xl text-[var(--beheer-accent)] transition-transform group-hover:scale-110">
+                        {React.cloneElement(icon as any, { className: 'h-4 w-4' })}
+                    </div>
+                    <h2 className="text-sm font-black text-[var(--beheer-text)] tracking-[0.2em]">{title}</h2>
+                    <div className="h-px flex-1 bg-gradient-to-r from-[var(--beheer-border)] to-transparent" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {visibleItems.map((item, i) => (
+                        <ActionCard 
+                            key={i} 
+                            title={item.title}
+                            subtitle={item.subtitle}
+                            value={item.value !== "Beheer" && item.value !== "Bekijken" && item.value !== "Inschakelen" ? item.value : undefined}
+                            icon={item.icon}
+                            href={item.href}
+                            colorClass={item.colorClass}
+                        />
+                    ))}
+                </div>
             </div>
+        );
+    };
+
+    return (
+        <div className="space-y-12">
+            {renderSection("Content", contentItems, <Layout />)}
+            {renderSection("Beheer", manageItems, <Users />)}
+            {renderSection("Systeem", systemItems, <Settings />)}
         </div>
     );
 }
 
+/**
+ * Vertical list showing upcoming birthdays.
+ */
 export async function BirthdaysList() {
     const upcomingBirthdays = await getUpcomingBirthdays();
 
     return (
         <ListCard title="Aankomende Jarigen" icon={<Cake className="h-5 w-5" />}>
             {upcomingBirthdays.length > 0 ? (
-                <div className="space-y-3">
+                <div className="space-y-1">
                     {upcomingBirthdays.map((person) => (
-                        <div key={person.id} className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${person.isToday ? 'bg-amber-500/10 border-amber-500/30' : 'bg-[var(--beheer-card-soft)] border-[var(--beheer-border)]'}`}>
-                            <div>
-                                <p className={`text-sm font-black uppercase tracking-tight ${person.isToday ? 'text-amber-600' : 'text-[var(--beheer-text)]'}`}>
-                                    {person.first_name} {person.last_name}
-                                </p>
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--beheer-text-muted)]">
-                                    {new Date(person.birthday).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' })}
-                                </p>
+                        <div key={person.id} className={`flex items-center justify-between p-3.5 rounded-xl transition-all hover:bg-[var(--beheer-accent)]/5 group ${person.isToday ? 'bg-amber-500/5 border border-amber-500/20' : ''}`}>
+                            <div className="flex items-center gap-3">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-black shadow-sm ${person.isToday ? 'bg-amber-500 text-white shadow-amber-500/20' : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)]'}`}>
+                                    {person.first_name?.[0]}
+                                </div>
+                                <div>
+                                    <p className={`text-xs font-black tracking-tight ${person.isToday ? 'text-amber-600' : 'text-[var(--beheer-text)]'}`}>
+                                        {person.first_name} {person.last_name}
+                                    </p>
+                                    <p className="text-[9px] font-bold tracking-widest text-[var(--beheer-text-muted)] opacity-60">
+                                        {person.isToday ? '🎉 Vandaag!' : new Date(person.birthday).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' })}
+                                    </p>
+                                </div>
                             </div>
-                            <Cake className={`h-5 w-5 ${person.isToday ? 'text-amber-500 animate-bounce' : 'text-[var(--beheer-accent)]'}`} />
+                            {person.isToday && <Cake className="h-4 w-4 text-amber-500 animate-bounce" />}
                         </div>
                     ))}
                 </div>
             ) : (
-                <p className="text-[var(--beheer-text-muted)] text-[10px] font-black uppercase tracking-widest text-center py-8">Geen jarigen gevonden</p>
+                <p className="text-[var(--beheer-text-muted)] text-[10px] font-black tracking-widest text-center py-8 italic opacity-40">Geen jarigen deze week</p>
             )}
         </ListCard>
     );
 }
 
+/**
+ * Top sticker collectors rankings.
+ */
 export async function TopStickersList() {
     const topStickers = await getTopStickers();
 
     return (
         <ListCard title="Top Sticker Verzamelaars" icon={<Award className="h-5 w-5" />}>
             {topStickers.length > 0 ? (
-                <div className="space-y-3">
+                <div className="space-y-1">
                     {topStickers.map((person, index) => (
-                        <div key={person.id} className="flex items-center justify-between p-4 bg-[var(--beheer-card-soft)] border border-[var(--beheer-border)] rounded-2xl group hover:border-[var(--beheer-accent)]/30 transition-all">
+                        <div key={person.id} className="flex items-center justify-between p-3.5 hover:bg-[var(--beheer-accent)]/5 rounded-xl transition-all group">
                             <div className="flex items-center gap-3">
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black text-white ${index === 0 ? 'bg-amber-500 shadow-lg shadow-amber-500/20' : index === 1 ? 'bg-slate-400' : 'bg-orange-600'}`}>
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black group-hover:scale-110 transition-transform ${index === 0 ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' : index === 1 ? 'bg-slate-400 text-white' : index === 2 ? 'bg-orange-600 text-white' : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)]'}`}>
                                     {index + 1}
                                 </div>
                                 <div className="truncate">
-                                    <p className="text-sm font-black text-[var(--beheer-text)] uppercase tracking-tight truncate">
+                                    <p className="text-xs font-black text-[var(--beheer-text)] tracking-tight truncate group-hover:text-[var(--beheer-accent)]">
                                         {person.first_name} {person.last_name}
                                     </p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <span className="text-xl font-black text-[var(--beheer-accent)] tracking-tighter">{person.count}</span>
-                                <Award className="h-4 w-4 text-[var(--beheer-accent)]" />
+                            <div className="flex items-center gap-1.5 grayscale group-hover:grayscale-0 transition-all">
+                                <span className="text-lg font-black text-[var(--beheer-text)] tracking-tighter leading-tight">{person.count}</span>
+                                <MapPin className="h-3 w-3 text-[var(--beheer-accent)]" />
                             </div>
                         </div>
                     ))}
                 </div>
             ) : (
-                <p className="text-[var(--beheer-text-muted)] text-[10px] font-black uppercase tracking-widest text-center py-8">Geen stickers gevonden</p>
+                <p className="text-[var(--beheer-text-muted)] text-[10px] font-black tracking-widest text-center py-8 italic opacity-40">Geen stickers gevonden</p>
             )}
         </ListCard>
     );
 }
 
+/**
+ * Activity signups overview.
+ */
 export async function ActivitySignupsList() {
     const latestEventsWithSignups = await getRecentActivities();
 
     return (
-        <div className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] shadow-sm p-6 overflow-hidden">
-            <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                    <div className="bg-[var(--beheer-accent)]/10 p-2 rounded-xl text-[var(--beheer-accent)]">
-                        <Activity className="h-5 w-5" />
-                    </div>
-                    <h3 className="text-sm font-black text-[var(--beheer-text)] uppercase tracking-widest">Activiteiten aanmeldingen</h3>
-                </div>
-            </div>
-            <div className="space-y-3">
+        <ListCard title="Activiteiten aanmeldingen" icon={<Activity className="h-5 w-5" />}>
+            <div className="space-y-1">
                 {latestEventsWithSignups.length > 0 ? (
                     latestEventsWithSignups.map((ev) => {
                         const eventDate = ev.event_date ? new Date(ev.event_date) : null;
@@ -166,25 +189,38 @@ export async function ActivitySignupsList() {
                         return (
                             <a
                                 key={ev.id}
-                                href={isPast ? undefined : `/beheer/activiteiten/${ev.id}/aanmeldingen`}
-                                className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all group ${isPast ? 'bg-[var(--beheer-card-soft)]/50 border-[var(--beheer-border)] opacity-60 cursor-default' : 'bg-[var(--beheer-card-soft)] border-[var(--beheer-border)] hover:border-[var(--beheer-accent)]/30 hover:shadow-md cursor-pointer active:scale-[0.98]'}`}
+                                href={`/beheer/activiteiten/${ev.id}/aanmeldingen`}
+                                className="w-full flex items-center justify-between p-3.5 rounded-xl transition-all group border border-transparent hover:bg-[var(--beheer-accent)]/5 hover:border-[var(--beheer-border)] cursor-pointer active:scale-[0.98]"
                             >
-                                <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
-                                    <div className="text-sm font-black text-[var(--beheer-text)] uppercase tracking-tight truncate">{ev.name}</div>
-                                    {isPast && <span className="text-[8px] font-black bg-[var(--beheer-border)] text-[var(--beheer-text-muted)] px-1.5 py-0.5 rounded-full uppercase tracking-widest">Past</span>}
+                                <div className="flex-1 min-w-0 pr-2">
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-xs font-black text-[var(--beheer-text)] tracking-tight truncate group-hover:text-[var(--beheer-accent)]">
+                                            {ev.name}
+                                        </p>
+                                        {isPast && <span className="text-[7px] font-black bg-[var(--beheer-border)] text-[var(--beheer-text-muted)] px-1.5 py-0.5 rounded-full tracking-widest opacity-60">Verleden</span>}
+                                    </div>
+                                    <p className="text-[9px] font-bold text-[var(--beheer-text-muted)] tracking-widest opacity-60">
+                                        {ev.event_date ? new Date(ev.event_date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }) : 'Geen datum'}
+                                    </p>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <span className={`text-xl font-black tracking-tighter ${isPast ? 'text-[var(--beheer-text-muted)]' : 'text-[var(--beheer-accent)]'}`}>{ev.signups}</span>
-                                    <UserCheck className={`h-4 w-4 ${isPast ? 'text-[var(--beheer-text-muted)]' : 'text-[var(--beheer-accent)]'}`} />
+                                <div className="flex items-center gap-3">
+                                    <div className="flex flex-col items-end">
+                                        <div className="flex items-center gap-1">
+                                            <span className="text-lg font-black tracking-tighter text-[var(--beheer-text)]">{ev.signups}</span>
+                                            <Users className="h-3 w-3 text-[var(--beheer-text-muted)] opacity-40" />
+                                        </div>
+                                    </div>
+                                    <div className="bg-[var(--beheer-card-soft)] p-1.5 rounded-lg text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)] group-hover:bg-[var(--beheer-accent)]/10 transition-all opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0">
+                                        <Ticket className="h-3 w-3" />
+                                    </div>
                                 </div>
                             </a>
                         );
                     })
                 ) : (
-                    <p className="text-[var(--beheer-text-muted)] text-[10px] font-black uppercase tracking-widest text-center py-8">Geen recente activiteiten</p>
+                    <p className="text-[var(--beheer-text-muted)] text-[10px] font-black tracking-widest text-center py-8 italic opacity-40">Geen recente activiteiten</p>
                 )}
             </div>
-        </div>
+        </ListCard>
     );
 }
-

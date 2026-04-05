@@ -16,6 +16,11 @@ import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 
+// Clean committee names (removed || SV Salve Mundi and other suffixes)
+function cleanCommitteeName(name: string): string {
+    return name?.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim() || '';
+}
+
 interface Committee {
     id: number;
     name: string;
@@ -133,6 +138,7 @@ export default function ActiviteitNieuwIsland({ committees }: { committees: Comm
                                     id="name"
                                     name="name"
                                     autoComplete="off"
+                                    suppressHydrationWarning
                                     className={`w-full px-5 py-4 rounded-xl border bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] text-lg font-bold ${formErrors.name ? 'border-red-500 ring-4 ring-red-500/10' : 'border-[var(--beheer-border)]'} focus:border-[var(--beheer-accent)] focus:ring-4 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all shadow-sm`}
                                     placeholder="Bijv. Introductiebivak 2024"
                                 />
@@ -146,6 +152,8 @@ export default function ActiviteitNieuwIsland({ committees }: { committees: Comm
                                         id="description"
                                         name="description"
                                         rows={6}
+                                        autoComplete="off"
+                                        suppressHydrationWarning
                                         className={`w-full px-5 py-4 rounded-xl border bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] ${formErrors.description ? 'border-red-500 ring-4 ring-red-500/10' : 'border-[var(--beheer-border)]'} focus:border-[var(--beheer-accent)] focus:ring-4 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all shadow-sm resize-none text-[15px] leading-relaxed font-medium`}
                                         placeholder="Wat gaan we doen?"
                                     />
@@ -157,6 +165,8 @@ export default function ActiviteitNieuwIsland({ committees }: { committees: Comm
                                         id="description_logged_in"
                                         name="description_logged_in"
                                         rows={6}
+                                        autoComplete="off"
+                                        suppressHydrationWarning
                                         className="w-full px-5 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] focus:border-[var(--beheer-accent)] focus:ring-4 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all shadow-sm resize-none text-[15px] leading-relaxed font-medium"
                                         placeholder="Details zoals verzamelplek of geheime agenda..."
                                     />
@@ -174,19 +184,19 @@ export default function ActiviteitNieuwIsland({ committees }: { committees: Comm
                                 <div className="grid grid-cols-2 gap-6">
                                     <div className="space-y-3">
                                         <label htmlFor="event_date" className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Startdatum *</label>
-                                        <input type="date" id="event_date" name="event_date" className={`w-full px-4 py-3 rounded-xl border bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] font-bold ${formErrors.event_date ? 'border-red-500' : 'border-[var(--beheer-border)]'} focus:border-[var(--beheer-accent)] focus:ring-2 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all`} />
+                                        <input type="date" id="event_date" name="event_date" autoComplete="off" suppressHydrationWarning className={`w-full px-4 py-3 rounded-xl border bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] font-bold ${formErrors.event_date ? 'border-red-500' : 'border-[var(--beheer-border)]'} focus:border-[var(--beheer-accent)] focus:ring-2 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all`} />
                                     </div>
                                     <div className="space-y-3">
                                         <label htmlFor="event_time" className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Starttijd</label>
-                                        <input type="time" id="event_time" name="event_time" className="w-full px-4 py-3 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] font-bold focus:border-[var(--beheer-accent)] focus:ring-2 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all" />
+                                        <input type="time" id="event_time" name="event_time" autoComplete="off" suppressHydrationWarning className="w-full px-4 py-3 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] font-bold focus:border-[var(--beheer-accent)] focus:ring-2 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all" />
                                     </div>
                                     <div className="space-y-3">
                                         <label htmlFor="event_date_end" className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Einddatum</label>
-                                        <input type="date" id="event_date_end" name="event_date_end" className="w-full px-4 py-3 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] font-bold focus:border-[var(--beheer-accent)] focus:ring-2 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all" />
+                                        <input type="date" id="event_date_end" name="event_date_end" autoComplete="off" suppressHydrationWarning className="w-full px-4 py-3 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] font-bold focus:border-[var(--beheer-accent)] focus:ring-2 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all" />
                                     </div>
                                     <div className="space-y-3">
                                         <label htmlFor="event_time_end" className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Eindtijd</label>
-                                        <input type="time" id="event_time_end" name="event_time_end" className="w-full px-4 py-3 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] font-bold focus:border-[var(--beheer-accent)] focus:ring-2 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all" />
+                                        <input type="time" id="event_time_end" name="event_time_end" autoComplete="off" suppressHydrationWarning className="w-full px-4 py-3 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] font-bold focus:border-[var(--beheer-accent)] focus:ring-2 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all" />
                                     </div>
                                 </div>
                             </div>
@@ -198,11 +208,11 @@ export default function ActiviteitNieuwIsland({ committees }: { committees: Comm
                                 <div className="space-y-6">
                                     <div className="space-y-3">
                                         <label htmlFor="location" className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Locatie</label>
-                                        <input type="text" id="location" name="location" className="w-full px-4 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] font-bold focus:border-[var(--beheer-accent)] outline-none transition-all" placeholder="Bijv. Fontys R10 of Eindhoven Centrum" />
+                                        <input type="text" id="location" name="location" autoComplete="off" suppressHydrationWarning className="w-full px-4 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] font-bold focus:border-[var(--beheer-accent)] outline-none transition-all" placeholder="Bijv. Fontys R10 of Eindhoven Centrum" />
                                     </div>
                                     <div className="space-y-3">
                                         <label htmlFor="contact" className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Contactpersoon (E-mail)</label>
-                                        <input type="email" id="contact" name="contact" className="w-full px-4 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] font-bold focus:border-[var(--beheer-accent)] outline-none transition-all" placeholder="naam@salvemundi.nl" />
+                                        <input type="email" id="contact" name="contact" autoComplete="off" suppressHydrationWarning className="w-full px-4 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] font-bold focus:border-[var(--beheer-accent)] outline-none transition-all" placeholder="naam@salvemundi.nl" />
                                     </div>
                                 </div>
                             </div>
@@ -219,21 +229,21 @@ export default function ActiviteitNieuwIsland({ committees }: { committees: Comm
                                     <label htmlFor="max_sign_ups" className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Max Deelnemers</label>
                                     <div className="relative">
                                         <Users className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--beheer-text-muted)]" />
-                                        <input type="number" id="max_sign_ups" name="max_sign_ups" className="w-full pl-11 pr-4 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] font-bold focus:border-[var(--beheer-accent)] outline-none transition-all placeholder:font-medium" placeholder="Onbeperkt" />
+                                        <input type="number" id="max_sign_ups" name="max_sign_ups" autoComplete="off" suppressHydrationWarning className="w-full pl-11 pr-4 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] font-bold focus:border-[var(--beheer-accent)] outline-none transition-all placeholder:font-medium" placeholder="Onbeperkt" />
                                     </div>
                                 </div>
                                 <div className="space-y-3">
                                     <label htmlFor="price_members" className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Prijs Leden (€)</label>
                                     <div className="relative">
                                         <Euro className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--beheer-text-muted)]" />
-                                        <input type="number" step="0.01" id="price_members" name="price_members" className="w-full pl-11 pr-4 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] font-bold focus:border-[var(--beheer-accent)] outline-none transition-all" placeholder="0.00" />
+                                        <input type="number" step="0.01" id="price_members" name="price_members" autoComplete="off" suppressHydrationWarning className="w-full pl-11 pr-4 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] font-bold focus:border-[var(--beheer-accent)] outline-none transition-all" placeholder="0.00" />
                                     </div>
                                 </div>
                                 <div className="space-y-3">
                                     <label htmlFor="price_non_members" className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Prijs Niet-leden (€)</label>
                                     <div className="relative">
                                         <Euro className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--beheer-text-muted)]" />
-                                        <input type="number" step="0.01" id="price_non_members" name="price_non_members" className="w-full pl-11 pr-4 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] font-bold focus:border-[var(--beheer-accent)] outline-none transition-all" placeholder="0.00" />
+                                        <input type="number" step="0.01" id="price_non_members" name="price_non_members" autoComplete="off" suppressHydrationWarning className="w-full pl-11 pr-4 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] font-bold focus:border-[var(--beheer-accent)] outline-none transition-all" placeholder="0.00" />
                                     </div>
                                 </div>
                             </div>
@@ -241,13 +251,13 @@ export default function ActiviteitNieuwIsland({ committees }: { committees: Comm
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-3">
                                     <label htmlFor="registration_deadline" className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Inschrijfdeadline</label>
-                                    <input type="datetime-local" id="registration_deadline" name="registration_deadline" className="w-full px-4 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] font-bold focus:border-[var(--beheer-accent)] outline-none transition-all" />
+                                    <input type="datetime-local" id="registration_deadline" name="registration_deadline" autoComplete="off" suppressHydrationWarning className="w-full px-4 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] font-bold focus:border-[var(--beheer-accent)] outline-none transition-all" />
                                 </div>
                                 <div className="space-y-3">
                                     <label htmlFor="committee_id" className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Verantwoordelijke Commissie</label>
-                                    <select id="committee_id" name="committee_id" className="w-full px-4 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] font-bold focus:border-[var(--beheer-accent)] outline-none transition-all cursor-pointer">
-                                        <option value="">Geen commissie</option>
-                                        {committees.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                    <select id="committee_id" name="committee_id" autoComplete="off" suppressHydrationWarning className="w-full px-5 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] focus:border-[var(--beheer-accent)] focus:ring-4 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all font-bold cursor-pointer">
+                                        <option value="">Selecteer een commissie...</option>
+                                        {committees.map(c => <option key={c.id} value={c.id}>{cleanCommitteeName(c.name)}</option>)}
                                     </select>
                                 </div>
                             </div>

@@ -156,9 +156,9 @@ export default function ActivityCard({
                                         <span className="text-emerald-500">GRATIS</span>
                                     ) : (
                                         <>
-                                            <span>€{event.price_members || 0} Member</span>
+                                            <span>€{event.price_members || 0} Lid</span>
                                             <span className="text-[var(--beheer-border)]">|</span>
-                                            <span className="text-[var(--beheer-text-muted)]">€{event.price_non_members || 0} Guest</span>
+                                            <span className="text-[var(--beheer-text-muted)]">€{event.price_non_members || 0} Niet lid</span>
                                         </>
                                     )}
                                 </div>

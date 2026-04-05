@@ -5,6 +5,7 @@ import { headers } from 'next/headers';
 import AdminDashboardSkeleton from '@/components/ui/admin/AdminDashboardSkeleton';
 import AdminActivitiesIsland from '@/components/islands/admin/activities/AdminActivitiesIsland';
 import { getAdminActivities } from '@/server/actions/activiteiten.actions';
+import { getCommittees } from '@/server/actions/committees.actions';
 
 export const metadata: Metadata = {
     title: 'Beheer Activiteiten | SV Salve Mundi',
@@ -32,19 +33,18 @@ async function ActivitiesDataLoader({ searchParams }: { searchParams: { q?: stri
         headers: await headers()
     });
     
-    // Fetch data server-side so the client island hydrates immediately with data
-    const initialEvents = await getAdminActivities(
-        searchParams.q, 
-        (searchParams.filter as any) || 'all'
-    ).catch(() => []);
+    // Fetch ALL data server-side so the client island handles the rest for maximum speed
+    const [initialEvents, committees] = await Promise.all([
+        getAdminActivities(undefined, 'all').catch(() => []),
+        getCommittees().catch(() => [])
+    ]);
     
     return (
         <AdminActivitiesIsland 
             initialEvents={initialEvents as any} 
+            committees={committees as any}
             userId={session?.user?.id}
             userCommittees={(session?.user as any)?.committees || []}
-            initialSearch={searchParams.q}
-            initialFilter={(searchParams.filter as any) || 'all'}
         />
     );
 }

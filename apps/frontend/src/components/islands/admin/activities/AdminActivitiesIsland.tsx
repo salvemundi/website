@@ -25,6 +25,11 @@ import ActivityNotificationModal from './ActivityNotificationModal';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 
+// Clean committee names (removed || SV Salve Mundi and other suffixes)
+function cleanCommitteeName(name: string): string {
+    return name?.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim() || '';
+}
+
 interface AdminActivity {
     id: number;
     name: string;
@@ -39,6 +44,7 @@ interface AdminActivity {
     contact?: string | null;
     image?: any;
     committee_id?: number | null;
+    committee_name?: string | null;
     status?: 'published' | 'draft' | 'archived' | 'scheduled' | null;
     publish_date?: string | null;
     signup_count?: number;
@@ -46,23 +52,23 @@ interface AdminActivity {
 
 interface Props {
     initialEvents: AdminActivity[];
+    committees: any[];
     userId?: string;
     userCommittees?: any[];
-    initialSearch?: string;
-    initialFilter?: 'all' | 'upcoming' | 'past';
 }
 
 export default function AdminActivitiesIsland({
     initialEvents,
+    committees = [],
     userCommittees = [],
-    initialSearch = '',
-    initialFilter = 'all'
+    userId
 }: Props) {
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
     const [events, setEvents] = useState(initialEvents);
-    const [searchQuery, setSearchQuery] = useState(initialSearch);
-    const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>(initialFilter);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>('all');
+    const [selectedCommittee, setSelectedCommittee] = useState<string>('all');
     const [pageSize, setPageSize] = useState<number | -1>(10);
 
     // Notification states
@@ -72,31 +78,15 @@ export default function AdminActivitiesIsland({
 
     const [isPending, startTransition] = useTransition();
 
-    // Sync state with props
+    // Client-side filtering only for maximum speed as requested
+    // Removed URL router.push to prevent page reloads
     useEffect(() => {
-        setEvents(initialEvents);
-        setSearchQuery(initialSearch);
-        setFilter(initialFilter);
-    }, [initialEvents, initialSearch, initialFilter]);
-
-    // Search debounce logic (handled by URL updates)
-    useEffect(() => {
-        if (searchQuery === initialSearch) return;
-        const timer = setTimeout(() => {
-            const params = new URLSearchParams();
-            if (searchQuery) params.set('q', searchQuery);
-            if (filter !== 'all') params.set('filter', filter);
-            router.push(`/beheer/activiteiten?${params.toString()}`);
-        }, 500);
-        return () => clearTimeout(timer);
-    }, [searchQuery]);
+        // We keep the state updates, but don't push to URL 
+        // unless explicitly requested via a "Share" button or similar.
+    }, [searchQuery, filter, selectedCommittee]);
 
     const handleFilterChange = (newFilter: 'all' | 'upcoming' | 'past') => {
         setFilter(newFilter);
-        const params = new URLSearchParams();
-        if (searchQuery) params.set('q', searchQuery);
-        if (newFilter !== 'all') params.set('filter', newFilter);
-        router.push(`/beheer/activiteiten?${params.toString()}`);
     };
 
     const handleDelete = async (id: number, name: string) => {
@@ -137,21 +127,57 @@ export default function AdminActivitiesIsland({
         }
     };
 
-    const displayedEvents = pageSize === -1 ? events : events.slice(0, pageSize);
+    const availableCommittees = useMemo(() => {
+        return committees
+            .map(c => ({ 
+                id: String(c.id), 
+                name: cleanCommitteeName(c.name || '') 
+            }))
+            .sort((a, b) => a.name.localeCompare(b.name));
+    }, [committees]);
+
+    const filteredEvents = useMemo(() => {
+        let result = events;
+        
+        // 1. Status Filter (Upcoming / Past)
+        const now = new Date();
+        if (filter === 'upcoming') {
+            result = result.filter(e => new Date(e.event_date) >= now);
+        } else if (filter === 'past') {
+            result = result.filter(e => new Date(e.event_date) < now);
+        }
+
+        // 2. Search Filter
+        if (searchQuery) {
+            const query = searchQuery.toLowerCase();
+            result = result.filter(e => 
+                e.name.toLowerCase().includes(query) || 
+                e.location?.toLowerCase().includes(query) ||
+                e.description?.toLowerCase().includes(query)
+            );
+        }
+
+        // 3. Committee Filter
+        if (selectedCommittee !== 'all') {
+            result = result.filter(e => String(e.committee_id) === selectedCommittee);
+        }
+        
+        return result;
+    }, [events, filter, searchQuery, selectedCommittee]);
+
+    const displayedEvents = pageSize === -1 ? filteredEvents : filteredEvents.slice(0, pageSize);
     const superAdmin = useMemo(() => isSuperAdmin(userCommittees), [userCommittees]);
 
     const stats = useMemo(() => {
-        const upcomingCount = events.filter(e => new Date(e.event_date) >= new Date()).length;
-        const totalSignups = events.reduce((acc, curr) => acc + (curr.signup_count || 0), 0);
-        const avgPrice = events.length > 0 ? (events.reduce((acc, curr) => acc + (curr.price_members || 0), 0) / events.length).toFixed(2) : '0.00';
+        const upcomingCount = filteredEvents.filter(e => new Date(e.event_date) >= new Date()).length;
+        const totalSignups = filteredEvents.reduce((acc, curr) => acc + (curr.signup_count || 0), 0);
         
         return [
-            { label: 'Activiteiten', value: events.length, icon: Calendar, theme: 'blue' },
-            { label: 'Aankomend', value: upcomingCount, icon: Clock, theme: 'emerald' },
-            { label: 'Aanmeldingen', value: totalSignups, icon: Users, theme: 'indigo' },
-            { label: 'Gem. Prijs Member', value: `€${avgPrice}`, icon: Euro, theme: 'amber' },
+            { label: 'Aankomende activiteiten', value: upcomingCount, icon: Clock, theme: 'emerald' },
+            { label: 'Totale Activiteiten', value: filteredEvents.length, icon: Calendar, theme: 'blue' },
+            { label: 'Totale Aanmeldingen', value: totalSignups, icon: Users, theme: 'indigo' },
         ];
-    }, [events]);
+    }, [filteredEvents]);
 
     return (
         <>
@@ -180,6 +206,9 @@ export default function AdminActivitiesIsland({
                     onFilterChange={handleFilterChange}
                     pageSize={pageSize}
                     onPageSizeChange={setPageSize}
+                    selectedCommittee={selectedCommittee}
+                    committees={availableCommittees}
+                    onCommitteeChange={setSelectedCommittee}
                 />
 
                 <div className="grid grid-cols-1 gap-8">

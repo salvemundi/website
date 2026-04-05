@@ -1,10 +1,12 @@
 import { query } from '@/lib/db';
-import { DashboardStatsSchema, type DashboardStats } from '@salvemundi/validations';
+import { DashboardStatsSchema, type DashboardStats, type RecentActivity, RecentActivitySchema } from '@salvemundi/validations';
+import { z } from 'zod';
 
 /**
  * High-performance dashboard statistics using direct SQL.
  * Bypasses Directus API and cache for immediate consistency.
  */
+
 export async function getDashboardStatsInternal(): Promise<DashboardStats> {
     try {
         const now = new Date();
@@ -12,11 +14,12 @@ export async function getDashboardStatsInternal(): Promise<DashboardStats> {
         const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
         // 1. Basic counts in a single multi-query
+        // Filter signups by successful/open payment status
         const basicSql = `
             SELECT 
                 (SELECT COUNT(*) FROM directus_users WHERE status = 'active' AND (membership_expiry IS NULL OR membership_expiry >= $1)) as members,
                 (SELECT COUNT(*) FROM events WHERE event_date >= $1) as events,
-                (SELECT COUNT(*) FROM event_signups es JOIN events e ON es.event_id = e.id WHERE e.event_date >= $1) as signups,
+                (SELECT COUNT(*) FROM event_signups es JOIN events e ON es.event_id = e.id WHERE e.event_date >= $1 AND es.payment_status = 'paid') as signups,
                 (SELECT COUNT(*) FROM intro_signups) as intro,
                 (SELECT COUNT(*) FROM coupons WHERE is_active = true AND (valid_until IS NULL OR valid_until >= $1)) as coupons,
                 (SELECT COUNT(*) FROM system_logs WHERE status = 'FAILED') as errors,
@@ -28,13 +31,11 @@ export async function getDashboardStatsInternal(): Promise<DashboardStats> {
         const b = basicRows[0];
 
         // 2. Specialized counts for Trips and Pub Crawl
-        // These are slightly more complex as they depend on "current/upcoming" logic
-        
-        // Upcoming Pub Crawl Signups
+        // Upcoming Pub Crawl Signups (filtered by payment status)
         const pcSql = `
             SELECT COUNT(*) as count 
             FROM pub_crawl_signups 
-            WHERE pub_crawl_event_id = (
+            WHERE payment_status = 'paid' AND pub_crawl_event_id = (
                 SELECT id FROM pub_crawl_events 
                 WHERE date >= $1 
                 ORDER BY date ASC 
@@ -86,5 +87,37 @@ export async function getDashboardStatsInternal(): Promise<DashboardStats> {
             reisSignups: 0,
             stickerGrowthRate: 0
         };
+    }
+}
+
+/**
+ * Fetch recent activities with signup counts using SQL for immediate consistency.
+ * Excludes failed/canceled payments.
+ */
+export async function getRecentActivitiesInternal(): Promise<RecentActivity[]> {
+    try {
+        const sql = `
+            SELECT 
+                e.id, 
+                e.name, 
+                e.event_date,
+                (SELECT COUNT(*) FROM event_signups es WHERE es.event_id = e.id AND es.payment_status = 'paid') as signups
+            FROM events e
+            ORDER BY e.event_date DESC
+            LIMIT 4
+        `;
+        const { rows } = await query(sql);
+        
+        const mapped = rows.map(r => ({
+            id: Number(r.id),
+            name: r.name,
+            event_date: r.event_date ? new Date(r.event_date).toISOString() : null,
+            signups: Number(r.signups || 0)
+        }));
+
+        return z.array(RecentActivitySchema).parse(mapped);
+    } catch (error) {
+        console.error('[AdminDashboardQueries] getRecentActivitiesInternal failed:', error);
+        return [];
     }
 }
