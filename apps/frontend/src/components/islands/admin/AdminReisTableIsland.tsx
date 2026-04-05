@@ -10,6 +10,7 @@ import ReisFilters from '@/components/admin/reis/ReisFilters';
 import ReisTable from '@/components/admin/reis/ReisTable';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
+import { mapActivityOptionIdToName, parseActivityOptions, parseSelectedOptions } from '@/lib/reis-utils';
 
 interface AdminReisTableIslandProps {
     initialSignups: TripSignup[];
@@ -163,15 +164,11 @@ export default function AdminReisTableIsland({ initialSignups, initialSignupActi
                     const activity = a as any;
                     const name = activity.activity_name || activity.trip_activity_id?.name || activity.trip_activity_id;
                     
-                    const rawOptions = typeof activity.selected_options === 'string' ? JSON.parse(activity.selected_options) : (activity.selected_options || {});
-                    const metaOptionsRaw = activity.activity_options || activity.trip_activity_id?.options || [];
-                    const metaOptions = typeof metaOptionsRaw === 'string' ? JSON.parse(metaOptionsRaw) : (metaOptionsRaw || []);
+                    const rawOptions = parseSelectedOptions(activity.selected_options);
+                    const metaOptions = parseActivityOptions(activity.activity_options || activity.trip_activity_id?.options);
                     
                     const opts = Object.keys(rawOptions);
-                    const optNames = opts.map(id => {
-                        const opt = metaOptions.find((m: any) => m.id === id);
-                        return opt?.name || id;
-                    }).filter(Boolean);
+                    const optNames = opts.map(id => mapActivityOptionIdToName(id, metaOptions)).filter(Boolean);
                     
                     return optNames.length > 0 ? `${name} (${optNames.join(', ')})` : name;
                 }).join(' | ');

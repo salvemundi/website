@@ -7,6 +7,8 @@ import {
     Loader2 
 } from 'lucide-react';
 
+import { mapActivityOptionIdToName, parseActivityOptions, parseSelectedOptions } from '@/lib/reis-utils';
+
 interface Signup {
     id: number;
     trip_signup_id?: {
@@ -14,17 +16,18 @@ interface Signup {
         last_name: string;
         email: string;
     };
-    selected_options?: string[];
+    selected_options?: string | Record<string, boolean> | string[];
 }
 
 interface Props {
     activityName: string;
+    options?: any;
     signups: Signup[];
     loading: boolean;
     onClose: () => void;
 }
 
-export default function TripActivitySignupsModal({ activityName, signups, loading, onClose }: Props) {
+export default function TripActivitySignupsModal({ activityName, options, signups, loading, onClose }: Props) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
             <div className="bg-[var(--beheer-card-bg)] w-full max-w-4xl rounded-[var(--beheer-radius)] shadow-[0_0_50px_rgba(0,0,0,0.3)] overflow-hidden border border-[var(--beheer-border)] flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300">
@@ -74,17 +77,25 @@ export default function TripActivitySignupsModal({ activityName, signups, loadin
                                             </td>
                                             <td className="px-8 py-6 text-xs text-[var(--beheer-text-muted)] font-medium lowercase">{s.trip_signup_id?.email || '-'}</td>
                                             <td className="px-8 py-6">
-                                                {Array.isArray(s.selected_options) && s.selected_options.length > 0 ? (
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {s.selected_options.map((opt: string, i: number) => (
-                                                            <span key={i} className="px-3 py-1 bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] text-[9px] font-black uppercase tracking-tighter rounded-lg border border-[var(--beheer-accent)]/10">
-                                                                {opt}
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                ) : (
-                                                    <span className="text-[var(--beheer-text-muted)] italic text-xs opacity-40">Geen opties</span>
-                                                )}
+                                                {(() => {
+                                                    const rawSelected = parseSelectedOptions(s.selected_options);
+                                                    const metaOptions = parseActivityOptions(options);
+                                                    const selectedIds = Object.keys(rawSelected).filter(id => rawSelected[id]);
+                                                    
+                                                    if (selectedIds.length === 0) {
+                                                        return <span className="text-[var(--beheer-text-muted)] italic text-xs opacity-40">Geen opties</span>;
+                                                    }
+
+                                                    return (
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {selectedIds.map((optId, i) => (
+                                                                <span key={i} className="px-3 py-1 bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] text-[9px] font-black uppercase tracking-tighter rounded-lg border border-[var(--beheer-accent)]/10">
+                                                                    {mapActivityOptionIdToName(optId, metaOptions)}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    );
+                                                })()}
                                             </td>
                                         </tr>
                                     ))}
