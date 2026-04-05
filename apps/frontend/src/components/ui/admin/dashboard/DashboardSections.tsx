@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { Calendar, Users, Ticket, Activity, AlertCircle, UserCheck, Cake, Award, Plus, FileText, Shield, MapPin } from 'lucide-react';
+import { Calendar, Users, Ticket, Activity, AlertCircle, UserCheck, Cake, Award, Plus, FileText, Shield, MapPin, Mail } from 'lucide-react';
 import { StatCard, ActionCard, ListCard } from './LegacyCards';
 import { getDashboardStats, getDashboardPermissions, getUpcomingBirthdays, getRecentActivities, getTopStickers } from '@/server/actions/admin.actions';
 
@@ -76,6 +76,7 @@ export async function QuickActions() {
                 {permissions.canAccessLogging && <ActionCard title="Logboek" subtitle="Activiteiten" icon={<FileText className="h-6 w-6" />} href="/beheer/logging" colorClass="amber" />}
                 {permissions.canAccessStickers && <ActionCard title="Beheer" subtitle="Stickers" icon={<MapPin className="h-6 w-6" />} href="/beheer/stickers" colorClass="purple" />}
                 {permissions.isIct && <ActionCard title="Test Modus" subtitle="Impersonatie" icon={<Users className="h-6 w-6" />} href="/beheer/impersonate" colorClass="teal" />}
+                {permissions.canAccessMail && <ActionCard title="Mail" subtitle="Beheer" icon={<Mail className="h-6 w-6" />} href="/beheer/mail" colorClass="purple" />}
             </div>
         </div>
     );
