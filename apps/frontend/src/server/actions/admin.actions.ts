@@ -94,6 +94,7 @@ export async function getDashboardPermissions() {
         canAccessCoupons: permissions.canAccessCoupons || false,
         canAccessStickers: permissions.canAccessStickers || false,
         canAccessPermissions: permissions.canAccessPermissions || false,
+        canAccessMail: isAuthorized,
         isIct
     };
 }
