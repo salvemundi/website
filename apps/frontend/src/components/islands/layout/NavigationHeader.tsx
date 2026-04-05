@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
     Menu, X, Sparkles, Shield, MapPin, LogOut,
     Home, User, CalendarDays, Users, Beer, Map, Mail,
@@ -42,7 +42,23 @@ type SessionUser = {
 const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = [], initialSession, impersonation }) => {
     const pathname = usePathname();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [mounted, setMounted] = useState(false);
+
+    // Auto-login flow wanneer proxy een 302 uitvoert naar /?needLogin=true
+    useEffect(() => {
+        if (!mounted) return;
+        const needLogin = searchParams.get('needLogin');
+        const callbackURL = searchParams.get('callbackURL') || '/profiel';
+
+        if (needLogin === 'true') {
+            // Verwijder de parameter uit de URL zodat we niet in een loop belanden als de user terug navigeert
+            router.replace(pathname || '/');
+            
+            // Login flow direct starten
+            authClient.signIn.social({ provider: 'microsoft', callbackURL }).catch(console.error);
+        }
+    }, [mounted, searchParams, pathname, router]);
 
     // Better Auth sessie — uitsluitend via useSession() conform V7-advies
     // De Redis-plugin zorgt ervoor dat 'user' al geswapped is bij impersonatie.

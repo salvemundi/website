@@ -112,11 +112,8 @@ async function proxy(request: NextRequest) {
 
             if (!hasSession) {
                 const callbackUrl = encodeURIComponent(pathname + request.nextUrl.search);
-                const microsoftAuthUrl = new URL(
-                    `/api/auth/login/social/microsoft?callbackURL=${callbackUrl}`,
-                    request.url
-                );
-                return withSecurity(NextResponse.redirect(microsoftAuthUrl));
+                const authRedirectUrl = new URL(`/?needLogin=true&callbackURL=${callbackUrl}`, request.url);
+                return withSecurity(NextResponse.redirect(authRedirectUrl));
             }
 
             return nextWithNonce();
