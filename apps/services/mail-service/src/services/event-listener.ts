@@ -91,6 +91,7 @@ export class EventListenerService {
                     // 2. Fetch Event/Trip details
                     try {
                         if (data.registrationType === 'trip_signup' && data.registrationId) {
+                            templateId = 'trip-signup';
                             const signupRes = await fetch(`${directusUrl}/items/trip_signups/${data.registrationId}?fields=trip_id,first_name`, {
                                 headers: { 'Authorization': `Bearer ${directusToken}` }
                             });
@@ -105,7 +106,8 @@ export class EventListenerService {
                                 const tripData: any = await tripRes.json();
                                 mailData.eventName = tripData?.data?.name || 'Reis';
                             }
-                        } else if (data.registrationType === 'pub_crawl_signup') {
+                        }
+ else if (data.registrationType === 'pub_crawl_signup') {
                             mailData.eventName = 'Kroegentocht';
                         } else if (data.registrationType === 'event_signup' && data.registrationId) {
                             const signupRes = await fetch(`${directusUrl}/items/event_signups/${data.registrationId}?fields=event_id,first_name`, {

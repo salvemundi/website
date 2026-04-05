@@ -4,6 +4,15 @@ export interface Schema {
     committee_members: CommitteeMember[];
     events: Event[];
     event_signups: EventSignup[];
+    feature_flags: FeatureFlag[];
+}
+
+export interface FeatureFlag {
+    id: string;
+    name: string;
+    route_match: string;
+    is_active: boolean;
+    message?: string;
 }
 
 export interface Event {
