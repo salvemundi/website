@@ -1,122 +1,42 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            line-height: 1.6;
-            color: #1e1e1e;
-            background-color: #f8f9fa;
-        }
-
-        .container {
-            padding: 20px;
-            max-width: 600px;
-            margin: auto;
-            background-color: #ffffff;
-            border-radius: 20px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-
-        .header {
-            background: #a4539b;
-            color: white;
-            padding: 30px;
-            text-align: center;
-            border-radius: 20px 20px 0 0;
-        }
-
-        .content {
-            padding: 40px;
-        }
-
-        .status-badge {
-            display: inline-block;
-            background: #e8f5e9;
-            color: #2e7d32;
-            padding: 8px 16px;
-            border-radius: 50px;
-            font-weight: 800;
-            text-transform: uppercase;
-            font-size: 10px;
-            letter-spacing: 1px;
-            margin-bottom: 20px;
-        }
-
-        .footer {
-            font-size: 0.8em;
-            color: #8a7a8c;
-            margin-top: 30px;
-            border-top: 1px solid #eee;
-            padding-top: 20px;
-            text-align: center;
-        }
-
-        .button {
-            display: inline-block;
-            padding: 16px 32px;
-            background-color: #a4539b;
-            color: white !important;
-            text-decoration: none;
-            border-radius: 12px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 20px;
-            box-shadow: 0 4px 10px rgba(164, 83, 155, 0.3);
-        }
-
-        .details {
-            background: #fdfbff;
-            border: 1px solid #d9c7db;
-            padding: 20px;
-            border-radius: 12px;
-            margin: 20px 0;
-        }
-
-        .details p {
-            margin: 5px 0;
-            font-size: 14px;
-        }
-
-        .details strong {
-            color: #5e2b52;
-        }
-    </style>
-</head>
-
-<body>
-    <div class="container">
-        <div class="header">
-            <h1 style="margin:0; font-weight: 900; letter-spacing: 2px;">PAID & CONFIRMED</h1>
+{{#> layout headerTitle="PAID & CONFIRMED"}}
+    <div class="status-badge">Betaling Ontvangen</div>
+    <p>Beste deelnemer,</p>
+    
+    {{#if (eq registrationType 'trip_signup')}}
+        <p>Hoera! Je betaling voor de <strong>Reis ({{eventName}})</strong> is succesvol verwerkt.</p>
+        <div class="details">
+            <p><strong>Transactie ID:</strong> {{paymentId}}</p>
+            <p><strong>Registratie ID:</strong> {{registrationId}}</p>
+            <p><strong>Type:</strong> Reis Inschrijving</p>
         </div>
-        <div class="content">
-            <div class="status-badge">Betaling Ontvangen</div>
-            <p>Beste deelnemer,</p>
-            <p>Hoera! Je betaling voor de <strong>Kroegentocht</strong> is succesvol verwerkt.</p>
-            
-            <div class="details">
-                <p><strong>Transactie ID:</strong> {{paymentId}}</p>
-                <p><strong>Registratie ID:</strong> {{registrationId}}</p>
-                <p><strong>Type:</strong> Kroegentocht Inschrijving</p>
-            </div>
-
-            <p>Je tickets zijn nu beschikbaar in je Salve Mundi profiel. Je kunt ze op elk moment bekijken en downloaden via de onderstaande knop.</p>
-            
-            <p style="text-align: center;">
-                <a href="https://salvemundi.nl/kroegentocht" class="button">Bekijk Mijn Tickets</a>
-            </p>
-
-            <p>Vergeet niet je QR-code(s) mee te nemen naar het startpunt van de kroegentocht! We hebben er zin in.</p>
-
-            <p>Met paarse groet,<br><strong>Bestuur Salve Mundi</strong></p>
+        <p>Je kunt de status van je aanmelding en de details van de reis op elk moment bekijken via je dashboard.</p>
+        <p style="text-align: center;">
+            <a href="https://salvemundi.nl/reis" class="button">Naar Reis Dashboard</a>
+        </p>
+    {{else if (eq registrationType 'pub_crawl_signup')}}
+        <p>Hoera! Je betaling voor de <strong>{{eventName}}</strong> is succesvol verwerkt.</p>
+        <div class="details">
+            <p><strong>Transactie ID:</strong> {{paymentId}}</p>
+            <p><strong>Registratie ID:</strong> {{registrationId}}</p>
+            <p><strong>Type:</strong> {{eventName}} Inschrijving</p>
         </div>
-        <div class="footer">
-            Dit is een automatisch bericht van het Salve Mundi Platform v7.<br>
-            Vragen? Mail naar <a href="mailto:ict@salvemundi.nl">ict@salvemundi.nl</a>
+        <p>Je tickets zijn nu beschikbaar in je Salve Mundi profiel. Je kunt ze op elk moment bekijken en downloaden via de onderstaande knop.</p>
+        <p style="text-align: center;">
+            <a href="https://salvemundi.nl/profiel" class="button">Bekijk Mijn Tickets</a>
+        </p>
+        <p>Vergeet niet je QR-code(s) mee te nemen naar het startpunt van de kroegentocht! We hebben er zin in.</p>
+    {{else}}
+        <p>Hoera! Je betaling voor de <strong>{{eventName}}</strong> is succesvol verwerkt.</p>
+        <div class="details">
+            <p><strong>Transactie ID:</strong> {{paymentId}}</p>
+            <p><strong>Registratie ID:</strong> {{registrationId}}</p>
+            <p><strong>Type:</strong> {{eventName}} Inschrijving</p>
         </div>
-    </div>
-</body>
+        <p>Bedankt voor je betaling! Je kunt je aanmelding bekijken via je profiel.</p>
+        <p style="text-align: center;">
+            <a href="https://salvemundi.nl/profiel" class="button">Naar Mijn Profiel</a>
+        </p>
+    {{/if}}
 
-</html>
+    <p>Met paarse groet,<br><strong>Bestuur Salve Mundi</strong></p>
+{{/layout}}

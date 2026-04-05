@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800;900&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: #1e1e1e;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            padding: 0;
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            border: 1px solid #eee;
+        }
+
+        .header {
+            background: #a4539b;
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header img {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-weight: 900;
+            letter-spacing: 3px;
+            font-size: 26px;
+            text-transform: uppercase;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1.5px;
+            margin-bottom: 25px;
+        }
+
+        /* Status Badge Variants */
+        .status-badge.info { background: #e3f2fd; color: #1565c0; }
+        .status-badge.warning { background: #fff3e0; color: #e65100; }
+        .status-badge.error { background: #ffebee; color: #c62828; }
+
+        .details {
+            background: #fdfbff;
+            border: 1px solid #d9c7db;
+            padding: 25px;
+            border-radius: 16px;
+            margin: 25px 0;
+        }
+
+        .details p {
+            margin: 8px 0;
+            font-size: 15px;
+        }
+
+        .details strong {
+            color: #5e2b52;
+            font-weight: 700;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 18px 36px;
+            background-color: #a4539b;
+            color: white !important;
+            text-decoration: none;
+            border-radius: 14px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 25px 0;
+            box-shadow: 0 10px 20px rgba(164, 83, 155, 0.2);
+        }
+
+        .footer {
+            font-size: 13px;
+            color: #8a7a8c;
+            background: #fafafa;
+            padding: 30px 40px;
+            text-align: center;
+            border-top: 1px solid #eee;
+        }
+
+        .footer a {
+            color: #a4539b;
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://salvemundi.nl/img/newlogo.png" alt="Salve Mundi Logo">
+            <h1>{{#if headerTitle}}{{headerTitle}}{{else}}STAY CONNECTED{{/if}}</h1>
+        </div>
+        <div class="content">
+            {{> @partial-block}}
+        </div>
+        <div class="footer">
+            Dit is een automatisch bericht van het Salve Mundi Platform.<br>
+            Vragen? Mail naar <a href="mailto:ict@salvemundi.nl">ict@salvemundi.nl</a> &bull; <a href="https://salvemundi.nl">salvemundi.nl</a>
+        </div>
+    </div>
+</body>
+</html>

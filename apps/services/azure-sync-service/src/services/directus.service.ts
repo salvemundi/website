@@ -1,5 +1,6 @@
 import { getDirectusClient } from '../config/directus.js';
 import { updateItem, readItems, createItem, deleteItem, readUsers, updateUser, createUser } from '@directus/sdk';
+import { Event, EventSignup } from '../types/schema.js';
 
 export class DirectusService {
     static async getUserById(id: string) {
@@ -93,8 +94,29 @@ export class DirectusService {
 
     static async getAllUsers() {
         return await getDirectusClient().request(readUsers({
-            fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status'],
+            fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'membership_expiry'],
             limit: -1
+        }));
+    }
+
+    static async getUpcomingEvents(daysAhead: number): Promise<Event[]> {
+        const targetDate = new Date();
+        targetDate.setDate(targetDate.getDate() + daysAhead);
+        const dateStr = targetDate.toISOString().split('T')[0];
+
+        return await getDirectusClient().request(readItems('events', {
+            filter: { event_date: { _eq: dateStr } },
+            fields: ['id', 'name', 'event_date', 'event_time', 'location']
+        }));
+    }
+
+    static async getPaidEventSignups(eventId: number): Promise<EventSignup[]> {
+        return await getDirectusClient().request(readItems('event_signups', {
+            filter: { 
+                event_id: { _eq: eventId },
+                payment_status: { _eq: 'paid' }
+            },
+            fields: ['id', 'participant_name', 'participant_email']
         }));
     }
 }

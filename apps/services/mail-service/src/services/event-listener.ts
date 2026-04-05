@@ -60,14 +60,76 @@ export class EventListenerService {
             if (payload.event === 'PAYMENT_SUCCESS') {
                 const data = PaymentSuccessEventSchema.parse(payload);
                 
-                await MailWorkerService.queueMail(redis, data.email, 'welcome_payment', { 
+                let eventName = 'Evenement';
+                let templateId = 'welcome_payment';
+                let mailData: any = { 
                     paymentId: data.paymentId, 
                     userId: data.userId,
                     registrationId: data.registrationId,
-                    registrationType: data.registrationType
-                });
+                    registrationType: data.registrationType,
+                    eventName: eventName
+                };
+
+                const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL!;
+                const directusToken = process.env.DIRECTUS_STATIC_TOKEN!;
                 
-                console.log(`[MailEventListener] Queued payment mail for ${data.email}`);
+                // 1. Handle Membership (New vs Renewal)
+                if ((data as any).isContribution || data.registrationType === 'membership') {
+                    templateId = data.isNewMember ? 'welcome_payment' : 'membership_renewal';
+                    try {
+                        const userRes = await fetch(`${directusUrl}/users/${data.userId}?fields=first_name,membership_expiry`, {
+                            headers: { 'Authorization': `Bearer ${directusToken}` }
+                        });
+                        const userData: any = await userRes.json();
+                        mailData.firstName = userData?.data?.first_name || 'Lid';
+                        mailData.expiryDate = userData?.data?.membership_expiry || 'Onbekend';
+                        mailData.amount = '20.00'; 
+                    } catch (err) {
+                        console.error('[MailEventListener] Failed to fetch user info for renewal:', err);
+                    }
+                } else {
+                    // 2. Fetch Event/Trip details
+                    try {
+                        if (data.registrationType === 'trip_signup' && data.registrationId) {
+                            const signupRes = await fetch(`${directusUrl}/items/trip_signups/${data.registrationId}?fields=trip_id,first_name`, {
+                                headers: { 'Authorization': `Bearer ${directusToken}` }
+                            });
+                            const signupData: any = await signupRes.json();
+                            const tripId = signupData?.data?.trip_id;
+                            mailData.firstName = signupData?.data?.first_name;
+                            
+                            if (tripId) {
+                                const tripRes = await fetch(`${directusUrl}/items/trips/${tripId}?fields=name`, {
+                                    headers: { 'Authorization': `Bearer ${directusToken}` }
+                                });
+                                const tripData: any = await tripRes.json();
+                                mailData.eventName = tripData?.data?.name || 'Reis';
+                            }
+                        } else if (data.registrationType === 'pub_crawl_signup') {
+                            mailData.eventName = 'Kroegentocht';
+                        } else if (data.registrationType === 'event_signup' && data.registrationId) {
+                            const signupRes = await fetch(`${directusUrl}/items/event_signups/${data.registrationId}?fields=event_id,first_name`, {
+                                headers: { 'Authorization': `Bearer ${directusToken}` }
+                            });
+                            const signupData: any = await signupRes.json();
+                            const eventId = signupData?.data?.event_id;
+                            mailData.firstName = signupData?.data?.first_name;
+                            
+                            if (eventId) {
+                                const eventRes = await fetch(`${directusUrl}/items/events/${eventId}?fields=name`, {
+                                    headers: { 'Authorization': `Bearer ${directusToken}` }
+                                });
+                                const eventData: any = await eventRes.json();
+                                mailData.eventName = eventData?.data?.name || 'Evenement';
+                            }
+                        }
+                    } catch (fetchErr) {
+                        console.error('[MailEventListener] Failed to fetch event name:', fetchErr);
+                    }
+                }
+
+                await MailWorkerService.queueMail(redis, data.email, templateId, mailData);
+                console.log(`[MailEventListener] Queued ${templateId} for ${data.email} (${mailData.eventName})`);
             } else if (payload.event === 'ACTIVITY_SIGNUP_SUCCESS') {
                 const data = ActivitySignupEventSchema.parse(payload);
 

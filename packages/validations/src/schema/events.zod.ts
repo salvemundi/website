@@ -9,8 +9,10 @@ export const PaymentSuccessEventSchema = BaseEventSchema.extend({
     userId: z.string().optional(),
     paymentId: z.string(),
     email: z.string().email(),
-    registrationId: z.union([z.string(), z.number()]),
-    registrationType: z.enum(['event_signup', 'pub_crawl_signup', 'trip_signup', 'membership']),
+    registrationId: z.union([z.string(), z.number()]).optional(),
+    registrationType: z.enum(['event_signup', 'pub_crawl_signup', 'trip_signup', 'membership']).optional(),
+    isContribution: z.boolean().optional(),
+    isNewMember: z.boolean().optional(),
 });
 
 export const ActivitySignupEventSchema = BaseEventSchema.extend({

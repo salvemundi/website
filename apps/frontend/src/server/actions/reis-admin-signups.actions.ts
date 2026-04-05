@@ -93,8 +93,42 @@ export async function updateSignupStatus(signupId: number, status: string) {
     await requireReisAdmin();
 
     try {
-        await getSystemDirectus().request(updateItem('trip_signups', signupId, { status }));
+        const client = getSystemDirectus();
         
+        // 1. Fetch current data to know if we need to send a mail
+        const signup = await client.request(readItem('trip_signups', signupId, {
+            fields: ['id', 'email', 'first_name', 'status', { trip_id: ['name'] }]
+        })) as any;
+
+        const oldStatus = signup?.status;
+        
+        // 2. Perform the update
+        await client.request(updateItem('trip_signups', signupId, { status }));
+        
+        // 3. Trigger Email if status changed TO confirmed
+        if (status === 'confirmed' && oldStatus !== 'confirmed' && signup?.email) {
+            const mailUrl = process.env.MAIL_SERVICE_URL;
+            const token = process.env.INTERNAL_SERVICE_TOKEN;
+
+            if (mailUrl && token) {
+                fetch(`${mailUrl}/api/mail/send`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        to: signup.email,
+                        templateId: 'trip_status_update',
+                        data: {
+                            firstName: signup.first_name,
+                            tripName: signup.trip_id?.name || 'de reis'
+                        }
+                    })
+                }).catch(e => console.error('[AdminReisActions] Failed to trigger status update mail:', e));
+            }
+        }
+
         const { revalidatePath, ...cacheFunctions } = await import('next/cache');
         const cache = cacheFunctions as any;
         if (cache.updateTag) cache.updateTag('reis-status');

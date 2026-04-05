@@ -1,44 +1,25 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body { font-family: sans-serif; line-height: 1.6; color: #333; }
-        .container { padding: 20px; max-width: 600px; margin: auto; border: 1px solid #eee; border-radius: 12px; }
-        .header { background: #004d40; color: white; padding: 20px; text-align: center; border-radius: 12px 12px 0 0; }
-        .content { padding: 30px; background: #fff; }
-        .button { display: inline-block; padding: 12px 24px; background-color: #004d40; color: white !important; text-decoration: none; border-radius: 8px; font-weight: bold; margin-top: 20px; text-align: center; }
-        .footer { font-size: 0.8em; color: #777; margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px; text-align: center; }
-        .amount { font-size: 1.2em; font-weight: bold; color: #004d40; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>Betaalverzoek Reis</h1>
-        </div>
-        <div class="content">
-            <p>Beste {{firstName}},</p>
-            <p>Er staat een betaalverzoek voor je klaar voor de reis: <strong>{{tripName}}</strong>.</p>
-            <p>Het betreft de <strong>{{paymentType}}</strong>.</p>
-            
-            <p>Bedrag: <span class="amount">€ {{amount}}</span></p>
-            
-            <p>Je kunt de betaling afronden via de onderstaande knop:</p>
-            
-            <p style="text-align: center;">
-                <a href="{{checkoutUrl}}" class="button">Nu Betalen</a>
-            </p>
-            
-            <p>Als de link niet werkt, kun je deze kopiëren en plakken in je browser:<br>
-            <a href="{{checkoutUrl}}">{{checkoutUrl}}</a></p>
-            
-            <p>Mocht je nog vragen hebben, stuur dan een mailtje naar de Reiscommissie: <a href="mailto:reis@salvemundi.nl">reis@salvemundi.nl</a>.</p>
-            
-            <p>Met vriendelijke groet,<br>De Reiscommissie van Salve Mundi</p>
-        </div>
-        <div class="footer">
-            Dit is een automatisch verzonden e-mail vanuit het Salve Mundi Portaal.
-        </div>
+{{#> layout headerTitle="GET READY"}}
+    <div class="status-badge warning">Betaling Vereist</div>
+    <p>Beste {{firstName}},</p>
+    
+    <p>Maak je borst maar nat, want de reis naar <strong>{{tripName}}</strong> komt eraan! Om je deelname definitief te maken, staat er een betaalverzoek voor je klaar.</p>
+    
+    <div class="details">
+        <p style="text-align: center; margin-bottom: 10px; font-weight: 800; color: #a4539b; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Betaaldetails</p>
+        <p><strong>Reis:</strong> {{tripName}}</p>
+        <p><strong>Type:</strong> {{paymentType}}</p>
+        <p style="font-size: 20px; font-weight: 900; color: #a4539b; text-align: center; margin-top: 15px;">€ {{amount}}</p>
     </div>
-</body>
-</html>
+
+    <p>Je kunt de betaling veilig en snel afronden via de onderstaande knop:</p>
+    
+    <p style="text-align: center;">
+        <a href="{{checkoutUrl}}" class="button">Nu Veilig Betalen</a>
+    </p>
+
+    <p>Heb je vragen over de betaling of de reis? Stuur dan even een mailtje naar de Reiscommissie via <a href="mailto:reis@salvemundi.nl">reis@salvemundi.nl</a>.</p>
+
+    <p>Tot snel!</p>
+
+    <p>Met paarse groet,<br><strong>De Reiscommissie</strong></p>
+{{/layout}}

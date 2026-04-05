@@ -1,97 +1,29 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-    <style>
-        body {
-            font-family: sans-serif;
-            line-height: 1.6;
-            color: #333;
-        }
-
-        .container {
-            padding: 20px;
-            max-width: 600px;
-            margin: auto;
-            border: 1px solid #eee;
-            border-radius: 12px;
-        }
-
-        .header {
-            background: #004d40;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            border-radius: 12px 12px 0 0;
-        }
-
-        .content {
-            padding: 30px;
-            background: #fff;
-        }
-
-        .password-box {
-            background: #f4f4f4;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            font-family: monospace;
-            font-size: 1.4em;
-            margin: 20px 0;
-            border: 1px dashed #ccc;
-        }
-
-        .footer {
-            font-size: 0.8em;
-            color: #777;
-            margin-top: 20px;
-            border-top: 1px solid #eee;
-            padding-top: 20px;
-            text-align: center;
-        }
-
-        .button {
-            display: inline-block;
-            padding: 12px 24px;
-            background-color: #004d40;
-            color: white !important;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-    </style>
-</head>
-
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>Welkom bij Salve Mundi!</h1>
-        </div>
-        <div class="content">
-            <p>Beste {{name}},</p>
-            <p>Er is een nieuw Azure account voor je aangemaakt bij Salve Mundi.</p>
-            <p>Hiermee krijg je toegang tot je Salve Mundi e-mail en andere Microsoft 365 diensten van de vereniging.
-            </p>
-
-            <p><strong>Je tijdelijke wachtwoord:</strong></p>
-            <div class="password-box">
-                {{temporaryPassword}}
-            </div>
-
-            <p><em>Let op: Je wordt gevraagd dit wachtwoord te wijzigen bij de eerste keer inloggen.</em></p>
-
-            <p>Je kunt inloggen via de volgende link:</p>
-            <p style="text-align: center;">
-                <a href="https://portal.office.com" class="button">Inloggen bij Office 365</a>
-            </p>
-
-            <p>Met vriendelijke groet,<br>Het Bestuur van Salve Mundi</p>
-        </div>
-        <div class="footer">
-            Dit is een automatisch verzonden e-mail vanuit het Salve Mundi Portaal.
-        </div>
+{{#> layout headerTitle="WELCOME TO SALVE MUNDI"}}
+    <div class="status-badge info">Welkom bij de Vereniging</div>
+    <p>Beste {{name}},</p>
+    
+    <p>Welkom bij <strong>Salve Mundi</strong>, de studievereniging van Fontys ICT! We zijn ontzettend blij dat je erbij bent.</p>
+    
+    <p>Je hebt nu toegang tot al onze evenementen, kortingen en natuurlijk de gezelligheid op de vereniging. Om te kunnen inloggen op al onze digitale diensten, hebben we zojuist een officieel <strong>@salvemundi.nl</strong> account voor je aangemaakt.</p>
+    
+    <div class="details">
+        <p style="text-align: center; margin-bottom: 10px; font-weight: 800; color: #a4539b; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Je tijdelijke wachtwoord</p>
+        <p style="text-align: center; font-family: 'Courier New', monospace; font-size: 24px; font-weight: 900; letter-spacing: 2px; background: #fff; padding: 15px; border-radius: 12px; border: 1px dashed #d9c7db; margin: 0;">
+            {{temporaryPassword}}
+        </p>
     </div>
-</body>
 
-</html>
+    <p style="font-size: 13px; color: #8a7a8c; font-style: italic; text-align: center; margin-top: 5px;">Let op: Je wordt gevraagd dit wachtwoord te wijzigen zodra je voor de eerste keer inlogt.</p>
+
+    <p>Je kunt direct aan de slag via het officiële Microsoft portaal. Hier heb je ook toegang tot Microsoft 365 (Word, Excel, etc.) en je verenigings-e-mail.</p>
+    
+    <p style="text-align: center;">
+        <a href="https://portal.office.com" class="button">Inloggen bij Office 365</a>
+    </p>
+
+    <p>Vergeet ook niet om je profiel aan te vullen op onze website via <a href="https://salvemundi.nl/profiel">salvemundi.nl/profiel</a>. Heb je vragen? Kom gerust eens langs in de SM-ruimte!</p>
+
+    <p>Gefeliciteerd met je lidmaatschap en veel succes met je nieuwe account!</p>
+
+    <p>Met paarse groet,<br><strong>Bestuur Salve Mundi</strong></p>
+{{/layout}}

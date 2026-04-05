@@ -11,6 +11,19 @@ const __dirname = path.dirname(__filename);
 Handlebars.registerHelper('eq', (a, b) => a === b);
 Handlebars.registerHelper('neq', (a, b) => a !== b);
 
+// Register all templates as partials for easy layout wrapping
+const templatesDir = path.join(__dirname, '../templates');
+if (fs.existsSync(templatesDir)) {
+    const files = fs.readdirSync(templatesDir);
+    files.forEach(file => {
+        if (file.endsWith('.hbs')) {
+            const name = path.basename(file, '.hbs');
+            const source = fs.readFileSync(path.join(templatesDir, file), 'utf-8');
+            Handlebars.registerPartial(name, source);
+        }
+    });
+}
+
 export class MailerService {
     /**
      * Renders a Handlebars template with the provided data.
