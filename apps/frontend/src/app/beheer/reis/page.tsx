@@ -142,7 +142,7 @@ async function AdminReisSignupsTable({ tripId, trip }: { tripId: number, trip: a
 
     // Group activities by signupId
     (allSignupActivities || []).forEach((sa: any) => {
-        const signupId = typeof sa.trip_signup_id === 'object' ? (sa.trip_signup_id as any).id : sa.trip_signup_id;
+        const signupId = (sa.trip_signup_id && typeof sa.trip_signup_id === 'object') ? (sa.trip_signup_id as any).id : sa.trip_signup_id;
         if (activitiesMap[signupId]) {
             activitiesMap[signupId].push(sa);
         }
