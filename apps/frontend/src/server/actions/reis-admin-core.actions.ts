@@ -20,41 +20,7 @@ import { getRedis } from '@/server/auth/redis-client';
 import { FLAGS_CACHE_KEY } from '@/lib/feature-flags';
 import { revalidateTag } from 'next/cache';
 
-export async function getTrips() {
-    await requireReisAdmin();
-
-    try {
-        const trips = await getSystemDirectus().request(readItems('trips', {
-            fields: TRIP_FIELDS as any,
-            sort: ['-event_date'] as any
-        })) as unknown as DbTrip[];
-
-        const sanitized = (trips ?? []).map(t => ({
-            ...t,
-            max_participants: t.max_participants !== null ? Number(t.max_participants) : t.max_participants,
-            max_crew: t.max_crew !== null ? Number(t.max_crew) : t.max_crew,
-            base_price: t.base_price !== null ? Number(t.base_price) : t.base_price,
-            crew_discount: t.crew_discount !== null ? Number(t.crew_discount) : t.crew_discount,
-            deposit_amount: t.deposit_amount !== null ? Number(t.deposit_amount) : t.deposit_amount,
-            event_date: t.event_date === null ? null : t.event_date,
-            start_date: t.start_date === null ? null : t.start_date,
-            end_date: t.end_date === null ? null : t.end_date,
-            registration_start_date: t.registration_start_date === null ? null : t.registration_start_date,
-        }));
-
-        const parsed = z.array(tripSchema).safeParse(sanitized);
-
-        if (!parsed.success) {
-            console.error('[AdminReisActions#getTrips] Zod validation failed:', parsed.error.format());
-            return [];
-        }
-
-        return parsed.data;
-    } catch (error) {
-        console.error('[AdminReisActions#getTrips] Error:', error);
-        return [];
-    }
-}
+// getTrips removed - Use getTrips from @/server/queries/admin-reis.queries instead to avoid redundancy.
 
 export async function createTrip(prevState: unknown, formData: FormData) {
     await requireReisAdmin();
@@ -85,6 +51,8 @@ export async function createTrip(prevState: unknown, formData: FormData) {
         await getSystemDirectus().request(createItem('trips', validated.data as any));
 
         revalidatePath('/beheer/reis');
+        revalidatePath('/beheer/reis/instellingen');
+        revalidatePath('/beheer/reis/activiteiten');
         return { success: true };
     } catch (error) {
         console.error('[AdminReisActions#createTrip] Error:', error);
@@ -121,6 +89,8 @@ export async function updateTrip(id: number, prevState: unknown, formData: FormD
         await getSystemDirectus().request(updateItem('trips', id, validated.data as any));
 
         revalidatePath('/beheer/reis');
+        revalidatePath('/beheer/reis/instellingen');
+        revalidatePath('/beheer/reis/activiteiten');
         return { success: true };
     } catch (error) {
         console.error('[AdminReisActions#updateTrip] Error:', error);
@@ -133,6 +103,8 @@ export async function deleteTrip(id: number) {
     try {
         await getSystemDirectus().request(deleteItem('trips', id));
         revalidatePath('/beheer/reis');
+        revalidatePath('/beheer/reis/instellingen');
+        revalidatePath('/beheer/reis/activiteiten');
         return { success: true };
     } catch (error) {
         console.error('[AdminReisActions#deleteTrip] Error:', error);
@@ -177,6 +149,8 @@ export async function toggleReisVisibility(): Promise<{ success: boolean; show?:
         revalidateTag('feature_flags', 'default');
         revalidatePath('/', 'layout');
         revalidatePath('/beheer/reis');
+        revalidatePath('/beheer/reis/instellingen');
+        revalidatePath('/beheer/reis/activiteiten');
 
         // 3. Final clear
         try {

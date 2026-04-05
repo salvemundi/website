@@ -146,7 +146,57 @@ export async function fetchTripSignupActivitiesDb(tripId: number): Promise<any[]
 }
 
 /**
- * Fetches all trips directly from the database for the admin selector.
+ * Fetches all trips with full details directly from the database for management.
+ */
+export async function fetchFullTripsDb(): Promise<any[]> {
+    console.log(`[DB-DIRECT-FETCH] FullTripsManagement`);
+    try {
+        const res = await query(
+            `SELECT * FROM trips ORDER BY event_date DESC`,
+            []
+        );
+        return (res.rows || []).map(t => ({
+            ...t,
+            max_participants: t.max_participants !== null ? Number(t.max_participants) : 0,
+            max_crew: t.max_crew !== null ? Number(t.max_crew) : 0,
+            base_price: t.base_price !== null ? Number(t.base_price) : 0,
+            crew_discount: t.crew_discount !== null ? Number(t.crew_discount) : 0,
+            deposit_amount: t.deposit_amount !== null ? Number(t.deposit_amount) : 0,
+            registration_open: !!t.registration_open,
+            is_bus_trip: !!t.is_bus_trip,
+            allow_final_payments: !!t.allow_final_payments
+        }));
+    } catch (error) {
+        console.error('[ReisDbUtils#fetchFullTripsDb] Error:', error);
+        return [];
+    }
+}
+
+/**
+ * Fetches all activities for a specific trip directly from the database.
+ */
+export async function fetchTripActivitiesByTripIdDb(tripId: number): Promise<any[]> {
+    console.log(`[DB-DIRECT-FETCH] TripActivitiesByTripId tripId: ${tripId}`);
+    try {
+        const res = await query(
+            `SELECT * FROM trip_activities WHERE trip_id = $1 ORDER BY display_order ASC, name ASC`,
+            [tripId]
+        );
+        return (res.rows || []).map(a => ({
+            ...a,
+            price: a.price !== null ? Number(a.price) : 0,
+            display_order: a.display_order !== null ? Number(a.display_order) : 0,
+            max_participants: a.max_participants !== null ? Number(a.max_participants) : null,
+            max_selections: a.max_selections !== null ? Number(a.max_selections) : null,
+        }));
+    } catch (error) {
+        console.error('[ReisDbUtils#fetchTripActivitiesByTripIdDb] Error:', error);
+        return [];
+    }
+}
+
+/**
+ * Fetches all trips directly from the database for the admin selector (summary version).
  */
 export async function fetchAllTripsDb(): Promise<any[]> {
     console.log(`[DB-DIRECT-FETCH] AllTrips`);
