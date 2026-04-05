@@ -138,12 +138,16 @@ export default function ReisTableRow({
                                             activities.map(a => {
                                                 const activity = a as any;
                                                 const name = activity.activity_name || activity.trip_activity_id?.name || 'Activiteit';
-                                                const rawOptions = activity.selected_options || {};
-                                                const metaOptions = activity.activity_options || activity.trip_activity_id?.options || [];
+                                                const rawOptions = typeof activity.selected_options === 'string' ? JSON.parse(activity.selected_options) : (activity.selected_options || {});
+                                                const metaOptionsRaw = activity.activity_options || activity.trip_activity_id?.options || [];
+                                                const metaOptions = typeof metaOptionsRaw === 'string' ? JSON.parse(metaOptionsRaw) : (metaOptionsRaw || []);
                                                 
                                                 // Map IDs to names
                                                 const selectedNames = Object.keys(rawOptions)
-                                                    .map(optId => metaOptions.find((m: any) => m.id === optId)?.name)
+                                                    .map(optId => {
+                                                        const opt = metaOptions.find((m: any) => m.id === optId);
+                                                        return opt?.name || optId; // Fallback to ID if name not found
+                                                    })
                                                     .filter(Boolean);
 
                                                 return (
