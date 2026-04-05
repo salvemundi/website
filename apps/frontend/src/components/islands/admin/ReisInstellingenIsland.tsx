@@ -168,9 +168,15 @@ export default function ReisInstellingenIsland({ initialTrips }: ReisInstellinge
                                     <InputField label="Start Datum" name="start_date" type="date" defaultValue={editingTrip?.start_date?.split('T')[0]} required />
                                     <InputField label="Eind Datum" name="end_date" type="date" defaultValue={editingTrip?.end_date?.split('T')[0]} />
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <InputField label="Max Deelnemers" name="max_participants" type="number" defaultValue={editingTrip?.max_participants} required />
-                                    <InputField label="Aantal Crew" name="max_crew" type="number" defaultValue={editingTrip?.max_crew || 0} required />
+                                <div className="grid grid-cols-1 gap-4">
+                                     <InputField 
+                                        label="Totaal aantal plekken" 
+                                        name="max_participants" 
+                                        type="number" 
+                                        defaultValue={editingTrip?.max_participants} 
+                                        required 
+                                        description="Dit is de totale capaciteit van de reis (deelnemers + crew)."
+                                    />
                                 </div>
                             </div>
 
@@ -181,7 +187,11 @@ export default function ReisInstellingenIsland({ initialTrips }: ReisInstellinge
                                     <InputField label="Aanbetaling (€)" name="deposit_amount" type="number" step="0.01" defaultValue={editingTrip?.deposit_amount} required />
                                 </div>
                                 <InputField label="Crew Korting (€)" name="crew_discount" type="number" step="0.01" defaultValue={editingTrip?.crew_discount} />
-                                <InputField label="Banner Image ID (Directus)" name="image" defaultValue={editingTrip?.image} />
+                                
+                                <ReisImageUpload 
+                                    defaultValue={editingTrip?.image} 
+                                    name="image"
+                                />
                                 
                                 <div className="p-6 bg-[var(--bg-main)]/50 rounded-3xl border border-[var(--border-color)]/20 space-y-4">
                                     <ToggleField label="Inschrijving nu Open" name="registration_open" defaultChecked={editingTrip?.registration_open} />
@@ -301,7 +311,7 @@ function TripCard({ trip, onEdit, onDelete, isDeleting }: any) {
                     </div>
                     <div className="flex items-center gap-3 text-[var(--text-muted)]">
                         <Users className="h-4 w-4" />
-                        <span className="text-xs font-bold">{trip.max_participants} deelnemers {trip.max_crew > 0 && `(+${trip.max_crew} crew)`}</span>
+                        <span className="text-xs font-bold">{trip.max_participants} plekken totaal</span>
                     </div>
                     <div className="flex items-center gap-3 text-[var(--beheer-accent)]">
                         <DollarSign className="h-4 w-4" />
@@ -331,12 +341,15 @@ function TripCard({ trip, onEdit, onDelete, isDeleting }: any) {
     );
 }
 
-function InputField({ label, name, type = 'text', defaultValue, placeholder, required, step }: any) {
+function InputField({ label, name, type = 'text', defaultValue, placeholder, required, step, description }: any) {
     return (
         <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] ml-1">
-                {label} {required && <span className="text-[var(--theme-error)]">*</span>}
-            </label>
+            <div className="flex flex-col">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] ml-1">
+                    {label} {required && <span className="text-[var(--theme-error)]">*</span>}
+                </label>
+                {description && <span className="text-[10px] text-[var(--text-muted)] opacity-60 ml-1 font-medium">{description}</span>}
+            </div>
             <input 
                 type={type} 
                 name={name}
@@ -346,6 +359,57 @@ function InputField({ label, name, type = 'text', defaultValue, placeholder, req
                 required={required}
                 className="w-full px-6 py-4 bg-[var(--bg-main)]/50 border-0 ring-1 ring-[var(--beheer-border)]/50 rounded-2xl text-sm text-[var(--beheer-text)] transition-all font-semibold focus:ring-2 focus:ring-[var(--beheer-accent)]"
             />
+        </div>
+    );
+}
+
+function ReisImageUpload({ defaultValue, name }: { defaultValue?: string | null, name: string }) {
+    const [preview, setPreview] = useState<string | null>(null);
+    const [hasFile, setHasFile] = useState(false);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setPreview(URL.createObjectURL(file));
+            setHasFile(true);
+        }
+    };
+
+    const currentImage = preview || (defaultValue ? getImageUrl(defaultValue, { width: 400, height: 200, fit: 'cover' }) : null);
+
+    return (
+        <div className="space-y-2">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] ml-1">
+                Banner Afbeelding
+            </label>
+            <div className="relative group overflow-hidden bg-[var(--bg-main)]/50 rounded-2xl border-2 border-dashed border-[var(--beheer-border)]/30 hover:border-[var(--beheer-accent)]/50 transition-all aspect-video flex flex-col items-center justify-center p-4 text-center cursor-pointer">
+                <input 
+                    type="file" 
+                    name="image_file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                />
+                
+                {currentImage ? (
+                    <div className="absolute inset-0">
+                        <img src={currentImage} alt="Preview" className="w-full h-full object-cover transition-opacity group-hover:opacity-40" />
+                        <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Upload className="h-8 w-8 text-[var(--beheer-text)] mb-2" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text)]">Wijzigen</span>
+                        </div>
+                    </div>
+                ) : (
+                    <>
+                        <ImageIcon className="h-10 w-10 text-[var(--text-muted)] mb-3 opacity-20 group-hover:opacity-40 transition-opacity" />
+                        <p className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-tight">Klik of sleep afbeelding hier</p>
+                        <p className="text-[10px] font-medium text-[var(--text-muted)] opacity-50 mt-1 italic tracking-widest">Aanbevolen: 1200x600px</p>
+                    </>
+                )}
+                
+                {/* Hidden ID field to maintain references if image not changed */}
+                <input type="hidden" name={name} value={defaultValue || ''} />
+            </div>
         </div>
     );
 }

@@ -12,7 +12,8 @@ import {
     readItems, 
     updateItem, 
     deleteItem, 
-    createItem
+    createItem,
+    uploadFiles
 } from '@directus/sdk';
 import { requireReisAdmin } from './reis-admin-utils';
 import { query } from '@/lib/db';
@@ -22,32 +23,54 @@ import { revalidateTag } from 'next/cache';
 
 // getTrips removed - Use getTrips from @/server/queries/admin-reis.queries instead to avoid redundancy.
 
+async function handleImageUpload(formData: FormData): Promise<string | null> {
+    const file = formData.get('image_file') as File;
+    if (!file || file.size === 0) return null;
+
+    const uploadFormData = new FormData();
+    uploadFormData.append('file', file);
+    
+    // Optional: Add folder ID if needed, or leave at root
+    // uploadFormData.append('folder', 'TRIP_BANNERS_FOLDER_ID');
+
+    try {
+        const client = getSystemDirectus();
+        const response = await client.request(uploadFiles(uploadFormData));
+        return (response as any).id;
+    } catch (error) {
+        console.error('[AdminReisActions#handleImageUpload] Error:', error);
+        throw new Error('Afbeelding uploaden mislukt');
+    }
+}
+
 export async function createTrip(prevState: unknown, formData: FormData) {
     await requireReisAdmin();
 
-    const rawData = Object.fromEntries(formData.entries());
-    const data = {
-        ...rawData,
-        registration_open: rawData.registration_open === 'on' || rawData.registration_open === 'true',
-        is_bus_trip: rawData.is_bus_trip === 'on' || rawData.is_bus_trip === 'true',
-        allow_final_payments: rawData.allow_final_payments === 'on' || rawData.allow_final_payments === 'true',
-        max_participants: parseInt(rawData.max_participants as string) || 0,
-        max_crew: parseInt(rawData.max_crew as string) || 0,
-        base_price: parseFloat(rawData.base_price as string) || 0,
-        crew_discount: parseFloat(rawData.crew_discount as string) || 0,
-        deposit_amount: parseFloat(rawData.deposit_amount as string) || 0,
-        registration_start_date: rawData.registration_start_date || null,
-        description: rawData.description || null,
-        image: rawData.image || null,
-        event_date: rawData.start_date || null,
-    };
-
-    const validated = tripSchema.omit({ id: true }).safeParse(data);
-    if (!validated.success) {
-        return { success: false, error: 'Validatie mislukt', fieldErrors: validated.error.flatten().fieldErrors };
-    }
-
     try {
+        const newImageId = await handleImageUpload(formData);
+        
+        const rawData = Object.fromEntries(formData.entries());
+        const data = {
+            ...rawData,
+            registration_open: rawData.registration_open === 'on' || rawData.registration_open === 'true',
+            is_bus_trip: rawData.is_bus_trip === 'on' || rawData.is_bus_trip === 'true',
+            allow_final_payments: rawData.allow_final_payments === 'on' || rawData.allow_final_payments === 'true',
+            max_participants: parseInt(rawData.max_participants as string) || 0,
+            max_crew: 0, // Simplified: crew is part of total spots now
+            base_price: parseFloat(rawData.base_price as string) || 0,
+            crew_discount: parseFloat(rawData.crew_discount as string) || 0,
+            deposit_amount: parseFloat(rawData.deposit_amount as string) || 0,
+            registration_start_date: rawData.registration_start_date || null,
+            description: rawData.description || null,
+            image: newImageId || rawData.image || null,
+            event_date: rawData.start_date || null,
+        };
+
+        const validated = tripSchema.omit({ id: true }).safeParse(data);
+        if (!validated.success) {
+            return { success: false, error: 'Validatie mislukt', fieldErrors: validated.error.flatten().fieldErrors };
+        }
+
         await getSystemDirectus().request(createItem('trips', validated.data as any));
 
         revalidatePath('/beheer/reis');
@@ -63,29 +86,31 @@ export async function createTrip(prevState: unknown, formData: FormData) {
 export async function updateTrip(id: number, prevState: unknown, formData: FormData) {
     await requireReisAdmin();
 
-    const rawData = Object.fromEntries(formData.entries());
-    const data = {
-        ...rawData,
-        registration_open: rawData.registration_open === 'on' || rawData.registration_open === 'true',
-        is_bus_trip: rawData.is_bus_trip === 'on' || rawData.is_bus_trip === 'true',
-        allow_final_payments: rawData.allow_final_payments === 'on' || rawData.allow_final_payments === 'true',
-        max_participants: parseInt(rawData.max_participants as string) || 0,
-        max_crew: parseInt(rawData.max_crew as string) || 0,
-        base_price: parseFloat(rawData.base_price as string) || 0,
-        crew_discount: parseFloat(rawData.crew_discount as string) || 0,
-        deposit_amount: parseFloat(rawData.deposit_amount as string) || 0,
-        registration_start_date: rawData.registration_start_date || null,
-        description: rawData.description || null,
-        image: rawData.image || null,
-        event_date: rawData.start_date || null,
-    };
-
-    const validated = tripSchema.omit({ id: true }).partial().safeParse(data);
-    if (!validated.success) {
-        return { success: false, error: 'Validatie mislukt', fieldErrors: validated.error.flatten().fieldErrors };
-    }
-
     try {
+        const newImageId = await handleImageUpload(formData);
+        
+        const rawData = Object.fromEntries(formData.entries());
+        const data = {
+            ...rawData,
+            registration_open: rawData.registration_open === 'on' || rawData.registration_open === 'true',
+            is_bus_trip: rawData.is_bus_trip === 'on' || rawData.is_bus_trip === 'true',
+            allow_final_payments: rawData.allow_final_payments === 'on' || rawData.allow_final_payments === 'true',
+            max_participants: parseInt(rawData.max_participants as string) || 0,
+            max_crew: 0, // Simplified
+            base_price: parseFloat(rawData.base_price as string) || 0,
+            crew_discount: parseFloat(rawData.crew_discount as string) || 0,
+            deposit_amount: parseFloat(rawData.deposit_amount as string) || 0,
+            registration_start_date: rawData.registration_start_date || null,
+            description: rawData.description || null,
+            image: newImageId || rawData.image || null,
+            event_date: rawData.start_date || null,
+        };
+
+        const validated = tripSchema.omit({ id: true }).partial().safeParse(data);
+        if (!validated.success) {
+            return { success: false, error: 'Validatie mislukt', fieldErrors: validated.error.flatten().fieldErrors };
+        }
+
         await getSystemDirectus().request(updateItem('trips', id, validated.data as any));
 
         revalidatePath('/beheer/reis');
