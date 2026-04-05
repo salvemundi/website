@@ -19,6 +19,7 @@ import {
     CheckCircle2,
     Home
 } from 'lucide-react';
+import { format } from 'date-fns';
 import type { 
     Trip, 
     TripSignup, 
@@ -60,7 +61,7 @@ export default function TripPaymentFlowIsland({
         first_name: signup.first_name || '',
         last_name: signup.last_name || '',
         phone_number: signup.phone_number || '',
-        date_of_birth: signup.date_of_birth || '',
+        date_of_birth: signup.date_of_birth ? format(new Date(signup.date_of_birth), 'yyyy-MM-dd') : '',
         id_document: signup.id_document || 'none',
         document_number: signup.document_number || '',
         allergies: signup.allergies || '',
@@ -70,7 +71,7 @@ export default function TripPaymentFlowIsland({
 
     const [activitySelections, setActivitySelections] = useState<{ activityId: number, options: any }[]>(
         selectedActivities.map(sa => ({
-            activityId: Number(sa.trip_activity_id),
+            activityId: typeof sa.trip_activity_id === 'object' ? (sa.trip_activity_id as any).id : Number(sa.trip_activity_id),
             options: sa.selected_options || {}
         }))
     );

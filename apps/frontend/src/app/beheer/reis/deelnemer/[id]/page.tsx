@@ -86,9 +86,7 @@ async function DeelnemerDataWrapper({ signupId }: { signupId: number }) {
             initialSignup={{ ...signup, date_created: signup.created_at } as any}
             trips={trips as any}
             allActivities={activities as any}
-            initialSelectedActivities={(signupActivities || []).map((a: any) => 
-                typeof a.trip_activity_id === 'object' ? a.trip_activity_id.id : a.trip_activity_id
-            )}
+            initialSelectedActivities={participantActivities}
         />
     );
 }
