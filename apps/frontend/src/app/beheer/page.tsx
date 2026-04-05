@@ -1,88 +1,99 @@
 import { Suspense } from 'react';
-import { Settings } from 'lucide-react';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import { 
-    DashboardQuickStats, 
-    QuickActions, 
+    DashboardHub, 
     BirthdaysList, 
     TopStickersList, 
     ActivitySignupsList
 } from '@/components/ui/admin/dashboard/DashboardSections';
 import { 
     StatCardSkeleton, 
-    ActionCardSkeleton, 
     ListCardSkeleton, 
-    ActivitySignupsSkeleton 
+    ActivitySignupsSkeleton,
+    HubSkeleton
 } from '@/components/ui/admin/dashboard/DashboardSkeletons';
-import { checkAdminAccess } from '@/server/actions/admin.actions';
+import { checkAdminAccess, getDashboardPermissions } from '@/server/actions/admin.actions';
 
 export default async function BeheerPage() {
     const { user } = await checkAdminAccess();
+    const permissions = await getDashboardPermissions();
+    
+    // Detecteer beperkte rechten voor layout optimalisatie
+    const allPermissions = [
+        permissions.canAccessIntro,
+        permissions.canAccessReis,
+        permissions.canAccessLogging,
+        permissions.canAccessSync,
+        permissions.canAccessCoupons,
+        permissions.canAccessStickers,
+        permissions.canAccessPermissions,
+        permissions.isIct
+    ];
+    const visibleCount = allPermissions.filter(Boolean).length;
+    const isLimitedAccess = visibleCount <= 2; // Bijv. alleen Intro of alleen Activiteiten
 
     return (
-        <main className="min-h-screen bg-[var(--bg-main)]">
+        <main className="min-h-screen bg-[var(--bg-main)] pb-24">
             <AdminToolbar 
                 title="Beheer Dashboard" 
                 subtitle={`Welkom terug, ${user?.first_name || 'Admin'}. Beheer de vereniging en evenementen vanaf één plek.`}
             />
 
-            <div className="container mx-auto px-4 py-12 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700">
-                {/* 1. Core Statistics - Legacy "Standard 4" */}
-                <Suspense fallback={<StatsRowSkeleton />}>
-                    <DashboardQuickStats />
-                </Suspense>
-
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                    {/* Left Column: Actions & Social */}
-                    <div className="lg:col-span-7 space-y-6">
-                        <Suspense fallback={<ActionsGridSkeleton />}>
-                            <QuickActions />
+            <div className="container mx-auto px-4 py-8 md:py-12 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className={`grid grid-cols-1 ${isLimitedAccess ? 'lg:grid-cols-1 max-w-5xl mx-auto' : 'lg:grid-cols-12'} gap-8 md:gap-12 items-start`}>
+                    
+                    {/* Main Hub: Navigation & Key Stats */}
+                    <div className={isLimitedAccess ? 'w-full space-y-12' : 'lg:col-span-8 space-y-12'}>
+                        <Suspense fallback={<HubSkeleton isLimitedAccess={isLimitedAccess} />}>
+                            <DashboardHub />
                         </Suspense>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {!isLimitedAccess && (
+                            <div className="pt-12 border-t border-[var(--beheer-border)] opacity-60 hover:opacity-100 transition-opacity hidden md:block">
+                                <Suspense fallback={<ListCardSkeleton rows={3} />}>
+                                    <TopStickersList />
+                                </Suspense>
+                            </div>
+                        )}
+                    </div>
+{/* ... remainder of layout unchanged */}
+
+                    {/* Side Sidebar: Real-time activities & birthdays */}
+                    <div className={isLimitedAccess ? 'w-full grid grid-cols-1 md:grid-cols-2 gap-6 pt-12 border-t border-[var(--beheer-border)]' : 'lg:col-span-4 space-y-8'}>
+                        <div className="space-y-6">
+                            <Suspense fallback={<ActivitySignupsSkeleton />}>
+                                <ActivitySignupsList />
+                            </Suspense>
+                        </div>
+                        
+                        <div className="space-y-6">
                             <Suspense fallback={<ListCardSkeleton rows={5} />}>
                                 <BirthdaysList />
                             </Suspense>
-                            <Suspense fallback={<ListCardSkeleton rows={3} />}>
-                                <TopStickersList />
-                            </Suspense>
+
+                            {isLimitedAccess && (
+                                <div className="md:hidden opacity-60">
+                                    <Suspense fallback={<ListCardSkeleton rows={3} />}>
+                                        <TopStickersList />
+                                    </Suspense>
+                                </div>
+                            )}
                         </div>
                     </div>
-
-                    {/* Right Column: Activities */}
-                    <div className="lg:col-span-5">
-                        <Suspense fallback={<ActivitySignupsSkeleton />}>
-                            <ActivitySignupsList />
-                        </Suspense>
-                    </div>
                 </div>
-
             </div>
         </main>
     );
 }
 
-function StatsRowSkeleton() {
-    return (
-        <div className="mb-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-                {[...Array(6)].map((_, i) => (
-                    <StatCardSkeleton key={i} />
-                ))}
-            </div>
-        </div>
-    );
-}
 
-function ActionsGridSkeleton() {
+function ActivitySignupsSkeletonWrapper() {
     return (
-        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-lg p-6 border border-[var(--beheer-border)] animate-pulse">
-            <div className="h-6 w-32 bg-[var(--beheer-border)]/50 rounded mb-6" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {[...Array(4)].map((_, i) => (
-                    <ActionCardSkeleton key={i} />
-                ))}
-            </div>
+        <div className="space-y-6">
+            <ActivitySignupsSkeleton />
         </div>
     );
 }
+// Note: StatsGridSkeleton was removed and replaced by HubSkeleton from DashboardSkeletons.tsx
+
+

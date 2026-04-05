@@ -36,11 +36,11 @@ export default function AdminToolbar({
                             </Link>
                         )}
                         <div>
-                            <h1 className="text-2xl md:text-3xl font-black text-[var(--beheer-text)] tracking-tighter uppercase leading-tight">
+                            <h1 className="text-2xl md:text-3xl font-black text-[var(--beheer-text)] tracking-tighter leading-tight">
                                 {title}
                             </h1>
                             {subtitle && (
-                                <p className="text-[10px] font-bold text-[var(--beheer-text-muted)] uppercase tracking-widest leading-none mt-1">
+                                <p className="text-xs font-bold text-[var(--beheer-text-muted)] tracking-wide mt-1 opacity-60">
                                     {subtitle}
                                 </p>
                             )}

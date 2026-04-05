@@ -9,7 +9,10 @@ import { notFound } from 'next/navigation';
 import ActiviteitAanmeldingenIsland from '@/components/islands/admin/activities/ActiviteitAanmeldingenIsland';
 import AanmeldingenListSkeleton from '@/components/ui/admin/activities/AanmeldingenListSkeleton';
 import { getSystemDirectus } from '@/lib/directus';
-import { readItem, readItems } from '@directus/sdk';
+import { readItem } from '@directus/sdk';
+import { 
+    getActivitySignupsInternal 
+} from '@/server/queries/admin-event.queries';
 
 export const metadata: Metadata = {
     title: 'Activiteit Aanmeldingen | SV Salve Mundi',
@@ -45,7 +48,7 @@ async function SignupsDataLoader({ id }: { id: string }) {
     try {
         event = await getSystemDirectus().request(
             readItem<any, any, any>('events', id, {
-                fields: ['id', 'name', 'price_members', 'committee_id']
+                fields: ['id', 'name', 'price_members', 'committee_id', 'max_sign_ups']
             })
         );
     } catch (e) {
@@ -70,30 +73,8 @@ async function SignupsDataLoader({ id }: { id: string }) {
         );
     }
 
-    // Fetch Signups
-    let signups: any[] = [];
-    try {
-        signups = await getSystemDirectus().request(
-            readItems<any, any, any>('event_signups', {
-                filter: {
-                    event_id: { _eq: id }
-                },
-                fields: [
-                    'id', 
-                    'participant_name', 
-                    'participant_email', 
-                    'participant_phone', 
-                    'payment_status', 
-                    'checked_in',
-                    'checked_in_at'
-                ],
-                sort: ['-id'],
-                limit: -1
-            })
-        );
-    } catch (e: any) {
-        console.error("Failed to fetch signups:", e.message, e?.errors || e);
-    }
+    // Fetch Signups using high-performance SQL query (filters out failed payments)
+    const signups = await getActivitySignupsInternal(id);
 
     return (
         <div className="pb-20">

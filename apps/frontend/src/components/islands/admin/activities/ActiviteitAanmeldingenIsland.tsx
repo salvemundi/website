@@ -23,6 +23,7 @@ interface Signup {
     created_at: string;
     checked_in?: boolean;
     checked_in_at?: string | null;
+    is_member?: boolean;
     directus_relations?: {
         id: string;
         first_name: string;
@@ -67,9 +68,15 @@ export default function ActiviteitAanmeldingenIsland({ event, initialSignups }: 
         
         const deduplicated = Array.from(map.values()) as Signup[];
 
-        if (!searchQuery) return deduplicated;
+        const sorted = deduplicated.sort((a, b) => {
+            if (a.is_member && !b.is_member) return -1;
+            if (!a.is_member && b.is_member) return 1;
+            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        });
+
+        if (!searchQuery) return sorted;
         const query = searchQuery.toLowerCase();
-        return deduplicated.filter(signup => {
+        return sorted.filter(signup => {
             const name = getName(signup).toLowerCase();
             const email = getEmail(signup).toLowerCase();
             const phone = getPhone(signup).toLowerCase();
@@ -103,32 +110,21 @@ export default function ActiviteitAanmeldingenIsland({ event, initialSignups }: 
         return signup.participant_phone || signup.directus_relations?.phone_number || '-';
     }
 
-    function getStatusBadge(status: string) {
-        switch (status) {
-            case 'paid':
-                return (
-                    <span className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 text-emerald-500 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">
-                        <CheckCircle className="h-3 w-3" />
-                        Betaald
-                    </span>
-                );
-            case 'failed':
-            case 'canceled':
-                return (
-                    <span className="flex items-center gap-1.5 px-2.5 py-1 bg-red-500/10 text-red-500 rounded-full text-[10px] font-black uppercase tracking-widest border border-red-500/20">
-                        <XCircle className="h-3 w-3" />
-                        Mislukt
-                    </span>
-                );
-            case 'open':
-            default:
-                return (
-                    <span className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 text-amber-500 rounded-full text-[10px] font-black uppercase tracking-widest border border-amber-500/20">
-                        <Clock className="h-3 w-3" />
-                        Open
-                    </span>
-                );
+    function getMemberBadge(isMember: boolean) {
+        if (isMember) {
+            return (
+                <span className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 text-emerald-500 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">
+                    <CheckCircle className="h-3 w-3" />
+                    Lid
+                </span>
+            );
         }
+        return (
+            <span className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 text-amber-500 rounded-full text-[10px] font-black uppercase tracking-widest border border-amber-500/20">
+                <Clock className="h-3 w-3" />
+                Niet lid
+            </span>
+        );
     }
 
     const exportToXLSX = () => {
@@ -140,7 +136,7 @@ export default function ActiviteitAanmeldingenIsland({ event, initialSignups }: 
             Telefoon: getPhone(signup),
             Status: signup.payment_status || 'open',
             'Checked In': signup.checked_in ? 'Ja' : 'Nee',
-            'Inschrijfdatum': format(new Date(signup.created_at), 'dd-MM-yyyy HH:mm', { locale: nl })
+            'Inschrijfdatum': signup.created_at ? format(new Date(signup.created_at), 'dd-MM-yyyy HH:mm', { locale: nl }) : 'Onbekend'
         }));
 
         const ws = XLSX.utils.json_to_sheet(data);
@@ -181,10 +177,15 @@ export default function ActiviteitAanmeldingenIsland({ event, initialSignups }: 
     }
 
     const adminStats = [
-        { label: 'Totaal', value: stats.total, icon: Users, trend: 'Aanmeldingen' },
-        { label: 'Betaald', value: stats.paid, icon: DollarSign, trend: 'Voldaan' },
-        { label: 'Ingecheckt', value: stats.checkedIn, icon: UserCheck, trend: 'Aanwezig' },
-        { label: 'Afwezig', value: stats.total - stats.checkedIn, icon: UserMinus, trend: 'Nog niet' },
+        { label: 'Aanmeldingen', value: stats.total, icon: Users },
+        { 
+            label: 'Plekken over', 
+            value: event.max_sign_ups 
+                ? `${event.max_sign_ups - stats.total} van de ${event.max_sign_ups}` 
+                : '∞', 
+            icon: Users
+        },
+        { label: 'Ingecheckt via ticket', value: stats.checkedIn, icon: UserCheck },
     ];
 
     return (
@@ -227,6 +228,8 @@ export default function ActiviteitAanmeldingenIsland({ event, initialSignups }: 
                         placeholder="Zoek op naam, email of telefoon..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
+                        autoComplete="off"
+                        suppressHydrationWarning
                         className="w-full pl-11 pr-5 py-3 rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] placeholder:text-[var(--beheer-text-muted)] focus:ring-2 focus:ring-[var(--beheer-accent)]/20 focus:border-[var(--beheer-accent)] outline-none transition-all shadow-sm font-bold uppercase tracking-widest text-[10px]"
                     />
                 </div>
@@ -259,7 +262,7 @@ export default function ActiviteitAanmeldingenIsland({ event, initialSignups }: 
                                         <th className="px-6 py-4">Status</th>
                                         <th className="px-6 py-4">Deelnemer</th>
                                         <th className="px-6 py-4">Contact</th>
-                                        <th className="px-6 py-4">Betaling & Datum</th>
+                                        <th className="px-6 py-4">Lidmaatschap & Datum</th>
                                         <th className="px-6 py-4 text-right">Acties</th>
                                     </tr>
                                 </thead>
@@ -297,10 +300,12 @@ export default function ActiviteitAanmeldingenIsland({ event, initialSignups }: 
                                             </td>
                                             <td className="px-6 py-5">
                                                 <div className="mb-2">
-                                                    {getStatusBadge(signup.payment_status || 'open')}
+                                                    {getMemberBadge(!!signup.is_member)}
                                                 </div>
                                                 <div className="text-[10px] text-[var(--beheer-text-muted)] font-bold uppercase tracking-widest">
-                                                    {format(new Date(signup.created_at), 'dd MMM yyyy, HH:mm', { locale: nl })}
+                                                    {signup.created_at && !isNaN(new Date(signup.created_at).getTime()) 
+                                                        ? format(new Date(signup.created_at), 'dd MMM yyyy, HH:mm', { locale: nl }) 
+                                                        : 'Datum onbekend'}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-5 text-right">

@@ -28,6 +28,10 @@ import {
     TopSticker,
     TopStickerSchema
 } from "@salvemundi/validations";
+import { 
+    getDashboardStatsInternal, 
+    getRecentActivitiesInternal 
+} from "@/server/queries/admin-dashboard.queries";
 import { Pool } from "pg";
 import { createDirectus, staticToken, rest } from "@directus/sdk";
 import { AdminResource } from '@/shared/lib/permissions-config';
@@ -102,94 +106,8 @@ export async function getDashboardPermissions() {
 export async function getDashboardStats(): Promise<DashboardStats> {
     const { isAuthorized } = await checkAdminAccess();
     if (!isAuthorized) throw new Error("Geen toegang");
-    try {
-        const now = new Date();
-        const today = now.toISOString().split('T')[0];
-        const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
-
-        const [
-            membersCount,
-            eventsCount,
-            signupsCount,
-            introCount,
-            couponsCount,
-            activityCount,
-            allStickersCount,
-            recentStickersCount,
-            pubCrawlEvents,
-            trips
-        ] = await Promise.all([
-            getSystemDirectus().request(aggregate('directus_users', {
-                aggregate: { count: '*' },
-                query: {
-                    filter: {
-                        _and: [
-                            { status: { _eq: 'active' } },
-                            { membership_expiry: { _gte: today } }
-                        ]
-                    }
-                }
-            })).catch(e => { console.error("Stats: users fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
-            getSystemDirectus().request(aggregate('events', { aggregate: { count: '*' }, query: { filter: { event_date: { _gte: today } } } })).catch(e => { console.error("Stats: events fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
-            getSystemDirectus().request(aggregate('event_signups', { aggregate: { count: '*' }, query: { filter: { event_id: { event_date: { _gte: today } } } } })).catch(e => { console.error("Stats: signups fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
-            getSystemDirectus().request(aggregate('intro_signups', { aggregate: { count: '*' } })).catch(e => { console.error("Stats: intro fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
-            getCoupons().catch(e => { console.error("Stats: coupons fail", e instanceof Error ? e.message : e); return []; }),
-            getSystemDirectus().request(aggregate('system_logs' as any, { aggregate: { count: '*' }, query: { filter: { status: { _eq: 'FAILED' } } } })).catch(e => { console.error("Stats: logs fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
-            getSystemDirectus().request(aggregate('Stickers' as any, { aggregate: { count: '*' } })).catch(e => { console.error("Stats: Stickers fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
-            getSystemDirectus().request(aggregate('Stickers' as any, { aggregate: { count: '*' }, query: { filter: { date_created: { _gte: lastWeek } } } })).catch(e => { console.error("Stats: recent Stickers fail", e instanceof Error ? e.message : e); return [{ count: 0 }]; }),
-            getSystemDirectus().request(readItems('pub_crawl_events', { fields: [...PUB_CRAWL_EVENT_FIELDS], sort: ['-date'] })).catch(() => []),
-            getSystemDirectus().request(readItems('trips', { fields: TRIP_FIELDS, sort: ['-start_date'] })).catch(() => [])
-        ]);
-
-        let pubCrawlSignups = 0;
-        const upcomingPubCrawl = Array.isArray(pubCrawlEvents) ? (pubCrawlEvents.find((e: any) => new Date(e.date) >= now) || pubCrawlEvents[0]) : null;
-        if (upcomingPubCrawl?.id) {
-            const pcSignups: any = await getSystemDirectus().request(aggregate('pub_crawl_signups' as any, { aggregate: { count: '*' }, query: { filter: { pub_crawl_event_id: { _eq: upcomingPubCrawl.id } } } })).catch(() => [{ count: 0 }]);
-            pubCrawlSignups = Number(pcSignups?.[0]?.count || 0);
-        }
-
-        let reisSignups = 0;
-        const activeTrip = Array.isArray(trips) ? (trips.find((t: any) => {
-            const dateStr = t.end_date || t.event_date || t.start_date;
-            return dateStr && new Date(dateStr) >= now;
-        }) || trips[0]) : null;
-
-        if (activeTrip?.id) {
-            const tSignups: any = await getSystemDirectus().request(aggregate('trip_signups' as any, { aggregate: { count: '*' }, query: { filter: { trip_id: { _eq: activeTrip.id }, status: { _neq: 'cancelled' } } } })).catch(() => [{ count: 0 }]);
-            reisSignups = Number(tSignups?.[0]?.count || 0);
-        }
-
-        const totalStickers = Number(allStickersCount?.[0]?.count || 0);
-        const recentStickers = Number(recentStickersCount?.[0]?.count || 0);
-        const stickerGrowthRate = totalStickers > 0 ? Math.round((recentStickers / totalStickers) * 100) : 0;
-
-        const stats = {
-            totalMembers: Number(membersCount?.[0]?.count || 0),
-            upcomingEventsCount: Number(eventsCount?.[0]?.count || 0),
-            pendingSignupsCount: Number(signupsCount?.[0]?.count || 0),
-            systemErrors: Number(activityCount?.[0]?.count || 0),
-            introSignups: Number(introCount?.[0]?.count || 0),
-            totalCoupons: (couponsCount as any[]).filter(c => getComputedCouponStatus(c).type === 'active').length,
-            pubCrawlSignups,
-            reisSignups,
-            stickerGrowthRate
-        };
-
-        return DashboardStatsSchema.parse(stats);
-    } catch (error: any) {
-        console.error("Dashboard stats error:", error);
-        return {
-            totalMembers: 0,
-            upcomingEventsCount: 0,
-            pendingSignupsCount: 0,
-            systemErrors: 0,
-            introSignups: 0,
-            totalCoupons: 0,
-            pubCrawlSignups: 0,
-            reisSignups: 0,
-            stickerGrowthRate: 0
-        };
-    }
+    
+    return await getDashboardStatsInternal();
 }
 
 export async function getUpcomingBirthdays(): Promise<Birthday[]> {
@@ -243,23 +161,8 @@ export async function getUpcomingBirthdays(): Promise<Birthday[]> {
 export async function getRecentActivities(): Promise<RecentActivity[]> {
     const { isAuthorized } = await checkAdminAccess();
     if (!isAuthorized) return [];
-    try {
-        const events = await getSystemDirectus().request(readItems('events', { fields: [...EVENT_FIELDS], sort: ['-event_date'], limit: 4 }));
-        const eventsWithSignups = await Promise.all(
-            events.map(async (ev: any) => {
-                const signups: any = await getSystemDirectus().request(aggregate('event_signups' as any, { aggregate: { count: '*' }, query: { filter: { event_id: { _eq: ev.id } } } })).catch(() => [{ count: 0 }]);
-                return {
-                    id: ev.id,
-                    name: ev.name,
-                    event_date: ev.event_date,
-                    signups: Number(signups?.[0]?.count || 0)
-                };
-            })
-        );
-        return z.array(RecentActivitySchema).parse(eventsWithSignups);
-    } catch {
-        return [];
-    }
+    
+    return await getRecentActivitiesInternal();
 }
 
 export async function getTopStickers(): Promise<TopSticker[]> {
