@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { Loader2, Edit, Trash2, Send, AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { TripSignup, TripSignupActivity } from '@salvemundi/validations';
+import { mapActivityOptionIdToName, parseActivityOptions, parseSelectedOptions } from '@/lib/reis-utils';
 
 interface ReisTableRowProps {
     signup: TripSignup;
@@ -138,16 +139,12 @@ export default function ReisTableRow({
                                             activities.map(a => {
                                                 const activity = a as any;
                                                 const name = activity.activity_name || activity.trip_activity_id?.name || 'Activiteit';
-                                                const rawOptions = typeof activity.selected_options === 'string' ? JSON.parse(activity.selected_options) : (activity.selected_options || {});
-                                                const metaOptionsRaw = activity.activity_options || activity.trip_activity_id?.options || [];
-                                                const metaOptions = typeof metaOptionsRaw === 'string' ? JSON.parse(metaOptionsRaw) : (metaOptionsRaw || []);
+                                                const rawOptions = parseSelectedOptions(activity.selected_options);
+                                                const metaOptions = parseActivityOptions(activity.activity_options || activity.trip_activity_id?.options);
                                                 
-                                                // Map IDs to names
+                                                // Map IDs to names using the shared utility
                                                 const selectedNames = Object.keys(rawOptions)
-                                                    .map(optId => {
-                                                        const opt = metaOptions.find((m: any) => m.id === optId);
-                                                        return opt?.name || optId; // Fallback to ID if name not found
-                                                    })
+                                                    .map(optId => mapActivityOptionIdToName(optId, metaOptions))
                                                     .filter(Boolean);
 
                                                 return (

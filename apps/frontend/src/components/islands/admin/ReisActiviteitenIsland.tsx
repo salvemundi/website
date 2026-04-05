@@ -194,6 +194,7 @@ export default function ReisActiviteitenIsland({
                 {viewingSignupsId && (
                     <TripActivitySignupsModal 
                         activityName={activities.find(a => a.id === viewingSignupsId)?.name || ''}
+                        options={activities.find(a => a.id === viewingSignupsId)?.options}
                         signups={signupsByActivity[viewingSignupsId] || []}
                         loading={false}
                         onClose={() => setViewingSignupsId(null)}
