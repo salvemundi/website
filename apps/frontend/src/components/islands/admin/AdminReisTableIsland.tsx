@@ -162,9 +162,16 @@ export default function AdminReisTableIsland({ initialSignups, initialSignupActi
                 const activitiesStr = activities.map(a => {
                     const activity = a as any;
                     const name = activity.activity_name || activity.trip_activity_id?.name || activity.trip_activity_id;
-                    const opts = activity.selected_options ? Object.keys(activity.selected_options) : [];
-                    const metaOpts = activity.activity_options || activity.trip_activity_id?.options || [];
-                    const optNames = opts.map(id => metaOpts.find((m: any) => m.id === id)?.name).filter(Boolean);
+                    
+                    const rawOptions = typeof activity.selected_options === 'string' ? JSON.parse(activity.selected_options) : (activity.selected_options || {});
+                    const metaOptionsRaw = activity.activity_options || activity.trip_activity_id?.options || [];
+                    const metaOptions = typeof metaOptionsRaw === 'string' ? JSON.parse(metaOptionsRaw) : (metaOptionsRaw || []);
+                    
+                    const opts = Object.keys(rawOptions);
+                    const optNames = opts.map(id => {
+                        const opt = metaOptions.find((m: any) => m.id === id);
+                        return opt?.name || id;
+                    }).filter(Boolean);
                     
                     return optNames.length > 0 ? `${name} (${optNames.join(', ')})` : name;
                 }).join(' | ');
