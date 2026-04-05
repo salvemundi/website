@@ -32,6 +32,12 @@ export class ExpiryCheckJob {
 
     static async runCheck(redis: Redis) {
         console.log('[ExpiryCheckJob] Running membership expiry scan...');
+
+        const isActive = await DirectusService.isFlagActive('mail_expiry_check');
+        if (!isActive) {
+            console.log('[ExpiryCheckJob] Automated membership emails are DISABLED via feature flag. Skipping run.');
+            return;
+        }
         
         const members = await DirectusService.getAllUsers();
         const now = new Date();

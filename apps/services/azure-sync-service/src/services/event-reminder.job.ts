@@ -33,6 +33,12 @@ export class EventReminderJob {
 
     static async runCheck(redis: Redis) {
         console.log('[EventReminderJob] Running upcoming event scan (3 days ahead)...');
+
+        const isActive = await DirectusService.isFlagActive('mail_event_reminders');
+        if (!isActive) {
+            console.log('[EventReminderJob] Automated event reminders are DISABLED via feature flag. Skipping run.');
+            return;
+        }
         
         const upcomingEvents = await DirectusService.getUpcomingEvents(3);
         console.log(`[EventReminderJob] Found ${upcomingEvents.length} events scheduled in 3 days.`);

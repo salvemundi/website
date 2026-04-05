@@ -1,6 +1,6 @@
 import { getDirectusClient } from '../config/directus.js';
 import { updateItem, readItems, createItem, deleteItem, readUsers, updateUser, createUser } from '@directus/sdk';
-import { Event, EventSignup } from '../types/schema.js';
+import { Event, EventSignup, FeatureFlag } from '../types/schema.js';
 
 export class DirectusService {
     static async getUserById(id: string) {
@@ -118,5 +118,18 @@ export class DirectusService {
             },
             fields: ['id', 'participant_name', 'participant_email']
         }));
+    }
+
+    static async isFlagActive(key: string): Promise<boolean> {
+        try {
+            const items = await getDirectusClient().request(readItems('feature_flags', {
+                filter: { route_match: { _eq: key } },
+                fields: ['is_active']
+            }));
+            return items?.[0]?.is_active ?? false;
+        } catch (err) {
+            console.error(`[DirectusService] Error checking flag ${key}:`, err);
+            return false;
+        }
     }
 }
