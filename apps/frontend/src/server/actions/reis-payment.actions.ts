@@ -24,6 +24,7 @@ import {
 import { auth } from '@/server/auth/auth';
 import { headers as nextHeaders } from 'next/headers';
 import { getRedis } from '@/server/auth/redis-client';
+import { query } from '@/lib/db';
 
 /**
  * Validates if the current request has access to a signup.
@@ -123,7 +124,7 @@ export async function getTripSignupByToken(signupId: number, token?: string) {
         };
 
     } catch (err: any) {
-        console.error('[reis-payment.actions#getTripSignupByToken] Error:', err);
+        console.error('Error fetching signup by token:', err);
         return { success: false, error: 'Er is een fout opgetreden bij het ophalen van je gegevens. Probeer het later opnieuw.' };
     }
 }
@@ -140,16 +141,19 @@ export async function updateSignupDetails(signupId: number, data: ReisPaymentEnr
             return { success: false, error: 'Vul alle verplichte velden correct in.', fieldErrors: validated.error.flatten().fieldErrors };
         }
 
-        const directus = getSystemDirectus();
-        await directus.request(updateItem('trip_signups', signupId, validated.data));
+        const fields = Object.keys(validated.data);
+        const values = Object.values(validated.data);
+        const setClause = fields.map((f, i) => `${f} = $${i + 2}`).join(', ');
+
+        await query(`UPDATE trip_signups SET ${setClause} WHERE id = $1`, [signupId, ...values]);
+
+        getSystemDirectus().request(updateItem('trip_signups', signupId, validated.data as any)).catch(err => {
+            console.error('Directus sync error:', err);
+        });
 
         return { success: true };
     } catch (err: any) {
-        // Special mapping for common Directus/Database errors
-        if (err.errors?.[0]?.extensions?.code === 'RECORD_NOT_FOUND') {
-            return { success: false, error: 'Aanmelding niet gevonden.' };
-        }
-
+        console.error('Error updating signup details:', err);
         return { success: false, error: 'Opslaan mislukt door een serverfout.' };
     }
 }
@@ -163,7 +167,7 @@ export async function syncSignupActivities(signupId: number, selections: { activ
         const lockKey = `lock:trip-activity-sync:${signupId}`;
         let lockAcquired = false;
 
-        // 1. Simple 10s spin-lock to prevent double-sync
+        // 1. Simple 10s spin-lock
         for (let i = 0; i < 20; i++) {
             const res = await (redis as any).set(lockKey, 'locked', 'EX', 10, 'NX');
             if (res === 'OK') {
@@ -174,41 +178,38 @@ export async function syncSignupActivities(signupId: number, selections: { activ
         }
 
         if (!lockAcquired) {
-            return { success: false, error: 'Het systeem is momenteel bezig met het verwerken van je aanvraag. Probeer het over een paar seconden opnieuw.' };
+            return { success: false, error: 'Systeem is bezig. Probeer het over een paar seconden opnieuw.' };
         }
 
         try {
-            const directus = getSystemDirectus();
-
-            // 1. Get current activities for this signup
-            const current = await directus.request(readItems('trip_signup_activities', {
-                filter: { trip_signup_id: { _eq: signupId } },
-                fields: ['id', 'trip_activity_id'] as any
-            }));
+            // 1. Get current activities for this signup (SQL for consistency)
+            const currentRes = await query(
+                'SELECT id, trip_activity_id FROM trip_signup_activities WHERE trip_signup_id = $1',
+                [signupId]
+            );
+            const current = currentRes.rows || [];
 
             const toRemove = current
-                .filter(c => !selections.find(s => s.activityId === c.trip_activity_id))
-                .map(c => c.id);
+                .filter(c => !selections.find(s => s.activityId === Number(c.trip_activity_id)))
+                .map(c => Number(c.id));
 
-            const toUpsert = selections;
-
-            // 2. Perform sync (atomic would be nice, but Directus SDK triggers individual calls)
+            // 2. Perform sync via SQL
             if (toRemove.length > 0) {
-                await directus.request(deleteItems('trip_signup_activities', toRemove));
+                await query('DELETE FROM trip_signup_activities WHERE id = ANY($1::int[])', [toRemove]);
             }
 
-            for (const s of toUpsert) {
-                const existing = current.find(c => c.trip_activity_id === s.activityId);
+            for (const s of selections) {
+                const existing = current.find(c => Number(c.trip_activity_id) === s.activityId);
                 if (existing) {
-                    await directus.request(updateItem('trip_signup_activities', existing.id, {
-                        selected_options: s.options
-                    }));
+                    await query(
+                        'UPDATE trip_signup_activities SET selected_options = $1 WHERE id = $2',
+                        [JSON.stringify(s.options), existing.id]
+                    );
                 } else {
-                    await directus.request(createItem('trip_signup_activities', {
-                        trip_signup_id: signupId,
-                        trip_activity_id: s.activityId,
-                        selected_options: s.options
-                    }));
+                    await query(
+                        'INSERT INTO trip_signup_activities (trip_signup_id, trip_activity_id, selected_options) VALUES ($1, $2, $3)',
+                        [signupId, s.activityId, JSON.stringify(s.options)]
+                    );
                 }
             }
 
@@ -217,7 +218,7 @@ export async function syncSignupActivities(signupId: number, selections: { activ
             await redis.del(lockKey);
         }
     } catch (err) {
-        console.error('[reis-payment.actions#syncSignupActivities] Error:', err);
+        console.error('Error syncing signup activities:', err);
         return { success: false, error: 'Synchroniseren van activiteiten mislukt.' };
     }
 }
@@ -249,7 +250,7 @@ export async function initiateTripPaymentAction(signupId: number, paymentType: '
         return { success: true, checkoutUrl: data.checkoutUrl };
 
     } catch (err) {
-        console.error('[reis-payment.actions#initiateTripPaymentAction] Error:', err);
+        console.error('Error initiating trip payment:', err);
         return { success: false, error: 'Interne fout bij starten betaling.' };
     }
 }

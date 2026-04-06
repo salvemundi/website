@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Plane, Loader2, Edit2 } from 'lucide-react';
+import { Plane, Loader2, Edit2, ChevronDown } from 'lucide-react';
 import type { Trip } from '@salvemundi/validations';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
@@ -24,7 +24,6 @@ export default function AdminReisSelectorIsland({ trips, initialSettings }: Admi
     const [isPending, startTransition] = useTransition();
     const [settings, setSettings] = useState(initialSettings);
 
-    // Find currently selected from URL, or fallback to chronological zero
     const currentTripId = searchParams.get('tripId');
     const selectedId = currentTripId ? Number(currentTripId) : (trips.length > 0 ? trips[0].id : '');
 
@@ -65,11 +64,11 @@ export default function AdminReisSelectorIsland({ trips, initialSettings }: Admi
                         <select
                             value={selectedId}
                             onChange={handleChange}
-                            className="w-full pl-4 pr-10 py-2.5 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-[10px] font-black uppercase tracking-widest focus:ring-2 focus:ring-[var(--beheer-accent)] focus:border-transparent transition-all appearance-none cursor-pointer shadow-sm"
+                            className="beheer-select"
                         >
                             {trips.map(trip => {
                                 const displayStartDate = trip.start_date || trip.event_date;
-                                if (!displayStartDate) return <option key={trip.id} value={trip.id}>{trip.name}</option>;
+                                if (!displayStartDate) return <option key={trip.id} value={trip.id} className="bg-[var(--beheer-card-bg)]">{trip.name}</option>;
 
                                 const dateDisplay = trip.end_date
                                     ? `${format(new Date(displayStartDate), 'd MMM yyyy', { locale: nl })} - ${format(new Date(trip.end_date), 'd MMM yyyy', { locale: nl })}`
@@ -82,8 +81,8 @@ export default function AdminReisSelectorIsland({ trips, initialSettings }: Admi
                                 );
                             })}
                         </select>
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)] transition-colors">
-                            <span>▼</span>
+                        <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)] transition-colors opacity-40">
+                            <ChevronDown className="h-4 w-4" />
                         </div>
                     </div>
 

@@ -14,7 +14,9 @@ import { requireReisAdmin } from './reis-admin-utils';
 import { 
     fetchAllTripSignupsDb, 
     fetchTripSignupByIdDb, 
-    fetchTripSignupActivitiesDb 
+    fetchTripSignupActivitiesDb,
+    updateTripSignupDb,
+    deleteTripSignupDb
 } from './reis-db.utils';
 import { getSystemDirectus } from '@/lib/directus';
 import { 
@@ -29,13 +31,11 @@ export async function getTripSignups(tripId: number) {
     await requireReisAdmin();
 
     try {
-        // 1. Direct DB fetch for absolute consistency in the list
         const dbSignups = await fetchAllTripSignupsDb(tripId);
         if (dbSignups.length > 0) {
             return dbSignups as TripSignup[];
         }
 
-        // 2. Fallback to Directus if DB query returns nothing or is empty
         const signups = await getSystemDirectus().request(readItems('trip_signups', {
             filter: { trip_id: { _eq: tripId } },
             fields: TRIP_SIGNUP_FIELDS as any,
@@ -54,13 +54,13 @@ export async function getTripSignups(tripId: number) {
         const parsed = z.array(tripSignupSchema).safeParse(sanitized);
 
         if (!parsed.success) {
-            console.error('[AdminReisActions#getTripSignups] Zod validation failed on Directus fallback:', parsed.error.flatten().fieldErrors);
+            console.error('Zod validation failed on Directus fallback:', parsed.error.flatten().fieldErrors);
             return [];
         }
 
         return parsed.data;
     } catch (error) {
-        console.error('[AdminReisActions#getTripSignups] Error:', error);
+        console.error('Error fetching trip signups:', error);
         return [];
     }
 }
@@ -69,13 +69,11 @@ export async function getTripSignup(id: number): Promise<TripSignup | null> {
     await requireReisAdmin();
 
     try {
-        // 1. Direct DB fetch for absolute consistency
         const dbSignup = await fetchTripSignupByIdDb(id);
         if (dbSignup) {
             return dbSignup as TripSignup;
         }
 
-        // 2. Fallback to Directus
         const signup = await getSystemDirectus().request(readItem('trip_signups', id, {
             fields: TRIP_SIGNUP_FIELDS as any
         })) as unknown as DbTripSignup;
@@ -84,7 +82,7 @@ export async function getTripSignup(id: number): Promise<TripSignup | null> {
         const sanitized = { ...signup, created_at: signup.created_at };
         return tripSignupSchema.parse(sanitized);
     } catch (error) {
-        console.error('[AdminReisActions#getTripSignup] Error:', error);
+        console.error('Error fetching trip signup:', error);
         return null;
     }
 }
@@ -95,17 +93,20 @@ export async function updateSignupStatus(signupId: number, status: string) {
     try {
         const client = getSystemDirectus();
         
-        // 1. Fetch current data to know if we need to send a mail
         const signup = await client.request(readItem('trip_signups', signupId, {
             fields: ['id', 'email', 'first_name', 'status', { trip_id: ['name'] }]
         })) as any;
 
         const oldStatus = signup?.status;
         
-        // 2. Perform the update
-        await client.request(updateItem('trip_signups', signupId, { status }));
+        const success = await updateTripSignupDb(signupId, { status });
+        if (!success) throw new Error('Database update mislukt');
+
+        client.request(updateItem('trip_signups', signupId, { status })).catch(err => {
+            console.error('Directus sync error:', err);
+        });
         
-        // 3. Trigger Email if status changed TO confirmed
+        // 4. Trigger Email if status changed TO confirmed
         if (status === 'confirmed' && oldStatus !== 'confirmed' && signup?.email) {
             const mailUrl = process.env.MAIL_SERVICE_URL;
             const token = process.env.INTERNAL_SERVICE_TOKEN;
@@ -125,7 +126,7 @@ export async function updateSignupStatus(signupId: number, status: string) {
                             tripName: signup.trip_id?.name || 'de reis'
                         }
                     })
-                }).catch(e => console.error('[AdminReisActions] Failed to trigger status update mail:', e));
+                }).catch(e => console.error('Failed to trigger status update mail:', e));
             }
         }
 
@@ -139,7 +140,7 @@ export async function updateSignupStatus(signupId: number, status: string) {
 
         return { success: true };
     } catch (error) {
-        console.error('[AdminReisActions#updateSignupStatus] Error:', error);
+        console.error('Error updating signup status:', error);
         return { success: false, error: 'Update mislukt' };
     }
 }
@@ -148,7 +149,12 @@ export async function deleteTripSignup(signupId: number) {
     await requireReisAdmin();
 
     try {
-        await getSystemDirectus().request(deleteItem('trip_signups', signupId));
+        const success = await deleteTripSignupDb(signupId);
+        if (!success) throw new Error('Database delete mislukt');
+
+        getSystemDirectus().request(deleteItem('trip_signups', signupId)).catch(err => {
+            console.error('Directus sync error:', err);
+        });
         
         const { revalidatePath, ...cacheFunctions } = await import('next/cache');
         const cache = cacheFunctions as any;
@@ -160,22 +166,32 @@ export async function deleteTripSignup(signupId: number) {
 
         return { success: true };
     } catch (error) {
-        console.error('[AdminReisActions#deleteTripSignup] Error:', error);
+        console.error('Error deleting trip signup:', error);
         return { success: false, error: 'Verwijderen mislukt' };
     }
 }
 
-export async function updateTripSignup(id: number, prevState: unknown, formData: FormData) {
+export async function updateTripSignup(prevState: any, formData: FormData) {
     await requireReisAdmin();
+
+    const id = parseInt(formData.get('id') as string);
+    if (!id) throw new Error('Geen ID gevonden voor update');
 
     const rawData = Object.fromEntries(formData.entries());
     
     const data = {
-        ...rawData,
+        first_name: rawData.first_name as string,
+        last_name: rawData.last_name as string,
+        email: rawData.email as string,
+        phone_number: rawData.phone_number as string,
         willing_to_drive: rawData.willing_to_drive === 'on' || rawData.willing_to_drive === 'true',
         deposit_paid: rawData.deposit_paid === 'on' || rawData.deposit_paid === 'true',
         full_payment_paid: rawData.full_payment_paid === 'on' || rawData.full_payment_paid === 'true',
         date_of_birth: rawData.date_of_birth || null,
+        status: rawData.status as string,
+        role: rawData.role as string,
+        allergies: rawData.allergies as string,
+        special_notes: rawData.special_notes as string,
     };
 
     const validated = tripSignupSchema.partial().safeParse(data);
@@ -184,7 +200,12 @@ export async function updateTripSignup(id: number, prevState: unknown, formData:
     }
 
     try {
-        await getSystemDirectus().request(updateItem('trip_signups', id, validated.data as any));
+        const success = await updateTripSignupDb(id, validated.data);
+        if (!success) throw new Error('Database update mislukt');
+
+        getSystemDirectus().request(updateItem('trip_signups', id, validated.data as any)).catch(err => {
+            console.error('Directus sync error:', err);
+        });
 
         const { revalidatePath, ...cacheFunctions } = await import('next/cache');
         const cache = cacheFunctions as any;
@@ -197,7 +218,7 @@ export async function updateTripSignup(id: number, prevState: unknown, formData:
 
         return { success: true };
     } catch (error) {
-        console.error('[AdminReisActions#updateTripSignup] Error:', error);
+        console.error('Error updating trip signup data:', error);
         return { success: false, error: 'Update mislukt' };
     }
 }

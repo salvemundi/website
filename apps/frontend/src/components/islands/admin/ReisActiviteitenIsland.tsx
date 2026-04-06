@@ -82,7 +82,8 @@ export default function ReisActiviteitenIsland({
         
         let res;
         if (editingActivity?.id) {
-            res = await updateTripActivity(editingActivity.id, {}, formData);
+            formData.set('id', editingActivity.id.toString());
+            res = await updateTripActivity({}, formData);
         } else {
             formData.set('trip_id', selectedTripId.toString());
             res = await createTripActivity({}, formData);
