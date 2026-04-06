@@ -7,63 +7,28 @@ import { revalidateTag, unstable_noStore as noStore } from 'next/cache';
 import { cache } from 'react';
 
 import { getSystemDirectus } from '@/lib/directus';
-import { readItems, createItem, updateItem, deleteItem } from '@directus/sdk';
+import { readItems, createItem, deleteItem } from '@directus/sdk';
 import { 
     getActivitiesInternal, 
-    getActivityByIdInternal 
+    getActivityByIdInternal,
+    getActivitySignupsInternal 
 } from "@/server/queries/admin-event.queries";
-import { createEventSignupDb, deleteEventSignupDb } from './event-db.utils';
-
-
-const getFinanceServiceUrl = () =>
-    process.env.FINANCE_SERVICE_URL;
-
-const getMailServiceUrl = () =>
-    process.env.MAIL_SERVICE_URL;
-
-const getInternalHeaders = () => {
-    const token = process.env.INTERNAL_SERVICE_TOKEN;
-    return {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-    };
-};
-
-async function getSession() {
-    return await auth.api.getSession({
-        headers: await headers()
-    });
-}
-
-async function checkAdminAccess() {
-    const session = await getSession();
-    if (!session || !session.user) return null;
-    
-    // Check if user has admin access based on committees or specific role
-    const user = session.user as any;
-    const committees = user.committees || [];
-    const { isSuperAdmin } = await import('@/lib/auth-utils');
-    if (!isSuperAdmin(committees)) return null;
-    return session;
-}
-
-async function fetchWithTimeout(url: string, options: RequestInit & { timeout?: number } = {}) {
-    const { timeout = 10000, ...fetchOptions } = options;
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), timeout);
-
-    try {
-        const response = await fetch(url, {
-            ...fetchOptions,
-            signal: controller.signal,
-        });
-        clearTimeout(id);
-        return response;
-    } catch (error) {
-        clearTimeout(id);
-        throw error;
-    }
-}
+import { 
+    createEventSignupDb, 
+    deleteEventSignupDb,
+    fetchEventSignupByIdDb,
+    fetchUserEventSignupsDb
+} from './event-db.utils';
+import { 
+    fetchPubCrawlSignupByIdDb,
+    fetchUserPubCrawlSignupsDb
+} from './kroegentocht-db.utils';
+import { 
+    getFinanceServiceUrl, 
+    getInternalHeaders, 
+    fetchWithTimeout, 
+    checkAdminAccess 
+} from './activiteit-utils';
 
 /**
  * Fetches all published activities directly from the database (SQL-first).
@@ -90,6 +55,21 @@ export const getActivityById = cache(async (id: string): Promise<Activiteit | nu
 });
 
 /**
+ * Fetches all signups for a specific activity (Admin only).
+ */
+export async function getActivitySignups(eventId: string) {
+    const session = await checkAdminAccess();
+    if (!session) return [];
+    
+    try {
+        return await getActivitySignupsInternal(eventId);
+    } catch (error) {
+        console.error(`[Activities] getActivitySignups failed for ${eventId}:`, error);
+        return [];
+    }
+}
+
+/**
  * Sign up for an activity (Directus Event).
  * Handles both members (linked via directus_relations) and guests.
  */
@@ -97,7 +77,7 @@ export async function signupForActivity(data: EventSignupForm) {
     const { rateLimit } = await import('../utils/ratelimit');
     const { success } = await rateLimit('event-signup', 3, 300);
     if (!success) {
-        return { success: false, error: 'Too many requests. Please try again in 5 minutes.' };
+        return { success: false, error: 'Too many requests. Please try again soon.' };
     }
 
     const parsed = eventSignupFormSchema.safeParse(data);
@@ -128,6 +108,7 @@ export async function signupForActivity(data: EventSignupForm) {
 
         const qrToken = `r-${parsed.data.event_id}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
         const directus = getSystemDirectus();
+        
         const payload: any = {
             event_id: parsed.data.event_id,
             participant_name: parsed.data.name,
@@ -141,8 +122,9 @@ export async function signupForActivity(data: EventSignupForm) {
         const signupId = await createEventSignupDb(payload);
         if (!signupId) throw new Error('Could not write to database');
 
+        // Async sync back to Directus for admin dashboard
         directus.request(createItem('event_signups', { ...payload, id: signupId })).catch(err => {
-            console.error('Directus public signup sync error:', err);
+            console.error('[Activities] Directus sync error:', err);
         });
 
         revalidateTag(`event_signups_${parsed.data.event_id}`, 'default');
@@ -168,13 +150,12 @@ export async function signupForActivity(data: EventSignupForm) {
                 return { success: true, checkoutUrl: paymentData.checkoutUrl };
             }
             
-            console.error('Payment service error:', paymentData);
+            console.error('[Activities] Payment service error:', paymentData);
             try {
                 await deleteEventSignupDb(signupId);
                 getSystemDirectus().request(deleteItem('event_signups', signupId)).catch(() => {});
-                console.log(`Cleaned up failed signup ${signupId}`);
             } catch (cleanupErr) {
-                console.error(`Cleanup failed for ${signupId}:`, cleanupErr);
+                console.error(`[Activities] Cleanup failed for ${signupId}:`, cleanupErr);
             }
 
             return { success: false, error: 'Could not create payment for this signup.' };
@@ -202,200 +183,128 @@ export async function signupForActivity(data: EventSignupForm) {
     }
 }
 
-export async function getActivitySignups(eventId: string) {
-    const session = await checkAdminAccess();
-    if (!session) return [];
-    
-    try {
-        return await getSystemDirectus().request(readItems('event_signups', {
-            filter: { event_id: { _eq: eventId } },
-            fields: EVENT_SIGNUP_FIELDS
-        }));
-    } catch (error) {
-        console.error(`[Activities] Error fetching signups for ${eventId}:`, error);
-        return [];
-    }
-}
-
+/**
+ * Fetches the status of a specific signup (Event, Pub Crawl, Trip, or Membership).
+ * Uses SQL-first approach for registration data and Finance Service for payment verification.
+ */
 export async function getSignupStatus(id?: string, transactionId?: string, cacheBuster?: string) {
     noStore();
-    if (transactionId) {
+    
+    // 1. Finance Service Verification (Source of Truth for Payments)
+    let paymentStatus = 'open';
+    const financeId = transactionId || id;
+    
+    if (financeId) {
         try {
-            const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(transactionId);
-            const isNumeric = /^\d+$/.test(transactionId);
+            const FINANCE_SERVICE_URL = getFinanceServiceUrl() || 'http://finance-service:3001';
+            const finRes = await fetch(`${FINANCE_SERVICE_URL}/api/finance/status/${financeId}`, { cache: 'no-store' });
+            if (finRes.ok) {
+                const finData = await finRes.json();
+                paymentStatus = finData.payment_status || 'open';
+            }
+        } catch (err) {
+            console.error('[Activities] Finance status check failed:', err);
+        }
+    }
 
+    try {
+        // 2. Direct Registration Lookup (Numeric ID provided in URL)
+        if (id && /^\d+$/.test(id)) {
+            const signupId = parseInt(id);
+            
+            const eventSignup = await fetchEventSignupByIdDb(signupId);
+            if (eventSignup) {
+                return { status: eventSignup.payment_status === 'paid' ? 'paid' : paymentStatus, signup: eventSignup };
+            }
+
+            const krotoSignup = await fetchPubCrawlSignupByIdDb(signupId);
+            if (krotoSignup) {
+                krotoSignup.amount_tickets = krotoSignup.tickets?.length || 1;
+                krotoSignup.event_id = { name: krotoSignup.pub_crawl_event_id?.name || 'Pub Crawl' };
+                return { status: krotoSignup.payment_status === 'paid' ? 'paid' : paymentStatus, signup: krotoSignup };
+            }
+        }
+
+        // 3. Fallback to Transaction Lookup (token/transactionId provided)
+        if (transactionId) {
+            const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(transactionId);
             const filter: any = { _or: [] };
             if (isUuid) {
                 filter._or.push({ access_token: { _eq: transactionId } });
                 filter._or.push({ mollie_id: { _eq: transactionId } });
-            }
-            if (isNumeric) {
+            } else if (/^\d+$/.test(transactionId)) {
                 filter._or.push({ id: { _eq: parseInt(transactionId) } });
-            }
-            
-            if (filter._or.length === 0) {
+            } else {
                 filter._or.push({ mollie_id: { _eq: transactionId } });
             }
-
-            const FINANCE_SERVICE_URL = process.env.FINANCE_SERVICE_URL || 'http://finance-service:3001';
-            const finRes = await fetch(`${FINANCE_SERVICE_URL}/api/finance/status/${transactionId}`);
-            if (!finRes.ok) {
-                return { status: 'error' };
-            }
-            const finData = await finRes.json();
 
             const transactions = await getSystemDirectus().request(readItems('transactions', {
                 fields: TRANSACTION_FIELDS as any,
                 filter,
                 limit: 1,
-                params: { t: Date.now().toString() + Math.random().toString(36).substring(7) }
+                params: { t: Date.now().toString() }
             })) as unknown as DbTransaction[];
 
             const trans = transactions?.[0];
-            
-            if (!trans) return { status: 'error' };
-
-            trans.payment_status = finData.payment_status || trans.payment_status;
+            if (!trans) return { status: paymentStatus === 'paid' ? 'paid' : 'error' };
 
             const productType = trans.product_type;
+            const regId = typeof trans.registration === 'object' ? trans.registration?.id : trans.registration;
+            const krotoId = typeof trans.pub_crawl_signup === 'object' ? trans.pub_crawl_signup?.id : trans.pub_crawl_signup;
 
-            if (productType === 'event_signup') {
-                const signupId = typeof trans.registration === 'object' ? trans.registration?.id : trans.registration;
-                if (!signupId) return { status: 'error' };
-
-                const signups = await getSystemDirectus().request(readItems('event_signups', {
-                    fields: ['id', 'payment_status', 'participant_name', 'participant_email', { event_id: ['id', 'name'] }] as any,
-                    filter: { id: { _eq: signupId } },
-                    limit: 1
-                })) as unknown as DbEventSignup[];
-                const signup = signups?.[0];
-                const status = signup?.payment_status === 'paid' ? 'paid' : trans.payment_status;
-                console.log(`[Activities] Signup status for transaction ${transactionId}: ${status}`);
-                return { status, signup, transaction: trans };
-            } else if (productType === 'pub_crawl_signup') {
-                const signupId = typeof trans.pub_crawl_signup === 'object' ? trans.pub_crawl_signup?.id : trans.pub_crawl_signup;
-                if (!signupId) return { status: 'error' };
-
-                const signups = await getSystemDirectus().request(readItems('pub_crawl_signups', {
-                    fields: [...PUB_CRAWL_SIGNUP_FIELDS, { pub_crawl_event_id: ['name'] }, { tickets: ['id', 'name', 'qr_token'] }] as any,
-                    filter: { id: { _eq: signupId } },
-                    limit: 1
-                })) as unknown as DbPubCrawlSignup[];
-                const signup = signups?.[0];
+            if (productType === 'event_signup' && regId) {
+                const signup = await fetchEventSignupByIdDb(Number(regId));
+                return { status: signup?.payment_status === 'paid' ? 'paid' : paymentStatus, signup, transaction: trans };
+            } else if (productType === 'pub_crawl_signup' && krotoId) {
+                const signup = await fetchPubCrawlSignupByIdDb(Number(krotoId));
                 if (signup) {
-                    (signup as any).amount_tickets = signup.tickets?.length || 1;
+                    signup.amount_tickets = signup.tickets?.length || 1;
+                    signup.event_id = { name: signup.pub_crawl_event_id?.name || 'Pub Crawl' };
                 }
-                console.log(`[Activities] Signup status for pub crawl transaction ${transactionId}: ${trans.payment_status}`);
-                return { status: trans.payment_status, signup, transaction: trans };
+                return { status: signup?.payment_status === 'paid' ? 'paid' : paymentStatus, signup, transaction: trans };
             } else if (productType === 'membership') {
-                console.log(`[Activities] Membership status for transaction ${transactionId}: ${trans.payment_status}`);
-                return { status: trans.payment_status, transaction: trans, isMembership: true };
-            } else if (productType === 'trip_signup') {
-                const signupId = typeof trans.trip_signup === 'object' ? trans.trip_signup?.id : trans.trip_signup;
-                if (!signupId) return { status: 'error' };
-
-                const signups = await getSystemDirectus().request(readItems('trip_signups', {
-                    fields: ['id', 'status', 'first_name', 'last_name', 'email', { trip_id: ['id', 'name'] }] as any,
-                    filter: { id: { _eq: signupId } },
-                    limit: 1
-                })) as unknown as DbTripSignup[];
-                const signup = signups?.[0];
-                if (signup) {
-                    (signup as any).event_id = { name: (signup as any).trip_id?.name || 'Trip' };
-                }
-                console.log(`[Activities] Trip status for transaction ${transactionId}: ${trans.payment_status}`);
-                return { status: trans.payment_status, signup, transaction: trans, isTrip: true };
+                return { status: paymentStatus, transaction: trans, isMembership: true };
             }
-            console.log(`[Activities] Generic status for transaction ${transactionId}: ${trans.payment_status}`);
-            return { status: trans.payment_status, transaction: trans };
-        } catch (e) {
-            console.error('[Activities] Error resolving transaction:', e);
-            return { status: 'error' };
         }
-    } else if (id) {
-        try {
+
+        // 4. Manual Verification / Detail Lookup (Requires Login)
+        if (id && /^\d+$/.test(id)) {
             const session = await auth.api.getSession({ headers: await headers() });
             const userId = session?.user?.id;
             const user = session?.user as any;
             const isAdmin = user?.role === 'admin' || user?.role === '06e78cf9-f9c3-4f9e-a86d-1907de634567'; 
+            const signupId = parseInt(id);
 
-            const signups = await getSystemDirectus().request(readItems('event_signups', {
-                fields: [...EVENT_SIGNUP_FIELDS, { event_id: ['id', 'name'] }] as any,
-                filter: { id: { _eq: id } },
-                limit: 1
-            })) as unknown as DbEventSignup[];
-            
-            if (signups && signups.length > 0) {
-                const signup = signups[0];
-                
-                let isOwner = false;
-                if (userId) {
-                    const txs = await getSystemDirectus().request(readItems('transactions', {
-                        filter: {
-                            user_id: { _eq: userId },
-                            registration: { _eq: signup.id }
-                        },
-                        limit: 1
-                    }));
-                    isOwner = txs.length > 0;
+            const signup = await fetchEventSignupByIdDb(signupId);
+            if (signup) {
+                const isOwner = userId && signup.directus_relations === userId;
+                if (isAdmin || isOwner) {
+                    return { status: signup.payment_status || paymentStatus, signup };
                 }
-
-                if (!isAdmin && !isOwner) {
-                    console.warn(`[Activities] Unauthorized access attempt to event signup ${id} by user ${userId}`);
-                    return { status: 'unauthorized' };
-                }
-
-                console.log(`[Activities] Signup status for ID ${id} (event): ${signup.payment_status}`);
-                return { status: signup.payment_status || 'open', signup };
+                return { status: 'unauthorized' };
             }
 
-            const pubCrawlSignups = await getSystemDirectus().request(readItems('pub_crawl_signups', {
-                fields: [...PUB_CRAWL_SIGNUP_FIELDS, { pub_crawl_event_id: ['id', 'name'] }, { tickets: ['id', 'name', 'qr_token'] }] as any,
-                filter: { id: { _eq: id } },
-                limit: 1
-            })) as unknown as DbPubCrawlSignup[];
-
-            if (pubCrawlSignups && pubCrawlSignups.length > 0) {
-                const signup = pubCrawlSignups[0];
-                
-                let isOwner = false;
-                if (userId) {
-                    const txs = await getSystemDirectus().request(readItems('transactions', {
-                        filter: {
-                            user_id: { _eq: userId },
-                            pub_crawl_signup: { _eq: signup.id }
-                        },
-                        limit: 1
-                    }));
-                    isOwner = txs.length > 0;
+            const krotoSignup = await fetchPubCrawlSignupByIdDb(signupId);
+            if (krotoSignup) {
+                const isOwner = userId && krotoSignup.directus_relations === userId;
+                if (isAdmin || isOwner) {
+                    krotoSignup.amount_tickets = krotoSignup.tickets?.length || 1;
+                    krotoSignup.event_id = { name: krotoSignup.pub_crawl_event_id?.name || 'Pub Crawl' };
+                    return { status: krotoSignup.payment_status || paymentStatus, signup: krotoSignup };
                 }
-
-                if (!isAdmin && !isOwner) {
-                    console.warn(`[Activities] Unauthorized access attempt to pub crawl signup ${id} by user ${userId}`);
-                    return { status: 'unauthorized' };
-                }
-
-                if (signup) {
-                    (signup as any).amount_tickets = signup.tickets?.length || 1;
-                }
-                console.log(`[Activities] Signup status for ID ${id} (pub crawl): ${signup.payment_status}`);
-                return { status: signup.payment_status || 'open', signup };
+                return { status: 'unauthorized' };
             }
-            
-            console.warn(`[Activities] Signup ID ${id} not found in any collection.`);
-            return { status: 'error' };
-        } catch (e) {
-            console.error('[Activities] Error fetching signup status:', e);
-            return { status: 'error' };
         }
-    }
 
-    return { status: 'error' };
+        return { status: paymentStatus };
+    } catch (error) {
+        console.error('[Activities] getSignupStatus failed:', error);
+        return { status: 'error' };
+    }
 }
 
 /**
- * Fetches the tickets (signups) for the current logged-in user.
- * Queries Events, Pub Crawls, and Trips using 'directus_relations' for a consistent overview.
+ * Fetches the tickets (signups) for the current logged-in user (SQL-First).
  */
 export async function getMyTickets() {
     const session = await auth.api.getSession({ headers: await headers() });
@@ -403,24 +312,14 @@ export async function getMyTickets() {
     if (!userId) return [];
 
     try {
-        const directus = getSystemDirectus();
-        
-        // 1. Fetch event signups directly via directus_relations
-        const eventSignups = await directus.request(readItems('event_signups', {
-            filter: { directus_relations: { _eq: userId } },
-            fields: [...EVENT_SIGNUP_FIELDS, { event_id: ['id', 'name', 'event_date', 'location'] }] as any,
-            sort: ['-created_at']
-        })) as unknown as DbEventSignup[];
+        // 1. Fetch event signups (SQL)
+        const eventSignups = await fetchUserEventSignupsDb(userId);
 
-        // 2. Fetch pub crawl signups directly via directus_relations
-        const pubCrawlSignups = await directus.request(readItems('pub_crawl_signups', {
-            filter: { directus_relations: { _eq: userId } },
-            fields: [...PUB_CRAWL_SIGNUP_FIELDS, { pub_crawl_event_id: ['id', 'name', 'event_date', 'location'] }, { tickets: ['id', 'name', 'qr_token'] }] as any,
-            sort: ['-created_at']
-        })) as unknown as DbPubCrawlSignup[];
+        // 2. Fetch pub crawl signups (SQL)
+        const pubCrawlSignups = await fetchUserPubCrawlSignupsDb(userId);
 
-        // 3. Fetch trip signups directly via directus_relations
-        const tripSignups = await directus.request(readItems('trip_signups', {
+        // 3. Fetch trip signups (Legacy Directus for now)
+        const tripSignups = await getSystemDirectus().request(readItems('trip_signups', {
             filter: { directus_relations: { _eq: userId } },
             fields: ['id', 'status', 'created_at', 'first_name', 'last_name', { trip_id: ['id', 'name', 'event_date'] }] as any,
             sort: ['-created_at']
@@ -428,8 +327,6 @@ export async function getMyTickets() {
 
         const formattedPubCrawl = pubCrawlSignups.map(s => ({
             ...s,
-            id: s.id,
-            event_id: s.pub_crawl_event_id,
             type: 'pub_crawl'
         }));
 
@@ -457,7 +354,7 @@ export async function getMyTickets() {
             return dateB - dateA;
         });
     } catch (error) {
-        console.error('[Activities] Error fetching user tickets:', error);
+        console.error('[Activities] getMyTickets failed:', error);
         return [];
     }
 }

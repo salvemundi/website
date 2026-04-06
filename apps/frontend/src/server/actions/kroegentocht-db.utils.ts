@@ -74,12 +74,16 @@ export async function fetchPubCrawlSignupsDb(eventId: number): Promise<(PubCrawl
 }
 
 /**
- * Fetches a single signup by ID.
+ * Fetches a single signup by ID with event details.
  */
 export async function fetchPubCrawlSignupByIdDb(signupId: number): Promise<any | null> {
     try {
         const res = await query(
-            `SELECT * FROM pub_crawl_signups WHERE id = $1 LIMIT 1`,
+            `SELECT s.*, e.name as event_name, e.date as event_date, e.description as event_description, e.image as event_image
+             FROM pub_crawl_signups s
+             JOIN pub_crawl_events e ON s.pub_crawl_event_id = e.id
+             WHERE s.id = $1 
+             LIMIT 1`,
             [signupId]
         );
 
@@ -93,6 +97,13 @@ export async function fetchPubCrawlSignupByIdDb(signupId: number): Promise<any |
 
         return {
             ...signup,
+            pub_crawl_event_id: {
+                id: signup.pub_crawl_event_id,
+                name: signup.event_name,
+                date: signup.event_date,
+                description: signup.event_description,
+                image: signup.event_image
+            },
             tickets: ticketRes.rows || []
         };
     } catch (error: any) {

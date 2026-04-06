@@ -97,6 +97,63 @@ export default function ActivitiesProviderIsland({ events }: ActivitiesProviderI
                 </h2>
 
                 <div className="flex flex-wrap items-center gap-3">
+                    {/* View Mode Switcher moved here to prevent shift */}
+                    <div className="hidden md:flex rounded-lg bg-[var(--bg-card)] overflow-hidden shadow-sm border border-[var(--border-color)] mr-2">
+                        <button
+                            onClick={() => setViewMode('list')}
+                            className={`px-4 py-2 text-sm font-semibold transition-all ${viewMode === 'list'
+                                ? 'bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] shadow-sm'
+                                : 'text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/5'
+                                }`}
+                        >
+                            <span className="flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="8" y1="6" x2="21" y2="6" />
+                                    <line x1="8" y1="12" x2="21" y2="12" />
+                                    <line x1="8" y1="18" x2="21" y2="18" />
+                                    <line x1="3" y1="6" x2="3.01" y2="6" />
+                                    <line x1="3" y1="12" x2="3.01" y2="12" />
+                                    <line x1="3" y1="18" x2="3.01" y2="18" />
+                                </svg>
+                                Lijst
+                            </span>
+                        </button>
+                        <button
+                            onClick={() => setViewMode('grid')}
+                            className={`px-4 py-2 text-sm font-semibold transition-all ${viewMode === 'grid'
+                                ? 'bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] shadow-sm'
+                                : 'text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/5'
+                                }`}
+                        >
+                            <span className="flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <rect x="3" y="3" width="8" height="8" rx="1" ry="1" />
+                                    <rect x="13" y="3" width="8" height="8" rx="1" ry="1" />
+                                    <rect x="3" y="13" width="8" height="8" rx="1" ry="1" />
+                                    <rect x="13" y="13" width="8" height="8" rx="1" ry="1" />
+                                </svg>
+                                Kaarten
+                            </span>
+                        </button>
+                        <button
+                            onClick={() => setViewMode('calendar')}
+                            className={`px-4 py-2 text-sm font-semibold transition-all ${viewMode === 'calendar'
+                                ? 'bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] shadow-sm'
+                                : 'text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/5'
+                                }`}
+                        >
+                            <span className="flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                                    <line x1="16" y1="2" x2="16" y2="6" />
+                                    <line x1="8" y1="2" x2="8" y2="6" />
+                                    <line x1="3" y1="10" x2="21" y2="10" />
+                                </svg>
+                                Kalender
+                            </span>
+                        </button>
+                    </div>
+
                     <button
                         onClick={async () => {
                             const calendarUrl = 'https://api.salvemundi.nl/calendar';
@@ -161,62 +218,7 @@ export default function ActivitiesProviderIsland({ events }: ActivitiesProviderI
                 )}
 
                 <div className="flex-1 space-y-6">
-                    <div className="hidden md:flex rounded-lg bg-[var(--bg-card)] overflow-hidden shadow-sm border border-[var(--border-color)]">
-                        <button
-                            onClick={() => setViewMode('list')}
-                            className={`px-4 py-2 text-sm font-semibold transition-all ${viewMode === 'list'
-                                ? 'bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] shadow-sm'
-                                : 'text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/5'
-                                }`}
-                        >
-                            <span className="flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <line x1="8" y1="6" x2="21" y2="6" />
-                                    <line x1="8" y1="12" x2="21" y2="12" />
-                                    <line x1="8" y1="18" x2="21" y2="18" />
-                                    <line x1="3" y1="6" x2="3.01" y2="6" />
-                                    <line x1="3" y1="12" x2="3.01" y2="12" />
-                                    <line x1="3" y1="18" x2="3.01" y2="18" />
-                                </svg>
-                                Lijst
-                            </span>
-                        </button>
-                        <button
-                            onClick={() => setViewMode('grid')}
-                            className={`px-4 py-2 text-sm font-semibold transition-all ${viewMode === 'grid'
-                                ? 'bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] shadow-sm'
-                                : 'text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/5'
-                                }`}
-                        >
-                            <span className="flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <rect x="3" y="3" width="8" height="8" rx="1" ry="1" />
-                                    <rect x="13" y="3" width="8" height="8" rx="1" ry="1" />
-                                    <rect x="3" y="13" width="8" height="8" rx="1" ry="1" />
-                                    <rect x="13" y="13" width="8" height="8" rx="1" ry="1" />
-                                </svg>
-                                Kaarten
-                            </span>
-                        </button>
 
-                        <button
-                            onClick={() => setViewMode('calendar')}
-                            className={`px-4 py-2 text-sm font-semibold transition-all ${viewMode === 'calendar'
-                                ? 'bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] shadow-sm'
-                                : 'text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/5'
-                                }`}
-                        >
-                            <span className="flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                                    <line x1="16" y1="2" x2="16" y2="6" />
-                                    <line x1="8" y1="2" x2="8" y2="6" />
-                                    <line x1="3" y1="10" x2="21" y2="10" />
-                                </svg>
-                                Kalender
-                            </span>
-                        </button>
-                    </div>
 
                     {viewMode === 'calendar' && (
                         <>

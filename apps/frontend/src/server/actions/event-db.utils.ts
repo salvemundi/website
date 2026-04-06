@@ -160,7 +160,7 @@ export async function deleteEventSignupDb(id: number): Promise<boolean> {
 }
 
 /**
- * Fetches all event signups for a specific user directly from the database.
+ * Fetches multiple event signups for a user (consistent with fetchUserEventSignupsDb)
  */
 export async function fetchUserEventSignupsDb(userId: string): Promise<any[]> {
     try {
@@ -186,5 +186,38 @@ export async function fetchUserEventSignupsDb(userId: string): Promise<any[]> {
     } catch (error) {
         console.error('Error in fetchUserEventSignupsDb:', error);
         return [];
+    }
+}
+
+/**
+ * Fetches a single event signup by ID with event details.
+ */
+export async function fetchEventSignupByIdDb(id: number): Promise<any | null> {
+    try {
+        const sql = `
+            SELECT es.*, e.name as event_name, e.event_date, e.description, e.image, e.contact
+            FROM event_signups es
+            JOIN events e ON es.event_id = e.id
+            WHERE es.id = $1
+            LIMIT 1
+        `;
+        const { rows } = await query(sql, [id]);
+        if (rows.length === 0) return null;
+
+        const row = rows[0];
+        return {
+            ...row,
+            event_id: {
+                id: row.event_id,
+                name: row.event_name,
+                event_date: row.event_date,
+                description: row.description,
+                image: row.image,
+                contact: row.contact
+            }
+        };
+    } catch (error) {
+        console.error('Error in fetchEventSignupByIdDb:', error);
+        return null;
     }
 }
