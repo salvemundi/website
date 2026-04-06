@@ -8,6 +8,10 @@ import { cache } from 'react';
 
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems, createItem, updateItem, deleteItem } from '@directus/sdk';
+import { 
+    getActivitiesInternal, 
+    getActivityByIdInternal 
+} from "@/server/queries/admin-event.queries";
 import { createEventSignupDb, deleteEventSignupDb } from './event-db.utils';
 
 
@@ -61,86 +65,26 @@ async function fetchWithTimeout(url: string, options: RequestInit & { timeout?: 
     }
 }
 
+/**
+ * Fetches all published activities directly from the database (SQL-first).
+ */
 export const getActivities = cache(async (): Promise<Activiteit[]> => {
     try {
-        const events = await getSystemDirectus().request(readItems('events', {
-            fields: [
-                ...EVENT_FIELDS,
-                { committee_id: ['name'] }
-            ] as any,
-            filter: { status: { _eq: 'published' } },
-            limit: -1
-        }));
-
-        const mappedData = events.map((item) => ({
-            id: String(item.id ?? ''),
-            titel: item.name ?? '',
-            beschrijving: item.description ?? null,
-            locatie: item.location ?? null,
-            datum_start: item.event_date ? new Date(item.event_date).toISOString() : new Date().toISOString(),
-            datum_eind: item.event_date_end ? new Date(item.event_date_end).toISOString() : null,
-            afbeelding_id: item.image ?? null,
-            status: item.status ?? undefined,
-            price_members: item.price_members != null ? Number(item.price_members) : 0,
-            price_non_members: item.price_non_members != null ? Number(item.price_non_members) : 0,
-            only_members: item.only_members ?? false,
-            registration_deadline: item.registration_deadline ?? null,
-            contact: item.contact ?? null,
-            event_time: item.event_time ?? null,
-            event_time_end: item.event_time_end ?? null,
-            committee_name: typeof item.committee_id === 'object' ? (item.committee_id as any)?.name || null : null,
-        }));
-
-        const parsed = activiteitenSchema.safeParse(mappedData);
-        if (!parsed.success) {
-            console.error('[Activities] Zod validation failed:', parsed.error.flatten().fieldErrors);
-            return [];
-        }
-
-        return parsed.data;
+        return await getActivitiesInternal(true);
     } catch (error) {
-        console.error('[Activities] Fetch failed:', error);
+        console.error('[Activities] getActivities failed:', error);
         return [];
     }
 });
 
+/**
+ * Fetches a single activity by ID directly from the database (SQL-first).
+ */
 export const getActivityById = cache(async (id: string): Promise<Activiteit | null> => {
     try {
-        const items = await getSystemDirectus().request(readItems('events', {
-            fields: [
-                ...EVENT_FIELDS,
-                { committee_id: ['id', 'name'] }
-            ] as any,
-            filter: { id: { _eq: id } },
-            limit: 1
-        })) as any[];
-        
-        const item = items?.[0];
-        if (!item) return null;
-
-        const mapped = {
-            id: String(item.id ?? ''),
-            titel: item.name ?? '',
-            beschrijving: item.description ?? null,
-            locatie: item.location ?? null,
-            datum_start: item.event_date ? new Date(item.event_date).toISOString() : new Date().toISOString(),
-            datum_eind: item.event_date_end ? new Date(item.event_date_end).toISOString() : null,
-            afbeelding_id: item.image ?? null,
-            status: item.status ?? undefined,
-            price_members: item.price_members != null ? Number(item.price_members) : 0,
-            price_non_members: item.price_non_members != null ? Number(item.price_non_members) : 0,
-            only_members: item.only_members ?? false,
-            registration_deadline: item.registration_deadline ?? null,
-            contact: item.contact ?? null,
-            event_time: item.event_time ?? null,
-            event_time_end: item.event_time_end ?? null,
-            committee_name: typeof item.committee_id === 'object' ? (item.committee_id as any)?.name || null : null,
-        };
-
-        const parsed = activiteitenSchema.element.safeParse(mapped);
-        return parsed.success ? parsed.data : null;
+        return await getActivityByIdInternal(id);
     } catch (error) {
-        console.error('[Activities] Fetch by ID failed:', error);
+        console.error(`[Activities] getActivityById failed for ${id}:`, error);
         return null;
     }
 });

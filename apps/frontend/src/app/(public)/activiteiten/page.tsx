@@ -58,9 +58,9 @@ function ActivitiesListFallback() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {[1, 2, 3, 4, 5, 6].map((i) => (
-                            <ActivityCardSkeleton key={i} />
+                    <div className="flex flex-col gap-4">
+                        {[1, 2, 3, 4].map((i) => (
+                            <div key={i} className="h-32 w-full rounded-2xl bg-[var(--bg-soft)] animate-pulse border border-[var(--border-color)]" />
                         ))}
                     </div>
                 </div>
@@ -96,4 +96,3 @@ export default function ActivitiesPage() {
         </div>
     );
 }
-
