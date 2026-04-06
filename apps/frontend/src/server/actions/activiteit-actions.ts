@@ -36,7 +36,7 @@ async function checkAdminAccess() {
     if (!session || !session.user) return null;
     
     // Check if user has admin access based on committees or specific role
-    const user = session.user as any; // Better-auth user object doesn't have all Directus fields typed yet
+    const user = session.user as any;
     const committees = user.committees || [];
     const { isSuperAdmin } = await import('@/lib/auth-utils');
     if (!isSuperAdmin(committees)) return null;
@@ -145,11 +145,15 @@ export const getActivityById = cache(async (id: string): Promise<Activiteit | nu
     }
 });
 
+/**
+ * Sign up for an activity (Directus Event).
+ * Handles both members (linked via directus_relations) and guests.
+ */
 export async function signupForActivity(data: EventSignupForm) {
     const { rateLimit } = await import('../utils/ratelimit');
     const { success } = await rateLimit('event-signup', 3, 300);
     if (!success) {
-        return { success: false, error: 'Te veel verzoeken. Probeer het over 5 minuten opnieuw.' };
+        return { success: false, error: 'Too many requests. Please try again in 5 minutes.' };
     }
 
     const parsed = eventSignupFormSchema.safeParse(data);
@@ -158,7 +162,7 @@ export async function signupForActivity(data: EventSignupForm) {
     }
 
     if (parsed.data.website) {
-        return { success: false, error: 'Spam gedetecteerd' };
+        return { success: false, error: 'Spam detected' };
     }
 
     try {
@@ -168,10 +172,10 @@ export async function signupForActivity(data: EventSignupForm) {
         const userId = session?.user?.id;
 
         const activity = await getActivityById(String(parsed.data.event_id));
-        if (!activity) return { success: false, error: 'Activiteit niet gevonden' };
+        if (!activity) return { success: false, error: 'Activity not found' };
 
         if (activity.only_members && !userId) {
-            return { success: false, error: 'Deze activiteit is alleen voor leden.' };
+            return { success: false, error: 'This activity is for members only.' };
         }
 
         const user = session?.user as any;
@@ -191,9 +195,8 @@ export async function signupForActivity(data: EventSignupForm) {
         };
 
         const signupId = await createEventSignupDb(payload);
-        if (!signupId) throw new Error('Kon niet wegschrijven naar database');
+        if (!signupId) throw new Error('Could not write to database');
 
-        // Sync to directus in the background
         directus.request(createItem('event_signups', { ...payload, id: signupId })).catch(err => {
             console.error('Directus public signup sync error:', err);
         });
@@ -207,7 +210,7 @@ export async function signupForActivity(data: EventSignupForm) {
                 headers: getInternalHeaders(),
                 body: JSON.stringify({
                     amount: price,
-                    description: `Inschrijving: ${activity.titel}`,
+                    description: `Signup: ${activity.titel}`,
                     registrationId: signupId,
                     registrationType: 'event_signup',
                     email: parsed.data.email,
@@ -224,14 +227,13 @@ export async function signupForActivity(data: EventSignupForm) {
             console.error('Payment service error:', paymentData);
             try {
                 await deleteEventSignupDb(signupId);
-                // Also clean from directus
                 getSystemDirectus().request(deleteItem('event_signups', signupId)).catch(() => {});
                 console.log(`Cleaned up failed signup ${signupId}`);
             } catch (cleanupErr) {
                 console.error(`Cleanup failed for ${signupId}:`, cleanupErr);
             }
 
-            return { success: false, error: 'Er kon geen betaling worden aangemaakt voor deze inschrijving.' };
+            return { success: false, error: 'Could not create payment for this signup.' };
         } else {
             const { getRedis } = await import('@/server/auth/redis-client');
             const redis = await getRedis();
@@ -248,11 +250,11 @@ export async function signupForActivity(data: EventSignupForm) {
 
             await redis.xadd('v7:events', '*', 'payload', JSON.stringify(eventPayload));
             
-            return { success: true, message: 'Inschrijving geslaagd!' };
+            return { success: true, message: 'Signup successful!' };
         }
     } catch (error) {
         console.error('[Activities] Signup error:', error);
-        return { success: false, error: 'Er is een fout opgetreden bij de inschrijving.' };
+        return { success: false, error: 'An error occurred during signup.' };
     }
 }
 
@@ -314,7 +316,6 @@ export async function getSignupStatus(id?: string, transactionId?: string, cache
             const productType = trans.product_type;
 
             if (productType === 'event_signup') {
-                // Extract ID from nested registration object if returned as such
                 const signupId = typeof trans.registration === 'object' ? trans.registration?.id : trans.registration;
                 if (!signupId) return { status: 'error' };
 
@@ -356,8 +357,7 @@ export async function getSignupStatus(id?: string, transactionId?: string, cache
                 })) as unknown as DbTripSignup[];
                 const signup = signups?.[0];
                 if (signup) {
-                    // Map trip_id.name to event_id.name for UI consistency in ConfirmationIsland
-                    (signup as any).event_id = { name: (signup as any).trip_id?.name || 'Reis' };
+                    (signup as any).event_id = { name: (signup as any).trip_id?.name || 'Trip' };
                 }
                 console.log(`[Activities] Trip status for transaction ${transactionId}: ${trans.payment_status}`);
                 return { status: trans.payment_status, signup, transaction: trans, isTrip: true };
@@ -449,6 +449,10 @@ export async function getSignupStatus(id?: string, transactionId?: string, cache
     return { status: 'error' };
 }
 
+/**
+ * Fetches the tickets (signups) for the current logged-in user.
+ * Queries Events, Pub Crawls, and Trips using 'directus_relations' for a consistent overview.
+ */
 export async function getMyTickets() {
     const session = await auth.api.getSession({ headers: await headers() });
     const userId = session?.user?.id;
@@ -457,36 +461,26 @@ export async function getMyTickets() {
     try {
         const directus = getSystemDirectus();
         
-        // 1. Fetch user's transactions to find signups
-        const transactions = await directus.request(readItems('transactions', {
-            filter: { user_id: { _eq: userId } },
-            fields: ['id', 'registration', 'pub_crawl_signup', 'trip_signup'] as any,
-            limit: -1
-        }));
-
-        const eventSignupIds = transactions.map(tx => tx.registration).filter(Boolean);
-        const pubCrawlSignupIds = transactions.map(tx => tx.pub_crawl_signup).filter(Boolean);
-        const tripSignupIds = transactions.map(tx => tx.trip_signup).filter(Boolean);
-
-        // 2. Fetch event signups
-        const eventSignups = eventSignupIds.length > 0 ? await directus.request(readItems('event_signups', {
-            filter: { id: { _in: eventSignupIds } },
+        // 1. Fetch event signups directly via directus_relations
+        const eventSignups = await directus.request(readItems('event_signups', {
+            filter: { directus_relations: { _eq: userId } },
             fields: [...EVENT_SIGNUP_FIELDS, { event_id: ['id', 'name', 'event_date', 'location'] }] as any,
             sort: ['-created_at']
-        })) as unknown as DbEventSignup[] : [];
+        })) as unknown as DbEventSignup[];
 
-        // 3. Fetch pub crawl signups
-        const pubCrawlSignups = pubCrawlSignupIds.length > 0 ? await directus.request(readItems('pub_crawl_signups', {
-            filter: { id: { _in: pubCrawlSignupIds } },
+        // 2. Fetch pub crawl signups directly via directus_relations
+        const pubCrawlSignups = await directus.request(readItems('pub_crawl_signups', {
+            filter: { directus_relations: { _eq: userId } },
             fields: [...PUB_CRAWL_SIGNUP_FIELDS, { pub_crawl_event_id: ['id', 'name', 'event_date', 'location'] }, { tickets: ['id', 'name', 'qr_token'] }] as any,
             sort: ['-created_at']
-        })) as unknown as DbPubCrawlSignup[] : [];
+        })) as unknown as DbPubCrawlSignup[];
 
-        const tripSignups = tripSignupIds.length > 0 ? await directus.request(readItems('trip_signups', {
-            filter: { id: { _in: tripSignupIds } },
+        // 3. Fetch trip signups directly via directus_relations
+        const tripSignups = await directus.request(readItems('trip_signups', {
+            filter: { directus_relations: { _eq: userId } },
             fields: ['id', 'status', 'created_at', 'first_name', 'last_name', { trip_id: ['id', 'name', 'event_date'] }] as any,
             sort: ['-created_at']
-        })) as unknown as DbTripSignup[] : [];
+        })) as unknown as DbTripSignup[];
 
         const formattedPubCrawl = pubCrawlSignups.map(s => ({
             ...s,
@@ -506,7 +500,7 @@ export async function getMyTickets() {
                 ...s,
                 event_id: { 
                     id: trip?.id, 
-                    name: trip?.name, // Use 'name' from DbTrip
+                    name: trip?.name,
                     event_date: trip?.event_date 
                 },
                 type: 'trip'

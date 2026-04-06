@@ -42,8 +42,8 @@ async function sendCancellationEmail(email: string, eventName: string) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 to: email,
-                subject: `Uitschrijving: ${eventName}`,
-                html: `Beste aanmelder,<br/><br/>Je bent afgemeld voor de activiteit: <strong>${eventName}</strong>.<br/><br/>Met vriendelijke groet,<br/>Het Salve Mundi Team`
+                subject: `Cancellation: ${eventName}`,
+                html: `Dear member,<br/><br/>You have been signed off from the activity: <strong>${eventName}</strong>.<br/><br/>Kind regards,<br/>The Salve Mundi Team`
             })
         });
     } catch (e) {
@@ -57,7 +57,7 @@ export async function deleteSignupAction(signupId: number, eventId: string | num
 
     try {
         const success = await deleteEventSignupDb(signupId);
-        if (!success) throw new Error("Verwijderen uit database mislukt");
+        if (!success) throw new Error("Deletion from database failed");
 
         // Sync to Directus
         getSystemDirectus().request(deleteItem('event_signups', signupId)).catch(err => {
@@ -74,7 +74,7 @@ export async function deleteSignupAction(signupId: number, eventId: string | num
         return { success: true };
     } catch (error) {
         console.error("Failed to delete signup:", error);
-        return { success: false, error: "Verwijderen mislukt" };
+        return { success: false, error: "Deletion failed" };
     }
 }
 
@@ -95,7 +95,7 @@ export async function searchMembersAction(query: string) {
         return { success: true, data: (users || []) as any[] };
     } catch (error) {
         console.error("Failed to search members:", error);
-        return { success: false, error: "Zoeken mislukt", data: [] };
+        return { success: false, error: "Search failed", data: [] };
     }
 }
 
@@ -110,7 +110,7 @@ export async function createManualSignupAction(eventId: number, eventName: strin
         };
 
         if (signupType === 'member') {
-            // payload.directus_relations = memberData.id; (removed)
+            payload.directus_relations = memberData.id;
             payload.participant_name = `${memberData.first_name} ${memberData.last_name || ''}`.trim();
             payload.participant_email = memberData.email;
         } else {
@@ -135,9 +135,9 @@ export async function createManualSignupAction(eventId: number, eventName: strin
         console.error("Failed to create manual signup:", error);
         const errMessage = error?.errors?.[0]?.message || "";
         if (errMessage.includes('UNIQUE') || errMessage.includes('duplicate')) {
-            return { success: false, error: "Deze persoon is al ingeschreven." };
+            return { success: false, error: "This person is already signed up." };
         }
-        return { success: false, error: "Aanmelding opslaan mislukt." };
+        return { success: false, error: "Failed to save signup." };
     }
 }
 
@@ -163,7 +163,7 @@ export async function toggleCheckInAction(signupId: number, eventId: number, che
         return { success: true };
     } catch (error) {
         console.error("Failed to toggle check-in:", error);
-        return { success: false, error: "Check-in bijwerken mislukt" };
+        return { success: false, error: "Failed to update check-in" };
     }
 }
 
