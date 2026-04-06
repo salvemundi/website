@@ -198,6 +198,7 @@ jobs:
             echo "INTERNAL_DIRECTUS_URL=http://v7-core-directus:8055" >> .env
             echo "AZURE_SYNC_SERVICE_URL=http://v7-acc-sync:3002" >> .env
             echo "NEXT_APP_INTERNAL_URL=http://v7-acc-app:3000" >> .env
+            echo "DB_HOST=v7-core-db" >> .env
 
             if [ ! -z "$REDIS_PASSWORD" ]; then
               echo "REDIS_URL=redis://default:${REDIS_PASSWORD}@v7-core-redis:6379" >> .env
