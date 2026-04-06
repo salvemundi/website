@@ -37,17 +37,21 @@ export default async function ReisPage() {
     // 2. Logic for registration availability (Calculated on Server)
     const registrationStartDate = nextTrip?.registration_start_date ? new Date(nextTrip.registration_start_date) : null;
     const now = new Date();
-    const isRegistrationDateReached = registrationStartDate ? now >= registrationStartDate : false;
     
-    // canSignUp is true ONLY if both the global switch (isReisEnabled) and the trip switch are ON
-    const canSignUp = Boolean(isReisEnabled && nextTrip && (nextTrip.registration_open || isRegistrationDateReached));
+    // Default to true if no date is set, so the toggle works immediately
+    const isRegistrationDateReached = registrationStartDate ? now >= registrationStartDate : true;
+    
+    // canSignUp is true ONLY if the global switch (isReisEnabled), the trip switch (registration_open), 
+    // AND the start date are ALL satisfied.
+    const canSignUp = Boolean(isReisEnabled && nextTrip && nextTrip.registration_open && isRegistrationDateReached);
 
-    const showStartText = !canSignUp && registrationStartDate;
     const registrationStartText = !isReisEnabled 
         ? reisDisabledMessage 
-        : (showStartText
-            ? `Inschrijving opent op ${format(registrationStartDate!, 'd MMMM yyyy HH:mm', { locale: nl })}`
-            : 'Inschrijving nog niet beschikbaar');
+        : (!nextTrip?.registration_open 
+            ? 'De inschrijvingen voor deze reis zijn momenteel gesloten.'
+            : (registrationStartDate && now < registrationStartDate
+                ? `Inschrijving opent op ${format(registrationStartDate!, 'd MMMM yyyy HH:mm', { locale: nl })}`
+                : 'Inschrijving tijdelijk niet beschikbaar'));
 
     return (
         <>
