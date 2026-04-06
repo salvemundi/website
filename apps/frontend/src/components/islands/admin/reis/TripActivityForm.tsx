@@ -63,6 +63,7 @@ export default function TripActivityForm({ activity, onSave, onCancel, pending }
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-8">
+                {activity?.id && <input type="hidden" name="id" value={activity.id} />}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-6">
                         <Field label="Naam *">

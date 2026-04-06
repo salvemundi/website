@@ -1,6 +1,6 @@
 'use client';
 
-import { Search, Download, Edit } from 'lucide-react';
+import { Search, Download, Edit, ChevronDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface ReisFiltersProps {
@@ -39,11 +39,11 @@ export default function ReisFilters({
                         className="w-full pl-10 pr-4 py-2 border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] focus:ring-2 focus:ring-[var(--beheer-accent)] focus:border-transparent transition-all"
                     />
                 </div>
-                <div>
+                <div className="relative group">
                     <select
                         value={statusFilter}
                         onChange={(e) => onStatusChange(e.target.value)}
-                        className="w-full px-4 py-2 border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] focus:ring-2 focus:ring-[var(--beheer-accent)] focus:border-transparent transition-all font-bold text-sm uppercase tracking-widest"
+                        className="beheer-select"
                     >
                         <option value="all">Alle statussen</option>
                         <option value="registered">Geregistreerd</option>
@@ -51,17 +51,19 @@ export default function ReisFilters({
                         <option value="waitlist">Wachtlijst</option>
                         <option value="cancelled">Geannuleerd</option>
                     </select>
+                    <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--beheer-text-muted)] opacity-40 group-hover:text-[var(--beheer-accent)] transition-colors pointer-events-none" />
                 </div>
-                <div>
+                <div className="relative group">
                     <select
                         value={roleFilter}
                         onChange={(e) => onRoleChange(e.target.value)}
-                        className="w-full px-4 py-2 border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] focus:ring-2 focus:ring-[var(--beheer-accent)] focus:border-transparent transition-all font-bold text-sm uppercase tracking-widest"
+                        className="beheer-select"
                     >
                         <option value="all">Alle rollen</option>
                         <option value="participant">Deelnemer</option>
                         <option value="crew">Crew</option>
                     </select>
+                    <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--beheer-text-muted)] opacity-40 group-hover:text-[var(--beheer-accent)] transition-colors pointer-events-none" />
                 </div>
             </div>
 

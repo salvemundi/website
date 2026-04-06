@@ -44,10 +44,7 @@ export default function ReisInstellingenIsland({ initialTrips }: ReisInstellinge
     const [isDeleting, setIsDeleting] = useState<number | null>(null);
 
     const [createState, createAction, isCreating] = useActionState(createTrip, null);
-    const [updateState, updateAction, isUpdating] = useActionState(
-        (prevState: any, formData: FormData) => updateTrip(editingTrip?.id!, prevState, formData), 
-        null
-    );
+    const [updateState, updateAction, isUpdating] = useActionState(updateTrip, null);
 
     const handleEdit = (trip: Trip) => {
         setEditingTrip(trip);
@@ -144,6 +141,7 @@ export default function ReisInstellingenIsland({ initialTrips }: ReisInstellinge
                     </div>
 
                     <form action={editingTrip ? updateAction : createAction} className="p-8">
+                        {editingTrip && <input type="hidden" name="id" value={editingTrip.id} />}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             {/* Left Column: Basic Info */}
                             <div className="space-y-6">

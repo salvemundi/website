@@ -23,7 +23,7 @@ import { readItems, createItem, readUsers } from '@directus/sdk';
 import { query } from '@/lib/db';
 import { auth } from '@/server/auth/auth';
 import { headers as nextHeaders } from 'next/headers';
-import { fetchUserSignupStatusDb } from './reis-db.utils';
+import { fetchUserSignupStatusDb, fetchPublicTripsDb, insertTripSignupDb } from './reis-db.utils';
 import { getRedis } from '@/server/auth/redis-client';
 import { randomUUID } from 'crypto';
 
@@ -51,7 +51,7 @@ export async function getReisSiteSettings(): Promise<ReisSiteSettings | null> {
             disabled_message: flag.message
         };
     } catch (err: any) {
-        console.error('[reis.actions#getReisSiteSettings] SQL Error:', err);
+        console.error('SQL Error fetching site settings:', err);
         return null;
     }
 }
@@ -81,34 +81,25 @@ export async function getCurrentUserProfileAction(): Promise<{ success: boolean;
         }));
 
         if (!users || users.length === 0) {
-            console.warn(`[ReisAction] User not found in Directus for email: ${userEmail}`);
+            console.warn(`User not found for email: ${userEmail}`);
             return { success: false, error: "Gebruiker niet gevonden in Directus" };
         }
 
         return { success: true, data: users[0] };
     } catch (err) {
-        console.error('[reis.actions#getCurrentUserProfileAction] Error:', err);
+        console.error('Error getting current user profile:', err);
         return { success: false, error: "Profiel ophalen mislukt" };
     }
 }
 
 export async function getUpcomingTrips(): Promise<ReisTrip[]> {
     try {
-        await nextHeaders(); // Force dynamic
-        const data = await getSystemDirectus().request(readItems('trips', {
-            filter: {
-                _or: [
-                    { status: { _eq: 'published' } },
-                    { status: { _null: true } }
-                ]
-            },
-            fields: [...TRIP_FIELDS],
-            sort: ['start_date']
-        }));
+        // 1. Direct SQL for speed and bypass cache
+        const data = await fetchPublicTripsDb();
 
         const parsed = reisTripSchema.array().safeParse(data ?? []);
         if (!parsed.success) {
-            console.error('[reis.actions#getUpcomingTrips] Validation failed', parsed.error.flatten().fieldErrors);
+            console.error('Validation failed for upcoming trips:', parsed.error.flatten().fieldErrors);
             return [];
         }
 
@@ -129,15 +120,9 @@ export async function getUpcomingTrips(): Promise<ReisTrip[]> {
             return eventDate >= today;
         });
 
-        validTrips.sort((a: ReisTrip, b: ReisTrip) => {
-            const dateA = new Date((a.event_date || a.start_date)!);
-            const dateB = new Date((b.event_date || b.start_date)!);
-            return dateA.getTime() - dateB.getTime();
-        });
-
         return validTrips;
     } catch (err) {
-        console.error('[reis.actions#getUpcomingTrips] Error:', err);
+        console.error('Error fetching upcoming trips:', err);
         return [];
     }
 }
@@ -151,7 +136,7 @@ export async function getTripParticipantsCount(tripId: number): Promise<number> 
         );
         return rows?.[0]?.count || 0;
     } catch (err) {
-        console.error('[reis.actions#getTripParticipantsCount] Error:', err);
+        console.error('Error getting participant count:', err);
         return 0;
     }
 }
@@ -167,11 +152,8 @@ export async function getUserTripSignup(tripId: number): Promise<ReisTripSignup 
 
         const userId = session.user.id;
 
-        // 1. Direct DB fetch for absolute consistency (Source of Truth)
         const dbResult = await fetchUserSignupStatusDb(userId, tripId);
         if (dbResult) return dbResult;
-
-        // 2. Fallback to Directus if DB query returns nothing or fails
         const directus = getSystemDirectus();
         const data = await directus.request(readItems('trip_signups', {
             filter: { 
@@ -189,7 +171,7 @@ export async function getUserTripSignup(tripId: number): Promise<ReisTripSignup 
 
         return data[0] as any;
     } catch (err) {
-        console.error('[reis.actions#getUserTripSignup] Error:', err);
+        console.error('Error fetching user trip signup:', err);
         return null;
     }
 }
@@ -208,7 +190,7 @@ async function getTripSignups(tripId: number): Promise<ReisTripSignup[]> {
 
         const parsed = reisTripSignupSchema.array().safeParse(data ?? []);
         if (!parsed.success) {
-            console.error('[reis.actions#getTripSignups] Validation failed', parsed.error.flatten().fieldErrors);
+            console.error('Validation failed for trip signups:', parsed.error.flatten().fieldErrors);
             return [];
         }
         return parsed.data;
@@ -223,7 +205,7 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
     
     const parsed = reisSignupFormSchema.safeParse(data);
     if (!parsed.success) {
-        console.error('[reis.actions#createTripSignup] Zod validation failed:', parsed.error.flatten().fieldErrors);
+        console.error('Zod validation failed for signup:', parsed.error.flatten().fieldErrors);
         return { success: false, message: 'Ongeldige invoer. Controleer de velden en probeer het opnieuw.' };
     }
 
@@ -234,7 +216,6 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
         getReisSiteSettings()
     ]);
 
-    // 1. Global site-level check
     const isReisEnabled = siteSettings?.show ?? true;
     if (!isReisEnabled) {
         return { success: false, message: 'Inschrijvingen voor de reis zijn momenteel gesloten.' };
@@ -255,7 +236,6 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
         return { success: false, message: 'Reis niet gevonden.' };
     }
 
-    // 2. Trip-specific registration check
     const registrationStartDate = targetTrip.registration_start_date ? new Date(targetTrip.registration_start_date) : null;
     const now = new Date();
     
@@ -299,13 +279,11 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
             getReisSiteSettings()
         ]);
         
-        // 1. Global site-level check inside lock
         const isReisEnabled = siteSettings?.show ?? true;
         if (!isReisEnabled) {
             return { success: false, message: 'Inschrijvingen voor de reis zijn momenteel gesloten.' };
         }
 
-        // 2. Re-check for logged-in users inside lock
         if (userId) {
             const existing = existingSignups.find(s => s.directus_relations === userId && s.status !== 'cancelled');
             if (existing) {
@@ -344,22 +322,21 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
             phone_number: parsed.data.phone_number,
             date_of_birth: parsed.data.date_of_birth,
             terms_accepted: parsed.data.terms_accepted,
-            directus_relations: userId || null, // Link to the user who created the signup (BetterAuth ID)
+            directus_relations: userId || null, 
             status: shouldBeWaitlisted ? ('waitlist' as const) : ('registered' as const),
             role: isCommitteeMember ? ('crew' as const) : ('participant' as const),
             deposit_paid: false,
             full_payment_paid: false,
             access_token: randomUUID(),
+            date_created: new Date().toISOString()
         };
         
-        const directus = getSystemDirectus();
-        const result = await directus.request(createItem('trip_signups', payload));
-        
-        // Ensure the path is revalidated immediately so the status page reflects the new record
-        const { revalidatePath, ...cacheFunctions } = await import('next/cache');
-        const cache = cacheFunctions as any;
-        if (cache.updateTag) cache.updateTag('reis-status');
-        else if (cache.revalidateTag) cache.revalidateTag('reis-status', 'max');
+        const signupId = await insertTripSignupDb(payload);
+        if (!signupId) throw new Error('Database insert failed');
+
+        getSystemDirectus().request(createItem('trip_signups', payload as any)).catch(err => {
+            console.error('Directus sync error:', err);
+        });
         
         revalidatePath('/reis');
         revalidatePath('/beheer/reis');
@@ -380,13 +357,13 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
                     siteUrl: siteUrl
                 }
             })
-        }).catch(e => console.error('[reis.actions#createTripSignup] Mail trigger failed', e));
+        }).catch(e => console.error('Mail trigger failed:', e));
 
         return { success: true };
     } catch (err: any) {
         // Detailed error logging for Directus SDK failures
         const errorDetails = err.errors ? JSON.stringify(err.errors, null, 2) : err.message;
-        console.error(`[reis.actions#createTripSignup] Directus Error:`, errorDetails);
+        console.error(`Directus Error during signup:`, errorDetails);
         
         return { success: false, message: 'Interne serverfout tijdens inschrijving.' };
     } finally {
@@ -409,7 +386,7 @@ export async function revalidateReisAction() {
         revalidatePath('/beheer/reis');
         return { success: true };
     } catch (err) {
-        console.error('[reis.actions#revalidateReisAction] Error:', err);
+        console.error('Error revalidating reis action:', err);
         return { success: false };
     }
 }

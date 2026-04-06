@@ -2,7 +2,7 @@
 
 import { Fragment } from 'react';
 import { format } from 'date-fns';
-import { Loader2, Edit, Trash2, Send, AlertCircle } from 'lucide-react';
+import { Loader2, Edit, Trash2, Send, AlertCircle, ChevronDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { TripSignup, TripSignupActivity } from '@salvemundi/validations';
 import { mapActivityOptionIdToName, parseActivityOptions, parseSelectedOptions } from '@/lib/reis-utils';
@@ -54,23 +54,28 @@ export default function ReisTableRow({
                 </td>
                 <td className="px-3 sm:px-6 py-4 whitespace-nowrap hidden md:table-cell">
                     <span className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full ${signup.role === 'crew' ? 'bg-[var(--beheer-accent)] text-white shadow-sm shadow-[var(--beheer-accent)]/20' : 'bg-[var(--bg-main)] text-[var(--beheer-text-muted)] border border-[var(--beheer-border)]/50'}`}>
-                        {signup.role === 'crew' ? 'Crew' : 'User'}
+                        {signup.role === 'crew' ? 'Crew' : 'Deelnemer'}
                     </span>
                 </td>
                 <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                     {isStatusLoading ? (
-                        <Loader2 className="h-5 w-5 animate-spin text-[var(--beheer-accent)]" />
+                        <div className="flex justify-center">
+                            <Loader2 className="h-5 w-5 animate-spin text-[var(--beheer-accent)]" />
+                        </div>
                     ) : (
-                        <select
-                            value={signup.status}
-                            onClick={(e) => e.stopPropagation()}
-                            onChange={(e) => onStatusChange(signup.id, e.target.value)}
-                            className={`px-1.5 sm:px-2 py-1 text-[10px] font-black uppercase tracking-widest rounded-full border-0 ${statusBadge.color} dark:bg-opacity-20 w-full sm:w-auto cursor-pointer focus:ring-2 focus:ring-[var(--beheer-accent)]`}>
-                            <option value="registered">Geregistreerd</option>
-                            <option value="confirmed">Bevestigd</option>
-                            <option value="waitlist">Wachtlijst</option>
-                            <option value="cancelled">Geannuleerd</option>
-                        </select>
+                        <div className="relative group min-w-[120px]">
+                            <select
+                                value={signup.status}
+                                onClick={(e) => e.stopPropagation()}
+                                onChange={(e) => onStatusChange(signup.id, e.target.value)}
+                                className={`beheer-status-select status-${signup.status}`}>
+                                <option value="registered" className="bg-[var(--beheer-card-bg)] text-[var(--beheer-text)]">Geregistreerd</option>
+                                <option value="confirmed" className="bg-[var(--beheer-card-bg)] text-[var(--beheer-text)]">Bevestigd</option>
+                                <option value="waitlist" className="bg-[var(--beheer-card-bg)] text-[var(--beheer-text)]">Wachtlijst</option>
+                                <option value="cancelled" className="bg-[var(--beheer-card-bg)] text-[var(--beheer-text)]">Geannuleerd</option>
+                            </select>
+                            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3 w-3 opacity-50 pointer-events-none group-hover:opacity-100 transition-opacity" />
+                        </div>
                     )}
                 </td>
                 <td className="px-3 sm:px-6 py-4 whitespace-nowrap hidden sm:table-cell">
@@ -99,8 +104,8 @@ export default function ReisTableRow({
                                 <Trash2 className="h-4 w-4" />
                             )}
                         </button>
-                        <div className="text-[var(--beheer-text-muted)] p-2 hover:text-[var(--beheer-text)] transition-colors">
-                            <span className="text-xs transition-transform duration-300 inline-block" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+                        <div className="text-[var(--beheer-text-muted)] p-2 group-hover:text-[var(--beheer-accent)] transition-colors">
+                            <ChevronDown className="h-4 w-4 transition-transform duration-300" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }} />
                         </div>
                     </div>
                 </td>

@@ -42,7 +42,7 @@ export default function ReisDeelnemerDetailIsland({
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
     const [isPending, startTransition] = useTransition();
-    const [state, formAction, isSaving] = useActionState(updateTripSignup.bind(null, initialSignup.id), null);
+    const [state, formAction, isSaving] = useActionState(updateTripSignup, null);
     const [selectedActivities, setSelectedActivities] = useState<number[]>(initialSelectedActivities);
     const [isUpdatingActivities, setIsUpdatingActivities] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -89,7 +89,7 @@ export default function ReisDeelnemerDetailIsland({
         { label: 'Status', value: initialSignup.status === 'confirmed' ? 'Bevestigd' : 'Afwachtend', icon: CheckCircle2 },
         { label: 'Leeftijd', value: `${age} jaar`, icon: User },
         { label: 'Betaling', value: paymentStatus, icon: CreditCard },
-        { label: 'Rol', value: initialSignup.role || 'Lid', icon: Shield },
+        { label: 'Rol', value: initialSignup.role === 'crew' ? 'Crew' : 'Deelnemer', icon: Shield },
     ];
 
     useEffect(() => {
@@ -125,21 +125,20 @@ export default function ReisDeelnemerDetailIsland({
                 <AdminStatsBar stats={adminStats} />
 
                 <form action={formAction} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <input type="hidden" name="id" value={initialSignup.id} />
                     <div className="lg:col-span-2 space-y-8">
                         <SignupForm signup={initialSignup} />
                     </div>
 
-                    {/* Right Column: Activities & Actions */}
                     <div className="space-y-8">
                         <SignupActivities 
-                            allActivities={allActivities}
+    allActivities={allActivities}
                             selectedActivities={selectedActivities}
                             onToggleActivity={toggleActivity}
                             onUpdate={handleUpdateActivities}
                             isUpdating={isUpdatingActivities}
                         />
 
-                        {/* Meta Stats */}
                         <div className="bg-[var(--beheer-card-bg)]/50 backdrop-blur-sm rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] p-6 space-y-4">
                             <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">
                                 <span>Aangemeld op</span>
@@ -151,7 +150,6 @@ export default function ReisDeelnemerDetailIsland({
                             </div>
                         </div>
 
-                        {/* Final Actions */}
                         <div className="space-y-4 pt-4">
                             <button
                                 type="submit"

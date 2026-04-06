@@ -14,7 +14,6 @@ import { z } from 'zod';
  * @param tripId The trip ID
  */
 export async function fetchUserSignupStatusDb(userId: string, tripId: number): Promise<ReisTripSignup | null> {
-    console.log(`[DB-DIRECT-FETCH] UserStatus userId: ${userId}, tripId: ${tripId}`);
     try {
         const res = await query(
             `SELECT * FROM trip_signups 
@@ -58,7 +57,6 @@ export async function fetchUserSignupStatusDb(userId: string, tripId: number): P
  * @param tripId The trip ID
  */
 export async function fetchAllTripSignupsDb(tripId: number): Promise<ReisTripSignup[]> {
-    console.log(`[DB-DIRECT-FETCH] AllSignups tripId: ${tripId}`);
     try {
         const res = await query(
             `SELECT * FROM trip_signups 
@@ -96,7 +94,6 @@ export async function fetchAllTripSignupsDb(tripId: number): Promise<ReisTripSig
  * Fetches a single signup by ID directly from the database.
  */
 export async function fetchTripSignupByIdDb(signupId: number): Promise<ReisTripSignup | null> {
-    console.log(`[DB-DIRECT-FETCH] TripSignupById id: ${signupId}`);
     try {
         const res = await query(
             `SELECT * FROM trip_signups WHERE id = $1 LIMIT 1`,
@@ -135,7 +132,6 @@ export async function fetchTripSignupByIdDb(signupId: number): Promise<ReisTripS
  * Fetches activity selections for a specific trip directly from the database.
  */
 export async function fetchTripSignupActivitiesDb(tripId: number): Promise<any[]> {
-    console.log(`[DB-DIRECT-FETCH] SignupActivities tripId: ${tripId}`);
     try {
         const res = await query(
             `SELECT sa.*, a.name as activity_name, a.price as activity_price, a.options as activity_options 
@@ -155,7 +151,6 @@ export async function fetchTripSignupActivitiesDb(tripId: number): Promise<any[]
  * Fetches all trips with full details directly from the database for management.
  */
 export async function fetchFullTripsDb(): Promise<any[]> {
-    console.log(`[DB-DIRECT-FETCH] FullTripsManagement`);
     try {
         const res = await query(
             `SELECT * FROM trips ORDER BY event_date DESC`,
@@ -187,7 +182,6 @@ export async function fetchFullTripsDb(): Promise<any[]> {
  * Fetches all activities for a specific trip directly from the database.
  */
 export async function fetchTripActivitiesByTripIdDb(tripId: number): Promise<any[]> {
-    console.log(`[DB-DIRECT-FETCH] TripActivitiesByTripId tripId: ${tripId}`);
     try {
         const res = await query(
             `SELECT * FROM trip_activities WHERE trip_id = $1 ORDER BY display_order ASC, name ASC`,
@@ -210,7 +204,6 @@ export async function fetchTripActivitiesByTripIdDb(tripId: number): Promise<any
  * Fetches all trips directly from the database for the admin selector (summary version).
  */
 export async function fetchAllTripsDb(): Promise<any[]> {
-    console.log(`[DB-DIRECT-FETCH] AllTrips`);
     try {
         const res = await query(
             `SELECT id, name, event_date, start_date, end_date, allow_final_payments 
@@ -222,5 +215,177 @@ export async function fetchAllTripsDb(): Promise<any[]> {
     } catch (error) {
         console.error('[ReisDbUtils#fetchAllTripsDb] Error:', error);
         return [];
+    }
+}
+/**
+ * Updates a trip's basic information directly in the database.
+ */
+export async function updateTripDb(id: number, data: any): Promise<boolean> {
+    try {
+        const fields = Object.keys(data);
+        const values = Object.values(data);
+        const setClause = fields.map((f, i) => `${f} = $${i + 2}`).join(', ');
+        
+        await query(
+            `UPDATE trips SET ${setClause} WHERE id = $1`,
+            [id, ...values]
+        );
+        return true;
+    } catch (error) {
+        console.error('[ReisDbUtils#updateTripDb] Error:', error);
+        return false;
+    }
+}
+
+/**
+ * Creates a new trip signup directly in the database.
+ */
+export async function insertTripSignupDb(payload: any): Promise<number | null> {
+    try {
+        const fields = Object.keys(payload);
+        const values = Object.values(payload);
+        const placeHolders = fields.map((_, i) => `$${i + 1}`).join(', ');
+        
+        const res = await query(
+            `INSERT INTO trip_signups (${fields.join(', ')}) VALUES (${placeHolders}) RETURNING id`,
+            values
+        );
+        return res.rows[0]?.id || null;
+    } catch (error) {
+        console.error('[ReisDbUtils#insertTripSignupDb] Error:', error);
+        return null;
+    }
+}
+
+/**
+ * Updates a trip signup directly in the database.
+ */
+export async function updateTripSignupDb(id: number, data: any): Promise<boolean> {
+    try {
+        const fields = Object.keys(data);
+        const values = Object.values(data);
+        const setClause = fields.map((f, i) => `${f} = $${i + 2}`).join(', ');
+        
+        await query(
+            `UPDATE trip_signups SET ${setClause} WHERE id = $1`,
+            [id, ...values]
+        );
+        return true;
+    } catch (error) {
+        console.error('[ReisDbUtils#updateTripSignupDb] Error:', error);
+        return false;
+    }
+}
+
+/**
+ * Deletes a trip signup directly from the database.
+ */
+export async function deleteTripSignupDb(id: number): Promise<boolean> {
+    try {
+        await query(`DELETE FROM trip_signups WHERE id = $1`, [id]);
+        return true;
+    } catch (error) {
+        console.error('[ReisDbUtils#deleteTripSignupDb] Error:', error);
+        return false;
+    }
+}
+
+/**
+ * Creates a new trip directly in the database.
+ */
+export async function createTripDb(data: any): Promise<number | null> {
+    try {
+        const fields = Object.keys(data);
+        const values = Object.values(data);
+        const placeHolders = fields.map((_, i) => `$${i + 1}`).join(', ');
+        
+        const res = await query(
+            `INSERT INTO trips (${fields.join(', ')}) VALUES (${placeHolders}) RETURNING id`,
+            values
+        );
+        return res.rows[0]?.id || null;
+    } catch (error) {
+        console.error('[ReisDbUtils#createTripDb] Error:', error);
+        return null;
+    }
+}
+
+/**
+ * Fetches all published or recently completed trips directly from the database.
+ */
+export async function fetchPublicTripsDb(): Promise<any[]> {
+    try {
+        const res = await query(
+            `SELECT * FROM trips 
+             WHERE status = 'published' OR status IS NULL
+             ORDER BY start_date ASC`,
+            []
+        );
+        return (res.rows || []).map(t => ({
+            ...t,
+            registration_open: !!t.registration_open,
+            is_bus_trip: !!t.is_bus_trip,
+            allow_final_payments: !!t.allow_final_payments,
+            start_date: t.start_date instanceof Date ? t.start_date.toISOString() : t.start_date,
+            end_date: t.end_date instanceof Date ? t.end_date.toISOString() : t.end_date,
+            event_date: t.event_date instanceof Date ? t.event_date.toISOString() : t.event_date,
+            registration_start_date: t.registration_start_date instanceof Date ? t.registration_start_date.toISOString() : t.registration_start_date
+        }));
+    } catch (error) {
+        console.error('[ReisDbUtils#fetchPublicTripsDb] Error:', error);
+        return [];
+    }
+}
+
+/**
+ * Creates a new trip activity directly in the database.
+ */
+export async function createTripActivityDb(data: any): Promise<number | null> {
+    try {
+        const fields = Object.keys(data);
+        const values = Object.values(data);
+        const placeHolders = fields.map((_, i) => `$${i + 1}`).join(', ');
+        
+        const res = await query(
+            `INSERT INTO trip_activities (${fields.join(', ')}) VALUES (${placeHolders}) RETURNING id`,
+            values
+        );
+        return res.rows[0]?.id || null;
+    } catch (error) {
+        console.error('[ReisDbUtils#createTripActivityDb] Error:', error);
+        return null;
+    }
+}
+
+/**
+ * Updates a trip activity directly in the database.
+ */
+export async function updateTripActivityDb(id: number, data: any): Promise<boolean> {
+    try {
+        const fields = Object.keys(data);
+        const values = Object.values(data);
+        const setClause = fields.map((f, i) => `${f} = $${i + 2}`).join(', ');
+        
+        await query(
+            `UPDATE trip_activities SET ${setClause} WHERE id = $1`,
+            [id, ...values]
+        );
+        return true;
+    } catch (error) {
+        console.error('[ReisDbUtils#updateTripActivityDb] Error:', error);
+        return false;
+    }
+}
+
+/**
+ * Deletes a trip activity directly from the database.
+ */
+export async function deleteTripActivityDb(id: number): Promise<boolean> {
+    try {
+        await query(`DELETE FROM trip_activities WHERE id = $1`, [id]);
+        return true;
+    } catch (error) {
+        console.error('[ReisDbUtils#deleteTripActivityDb] Error:', error);
+        return false;
     }
 }
