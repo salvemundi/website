@@ -7,7 +7,9 @@ import { revalidateTag, unstable_noStore as noStore } from 'next/cache';
 import { cache } from 'react';
 
 import { getSystemDirectus } from '@/lib/directus';
-import { readItems, createItem, updateItem } from '@directus/sdk';
+import { readItems, createItem, updateItem, deleteItem } from '@directus/sdk';
+import { createEventSignupDb, deleteEventSignupDb } from './event-db.utils';
+
 
 const getFinanceServiceUrl = () =>
     process.env.FINANCE_SERVICE_URL;
@@ -188,9 +190,13 @@ export async function signupForActivity(data: EventSignupForm) {
             directus_relations: userId || null,
         };
 
-        const signupResponse = await directus.request(createItem('event_signups', payload));
+        const signupId = await createEventSignupDb(payload);
+        if (!signupId) throw new Error('Kon niet wegschrijven naar database');
 
-        const { id: signupId } = eventSignupSchema.pick({ id: true }).parse(signupResponse);
+        // Sync to directus in the background
+        directus.request(createItem('event_signups', { ...payload, id: signupId })).catch(err => {
+            console.error('Directus public signup sync error:', err);
+        });
 
         revalidateTag(`event_signups_${parsed.data.event_id}`, 'default');
 
@@ -215,13 +221,14 @@ export async function signupForActivity(data: EventSignupForm) {
                 return { success: true, checkoutUrl: paymentData.checkoutUrl };
             }
             
-            console.error('[Activities] Payment service error:', paymentData);
+            console.error('Payment service error:', paymentData);
             try {
-                const { deleteItem } = await import('@directus/sdk');
-                await getSystemDirectus().request(deleteItem('event_signups', signupId));
-                console.log(`[Activities] Cleaned up failed signup ${signupId}`);
+                await deleteEventSignupDb(signupId);
+                // Also clean from directus
+                getSystemDirectus().request(deleteItem('event_signups', signupId)).catch(() => {});
+                console.log(`Cleaned up failed signup ${signupId}`);
             } catch (cleanupErr) {
-                console.error(`[Activities] Cleanup failed for ${signupId}:`, cleanupErr);
+                console.error(`Cleanup failed for ${signupId}:`, cleanupErr);
             }
 
             return { success: false, error: 'Er kon geen betaling worden aangemaakt voor deze inschrijving.' };

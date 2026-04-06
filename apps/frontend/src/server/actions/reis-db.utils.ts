@@ -134,13 +134,23 @@ export async function fetchTripSignupByIdDb(signupId: number): Promise<ReisTripS
 export async function fetchTripSignupActivitiesDb(tripId: number): Promise<any[]> {
     try {
         const res = await query(
-            `SELECT sa.*, a.name as activity_name, a.price as activity_price, a.options as activity_options 
+            `SELECT sa.*, a.name as activity_name, a.price as activity_price, a.options as activity_options,
+                    ts.first_name, ts.last_name, ts.email
              FROM trip_signup_activities sa
              JOIN trip_activities a ON sa.trip_activity_id = a.id
+             JOIN trip_signups ts ON sa.trip_signup_id = ts.id
              WHERE a.trip_id = $1`,
             [tripId]
         );
-        return res.rows || [];
+        return (res.rows || []).map(row => ({
+            ...row,
+            trip_signup_id: {
+                id: row.trip_signup_id,
+                first_name: row.first_name,
+                last_name: row.last_name,
+                email: row.email
+            }
+        }));
     } catch (error) {
         console.error('[ReisDbUtils#fetchTripSignupActivitiesDb] Error:', error);
         return [];
