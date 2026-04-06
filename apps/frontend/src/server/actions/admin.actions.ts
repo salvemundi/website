@@ -37,8 +37,8 @@ import { createDirectus, staticToken, rest } from "@directus/sdk";
 import { AdminResource } from '@/shared/lib/permissions-config';
 import { getPermissions, hasPermission, type UserPermissions } from '@/shared/lib/permissions';
 import { getRedis } from "@/server/auth/redis-client";
-import { getCoupons } from "@/server/queries/admin-coupon.queries";
 import { getComputedCouponStatus } from "@/lib/coupon-utils";
+import { fetchUserMetadataDb, fetchUserCommitteesDb } from "./user-db.utils";
 
 const pool = new Pool({
     user: process.env.DB_USER,
@@ -62,6 +62,26 @@ export async function checkAdminAccess() {
 
     const user = session.user as any;
 
+    try {
+        const [metadata, committees] = await Promise.all([
+            fetchUserMetadataDb(user.id),
+            fetchUserCommitteesDb(user.id)
+        ]);
+
+        if (metadata) {
+            user.membership_status = metadata.membership_status;
+            user.membership_expiry = metadata.membership_expiry;
+            user.minecraft_username = metadata.minecraft_username;
+            user.phone_number = metadata.phone_number;
+            user.date_of_birth = metadata.date_of_birth;
+        }
+        if (committees) {
+            user.committees = committees;
+        }
+    } catch (e: any) {
+        console.error("[Auth#checkAdminAccess] SQL enrichment failed:", e);
+    }
+
     if (!user.name && (user.first_name || user.last_name)) {
         user.name = `${user.first_name || ''} ${user.last_name || ''}`.trim();
     }
@@ -77,7 +97,6 @@ export async function checkAdminAccess() {
         isIct,
         impersonation: impersonation ? {
             ...impersonation,
-            // Add any missing banner-specific fields if needed
             committees: user.committees?.map((c: any) => c.name) || []
         } : null
     };

@@ -158,3 +158,33 @@ export async function deleteEventSignupDb(id: number): Promise<boolean> {
         return false;
     }
 }
+
+/**
+ * Fetches all event signups for a specific user directly from the database.
+ */
+export async function fetchUserEventSignupsDb(userId: string): Promise<any[]> {
+    try {
+        const sql = `
+            SELECT es.*, e.name as event_name, e.event_date, e.description, e.image, e.contact
+            FROM event_signups es
+            JOIN events e ON es.event_id = e.id
+            WHERE es.directus_relations = $1
+            ORDER BY e.event_date DESC
+        `;
+        const { rows } = await query(sql, [userId]);
+        return rows.map(row => ({
+            ...row,
+            event_id: {
+                id: row.event_id,
+                name: row.event_name,
+                event_date: row.event_date,
+                description: row.description,
+                image: row.image,
+                contact: row.contact
+            }
+        }));
+    } catch (error) {
+        console.error('Error in fetchUserEventSignupsDb:', error);
+        return [];
+    }
+}

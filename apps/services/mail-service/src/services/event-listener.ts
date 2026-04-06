@@ -2,6 +2,7 @@ import { Redis } from 'ioredis';
 import { MailWorkerService } from './mail-worker.js';
 import { PaymentSuccessEventSchema, ActivitySignupEventSchema } from '@salvemundi/validations';
 import QRCode from 'qrcode';
+import { query } from './db.js';
 
 export class EventListenerService {
     private static readonly STREAM_KEY = 'v7:events';
@@ -49,41 +50,33 @@ export class EventListenerService {
     }
 
     /**
-     * Fetches tickets for a pub crawl signup with retry logic.
-     * Directus flows may have a short delay generating the tickets after payment is confirmed.
+     * Fetches tickets for a pub crawl signup directly from the database.
      */
-    private static async fetchPubCrawlTicketsWithRetry(
-        directusUrl: string,
-        directusToken: string,
+    private static async fetchPubCrawlTicketsDb(
         signupId: string | number,
         expectedCount: number,
-        maxAttempts = 8,
-        delayMs = 2500
+        maxAttempts = 5,
+        delayMs = 1000
     ): Promise<any[]> {
         for (let attempt = 1; attempt <= maxAttempts; attempt++) {
             try {
-                const res = await fetch(
-                    `${directusUrl}/items/pub_crawl_tickets?filter[signup_id][_eq]=${signupId}&fields=id,name,initial,qr_token`,
-                    { headers: { 'Authorization': `Bearer ${directusToken}` } }
+                const res = await query(
+                    `SELECT id, name, initial, qr_token FROM pub_crawl_tickets WHERE signup_id = $1`,
+                    [signupId]
                 );
-                const json: any = await res.json();
-                const tickets = json?.data || [];
+                const tickets = res.rows || [];
 
                 if (tickets.length >= expectedCount) {
                     return tickets;
                 }
-
-                console.log(`[MailEventListener] Tickets not ready yet (attempt ${attempt}/${maxAttempts}), got ${tickets.length}/${expectedCount}. Retrying in ${delayMs}ms...`);
             } catch (err) {
-                console.error(`[MailEventListener] fetchPubCrawlTickets attempt ${attempt} failed:`, err);
+                console.error(`[MailEventListener] SQL ticket fetch attempt ${attempt} failed:`, err);
             }
 
             if (attempt < maxAttempts) {
                 await new Promise(resolve => setTimeout(resolve, delayMs));
             }
         }
-
-        console.warn(`[MailEventListener] Could not fetch all ${expectedCount} tickets for signup ${signupId} after ${maxAttempts} attempts.`);
         return [];
     }
 
@@ -167,13 +160,10 @@ export class EventListenerService {
                         const signup = signupJson?.data;
 
                         const signupName = signup?.name || 'Deelnemer';
-                        const amountTickets = signup?.amount_tickets || 1;
                         const eventName = signup?.pub_crawl_event_id?.name || 'Kroegentocht';
+                        const amountTickets = signup?.amount_tickets || 1;
 
-                        // Fetch tickets with retry (Directus flow may be slightly delayed)
-                        const rawTickets = await this.fetchPubCrawlTicketsWithRetry(
-                            directusUrl, directusToken, data.registrationId, amountTickets
-                        );
+                        const rawTickets = await this.fetchPubCrawlTicketsDb(data.registrationId, amountTickets);
 
                         // Generate QR code data URLs for each ticket
                         const tickets = await Promise.all(rawTickets.map(async (t: any) => ({
