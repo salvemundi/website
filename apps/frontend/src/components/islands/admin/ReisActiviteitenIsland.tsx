@@ -118,8 +118,6 @@ export default function ReisActiviteitenIsland({
     const adminStats = [
         { label: 'Activiteiten', value: activities.length, icon: Layers, theme: 'blue' },
         { label: 'Actief', value: activities.filter(a => a.is_active).length, icon: Layers, theme: 'emerald' },
-        { label: 'Inschrijvingen', value: totalSignups, icon: Users, theme: 'indigo' },
-        { label: 'Gem. Prijs', value: `€${avgPrice}`, icon: Euro, theme: 'amber' },
     ];
 
     const activeTrip = initialTrips.find(t => t.id === selectedTripId) || initialTrips[0];

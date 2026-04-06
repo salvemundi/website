@@ -266,10 +266,16 @@ importers:
       ioredis:
         specifier: ^5.6.0
         version: 5.10.1
+      qrcode:
+        specifier: ^1.5.4
+        version: 1.5.4
     devDependencies:
       '@types/node':
         specifier: ^22.0.0
         version: 22.19.13
+      '@types/qrcode':
+        specifier: ^1.5.5
+        version: 1.5.6
       typescript:
         specifier: 5.7.3
         version: 5.7.3

@@ -10,6 +10,7 @@ const __dirname = path.dirname(__filename);
 
 Handlebars.registerHelper('eq', (a, b) => a === b);
 Handlebars.registerHelper('neq', (a, b) => a !== b);
+Handlebars.registerHelper('addOne', (value: number) => value + 1);
 
 // Register all templates as partials for easy layout wrapping
 const templatesDir = path.join(__dirname, '../templates');

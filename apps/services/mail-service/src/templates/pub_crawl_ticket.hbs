@@ -1,0 +1,38 @@
+{{#> layout headerTitle="KROEGENTOCHT TICKETS"}}
+    <div class="status-badge">Betaling Bevestigd</div>
+    <p>Hoi <strong>{{name}}</strong>,</p>
+
+    <p>Je betaling voor de <strong>Kroegentocht</strong> is ontvangen! Hieronder vind je jouw ticket(s). Neem deze mee naar het startpunt.</p>
+
+    {{#each tickets}}
+    <div class="details" style="margin-bottom: 20px;">
+        <p style="text-align: center; font-weight: 800; color: #a4539b; text-transform: uppercase; font-size: 11px; letter-spacing: 1.5px; margin-bottom: 12px;">
+            Ticket {{addOne @index}} van {{../totalTickets}}
+        </p>
+        <h2 style="text-align: center; color: #5e2b52; margin: 8px 0 4px; font-weight: 900; font-size: 18px;">{{this.name}}</h2>
+        <p style="text-align: center; font-size: 13px; color: #8a7a8c; margin: 4px 0 20px;">{{../eventName}}</p>
+
+        {{#if this.qrDataUrl}}
+        <div style="text-align: center; margin: 16px 0;">
+            <img src="{{this.qrDataUrl}}" alt="QR Code voor {{this.name}}" width="180" height="180" style="border-radius: 12px; border: 4px solid #d9c7db;" />
+        </div>
+        {{/if}}
+
+        <p style="text-align: center; font-size: 11px; color: #8a7a8c; border-top: 1px dashed #d9c7db; padding-top: 12px; margin-top: 12px;">
+            Token: <code style="font-family: monospace; font-size: 11px;">{{this.qr_token}}</code>
+        </p>
+    </div>
+    {{/each}}
+
+    {{#if hasAccount}}
+    <p style="text-align: center;">
+        <a href="https://salvemundi.nl/profiel/tickets" class="button">Bekijk Mijn Tickets Online</a>
+    </p>
+    {{/if}}
+
+    <p><strong>Tip:</strong> Maak een screenshot van je QR-code(s) voor het geval je geen bereik hebt op locatie.</p>
+
+    <p>We zien je daar! 🍺</p>
+
+    <p>Met paarse groet,<br><strong>Bestuur Salve Mundi</strong></p>
+{{/layout}}
