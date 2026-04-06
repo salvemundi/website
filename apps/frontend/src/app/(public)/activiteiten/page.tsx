@@ -1,5 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { Suspense } from 'react';
+import { auth } from '@/server/auth/auth';
+import { headers } from 'next/headers';
 import PageHeader from '@/components/ui/layout/PageHeader';
 import ActivitiesBannerIsland from '@/components/islands/activities/ActivitiesBannerIsland';
 import ActivityCardSkeleton from '@/components/ui/activities/ActivityCardSkeleton';
