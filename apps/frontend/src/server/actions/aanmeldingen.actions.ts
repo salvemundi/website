@@ -12,6 +12,8 @@ import {
     readUsers
 } from "@directus/sdk";
 import { USER_BASIC_FIELDS } from "@salvemundi/validations";
+import { createEventSignupDb, updateEventSignupDb, deleteEventSignupDb } from "./event-db.utils";
+
 
 const getNotificationUrl = () => process.env.INTERNAL_NOTIFICATION_API_URL || process.env.NEXT_PUBLIC_NOTIFICATION_API_URL;
 
@@ -54,8 +56,14 @@ export async function deleteSignupAction(signupId: number, eventId: string | num
     if (!session) return { success: false, error: "Unauthorized" };
 
     try {
-        await getSystemDirectus().request(deleteItem('event_signups', signupId));
-        
+        const success = await deleteEventSignupDb(signupId);
+        if (!success) throw new Error("Verwijderen uit database mislukt");
+
+        // Sync to Directus
+        getSystemDirectus().request(deleteItem('event_signups', signupId)).catch(err => {
+            console.error('Directus delete signup sync error:', err);
+        });
+
         if (participantEmail && eventName) {
             await sendCancellationEmail(participantEmail, eventName);
         }
@@ -111,7 +119,13 @@ export async function createManualSignupAction(eventId: number, eventName: strin
             payload.participant_phone = guestData.phone || null;
         }
 
-        await getSystemDirectus().request(createItem('event_signups', payload));
+        const newId = await createEventSignupDb(payload);
+        if (!newId) throw new Error('Toevoegen aan database mislukt');
+
+        // Background sync
+        getSystemDirectus().request(createItem('event_signups', { ...payload, id: newId })).catch(err => {
+            console.error('Directus manual signup sync error:', err);
+        });
 
         revalidateTag(`event_signups_${eventId}`, 'default');
         revalidatePath(`/beheer/activiteiten/${eventId}/aanmeldingen`);
@@ -132,12 +146,18 @@ export async function toggleCheckInAction(signupId: number, eventId: number, che
     if (!session) return { success: false, error: "Unauthorized" };
 
     try {
-        await getSystemDirectus().request(
-            updateItem('event_signups', signupId, {
-                checked_in: checkedIn,
-                checked_in_at: checkedIn ? new Date().toISOString() : null
-            })
-        );
+        const payload = {
+            checked_in: checkedIn,
+            checked_in_at: checkedIn ? new Date().toISOString() : null
+        };
+
+        const updated = await updateEventSignupDb(signupId, payload);
+        if (!updated) throw new Error("Database update mislukt");
+
+        // Background sync
+        getSystemDirectus().request(updateItem('event_signups', signupId, payload)).catch(err => {
+            console.error('Directus toggle check-in sync error:', err);
+        });
 
         revalidateTag(`event_signups_${eventId}`, 'default');
         return { success: true };

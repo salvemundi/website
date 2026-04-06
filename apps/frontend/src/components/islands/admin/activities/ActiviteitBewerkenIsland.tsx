@@ -136,7 +136,7 @@ export default function ActiviteitBewerkenIsland({ event, committees }: { event:
                             defaultValue={event.name}
                             autoComplete="off"
                             suppressHydrationWarning
-                            className={`w-full px-5 py-4 rounded-xl border bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] placeholder:text-[var(--beheer-text-muted)] ${formErrors.name ? 'border-red-500 ring-4 ring-red-500/10' : 'border-[var(--beheer-border)]'} focus:border-[var(--beheer-accent)] focus:ring-4 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all font-bold`}
+                            className={`beheer-input ${formErrors.name ? 'border-red-500 ring-4 ring-red-500/10' : ''}`}
                             placeholder="Bijv. Borrel: Back to School"
                         />
                         {formErrors.name && <p className="text-red-500 text-[10px] font-black uppercase tracking-widest mt-2">{formErrors.name[0]}</p>}
@@ -152,73 +152,73 @@ export default function ActiviteitBewerkenIsland({ event, committees }: { event:
                                 autoComplete="off"
                                 suppressHydrationWarning
                                 defaultValue={formatDate(event.event_date)}
-                                className={`w-full px-5 py-4 rounded-xl border bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] ${formErrors.event_date ? 'border-red-500' : 'border-[var(--beheer-border)]'} focus:border-[var(--beheer-accent)] focus:ring-4 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all font-bold`}
+                                className={`beheer-input ${formErrors.event_date ? 'border-red-500' : ''}`}
                             />
                             {formErrors.event_date && <p className="text-red-500 text-[10px] font-black uppercase tracking-widest mt-2">{formErrors.event_date[0]}</p>}
                         </div>
                         <div className="lg:col-span-2">
                             <label htmlFor="event_time" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Starttijd</label>
-                            <input type="time" id="event_time" name="event_time" autoComplete="off" suppressHydrationWarning defaultValue={event.event_time?.slice(0, 5) || ''} className="w-full px-5 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] focus:border-[var(--beheer-accent)] outline-none transition-all font-bold" />
+                            <input type="time" id="event_time" name="event_time" autoComplete="off" suppressHydrationWarning defaultValue={event.event_time?.slice(0, 5) || ''} className="beheer-input" />
                         </div>
                         <div className="lg:col-span-2">
                             <label htmlFor="event_date_end" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Einddatum</label>
-                            <input type="date" id="event_date_end" name="event_date_end" autoComplete="off" suppressHydrationWarning defaultValue={formatDate(event.event_date_end)} className="w-full px-5 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] focus:border-[var(--beheer-accent)] outline-none transition-all font-bold" />
+                            <input type="date" id="event_date_end" name="event_date_end" autoComplete="off" suppressHydrationWarning defaultValue={formatDate(event.event_date_end)} className="beheer-input" />
                         </div>
                         <div className="lg:col-span-2">
                             <label htmlFor="event_time_end" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Eindtijd</label>
-                            <input type="time" id="event_time_end" name="event_time_end" autoComplete="off" suppressHydrationWarning defaultValue={event.event_time_end?.slice(0, 5) || ''} className="w-full px-5 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] focus:border-[var(--beheer-accent)] outline-none transition-all font-bold" />
+                            <input type="time" id="event_time_end" name="event_time_end" autoComplete="off" suppressHydrationWarning defaultValue={event.event_time_end?.slice(0, 5) || ''} className="beheer-input" />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
                         <div>
                             <label htmlFor="registration_deadline" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Inschrijfdeadline</label>
-                            <input type="datetime-local" id="registration_deadline" name="registration_deadline" autoComplete="off" suppressHydrationWarning defaultValue={formatDateTime(event.registration_deadline)} className="w-full px-5 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] focus:border-[var(--beheer-accent)] outline-none transition-all font-bold" />
+                            <input type="datetime-local" id="registration_deadline" name="registration_deadline" autoComplete="off" suppressHydrationWarning defaultValue={formatDateTime(event.registration_deadline)} className="beheer-input" />
                         </div>
                         <div>
                             <label htmlFor="location" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Locatie</label>
-                            <input type="text" id="location" name="location" autoComplete="off" suppressHydrationWarning defaultValue={event.location || ''} className="w-full px-5 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] focus:border-[var(--beheer-accent)] outline-none transition-all font-bold" placeholder="Bijv. Fontys R10" />
+                            <input type="text" id="location" name="location" autoComplete="off" suppressHydrationWarning defaultValue={event.location || ''} className="beheer-input" placeholder="Bijv. Fontys R10" />
                         </div>
                     </div>
 
                     <div className="relative z-10">
                         <label htmlFor="description" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Beschrijving *</label>
-                        <textarea id="description" name="description" rows={5} autoComplete="off" suppressHydrationWarning defaultValue={event.description} className={`w-full px-5 py-4 rounded-xl border bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] ${formErrors.description ? 'border-red-500' : 'border-[var(--beheer-border)]'} focus:border-[var(--beheer-accent)] focus:ring-4 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all font-medium resize-none text-[15px] leading-relaxed`} placeholder="Beschrijving van de activiteit" />
+                        <textarea id="description" name="description" rows={5} autoComplete="off" suppressHydrationWarning defaultValue={event.description} className={`beheer-input ${formErrors.description ? 'border-red-500 ring-4 ring-red-500/10' : ''}`} placeholder="Beschrijving van de activiteit" />
                         {formErrors.description && <p className="text-red-500 text-[10px] font-black uppercase tracking-widest mt-2">{formErrors.description[0]}</p>}
                     </div>
 
                     <div className="relative z-10">
                         <label htmlFor="description_logged_in" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Extra beschrijving (alleen ingelogd)</label>
-                        <textarea id="description_logged_in" name="description_logged_in" rows={3} autoComplete="off" suppressHydrationWarning defaultValue={event.description_logged_in || ''} className="w-full px-5 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] focus:border-[var(--beheer-accent)] outline-none transition-all font-medium resize-none text-[15px] leading-relaxed" />
+                        <textarea id="description_logged_in" name="description_logged_in" rows={3} autoComplete="off" suppressHydrationWarning defaultValue={event.description_logged_in || ''} className="beheer-input" />
                     </div>
 
                     {/* Capacity & Pricing */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
                         <div>
                             <label htmlFor="max_sign_ups" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Capaciteit</label>
-                            <input type="number" id="max_sign_ups" name="max_sign_ups" autoComplete="off" suppressHydrationWarning defaultValue={event.max_sign_ups || ''} min="0" className="w-full px-5 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] focus:border-[var(--beheer-accent)] outline-none transition-all font-bold" placeholder="Max deelnemers" />
+                            <input type="number" id="max_sign_ups" name="max_sign_ups" autoComplete="off" suppressHydrationWarning defaultValue={event.max_sign_ups || ''} min="0" className="beheer-input" placeholder="Max deelnemers" />
                         </div>
                         <div>
                             <label htmlFor="price_members" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Prijs Leden (€)</label>
-                            <input type="number" id="price_members" name="price_members" autoComplete="off" suppressHydrationWarning defaultValue={event.price_members !== null && event.price_members !== undefined ? event.price_members : ''} min="0" step="0.01" className="w-full px-5 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] focus:border-[var(--beheer-accent)] outline-none transition-all font-bold" placeholder="0.00" />
+                            <input type="number" id="price_members" name="price_members" autoComplete="off" suppressHydrationWarning defaultValue={event.price_members !== null && event.price_members !== undefined ? event.price_members : ''} min="0" step="0.01" className="beheer-input" placeholder="0.00" />
                         </div>
                         <div>
                             <label htmlFor="price_non_members" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Prijs Niet-leden (€)</label>
-                            <input type="number" id="price_non_members" name="price_non_members" autoComplete="off" suppressHydrationWarning defaultValue={event.price_non_members !== null && event.price_non_members !== undefined ? event.price_non_members : ''} min="0" step="0.01" className="w-full px-5 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] focus:border-[var(--beheer-accent)] outline-none transition-all font-bold" placeholder="0.00" />
+                            <input type="number" id="price_non_members" name="price_non_members" autoComplete="off" suppressHydrationWarning defaultValue={event.price_non_members !== null && event.price_non_members !== undefined ? event.price_non_members : ''} min="0" step="0.01" className="beheer-input" placeholder="0.00" />
                         </div>
                     </div>
 
                     {/* Committee & Contact */}
                     <div className="relative z-10">
                         <label htmlFor="committee_id" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Commissie</label>
-                        <select id="committee_id" name="committee_id" defaultValue={event.committee_id || ''} suppressHydrationWarning className="w-full px-5 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] focus:border-[var(--beheer-accent)] focus:ring-4 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all font-bold cursor-pointer">
+                        <select id="committee_id" name="committee_id" defaultValue={event.committee_id || ''} suppressHydrationWarning className="beheer-select">
                             <option value="">Selecteer een commissie...</option>
                             {committees.map(c => <option key={c.id} value={c.id}>{cleanCommitteeName(c.name)}</option>)}
                         </select>
                     </div>
                     <div className="relative z-10">
                         <label htmlFor="contact" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Contact (email of telefoon)</label>
-                        <input type="text" id="contact" name="contact" autoComplete="off" suppressHydrationWarning defaultValue={event.contact || ''} className="w-full px-5 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] focus:border-[var(--beheer-accent)] outline-none transition-all font-bold" placeholder="naam@salvemundi.nl" />
+                        <input type="text" id="contact" name="contact" autoComplete="off" suppressHydrationWarning defaultValue={event.contact || ''} className="beheer-input" placeholder="naam@salvemundi.nl" />
                     </div>
 
                     {/* Image Upload */}
@@ -271,7 +271,9 @@ export default function ActiviteitBewerkenIsland({ event, committees }: { event:
                                 <div className="flex-1">
                                     <span className="text-[10px] font-black text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-text)] uppercase tracking-widest transition-colors">Plannen voor later</span>
                                     {status === 'scheduled' && (
-                                        <input type="datetime-local" name="publish_date" defaultValue={formatDateTime(event.publish_date)} className="mt-4 w-full px-5 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] focus:ring-4 focus:ring-[var(--beheer-accent)]/10 outline-none transition-all font-bold" />
+                                        <div className="mt-4">
+                                            <input type="datetime-local" name="publish_date" defaultValue={formatDateTime(event.publish_date)} className="beheer-input" />
+                                        </div>
                                     )}
                                 </div>
                             </label>

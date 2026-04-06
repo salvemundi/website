@@ -24,6 +24,8 @@ import {
 const EVENT_ID_FIELDS = ['id'] as const;
 import { logAdminAction } from "./audit.actions";
 import { isSuperAdmin } from "@/lib/auth-utils";
+import { createEventDb, updateEventDb, deleteEventDb } from "./event-db.utils";
+
 
 async function getSession() {
     return await auth.api.getSession({
@@ -123,7 +125,14 @@ export async function deleteActivity(eventId: number) {
     if (!session) return { success: false, error: "Unauthorized" };
 
     try {
-        await getSystemDirectus().request(deleteItem('events', eventId));
+        const success = await deleteEventDb(eventId);
+        if (!success) throw new Error("Verwijderen uit database mislukt");
+
+        // Sync to Directus in the background
+        getSystemDirectus().request(deleteItem('events', eventId)).catch(err => {
+            console.error('Directus delete sync error:', err);
+        });
+
         await logAdminAction('activity_deleted', 'SUCCESS', { id: eventId });
         
         revalidateTag('events', 'default');
@@ -179,17 +188,23 @@ export async function createActivityAction(prevState: any, formData: FormData): 
     if (imageId) directusPayload.image = imageId;
 
     try {
-        const res = await getSystemDirectus().request(createItem('events', directusPayload));
-        await logAdminAction('activity_created', 'SUCCESS', { id: res.id, data: directusPayload });
+        const newId = await createEventDb(directusPayload);
+        if (!newId) throw new Error('Geen ID teruggekregen van de database');
+
+        await logAdminAction('activity_created', 'SUCCESS', { id: newId, data: directusPayload });
+
+        // Background sync to Directus
+        getSystemDirectus().request(createItem('events', { ...directusPayload, id: newId })).catch(err => {
+            console.error('Directus insert sync error:', err);
+        });
 
         revalidateTag('events', 'default');
         revalidatePath('/beheer/activiteiten');
         revalidatePath('/beheer');
-        if (typeof res.id !== 'number') {
-            throw new Error('Geen ID teruggekregen van de database');
-        }
-        return { success: true, id: res.id };
+
+        return { success: true, id: newId };
     } catch (error) {
+        console.error('Error in createActivityAction:', error);
         return { error: 'Fout bij opslaan in de database', success: false };
     }
 }
@@ -251,7 +266,14 @@ export async function updateActivityAction(eventId: number, prevState: any, form
         
         if (imageId !== undefined) directusPayload.image = imageId;
 
-        await getSystemDirectus().request(updateItem('events', eventId, directusPayload));
+        const updated = await updateEventDb(eventId, directusPayload);
+        if (!updated) throw new Error('Update in database mislukt');
+
+        // Background sync to Directus
+        getSystemDirectus().request(updateItem('events', eventId, directusPayload)).catch(err => {
+            console.error('Directus update sync error:', err);
+        });
+
         await logAdminAction('activity_updated', 'SUCCESS', { id: eventId, data: directusPayload });
 
         revalidateTag('events', 'default');
