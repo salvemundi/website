@@ -8,7 +8,7 @@ import { useAuth } from '@/features/auth/providers/auth-provider';
 import type { Activiteit } from '@salvemundi/validations';
 
 interface EventListProps {
-    events: Activiteit[];
+    events: (Activiteit & { is_signed_up?: boolean })[];
     onEventClick: (event: Activiteit) => void;
     variant?: 'list' | 'grid';
 }
@@ -41,6 +41,7 @@ export default function EventList({ events, onEventClick, variant = 'list' }: Ev
                         price={(user as any)?.membership_status === 'active' ? (event.price_members ?? undefined) : (event.price_non_members ?? undefined)}
                         image={getImageUrl(event.afbeelding_id) ?? undefined}
                         isPast={isEventPast(event.datum_start)}
+                        isSignedUp={event.is_signed_up}
                         variant="grid"
                         committeeName={event.committee_name ?? undefined}
                         contact={event.contact ?? undefined}
@@ -70,6 +71,7 @@ export default function EventList({ events, onEventClick, variant = 'list' }: Ev
                     price={(user as any)?.membership_status === 'active' ? (event.price_members ?? undefined) : (event.price_non_members ?? undefined)}
                     image={getImageUrl(event.afbeelding_id) ?? undefined}
                     isPast={isEventPast(event.datum_start)}
+                    isSignedUp={event.is_signed_up}
                     variant="list"
                     committeeName={event.committee_name ?? undefined}
                     contact={event.contact ?? undefined}

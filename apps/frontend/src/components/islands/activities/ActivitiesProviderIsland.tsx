@@ -11,11 +11,14 @@ import EventList from "./EventList";
 import type { Activiteit } from '@salvemundi/validations';
 
 interface ActivitiesProviderIslandProps {
-    events: Activiteit[];
+    events: (Activiteit & { is_signed_up?: boolean })[];
 }
 
-export default function ActivitiesProviderIsland({ events }: ActivitiesProviderIslandProps) {
+export default function ActivitiesProviderIsland({
+    events: initialEvents,
+}: ActivitiesProviderIslandProps) {
     const router = useRouter();
+    const [events] = useState<(Activiteit & { is_signed_up?: boolean })[]>(initialEvents);
     const searchParams = useSearchParams();
 
     const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('list');

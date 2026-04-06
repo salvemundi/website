@@ -13,13 +13,19 @@ export const metadata = {
 
 
 async function ActivitiesBannerData() {
-    const events = await getActivities();
+    const session = await auth.api.getSession({
+        headers: await headers()
+    });
+    const events = await getActivities(session?.user?.id);
     return <ActivitiesBannerIsland events={events} />;
 }
 
 
 async function ActivitiesListData() {
-    const events = await getActivities();
+    const session = await auth.api.getSession({
+        headers: await headers()
+    });
+    const events = await getActivities(session?.user?.id);
     return <ActivitiesProviderIsland events={events} />;
 }
 

@@ -32,10 +32,26 @@ import {
 
 /**
  * Fetches all published activities directly from the database (SQL-first).
+ * Enriches each activity with 'is_signed_up' status if userId is provided.
  */
-export const getActivities = cache(async (): Promise<Activiteit[]> => {
+export const getActivities = cache(async (userId?: string): Promise<(Activiteit & { is_signed_up?: boolean })[]> => {
     try {
-        return await getActivitiesInternal(true);
+        const activities = await getActivitiesInternal(true);
+        
+        if (!userId) return activities;
+
+        // Fetch user signups for these activities
+        const userSignups = await fetchUserEventSignupsDb(userId);
+        const signedUpEventIds = new Set(userSignups.map(s => s.event_id.id));
+
+        // Also check Pub Crawl signups
+        const pubCrawlSignups = await fetchUserPubCrawlSignupsDb(userId);
+        const signedUpPubCrawlIds = new Set(pubCrawlSignups.map(s => s.pub_crawl_event_id.id));
+
+        return activities.map(activity => ({
+            ...activity,
+            is_signed_up: signedUpEventIds.has(activity.id) || (activity as any).type === 'pub_crawl' && signedUpPubCrawlIds.has(activity.id)
+        }));
     } catch (error) {
         console.error('[Activities] getActivities failed:', error);
         return [];
@@ -96,15 +112,29 @@ export async function signupForActivity(data: EventSignupForm) {
         const userId = session?.user?.id;
 
         const activity = await getActivityById(String(parsed.data.event_id));
-        if (!activity) return { success: false, error: 'Activity not found' };
+        if (!activity) return { success: false, error: 'Activiteit niet gevonden' };
 
         if (activity.only_members && !userId) {
-            return { success: false, error: 'This activity is for members only.' };
+            return { success: false, error: 'Deze activiteit is alleen voor leden.' };
         }
 
         const user = session?.user as any;
         const isMember = user?.membership_status === 'active';
         const price = (isMember ? activity.price_members : activity.price_non_members) ?? 0;
+
+        // Extra check for existing signups (Guest by email or Member by ID)
+        // This acts as a primary check before the DB constraint catches it
+        const { query } = await import('@/lib/db');
+        const existingCheck = await query(
+            `SELECT id FROM event_signups 
+             WHERE event_id = $1 AND (participant_email = $2 OR (directus_relations IS NOT NULL AND directus_relations = $3))
+             AND payment_status != 'failed' LIMIT 1`,
+            [parsed.data.event_id, parsed.data.email, userId || null]
+        );
+
+        if (existingCheck.rows.length > 0) {
+            return { success: false, error: 'U bent al aangemeld voor deze activiteit.' };
+        }
 
         const qrToken = `r-${parsed.data.event_id}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
         const directus = getSystemDirectus();
@@ -175,11 +205,17 @@ export async function signupForActivity(data: EventSignupForm) {
 
             await redis.xadd('v7:events', '*', 'payload', JSON.stringify(eventPayload));
             
-            return { success: true, message: 'Signup successful!' };
+            return { success: true, message: 'Inschrijving geslaagd!' };
         }
-    } catch (error) {
+    } catch (error: any) {
         console.error('[Activities] Signup error:', error);
-        return { success: false, error: 'An error occurred during signup.' };
+        
+        // Postgres Code 23505: Unique Violation
+        if (error.code === '23505') {
+            return { success: false, error: 'U bent al aangemeld voor deze activiteit.' };
+        }
+        
+        return { success: false, error: 'Er is een fout opgetreden bij de inschrijving.' };
     }
 }
 
