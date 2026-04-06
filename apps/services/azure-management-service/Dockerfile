@@ -28,6 +28,8 @@ FROM node:22.22.2-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
+RUN apk add --no-cache tzdata
+ENV TZ=Europe/Amsterdam
 
 # Copy the pruned service (includes production node_modules from workspace)
 COPY --from=builder --chown=node:node /app/pruned ./

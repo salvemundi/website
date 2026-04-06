@@ -43,6 +43,8 @@ RUN chown node:node /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+RUN apk add --no-cache tzdata
+ENV TZ=Europe/Amsterdam
 
 # Copy standalone output from builder
 # Next.js standalone includes all necessary node_modules (including workspace dependencies)
