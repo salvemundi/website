@@ -16,6 +16,7 @@ import {
 import { z } from 'zod';
 import { 
     AdminActivitySchema,
+    activityAdminSchema,
     type Activiteit
 } from "@salvemundi/validations";
 import { 
@@ -38,10 +39,10 @@ async function checkAdminAccess() {
     if (!session || !session.user) return null;
     
     const user = session.user as any;
-    // Gebruik de bestaande admin/ict vlaggen voor brede beheer-toegang
+    // Use existing admin/ict flags for broad management access
     if (user.isAdmin || user.isICT) return session;
     
-    // Fallback voor specifieke commissie-rechten als die nodig zijn
+    // Fallback for specific committee permissions if needed
     if (user.committees && isSuperAdmin(user.committees)) return session;
     return null;
 }
@@ -86,7 +87,7 @@ export async function sendActivityReminder(eventId: number) {
         
         return { success: true, sent: result.sent || 0 };
     } catch (error) {
-        return { success: false, error: "Herinnering versturen mislukt" };
+        return { success: false, error: "Failed to send reminder" };
     }
 }
 
@@ -116,7 +117,7 @@ export async function sendActivityCustomNotification(eventId: number, title: str
         
         return { success: true, sent: result.sent || 0 };
     } catch (error) {
-        return { success: false, error: "Notificatie versturen mislukt" };
+        return { success: false, error: "Failed to send notification" };
     }
 }
 
@@ -126,7 +127,7 @@ export async function deleteActivity(eventId: number) {
 
     try {
         const success = await deleteEventDb(eventId);
-        if (!success) throw new Error("Verwijderen uit database mislukt");
+        if (!success) throw new Error("Deletion from database failed");
 
         // Sync to Directus in the background
         getSystemDirectus().request(deleteItem('events', eventId)).catch(err => {
@@ -140,7 +141,7 @@ export async function deleteActivity(eventId: number) {
         revalidatePath('/beheer');
         return { success: true };
     } catch (error) {
-        return { success: false, error: "Verwijderen mislukt" };
+        return { success: false, error: "Deletion failed" };
     }
 }
 
@@ -162,6 +163,7 @@ export async function createActivityAction(prevState: any, formData: FormData): 
             const res = await getSystemDirectus().request(uploadFiles(fileData));
             imageId = res.id;
         } catch (e) {
+            console.error('Image upload failed during activity creation:', e);
         }
     }
 
@@ -170,10 +172,10 @@ export async function createActivityAction(prevState: any, formData: FormData): 
         if (key !== 'imageFile') rawData[key] = value;
     });
     
-    const validated = AdminActivitySchema.safeParse(rawData);
+    const validated = activityAdminSchema.safeParse(rawData);
     if (!validated.success) {
         return { 
-            error: "Validatie mislukt", 
+            error: "Validation failed", 
             fieldErrors: validated.error.flatten().fieldErrors,
             success: false 
         };
@@ -189,7 +191,7 @@ export async function createActivityAction(prevState: any, formData: FormData): 
 
     try {
         const newId = await createEventDb(directusPayload);
-        if (!newId) throw new Error('Geen ID teruggekregen van de database');
+        if (!newId) throw new Error('No ID returned from database');
 
         await logAdminAction('activity_created', 'SUCCESS', { id: newId, data: directusPayload });
 
@@ -224,11 +226,11 @@ export async function updateActivityAction(eventId: number, prevState: any, form
             limit: 1
         }));
         
-        if (!existing || existing.length === 0) return { error: "Activiteit niet gevonden", success: false };
+        if (!existing || existing.length === 0) return { error: "Activity not found", success: false };
         
         if (!isPowerful) {
             const isMember = existing[0].committee_id ? memberships.some((c: any) => String(c.id) === String(existing[0].committee_id)) : false;
-            if (!isMember) return { error: "Geen rechten voor deze activiteit", success: false };
+            if (!isMember) return { error: "Insufficient permissions for this activity", success: false };
         }
 
         const imageFile = formData.get('imageFile') as File | null;
@@ -249,10 +251,10 @@ export async function updateActivityAction(eventId: number, prevState: any, form
             if (key !== 'imageFile' && key !== 'removeImage') rawData[key] = value;
         });
         
-        const validated = AdminActivitySchema.safeParse(rawData);
+        const validated = activityAdminSchema.safeParse(rawData);
         if (!validated.success) {
             return { 
-                error: "Validatie mislukt", 
+                error: "Validation failed", 
                 fieldErrors: validated.error.flatten().fieldErrors,
                 success: false 
             };
@@ -267,7 +269,7 @@ export async function updateActivityAction(eventId: number, prevState: any, form
         if (imageId !== undefined) directusPayload.image = imageId;
 
         const updated = await updateEventDb(eventId, directusPayload);
-        if (!updated) throw new Error('Update in database mislukt');
+        if (!updated) throw new Error('Database update failed');
 
         // Background sync to Directus
         getSystemDirectus().request(updateItem('events', eventId, directusPayload)).catch(err => {
@@ -285,7 +287,7 @@ export async function updateActivityAction(eventId: number, prevState: any, form
         return { success: true };
     } catch (error) {
         console.error("Failed to update activity:", error);
-        return { error: 'Interne serverfout', success: false };
+        return { error: 'Internal server error', success: false };
     }
 }
 

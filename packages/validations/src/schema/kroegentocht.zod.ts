@@ -36,6 +36,7 @@ export const pubCrawlSignupSchema = z.object({
     pub_crawl_event_id: z.union([z.string(), z.number()]),
     name_initials: z.string(), // JSON string voor legacy compatibiliteit
     payment_status: z.enum(['open', 'paid', 'failed', 'canceled', 'expired']).default('open'),
+    directus_relations: z.string().optional().nullable(),
 });
 
 /**
