@@ -7,6 +7,7 @@ import { ReisInfoIsland } from '@/components/islands/activities/ReisInfoIsland';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import Link from 'next/link';
+import { getImageUrl } from '@/lib/image-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,11 +20,12 @@ export default async function ReisPage() {
 
     const isReisEnabled = siteSettings?.show ?? true;
     const reisDisabledMessage = siteSettings?.disabled_message || 'De inschrijvingen voor de reis zijn momenteel gesloten.';
+    const nextTrip = trips.length > 0 ? trips[0] : null;
 
     if (!isReisEnabled) {
         return (
             <>
-                <ReisHeader />
+                <ReisHeader tripImage={nextTrip?.image} />
                 <section className="px-4 sm:px-6 lg:px-10 py-12 lg:py-16">
                     <div className="max-w-4xl mx-auto bg-surface dark:border dark:border-white/10 rounded-2xl lg:rounded-3xl p-6 lg:p-8 text-center shadow-card dark:shadow-card-elevated">
                         <h2 className="text-2xl lg:text-3xl font-bold text-gradient mb-4">Reis momenteel niet beschikbaar</h2>
@@ -37,7 +39,6 @@ export default async function ReisPage() {
         );
     }
 
-    const nextTrip = trips.length > 0 ? trips[0] : null;
     let participantsCount = 0;
     let userSignup = null;
 
@@ -63,7 +64,7 @@ export default async function ReisPage() {
 
     return (
         <>
-            <ReisHeader />
+            <ReisHeader tripImage={nextTrip?.image} />
             <main className="relative overflow-hidden bg-background">
                 <div className="mx-auto max-w-app px-4 py-8 sm:py-10 md:py-12">
                     <div className="flex flex-col lg:flex-row gap-8 items-start">
@@ -87,13 +88,13 @@ export default async function ReisPage() {
     );
 }
 
-function ReisHeader() {
+function ReisHeader({ tripImage }: { tripImage?: string | null }) {
     return (
         <div className="flex flex-col w-full">
             <Suspense fallback={<ReisPageHeaderSkeleton />}>
                 <PageHeader
                     title="SALVE MUNDI REIS"
-                    backgroundImage="/img/newlogo.svg"
+                    backgroundImage={getImageUrl(tripImage)}
                     contentPadding="py-20"
                     imageFilter="brightness(0.65)"
                 >
