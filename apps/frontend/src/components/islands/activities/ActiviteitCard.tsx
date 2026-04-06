@@ -130,32 +130,48 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
         return (
             <div
                 onClick={onShowDetails}
-                className={`group relative z-0 overflow-visible w-full rounded-2xl bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-4 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 group-hover:z-10 ${isPast ? 'opacity-60 filter grayscale' : ''}`}
+                className={`group relative z-0 overflow-hidden w-full rounded-2xl bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-5 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 ${isPast ? 'opacity-60 filter grayscale' : ''}`}
             >
-                <span className="absolute -top-5 -right-5 h-20 w-20 rounded-full bg-[var(--theme-purple)]/20 transition-transform duration-300 group-hover:scale-110 pointer-events-none" />
-                <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
-                    <div className="flex-1 min-w-[180px]">
-                        <p className="text-xs uppercase tracking-wider text-[var(--theme-purple)]/60 font-semibold">
-                            {committeeLabel}
-                        </p>
-                        <h3 className="text-lg font-bold text-[var(--theme-purple)]/80 leading-snug">{title}</h3>
+                {/* Decorative background element - adjusted to be less intrusive */}
+                <span className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-[var(--theme-purple)]/5 transition-transform duration-500 group-hover:scale-125 pointer-events-none" />
+                
+                <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
+                    <div className="flex-1 min-w-[200px]">
+                        <div className="flex items-center gap-2 mb-1">
+                            <span className="text-[10px] uppercase tracking-widest text-[var(--theme-purple)] font-black bg-[var(--theme-purple)]/10 px-2 py-0.5 rounded-md">
+                                {committeeLabel}
+                            </span>
+                            {onlyMembers && (
+                                <span className="text-[10px] uppercase tracking-widest text-amber-600 font-black bg-amber-50 px-2 py-0.5 rounded-md">
+                                    Leden
+                                </span>
+                            )}
+                        </div>
+                        <h3 className="text-xl font-black text-[var(--theme-purple)]/90 leading-tight group-hover:text-[var(--theme-purple)] transition-colors">
+                            {title}
+                        </h3>
                         {contact && (
-                            <p className="text-sm text-[var(--text-muted)] mt-1">
-                                <span className="font-medium text-[var(--theme-purple)]/80">Contact:</span>{' '}
-                                <span className="text-[var(--text-muted)]">{contact}</span>
+                            <p className="text-xs text-[var(--text-muted)] mt-2 flex items-center gap-1">
+                                <span className="font-bold opacity-70">Contact:</span>
+                                <span>{contact}</span>
                             </p>
                         )}
                     </div>
 
-                    <div className="flex flex-row flex-wrap gap-4 text-right text-[var(--theme-purple)]/80 font-semibold">
-                        <div className="min-w-[160px] text-right">
-                            <p className="text-xs text-[var(--theme-purple)]/60 uppercase tracking-wide">Datum & Tijd</p>
-                            <p className="text-base">{formatDate(date, endDate)}{timeRange ? ` — ${timeRange}` : ''}</p>
-                            {location && <p className="text-xs text-[var(--text-muted)] mt-1 truncate max-w-[220px]">{location}</p>}
+                    <div className="flex items-center gap-6 md:gap-10">
+                        <div className="text-right">
+                            <p className="text-[10px] font-black text-[var(--theme-purple)]/40 uppercase tracking-widest mb-1">Datum & Tijd</p>
+                            <p className="text-sm font-bold text-[var(--theme-purple)]/80">
+                                {formatDate(date, endDate)}
+                            </p>
+                            <p className="text-xs font-medium text-[var(--text-muted)]">
+                                {timeRange || location || 'Geen tijd/locatie'}
+                            </p>
                         </div>
-                        <div className="min-w-[90px]">
-                            <p className="text-xs text-[var(--theme-purple)]/60 uppercase tracking-wide">Prijs</p>
-                            <p className="text-base">€{safePrice}</p>
+
+                        <div className="bg-[var(--bg-soft)] px-4 py-2 rounded-xl border border-[var(--border-color)] text-center min-w-[80px]">
+                            <p className="text-[10px] font-black text-[var(--theme-purple)]/40 uppercase tracking-widest mb-0.5">Prijs</p>
+                            <p className="text-lg font-black text-[var(--theme-purple)]">€{safePrice}</p>
                         </div>
                     </div>
                 </div>
