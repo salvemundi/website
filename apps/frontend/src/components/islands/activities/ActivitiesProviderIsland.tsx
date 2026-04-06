@@ -18,7 +18,7 @@ export default function ActivitiesProviderIsland({ events }: ActivitiesProviderI
     const router = useRouter();
     const searchParams = useSearchParams();
 
-    const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('grid');
+    const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('list');
     const [showPastActivities, setShowPastActivities] = useState(false);
     const [selectedDay, setSelectedDay] = useState<Date | null>(null);
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -29,9 +29,7 @@ export default function ActivitiesProviderIsland({ events }: ActivitiesProviderI
             const now = new Date();
             filtered = filtered.filter(event => {
                 const eventDate = event.datum_start;
-                // De server actions sturen nu ISO strings (datum_start) of YYYY-MM-DD (event_date)
-                // Als we een ISO string hebben, gebruiken we die direct.
-                // Als we een event_time hebben, combineren we die alleen met de YYYY-MM-DD variant.
+                // The server actions now send ISO strings (datum_start) or YYYY-MM-DD (event_date)
                 let eventDateTime;
                 if (event.event_time && eventDate.length <= 10) {
                     eventDateTime = new Date(`${eventDate}T${event.event_time}`);
@@ -59,18 +57,21 @@ export default function ActivitiesProviderIsland({ events }: ActivitiesProviderI
         const now = new Date();
         return events
             .filter(e => {
-                const eventDateTime = e.event_time
-                    ? new Date(`${e.datum_start}T${e.event_time}`)
-                    : new Date(e.datum_start);
+                const eventDate = e.datum_start;
+                const eventDateTime = (e.event_time && eventDate.length <= 10)
+                    ? new Date(`${eventDate}T${e.event_time}`)
+                    : new Date(eventDate);
                 return eventDateTime >= now;
             })
             .sort((a, b) => {
-                const aDateTime = a.event_time
-                    ? new Date(`${a.datum_start}T${a.event_time}`).getTime()
-                    : new Date(a.datum_start).getTime();
-                const bDateTime = b.event_time
-                    ? new Date(`${b.datum_start}T${b.event_time}`).getTime()
-                    : new Date(b.datum_start).getTime();
+                const aDate = a.datum_start;
+                const bDate = b.datum_start;
+                const aDateTime = (a.event_time && aDate.length <= 10)
+                    ? new Date(`${aDate}T${a.event_time}`).getTime()
+                    : new Date(aDate).getTime();
+                const bDateTime = (b.event_time && bDate.length <= 10)
+                    ? new Date(`${bDate}T${b.event_time}`).getTime()
+                    : new Date(bDate).getTime();
                 return aDateTime - bDateTime;
             })[0];
     }, [events]);
@@ -139,9 +140,9 @@ export default function ActivitiesProviderIsland({ events }: ActivitiesProviderI
             </div>
 
             <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
-                {(selectedDay || upcomingEvent) && (
+                {(selectedDay || (upcomingEvent && viewMode === 'list')) && (
                     <aside className="lg:w-96 xl:w-[28rem] space-y-6">
-                        {upcomingEvent && (
+                        {upcomingEvent && viewMode === 'list' && (
                             <FeaturedEvent
                                 event={upcomingEvent}
                                 onEventClick={handleShowDetails}
