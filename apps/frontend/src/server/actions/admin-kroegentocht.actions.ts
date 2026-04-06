@@ -30,7 +30,9 @@ import {
     fetchPubCrawlEventsDb, 
     fetchPubCrawlSignupsDb, 
     fetchPubCrawlSignupByIdDb,
-    fetchPubCrawlTicketsDb
+    fetchPubCrawlTicketsDb,
+    updatePubCrawlSignupDb,
+    deletePubCrawlSignupDb
 } from './kroegentocht-db.utils';
 
 async function requireKroegAdmin() {
@@ -128,10 +130,15 @@ export async function getPubCrawlSignup(id: number) {
 }
 
 export async function deletePubCrawlSignup(id: number, eventId: number) {
-    const session = await requireKroegAdmin();
+    await requireKroegAdmin();
     try {
-        await getSystemDirectus().request(deleteItem('pub_crawl_signups', id));
+        await deletePubCrawlSignupDb(id);
         revalidateTag(`signups-${eventId}`, 'default');
+
+        // Background sync to Directus
+        getSystemDirectus().request(deleteItem('pub_crawl_signups', id))
+            .catch(e => console.error('[AdminKroegentocht] Directus delete sync failed:', e));
+
         return { success: true };
     } catch (e) {
         console.error('[AdminKroegentocht] Delete signup failed:', e);
@@ -140,10 +147,15 @@ export async function deletePubCrawlSignup(id: number, eventId: number) {
 }
 
 export async function updatePubCrawlSignup(id: number, eventId: number, data: any) {
-    const session = await requireKroegAdmin();
+    await requireKroegAdmin();
     try {
-        await getSystemDirectus().request(updateItem('pub_crawl_signups', id, data));
+        await updatePubCrawlSignupDb(id, data);
         revalidateTag(`signups-${eventId}`, 'default');
+
+        // Background sync to Directus
+        getSystemDirectus().request(updateItem('pub_crawl_signups', id, data))
+            .catch(e => console.error('[AdminKroegentocht] Directus update sync failed:', e));
+
         return { success: true };
     } catch (e) {
         console.error('[AdminKroegentocht] Update signup failed:', e);
@@ -166,35 +178,29 @@ export async function toggleKroegentochtVisibility(): Promise<{ success: boolean
 
         if (flag) {
             await query('UPDATE feature_flags SET is_active = $1 WHERE id = $2', [newStatus, flag.id]);
-            console.log(`[AdminKroegentocht] Toggle (SQL): DB was ${oldStatus}, setting to ${newStatus} (ID: ${flag.id})`);
         } else {
             await query('INSERT INTO feature_flags (name, route_match, is_active) VALUES ($1, $2, $3)', 
                 ['Kroegentocht Inschrijving', route, newStatus]);
-            console.log(`[AdminKroegentocht] Toggle (SQL): Created new flag for ${route} with is_active: ${newStatus}`);
         }
 
-        // 1. Immediate clear to disrupt any current stale requests
+        // Clear Redis feature flag cache immediately
         try {
             const redis = await getRedis();
             await redis.del(FLAGS_CACHE_KEY);
-            console.log(`[AdminKroegentocht] Initial Redis cache clear (immediate)`);
         } catch (e) {
-            console.error('[AdminKroegentocht] Initial Redis clear failed:', e);
+            console.error('[AdminKroegentocht] Redis clear failed:', e);
         }
 
-        // 2. Wait for Directus DB/Cache consistency. 200ms was too short based on logs.
-        console.log(`[AdminKroegentocht] Waiting for Directus consistency (1000ms)...`);
+        // Wait for Directus cache consistency
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        console.log(`[AdminKroegentocht] Revalidating: feature_flags (profile: default)`);
         revalidateTag('feature_flags', 'default');
         revalidatePath('/', 'layout');
         
-        // 3. Final clear to ensure any concurrent requests that fetched stale data are purged
+        // Final Redis flush
         try {
             const redis = await getRedis();
-            const deletedRows = await redis.del(FLAGS_CACHE_KEY);
-            console.log(`[AdminKroegentocht] Final Redis cache clear. Keys deleted: ${deletedRows}`);
+            await redis.del(FLAGS_CACHE_KEY);
         } catch (e) {
             console.error('[AdminKroegentocht] Final Redis clear failed:', e);
         }
@@ -211,13 +217,10 @@ export async function getKroegentochtSettings() {
     await requireKroegAdmin();
     try {
         const { rows } = await query('SELECT is_active FROM feature_flags WHERE route_match = $1 LIMIT 1', ['/kroegentocht']);
-        
         const isVisible = rows && rows.length > 0 ? !!rows[0].is_active : true;
-        console.log(`[AdminKroegentocht] getKroegentochtSettings (SQL): isVisible=${isVisible}`);
-        
         return { show: isVisible };
     } catch (e) {
-        console.error('[AdminKroegentocht] Get settings (SQL) failed:', e);
+        console.error('[AdminKroegentocht] Get settings failed:', e);
         return { show: true };
     }
 }

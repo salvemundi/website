@@ -17,7 +17,8 @@ import { headers } from 'next/headers';
 import { revalidateTag } from 'next/cache';
 
 import { getSystemDirectus } from '@/lib/directus';
-import { readItems, createItem } from '@directus/sdk';
+import { readItems, createItem, deleteItem } from '@directus/sdk';
+import { createPubCrawlSignupDb, deletePubCrawlSignupDb } from './kroegentocht-db.utils';
 
 const getFinanceServiceUrl = () =>
     process.env.FINANCE_SERVICE_URL;
@@ -118,6 +119,7 @@ export async function initiateKroegentochtPayment(formData: any) {
         const price = 1;
         const maxPerPerson = 10;
 
+        // Validate existing ticket count
         const existingSignups = await getSystemDirectus().request(readItems('pub_crawl_signups', {
             filter: {
                 email: { _eq: parsed.data.email },
@@ -133,14 +135,21 @@ export async function initiateKroegentochtPayment(formData: any) {
             return { success: false, error: `Je hebt al ${existingCount} tickets. Maximaal ${maxPerPerson} per persoon/groep.` };
         }
 
-        // 0. Get session
         const session = await auth.api.getSession({ headers: await headers() });
-        const userId = session?.user?.id;
 
-        // 4. Create signup
-        // Note: For now we remove directus_relations here because it is causing a Foreign Key violation in some environments.
-        // The user link is still maintained via the transaction record which is created later.
-        const signupResponse = await getSystemDirectus().request(createItem('pub_crawl_signups', {
+        // SQL-first: create signup directly in DB for minimal latency
+        const signupId = await createPubCrawlSignupDb({
+            name: parsed.data.name,
+            email: parsed.data.email,
+            association: parsed.data.association,
+            amount_tickets: parsed.data.amount_tickets,
+            name_initials: parsed.data.name_initials,
+            pub_crawl_event_id: parsed.data.pub_crawl_event_id as number,
+            payment_status: 'open',
+        });
+
+        // Background sync to Directus
+        getSystemDirectus().request(createItem('pub_crawl_signups', {
             name: parsed.data.name,
             email: parsed.data.email,
             association: parsed.data.association,
@@ -148,10 +157,7 @@ export async function initiateKroegentochtPayment(formData: any) {
             name_initials: parsed.data.name_initials,
             pub_crawl_event_id: parsed.data.pub_crawl_event_id as any,
             payment_status: 'open',
-            // directus_relations: userId || null (Temporarily disabled due to schema mismatch on acceptance)
-        } as any));
-        
-        const signupId = (signupResponse as any).id;
+        } as any)).catch(e => console.error('[kroegentocht] Directus signup sync failed:', e));
 
         // 5. Initiate payment via Finance Service
         const financeUrl = `${getFinanceServiceUrl()}/api/payments/create`;
@@ -181,14 +187,13 @@ export async function initiateKroegentochtPayment(formData: any) {
             return { success: true, checkoutUrl: paymentData.checkoutUrl };
         }
  
-        // 6. Cleanup on Failure
-        console.error('[kroegentocht.actions#initiatePayment] Payment service error:', paymentData);
+        // Cleanup: remove from SQL DB and background sync Directus delete
         try {
-            const { deleteItem } = await import('@directus/sdk');
-            await getSystemDirectus().request(deleteItem('pub_crawl_signups', signupId));
-            console.log(`[kroegentocht.actions#initiatePayment] Cleaned up failed signup ${signupId}`);
+            await deletePubCrawlSignupDb(signupId);
+            getSystemDirectus().request(deleteItem('pub_crawl_signups', signupId))
+                .catch(cleanupErr => console.error(`[kroegentocht] Directus cleanup failed for ${signupId}:`, cleanupErr));
         } catch (cleanupErr) {
-            console.error(`[kroegentocht.actions#initiatePayment] Cleanup failed for ${signupId}:`, cleanupErr);
+            console.error(`[kroegentocht] Cleanup failed for signup ${signupId}:`, cleanupErr);
         }
 
         return { success: false, error: 'Het aanmaken van de betaling is mislukt. Probeer het later opnieuw.' };
