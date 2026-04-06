@@ -258,8 +258,12 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
     // 2. Trip-specific registration check
     const registrationStartDate = targetTrip.registration_start_date ? new Date(targetTrip.registration_start_date) : null;
     const now = new Date();
-    const isRegistrationDateReached = registrationStartDate ? now >= registrationStartDate : false;
-    const canSignUp = targetTrip.registration_open || isRegistrationDateReached;
+    
+    // Default to true if no date is set, so the toggle works immediately
+    const isRegistrationDateReached = registrationStartDate ? now >= registrationStartDate : true;
+    
+    // canSignUp is true ONLY if both the trip switch (registration_open) AND the start date are satisfied.
+    const canSignUp = Boolean(targetTrip.registration_open && isRegistrationDateReached);
 
     if (!canSignUp) {
         return { success: false, message: 'De inschrijving voor deze reis is momenteel niet geopend.' };
@@ -318,8 +322,12 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
         // 3. Trip-specific registration check inside lock
         const registrationStartDate = targetTrip.registration_start_date ? new Date(targetTrip.registration_start_date) : null;
         const now = new Date();
-        const isRegistrationDateReached = registrationStartDate ? now >= registrationStartDate : false;
-        const canSignUp = targetTrip.registration_open || isRegistrationDateReached;
+        
+        // Default to true if no date is set, so the toggle works immediately
+        const isRegistrationDateReached = registrationStartDate ? now >= registrationStartDate : true;
+        
+        // canSignUp is true ONLY if both the trip switch (registration_open) AND the start date are satisfied.
+        const canSignUp = Boolean(targetTrip.registration_open && isRegistrationDateReached);
 
         if (!canSignUp) {
             return { success: false, message: 'De inschrijving voor deze reis is momenteel niet geopend.' };
