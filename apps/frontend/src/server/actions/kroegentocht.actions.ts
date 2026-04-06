@@ -18,7 +18,17 @@ import { revalidateTag } from 'next/cache';
 
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems, createItem, deleteItem } from '@directus/sdk';
-import { createPubCrawlSignupDb, deletePubCrawlSignupDb } from './kroegentocht-db.utils';
+import { 
+    createPubCrawlSignupDb, 
+    deletePubCrawlSignupDb, 
+    getPubCrawlTicketCountDb,
+    createPubCrawlTicketsDb,
+    deletePubCrawlTicketsBySignupIdDb,
+    fetchPubCrawlSignupByIdDb,
+    fetchPubCrawlEventsDb
+} from './kroegentocht-db.utils';
+import { query } from '@/lib/db';
+import crypto from 'crypto';
 
 const getFinanceServiceUrl = () =>
     process.env.FINANCE_SERVICE_URL;
@@ -53,14 +63,8 @@ export async function getKroegentochtEvent(): Promise<PubCrawlEvent | null> {
     const today = new Date().toISOString().split('T')[0];
     
     try {
-        const data = await getSystemDirectus().request(readItems('pub_crawl_events', {
-            filter: { date: { _gte: today } },
-            sort: ['date'],
-            limit: 1,
-            fields: [...PUB_CRAWL_EVENT_FIELDS]
-        }));
-
-        const event = data?.[0] as any;
+        const events = await fetchPubCrawlEventsDb();
+        const event = events.find((e: any) => e.date >= today);
         if (!event) return null;
 
         // Hardcode price and tickets per user request
@@ -69,7 +73,7 @@ export async function getKroegentochtEvent(): Promise<PubCrawlEvent | null> {
 
         const parsed = pubCrawlEventSchema.safeParse(event);
         return parsed.success ? parsed.data : null;
-    } catch (error) {
+    } catch (error: any) {
         console.error('[kroegentocht.actions#getEvent] Error:', error);
         return null;
     }
@@ -77,22 +81,27 @@ export async function getKroegentochtEvent(): Promise<PubCrawlEvent | null> {
 
 export async function getKroegentochtTickets(email: string): Promise<PubCrawlTicket[]> {
     try {
-        const data = await getSystemDirectus().request(readItems('pub_crawl_tickets', {
-            filter: {
-                signup_id: {
-                    email: { _eq: email },
-                    payment_status: { _eq: 'paid' }
-                } as any
-            },
-            fields: [
-                ...PUB_CRAWL_TICKET_FIELDS,
-                { signup_id: [{ pub_crawl_event_id: ['name'] }] }
-            ] as any
+        const res = await query(
+            `SELECT t.*, e.name as event_name 
+             FROM pub_crawl_tickets t
+             JOIN pub_crawl_signups s ON t.signup_id = s.id
+             JOIN pub_crawl_events e ON s.pub_crawl_event_id = e.id
+             WHERE s.email = $1 AND s.payment_status = 'paid'`,
+            [email]
+        );
+
+        const items = (res.rows || []).map((t: any) => ({
+            ...t,
+            signup_id: {
+                pub_crawl_event_id: {
+                    name: t.event_name
+                }
+            }
         }));
 
-        const parsed = (data || []).map((t: any) => pubCrawlTicketSchema.safeParse(t).data).filter(Boolean);
+        const parsed = items.map((t: any) => pubCrawlTicketSchema.safeParse(t).data).filter(Boolean);
         return parsed as PubCrawlTicket[];
-    } catch (error) {
+    } catch (error: any) {
         console.error('[kroegentocht.actions#getTickets] Error:', error);
         return [];
     }
@@ -105,13 +114,9 @@ export async function initiateKroegentochtPayment(formData: any) {
     }
 
     try {
-        const event = await getSystemDirectus().request(readItems('pub_crawl_events', {
-            filter: { id: { _eq: parsed.data.pub_crawl_event_id as any } },
-            limit: 1,
-            fields: [...EVENT_ID_FIELDS]
-        }));
+        const events = await fetchPubCrawlEventsDb();
+        const eventData = events.find((e: any) => e.id === Number(parsed.data.pub_crawl_event_id));
         
-        const eventData = event?.[0];
         if (!eventData) {
             return { success: false, error: 'Evenement niet gevonden' };
         }
@@ -119,47 +124,51 @@ export async function initiateKroegentochtPayment(formData: any) {
         const price = 1;
         const maxPerPerson = 10;
 
-        // Validate existing ticket count
-        const existingSignups = await getSystemDirectus().request(readItems('pub_crawl_signups', {
-            filter: {
-                email: { _eq: parsed.data.email },
-                pub_crawl_event_id: { _eq: parsed.data.pub_crawl_event_id },
-                payment_status: { _eq: 'paid' }
-            },
-            fields: ['amount_tickets' as any]
-        }));
-        
-        const existingCount = (existingSignups || []).reduce((sum: number, s: any) => sum + (s.amount_tickets || 0), 0);
+        // Validate existing ticket count - SQL-first for accuracy during peaks
+        const existingCount = await getPubCrawlTicketCountDb(Number(parsed.data.pub_crawl_event_id));
 
         if (existingCount + parsed.data.amount_tickets > maxPerPerson) {
             return { success: false, error: `Je hebt al ${existingCount} tickets. Maximaal ${maxPerPerson} per persoon/groep.` };
         }
 
         const session = await auth.api.getSession({ headers: await headers() });
+        const userId = session?.user?.id;
 
-        // SQL-first: create signup directly in DB for minimal latency
         const signupId = await createPubCrawlSignupDb({
             name: parsed.data.name,
             email: parsed.data.email,
             association: parsed.data.association,
             amount_tickets: parsed.data.amount_tickets,
             name_initials: parsed.data.name_initials,
-            pub_crawl_event_id: parsed.data.pub_crawl_event_id as number,
+            pub_crawl_event_id: Number(parsed.data.pub_crawl_event_id),
             payment_status: 'open',
+            directus_relations: userId || null,
         });
 
-        // Background sync to Directus
+        const ticketsTable = [];
+        const names = (parsed.data.name_initials || '').split(',').map(n => n.trim()).filter(Boolean);
+        
+        for (let i = 0; i < parsed.data.amount_tickets; i++) {
+            ticketsTable.push({
+                name: names[i] || parsed.data.name,
+                initial: (names[i] || parsed.data.name).substring(0, 1).toUpperCase(),
+                qr_token: crypto.randomUUID()
+            });
+        }
+        await createPubCrawlTicketsDb(signupId, ticketsTable);
+
         getSystemDirectus().request(createItem('pub_crawl_signups', {
+            id: signupId,
             name: parsed.data.name,
             email: parsed.data.email,
             association: parsed.data.association,
             amount_tickets: parsed.data.amount_tickets,
             name_initials: parsed.data.name_initials,
-            pub_crawl_event_id: parsed.data.pub_crawl_event_id as any,
+            pub_crawl_event_id: Number(parsed.data.pub_crawl_event_id) as any,
             payment_status: 'open',
-        } as any)).catch(e => console.error('[kroegentocht] Directus signup sync failed:', e));
+            directus_relations: userId || null,
+        } as any)).catch((e: any) => console.error('[Kroegentocht] Sync failed:', e));
 
-        // 5. Initiate payment via Finance Service
         const financeUrl = `${getFinanceServiceUrl()}/api/payments/create`;
         const paymentRes = await fetchWithTimeout(financeUrl, {
             method: 'POST',
@@ -179,43 +188,29 @@ export async function initiateKroegentochtPayment(formData: any) {
 
         const paymentData = await paymentRes.json();
         if (paymentRes.ok && paymentData.checkoutUrl) {
-            // Update the redirect URL to include the transaction ID (Mollie ID) as a security token
-            const secureRedirectUrl = `${process.env.PUBLIC_URL}/kroegentocht/bevestiging?id=${signupId}&t=${paymentData.mollie_id}`;
-            
-            // We can't update the Mollie payment redirect URL once created easily without re-creating, 
-            // but we can redirect the user to our confirmation page with the token.
             return { success: true, checkoutUrl: paymentData.checkoutUrl };
         }
  
-        // Cleanup: remove from SQL DB and background sync Directus delete
         try {
+            await deletePubCrawlTicketsBySignupIdDb(signupId);
             await deletePubCrawlSignupDb(signupId);
             getSystemDirectus().request(deleteItem('pub_crawl_signups', signupId))
-                .catch(cleanupErr => console.error(`[kroegentocht] Directus cleanup failed for ${signupId}:`, cleanupErr));
-        } catch (cleanupErr) {
-            console.error(`[kroegentocht] Cleanup failed for signup ${signupId}:`, cleanupErr);
+                .catch((e: any) => console.error(`[Kroegentocht] Sync cleanup failed:`, e));
+        } catch (cleanupErr: any) {
+            console.error(`[Kroegentocht] Cleanup failed:`, cleanupErr);
         }
 
-        return { success: false, error: 'Het aanmaken van de betaling is mislukt. Probeer het later opnieuw.' };
+        return { success: false, error: 'Failed to initiate payment. Please try again later.' };
 
-    } catch (error) {
-        console.error('[kroegentocht.actions#initiatePayment] Error:', error);
-        return { success: false, error: 'Er is een interne fout opgetreden' };
+    } catch (error: any) {
+        console.error('[Kroegentocht#initiatePayment] Error:', error);
+        return { success: false, error: 'An internal error occurred.' };
     }
 }
 
 export async function getKroegentochtStatus(signupId: string) {
     try {
-        const data = await getSystemDirectus().request(readItems('pub_crawl_signups', {
-            filter: { id: { _eq: signupId as any } },
-            fields: [
-                ...PUB_CRAWL_SIGNUP_FIELDS,
-                { pub_crawl_event_id: ['name'] }
-            ] as any,
-            limit: 1
-        }));
-
-        const signup = data?.[0];
+        const signup = await fetchPubCrawlSignupByIdDb(parseInt(signupId, 10));
         if (!signup) return { status: 'error' };
 
         if (signup.payment_status === 'paid') {
@@ -226,8 +221,8 @@ export async function getKroegentochtStatus(signupId: string) {
         }
 
         return { status: 'open' };
-    } catch (error) {
-        console.error('[kroegentocht.actions#getStatus] Error:', error);
+    } catch (error: any) {
+        console.error('[Kroegentocht#getStatus] Error:', error);
         return { status: 'error' };
     }
 }
