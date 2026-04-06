@@ -22,23 +22,6 @@ export default async function ReisPage() {
     const reisDisabledMessage = siteSettings?.disabled_message || 'De inschrijvingen voor de reis zijn momenteel gesloten.';
     const nextTrip = trips.length > 0 ? trips[0] : null;
 
-    if (!isReisEnabled) {
-        return (
-            <>
-                <ReisHeader tripImage={nextTrip?.image} />
-                <section className="px-4 sm:px-6 lg:px-10 py-12 lg:py-16">
-                    <div className="max-w-4xl mx-auto bg-surface dark:border dark:border-white/10 rounded-2xl lg:rounded-3xl p-6 lg:p-8 text-center shadow-card dark:shadow-card-elevated">
-                        <h2 className="text-2xl lg:text-3xl font-bold text-gradient mb-4">Reis momenteel niet beschikbaar</h2>
-                        <p className="text-base lg:text-lg text-theme-text-muted mb-6">{reisDisabledMessage}</p>
-                        <Link href="/" className="inline-flex items-center justify-center px-6 py-3 bg-gradient-theme text-white font-semibold rounded-full shadow-lg shadow-theme-purple/30 hover:-translate-y-0.5 transition-all">
-                            Terug naar Home
-                        </Link>
-                    </div>
-                </section>
-            </>
-        );
-    }
-
     let participantsCount = 0;
     let userSignup = null;
 
@@ -55,12 +38,16 @@ export default async function ReisPage() {
     const registrationStartDate = nextTrip?.registration_start_date ? new Date(nextTrip.registration_start_date) : null;
     const now = new Date();
     const isRegistrationDateReached = registrationStartDate ? now >= registrationStartDate : false;
-    const canSignUp = Boolean(nextTrip && (nextTrip.registration_open || isRegistrationDateReached));
+    
+    // canSignUp is true ONLY if both the global switch (isReisEnabled) and the trip switch are ON
+    const canSignUp = Boolean(isReisEnabled && nextTrip && (nextTrip.registration_open || isRegistrationDateReached));
 
     const showStartText = !canSignUp && registrationStartDate;
-    const registrationStartText = showStartText
-        ? `Inschrijving opent op ${format(registrationStartDate!, 'd MMMM yyyy HH:mm', { locale: nl })}`
-        : 'Inschrijving nog niet beschikbaar';
+    const registrationStartText = !isReisEnabled 
+        ? reisDisabledMessage 
+        : (showStartText
+            ? `Inschrijving opent op ${format(registrationStartDate!, 'd MMMM yyyy HH:mm', { locale: nl })}`
+            : 'Inschrijving nog niet beschikbaar');
 
     return (
         <>
