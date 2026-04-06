@@ -8,6 +8,7 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
+      TZ: Europe/Amsterdam
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 10s
@@ -15,6 +16,8 @@ services:
       retries: 5
     volumes:
       - v7_core_postgres_data:/var/lib/postgresql/data
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     networks:
       - shared-network
 
@@ -82,8 +85,11 @@ services:
       AUTH_MICROSOFT_DEFAULT_ROLE_ID: "85750035-2d6e-4405-9f5b-6f069ce58a9e"
       AUTH_SAFE_REDIRECT_HOSTS: ${DIRECTUS_ALLOWED_REDIRECTS}
       DIRECTUS_STATIC_TOKEN: ${DIRECTUS_STATIC_TOKEN}
+      TZ: Europe/Amsterdam
     volumes:
       - v7_core_directus_uploads:/directus/uploads
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     networks:
       - shared-network
       - proxy-network

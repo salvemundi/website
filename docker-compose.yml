@@ -34,8 +34,11 @@ services:
       - NEXT_APP_INTERNAL_URL=http://localhost:3000
       - TRUST_PROXY=true
       - HOSTNAME=0.0.0.0
+      - TZ=Europe/Amsterdam
     volumes:
       - v7_next_cache:/app/apps/frontend/.next/cache
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     networks:
       - salve-mundi-v7-shared
       - proxy-network
@@ -56,6 +59,10 @@ services:
       - PUBLIC_URL=${PUBLIC_URL}
       - MAIL_SERVICE_URL=http://mail-service:3003
       - NEXT_APP_INTERNAL_URL=http://frontend:3000
+      - TZ=Europe/Amsterdam
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     networks:
       - salve-mundi-v7-shared
 
@@ -73,6 +80,10 @@ services:
       - DIRECTUS_STATIC_TOKEN=${DIRECTUS_STATIC_TOKEN}
       - DIRECTUS_SERVICE_URL=${INTERNAL_DIRECTUS_URL}
       - REDIS_URL=${REDIS_URL}
+      - TZ=Europe/Amsterdam
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     networks:
       - salve-mundi-v7-shared
 
@@ -91,6 +102,10 @@ services:
       - DIRECTUS_STATIC_TOKEN=${DIRECTUS_STATIC_TOKEN}
       - DIRECTUS_SERVICE_URL=${INTERNAL_DIRECTUS_URL}
       - REDIS_URL=${REDIS_URL}
+      - TZ=Europe/Amsterdam
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     networks:
       - salve-mundi-v7-shared
 
@@ -109,6 +124,10 @@ services:
       - DIRECTUS_STATIC_TOKEN=${DIRECTUS_STATIC_TOKEN}
       - DIRECTUS_SERVICE_URL=${INTERNAL_DIRECTUS_URL}
       - REDIS_URL=${REDIS_URL}
+      - TZ=Europe/Amsterdam
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     networks:
       - salve-mundi-v7-shared
 
