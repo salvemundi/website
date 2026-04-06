@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Clock, Lock } from 'lucide-react';
 import { createTripSignup, getCurrentUserProfileAction } from '@/server/actions/reis.actions';
 import type { ReisTrip } from '@salvemundi/validations';
 import { FormField } from '@/shared/ui/FormField';
@@ -183,12 +183,20 @@ export function ReisRegistrationForm({
     }
 
     if (!canSignUp) {
+        const isWaitingForDate = registrationStartText.includes('opent op');
+        
         return (
             <div className="flex flex-col items-center justify-center py-10 px-6 text-center bg-gray-500/5 rounded-2xl border border-gray-500/10 animate-in fade-in duration-700">
-                <div className="w-12 h-12 bg-gray-500/10 rounded-full flex items-center justify-center mb-4">
-                    <Loader2 className="w-6 h-6 text-gray-500 opacity-40" />
+                <div className="w-12 h-12 bg-gray-500/10 rounded-full flex items-center justify-center mb-4 text-gray-500 opacity-60">
+                    {isWaitingForDate ? (
+                        <Clock className="w-6 h-6 animate-pulse" />
+                    ) : (
+                        <Lock className="w-6 h-6" />
+                    )}
                 </div>
-                <h3 className="text-lg font-bold text-gray-700 dark:text-gray-300 mb-1">Inschrijving Gesloten</h3>
+                <h3 className="text-lg font-bold text-gray-700 dark:text-gray-300 mb-1">
+                    {isWaitingForDate ? 'Binnenkort Open' : 'Inschrijving Gesloten'}
+                </h3>
                 <p className="text-theme-text-muted text-sm max-w-xs">
                     {registrationStartText}
                 </p>
