@@ -7,12 +7,12 @@ import ActivitiesBannerIsland from '@/components/islands/activities/ActivitiesBa
 import ActivityCardSkeleton from '@/components/ui/activities/ActivityCardSkeleton';
 import ActivitiesProviderIsland from '@/components/islands/activities/ActivitiesProviderIsland';
 import { getActivities } from '@/server/actions/activiteit-actions';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 export const metadata = {
     title: 'Activiteiten | SV Salve Mundi',
     description: 'Bekijk alle evenementen, trainingen en feesten van Salve Mundi.',
 };
-
 
 async function ActivitiesBannerData() {
     const session = await auth.api.getSession({
@@ -21,7 +21,6 @@ async function ActivitiesBannerData() {
     const events = await getActivities(session?.user?.id);
     return <ActivitiesBannerIsland events={events} />;
 }
-
 
 async function ActivitiesListData() {
     const session = await auth.api.getSession({
@@ -40,35 +39,33 @@ function ActivitiesListFallback() {
                     Komende Activiteiten
                 </h2>
 
-                <div className="flex flex-wrap items-center gap-3 animate-pulse">
+                <div className="flex flex-wrap items-center gap-3">
                     {/* Exact button stubs using the right CSS tokens to prevent CLS */}
-                    <button disabled className="px-4 py-2 text-sm font-semibold bg-[var(--bg-soft)] text-transparent rounded-lg border border-[var(--border-color)] shadow-sm flex items-center gap-2 select-none pointer-events-none">
-                        📅 Sync Agenda
-                    </button>
-
-                    <button disabled className="px-4 py-2 text-sm font-semibold bg-[var(--bg-soft)] text-transparent rounded-lg border border-[var(--border-color)] select-none pointer-events-none">
-                        Toon Afgelopen
-                    </button>
+                    <Skeleton className="h-9 w-32" rounded="lg" />
+                    <Skeleton className="h-9 w-36" rounded="lg" />
                 </div>
             </div>
 
             <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
                 <div className="flex-1 space-y-6">
-                    <div className="hidden md:flex rounded-lg bg-[var(--bg-soft)] overflow-hidden shadow-sm border border-[var(--border-color)] animate-pulse">
-                        <div className="px-4 py-2 text-sm font-semibold text-transparent flex items-center gap-2 select-none pointer-events-none">
-                            <span className="w-4 h-4 bg-[var(--color-purple-900)]/10 rounded-sm"></span>Lijst
+                    <div className="hidden md:flex rounded-lg bg-[var(--bg-soft)] overflow-hidden shadow-sm border border-[var(--border-color)]">
+                        <div className="px-4 py-2 flex items-center gap-2 select-none pointer-events-none">
+                            <Skeleton className="w-4 h-4" rounded="sm" />
+                            <Skeleton className="h-4 w-12" rounded="sm" />
                         </div>
-                        <div className="px-4 py-2 text-sm font-semibold text-transparent flex items-center gap-2 select-none pointer-events-none">
-                            <span className="w-4 h-4 bg-[var(--color-purple-900)]/10 rounded-sm"></span>Kaarten
+                        <div className="px-4 py-2 flex items-center gap-2 select-none pointer-events-none">
+                            <Skeleton className="w-4 h-4" rounded="sm" />
+                            <Skeleton className="h-4 w-16" rounded="sm" />
                         </div>
-                        <div className="px-4 py-2 text-sm font-semibold text-transparent flex items-center gap-2 select-none pointer-events-none">
-                            <span className="w-4 h-4 bg-[var(--color-purple-900)]/10 rounded-sm"></span>Kalender
+                        <div className="px-4 py-2 flex items-center gap-2 select-none pointer-events-none">
+                            <Skeleton className="w-4 h-4" rounded="sm" />
+                            <Skeleton className="h-4 w-20" rounded="sm" />
                         </div>
                     </div>
 
                     <div className="flex flex-col gap-4">
                         {[1, 2, 3, 4].map((i) => (
-                            <div key={i} className="h-32 w-full rounded-2xl bg-[var(--bg-soft)] animate-pulse border border-[var(--border-color)]" />
+                            <ActivityCardSkeleton key={i} variant="list" />
                         ))}
                     </div>
                 </div>
@@ -76,6 +73,7 @@ function ActivitiesListFallback() {
         </div>
     );
 }
+
 
 export default function ActivitiesPage() {
     return (

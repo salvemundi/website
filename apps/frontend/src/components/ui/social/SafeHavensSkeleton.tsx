@@ -1,6 +1,6 @@
 /**
  * Hoge-kwaliteit skeleton voor de Safe Havens pagina.
- * Matcht de bento-grid layout van de legacy opmaak om CLS te voorkomen.
+ * Deze skeleton matcht de bento-grid layout van de overzichtspagina om CLS te voorkomen.
  */
 export default function SafeHavensSkeleton() {
     return (

@@ -4,19 +4,22 @@ import { useMemo } from 'react';
 import { format } from 'date-fns';
 import { CreditCard, Clock, Tag, CheckCircle } from 'lucide-react';
 import type { Transaction } from '@salvemundi/validations';
+import { Skeleton } from '../../ui/Skeleton';
 
 interface TransactionsIslandProps {
-    transactions: Transaction[];
+    isLoading?: boolean;
+    transactions?: Transaction[];
 }
 
-export const TransactionsIsland: React.FC<TransactionsIslandProps> = ({ transactions }) => {
+export const TransactionsIsland: React.FC<TransactionsIslandProps> = ({ isLoading = false, transactions = [] }) => {
 
     const paidTransactions = useMemo(() => {
+        if (isLoading) return [];
         return transactions.filter((t) => {
             const status = (t.payment_status || t.status || '').toLowerCase();
             return status === 'paid' || status === 'completed';
         });
-    }, [transactions]);
+    }, [transactions, isLoading]);
 
     const getInferredTransactionType = (t: Transaction) => {
         if (t.transaction_type) return t.transaction_type;
@@ -35,7 +38,7 @@ export const TransactionsIsland: React.FC<TransactionsIslandProps> = ({ transact
     };
 
     return (
-        <section className="relative overflow-hidden rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 shadow-lg p-6 sm:p-8">
+        <section className={`relative overflow-hidden rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 shadow-lg p-6 sm:p-8`} aria-busy={isLoading}>
             <header className="mb-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-[var(--color-purple-100)] pb-4">
                 <div className="flex min-w-0 items-center gap-3">
                      <div className="shrink-0 rounded-xl bg-theme-purple/10 p-2 text-[var(--color-purple-500)]">
@@ -47,7 +50,7 @@ export const TransactionsIsland: React.FC<TransactionsIslandProps> = ({ transact
                 </div>
             </header>
 
-            {paidTransactions.length === 0 ? (
+            {!isLoading && paidTransactions.length === 0 ? (
                 <div className="rounded-2xl border-2 border-dashed border-[var(--color-purple-100)] bg-slate-50 dark:bg-black/20 p-8 text-center">
                     <p className="text-[var(--text-main)] font-medium">Geen betaalde transacties gevonden.</p>
                     <p className="mt-2 text-sm text-[var(--text-muted)]">Zodra je een betaling afrondt, verschijnt deze hier.</p>
@@ -65,41 +68,53 @@ export const TransactionsIsland: React.FC<TransactionsIslandProps> = ({ transact
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[var(--color-purple-100)]">
-                            {paidTransactions.map((transaction) => (
-                                <tr key={transaction.id} className="hover:bg-slate-50 dark:hover:bg-black/20 transition-colors group">
-                                     <td className="px-4 py-5 whitespace-nowrap text-sm text-[var(--text-main)]">
-                                        <div className="flex items-center gap-2">
-                                            <Clock className="h-3.5 w-3.5 text-[var(--text-muted)]" />
-                                            {format(new Date(transaction.created_at || transaction.date_created || new Date()), 'd MMM yyyy HH:mm')}
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-5">
-                                        <div className="text-sm font-semibold text-[var(--text-main)]">
-                                            {transaction.product_name || transaction.description || 'Betaling'}
-                                        </div>
-                                        {transaction.coupon_code && (
-                                            <div className="flex items-center gap-1 text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider mt-1">
-                                                <Tag className="h-3 w-3" />
-                                                {transaction.coupon_code}
+                            {isLoading ? (
+                                [1, 2, 3, 4, 5].map((i) => (
+                                    <tr key={i}>
+                                        <td className="px-4 py-5"><Skeleton className="h-4 w-28" rounded="sm" /></td>
+                                        <td className="px-4 py-5"><Skeleton className="h-4 w-40" rounded="sm" /></td>
+                                        <td className="px-4 py-5"><Skeleton className="h-6 w-16" rounded="full" /></td>
+                                        <td className="px-4 py-5 flex justify-center"><Skeleton className="h-6 w-20" rounded="full" /></td>
+                                        <td className="px-4 py-5 text-right"><Skeleton className="h-4 w-16 ml-auto" rounded="sm" /></td>
+                                    </tr>
+                                ))
+                            ) : (
+                                paidTransactions.map((transaction) => (
+                                    <tr key={transaction.id} className="hover:bg-slate-50 dark:hover:bg-black/20 transition-colors group">
+                                         <td className="px-4 py-5 whitespace-nowrap text-sm text-[var(--text-main)]">
+                                            <div className="flex items-center gap-2">
+                                                <Clock className="h-3.5 w-3.5 text-[var(--text-muted)]" />
+                                                {format(new Date(transaction.created_at || transaction.date_created || new Date()), 'd MMM yyyy HH:mm')}
                                             </div>
-                                        )}
-                                    </td>
-                                     <td className="px-4 py-5 whitespace-nowrap">
-                                        <span className="px-3 py-1 inline-flex text-[10px] font-bold uppercase tracking-wider rounded-full bg-[var(--color-purple-100)] text-[var(--color-purple-500)] border border-[var(--color-purple-200)]">
-                                            {getInferredTransactionType(transaction)}
-                                        </span>
-                                    </td>
-                                    <td className="px-4 py-5 text-center whitespace-nowrap">
-                                        <span className="inline-flex items-center gap-1.5 rounded-full bg-green-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-green-600 dark:text-green-400 border border-green-500/20">
-                                            <CheckCircle className="h-3 w-3" />
-                                            Betaald
-                                        </span>
-                                    </td>
-                                    <td className="px-4 py-5 whitespace-nowrap text-right text-sm font-mono font-bold text-[var(--text-main)]">
-                                        {formatAmount(transaction.amount)}
-                                    </td>
-                                </tr>
-                            ))}
+                                        </td>
+                                        <td className="px-4 py-5">
+                                            <div className="text-sm font-semibold text-[var(--text-main)]">
+                                                {transaction.product_name || transaction.description || 'Betaling'}
+                                            </div>
+                                            {transaction.coupon_code && (
+                                                <div className="flex items-center gap-1 text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider mt-1">
+                                                    <Tag className="h-3 w-3" />
+                                                    {transaction.coupon_code}
+                                                </div>
+                                            )}
+                                        </td>
+                                         <td className="px-4 py-5 whitespace-nowrap">
+                                            <span className="px-3 py-1 inline-flex text-[10px] font-bold uppercase tracking-wider rounded-full bg-[var(--color-purple-100)] text-[var(--color-purple-500)] border border-[var(--color-purple-200)]">
+                                                {getInferredTransactionType(transaction)}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-5 text-center whitespace-nowrap">
+                                            <span className="inline-flex items-center gap-1.5 rounded-full bg-green-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-green-600 dark:text-green-400 border border-green-500/20">
+                                                <CheckCircle className="h-3 w-3" />
+                                                Betaald
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-5 whitespace-nowrap text-right text-sm font-mono font-bold text-[var(--text-main)]">
+                                            {formatAmount(transaction.amount)}
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -107,3 +122,4 @@ export const TransactionsIsland: React.FC<TransactionsIslandProps> = ({ transact
         </section>
     );
 };
+

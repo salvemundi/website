@@ -5,10 +5,10 @@ interface PageProps {
 }
 
 /**
- * Legacy redirect for the old /reis/activiteiten/[id] route.
- * Redirects participants to the modern final payment (restbetaling) page.
+ * Omleidingspagina voor verouderde reis-activiteit URL's.
+ * Stuurt deelnemers door naar de nieuwe betalingsstructuur.
  */
-export default async function LegacyActiviteitenRedirect({ params }: PageProps) {
+export default async function ReisActiviteitRedirect({ params }: PageProps) {
     const { id } = await params;
     
     if (!id) {

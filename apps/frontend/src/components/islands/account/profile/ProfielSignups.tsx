@@ -6,28 +6,33 @@ import { Calendar, ChevronRight, CreditCard } from 'lucide-react';
 import { format, isBefore, startOfDay } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { Tile } from './ProfielUI';
+import { Skeleton } from '../../../ui/Skeleton';
 
 interface ProfielSignupsProps {
-    filteredSignups: any[];
-    showPastEvents: boolean;
-    setShowPastEvents: (val: boolean | ((v: boolean) => boolean)) => void;
+    isLoading?: boolean;
+    filteredSignups?: any[];
+    showPastEvents?: boolean;
+    setShowPastEvents?: (val: boolean | ((v: boolean) => boolean)) => void;
 }
 
 export default function ProfielSignups({
-    filteredSignups,
-    showPastEvents,
-    setShowPastEvents
+    isLoading = false,
+    filteredSignups = [],
+    showPastEvents = false,
+    setShowPastEvents = () => {}
 }: ProfielSignupsProps) {
     return (
         <Tile
             title="Mijn inschrijvingen"
             icon={<Calendar className="h-5 w-5" />}
             className="h-fit"
+            aria-busy={isLoading}
             actions={
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => setShowPastEvents((v) => !v)}
-                        className="inline-flex items-center justify-center rounded-xl bg-[var(--color-purple-50)] px-4 py-2 text-[10px] font-black uppercase text-[var(--color-purple-700)] hover:bg-[var(--color-purple-100)] transition border border-[var(--color-purple-100)]"
+                        disabled={isLoading}
+                        className="inline-flex items-center justify-center rounded-xl bg-[var(--color-purple-50)] px-4 py-2 text-[10px] font-black uppercase text-[var(--color-purple-700)] hover:bg-[var(--color-purple-100)] transition border border-[var(--color-purple-100)] disabled:opacity-50"
                     >
                         {showPastEvents ? "Verberg oude" : "Toon oude"}
                     </button>
@@ -40,7 +45,19 @@ export default function ProfielSignups({
                 </div>
             }
         >
-            {filteredSignups.length === 0 ? (
+            {isLoading ? (
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} className="h-28 rounded-3xl bg-[var(--bg-card)] dark:bg-black/20 border border-[var(--border-color)]/10 flex items-center p-5 gap-4">
+                            <Skeleton className="h-16 w-16" rounded="2xl" />
+                            <div className="flex-1 space-y-2 min-w-0">
+                                <Skeleton className="h-5 w-full" rounded="md" />
+                                <Skeleton className="h-3 w-1/2" rounded="md" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : filteredSignups.length === 0 ? (
                 <div className="rounded-3xl border-2 border-dashed border-slate-300 dark:border-white/20 bg-slate-50 dark:bg-black/10 p-12 text-center shadow-inner">
                     <p className="text-[var(--color-purple-700)] dark:text-white font-bold text-lg mb-2">
                         Je hebt je nog niet ingeschreven voor evenementen.
@@ -113,3 +130,4 @@ export default function ProfielSignups({
         </Tile>
     );
 }
+

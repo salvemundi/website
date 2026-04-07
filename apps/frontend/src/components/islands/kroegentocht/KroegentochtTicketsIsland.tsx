@@ -7,17 +7,20 @@ import qrService from '@/lib/qr-service';
 import { Ticket, Download, CheckCircle2 } from 'lucide-react';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 interface KroegentochtTicketsIslandProps {
-    initialTickets: PubCrawlTicket[];
+    isLoading?: boolean;
+    initialTickets?: PubCrawlTicket[];
     userEmail?: string;
 }
 
-export default function KroegentochtTicketsIsland({ initialTickets, userEmail }: KroegentochtTicketsIslandProps) {
+export default function KroegentochtTicketsIsland({ isLoading = false, initialTickets = [], userEmail }: KroegentochtTicketsIslandProps) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [tickets] = useState<PubCrawlTicket[]>(initialTickets);
 
     const downloadTicketAsImage = async (ticket: PubCrawlTicket, index: number) => {
+        // ... (same implementation)
         try {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
@@ -87,7 +90,22 @@ export default function KroegentochtTicketsIsland({ initialTickets, userEmail }:
         }
     };
 
-    if (tickets.length === 0) return null;
+    if (isLoading) {
+        return (
+            <section className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-lg p-5 sm:p-6 md:p-8 mb-8" aria-busy="true">
+                <Skeleton className="h-8 w-64 mb-4" rounded="lg" />
+                <Skeleton className="h-4 w-full max-w-2xl mb-8" rounded="md" />
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {[1, 2, 3, 4].map((i) => (
+                        <Skeleton key={i} className="h-80 w-full" rounded="xl" />
+                    ))}
+                </div>
+            </section>
+        );
+    }
+
+    if (!isLoading && tickets.length === 0) return null;
 
     return (
         <section className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-6 md:p-8 mb-8 overflow-hidden">
@@ -142,3 +160,4 @@ export default function KroegentochtTicketsIsland({ initialTickets, userEmail }:
         </section>
     );
 }
+

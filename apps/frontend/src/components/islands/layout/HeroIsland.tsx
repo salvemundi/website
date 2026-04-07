@@ -13,9 +13,10 @@ import { getImageUrl } from '@/lib/image-utils';
 
 
 interface HeroIslandProps {
+    isLoading?: boolean;
     // Gevalideerde data vanuit de server (getHeroBanners / getUpcomingActiviteiten)
-    banners: HeroBanner[];
-    activiteiten: Activiteit[];
+    banners?: HeroBanner[];
+    activiteiten?: Activiteit[];
 }
 
 // Formatteert een ISO datetime string naar een leesbare Nederlandse datum.
@@ -29,11 +30,13 @@ function formatEventDate(dateString: string): string {
     }
 }
 
-// Client Island — vervangt de legacy Hero widget.
-// GSAP-animaties vervangen door native CSS (animate-fade-in-up / stagger-item).
-// Swiper behoudt de slideshow-functionaliteit voor hero banners.
+/**
+ * Client Island — Belangrijkste visuele sectie van de homepage.
+ * Maakt gebruik van native CSS animaties voor optimale prestaties.
+ * Swiper verzorgt de slideshow-functionaliteit voor hero banners.
+ */
 // Auth-state via authClient.useSession() conform het NavigationHeader patroon.
-export function HeroIsland({ banners, activiteiten }: HeroIslandProps) {
+export function HeroIsland({ isLoading = false, banners = [], activiteiten = [] }: HeroIslandProps) {
     const { data: session, isPending: authLoading } = authClient.useSession();
     const isAuthenticated = !!session?.user;
 
@@ -73,12 +76,14 @@ export function HeroIsland({ banners, activiteiten }: HeroIslandProps) {
         return upcoming[0] ?? null;
     }, [activiteiten]);
 
-    const showMembershipLink = !authLoading && !isAuthenticated;
+    const showMembershipLink = !authLoading && !isAuthenticated && !isLoading;
+    const isReallyLoading = isLoading || authLoading || !mounted;
 
     return (
         <section
             id="home"
-            className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full min-h-[450px] md:min-h-[500px] py-4 sm:py-8 lg:py-12 transition-colors duration-300"
+            className={`relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full min-h-[450px] md:min-h-[500px] py-4 sm:py-8 lg:py-12 transition-colors duration-300`}
+            aria-busy={isLoading}
         >
             <div className="mx-auto max-w-app px-4 sm:px-6 lg:px-8">
                 <div className="relative w-full px-0">
@@ -106,8 +111,8 @@ export function HeroIsland({ banners, activiteiten }: HeroIslandProps) {
                             <div className="w-full max-w-full">
                                 <div className="flex flex-wrap gap-3 sm:gap-4 min-h-[100px]">
                                     {/* Laden: skeleton */}
-                                    {(!mounted || authLoading) && (
-                                        <div className="w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)]/10 p-4 sm:p-6 shadow-lg backdrop-blur min-h-[90px] sm:min-h-[100px] animate-pulse border border-[var(--color-purple-300)]/10">
+                                    {isReallyLoading && (
+                                        <div className="w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)]/10 p-4 sm:p-6 shadow-lg backdrop-blur min-h-[90px] sm:min-h-[100px] border border-[var(--color-purple-300)]/10">
                                             <div className="h-4 w-24 bg-[var(--color-purple-300)]/10 rounded mb-3" />
                                             <div className="h-6 w-3/4 bg-[var(--color-purple-300)]/10 rounded mb-2" />
                                             <div className="h-4 w-1/2 bg-[var(--color-purple-300)]/10 rounded" />
@@ -115,7 +120,7 @@ export function HeroIsland({ banners, activiteiten }: HeroIslandProps) {
                                     )}
 
                                     {/* Niet ingelogd: Word Lid kaart */}
-                                    {(mounted && !authLoading && showMembershipLink) && (
+                                    {(!isReallyLoading && showMembershipLink) && (
                                         <Link
                                             href="/lidmaatschap"
                                             className="block w-full transition-transform hover:scale-[1.02] group/lid"
@@ -140,7 +145,7 @@ export function HeroIsland({ banners, activiteiten }: HeroIslandProps) {
                                     )}
 
                                     {/* Ingelogd + volgend evenement beschikbaar */}
-                                    {(mounted && !authLoading && !showMembershipLink && nextEvent) && (
+                                    {(!isReallyLoading && !showMembershipLink && nextEvent) && (
                                         <Link
                                             href={(nextEvent as any).custom_url || `/activiteiten/${nextEvent.id}`}
                                             className="block w-full transition-transform hover:scale-[1.02] group/event"
@@ -165,7 +170,7 @@ export function HeroIsland({ banners, activiteiten }: HeroIslandProps) {
                                     )}
 
                                     {/* Ingelogd maar geen evenement */}
-                                    {(mounted && !authLoading && !showMembershipLink && !nextEvent) && (
+                                    {(!isReallyLoading && !showMembershipLink && !nextEvent) && (
                                         <div className="w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-4 sm:p-6 shadow-lg backdrop-blur min-h-[90px] sm:min-h-[100px]">
                                             <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[var(--color-purple-300)]/60 dark:text-white/60">
                                                 Volgende evenement
@@ -189,8 +194,13 @@ export function HeroIsland({ banners, activiteiten }: HeroIslandProps) {
                                 className="relative w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)]/80 shadow-2xl backdrop-blur-xl overflow-hidden"
                             >
                                 <div className="h-[240px] sm:h-[280px] md:h-[350px] lg:h-[480px] xl:h-[540px]">
+                                    {/* Laden placeholder */}
+                                    {isLoading && (
+                                        <div className="w-full h-full bg-[var(--color-purple-100)]/10" />
+                                    )}
+
                                     {/* Mobiel: enkel statisch plaatje */}
-                                    {mounted && isMobile && (
+                                    {!isLoading && mounted && isMobile && (
                                         <div className="sm:hidden w-full h-full relative">
                                             <Image
                                                 src={slideUrls[0]}
@@ -205,7 +215,7 @@ export function HeroIsland({ banners, activiteiten }: HeroIslandProps) {
                                     )}
 
                                     {/* Desktop: Swiper slideshow */}
-                                    {mounted && !isMobile && (
+                                    {!isLoading && mounted && !isMobile && (
                                         <Swiper
                                             modules={[Autoplay]}
                                             autoplay={{ delay: 5000, disableOnInteraction: false }}
@@ -240,3 +250,4 @@ export function HeroIsland({ banners, activiteiten }: HeroIslandProps) {
         </section>
     );
 }
+

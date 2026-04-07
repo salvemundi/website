@@ -3,6 +3,7 @@
 import React, { useState, useTransition, useEffect, useRef } from 'react';
 import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { initiateKroegentochtPayment } from '@/server/actions/kroegentocht.actions';
 import { type PubCrawlEvent, type PubCrawlParticipant } from '@salvemundi/validations';
 import { Plus, Minus, User, Mail, Building, Ticket, AlertCircle } from 'lucide-react';
@@ -27,10 +28,11 @@ const ASSOCIATIONS = [
 ];
 
 interface KroegentochtFormIslandProps {
-    event: PubCrawlEvent;
+    isLoading?: boolean;
+    event?: PubCrawlEvent;
 }
 
-export default function KroegentochtFormIsland({ event }: KroegentochtFormIslandProps) {
+export default function KroegentochtFormIsland({ isLoading = false, event = {} as PubCrawlEvent }: KroegentochtFormIslandProps) {
     const [isPending, startTransition] = useTransition();
     const [amount, setAmount] = useState(1);
     const [participants, setParticipants] = useState<PubCrawlParticipant[]>([{ name: '', initial: '' }]);
@@ -97,6 +99,25 @@ export default function KroegentochtFormIsland({ event }: KroegentochtFormIsland
             }
         });
     };
+
+    if (isLoading) {
+        return (
+            <section className="w-full bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-lg p-5 sm:p-6 md:p-8" aria-busy="true">
+                <Skeleton className="h-8 w-72 mb-8" rounded="lg" />
+                
+                <div className="space-y-6">
+                    {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="space-y-2">
+                            <Skeleton className="h-4 w-24" rounded="md" />
+                            <Skeleton className="h-12 w-full" rounded="xl" />
+                        </div>
+                    ))}
+                    <Skeleton className="h-32 w-full" rounded="2xl" />
+                    <Skeleton className="h-14 w-full" rounded="xl" />
+                </div>
+            </section>
+        );
+    }
 
     return (
         <section className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-6 md:p-8">

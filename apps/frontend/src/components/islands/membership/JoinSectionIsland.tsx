@@ -1,25 +1,44 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { authClient } from '@/lib/auth-client';
+import { Skeleton } from '../../ui/Skeleton';
 
-// Client Island — toont een CTA om lid te worden of het lidmaatschap te verlengen.
-// Verborgen voor actieve leden (membership_status === 'active').
-// Auth-state via authClient.useSession() conform het NavigationHeader patroon.
-//
-// Mount-gate patroon: de server en de eerste client-render produceren allebei null.
-// Dit voorkomt een hydration mismatch doordat useSession() server-side geen sessie
-// heeft maar client-side wel een initiële loading-state produceert.
-export function JoinSectionIsland() {
+interface JoinSectionIslandProps {
+    isLoading?: boolean;
+}
+
+/**
+ * UI Component voor de "Lid worden" sectie.
+ * Hybride loading-state om CLS te voorkomen tijdens sessie-checks.
+ */
+export const JoinSectionIsland: React.FC<JoinSectionIslandProps> = ({ 
+    isLoading = false 
+}) => {
     const [mounted, setMounted] = useState(false);
     useEffect(() => { setMounted(true); }, []);
 
     const { data: session, isPending } = authClient.useSession();
     const user = session?.user as (Record<string, unknown> & { membership_status?: string; membership_expiry?: string | null }) | null ?? null;
 
-    // Vóór client-mount: null renderen zodat SSR en client initieel overeenkomen
-    if (!mounted || isPending) return null;
+    const isReallyLoading = isLoading || !mounted || isPending;
+
+    // Loading state: toon skeleton om CLS te voorkomen
+    if (isReallyLoading) {
+        return (
+            <section className="px-6 py-8 sm:py-10 md:py-12 bg-[var(--bg-main)]" aria-busy="true">
+                <div className="mx-auto max-w-4xl text-center">
+                    <Skeleton className="mx-auto mb-6 h-12 w-72 max-w-full" rounded="full" />
+                    <Skeleton className="mx-auto mb-8 h-5 w-96 max-w-full" rounded="full" />
+                    <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+                        <Skeleton className="h-14 w-40" rounded="full" />
+                        <Skeleton className="h-14 w-40" rounded="full" />
+                    </div>
+                </div>
+            </section>
+        );
+    }
 
     // Actieve leden zien de sectie niet
     if (user?.membership_status === 'active') return null;
