@@ -9,24 +9,26 @@ import { Loader2, CheckCircle2, AlertCircle, CreditCard, Send, Users, Ticket, In
 import QRDisplay from '@/shared/ui/QRDisplay';
 
 interface EventSignupIslandProps {
-    eventId: number;
-    price: number;
-    eventDate: string;
-    description: string;
-    isPast: boolean;
-    eventName: string;
+    isLoading?: boolean;
+    eventId?: number;
+    price?: number;
+    eventDate?: string;
+    description?: string;
+    isPast?: boolean;
+    eventName?: string;
     initialUser?: any;
     verifiedPaymentStatus?: 'paid' | null;
     initialQrToken?: string;
 }
 
 export default function EventSignupIsland({
-    eventId,
-    price,
-    eventDate,
-    description,
-    isPast,
-    eventName,
+    isLoading = false,
+    eventId = 0,
+    price = 0,
+    eventDate = '',
+    description = '',
+    isPast = false,
+    eventName = 'Evenement',
     initialUser,
     verifiedPaymentStatus,
     initialQrToken
@@ -41,7 +43,7 @@ export default function EventSignupIsland({
     const [success, setSuccess] = useState<string | null>(verifiedPaymentStatus === 'paid' ? 'Betaling geslaagd! Je bent nu ingeschreven.' : null);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
     
-    // Status tracking (Legacy alignment)
+    // Status tracking (Platform consistency)
     const [signupStatus, setSignupStatus] = useState<{
         isSignedUp: boolean;
         paymentStatus?: 'paid' | 'open' | 'failed' | 'canceled';
@@ -63,7 +65,7 @@ export default function EventSignupIsland({
 
     // Sync form with user
     useEffect(() => {
-        if (user) {
+        if (user && !isLoading) {
             const userName = user.name || ((user as any).first_name ? `${(user as any).first_name} ${(user as any).last_name || ''}`.trim() : '');
             const userPhone = (user as any).phone_number || '';
             
@@ -74,10 +76,11 @@ export default function EventSignupIsland({
                 phoneNumber: prev.phoneNumber || userPhone || ''
             }));
         }
-    }, [user]);
+    }, [user, isLoading]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (isLoading) return;
         setError(null);
         setFieldErrors({});
 
@@ -107,7 +110,39 @@ export default function EventSignupIsland({
         });
     };
 
-    // Digital Ticket View (Legacy pattern)
+    // Loading State
+    if (isLoading) {
+        return (
+            <div className="h-full flex flex-col p-8 rounded-[2rem] bg-[var(--bg-card)] border border-[var(--border-color)] shadow-2xl shadow-[var(--theme-purple)]/5 animate-pulse" aria-busy="true">
+                <div className="flex justify-between items-start mb-8">
+                    <div className="space-y-3">
+                        <div className="h-8 w-32 bg-[var(--theme-purple)]/10 rounded-lg" />
+                        <div className="h-3 w-24 bg-[var(--text-muted)]/10 rounded ml-9" />
+                    </div>
+                    <div className="text-right space-y-2">
+                        <div className="h-3 w-12 bg-[var(--text-muted)]/10 rounded ml-auto" />
+                        <div className="h-8 w-20 bg-[var(--theme-purple)]/10 rounded-lg ml-auto" />
+                    </div>
+                </div>
+
+                <div className="space-y-6 flex-1">
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} className="space-y-2">
+                            <div className="h-3 w-20 bg-[var(--theme-purple)]/10 rounded ml-3" />
+                            <div className="h-14 w-full bg-[var(--bg-soft)] rounded-2xl" />
+                        </div>
+                    ))}
+                </div>
+
+                <div className="pt-8 space-y-4">
+                    <div className="h-16 w-full bg-gradient-to-br from-[var(--theme-purple)]/10 to-[var(--theme-purple)]/20 rounded-2xl" />
+                    <div className="h-3 w-48 bg-[var(--text-muted)]/10 rounded mx-auto" />
+                </div>
+            </div>
+        );
+    }
+
+    // Digital Ticket View (Standard platform pattern)
     if (signupStatus.paymentStatus === 'paid') {
         return (
             <div className="h-full flex flex-col justify-center space-y-8 p-8 rounded-[2rem] bg-[var(--bg-card)] border border-[var(--color-success)]/30 shadow-2xl shadow-[var(--color-success)]/10 animate-in zoom-in-95 duration-500">
@@ -254,3 +289,4 @@ export default function EventSignupIsland({
         </div>
     );
 }
+

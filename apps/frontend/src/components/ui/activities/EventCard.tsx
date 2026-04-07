@@ -1,46 +1,69 @@
+import React from 'react';
+import { type Activity } from '@salvemundi/validations';
+import { Calendar, Clock, MapPin, Tag } from 'lucide-react';
+import { Skeleton } from '../Skeleton';
 import Link from 'next/link';
 
 interface EventCardProps {
-    title: string;
-    category: string;
-    date: string;
-    href: string;
+    isLoading?: boolean;
+    activity?: Activity;
+    title?: string;
+    category?: string;
+    date?: string;
+    href?: string;
 }
 
-// UI-component voor een evenementenkaart in de EventsSection.
-// Server Component — geen interactiviteit.
-export function EventCard({ title, category, date, href }: EventCardProps) {
+/**
+ * UI Component voor een evenement-kaart.
+ * Hybride loading-state direct geïntegreerd om CLS te voorkomen.
+ */
+export const EventCard: React.FC<EventCardProps> = ({ 
+    isLoading = false, 
+    activity,
+    title,
+    category,
+    date,
+    href = "#"
+}) => {
+    // Gebruik props of activity
+    const displayTitle = title || (activity as any)?.name || (activity as any)?.title || (activity as any)?.titel || 'Evenement';
+    const displayCategory = category || 'Activiteit';
+    const displayDate = date || ((activity as any)?.event_date || (activity as any)?.datum_start ? new Date((activity as any)?.event_date || (activity as any)?.datum_start).toLocaleDateString() : 'Binnenkort');
+
+    // Skeleton-state: render exact dezelfde afmetingen
+    if (isLoading) {
+        return (
+            <div className="flex flex-col gap-3 rounded-3xl bg-white/90 dark:bg-black/40 p-5 shadow-sm border border-[var(--border-color)]/10" aria-busy="true">
+                <Skeleton className="h-3 w-20" rounded="full" />
+                <Skeleton className="h-4 w-full" rounded="full" />
+                <Skeleton className="h-4 w-3/4" rounded="full" />
+                <div className="mt-auto pt-2">
+                    <Skeleton className="h-3 w-24" rounded="full" />
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <Link
+        <Link 
             href={href}
-            className="group flex flex-col gap-3 rounded-3xl bg-white/90 dark:bg-black/40 p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
+            className="flex flex-col gap-3 rounded-3xl bg-white/90 dark:bg-black/40 p-5 shadow-sm border border-[var(--border-color)]/10 transition hover:-translate-y-1 hover:shadow-md group"
         >
-            {/* Categorie-label */}
-            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-[var(--color-purple-500)]">
-                {category}
-            </p>
+            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[var(--color-purple-500)]">
+                <Tag className="h-3 w-3" />
+                {displayCategory}
+            </div>
+            
+            <h4 className="text-sm font-black leading-tight text-[var(--text-main)] group-hover:text-[var(--color-purple-500)] transition-colors line-clamp-2">
+                {displayTitle}
+            </h4>
 
-            {/* Evenementtitel */}
-            <h3 className="text-sm font-bold leading-snug text-[var(--color-purple-900)] dark:text-white group-hover:text-[var(--color-purple-600)] transition-colors line-clamp-2">
-                {title}
-            </h3>
-
-            {/* Datum */}
-            <p className="mt-auto text-xs font-medium text-[var(--color-purple-500)]/70 dark:text-white/60">
-                {date}
-            </p>
+            <div className="mt-auto pt-2 flex items-center gap-3 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">
+                <div className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    {displayDate}
+                </div>
+            </div>
         </Link>
     );
-}
-
-// Skeleton versie van EventCard voor loading states
-export function EventCardSkeleton() {
-    return (
-        <div className="flex flex-col gap-3 rounded-3xl bg-white/90 dark:bg-black/40 p-5 animate-pulse">
-            <div className="h-3 w-20 rounded-full bg-[var(--color-purple-300)]/20" />
-            <div className="h-4 w-full rounded-full bg-[var(--color-purple-300)]/20" />
-            <div className="h-4 w-3/4 rounded-full bg-[var(--color-purple-300)]/20" />
-            <div className="mt-auto h-3 w-24 rounded-full bg-[var(--color-purple-300)]/20" />
-        </div>
-    );
-}
+};

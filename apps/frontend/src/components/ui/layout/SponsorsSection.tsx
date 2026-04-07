@@ -1,15 +1,40 @@
+import React from 'react';
 import type { Sponsor } from '@salvemundi/validations';
 import { getImageUrl } from '@/lib/image-utils';
+import { Skeleton } from '../Skeleton';
 
 interface SponsorsSectionProps {
-    sponsors: Sponsor[];
+    isLoading?: boolean;
+    sponsors?: Sponsor[];
 }
 
-// Server Component — vervangt de legacy client-side SponsorsSection.
-// Data wordt als prop ontvangen vanuit de parent page (getSponsors() Server Action).
-// Oneindige scroll-animatie via pure CSS (sponsors.css in globals.css import-chain).
-// De 20× duplicaat-array zorgt voor een naadloze loop zonder JavaScript.
-export function SponsorsSection({ sponsors }: SponsorsSectionProps) {
+/**
+ * UI Component voor de sponsoren-sectie op de homepagina.
+ * Toont een oneindige scroll van logo's of een skeleton-rij tijdens het laden.
+ */
+export const SponsorsSection: React.FC<SponsorsSectionProps> = ({ 
+    isLoading = false, 
+    sponsors = [] 
+}) => {
+    // Skeleton-state: render een statische rij van placeholders
+    if (isLoading) {
+        return (
+            <section className="py-8 sm:py-10 md:py-12 bg-[var(--bg-main)] overflow-hidden" aria-busy="true">
+                <div className="mx-auto max-w-app px-6">
+                    <div className="text-center mb-10">
+                        <Skeleton className="h-4 w-32 mx-auto mb-2" rounded="full" />
+                        <Skeleton className="h-10 w-64 mx-auto" rounded="lg" />
+                    </div>
+                    <div className="flex justify-center gap-8 px-6">
+                        {[1, 2, 3, 4, 5, 6].map((i) => (
+                            <Skeleton key={i} className="h-24 w-40 shrink-0" rounded="2xl" />
+                        ))}
+                    </div>
+                </div>
+            </section>
+        );
+    }
+
     const hasSponsors = sponsors.length > 0;
 
     // 20× dupliceren voor een naadloze oneindige CSS scroll-animatie.
@@ -17,7 +42,7 @@ export function SponsorsSection({ sponsors }: SponsorsSectionProps) {
     const duplicatedSponsors = Array.from({ length: 20 }, () => sponsors).flat();
 
     return (
-        <section className="py-8 sm:py-10 md:py-12 bg-[var(--bg-main)] overflow-hidden">
+        <section className="py-8 sm:py-10 md:py-12 bg-[var(--bg-main)] overflow-hidden" aria-busy={isLoading}>
             {/* Sectie-header */}
             <div className="mx-auto max-w-app px-6">
                 <div className="text-center mb-8">
@@ -30,8 +55,16 @@ export function SponsorsSection({ sponsors }: SponsorsSectionProps) {
                 </div>
             </div>
 
-            {/* Scrollende sponsor-balk of lege staat */}
-            {!hasSponsors ? (
+            {/* Scrollende sponsor-balk of lege staat of loading staat */}
+            {isLoading ? (
+                <div className="mx-auto max-w-app px-6">
+                    <div className="flex items-center justify-center gap-8 opacity-20 overflow-hidden">
+                        {[1, 2, 3, 4, 5].map((i) => (
+                            <div key={i} className="h-16 w-32 rounded-xl bg-[var(--color-purple-100)] shrink-0" />
+                        ))}
+                    </div>
+                </div>
+            ) : !hasSponsors ? (
                 <div className="mx-auto max-w-app px-6">
                     <p className="text-center text-sm text-[var(--text-muted)]">Binnenkort meer informatie over onze sponsors.</p>
                 </div>
@@ -73,3 +106,4 @@ export function SponsorsSection({ sponsors }: SponsorsSectionProps) {
         </section>
     );
 }
+

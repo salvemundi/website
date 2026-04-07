@@ -1,14 +1,17 @@
 'use client';
 
+import React from 'react';
 import Image from 'next/image';
-import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider';
 import { Calendar } from 'lucide-react';
+import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
+import ActivityCardSkeleton from '@/components/ui/activities/ActivityCardSkeleton';
 
 interface ActiviteitCardProps {
-    id: number | string;
-    description: string;
+    isLoading?: boolean;
+    id?: number | string;
+    description?: string;
     description_logged_in?: string;
     image?: string;
     date?: string;
@@ -16,7 +19,7 @@ interface ActiviteitCardProps {
     startTime?: string | null;
     endTime?: string | null;
     location?: string | null;
-    title: string;
+    title?: string;
     price?: number;
     isPast?: boolean;
     onSignup?: (data: { title: string; date?: string; description: string; price: number }) => void;
@@ -31,9 +34,10 @@ interface ActiviteitCardProps {
 }
 
 const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
-    description,
+    isLoading = false,
+    description = '',
     image,
-    title,
+    title = 'Activiteit',
     date,
     endDate,
     startTime,
@@ -55,9 +59,12 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     const { isAuthenticated, user } = useAuth();
     const { login: loginWithMicrosoft } = useAuthActions();
 
+    if (isLoading) {
+        return <ActivityCardSkeleton variant={variant} />;
+    }
+
     const alreadySignedUp = Boolean(isSignedUp);
     const isListVariant = variant === 'list';
-
     const isDeadlinePassed = registrationDeadline ? new Date(registrationDeadline) < new Date() : false;
     const cannotSignUp = alreadySignedUp || isDeadlinePassed;
 
@@ -131,8 +138,9 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
             <div
                 onClick={onShowDetails}
                 className={`group relative z-0 overflow-hidden w-full rounded-2xl bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-5 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 ${isPast ? 'opacity-60 filter grayscale' : ''}`}
+                aria-busy="false"
             >
-                {/* Decorative background element - adjusted to be less intrusive */}
+                {/* Decorative background element */}
                 <span className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-[var(--theme-purple)]/5 transition-transform duration-500 group-hover:scale-125 pointer-events-none" />
                 
                 <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
@@ -147,7 +155,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                                 </span>
                             )}
                         </div>
-                        <h3 className="text-xl font-black text-[var(--theme-purple)]/90 leading-tight group-hover:text-[var(--theme-purple)] transition-colors">
+                        <h3 className="text-xl font-black text-[var(--theme-purple)]/90 leading-tight group-hover:text-[var(--theme-purple)] transition-colors" title={title}>
                             {title}
                         </h3>
                         {contact && (
@@ -176,7 +184,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                     </div>
                 </div>
 
-                <div className="flex flex-wrap justify-end gap-2 mt-3">
+                <div className="flex flex-wrap justify-end gap-2 mt-3 pt-3 border-t border-[var(--border-color)]/5">
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
@@ -197,14 +205,17 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                         </button>
                     )}
                 </div>
+                <AdminToast toast={toast} onClose={hideToast} />
             </div>
         );
     }
 
+    // Grid Variant
     return (
         <div
             onClick={onShowDetails}
             className={`group relative z-0 overflow-visible w-full rounded-[1.75rem] bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-5 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 group-hover:z-10 ${isPast ? 'opacity-60 filter grayscale' : ''}`}
+            aria-busy="false"
         >
             <span className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-[var(--theme-purple)]/10 transition-transform duration-500 group-hover:scale-125 pointer-events-none" />
 

@@ -17,7 +17,7 @@ interface FooterIslandProps {
     committees: Committee[];
 }
 
-// Verwijdert het "|| SALVE MUNDI" achtervoegsel van commissienamen (legacy data-quirk)
+// Zorgt voor een eenduidige presentatie van commissienamen door redundante achtervoegsels te verwijderen.
 function cleanCommitteeName(name: string): string {
     return name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim();
 }

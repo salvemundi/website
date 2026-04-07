@@ -30,7 +30,7 @@ async function AsyncHero() {
  */
 async function AsyncEvents() {
     const activiteiten = await getUpcomingActiviteiten(4);
-    return <EventsSection activiteiten={activiteiten} />;
+    return <EventsSection activities={activiteiten as any} />;
 }
 
 /**
@@ -71,4 +71,3 @@ export default function HomePage() {
         </main>
     );
 }
-

@@ -9,8 +9,7 @@
 @layer components {
 
     /* ── Signup Form Visibility Fix ────────────────────────────────────────── */
-    /* Ensures inputs are always visible when a conflicting global rule hides them.
-     TODO: Remove once the root cause (the conflicting global) is resolved.    */
+    /* Ensures inputs are always visible when a conflicting global rule hides them. */
     .signup-form-container :is(input, textarea, select, .PhoneInputInput) {
         display: block;
         visibility: visible;

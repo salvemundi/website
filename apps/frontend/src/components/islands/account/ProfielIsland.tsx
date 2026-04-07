@@ -46,9 +46,10 @@ type SessionUser = {
 };
 
 interface ProfielIslandProps {
-    initialSignups: EventSignup[];
-    pubCrawlSignups: any[];
-    user: SessionUser;
+    isLoading?: boolean;
+    initialSignups?: EventSignup[];
+    pubCrawlSignups?: any[];
+    user?: SessionUser;
     impersonation?: { 
         name: string; 
         avatar?: string | null; 
@@ -57,7 +58,12 @@ interface ProfielIslandProps {
     } | null;
 }
 
-export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, pubCrawlSignups, user: initialUser }) => {
+export const ProfielIsland: React.FC<ProfielIslandProps> = ({ 
+    isLoading = false,
+    initialSignups = [], 
+    pubCrawlSignups = [], 
+    user: initialUser = {} as SessionUser 
+}) => {
     const { toast, showToast, hideToast } = useAdminToast();
     const [mounted, setMounted] = useState(false);
     const { data: session, refetch } = authClient.useSession();
@@ -250,11 +256,16 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, pu
     }, [optimisticUser, isCommitteeMember]);
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+        <div className={`grid grid-cols-1 md:grid-cols-12 gap-6 items-start ${isLoading ? 'pointer-events-none select-none' : ''}`}>
             {/* Left Column */}
             <div className="md:col-span-12 lg:col-span-4 flex flex-col gap-6">
-                <ProfielHeader user={optimisticUser} membershipStatus={membershipStatus} />
+                <ProfielHeader 
+                    isLoading={isLoading}
+                    user={optimisticUser} 
+                    membershipStatus={membershipStatus} 
+                />
                 <ProfielGaming 
+                    isLoading={isLoading}
                     user={optimisticUser}
                     isEditingMinecraft={isEditingMinecraft}
                     setIsEditingMinecraft={setIsEditingMinecraft}
@@ -270,6 +281,7 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, pu
             {/* Right Column */}
             <div className="md:col-span-12 lg:col-span-8 flex flex-col gap-6">
                 <ProfielDetails 
+                    isLoading={isLoading}
                     user={optimisticUser}
                     isEditingPhoneNumber={isEditingPhoneNumber}
                     setIsEditingPhoneNumber={setIsEditingPhoneNumber}
@@ -281,6 +293,7 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, pu
                     isPending={isPending}
                 />
                 <ProfielQuickLinks 
+                    isLoading={isLoading}
                     user={optimisticUser}
                     isCommitteeMember={isCommitteeMember}
                 />
@@ -289,6 +302,7 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({ initialSignups, pu
             {/* Bottom Column: Signups */}
             <div className="md:col-span-12">
                 <ProfielSignups 
+                    isLoading={isLoading}
                     filteredSignups={filteredSignups}
                     showPastEvents={showPastEvents}
                     setShowPastEvents={setShowPastEvents}
