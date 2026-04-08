@@ -103,17 +103,19 @@ export default function KroegentochtFormIsland({ isLoading = false, event = {} a
     if (isLoading) {
         return (
             <section className="w-full bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-lg p-5 sm:p-6 md:p-8" aria-busy="true">
-                <Skeleton className="h-8 w-72 mb-8" rounded="lg" />
+                <Skeleton className="h-9 w-72 mb-8 bg-[var(--color-purple-theme)]/10" rounded="lg" />
                 
                 <div className="space-y-6">
                     {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="space-y-2">
-                            <Skeleton className="h-4 w-24" rounded="md" />
-                            <Skeleton className="h-12 w-full" rounded="xl" />
+                        <div key={i} className="space-y-3">
+                            <Skeleton className="h-3 w-24 bg-[var(--color-purple-theme)]/10" rounded="full" />
+                            <Skeleton className="h-12 w-full bg-[var(--color-purple-theme)]/5" rounded="xl" />
                         </div>
                     ))}
-                    <Skeleton className="h-32 w-full" rounded="2xl" />
-                    <Skeleton className="h-14 w-full" rounded="xl" />
+                    <div className="pt-8 border-t border-[var(--color-purple-theme)]/5">
+                        <Skeleton className="h-32 w-full bg-[var(--color-purple-theme)]/5" rounded="2xl" />
+                    </div>
+                    <Skeleton className="h-14 w-full bg-[var(--color-purple-theme)]/20" rounded="xl" />
                 </div>
             </section>
         );

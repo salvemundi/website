@@ -45,7 +45,7 @@ export default function ProfielDetails({
                             E-mailadres
                         </p>
                         {isLoading ? (
-                            <Skeleton className="h-5 w-full" rounded="md" />
+                            <Skeleton className="h-5 w-full bg-[var(--color-purple-500)]/10" rounded="md" />
                         ) : (
                             <p className="font-bold text-[var(--color-purple-700)] dark:text-white break-words text-xs sm:text-sm leading-tight" title={user.email ?? undefined}>
                                 {formatForBreak(user.email) || 'Geen email'}
@@ -65,7 +65,7 @@ export default function ProfielDetails({
                                 Fontys e-mail
                             </p>
                             {isLoading ? (
-                                <Skeleton className="h-5 w-full" rounded="md" />
+                                <Skeleton className="h-5 w-full bg-[var(--color-purple-500)]/10" rounded="md" />
                             ) : (
                                 <p className="font-bold text-[var(--color-purple-700)] dark:text-white break-words text-xs sm:text-sm leading-tight" title={user.fontys_email ?? undefined}>
                                     {formatForBreak(user.fontys_email)}
@@ -92,7 +92,7 @@ export default function ProfielDetails({
                             <Phone className="h-5 w-5" />
                         </div>
                         {isLoading ? (
-                            <Skeleton className="h-5 w-32" rounded="md" />
+                            <Skeleton className="h-5 w-32 bg-[var(--color-purple-500)]/10" rounded="md" />
                         ) : isEditingPhoneNumber ? (
                             <form onSubmit={handleSubmitPhone(onSavePhone)} className="flex flex-col w-full gap-2">
                                 <div className="flex w-full items-center gap-2">
@@ -140,7 +140,7 @@ export default function ProfielDetails({
                             <Calendar className="h-5 w-5" />
                         </div>
                         {isLoading ? (
-                            <Skeleton className="h-5 w-32" rounded="md" />
+                            <Skeleton className="h-5 w-32 bg-[var(--color-purple-500)]/10" rounded="md" />
                         ) : (
                             <p className="font-bold text-[var(--color-purple-700)] dark:text-white text-sm">
                                 {user.date_of_birth ? format(new Date(user.date_of_birth), "d MMMM yyyy", { locale: nl }) : "Niet ingesteld"}

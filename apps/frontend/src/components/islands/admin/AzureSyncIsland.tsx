@@ -5,7 +5,7 @@ import {
     RefreshCw, AlertCircle, X, Info, Activity, UserPlus, CheckCircle
 } from 'lucide-react';
 import { triggerFullSyncAction, getSyncStatusAction, stopSyncAction, triggerUserSyncAction } from '@/server/actions/azure-sync.actions';
-import SyncSkeleton from '@/components/ui/admin/SyncSkeleton';
+import { Skeleton } from '@/components/ui/Skeleton';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import SyncStatus from '@/components/admin/sync/SyncStatus';
@@ -45,7 +45,7 @@ const syncFieldOptions = [
     { id: 'committees', label: 'Commissies' },
 ];
 
-export default function AzureSyncIsland() {
+export default function AzureSyncIsland({ isLoading: propIsLoading = false }: { isLoading?: boolean }) {
     const [mounted, setMounted] = useState(false);
     const { toast, showToast, hideToast } = useAdminToast();
     const [status, setStatus] = useState<SyncStatus | null>(null);
@@ -99,7 +99,9 @@ export default function AzureSyncIsland() {
         return () => clearTimeout(timeout);
     }, [status?.active, status?.status, isStartingSync, fetchStatus, mounted]);
 
-    if (!mounted || (isLoading && !status)) return <SyncSkeleton />;
+    if (!mounted) return null;
+    
+    const showSkeleton = propIsLoading || (isLoading && !status);
 
     const handleFullSync = async () => {
         setIsStartingSync(true);
@@ -193,7 +195,64 @@ export default function AzureSyncIsland() {
             />
 
             <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700">
-                <AdminStatsBar stats={adminStats} />
+                {showSkeleton ? (
+                    <div className="space-y-8 animate-pulse">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <div className="lg:col-span-2">
+                                <div className="bg-[var(--beheer-card-bg)] p-8 rounded-[2rem] shadow-sm border border-[var(--beheer-border)] min-h-[480px]">
+                                    <div className="flex items-center justify-between mb-8">
+                                        <div className="flex items-center gap-4">
+                                            <Skeleton className="h-12 w-12 rounded-2xl" />
+                                            <Skeleton className="h-6 w-32 rounded-lg" />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-6">
+                                        <Skeleton className="h-4 w-40 mb-4" />
+                                        <div className="flex flex-wrap gap-2">
+                                            {[1, 2, 3, 4].map(i => (
+                                                <Skeleton key={i} className="h-10 w-28 rounded-xl" />
+                                            ))}
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-[var(--beheer-border)]">
+                                            <Skeleton className="h-[72px] rounded-2xl" />
+                                            <Skeleton className="h-[72px] rounded-2xl" />
+                                        </div>
+                                        <Skeleton className="h-16 w-full rounded-2xl mt-4" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div className="bg-[var(--beheer-card-bg)] p-8 rounded-[2rem] shadow-sm border border-[var(--beheer-border)] h-full min-h-[480px]">
+                                    <div className="flex items-center gap-4 mb-8">
+                                        <Skeleton className="h-12 w-12 rounded-2xl" />
+                                        <Skeleton className="h-6 w-24 rounded-lg" />
+                                    </div>
+                                    <div className="space-y-3 mb-8">
+                                        <Skeleton className="h-4 w-full" />
+                                        <Skeleton className="h-4 w-3/4" />
+                                    </div>
+                                    <div className="space-y-4">
+                                        <Skeleton className="h-14 w-full rounded-2xl" />
+                                        <Skeleton className="h-14 w-full rounded-2xl" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="bg-[var(--beheer-card-soft)] p-8 rounded-[2.5rem] border border-[var(--beheer-border)] flex gap-6">
+                            <Skeleton className="h-12 w-12 rounded-2xl shrink-0" />
+                            <div className="space-y-2 w-full">
+                                <Skeleton className="h-5 w-64" />
+                                <div className="space-y-2 pt-2">
+                                    <Skeleton className="h-3 w-full" />
+                                    <Skeleton className="h-3 w-full" />
+                                    <Skeleton className="h-3 w-1/2" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <>
+                        <AdminStatsBar stats={adminStats} />
 
                 <div className="space-y-8">
                     <SyncOverview 
@@ -245,7 +304,9 @@ export default function AzureSyncIsland() {
                             </p>
                         </div>
                     </div>
-                </div>
+                        </div>
+                    </>
+                )}
             </div>
             <AdminToast toast={toast} onClose={hideToast} />
         </>

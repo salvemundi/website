@@ -41,7 +41,7 @@ export const CommitteeCard: React.FC<CommitteeCardProps> = ({ isLoading = false,
                 {/* Image Header */}
                 <div className="relative h-56 w-full overflow-hidden bg-gradient-to-br from-[var(--color-purple-500)]/10 to-[var(--color-purple-900)]/10">
                     {isLoading ? (
-                        <Skeleton className="h-full w-full" rounded="none" />
+                        <Skeleton className="h-full w-full bg-[var(--color-purple-500)]/10" rounded="none" />
                     ) : (
                         <>
                             <Image 
@@ -76,7 +76,12 @@ export const CommitteeCard: React.FC<CommitteeCardProps> = ({ isLoading = false,
                             
                             <div className="flex items-center gap-2 mt-1">
                                 {isLoading ? (
-                                    <Skeleton className="h-4 w-24" rounded="full" />
+                                    <div className="flex items-center gap-2 mt-2">
+                                        <div className="flex -space-x-2">
+                                            {[1, 2, 3].map(i => <Skeleton key={i} className="h-6 w-6 bg-[var(--color-purple-500)]/10 border-2 border-[var(--bg-card)]" rounded="full" />)}
+                                        </div>
+                                        <Skeleton className="h-3 w-20 bg-[var(--color-purple-500)]/10" rounded="full" />
+                                    </div>
                                 ) : (
                                     <>
                                         <div className="flex -space-x-2">
@@ -106,10 +111,10 @@ export const CommitteeCard: React.FC<CommitteeCardProps> = ({ isLoading = false,
                     </div>
 
                     {isLoading ? (
-                        <div className="space-y-2 mb-8">
-                            <Skeleton className="h-4 w-full" rounded="full" />
-                            <Skeleton className="h-4 w-full" rounded="full" />
-                            <Skeleton className="h-4 w-3/4" rounded="full" />
+                        <div className="space-y-3 mb-8">
+                            <Skeleton className="h-4 w-full bg-[var(--color-purple-500)]/10" rounded="full" />
+                            <Skeleton className="h-4 w-full bg-[var(--color-purple-500)]/10" rounded="full" />
+                            <Skeleton className="h-4 w-2/3 bg-[var(--color-purple-500)]/10" rounded="full" />
                         </div>
                     ) : (
                         <p className="mb-8 line-clamp-3 text-sm leading-relaxed text-[var(--text-muted)]">

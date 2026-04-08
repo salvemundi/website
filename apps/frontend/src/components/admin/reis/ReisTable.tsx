@@ -17,25 +17,29 @@ interface ReisTableProps {
     onResendEmail: (id: number, type: 'deposit' | 'final') => void;
     signupActivitiesMap: Record<number, TripSignupActivity[]>;
     allowFinalPayments: boolean;
+    isLoading?: boolean;
 }
 
+import { Skeleton } from '@/components/ui/Skeleton';
+
 export default function ReisTable({
-    filteredSignups,
-    expandedIds,
-    onToggleExpand,
-    getStatusBadge,
-    getPaymentStatus,
-    actionStates,
-    sendingEmailTo,
-    onStatusChange,
-    onDelete,
-    onResendEmail,
-    signupActivitiesMap,
-    allowFinalPayments
+    filteredSignups = [],
+    expandedIds = [],
+    onToggleExpand = () => {},
+    getStatusBadge = () => ({ label: '', color: '' }),
+    getPaymentStatus = () => ({ label: '', color: '' }),
+    actionStates = { status: new Set(), delete: new Set() },
+    sendingEmailTo = null,
+    onStatusChange = () => {},
+    onDelete = () => {},
+    onResendEmail = () => {},
+    signupActivitiesMap = {},
+    allowFinalPayments = false,
+    isLoading = false
 }: ReisTableProps) {
     return (
         <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] overflow-hidden">
-            {filteredSignups.length === 0 ? (
+            {!isLoading && filteredSignups.length === 0 ? (
                 <div className="text-center py-20 px-4">
                     <AlertCircle className="h-12 w-12 text-[var(--beheer-text-muted)] mx-auto mb-4 opacity-20" />
                     <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-[10px]">Geen aanmeldingen gevonden</p>
@@ -54,7 +58,34 @@ export default function ReisTable({
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[var(--beheer-border)]/10">
-                            {filteredSignups.map(signup => (
+                            {isLoading ? (
+                                [...Array(8)].map((_, i) => (
+                                    <tr key={i} className="animate-pulse">
+                                        <td className="px-3 sm:px-6 py-5">
+                                            <Skeleton className="h-4 w-32 mb-2" />
+                                            <Skeleton className="h-3 w-40 opacity-50" />
+                                        </td>
+                                        <td className="px-3 sm:px-6 py-5 hidden sm:table-cell">
+                                            <Skeleton className="h-4 w-24 opacity-50" />
+                                        </td>
+                                        <td className="px-3 sm:px-6 py-5 hidden md:table-cell">
+                                            <Skeleton className="h-6 w-20 rounded-full" />
+                                        </td>
+                                        <td className="px-3 sm:px-6 py-5">
+                                            <Skeleton className="h-7 w-28 rounded-full" />
+                                        </td>
+                                        <td className="px-3 sm:px-6 py-5 hidden sm:table-cell">
+                                            <Skeleton className="h-7 w-32 rounded-full opacity-50" />
+                                        </td>
+                                        <td className="px-2 sm:px-6 py-5 text-right">
+                                            <div className="flex justify-end gap-3">
+                                                <Skeleton className="h-8 w-8 rounded-xl" />
+                                                <Skeleton className="h-8 w-8 rounded-xl" />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : filteredSignups.map(signup => (
                                 <ReisTableRow 
                                     key={signup.id}
                                     signup={signup}

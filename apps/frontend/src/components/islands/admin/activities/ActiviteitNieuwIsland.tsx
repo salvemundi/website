@@ -15,6 +15,7 @@ import { createActivityAction } from '@/server/actions/activiteiten.actions';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 // Clean committee names (removed || SV Salve Mundi and other suffixes)
 function cleanCommitteeName(name: string): string {
@@ -33,7 +34,15 @@ interface ActionState {
     fieldErrors?: Record<string, string[]>;
 }
 
-export default function ActiviteitNieuwIsland({ committees }: { committees: Committee[] }) {
+interface ActiviteitNieuwIslandProps {
+    committees?: Committee[];
+    isLoading?: boolean;
+}
+
+export default function ActiviteitNieuwIsland({ 
+    committees = [], 
+    isLoading = false 
+}: ActiviteitNieuwIslandProps) {
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -98,8 +107,31 @@ export default function ActiviteitNieuwIsland({ committees }: { committees: Comm
                 subtitle="Creëer een nieuw evenement voor SV Salve Mundi"
                 backHref="/beheer/activiteiten"
             />
-            <div className="container mx-auto px-4 py-12 max-w-5xl animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <form action={formAction} className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-2xl overflow-hidden border border-[var(--beheer-border)] relative">
+            <div className="container mx-auto px-4 py-12 max-w-5xl">
+                {isLoading ? (
+                    <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-2xl overflow-hidden border border-[var(--beheer-border)] animate-pulse">
+                        <Skeleton className="h-64 sm:h-80 w-full mb-8" />
+                        <div className="p-8 sm:p-12 space-y-12">
+                            <div className="space-y-4">
+                                <Skeleton className="h-4 w-32" />
+                                <Skeleton className="h-14 w-full rounded-xl" />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <Skeleton className="h-40 w-full rounded-xl" />
+                                <Skeleton className="h-40 w-full rounded-xl" />
+                            </div>
+                            <div className="grid grid-cols-2 gap-6">
+                                <Skeleton className="h-14 w-full rounded-xl" />
+                                <Skeleton className="h-14 w-full rounded-xl" />
+                            </div>
+                            <div className="flex justify-end gap-4">
+                                <Skeleton className="h-14 w-32 rounded-xl" />
+                                <Skeleton className="h-14 w-48 rounded-xl" />
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <form action={formAction} className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-2xl overflow-hidden border border-[var(--beheer-border)] relative">
                     {/* Visual Section */}
                     <div className="relative h-64 sm:h-80 bg-slate-950 border-b border-[var(--beheer-border)]">
                         {imagePreview ? (
@@ -332,6 +364,7 @@ export default function ActiviteitNieuwIsland({ committees }: { committees: Comm
                         </div>
                     </div>
                 </form>
+                )}
 
                 <AdminToast toast={toast} onClose={hideToast} />
             </div>

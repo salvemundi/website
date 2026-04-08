@@ -46,13 +46,13 @@ export default function ProfielSignups({
             }
         >
             {isLoading ? (
-                <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {[1, 2, 3].map((i) => (
                         <div key={i} className="h-28 rounded-3xl bg-[var(--bg-card)] dark:bg-black/20 border border-[var(--border-color)]/10 flex items-center p-5 gap-4">
-                            <Skeleton className="h-16 w-16" rounded="2xl" />
-                            <div className="flex-1 space-y-2 min-w-0">
-                                <Skeleton className="h-5 w-full" rounded="md" />
-                                <Skeleton className="h-3 w-1/2" rounded="md" />
+                            <Skeleton className="h-16 w-16 bg-[var(--color-purple-500)]/10 shrink-0" rounded="2xl" />
+                            <div className="flex-1 space-y-3 min-w-0">
+                                <Skeleton className="h-5 w-full bg-[var(--color-purple-500)]/10" rounded="md" />
+                                <Skeleton className="h-3 w-1/2 bg-[var(--color-purple-500)]/5" rounded="full" />
                             </div>
                         </div>
                     ))}

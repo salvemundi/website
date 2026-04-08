@@ -6,6 +6,7 @@ import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 import { Activiteit } from '@salvemundi/validations';
 import { buildCommitteeEmail, formatDutchDate, formatTime } from '@/shared/lib/activity-utils';
 import { getImageUrl } from '@/lib/image-utils';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 interface ActivityDetailIslandProps {
     isLoading?: boolean;
@@ -47,10 +48,13 @@ export default function ActivityDetailIsland({ isLoading = false, activity, chil
                     <div className="absolute inset-x-0 bottom-0 max-w-7xl mx-auto px-4 pb-12">
                         <div className="max-w-3xl space-y-4">
                             {isLoading ? (
-                                <>
-                                    <div className="h-6 w-32 bg-[var(--theme-purple)]/20 rounded-full" />
-                                    <div className="h-16 w-3/4 bg-white/10 rounded-2xl" />
-                                </>
+                                <div className="space-y-6">
+                                    <Skeleton className="h-6 w-32 bg-[var(--theme-purple)]/30" rounded="full" />
+                                    <div className="space-y-3">
+                                        <Skeleton className="h-12 sm:h-16 w-3/4 bg-white/10" rounded="2xl" />
+                                        <Skeleton className="h-12 sm:h-16 w-1/2 bg-white/10" rounded="2xl" />
+                                    </div>
+                                </div>
                             ) : (
                                 <>
                                     <span className="inline-block px-4 py-1.5 rounded-full bg-[var(--theme-purple)] text-white text-[11px] font-black uppercase tracking-widest mb-4 shadow-xl border border-white/10">
@@ -95,8 +99,8 @@ export default function ActivityDetailIsland({ isLoading = false, activity, chil
                                 <p className="text-[10px] uppercase font-black text-[var(--theme-purple)]/40 tracking-[0.2em] mb-1">Datum & Tijd</p>
                                 {isLoading ? (
                                     <div className="space-y-2">
-                                        <div className="h-5 w-3/4 bg-[var(--bg-soft)] rounded" />
-                                        <div className="h-4 w-1/2 bg-[var(--bg-soft)] rounded opacity-50" />
+                                        <Skeleton className="h-5 w-3/4 bg-[var(--color-purple-500)]/10" rounded="md" />
+                                        <Skeleton className="h-4 w-1/2 bg-[var(--color-purple-500)]/5" rounded="md" />
                                     </div>
                                 ) : (
                                     <>
@@ -135,7 +139,7 @@ export default function ActivityDetailIsland({ isLoading = false, activity, chil
                             <div className="min-w-0 flex-1">
                                 <p className="text-[10px] uppercase font-black text-[var(--theme-purple)]/40 tracking-[0.2em] mb-1">Organisatie</p>
                                 {isLoading ? (
-                                    <div className="h-5 w-3/4 bg-[var(--bg-soft)] rounded" />
+                                    <Skeleton className="h-5 w-3/4 bg-[var(--color-purple-500)]/10" rounded="md" />
                                 ) : (
                                     <p className="text-base font-bold text-[var(--text-main)] truncate">{activity?.committee_name || 'Bestuur'}</p>
                                 )}
@@ -150,7 +154,7 @@ export default function ActivityDetailIsland({ isLoading = false, activity, chil
                             <div className="min-w-0 flex-1">
                                 <p className="text-[10px] uppercase font-black text-[var(--theme-purple)]/40 tracking-[0.2em] mb-1">Contact</p>
                                 {isLoading ? (
-                                    <div className="h-5 w-full bg-[var(--bg-soft)] rounded" />
+                                    <Skeleton className="h-5 w-full bg-[var(--color-purple-500)]/10" rounded="md" />
                                 ) : committeeEmail ? (
                                     <div className="text-sm font-bold text-[var(--theme-purple)] truncate block">
                                         <ObfuscatedEmail email={committeeEmail} showIcon={false} />

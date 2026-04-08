@@ -16,16 +16,23 @@ interface AdminReisTableIslandProps {
     initialSignups: TripSignup[];
     initialSignupActivities: Record<number, TripSignupActivity[]>;
     trip: Trip;
-    stats: {
+    stats?: {
         total: number;
         confirmed: number;
         waitlist: number;
         depositPaid: number;
         fullPaid: number;
     }
+    isLoading?: boolean;
 }
 
-export default function AdminReisTableIsland({ initialSignups, initialSignupActivities, trip, stats }: AdminReisTableIslandProps) {
+export default function AdminReisTableIsland({ 
+    initialSignups = [], 
+    initialSignupActivities = {}, 
+    trip, 
+    stats,
+    isLoading = false 
+}: AdminReisTableIslandProps) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [signups, setSignups] = useState<TripSignup[]>(initialSignups);
     const [searchQuery, setSearchQuery] = useState('');
@@ -233,19 +240,20 @@ export default function AdminReisTableIsland({ initialSignups, initialSignupActi
         return statusMap[status] || { label: status, color: 'bg-[var(--beheer-text-muted)]/10 text-[var(--beheer-text-muted)]' };
     };
 
-    const displayStats = [
-        { label: 'Aanmeldingen', value: stats.total, icon: Users },
-        { label: 'Wachtlijst', value: stats.waitlist, icon: UserX },
-        { label: 'Bevestigd', value: stats.confirmed, icon: UserCheck },
-        { label: 'Aanbetaling', value: stats.depositPaid, icon: Plane },
-        { label: 'Volledig', value: stats.fullPaid, icon: Plane }
+    const displayStats = isLoading ? [] : [
+        { label: 'Aanmeldingen', value: stats?.total || 0, icon: Users },
+        { label: 'Wachtlijst', value: stats?.waitlist || 0, icon: UserX },
+        { label: 'Bevestigd', value: stats?.confirmed || 0, icon: UserCheck },
+        { label: 'Aanbetaling', value: stats?.depositPaid || 0, icon: Plane },
+        { label: 'Volledig', value: stats?.fullPaid || 0, icon: Plane }
     ];
 
     return (
         <>
-            <AdminStatsBar stats={displayStats} />
+            <AdminStatsBar stats={displayStats} isLoading={isLoading} />
 
             <ReisFilters 
+                isLoading={isLoading}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
                 statusFilter={statusFilter}
@@ -257,6 +265,7 @@ export default function AdminReisTableIsland({ initialSignups, initialSignupActi
             />
 
             <ReisTable 
+                isLoading={isLoading}
                 filteredSignups={filteredSignups}
                 expandedIds={expandedIds}
                 onToggleExpand={toggleExpand}
@@ -268,7 +277,7 @@ export default function AdminReisTableIsland({ initialSignups, initialSignupActi
                 onDelete={handleDelete}
                 onResendEmail={handleResendPaymentEmail}
                 signupActivitiesMap={signupActivitiesMap}
-                allowFinalPayments={!!trip.allow_final_payments}
+                allowFinalPayments={!!trip?.allow_final_payments}
             />
             <AdminToast toast={toast} onClose={hideToast} />
         </>

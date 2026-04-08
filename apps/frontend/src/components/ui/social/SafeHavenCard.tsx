@@ -3,6 +3,7 @@ import type { SafeHaven } from '@salvemundi/validations';
 import { Mail, Phone } from 'lucide-react';
 import { getImageUrl } from '@/lib/image-utils';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
+import { Skeleton } from '../Skeleton';
 
 interface SafeHavenCardProps {
     isLoading?: boolean;
@@ -25,22 +26,26 @@ export default function SafeHavenCard({ isLoading = false, safeHaven }: SafeHave
             aria-busy={isLoading}
         >
             <div className="flex items-center gap-4">
-                <div className="relative h-16 w-16 sm:h-20 sm:w-20 overflow-hidden rounded-2xl shadow-md shrink-0 bg-slate-200 dark:bg-slate-800">
-                    {!isLoading && safeHaven && (
-                        <Image
-                            src={imageUrl}
-                            alt={safeHaven.naam}
-                            fill
-                            unoptimized
-                            className="object-cover"
-                        />
+                <div className="relative h-16 w-16 sm:h-20 sm:w-20 overflow-hidden rounded-2xl shadow-md shrink-0">
+                    {isLoading ? (
+                        <Skeleton className="h-full w-full bg-slate-200 dark:bg-slate-800" rounded="none" />
+                    ) : (
+                        safeHaven && (
+                            <Image
+                                src={imageUrl}
+                                alt={safeHaven.naam}
+                                fill
+                                unoptimized
+                                className="object-cover"
+                            />
+                        )
                     )}
                 </div>
                 <div className="min-w-0 flex-1">
                     {isLoading ? (
                         <div className="space-y-2">
-                            <div className="h-5 w-3/4 bg-slate-200 dark:bg-slate-800 rounded" />
-                            <div className="h-4 w-1/2 bg-slate-200 dark:bg-slate-800 rounded opacity-50" />
+                            <Skeleton className="h-5 w-3/4 bg-slate-200 dark:bg-slate-800" rounded="md" />
+                            <Skeleton className="h-4 w-1/2 bg-slate-200 dark:bg-slate-800 opacity-50" rounded="full" />
                         </div>
                     ) : (
                         <>
@@ -57,10 +62,10 @@ export default function SafeHavenCard({ isLoading = false, safeHaven }: SafeHave
 
             <div className="mt-4 space-y-2">
                 {isLoading ? (
-                    <>
-                        <div className="h-4 w-full bg-slate-200 dark:bg-slate-800 rounded opacity-40" />
-                        <div className="h-4 w-5/6 bg-slate-200 dark:bg-slate-800 rounded opacity-40" />
-                    </>
+                    <div className="space-y-2">
+                        <Skeleton className="h-4 w-full bg-slate-200 dark:bg-slate-800 opacity-40" rounded="full" />
+                        <Skeleton className="h-4 w-5/6 bg-slate-200 dark:bg-slate-800 opacity-40" rounded="full" />
+                    </div>
                 ) : safeHaven?.beschrijving && (
                     <p className="text-sm text-theme-muted leading-relaxed line-clamp-3">
                         {safeHaven.beschrijving}
@@ -70,10 +75,10 @@ export default function SafeHavenCard({ isLoading = false, safeHaven }: SafeHave
 
             <div className="mt-5 space-y-2">
                 {isLoading ? (
-                    <>
-                        <div className="h-10 w-full bg-slate-200 dark:bg-slate-800 rounded-xl" />
-                        <div className="h-10 w-full bg-slate-200 dark:bg-slate-800 rounded-xl" />
-                    </>
+                    <div className="space-y-3">
+                        <Skeleton className="h-11 w-full bg-slate-200 dark:bg-slate-800" rounded="xl" />
+                        <Skeleton className="h-11 w-full bg-slate-200 dark:bg-slate-800" rounded="xl" />
+                    </div>
                 ) : safeHaven?.email || safeHaven?.telefoon ? (
                     <>
                         {safeHaven.email && (
@@ -103,4 +108,3 @@ export default function SafeHavenCard({ isLoading = false, safeHaven }: SafeHave
         </div>
     );
 }
-

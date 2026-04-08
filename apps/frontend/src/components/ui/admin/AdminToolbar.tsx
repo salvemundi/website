@@ -1,11 +1,11 @@
-'use client';
-
 import React from 'react';
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 interface AdminToolbarProps {
-    title: string;
+    isLoading?: boolean;
+    title?: string;
     subtitle?: string;
     backHref?: string;
     actions?: React.ReactNode;
@@ -16,6 +16,7 @@ interface AdminToolbarProps {
  * Replaces the old "Hero Banners" with a compact horizontal layout.
  */
 export default function AdminToolbar({
+    isLoading = false,
     title,
     subtitle,
     backHref,
@@ -36,13 +37,22 @@ export default function AdminToolbar({
                             </Link>
                         )}
                         <div>
-                            <h1 className="text-2xl md:text-3xl font-black text-[var(--beheer-text)] tracking-tighter leading-tight">
-                                {title}
-                            </h1>
-                            {subtitle && (
-                                <p className="text-xs font-bold text-[var(--beheer-text-muted)] tracking-wide mt-1 opacity-60">
-                                    {subtitle}
-                                </p>
+                            {isLoading ? (
+                                <div className="space-y-3">
+                                    <Skeleton className="h-8 w-64" />
+                                    <Skeleton className="h-3 w-48 opacity-50" />
+                                </div>
+                            ) : (
+                                <>
+                                    <h1 className="text-2xl md:text-3xl font-black text-[var(--beheer-text)] tracking-tighter leading-tight">
+                                        {title}
+                                    </h1>
+                                    {subtitle && (
+                                        <p className="text-xs font-bold text-[var(--beheer-text-muted)] tracking-wide mt-1 opacity-60">
+                                            {subtitle}
+                                        </p>
+                                    )}
+                                </>
                             )}
                         </div>
                     </div>

@@ -12,7 +12,10 @@ interface ReisFiltersProps {
     onRoleChange: (value: string) => void;
     onDownloadExcel: () => void;
     hasResults: boolean;
+    isLoading?: boolean;
 }
+
+import { Skeleton } from '@/components/ui/Skeleton';
 
 export default function ReisFilters({
     searchQuery,
@@ -22,8 +25,26 @@ export default function ReisFilters({
     roleFilter,
     onRoleChange,
     onDownloadExcel,
-    hasResults
+    hasResults,
+    isLoading = false
 }: ReisFiltersProps) {
+    if (isLoading) {
+        return (
+            <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm p-4 sm:p-6 mb-6 border border-[var(--beheer-border)] animate-pulse">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4">
+                    <div className="md:col-span-2">
+                        <Skeleton className="w-full h-10 rounded-[var(--beheer-radius)]" />
+                    </div>
+                    <Skeleton className="w-full h-10 rounded-[var(--beheer-radius)]" />
+                    <Skeleton className="w-full h-10 rounded-[var(--beheer-radius)]" />
+                </div>
+                <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mt-6">
+                    <Skeleton className="h-10 w-40 rounded-[var(--beheer-radius)]" />
+                    <Skeleton className="h-10 w-40 rounded-[var(--beheer-radius)]" />
+                </div>
+            </div>
+        );
+    }
     const router = useRouter();
 
     return (
