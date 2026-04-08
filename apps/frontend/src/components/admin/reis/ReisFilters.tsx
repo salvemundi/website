@@ -28,6 +28,8 @@ export default function ReisFilters({
     hasResults,
     isLoading = false
 }: ReisFiltersProps) {
+    const router = useRouter();
+
     if (isLoading) {
         return (
             <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm p-4 sm:p-6 mb-6 border border-[var(--beheer-border)] animate-pulse">
@@ -45,7 +47,6 @@ export default function ReisFilters({
             </div>
         );
     }
-    const router = useRouter();
 
     return (
         <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm p-4 sm:p-6 mb-6 border border-[var(--beheer-border)]">

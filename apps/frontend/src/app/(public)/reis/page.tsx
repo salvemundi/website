@@ -1,7 +1,6 @@
 import React, { Suspense } from 'react';
 import PageHeader from '@/components/ui/layout/PageHeader';
 import { getReisSiteSettings, getUpcomingTrips, getUserTripSignup, getTripParticipantsCount } from '@/server/actions/reis.actions';
-import { ReisPageHeaderSkeleton, ReisFormSkeleton, ReisInfoSkeleton } from '@/components/ui/activities/ReisSkeletons';
 import { ReisFormIsland } from '@/components/islands/activities/ReisFormIsland';
 import { ReisInfoIsland } from '@/components/islands/activities/ReisInfoIsland';
 import { format } from 'date-fns';
@@ -59,7 +58,7 @@ export default async function ReisPage() {
             <main className="relative overflow-hidden bg-background">
                 <div className="mx-auto max-w-app px-4 py-8 sm:py-10 md:py-12">
                     <div className="flex flex-col lg:flex-row gap-8 items-start">
-                        <Suspense fallback={<ReisFormSkeleton />}>
+                        <Suspense fallback={<ReisFormIsland isLoading nextTrip={null} userSignup={null} canSignUp={false} registrationStartText="" participantsCount={0} />}>
                             <ReisFormIsland
                                 nextTrip={nextTrip}
                                 userSignup={userSignup}
@@ -69,7 +68,7 @@ export default async function ReisPage() {
                             />
                         </Suspense>
 
-                        <Suspense fallback={<ReisInfoSkeleton />}>
+                        <Suspense fallback={<ReisInfoIsland isLoading nextTrip={null} />}>
                             <ReisInfoIsland nextTrip={nextTrip} />
                         </Suspense>
                     </div>
@@ -79,23 +78,27 @@ export default async function ReisPage() {
     );
 }
 
-function ReisHeader({ tripImage }: { tripImage?: string | null }) {
+function ReisHeader({ tripImage, isLoading = false }: { tripImage?: string | null; isLoading?: boolean }) {
     return (
         <div className="flex flex-col w-full">
-            <Suspense fallback={<ReisPageHeaderSkeleton />}>
-                <PageHeader
-                    title="SALVE MUNDI REIS"
-                    backgroundImage={getImageUrl(tripImage)}
-                    contentPadding="py-20"
-                    imageFilter="brightness(0.65)"
-                >
+            <PageHeader
+                title="SALVE MUNDI REIS"
+                backgroundImage={getImageUrl(tripImage)}
+                contentPadding="py-20"
+                imageFilter="brightness(0.65)"
+                isLoading={isLoading}
+            >
+                {!isLoading && (
                     <div className="flex flex-col items-center">
                         <p className="max-w-3xl mt-4 text-lg font-medium text-[var(--theme-purple)] dark:text-white drop-shadow-sm sm:text-xl text-center">
                             Schrijf je in voor de jaarlijkse reis van Salve Mundi! Een onvergetelijke ervaring vol gezelligheid en avontuur.
                         </p>
                     </div>
-                </PageHeader>
-            </Suspense>
+                )}
+            </PageHeader>
         </div>
     );
 }
+
+// In the main component, update ReisHeader usage
+// (This is a simplified version, as PageHeader already handles its own internal skeleton if isLoading is passed)

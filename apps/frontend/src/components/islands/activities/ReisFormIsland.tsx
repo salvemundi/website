@@ -9,7 +9,10 @@ import { RefreshCcw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { revalidateReisAction } from '@/server/actions/reis.actions';
 
+import { Skeleton } from '@/components/ui/Skeleton';
+
 interface ReisFormIslandProps {
+    isLoading?: boolean;
     nextTrip: ReisTrip | null;
     userSignup: ReisTripSignup | null;
     canSignUp: boolean;
@@ -17,11 +20,47 @@ interface ReisFormIslandProps {
     participantsCount: number;
 }
 
-export function ReisFormIsland({ nextTrip, userSignup, canSignUp, registrationStartText }: ReisFormIslandProps) {
+export function ReisFormIsland({ 
+    isLoading = false,
+    nextTrip, 
+    userSignup, 
+    canSignUp, 
+    registrationStartText 
+}: ReisFormIslandProps) {
     const { data: session } = authClient.useSession();
     const router = useRouter();
     const currentUser = session?.user;
     const [refreshing, setRefreshing] = useState(false);
+
+    if (isLoading) {
+        return (
+            <section className="w-full lg:w-1/2 bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-lg p-5 sm:p-6 md:p-8 animate-pulse" aria-busy="true">
+                <Skeleton className="h-10 w-3/4 sm:w-1/2 bg-theme-purple/10 mb-8" rounded="lg" />
+                <div className="flex flex-col gap-6">
+                    <Skeleton className="h-5 w-full bg-[var(--text-muted)]/10" rounded="md" />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-3">
+                            <Skeleton className="h-3 w-1/4 bg-[var(--text-muted)]/10" rounded="full" />
+                            <Skeleton className="h-12 w-full bg-[var(--text-muted)]/5" rounded="xl" />
+                        </div>
+                        <div className="space-y-3">
+                            <Skeleton className="h-3 w-1/4 bg-[var(--text-muted)]/10" rounded="full" />
+                            <Skeleton className="h-12 w-full bg-[var(--text-muted)]/5" rounded="xl" />
+                        </div>
+                    </div>
+                    <div className="space-y-3">
+                        <Skeleton className="h-3 w-1/4 bg-[var(--text-muted)]/10" rounded="full" />
+                        <Skeleton className="h-12 w-full bg-[var(--text-muted)]/5" rounded="xl" />
+                    </div>
+                    <div className="space-y-3">
+                        <Skeleton className="h-3 w-1/4 bg-[var(--text-muted)]/10" rounded="full" />
+                        <Skeleton className="h-12 w-full bg-[var(--text-muted)]/5" rounded="xl" />
+                    </div>
+                    <Skeleton className="h-14 w-full bg-theme-purple/20 rounded-xl mt-6" />
+                </div>
+            </section>
+        );
+    }
 
     const handleRefresh = async () => {
         setRefreshing(true);

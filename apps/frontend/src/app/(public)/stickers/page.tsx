@@ -49,18 +49,7 @@ export default async function StickersPage() {
 
             {/* Application Area */}
             <div className="container mx-auto px-4 py-12 max-w-7xl">
-                <Suspense fallback={
-                    <div className="space-y-8">
-                        {/* Stats Skeleton */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            {[1, 2, 3, 4].map((i) => (
-                                <Skeleton key={i} className="h-24 bg-[var(--bg-card)]" rounded="2xl" />
-                            ))}
-                        </div>
-                        {/* Map Skeleton */}
-                        <Skeleton className="h-[600px] w-full bg-[var(--bg-card)]" rounded="3xl" />
-                    </div>
-                }>
+                <Suspense fallback={<StickerMapIsland isLoading initialStickers={[]} user={null} />}>
                     <StickerMapIsland initialStickers={stickers} user={session?.user || null} />
                 </Suspense>
             </div>

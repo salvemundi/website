@@ -17,7 +17,10 @@ import StickerMap from '@/components/ui/maps/StickerMap';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 
+import { Skeleton } from '@/components/ui/Skeleton';
+
 interface StickerMapIslandProps {
+    isLoading?: boolean;
     initialStickers: any[];
     user: any | null;
 }
@@ -26,7 +29,8 @@ interface StickerMapIslandProps {
 
 export default function StickerMapIsland({
     initialStickers,
-    user
+    user,
+    isLoading = false
 }: StickerMapIslandProps) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [stickers, setStickers] = useState(initialStickers);
@@ -148,6 +152,38 @@ export default function StickerMapIsland({
             }
         });
     };
+
+    if (isLoading) {
+        return (
+            <div className="space-y-8 animate-pulse" aria-busy="true">
+                {/* Stats Header Area Skeleton */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[1, 2, 3, 4].map((i) => (
+                        <StatCard key={i} isLoading={true} />
+                    ))}
+                </div>
+
+                {/* Map Container Skeleton */}
+                <div className="relative">
+                    <Skeleton className="h-[600px] w-full bg-[var(--bg-card)]" rounded="3xl" />
+                    
+                    {/* Floating Controls Skeleton */}
+                    <div className="absolute top-4 left-4 right-4 md:right-auto md:w-80 space-y-3">
+                        <div className="bg-[var(--bg-card)]/90 backdrop-blur-md rounded-2xl p-4 border border-white/10 space-y-4">
+                            <Skeleton className="h-4 w-24 bg-[var(--text-muted)]/10" rounded="full" />
+                            <div className="space-y-3">
+                                <Skeleton className="h-8 w-full bg-[var(--text-muted)]/5" rounded="lg" />
+                                <Skeleton className="h-8 w-full bg-[var(--text-muted)]/5" rounded="lg" />
+                            </div>
+                        </div>
+                        <div className="bg-[var(--bg-card)]/90 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+                            <Skeleton className="h-12 w-full bg-[var(--text-muted)]/10" rounded="xl" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-8 animate-in fade-in duration-700">
@@ -336,7 +372,18 @@ export default function StickerMapIsland({
     );
 }
 
-function StatCard({ label, value, icon: Icon, color }: any) {
+function StatCard({ label, value, icon: Icon, color, isLoading = false }: any) {
+    if (isLoading) {
+        return (
+            <div className="bg-[var(--bg-card)] rounded-2xl p-4 shadow-xl border border-white/5 flex items-center justify-between">
+                <div className="space-y-2 flex-1">
+                    <Skeleton className="h-3 w-12 bg-[var(--text-muted)]/10" rounded="full" />
+                    <Skeleton className="h-7 w-16 bg-[var(--text-muted)]/5" rounded="md" />
+                </div>
+                <Skeleton className="h-9 w-9 bg-slate-500/10" rounded="xl" />
+            </div>
+        );
+    }
     return (
         <div className="bg-[var(--bg-card)] rounded-2xl p-4 shadow-xl border border-white/5 flex items-center justify-between">
             <div>
