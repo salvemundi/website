@@ -49,7 +49,7 @@ export default async function StickersPage() {
 
             {/* Application Area */}
             <div className="container mx-auto px-4 py-12 max-w-7xl">
-                <Suspense fallback={<StickerMapIsland isLoading initialStickers={[]} user={null} />}>
+                <Suspense fallback={<StickerMapIsland isLoading isAuthenticated={!!session} initialStickers={[]} user={null} />}>
                     <StickerMapIsland initialStickers={stickers} user={session?.user || null} />
                 </Suspense>
             </div>

@@ -11,11 +11,7 @@ export const metadata = {
     description: 'Beheer je lidmaatschap bij Salve Mundi en krijg toegang tot exclusieve activiteiten.',
 };
 
-async function MembershipDynamicContent() {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
-
+async function MembershipDynamicContent({ session }: { session: any }) {
     const user = session?.user as any;
     const isGuest = !user;
     const baseAmount = 20.00;
@@ -63,10 +59,15 @@ async function MembershipDynamicContent() {
     );
 }
 
-export default function MembershipPage() {
+export default async function MembershipPage() {
+    const session = await auth.api.getSession({
+        headers: await headers()
+    });
+    const isGuest = !session?.user;
+
     return (
-        <Suspense fallback={<MembershipSkeleton />}>
-            <MembershipDynamicContent />
+        <Suspense fallback={<MembershipSkeleton isGuest={isGuest} />}>
+            <MembershipDynamicContent session={session} />
         </Suspense>
     );
 }

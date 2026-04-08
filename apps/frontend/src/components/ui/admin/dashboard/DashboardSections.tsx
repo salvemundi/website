@@ -34,21 +34,31 @@ import {
  * Standardized across all sections to use the horizontal "Small Button" layout.
  * Organized into 2 columns as requested.
  */
-export async function DashboardHub({ isLoading = false }: { isLoading?: boolean }) {
+export async function DashboardHub({ 
+    isLoading = false,
+    permissions: serverPermissions = null
+}: { 
+    isLoading?: boolean;
+    permissions?: any;
+}) {
     // Return early with skeleton items if loading
     if (isLoading) {
-        const skeletonItems = [...Array(4)].map(() => ({}));
         return (
             <div className="space-y-12">
-                {renderSkeletonSection("Content", <Layout />)}
-                {renderSkeletonSection("Beheer", <Users />)}
-                {renderSkeletonSection("Systeem", <Settings />)}
+                {(!serverPermissions || serverPermissions.canAccessIntro || serverPermissions.canAccessReis) && 
+                    renderSkeletonSection("Content", <Layout />)}
+                
+                {(!serverPermissions || serverPermissions.canAccessSync || serverPermissions.canAccessStickers) && 
+                    renderSkeletonSection("Beheer", <Users />)}
+                
+                {(!serverPermissions || serverPermissions.canAccessMail || serverPermissions.canAccessLogging || serverPermissions.isIct) && 
+                    renderSkeletonSection("Systeem", <Settings />)}
             </div>
         );
     }
 
     const stats = await getDashboardStats();
-    const permissions = await getDashboardPermissions();
+    const permissions = serverPermissions || await getDashboardPermissions();
 
     // Group 1: CONTENT
     const contentItems = [

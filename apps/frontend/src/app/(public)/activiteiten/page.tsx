@@ -14,28 +14,25 @@ export const metadata = {
     description: 'Bekijk alle evenementen, trainingen en feesten van Salve Mundi.',
 };
 
-async function ActivitiesBannerData() {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
+async function ActivitiesBannerData({ session }: { session: any }) {
     const events = await getActivities(session?.user?.id);
     return <ActivitiesBannerIsland events={events} />;
 }
 
-async function ActivitiesListData() {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
+async function ActivitiesListData({ session }: { session: any }) {
     const events = await getActivities(session?.user?.id);
     return <ActivitiesProviderIsland events={events} />;
 }
 
 
 
-export default function ActivitiesPage() {
+export default async function ActivitiesPage() {
+    const session = await auth.api.getSession({
+        headers: await headers()
+    });
+
     return (
         <div className="">
-            
             <PageHeader
                 title="ACTIVITEITEN"
                 backgroundImage="/img/backgrounds/Kroto2025.jpg"
@@ -44,16 +41,14 @@ export default function ActivitiesPage() {
                 variant="centered"
                 description="Bekijk alle evenementen, trainingen en feesten van Salve Mundi."
             >
-                {/* Fallback height approximately matches the FlipClock container to prevent CLS */}
                 <Suspense fallback={<ActivitiesBannerIsland isLoading events={[]} />}>
-                    <ActivitiesBannerData />
+                    <ActivitiesBannerData session={session} />
                 </Suspense>
             </PageHeader>
 
-            
             <main className="w-full px-4 py-8 sm:py-10 md:py-12">
                 <Suspense fallback={<ActivitiesProviderIsland isLoading />}>
-                    <ActivitiesListData />
+                    <ActivitiesListData session={session} />
                 </Suspense>
             </main>
         </div>

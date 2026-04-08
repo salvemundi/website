@@ -58,7 +58,18 @@ export default async function ReisPage() {
             <main className="relative overflow-hidden bg-background">
                 <div className="mx-auto max-w-app px-4 py-8 sm:py-10 md:py-12">
                     <div className="flex flex-col lg:flex-row gap-8 items-start">
-                        <Suspense fallback={<ReisFormIsland isLoading nextTrip={null} userSignup={null} canSignUp={false} registrationStartText="" participantsCount={0} />}>
+                        <Suspense fallback={
+                            <ReisFormIsland 
+                                isLoading 
+                                isSignedUp={!!userSignup}
+                                isReisDisabled={!isReisEnabled}
+                                nextTrip={null} 
+                                userSignup={null} 
+                                canSignUp={false} 
+                                registrationStartText="" 
+                                participantsCount={0} 
+                            />
+                        }>
                             <ReisFormIsland
                                 nextTrip={nextTrip}
                                 userSignup={userSignup}

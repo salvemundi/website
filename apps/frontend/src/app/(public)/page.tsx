@@ -8,6 +8,8 @@ import { WhySalveMundiSection } from '@/components/ui/membership/WhySalveMundiSe
 import { JoinSectionIsland } from '@/components/islands/membership/JoinSectionIsland';
 import { SponsorsSection } from '@/components/ui/layout/SponsorsSection';
 import { HeroSkeleton, EventsSkeleton, SponsorsSkeleton } from '@/components/ui/layout/HomePageSkeleton';
+import { auth } from '@/server/auth/auth';
+import { headers } from 'next/headers';
 
 export const metadata: Metadata = {
     title: 'Home | SV Salve Mundi',
@@ -45,7 +47,13 @@ async function AsyncSponsors() {
  * HomePage — Pure Server Component.
  * Onderdelen worden onafhankelijk gestreamed via granulaire Suspense (PPR).
  */
-export default function HomePage() {
+export default async function HomePage() {
+    const session = await auth.api.getSession({
+        headers: await headers()
+    });
+    
+    const user = session?.user ?? null;
+
     return (
         <main>
             {/* Hero Section - Onafhankelijk laden */}
@@ -61,8 +69,8 @@ export default function HomePage() {
             {/* Statische "Waarom Salve Mundi?" sectie - Wordt direct getoond */}
             <WhySalveMundiSection />
 
-            {/* Conditioneel lid-worden CTA - Client Island (interne auth check) */}
-            <JoinSectionIsland />
+            {/* Conditioneel lid-worden CTA - Identity Aware */}
+            <JoinSectionIsland serverUser={user} />
 
             {/* Scrollende sponsorbalk - Onafhankelijk laden */}
             <Suspense fallback={<SponsorsSkeleton />}>

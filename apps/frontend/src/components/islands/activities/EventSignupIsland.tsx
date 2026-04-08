@@ -11,11 +11,12 @@ import { Skeleton } from '@/components/ui/Skeleton';
 
 interface EventSignupIslandProps {
     isLoading?: boolean;
+    isMember?: boolean;
+    isPast?: boolean;
     eventId?: number;
     price?: number;
     eventDate?: string;
     description?: string;
-    isPast?: boolean;
     eventName?: string;
     initialUser?: any;
     verifiedPaymentStatus?: 'paid' | null;
@@ -24,11 +25,13 @@ interface EventSignupIslandProps {
 
 export default function EventSignupIsland({
     isLoading = false,
+    isMember = false,
+    isPast: serverIsPast = false,
     eventId = 0,
     price = 0,
     eventDate = '',
     description = '',
-    isPast = false,
+    isPast: clientIsPast = false,
     eventName = 'Evenement',
     initialUser,
     verifiedPaymentStatus,
@@ -112,7 +115,21 @@ export default function EventSignupIsland({
     };
 
     // Loading State
+    const isPast = serverIsPast || clientIsPast;
+
     if (isLoading) {
+        if (isPast) {
+            return (
+                <div className="h-full flex flex-col justify-center items-center p-12 rounded-[2rem] bg-slate-50/50 border border-dashed border-slate-300 dark:border-white/10 text-center space-y-4 animate-pulse" aria-busy="true">
+                    <Skeleton className="h-12 w-12 bg-slate-300/20" rounded="full" />
+                    <div className="space-y-3">
+                        <Skeleton className="h-6 w-32 mx-auto bg-slate-300/10" rounded="lg" />
+                        <Skeleton className="h-4 w-48 mx-auto bg-slate-200/5" rounded="full" />
+                    </div>
+                </div>
+            );
+        }
+
         return (
             <div className="h-full flex flex-col p-8 rounded-[2rem] bg-[var(--bg-card)] border border-[var(--border-color)] shadow-2xl shadow-[var(--theme-purple)]/5 animate-pulse" aria-busy="true">
                 <div className="flex justify-between items-start mb-8">

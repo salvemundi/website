@@ -75,16 +75,15 @@ const IntroInfoParent = () => (
  * Server component that retrieves dynamic auth data asynchronously,
  * reducing Promise.all blocking per V7 standard.
  */
-async function DynamicIntroContent() {
-    const sessionProm = auth.api.getSession({ headers: await headers() });
-    const parentCheckProm = hasParentSignup();
-
-    const session = await sessionProm;
-    const isAuthenticated = !!session;
-
-    // Conditionally await the check if authenticated
-    const isAlreadyParent = isAuthenticated ? await parentCheckProm : false;
-
+async function DynamicIntroContent({ 
+    isAuthenticated, 
+    isAlreadyParent, 
+    session 
+}: { 
+    isAuthenticated: boolean; 
+    isAlreadyParent: boolean; 
+    session: any;
+}) {
     return (
         <>
             <div className="flex flex-col w-full">
@@ -132,9 +131,20 @@ async function DynamicIntroContent() {
 }
 
 export default async function IntroPage() {
+    const sessionProm = auth.api.getSession({ headers: await headers() });
+    const parentCheckProm = hasParentSignup();
+
+    const session = await sessionProm;
+    const isAuthenticated = !!session;
+    const isAlreadyParent = isAuthenticated ? await parentCheckProm : false;
+
     return (
-        <Suspense fallback={<IntroContentSkeleton />}>
-            <DynamicIntroContent />
+        <Suspense fallback={<IntroContentSkeleton isAuthenticated={isAuthenticated} isAlreadyParent={isAlreadyParent} />}>
+            <DynamicIntroContent 
+                isAuthenticated={isAuthenticated} 
+                isAlreadyParent={isAlreadyParent} 
+                session={session} 
+            />
         </Suspense>
     );
 }

@@ -65,9 +65,15 @@ export default async function PageActivityId({ params, searchParams }: PageProps
     const { id } = await params;
     const sParams = await searchParams;
 
+    const session = await auth.api.getSession({
+        headers: await headers()
+    });
+
+    const isMember = (session?.user as any)?.membership_status === 'active';
+
     return (
         <main className="min-h-screen bg-[var(--bg-main)]">
-            <Suspense fallback={<ActivityDetailSkeleton />}>
+            <Suspense fallback={<ActivityDetailSkeleton isMember={isMember} />}>
                 <ActivityData id={id} searchParams={sParams} />
             </Suspense>
         </main>
