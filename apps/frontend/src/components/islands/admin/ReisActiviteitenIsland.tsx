@@ -18,6 +18,7 @@ import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import TripActivityCard from './reis/TripActivityCard';
 import TripActivityForm from './reis/TripActivityForm';
 import TripActivitySignupsModal from './reis/TripActivitySignupsModal';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 interface Trip {
     id: number;
@@ -39,17 +40,19 @@ interface TripActivity {
 }
 
 interface Props {
-    initialTrips: Trip[];
-    initialActivities: TripActivity[];
-    initialSelectedTripId: number;
-    initialSignupsByActivity: Record<number, any[]>;
+    initialTrips?: Trip[];
+    initialActivities?: TripActivity[];
+    initialSelectedTripId?: number;
+    initialSignupsByActivity?: Record<number, any[]>;
+    isLoading?: boolean;
 }
 
 export default function ReisActiviteitenIsland({ 
-    initialTrips, 
-    initialActivities, 
-    initialSelectedTripId,
-    initialSignupsByActivity
+    initialTrips = [], 
+    initialActivities = [], 
+    initialSelectedTripId = 0,
+    initialSignupsByActivity = {},
+    isLoading = false
 }: Props) {
     const router = useRouter();
     const [selectedTripId, setSelectedTripId] = useState<number>(initialSelectedTripId);
@@ -129,33 +132,60 @@ export default function ReisActiviteitenIsland({
                 subtitle="Beheer extra opties en inschrijvingen per activiteit"
                 backHref={`/beheer/reis?tripId=${selectedTripId}`}
                 actions={
-                    <>
-                        <div className="relative group min-w-[200px]">
-                            <select
-                                value={selectedTripId}
-                                onChange={handleTripChange}
-                                className="w-full pl-4 pr-10 py-2.5 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-[10px] font-black uppercase tracking-widest focus:ring-2 focus:ring-[var(--beheer-accent)] focus:border-transparent transition-all appearance-none cursor-pointer shadow-sm"
-                            >
-                                {initialTrips.map(trip => (
-                                    <option key={trip.id} value={trip.id} className="bg-[var(--beheer-card-bg)] text-base font-bold">{trip.name}</option>
-                                ))}
-                            </select>
-                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)] transition-all opacity-40" />
-                        </div>
+                    !isLoading && (
+                        <>
+                            <div className="relative group min-w-[200px]">
+                                <select
+                                    value={selectedTripId}
+                                    onChange={handleTripChange}
+                                    className="w-full pl-4 pr-10 py-2.5 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-[10px] font-black uppercase tracking-widest focus:ring-2 focus:ring-[var(--beheer-accent)] focus:border-transparent transition-all appearance-none cursor-pointer shadow-sm"
+                                >
+                                    {initialTrips.map(trip => (
+                                        <option key={trip.id} value={trip.id} className="bg-[var(--beheer-card-bg)] text-base font-bold">{trip.name}</option>
+                                    ))}
+                                </select>
+                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)] transition-all opacity-40" />
+                            </div>
 
-                        <button
-                            onClick={() => setEditingActivity({})}
-                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
-                        >
-                            <Plus className="h-4 w-4" />
-                            Nieuw
-                        </button>
-                    </>
+                            <button
+                                onClick={() => setEditingActivity({})}
+                                className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
+                            >
+                                <Plus className="h-4 w-4" />
+                                Nieuw
+                            </button>
+                        </>
+                    )
                 }
             />
 
-            <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <AdminStatsBar stats={adminStats} />
+            <div className="container mx-auto px-4 py-8 max-w-7xl">
+                {isLoading ? (
+                    <div className="animate-pulse">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            <Skeleton className="h-24 w-full rounded-3xl" />
+                            <Skeleton className="h-24 w-full rounded-3xl" />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {[1, 2, 3, 4, 5, 6].map(i => (
+                                <div key={i} className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] overflow-hidden h-96">
+                                    <Skeleton className="h-48 w-full" />
+                                    <div className="p-6 space-y-4">
+                                        <Skeleton className="h-4 w-32" />
+                                        <Skeleton className="h-3 w-full" />
+                                        <Skeleton className="h-3 w-2/3" />
+                                        <div className="flex gap-2 pt-4">
+                                            <Skeleton className="h-10 flex-1 rounded-xl" />
+                                            <Skeleton className="h-10 w-10 rounded-xl" />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                ) : (
+                    <>
+                        <AdminStatsBar stats={adminStats} />
 
                 {/* Form Section */}
                 {editingActivity && (
@@ -210,6 +240,8 @@ export default function ReisActiviteitenIsland({
                             <span className="font-black uppercase tracking-widest text-[10px]">{toast.message}</span>
                         </div>
                     </div>
+                )}
+                    </>
                 )}
             </div>
         </>

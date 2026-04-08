@@ -7,6 +7,7 @@ import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { Input } from '@/shared/ui/Input';
 import { Loader2, CheckCircle2, AlertCircle, CreditCard, Send, Users, Ticket, Info } from 'lucide-react';
 import QRDisplay from '@/shared/ui/QRDisplay';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 interface EventSignupIslandProps {
     isLoading?: boolean;
@@ -116,27 +117,27 @@ export default function EventSignupIsland({
             <div className="h-full flex flex-col p-8 rounded-[2rem] bg-[var(--bg-card)] border border-[var(--border-color)] shadow-2xl shadow-[var(--theme-purple)]/5 animate-pulse" aria-busy="true">
                 <div className="flex justify-between items-start mb-8">
                     <div className="space-y-3">
-                        <div className="h-8 w-32 bg-[var(--theme-purple)]/10 rounded-lg" />
-                        <div className="h-3 w-24 bg-[var(--text-muted)]/10 rounded ml-9" />
+                        <Skeleton className="h-8 w-32 bg-[var(--theme-purple)]/10" rounded="lg" />
+                        <Skeleton className="h-3 w-24 bg-[var(--color-purple-500)]/10 ml-9" rounded="full" />
                     </div>
                     <div className="text-right space-y-2">
-                        <div className="h-3 w-12 bg-[var(--text-muted)]/10 rounded ml-auto" />
-                        <div className="h-8 w-20 bg-[var(--theme-purple)]/10 rounded-lg ml-auto" />
+                        <Skeleton className="h-3 w-12 bg-[var(--color-purple-500)]/5 ml-auto" rounded="full" />
+                        <Skeleton className="h-8 w-20 bg-[var(--theme-purple)]/10 rounded-lg ml-auto" />
                     </div>
                 </div>
 
-                <div className="space-y-6 flex-1">
+                <div className="space-y-8 flex-1">
                     {[1, 2, 3].map((i) => (
-                        <div key={i} className="space-y-2">
-                            <div className="h-3 w-20 bg-[var(--theme-purple)]/10 rounded ml-3" />
-                            <div className="h-14 w-full bg-[var(--bg-soft)] rounded-2xl" />
+                        <div key={i} className="space-y-3">
+                            <Skeleton className="h-3 w-20 bg-[var(--theme-purple)]/10 ml-3" rounded="full" />
+                            <Skeleton className="h-14 w-full bg-[var(--color-purple-500)]/5" rounded="2xl" />
                         </div>
                     ))}
                 </div>
 
                 <div className="pt-8 space-y-4">
-                    <div className="h-16 w-full bg-gradient-to-br from-[var(--theme-purple)]/10 to-[var(--theme-purple)]/20 rounded-2xl" />
-                    <div className="h-3 w-48 bg-[var(--text-muted)]/10 rounded mx-auto" />
+                    <Skeleton className="h-16 w-full bg-gradient-to-br from-[var(--theme-purple)]/10 to-[var(--theme-purple)]/20" rounded="2xl" />
+                    <Skeleton className="h-3 w-48 bg-[var(--color-purple-500)]/5 mx-auto" rounded="full" />
                 </div>
             </div>
         );

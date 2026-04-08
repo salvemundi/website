@@ -17,10 +17,10 @@ export default function ProfielQuickLinks({ isLoading = false, user = {}, isComm
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {isLoading ? (
                     <>
-                        <Skeleton className="h-16" rounded="2xl" />
-                        <Skeleton className="h-16" rounded="2xl" />
-                        <Skeleton className="h-16" rounded="2xl" />
-                        <Skeleton className="h-16" rounded="2xl" />
+                        <Skeleton className="h-16 bg-[var(--color-purple-500)]/5" rounded="2xl" />
+                        <Skeleton className="h-16 bg-[var(--color-purple-500)]/5" rounded="2xl" />
+                        <Skeleton className="h-16 bg-[var(--color-purple-500)]/5" rounded="2xl" />
+                        <Skeleton className="h-16 bg-[var(--color-purple-500)]/5" rounded="2xl" />
                     </>
                 ) : (
                     <>

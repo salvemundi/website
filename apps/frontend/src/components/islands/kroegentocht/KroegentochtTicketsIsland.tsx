@@ -93,12 +93,12 @@ export default function KroegentochtTicketsIsland({ isLoading = false, initialTi
     if (isLoading) {
         return (
             <section className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-lg p-5 sm:p-6 md:p-8 mb-8" aria-busy="true">
-                <Skeleton className="h-8 w-64 mb-4" rounded="lg" />
-                <Skeleton className="h-4 w-full max-w-2xl mb-8" rounded="md" />
+                <Skeleton className="h-8 w-64 mb-4 bg-[var(--color-purple-theme)]/10" rounded="lg" />
+                <Skeleton className="h-4 w-full max-w-2xl mb-8 bg-[var(--color-purple-theme)]/5" rounded="md" />
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {[1, 2, 3, 4].map((i) => (
-                        <Skeleton key={i} className="h-80 w-full" rounded="xl" />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[1, 2, 3].map((i) => (
+                        <Skeleton key={i} className="h-96 w-full bg-slate-100 dark:bg-white/5" rounded="2xl" />
                     ))}
                 </div>
             </section>

@@ -21,6 +21,8 @@ import LedenTable from './LedenTable';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 
+import { Skeleton } from '@/components/ui/Skeleton';
+
 interface Member {
     id: string;
     first_name: string;
@@ -31,15 +33,17 @@ interface Member {
 }
 
 interface LedenOverzichtIslandProps {
-    members: Member[];
-    totalCount: number;
-    searchQuery: string;
+    members?: Member[];
+    totalCount?: number;
+    searchQuery?: string;
+    isLoading?: boolean;
 }
 
 export default function LedenOverzichtIsland({ 
-    members, 
-    totalCount, 
-    searchQuery: initialSearchQuery
+    members = [], 
+    totalCount = 0, 
+    searchQuery: initialSearchQuery = '',
+    isLoading = false
 }: LedenOverzichtIslandProps) {
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
@@ -115,35 +119,44 @@ export default function LedenOverzichtIsland({
     return (
         <>
             <AdminToolbar 
-                title="Leden Overzicht"
-                subtitle="Beheer alle Salve Mundi leden en lidmaatschappen"
+                isLoading={isLoading}
+                title={isLoading ? "" : "Leden Overzicht"}
+                subtitle={isLoading ? "" : "Beheer alle Salve Mundi leden en lidmaatschappen"}
                 backHref="/beheer"
                 actions={
-                    <div className="flex gap-2">
-                        <button
-                            onClick={exportToXLSX}
-                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-xs font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95"
-                            title="Exporteer naar Excel"
-                        >
-                            <Download className="h-4 w-4" />
-                            Export
-                        </button>
-                        <button
-                            onClick={handleSendReminder}
-                            disabled={isSendingReminder}
-                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 disabled:opacity-50"
-                        >
-                            {isSendingReminder ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bell className="h-4 w-4" />}
-                            Reminder
-                        </button>
-                    </div>
+                    isLoading ? (
+                        <div className="flex gap-2">
+                            <Skeleton className="h-[var(--beheer-btn-height)] w-24" />
+                            <Skeleton className="h-[var(--beheer-btn-height)] w-28" />
+                        </div>
+                    ) : (
+                        <div className="flex gap-2">
+                            <button
+                                onClick={exportToXLSX}
+                                className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-xs font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95"
+                                title="Exporteer naar Excel"
+                            >
+                                <Download className="h-4 w-4" />
+                                Export
+                            </button>
+                            <button
+                                onClick={handleSendReminder}
+                                disabled={isSendingReminder}
+                                className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 disabled:opacity-50"
+                            >
+                                {isSendingReminder ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bell className="h-4 w-4" />}
+                                Reminder
+                            </button>
+                        </div>
+                    )
                 }
             />
 
-            <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700">
-                <AdminStatsBar stats={adminStats} />
+            <div className={`container mx-auto px-4 py-8 max-w-7xl ${isLoading ? 'animate-pulse' : 'animate-in fade-in duration-700'}`}>
+                <AdminStatsBar stats={adminStats} isLoading={isLoading} />
 
                 <LedenFilters 
+                    isLoading={isLoading}
                     searchQuery={searchQuery}
                     onSearchChange={setSearchQuery}
                     activeTab={activeTab}
@@ -152,6 +165,7 @@ export default function LedenOverzichtIsland({
                 />
 
                 <LedenTable 
+                    isLoading={isLoading}
                     members={filteredMembers}
                     isPending={isPending}
                     formatDate={formatDate}

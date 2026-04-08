@@ -26,7 +26,7 @@ export default function ProfielHeader({ isLoading = false, user = {}, membership
                 <div className="relative group shrink-0">
                     <div className="relative h-28 w-28 sm:h-32 sm:w-32 rounded-full overflow-hidden border-4 border-[var(--color-purple-100)] shadow-lg bg-white">
                         {isLoading ? (
-                            <Skeleton className="h-full w-full" rounded="full" />
+                            <Skeleton className="h-full w-full bg-[var(--color-purple-500)]/10" rounded="full" />
                         ) : user.avatar || user.image ? (
                             <Image
                                 src={(user.avatar ? getImageUrl(user.avatar) : user.image ? getImageUrl(user.image) : '') as string}
@@ -47,8 +47,8 @@ export default function ProfielHeader({ isLoading = false, user = {}, membership
                 <div className="min-w-0 w-full">
                     {isLoading ? (
                         <div className="flex flex-col items-center gap-4">
-                            <Skeleton className="h-8 w-48" rounded="lg" />
-                            <Skeleton className="h-6 w-32 mt-2" rounded="full" />
+                            <Skeleton className="h-8 w-48 bg-[var(--color-purple-500)]/10" rounded="lg" />
+                            <Skeleton className="h-6 w-32 mt-2 bg-[var(--color-purple-500)]/5" rounded="full" />
                         </div>
                     ) : (
                         <>
@@ -73,8 +73,8 @@ export default function ProfielHeader({ isLoading = false, user = {}, membership
                             <div className="flex flex-wrap gap-2 justify-center">
                                 {isLoading ? (
                                     <>
-                                        <Skeleton className="h-8 w-24" rounded="full" />
-                                        <Skeleton className="h-8 w-24" rounded="full" />
+                                        <Skeleton className="h-8 w-24 bg-[var(--color-purple-500)]/10" rounded="full" />
+                                        <Skeleton className="h-8 w-24 bg-[var(--color-purple-500)]/10" rounded="full" />
                                     </>
                                 ) : (
                                     user.committees.map((committee: any) => (
@@ -101,9 +101,9 @@ export default function ProfielHeader({ isLoading = false, user = {}, membership
                             <p className="text-[10px] text-[var(--color-purple-400)] font-black uppercase tracking-wider mb-1.5">
                                 Lidmaatschap tot
                             </p>
-                            {isLoading ? (
-                                <Skeleton className="h-6 w-32 mx-auto" rounded="md" />
-                            ) : (
+                             {isLoading ? (
+                                 <Skeleton className="h-6 w-32 mx-auto bg-[var(--color-purple-500)]/10" rounded="md" />
+                             ) : (
                                 <p className="text-base font-bold text-[var(--color-purple-700)] dark:text-white">
                                     {user.membership_expiry 
                                         ? format(new Date(user.membership_expiry), "d MMM yyyy", { locale: nl })

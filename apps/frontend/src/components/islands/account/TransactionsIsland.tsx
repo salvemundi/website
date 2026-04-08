@@ -71,11 +71,24 @@ export const TransactionsIsland: React.FC<TransactionsIslandProps> = ({ isLoadin
                             {isLoading ? (
                                 [1, 2, 3, 4, 5].map((i) => (
                                     <tr key={i}>
-                                        <td className="px-4 py-5"><Skeleton className="h-4 w-28" rounded="sm" /></td>
-                                        <td className="px-4 py-5"><Skeleton className="h-4 w-40" rounded="sm" /></td>
-                                        <td className="px-4 py-5"><Skeleton className="h-6 w-16" rounded="full" /></td>
-                                        <td className="px-4 py-5 flex justify-center"><Skeleton className="h-6 w-20" rounded="full" /></td>
-                                        <td className="px-4 py-5 text-right"><Skeleton className="h-4 w-16 ml-auto" rounded="sm" /></td>
+                                        <td className="px-4 py-6">
+                                            <Skeleton className="h-4 w-28 bg-[var(--color-purple-500)]/10" rounded="sm" />
+                                        </td>
+                                        <td className="px-4 py-6">
+                                            <div className="space-y-2">
+                                                <Skeleton className="h-4 w-40 bg-[var(--color-purple-500)]/10" rounded="sm" />
+                                                <Skeleton className="h-3 w-20 bg-[var(--color-purple-500)]/5" rounded="full" />
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-6">
+                                            <Skeleton className="h-6 w-16 bg-[var(--color-purple-500)]/5" rounded="full" />
+                                        </td>
+                                        <td className="px-4 py-6 flex justify-center">
+                                            <Skeleton className="h-7 w-24 bg-green-500/10" rounded="full" />
+                                        </td>
+                                        <td className="px-4 py-6 text-right">
+                                            <Skeleton className="h-4 w-16 ml-auto bg-[var(--color-purple-500)]/10" rounded="sm" />
+                                        </td>
                                     </tr>
                                 ))
                             ) : (

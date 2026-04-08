@@ -10,6 +10,7 @@ import { ChevronRight } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
 import type { HeroBanner, Activiteit } from '@salvemundi/validations';
 import { getImageUrl } from '@/lib/image-utils';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 
 interface HeroIslandProps {
@@ -112,10 +113,10 @@ export function HeroIsland({ isLoading = false, banners = [], activiteiten = [] 
                                 <div className="flex flex-wrap gap-3 sm:gap-4 min-h-[100px]">
                                     {/* Laden: skeleton */}
                                     {isReallyLoading && (
-                                        <div className="w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)]/10 p-4 sm:p-6 shadow-lg backdrop-blur min-h-[90px] sm:min-h-[100px] border border-[var(--color-purple-300)]/10">
-                                            <div className="h-4 w-24 bg-[var(--color-purple-300)]/10 rounded mb-3" />
-                                            <div className="h-6 w-3/4 bg-[var(--color-purple-300)]/10 rounded mb-2" />
-                                            <div className="h-4 w-1/2 bg-[var(--color-purple-300)]/10 rounded" />
+                                        <div className="w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)]/10 p-4 sm:p-6 shadow-lg backdrop-blur min-h-[90px] sm:min-h-[100px] border border-[var(--color-purple-300)]/10 space-y-3">
+                                            <Skeleton className="h-3 w-24 bg-[var(--color-purple-300)]/20" />
+                                            <Skeleton className="h-6 w-3/4 bg-[var(--color-purple-300)]/20" />
+                                            <Skeleton className="h-4 w-1/2 bg-[var(--color-purple-300)]/20" />
                                         </div>
                                     )}
 
@@ -195,8 +196,8 @@ export function HeroIsland({ isLoading = false, banners = [], activiteiten = [] 
                             >
                                 <div className="h-[240px] sm:h-[280px] md:h-[350px] lg:h-[480px] xl:h-[540px]">
                                     {/* Laden placeholder */}
-                                    {isLoading && (
-                                        <div className="w-full h-full bg-[var(--color-purple-100)]/10" />
+                                    {isReallyLoading && (
+                                        <Skeleton className="w-full h-full bg-[var(--color-purple-100)]/10" rounded="none" />
                                     )}
 
                                     {/* Mobiel: enkel statisch plaatje */}

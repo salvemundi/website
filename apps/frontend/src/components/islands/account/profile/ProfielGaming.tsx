@@ -46,7 +46,7 @@ export default function ProfielGaming({
                 <div className="flex items-center gap-3 min-w-0">
                     <Gamepad2 className="h-5 w-5 text-[var(--color-purple-300)]" />
                     {isLoading ? (
-                        <Skeleton className="h-6 w-32" rounded="md" />
+                        <Skeleton className="h-6 w-32 bg-[var(--color-purple-500)]/10" rounded="md" />
                     ) : isEditingMinecraft ? (
                         <form onSubmit={handleSubmitMinecraft(onSaveMinecraft)} className="flex flex-col w-full gap-2">
                             <div className="flex w-full items-center gap-2">

@@ -18,6 +18,7 @@ import SafeHavenCard from '@/components/ui/social/SafeHavenCard';
 import SafeHavenSkeleton from '@/components/ui/social/SafeHavenSkeleton';
 import PageHeader from '@/components/ui/layout/PageHeader';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 export const metadata: Metadata = {
     title: 'Vertrouwenspersonen',
@@ -216,7 +217,7 @@ export default function SafeHavensPage() {
                                 <Suspense fallback={
                                     <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-4 sm:gap-5">
                                         {[1, 2, 3, 4].map((i) => (
-                                            <div key={i} className="h-48 rounded-2xl bg-slate-50 dark:bg-slate-900/10 animate-pulse" />
+                                            <Skeleton key={i} className="h-48 bg-slate-50 dark:bg-slate-900/10" rounded="2xl" />
                                         ))}
                                     </div>
                                 }>

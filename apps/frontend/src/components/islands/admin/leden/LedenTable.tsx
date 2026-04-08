@@ -8,6 +8,8 @@ import {
     ChevronRight
 } from 'lucide-react';
 
+import { Skeleton } from '@/components/ui/Skeleton';
+
 interface Member {
     id: string;
     first_name: string;
@@ -18,17 +20,19 @@ interface Member {
 }
 
 interface LedenTableProps {
-    members: Member[];
+    members?: Member[];
     isPending: boolean;
     formatDate: (dateString: string | null) => string;
     isMembershipActive: (m: Member) => boolean;
+    isLoading?: boolean;
 }
 
 export default function LedenTable({
-    members,
+    members = [],
     isPending,
     formatDate,
-    isMembershipActive
+    isMembershipActive,
+    isLoading = false
 }: LedenTableProps) {
     const router = useRouter();
 
@@ -45,7 +49,30 @@ export default function LedenTable({
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
-                        {members.map((member) => (
+                        {isLoading ? (
+                            [...Array(8)].map((_, i) => (
+                                <tr key={i}>
+                                    <td className="px-8 py-5">
+                                        <div className="flex items-center gap-4">
+                                            <Skeleton className="h-10 w-10 shrink-0 rounded-2xl" />
+                                            <div className="space-y-2">
+                                                <Skeleton className="h-4 w-32" />
+                                                <Skeleton className="h-3 w-20 opacity-50" />
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-5">
+                                        <Skeleton className="h-4 w-40 opacity-50" />
+                                    </td>
+                                    <td className="px-8 py-5">
+                                        <Skeleton className="h-6 w-24 rounded-full" />
+                                    </td>
+                                    <td className="px-8 py-5 text-right">
+                                        <Skeleton className="h-8 w-8 rounded-xl ml-auto" />
+                                    </td>
+                                </tr>
+                            ))
+                        ) : members.map((member) => (
                             <tr key={member.id} className="group hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition-colors">
                                 <td className="px-8 py-5">
                                     <div className="flex items-center gap-4">

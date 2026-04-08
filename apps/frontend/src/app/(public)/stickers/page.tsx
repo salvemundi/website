@@ -5,6 +5,7 @@ import { getPublicStickers } from '@/server/actions/stickers.actions';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import StickerMapIsland from '@/components/islands/stickers/StickerMapIsland';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 export const metadata = {
     title: 'Sticker Kaart | Salve Mundi',
@@ -49,9 +50,15 @@ export default async function StickersPage() {
             {/* Application Area */}
             <div className="container mx-auto px-4 py-12 max-w-7xl">
                 <Suspense fallback={
-                    <div className="flex flex-col items-center justify-center py-40 bg-[var(--bg-card)] rounded-[var(--radius-3xl)] border border-[var(--border-color)]/30 shadow-2xl">
-                        <Loader2 className="h-10 w-10 animate-spin text-[var(--theme-purple)] mb-4" />
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)] animate-pulse">Kaartgegevens initialiseren...</p>
+                    <div className="space-y-8">
+                        {/* Stats Skeleton */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {[1, 2, 3, 4].map((i) => (
+                                <Skeleton key={i} className="h-24 bg-[var(--bg-card)]" rounded="2xl" />
+                            ))}
+                        </div>
+                        {/* Map Skeleton */}
+                        <Skeleton className="h-[600px] w-full bg-[var(--bg-card)]" rounded="3xl" />
                     </div>
                 }>
                     <StickerMapIsland initialStickers={stickers} user={session?.user || null} />

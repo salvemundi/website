@@ -14,6 +14,8 @@ import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import { Users, UserCheck, UserMinus, DollarSign } from 'lucide-react';
 
+import { Skeleton } from '@/components/ui/Skeleton';
+
 interface Signup {
     id: number;
     participant_name: string;
@@ -33,7 +35,15 @@ interface Signup {
     } | null;
 }
 
-export default function ActiviteitAanmeldingenIsland({ event, initialSignups }: { event: any, initialSignups: Signup[] }) {
+export default function ActiviteitAanmeldingenIsland({ 
+    event = {}, 
+    initialSignups = [], 
+    isLoading = false 
+}: { 
+    event?: any, 
+    initialSignups?: Signup[], 
+    isLoading?: boolean 
+}) {
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
     const [isPending, startTransition] = useTransition();
@@ -191,47 +201,59 @@ export default function ActiviteitAanmeldingenIsland({ event, initialSignups }: 
     return (
         <>
             <AdminToolbar 
-                title={event.name || 'Aanmeldingen'}
-                subtitle="Deelnemerslijst en inchecken"
+                isLoading={isLoading}
+                title={isLoading ? "" : (event.name || 'Aanmeldingen')}
+                subtitle={isLoading ? "" : "Deelnemerslijst en inchecken"}
                 backHref="/beheer/activiteiten"
                 actions={
-                    <>
-                        <button
-                            onClick={exportToXLSX}
-                            disabled={filteredSignups.length === 0}
-                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-xs font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50"
-                        >
-                            <Download className="h-4 w-4" />
-                            Exporteer
-                        </button>
-                        <button
-                            onClick={() => setIsManualModalOpen(true)}
-                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
-                        >
-                            <UserPlus className="h-4 w-4" />
-                            Handmatig
-                        </button>
-                    </>
+                    isLoading ? (
+                        <div className="flex gap-3">
+                            <Skeleton className="h-[var(--beheer-btn-height)] w-28" />
+                            <Skeleton className="h-[var(--beheer-btn-height)] w-32" />
+                        </div>
+                    ) : (
+                        <>
+                            <button
+                                onClick={exportToXLSX}
+                                disabled={filteredSignups.length === 0}
+                                className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-xs font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50"
+                            >
+                                <Download className="h-4 w-4" />
+                                Exporteer
+                            </button>
+                            <button
+                                onClick={() => setIsManualModalOpen(true)}
+                                className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
+                            >
+                                <UserPlus className="h-4 w-4" />
+                                Handmatig
+                            </button>
+                        </>
+                    )
                 }
             />
 
-            <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <AdminStatsBar stats={adminStats} />
+            <div className={`container mx-auto px-4 py-8 max-w-7xl ${isLoading ? 'animate-pulse' : 'animate-in fade-in slide-in-from-bottom-4 duration-700'}`}>
+                <AdminStatsBar stats={adminStats} isLoading={isLoading} />
 
                 {/* Search Bar */}
                 <div className="mb-10 relative group max-w-xl">
                     <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none z-20">
                         <Search className="h-4 w-4 text-[var(--beheer-text-muted)] group-focus-within:text-[var(--beheer-accent)] transition-colors" />
                     </div>
-                    <input
-                        type="text"
-                        placeholder="Zoek op naam, email of telefoon..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        autoComplete="off"
-                        suppressHydrationWarning
-                        className="w-full pl-11 pr-5 py-3 rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] placeholder:text-[var(--beheer-text-muted)] focus:ring-2 focus:ring-[var(--beheer-accent)]/20 focus:border-[var(--beheer-accent)] outline-none transition-all shadow-sm font-bold uppercase tracking-widest text-[10px]"
-                    />
+                    {isLoading ? (
+                        <Skeleton className="w-full h-12 rounded-[var(--beheer-radius)]" />
+                    ) : (
+                        <input
+                            type="text"
+                            placeholder="Zoek op naam, email of telefoon..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            autoComplete="off"
+                            suppressHydrationWarning
+                            className="w-full pl-11 pr-5 py-3 rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] placeholder:text-[var(--beheer-text-muted)] focus:ring-2 focus:ring-[var(--beheer-accent)]/20 focus:border-[var(--beheer-accent)] outline-none transition-all shadow-sm font-bold uppercase tracking-widest text-[10px]"
+                        />
+                    )}
                 </div>
 
             <ManualSignupModal
@@ -244,7 +266,38 @@ export default function ActiviteitAanmeldingenIsland({ event, initialSignups }: 
 
             {/* Table */}
                 <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm ring-1 ring-[var(--beheer-border)] overflow-hidden">
-                    {filteredSignups.length === 0 ? (
+                    {isLoading ? (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse min-w-[800px]">
+                                <thead>
+                                    <tr className="border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[10px] uppercase font-black tracking-widest text-[var(--beheer-text-muted)]">
+                                        <th className="px-6 py-4">Status</th>
+                                        <th className="px-6 py-4">Deelnemer</th>
+                                        <th className="px-6 py-4">Contact</th>
+                                        <th className="px-6 py-4">Lidmaatschap & Datum</th>
+                                        <th className="px-6 py-4 text-right">Acties</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-[var(--beheer-border)]">
+                                    {[...Array(6)].map((_, i) => (
+                                        <tr key={i}>
+                                            <td className="px-6 py-6"><Skeleton className="h-6 w-6 rounded-full" /></td>
+                                            <td className="px-6 py-6"><Skeleton className="h-4 w-32" /></td>
+                                            <td className="px-6 py-6 space-y-2">
+                                                <Skeleton className="h-3 w-40 opacity-50" />
+                                                <Skeleton className="h-3 w-32 opacity-30" />
+                                            </td>
+                                            <td className="px-6 py-6 space-y-2">
+                                                <Skeleton className="h-5 w-16" />
+                                                <Skeleton className="h-2 w-24 opacity-40" />
+                                            </td>
+                                            <td className="px-6 py-6 text-right"><Skeleton className="h-8 w-8 rounded-xl ml-auto" /></td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ) : filteredSignups.length === 0 ? (
                         <div className="p-20 text-center">
                             <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[var(--beheer-card-soft)] mb-6">
                                 <Search className="h-10 w-10 text-[var(--beheer-text-muted)] opacity-20" />
@@ -327,7 +380,7 @@ export default function ActiviteitAanmeldingenIsland({ event, initialSignups }: 
                             </tbody>
                         </table>
                     </div>
-                )}
+                    )}
                 </div>
             </div>
             <AdminToast toast={toast} onClose={hideToast} />

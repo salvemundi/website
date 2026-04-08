@@ -13,7 +13,10 @@ interface Props {
     selectedCommittee: string;
     committees: { id: string, name: string }[];
     onCommitteeChange: (id: string) => void;
+    isLoading?: boolean;
 }
+
+import { Skeleton } from '@/components/ui/Skeleton';
 
 export default function ActivityFilters({
     searchQuery,
@@ -24,8 +27,21 @@ export default function ActivityFilters({
     onPageSizeChange,
     selectedCommittee,
     committees,
-    onCommitteeChange
+    onCommitteeChange,
+    isLoading = false
 }: Props) {
+    if (isLoading) {
+        return (
+            <div className="flex flex-col xl:flex-row gap-4 mb-10 items-stretch xl:items-center animate-pulse">
+                <Skeleton className="flex-1 h-14 rounded-[var(--beheer-radius)]" />
+                <div className="flex flex-wrap md:flex-nowrap items-center gap-4">
+                    <Skeleton className="h-12 w-48 rounded-[var(--beheer-radius)]" />
+                    <Skeleton className="h-12 w-40 rounded-[var(--beheer-radius)]" />
+                    <div className="h-12 w-64 bg-[var(--beheer-card-soft)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)]" />
+                </div>
+            </div>
+        );
+    }
     return (
         <div className="flex flex-col xl:flex-row gap-4 mb-10 items-stretch xl:items-center animate-in fade-in slide-in-from-top-4 duration-500">
             {/* Search Bar */}

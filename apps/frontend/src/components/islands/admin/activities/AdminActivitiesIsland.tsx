@@ -30,6 +30,8 @@ function cleanCommitteeName(name: string): string {
     return name?.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim() || '';
 }
 
+import { Skeleton } from '@/components/ui/Skeleton';
+
 interface AdminActivity {
     id: number;
     name: string;
@@ -51,17 +53,19 @@ interface AdminActivity {
 }
 
 interface Props {
-    initialEvents: AdminActivity[];
-    committees: any[];
+    initialEvents?: AdminActivity[];
+    committees?: any[];
     userId?: string;
     userCommittees?: any[];
+    isLoading?: boolean;
 }
 
 export default function AdminActivitiesIsland({
-    initialEvents,
+    initialEvents = [],
     committees = [],
     userCommittees = [],
-    userId
+    userId,
+    isLoading = false
 }: Props) {
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
@@ -182,24 +186,30 @@ export default function AdminActivitiesIsland({
     return (
         <>
             <AdminToolbar 
-                title="Activiteiten Beheer"
-                subtitle="Organiseer en beheer alle evenementen van Salve Mundi"
+                isLoading={isLoading}
+                title={isLoading ? "" : "Activiteiten Beheer"}
+                subtitle={isLoading ? "" : "Organiseer en beheer alle evenementen van Salve Mundi"}
                 backHref="/beheer"
                 actions={
-                    <button
-                        onClick={() => router.push('/beheer/activiteiten/nieuw')}
-                        className="bg-[var(--beheer-accent)] text-white px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] rounded-[var(--beheer-radius)] font-black uppercase tracking-widest text-xs shadow-[var(--shadow-glow)] transition-all hover:opacity-90 active:scale-95 flex items-center gap-2 cursor-pointer group"
-                    >
-                        <Plus className="h-4 w-4" />
-                        <span>Nieuw</span>
-                    </button>
+                    isLoading ? (
+                        <Skeleton className="h-[var(--beheer-btn-height)] w-24" />
+                    ) : (
+                        <button
+                            onClick={() => router.push('/beheer/activiteiten/nieuw')}
+                            className="bg-[var(--beheer-accent)] text-white px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] rounded-[var(--beheer-radius)] font-black uppercase tracking-widest text-xs shadow-[var(--shadow-glow)] transition-all hover:opacity-90 active:scale-95 flex items-center gap-2 cursor-pointer group"
+                        >
+                            <Plus className="h-4 w-4" />
+                            <span>Nieuw</span>
+                        </button>
+                    )
                 }
             />
 
-            <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <AdminStatsBar stats={stats} />
+            <div className={`container mx-auto px-4 py-8 max-w-7xl ${isLoading ? 'animate-pulse' : 'animate-in fade-in slide-in-from-bottom-4 duration-700'}`}>
+                <AdminStatsBar stats={stats} isLoading={isLoading} />
 
                 <ActivityFilters 
+                    isLoading={isLoading}
                     searchQuery={searchQuery}
                     onSearchChange={setSearchQuery}
                     filter={filter}
@@ -212,29 +222,37 @@ export default function AdminActivitiesIsland({
                 />
 
                 <div className="grid grid-cols-1 gap-8">
-                    {displayedEvents.map(event => (
-                        <ActivityCard 
-                            key={event.id}
-                            event={event}
-                            canEdit={superAdmin || (event.committee_id !== null && userCommittees.some(c => String(c.id) === String(event.committee_id)))}
-                            isSuperAdmin={superAdmin}
-                            isPending={isPending}
-                            isSending={isSending}
-                            onViewSignups={(id) => router.push(`/beheer/activiteiten/${id}/aanmeldingen`)}
-                            onReminder={handleReminder}
-                            onCustomNotify={(e) => {
-                                setCustomNotification({ title: `Update: ${e.name}`, body: '', eventId: e.id });
-                                setShowModal(true);
-                            }}
-                            onEdit={(id) => router.push(`/beheer/activiteiten/${id}/bewerken`)}
-                            onDelete={handleDelete}
-                        />
-                    ))}
-                    {displayedEvents.length === 0 && (
-                        <div className="py-24 text-center bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border-2 border-dashed border-[var(--beheer-border)]">
-                            <Calendar className="h-12 w-12 text-[var(--beheer-text-muted)] mx-auto mb-4 opacity-20" />
-                            <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-[10px] opacity-60">Geen activiteiten gevonden</p>
-                        </div>
+                    {isLoading ? (
+                        [...Array(3)].map((_, i) => (
+                            <ActivityCard key={i} isLoading={true} />
+                        ))
+                    ) : (
+                        <>
+                            {displayedEvents.map(event => (
+                                <ActivityCard 
+                                    key={event.id}
+                                    event={event}
+                                    canEdit={superAdmin || (event.committee_id !== null && userCommittees.some(c => String(c.id) === String(event.committee_id)))}
+                                    isSuperAdmin={superAdmin}
+                                    isPending={isPending}
+                                    isSending={isSending}
+                                    onViewSignups={(id) => router.push(`/beheer/activiteiten/${id}/aanmeldingen`)}
+                                    onReminder={handleReminder}
+                                    onCustomNotify={(e) => {
+                                        setCustomNotification({ title: `Update: ${e.name}`, body: '', eventId: e.id });
+                                        setShowModal(true);
+                                    }}
+                                    onEdit={(id) => router.push(`/beheer/activiteiten/${id}/bewerken`)}
+                                    onDelete={handleDelete}
+                                />
+                            ))}
+                            {displayedEvents.length === 0 && (
+                                <div className="py-24 text-center bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border-2 border-dashed border-[var(--beheer-border)]">
+                                    <Calendar className="h-12 w-12 text-[var(--beheer-text-muted)] mx-auto mb-4 opacity-20" />
+                                    <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-[10px] opacity-60">Geen activiteiten gevonden</p>
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
 

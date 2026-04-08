@@ -35,21 +35,22 @@ export default function ActivitiesBannerIsland({ events, isLoading = false }: Ac
     if (isLoading) {
         return (
             <div className="rounded-3xl shadow-xl px-8 pb-8 pt-6 bg-gradient-to-br 
-                from-[var(--gradient-start)]
-                via-[var(--gradient-start)]
-                to-[var(--gradient-end)]
-                dark:from-[#1f1921]
-                dark:via-[#1f1921]
-                dark:to-[#2a232b]
+                from-[var(--bg-card)]
+                to-[var(--bg-card)]
+                dark:from-[#1a1620]
+                dark:to-[#221c26]
+                border border-[var(--color-purple-500)]/10
                 animate-pulse">
-                <div className="flex flex-col items-center gap-4">
-                    <Skeleton className="h-6 w-48 mb-2" variant="purple" rounded="full" />
-                    <Skeleton className="h-8 w-64 mb-6" variant="purple" rounded="lg" />
-                    <div className="flex gap-4">
+                <div className="flex flex-col items-center gap-6">
+                    <div className="space-y-3 flex flex-col items-center">
+                        <Skeleton className="h-4 w-32 bg-[var(--color-purple-500)]/10" rounded="full" />
+                        <Skeleton className="h-8 w-64 bg-[var(--color-purple-500)]/5" rounded="lg" />
+                    </div>
+                    <div className="flex gap-4 sm:gap-6">
                         {[1, 2, 3, 4].map((i) => (
-                            <div key={i} className="flex flex-col items-center gap-2">
-                                <Skeleton className="h-20 w-16 sm:w-20" rounded="xl" />
-                                <Skeleton className="h-3 w-8" rounded="full" />
+                            <div key={i} className="flex flex-col items-center gap-3">
+                                <Skeleton className="h-16 w-14 sm:h-20 sm:w-20 bg-[var(--color-purple-500)]/5" rounded="2xl" />
+                                <Skeleton className="h-3 w-8 bg-[var(--color-purple-500)]/10" rounded="full" />
                             </div>
                         ))}
                     </div>

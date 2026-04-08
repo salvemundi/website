@@ -36,29 +36,67 @@ interface AdminActivity {
 }
 
 interface Props {
-    event: AdminActivity;
-    canEdit: boolean;
-    isSuperAdmin: boolean;
-    isPending: boolean;
-    isSending: boolean;
-    onViewSignups: (id: number) => void;
-    onReminder: (id: number, name: string) => void;
-    onCustomNotify: (event: AdminActivity) => void;
-    onEdit: (id: number) => void;
-    onDelete: (id: number, name: string) => void;
+    event?: AdminActivity;
+    canEdit?: boolean;
+    isSuperAdmin?: boolean;
+    isPending?: boolean;
+    isSending?: boolean;
+    onViewSignups?: (id: number) => void;
+    onReminder?: (id: number, name: string) => void;
+    onCustomNotify?: (event: AdminActivity) => void;
+    onEdit?: (id: number) => void;
+    onDelete?: (id: number, name: string) => void;
+    isLoading?: boolean;
 }
+
+import { Skeleton } from '@/components/ui/Skeleton';
 
 export default function ActivityCard({
     event,
-    canEdit,
-    isPending,
-    isSending,
-    onViewSignups,
-    onReminder,
-    onCustomNotify,
-    onEdit,
-    onDelete
+    canEdit = false,
+    isPending = false,
+    isSending = false,
+    onViewSignups = () => {},
+    onReminder = () => {},
+    onCustomNotify = () => {},
+    onEdit = () => {},
+    onDelete = () => {},
+    isLoading = false
 }: Props) {
+    if (isLoading) {
+        return (
+            <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-lg p-5 sm:p-8 border border-[var(--beheer-border)] animate-pulse">
+                <div className="flex flex-col lg:flex-row gap-8">
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-start gap-6 mb-6">
+                            <Skeleton className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 rounded-[var(--radius-2xl)] shrink-0" />
+                            <div className="flex-1 space-y-3 pt-1">
+                                <Skeleton className="h-8 w-1/2" />
+                                <div className="flex gap-4">
+                                    <Skeleton className="h-4 w-32 opacity-50" />
+                                    <Skeleton className="h-4 w-40 opacity-30" />
+                                </div>
+                            </div>
+                        </div>
+                        <Skeleton className="h-4 w-3/4 mb-8 opacity-40" />
+                        <div className="flex gap-4">
+                            <Skeleton className="h-10 w-40 rounded-2xl" />
+                            <Skeleton className="h-10 w-40 rounded-2xl" />
+                        </div>
+                    </div>
+                    <div className="flex flex-row lg:flex-col gap-3 justify-end items-stretch lg:w-48 pt-6 lg:pt-0 border-t lg:border-t-0 border-[var(--beheer-border)]">
+                        <Skeleton className="h-12 w-full rounded-2xl" />
+                        <div className="flex gap-3">
+                            <Skeleton className="h-12 flex-1 rounded-2xl" />
+                            <Skeleton className="h-12 flex-1 rounded-2xl" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (!event) return null;
     const eventDate = new Date(event.event_date);
     const isPast = eventDate < new Date();
     const isDraft = event.status === 'draft';

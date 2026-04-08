@@ -42,7 +42,19 @@ interface EventProps {
     publish_date?: string | null;
 }
 
-export default function ActiviteitBewerkenIsland({ event, committees }: { event: EventProps, committees: Committee[] }) {
+import { Skeleton } from '@/components/ui/Skeleton';
+
+interface ActiviteitBewerkenIslandProps {
+    event?: EventProps;
+    committees?: Committee[];
+    isLoading?: boolean;
+}
+
+export default function ActiviteitBewerkenIsland({ 
+    event = {} as EventProps, 
+    committees = [], 
+    isLoading = false 
+}: ActiviteitBewerkenIslandProps) {
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -121,8 +133,38 @@ export default function ActiviteitBewerkenIsland({ event, committees }: { event:
                 subtitle={`Wijzig de gegevens van "${event.name}"`}
                 backHref="/beheer/activiteiten"
             />
-            <div className="container mx-auto px-4 py-12 max-w-4xl overflow-x-hidden animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <form action={formAction} className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-2xl p-6 sm:p-10 space-y-8 text-[var(--beheer-text)] border border-[var(--beheer-border)] relative overflow-hidden">
+            <div className="container mx-auto px-4 py-12 max-w-4xl overflow-x-hidden">
+                {isLoading ? (
+                    <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl p-8 sm:p-10 space-y-8 border border-[var(--beheer-border)] animate-pulse">
+                        {/* Basic Info Skeleton */}
+                        <div>
+                            <Skeleton className="h-3 w-20 mb-3" />
+                            <Skeleton className="h-14 w-full rounded-xl" />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <Skeleton className="h-3 w-24 mb-3" />
+                                <Skeleton className="h-14 w-full rounded-xl" />
+                            </div>
+                            <div>
+                                <Skeleton className="h-3 w-20 mb-3" />
+                                <Skeleton className="h-14 w-full rounded-xl" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <Skeleton className="h-3 w-24 mb-3" />
+                            <Skeleton className="h-40 w-full rounded-xl" />
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row gap-5 pt-6">
+                            <Skeleton className="flex-1 h-14 rounded-full" />
+                            <Skeleton className="sm:w-40 h-14 rounded-full" />
+                        </div>
+                    </div>
+                ) : (
+                    <form action={formAction} className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-2xl p-6 sm:p-10 space-y-8 text-[var(--beheer-text)] border border-[var(--beheer-border)] relative overflow-hidden">
                     {/* Glow effect */}
                     <div className="absolute -top-24 -right-24 h-48 w-48 bg-[var(--beheer-accent)]/5 blur-3xl rounded-full" />
 
@@ -308,6 +350,7 @@ export default function ActiviteitBewerkenIsland({ event, committees }: { event:
                         </button>
                     </div>
                 </form>
+                )}
 
                 <AdminToast toast={toast} onClose={hideToast} />
             </div>

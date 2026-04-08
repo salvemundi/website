@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { getDocumenten } from '@/server/actions/website.actions';
 import DocumentenLijst from '@/components/ui/social/DocumentenLijst';
 import SafeHavenButton from '@/components/islands/social/SafeHavenButton';
@@ -12,9 +13,9 @@ import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
  */
 function DocumentenSkeleton() {
     return (
-        <div className="space-y-3 ml-14 animate-pulse">
+        <div className="space-y-4 ml-14" aria-hidden="true">
             {[1, 2].map((i) => (
-                <div key={i} className="h-5 bg-[var(--bg-soft)] rounded-md w-3/4" />
+                <Skeleton key={i} className="h-5 w-3/4 bg-slate-200 dark:bg-slate-800/40" rounded="md" />
             ))}
         </div>
     );

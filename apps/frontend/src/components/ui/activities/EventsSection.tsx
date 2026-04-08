@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import { ChevronRight, Calendar } from 'lucide-react';
 import type { Activity } from '@salvemundi/validations';
 import { EventCard } from './EventCard';
 import { Skeleton } from '../Skeleton';
@@ -18,15 +19,18 @@ export function EventsSection({ isLoading = false, activities = [] }: EventsSect
         return (
             <section id="kalender" className="py-8 sm:py-10 md:py-12 bg-[var(--bg-main)]" aria-busy="true">
                 <div className="mx-auto max-w-app px-4 sm:px-6 lg:px-8">
-                    <div className="flex flex-col gap-6 rounded-xl bg-gradient-theme px-6 sm:px-10 pt-8 sm:pt-10 md:pt-12 pb-8 sm:pb-10 md:pt-12 shadow-xl">
-                        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-                            <div className="space-y-3">
-                                <Skeleton className="h-4 w-24" rounded="full" />
-                                <Skeleton className="h-10 w-64" rounded="lg" />
-                                <Skeleton className="h-4 w-48" rounded="full" />
+                    <div className="flex flex-col gap-8 rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 px-8 sm:px-12 py-10 sm:py-14 shadow-2xl overflow-hidden relative">
+                        {/* Decorative background for premium feel */}
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[var(--color-purple-500)]/5 to-transparent rounded-full -mr-32 -mt-32 blur-3xl" />
+                        
+                        <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                            <div className="space-y-4">
+                                <Skeleton className="h-4 w-24 bg-[var(--color-purple-500)]/10" rounded="full" />
+                                <Skeleton className="h-10 sm:h-12 w-64 sm:w-80 bg-[var(--color-purple-500)]/5" />
+                                <Skeleton className="h-4 w-full max-w-md bg-[var(--color-purple-500)]/5" rounded="full" />
                             </div>
                         </div>
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                        <div className="relative z-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                             {[1, 2, 3, 4].map((i) => (
                                 <EventCard key={i} isLoading />
                             ))}
@@ -43,29 +47,33 @@ export function EventsSection({ isLoading = false, activities = [] }: EventsSect
         <section id="kalender" className="py-8 sm:py-10 md:py-12 bg-[var(--bg-main)]">
             <div className="mx-auto max-w-app px-4 sm:px-6 lg:px-8">
                 <div className="flex flex-col gap-6 rounded-xl bg-gradient-theme px-6 sm:px-10 pt-8 sm:pt-10 md:pt-12 pb-8 sm:pb-10 md:pt-12 shadow-xl">
-                    <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-                        <div className="space-y-3">
-                            <span className="text-xs font-black uppercase tracking-[0.2em] text-[var(--color-purple-600)] dark:text-[var(--color-purple-200)] bg-[var(--bg-main)]/50 dark:bg-black/20 w-fit px-4 py-1.5 rounded-full border border-[var(--color-purple-500)]/10 backdrop-blur-sm">
-                                Binnenkort
-                            </span>
-                            <h2 className="text-3xl font-black tracking-tight text-[var(--color-purple-800)] dark:text-white sm:text-4xl md:text-5xl">
-                                Onze Activiteiten
-                            </h2>
-                            <p className="max-w-xl text-sm font-medium text-[var(--color-purple-700)] dark:text-[var(--color-purple-100)] opacity-80">
-                                Van borrels tot workshops en van studiereizen tot sportevenementen. Er is altijd iets te doen! Mis niets en houd onze kalender in de gaten.
-                            </p>
-                        </div>
+                        <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                            <div className="space-y-4">
+                                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--color-purple-500)]/10 border border-[var(--color-purple-500)]/20 text-[10px] font-black uppercase tracking-widest text-[var(--color-purple-600)] dark:text-[var(--color-purple-300)] backdrop-blur-sm">
+                                    <div className="h-1.5 w-1.5 rounded-full bg-[var(--color-purple-500)] animate-pulse" />
+                                    Binnenkort
+                                </span>
+                                <h2 className="text-3xl font-black tracking-tight text-[var(--text-main)] sm:text-4xl md:text-5xl lg:text-6xl gradient-text">
+                                    Onze Activiteiten
+                                </h2>
+                                <p className="max-w-xl text-xs sm:text-sm font-medium text-[var(--text-muted)] leading-relaxed">
+                                    Van legendarische borrels tot verrijkende workshops en onvergetelijke studiereizen. Er is altijd een plek voor jou!
+                                </p>
+                            </div>
 
-                        {hasActivities && (
-                            <Link 
-                                href="/activiteiten"
-                                className="group flex w-fit items-center gap-3 rounded-full bg-[var(--bg-main)]/90 dark:bg-black/40 px-6 py-3.5 text-xs font-black uppercase tracking-widest text-[var(--color-purple-600)] dark:text-[var(--color-purple-200)] shadow-lg transition hover:scale-105 hover:bg-white dark:hover:bg-black border border-[var(--color-purple-500)]/20"
-                            >
-                                Alle activiteiten bekijken
-                                <div className="h-2 w-2 rounded-full bg-[var(--color-purple-500)] transition group-hover:scale-150" />
-                            </Link>
-                        )}
-                    </div>
+                            {hasActivities && (
+                                <Link 
+                                    href="/activiteiten"
+                                    className="group relative inline-flex items-center gap-4 px-8 py-4 bg-[var(--color-purple-600)] text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg shadow-[var(--color-purple-500)]/20 transition-all hover:scale-105 hover:shadow-xl hover:shadow-[var(--color-purple-500)]/40 active:scale-95 overflow-hidden"
+                                >
+                                    <div className="relative z-10">Alle activiteiten</div>
+                                    <div className="relative z-10 h-6 w-6 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                                        <ChevronRight className="h-4 w-4" />
+                                    </div>
+                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                                </Link>
+                            )}
+                        </div>
 
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         {hasActivities ? (
@@ -93,4 +101,3 @@ export function EventsSection({ isLoading = false, activities = [] }: EventsSect
     );
 }
 
-import { Calendar } from 'lucide-react';

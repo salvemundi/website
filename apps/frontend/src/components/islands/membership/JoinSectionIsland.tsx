@@ -29,11 +29,14 @@ export const JoinSectionIsland: React.FC<JoinSectionIslandProps> = ({
         return (
             <section className="px-6 py-8 sm:py-10 md:py-12 bg-[var(--bg-main)]" aria-busy="true">
                 <div className="mx-auto max-w-4xl text-center">
-                    <Skeleton className="mx-auto mb-6 h-12 w-72 max-w-full" rounded="full" />
-                    <Skeleton className="mx-auto mb-8 h-5 w-96 max-w-full" rounded="full" />
+                    <Skeleton className="mx-auto mb-6 h-12 w-80 max-w-full bg-slate-200 dark:bg-slate-800/20" rounded="full" />
+                    <div className="space-y-3 mb-10">
+                        <Skeleton className="mx-auto h-4 w-96 max-w-full bg-slate-200 dark:bg-slate-800/10" rounded="full" />
+                        <Skeleton className="mx-auto h-4 w-64 max-w-full bg-slate-200 dark:bg-slate-800/10" rounded="full" />
+                    </div>
                     <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-                        <Skeleton className="h-14 w-40" rounded="full" />
-                        <Skeleton className="h-14 w-40" rounded="full" />
+                        <Skeleton className="h-14 w-44 bg-theme-purple/20" rounded="full" />
+                        <Skeleton className="h-14 w-44 bg-slate-200 dark:bg-slate-800/10" rounded="full" />
                     </div>
                 </div>
             </section>

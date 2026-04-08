@@ -16,6 +16,7 @@ import {
     Settings,
     Layout
 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { 
     ActionCard,
     ListCard 
@@ -33,7 +34,19 @@ import {
  * Standardized across all sections to use the horizontal "Small Button" layout.
  * Organized into 2 columns as requested.
  */
-export async function DashboardHub() {
+export async function DashboardHub({ isLoading = false }: { isLoading?: boolean }) {
+    // Return early with skeleton items if loading
+    if (isLoading) {
+        const skeletonItems = [...Array(4)].map(() => ({}));
+        return (
+            <div className="space-y-12">
+                {renderSkeletonSection("Content", <Layout />)}
+                {renderSkeletonSection("Beheer", <Users />)}
+                {renderSkeletonSection("Systeem", <Settings />)}
+            </div>
+        );
+    }
+
     const stats = await getDashboardStats();
     const permissions = await getDashboardPermissions();
 
@@ -100,14 +113,50 @@ export async function DashboardHub() {
 }
 
 /**
+ * Skeleton helper for DashboardHub.
+ */
+function renderSkeletonSection(title: string, icon: React.ReactNode) {
+    return (
+        <div className="space-y-5">
+            <div className="flex items-center gap-3 px-1">
+                <div className="bg-[var(--beheer-accent)]/10 p-2 rounded-xl text-[var(--beheer-accent)] opacity-40">
+                    {React.cloneElement(icon as any, { className: 'h-4 w-4' })}
+                </div>
+                <h2 className="text-sm font-black text-[var(--beheer-text)] tracking-[0.2em] opacity-40">{title}</h2>
+                <div className="h-px flex-1 bg-[var(--beheer-border)] opacity-10" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[...Array(4)].map((_, i) => (
+                    <ActionCard key={i} isLoading={true} />
+                ))}
+            </div>
+        </div>
+    );
+}
+
+/**
  * Vertical list showing upcoming birthdays.
  */
-export async function BirthdaysList() {
-    const upcomingBirthdays = await getUpcomingBirthdays();
+export async function BirthdaysList({ isLoading = false }: { isLoading?: boolean }) {
+    const upcomingBirthdays = isLoading ? [] : await getUpcomingBirthdays();
 
     return (
-        <ListCard title="Aankomende Jarigen" icon={<Cake className="h-5 w-5" />}>
-            {upcomingBirthdays.length > 0 ? (
+        <ListCard title="Aankomende Jarigen" icon={<Cake className="h-5 w-5" />} isLoading={isLoading}>
+            {isLoading ? (
+                <div className="space-y-1">
+                    {[...Array(5)].map((_, i) => (
+                        <div key={i} className="flex items-center justify-between p-3.5 rounded-xl">
+                            <div className="flex items-center gap-3 flex-1">
+                                <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-800" />
+                                <div className="space-y-2 flex-1">
+                                    <Skeleton className="h-3 w-24" />
+                                    <Skeleton className="h-2 w-16 opacity-50" />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : upcomingBirthdays.length > 0 ? (
                 <div className="space-y-1">
                     {upcomingBirthdays.map((person) => (
                         <div key={person.id} className={`flex items-center justify-between p-3.5 rounded-xl transition-all hover:bg-[var(--beheer-accent)]/5 group ${person.isToday ? 'bg-amber-500/5 border border-amber-500/20' : ''}`}>
@@ -138,12 +187,25 @@ export async function BirthdaysList() {
 /**
  * Top sticker collectors rankings.
  */
-export async function TopStickersList() {
-    const topStickers = await getTopStickers();
+export async function TopStickersList({ isLoading = false }: { isLoading?: boolean }) {
+    const topStickers = isLoading ? [] : await getTopStickers();
 
     return (
-        <ListCard title="Top Sticker Verzamelaars" icon={<Award className="h-5 w-5" />}>
-            {topStickers.length > 0 ? (
+        <ListCard title="Top Sticker Verzamelaars" icon={<Award className="h-5 w-5" />} isLoading={isLoading}>
+            {isLoading ? (
+                <div className="space-y-1">
+                    {[...Array(3)].map((_, i) => (
+                        <div key={i} className="flex items-center justify-between p-3.5 rounded-xl">
+                            <div className="flex items-center gap-3 flex-1">
+                                <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800" />
+                                <div className="space-y-2 flex-1">
+                                    <Skeleton className="h-3 w-32" />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : topStickers.length > 0 ? (
                 <div className="space-y-1">
                     {topStickers.map((person, index) => (
                         <div key={person.id} className="flex items-center justify-between p-3.5 hover:bg-[var(--beheer-accent)]/5 rounded-xl transition-all group">
@@ -174,12 +236,27 @@ export async function TopStickersList() {
 /**
  * Activity signups overview.
  */
-export async function ActivitySignupsList() {
-    const latestEventsWithSignups = await getRecentActivities();
+export async function ActivitySignupsList({ isLoading = false }: { isLoading?: boolean }) {
+    const latestEventsWithSignups = isLoading ? [] : await getRecentActivities();
 
     return (
-        <ListCard title="Activiteiten aanmeldingen" icon={<Activity className="h-5 w-5" />}>
-            <div className="space-y-1">
+        <ListCard title="Activiteiten aanmeldingen" icon={<Activity className="h-5 w-5" />} isLoading={isLoading}>
+            {isLoading ? (
+                <div className="space-y-1">
+                    {[...Array(4)].map((_, i) => (
+                        <div key={i} className="flex items-center justify-between p-3.5 rounded-xl">
+                            <div className="flex-1 space-y-2">
+                                <Skeleton className="h-3 w-32" />
+                                <Skeleton className="h-2 w-20 opacity-50" />
+                            </div>
+                            <div className="shrink-0">
+                                <Skeleton className="h-6 w-8" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="space-y-1">
                 {latestEventsWithSignups.length > 0 ? (
                     latestEventsWithSignups.map((ev) => {
                         const eventDate = ev.event_date ? new Date(ev.event_date) : null;
@@ -221,6 +298,7 @@ export async function ActivitySignupsList() {
                     <p className="text-[var(--beheer-text-muted)] text-[10px] font-black tracking-widest text-center py-8 italic opacity-40">Geen recente activiteiten</p>
                 )}
             </div>
+            )}
         </ListCard>
     );
 }

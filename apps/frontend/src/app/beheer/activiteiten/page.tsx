@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
-import AdminDashboardSkeleton from '@/components/ui/admin/AdminDashboardSkeleton';
+import { AdminActivitiesSkeleton } from '@/components/ui/admin/activities/AdminActivitiesSkeleton';
 import AdminActivitiesIsland from '@/components/islands/admin/activities/AdminActivitiesIsland';
 import { getAdminActivities } from '@/server/actions/activiteiten.actions';
 import { getCommittees } from '@/server/actions/committees.actions';
@@ -21,7 +21,7 @@ export default async function AdminActiviteitenPage({
 
     return (
         <main className="min-h-screen bg-[var(--bg-main)]">
-            <Suspense fallback={<AdminDashboardSkeleton />}>
+            <Suspense fallback={<AdminActivitiesSkeleton />}>
                 <ActivitiesDataLoader searchParams={sParams} />
             </Suspense>
         </main>

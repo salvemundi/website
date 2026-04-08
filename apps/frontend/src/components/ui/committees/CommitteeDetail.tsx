@@ -23,23 +23,26 @@ export const CommitteeDetail: React.FC<CommitteeDetailProps> = ({
     // Skeleton-state: render exact dezelfde sectie-structuur
     if (isLoading) {
         return (
-            <div className="space-y-12 animate-in fade-in duration-500" aria-busy="true">
+            <div className="space-y-12 animate-pulse" aria-busy="true">
                 {/* Hero section skeleton */}
                 <section className="relative overflow-hidden rounded-[2.5rem] bg-[var(--bg-card)] dark:border dark:border-white/10 shadow-2xl">
                     <div className="flex flex-col lg:flex-row">
                         <div className="relative h-64 w-full lg:h-auto lg:w-1/2">
-                            <Skeleton className="h-full w-full" rounded="none" />
+                            <Skeleton className="h-full w-full bg-[var(--color-purple-500)]/10" rounded="none" />
                         </div>
                         <div className="flex w-full flex-col p-8 sm:p-12 lg:w-1/2">
-                            <Skeleton className="h-12 w-3/4 mb-6" rounded="lg" />
                             <div className="space-y-4 mb-8">
-                                <Skeleton className="h-4 w-full" rounded="full" />
-                                <Skeleton className="h-4 w-full" rounded="full" />
-                                <Skeleton className="h-4 w-2/3" rounded="full" />
+                                <Skeleton className="h-4 w-32 bg-[var(--color-purple-500)]/20" rounded="full" />
+                                <Skeleton className="h-12 w-3/4 bg-[var(--color-purple-500)]/10" rounded="lg" />
+                            </div>
+                            <div className="space-y-4 mb-8">
+                                <Skeleton className="h-4 w-full bg-[var(--color-purple-500)]/5" rounded="full" />
+                                <Skeleton className="h-4 w-full bg-[var(--color-purple-500)]/5" rounded="full" />
+                                <Skeleton className="h-4 w-2/3 bg-[var(--color-purple-500)]/5" rounded="full" />
                             </div>
                             <div className="flex flex-wrap gap-4 pt-4 border-t border-[var(--border-color)]/20">
-                                <Skeleton className="h-10 w-32" rounded="xl" />
-                                <Skeleton className="h-10 w-32" rounded="xl" />
+                                <Skeleton className="h-12 w-32 bg-[var(--color-purple-500)]/10" rounded="xl" />
+                                <Skeleton className="h-12 w-32 bg-[var(--color-purple-500)]/5" rounded="xl" />
                             </div>
                         </div>
                     </div>
@@ -49,13 +52,13 @@ export const CommitteeDetail: React.FC<CommitteeDetailProps> = ({
                 <div className="grid gap-12 lg:grid-cols-3">
                     <div className="lg:col-span-2 space-y-12">
                         <section className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-[2rem] p-8 sm:p-10 shadow-lg">
-                            <Skeleton className="h-8 w-48 mb-8" rounded="lg" />
-                            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                            <Skeleton className="h-8 w-48 mb-8 bg-[var(--color-purple-500)]/10" rounded="lg" />
+                            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
                                 {[1, 2, 3, 4, 5, 6].map(i => (
                                     <div key={i} className="flex flex-col items-center p-6 rounded-2xl bg-[var(--bg-soft)]/50 border border-[var(--border-color)]/10">
-                                        <Skeleton className="h-20 w-20 mb-4" rounded="full" />
-                                        <Skeleton className="h-6 w-24 mb-2" rounded="md" />
-                                        <Skeleton className="h-3 w-16" rounded="full" />
+                                        <Skeleton className="h-24 w-24 mb-4 bg-[var(--color-purple-500)]/10 border-4 border-white/5" rounded="full" />
+                                        <Skeleton className="h-6 w-32 mb-2 bg-[var(--color-purple-500)]/10" rounded="md" />
+                                        <Skeleton className="h-3 w-20 bg-[var(--color-purple-500)]/5" rounded="full" />
                                     </div>
                                 ))}
                             </div>
@@ -64,14 +67,14 @@ export const CommitteeDetail: React.FC<CommitteeDetailProps> = ({
 
                     <aside className="space-y-8">
                         <section className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-[2rem] p-8 shadow-lg">
-                            <Skeleton className="h-7 w-32 mb-6" rounded="lg" />
-                            <div className="space-y-6">
+                            <Skeleton className="h-7 w-32 mb-8 bg-[var(--color-purple-500)]/10" rounded="lg" />
+                            <div className="space-y-8">
                                 {[1, 2, 3].map(i => (
                                     <div key={i} className="flex items-center gap-4">
-                                        <Skeleton className="h-12 w-12" rounded="xl" />
+                                        <Skeleton className="h-14 w-14 bg-[var(--color-purple-500)]/10" rounded="2xl" />
                                         <div className="flex-1 space-y-2">
-                                            <Skeleton className="h-3 w-20" rounded="full" />
-                                            <Skeleton className="h-4 w-32" rounded="full" />
+                                            <Skeleton className="h-3 w-16 bg-[var(--color-purple-500)]/10" rounded="full" />
+                                            <Skeleton className="h-5 w-32 bg-[var(--color-purple-500)]/5" rounded="full" />
                                         </div>
                                     </div>
                                 ))}
