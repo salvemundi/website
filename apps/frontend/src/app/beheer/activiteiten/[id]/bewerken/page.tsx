@@ -18,20 +18,22 @@ export const metadata: Metadata = {
 export default async function BewerkenActiviteitPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;
     
+    // Check initial session to avoid ghost skeletons for guests
+    const session = await auth.api.getSession({
+        headers: await headers()
+    });
+    if (!session || !session.user) return <AdminUnauthorized title="Activiteit Bewerken" />;
+
     return (
         <main className="min-h-screen bg-[var(--bg-main)]">
             <Suspense fallback={<ActiviteitBewerkenSkeleton />}>
-                <EditFormLoader id={resolvedParams.id} />
+                <EditFormLoader id={resolvedParams.id} session={session} />
             </Suspense>
         </main>
     );
 }
 
-async function EditFormLoader({ id }: { id: string }) {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
-    if (!session || !session.user) return <AdminUnauthorized title="Activiteit Bewerken" />;
+async function EditFormLoader({ id, session }: { id: string, session: any }) {
 
     const user = session.user as any;
     const memberships = user.committees || [];

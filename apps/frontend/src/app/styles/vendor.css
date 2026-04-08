@@ -8,16 +8,6 @@
 
 @layer components {
 
-    /* ── Signup Form Visibility Fix ────────────────────────────────────────── */
-    /* Ensures inputs are always visible when a conflicting global rule hides them. */
-    .signup-form-container :is(input, textarea, select, .PhoneInputInput) {
-        display: block;
-        visibility: visible;
-        width: 100%;
-        height: auto;
-        opacity: 1;
-    }
-
     /* ── react-chrono Timeline Overrides ───────────────────────────────────── */
     /* react-chrono inlines overflow:hidden and fixed heights on card containers.
      These restore natural content flow. Scoped to avoid leaking to other cards. */

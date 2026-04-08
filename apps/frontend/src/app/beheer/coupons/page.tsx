@@ -16,15 +16,18 @@ export default async function BeheerCouponsPage() {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) redirect('/login');
 
-    const coupons = await getCoupons().catch(() => []);
-
     return (
         <main className="min-h-screen bg-[var(--bg-main)]">
             <Suspense fallback={<CouponPageLoader />}>
-                <CouponManagementIsland initialCoupons={coupons} />
+                <CouponDataLoader />
             </Suspense>
         </main>
     );
+}
+
+async function CouponDataLoader() {
+    const coupons = await getCoupons().catch(() => []);
+    return <CouponManagementIsland initialCoupons={coupons} />;
 }
 
 function CouponPageLoader() {

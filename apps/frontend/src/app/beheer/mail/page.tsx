@@ -15,16 +15,19 @@ export default async function BeheerMailPage() {
     const { isAuthorized } = await checkAdminAccess();
     if (!isAuthorized) redirect('/login');
 
-    const settingsRes = await getMailSettings();
-    const initialSettings = settingsRes.success ? settingsRes.settings || [] : [];
-
     return (
         <main className="min-h-screen bg-[var(--bg-main)]">
             <Suspense fallback={<MailPageLoader />}>
-                <MailManagementIsland initialSettings={initialSettings} />
+                <MailDataLoader />
             </Suspense>
         </main>
     );
+}
+
+async function MailDataLoader() {
+    const settingsRes = await getMailSettings();
+    const initialSettings = settingsRes.success ? settingsRes.settings || [] : [];
+    return <MailManagementIsland initialSettings={initialSettings} />;
 }
 
 function MailPageLoader() {

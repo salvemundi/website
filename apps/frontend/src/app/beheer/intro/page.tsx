@@ -21,6 +21,16 @@ export default async function BeheerIntroPage() {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) redirect('/login');
 
+    return (
+        <main className="min-h-screen bg-[var(--bg-main)]">
+            <Suspense fallback={<IntroPageLoader />}>
+                <IntroDataLoader />
+            </Suspense>
+        </main>
+    );
+}
+
+async function IntroDataLoader() {
     const [signups, parents, blogs, planning, settings] = await Promise.all([
         getIntroSignups().catch(() => []),
         getIntroParentSignups().catch(() => []),
@@ -30,17 +40,13 @@ export default async function BeheerIntroPage() {
     ]);
 
     return (
-        <main className="min-h-screen bg-[var(--bg-main)]">
-            <Suspense fallback={<IntroPageLoader />}>
-                <IntroManagementIsland
-                    initialSignups={signups}
-                    initialParents={parents}
-                    initialBlogs={blogs}
-                    initialPlanning={planning}
-                    initialIntroVisible={settings.show ?? false}
-                />
-            </Suspense>
-        </main>
+        <IntroManagementIsland
+            initialSignups={signups}
+            initialParents={parents}
+            initialBlogs={blogs}
+            initialPlanning={planning}
+            initialIntroVisible={settings.show ?? false}
+        />
     );
 }
 

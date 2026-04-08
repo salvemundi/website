@@ -20,7 +20,7 @@ import { query } from '@/lib/db';
 import { getRedis } from '@/server/auth/redis-client';
 import { FLAGS_CACHE_KEY } from '@/lib/feature-flags';
 import { revalidateTag } from 'next/cache';
-import { createTripDb, updateTripDb } from './reis-db.utils';
+import { createTripDb, updateTripDb, fetchAllTripsDb } from './reis-db.utils';
 
 
 
@@ -43,6 +43,27 @@ async function handleImageUpload(formData: FormData): Promise<string | null> {
         return null;
     }
 }
+ 
+ export async function getAdminTrips() {
+     await requireReisAdmin();
+     try {
+         return await fetchAllTripsDb();
+     } catch (error) {
+         console.error('[AdminReisActions] getAdminTrips failed:', error);
+         return [];
+     }
+ }
+ 
+ export async function getAdminTripById(id: number) {
+     await requireReisAdmin();
+     try {
+         const { rows } = await query('SELECT id, name FROM trips WHERE id = $1 LIMIT 1', [id]);
+         return rows?.[0] || null;
+     } catch (error) {
+         console.error('[AdminReisActions] getAdminTripById failed:', error);
+         return null;
+     }
+ }
 
 export async function createTrip(prevState: any, formData: FormData) {
     await requireReisAdmin();

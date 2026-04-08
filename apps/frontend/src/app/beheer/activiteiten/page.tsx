@@ -18,21 +18,26 @@ export default async function AdminActiviteitenPage({
     searchParams: Promise<{ q?: string; filter?: string }> 
 }) {
     const sParams = await searchParams;
+    const session = await auth.api.getSession({
+        headers: await headers()
+    });
 
     return (
         <main className="min-h-screen bg-[var(--bg-main)]">
             <Suspense fallback={<AdminActivitiesSkeleton />}>
-                <ActivitiesDataLoader searchParams={sParams} />
+                <ActivitiesDataLoader searchParams={sParams} session={session} />
             </Suspense>
         </main>
     );
 }
 
-async function ActivitiesDataLoader({ searchParams }: { searchParams: { q?: string; filter?: string } }) {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
-    
+async function ActivitiesDataLoader({ 
+    searchParams, 
+    session 
+}: { 
+    searchParams: { q?: string; filter?: string };
+    session: any;
+}) {
     // Fetch ALL data server-side so the client island handles the rest for maximum speed
     const [initialEvents, committees] = await Promise.all([
         getAdminActivities(undefined, 'all').catch(() => []),

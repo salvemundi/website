@@ -14,20 +14,23 @@ import { readUser, readItems as dReadItems } from '@directus/sdk';
 
 export default async function LidDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;
+    
+    // Check initial session to avoid ghost skeletons for guests/unauthorized
+    const session = await auth.api.getSession({
+        headers: await headers()
+    });
+    if (!session || !session.user) return <AdminUnauthorized title="Lid Detail" />;
+
     return (
         <main className="min-h-screen bg-[var(--bg-main)]">
             <Suspense fallback={<MemberDetailSkeleton />}>
-                <LidDataLoader id={resolvedParams.id} />
+                <LidDataLoader id={resolvedParams.id} session={session} />
             </Suspense>
         </main>
     );
 }
 
-async function LidDataLoader({ id }: { id: string }) {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
-    if (!session || !session.user) return <AdminUnauthorized title="Lid Detail" />;
+async function LidDataLoader({ id, session }: { id: string, session: any }) {
 
     const user = session.user as any;
     const memberships = user.committees || [];
