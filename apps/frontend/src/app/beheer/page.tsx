@@ -6,12 +6,6 @@ import {
     TopStickersList, 
     ActivitySignupsList
 } from '@/components/ui/admin/dashboard/DashboardSections';
-import { 
-    StatCardSkeleton, 
-    ListCardSkeleton, 
-    ActivitySignupsSkeleton,
-    HubSkeleton
-} from '@/components/ui/admin/dashboard/DashboardSkeletons';
 import { checkAdminAccess, getDashboardPermissions } from '@/server/actions/admin.actions';
 
 export default async function BeheerPage() {
@@ -44,13 +38,13 @@ export default async function BeheerPage() {
                     
                     {/* Main Hub: Navigation & Key Stats */}
                     <div className={isLimitedAccess ? 'w-full space-y-12' : 'lg:col-span-8 space-y-12'}>
-                        <Suspense fallback={<HubSkeleton isLimitedAccess={isLimitedAccess} />}>
+                        <Suspense fallback={<DashboardHub isLoading />}>
                             <DashboardHub />
                         </Suspense>
 
                         {!isLimitedAccess && (
                             <div className="pt-12 border-t border-[var(--beheer-border)] opacity-60 hover:opacity-100 transition-opacity hidden md:block">
-                                <Suspense fallback={<ListCardSkeleton rows={3} />}>
+                                <Suspense fallback={<TopStickersList isLoading />}>
                                     <TopStickersList />
                                 </Suspense>
                             </div>
@@ -61,19 +55,19 @@ export default async function BeheerPage() {
                     {/* Side Sidebar: Real-time activities & birthdays */}
                     <div className={isLimitedAccess ? 'w-full grid grid-cols-1 md:grid-cols-2 gap-6 pt-12 border-t border-[var(--beheer-border)]' : 'lg:col-span-4 space-y-8'}>
                         <div className="space-y-6">
-                            <Suspense fallback={<ActivitySignupsSkeleton />}>
+                            <Suspense fallback={<ActivitySignupsList isLoading />}>
                                 <ActivitySignupsList />
                             </Suspense>
                         </div>
                         
                         <div className="space-y-6">
-                            <Suspense fallback={<ListCardSkeleton rows={5} />}>
+                            <Suspense fallback={<BirthdaysList isLoading />}>
                                 <BirthdaysList />
                             </Suspense>
 
                             {isLimitedAccess && (
                                 <div className="md:hidden opacity-60">
-                                    <Suspense fallback={<ListCardSkeleton rows={3} />}>
+                                    <Suspense fallback={<TopStickersList isLoading />}>
                                         <TopStickersList />
                                     </Suspense>
                                 </div>
@@ -87,13 +81,6 @@ export default async function BeheerPage() {
 }
 
 
-function ActivitySignupsSkeletonWrapper() {
-    return (
-        <div className="space-y-6">
-            <ActivitySignupsSkeleton />
-        </div>
-    );
-}
-// Note: StatsGridSkeleton was removed and replaced by HubSkeleton from DashboardSkeletons.tsx
+// Note: All separate skeleton components were removed in favor of integrated isLoading props on Dashboard sections.
 
 
