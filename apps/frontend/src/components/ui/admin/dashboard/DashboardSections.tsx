@@ -34,6 +34,11 @@ import {
  * Standardized across all sections to use the horizontal "Small Button" layout.
  * Organized into 2 columns as requested.
  */
+/**
+ * Universal Dashboard Hub.
+ * Standardized across all sections to use the horizontal "Small Button" layout.
+ * Organized into 2 columns as requested.
+ */
 export async function DashboardHub({ 
     isLoading = false,
     permissions: serverPermissions = null
@@ -41,51 +46,62 @@ export async function DashboardHub({
     isLoading?: boolean;
     permissions?: any;
 }) {
+    const permissions = serverPermissions || await getDashboardPermissions();
+    
+    // Define items in a way that respects permissions for both skeleton and real state
+    const getGroups = (stats: any) => [
+        {
+            title: "Content",
+            icon: <Layout />,
+            items: [
+                { title: "Activiteiten", value: stats.upcomingEventsCount, icon: <Calendar />, subtitle: "Aankomende Events", href: "/beheer/activiteiten", colorClass: "purple" as const },
+                { title: "Intro", value: stats.introSignups, icon: <FileText />, subtitle: "Aanmeldingen", href: "/beheer/intro", colorClass: "blue" as const, disabled: !permissions.canAccessIntro },
+                { title: "Reis", value: stats.reisSignups, icon: <Globe />, subtitle: "Aanmeldingen", href: "/beheer/reis", colorClass: "teal" as const, disabled: !permissions.canAccessReis },
+                { title: "Kroegentocht", value: stats.pubCrawlSignups, icon: <Ticket />, subtitle: "Groepen", href: "/beheer/kroegentocht", colorClass: "orange" as const, disabled: !permissions.canAccessKroegentocht },
+            ].filter(i => !i.disabled)
+        },
+        {
+            title: "Beheer",
+            icon: <Users />,
+            items: [
+                { title: "Leden", value: stats.totalMembers, icon: <Users />, subtitle: "Leden", href: "/beheer/leden", colorClass: "green" as const, disabled: !permissions.canAccessMembers },
+                { title: "Commissies", value: "Beheer", icon: <Shield />, subtitle: "Vereniging", href: "/beheer/vereniging", colorClass: "orange" as const, disabled: !permissions.canAccessSync },
+                { title: "Stickers", value: "Beheer", icon: <MapPin />, subtitle: "Verzameling", href: "/beheer/stickers", colorClass: "purple" as const, disabled: !permissions.canAccessStickers },
+                { title: "Coupons", value: stats.totalCoupons, icon: <Ticket />, subtitle: "Actieve Codes", href: "/beheer/coupons", colorClass: "amber" as const, disabled: !permissions.canAccessCoupons },
+            ].filter(i => !i.disabled)
+        },
+        {
+            title: "Systeem",
+            icon: <Settings />,
+            items: [
+                { title: "Mail", value: "Beheer", icon: <Mail />, subtitle: "Mailinglijsten", href: "/beheer/mail", colorClass: "purple" as const, disabled: !permissions.canAccessMail },
+                { title: "Logboek", value: "Bekijken", icon: <FileText />, subtitle: "Activiteiten", href: "/beheer/logging", colorClass: "amber" as const, disabled: !permissions.canAccessLogging },
+                { title: "Test Modus", value: "Inschakelen", icon: <UserCheck />, subtitle: "Impersonatie", href: "/beheer/impersonate", colorClass: "teal" as const, disabled: !permissions.isIct },
+            ].filter(i => !i.disabled)
+        }
+    ];
+
     // Return early with skeleton items if loading
     if (isLoading) {
+        const dummyStats = { upcomingEventsCount: 0, introSignups: 0, reisSignups: 0, pubCrawlSignups: 0, totalMembers: 0, totalCoupons: 0 };
+        const groups = getGroups(dummyStats);
+
         return (
             <div className="space-y-12">
-                {(!serverPermissions || serverPermissions.canAccessIntro || serverPermissions.canAccessReis) && 
-                    renderSkeletonSection("Content", <Layout />)}
-                
-                {(!serverPermissions || serverPermissions.canAccessSync || serverPermissions.canAccessStickers) && 
-                    renderSkeletonSection("Beheer", <Users />)}
-                
-                {(!serverPermissions || serverPermissions.canAccessMail || serverPermissions.canAccessLogging || serverPermissions.isIct) && 
-                    renderSkeletonSection("Systeem", <Settings />)}
+                {groups.map((group, idx) => (
+                    group.items.length > 0 && (
+                        <RenderSkeletonSection key={idx} title={group.title} icon={group.icon} count={group.items.length} />
+                    )
+                ))}
             </div>
         );
     }
 
     const stats = await getDashboardStats();
-    const permissions = serverPermissions || await getDashboardPermissions();
-
-    // Group 1: CONTENT
-    const contentItems = [
-        { title: "Activiteiten", value: stats.upcomingEventsCount, icon: <Calendar />, subtitle: "Aankomende Events", href: "/beheer/activiteiten", colorClass: "purple" as const },
-        { title: "Intro", value: stats.introSignups, icon: <FileText />, subtitle: "Aanmeldingen", href: "/beheer/intro", colorClass: "blue" as const, disabled: !permissions.canAccessIntro },
-        { title: "Reis", value: stats.reisSignups, icon: <Globe />, subtitle: "Aanmeldingen", href: "/beheer/reis", colorClass: "teal" as const },
-        { title: "Kroegentocht", value: stats.pubCrawlSignups, icon: <Ticket />, subtitle: "Groepen", href: "/beheer/kroegentocht", colorClass: "orange" as const },
-    ];
-
-    // Group 2: BEHEER
-    const manageItems = [
-        { title: "Leden", value: stats.totalMembers, icon: <Users />, subtitle: "Leden", href: "/beheer/leden", colorClass: "green" as const },
-        { title: "Commissies", value: "Beheer", icon: <Shield />, subtitle: "Vereniging", href: "/beheer/vereniging", colorClass: "orange" as const, disabled: !permissions.canAccessSync },
-        { title: "Stickers", value: "Beheer", icon: <MapPin />, subtitle: "Verzameling", href: "/beheer/stickers", colorClass: "purple" as const, disabled: !permissions.canAccessStickers },
-        { title: "Coupons", value: stats.totalCoupons, icon: <Ticket />, subtitle: "Actieve Codes", href: "/beheer/coupons", colorClass: "amber" as const },
-    ];
-
-    // Group 3: SYSTEEM
-    const systemItems = [
-        { title: "Mail", value: "Beheer", icon: <Mail />, subtitle: "Mailinglijsten", href: "/beheer/mail", colorClass: "purple" as const, disabled: !permissions.canAccessMail },
-        { title: "Logboek", value: "Bekijken", icon: <FileText />, subtitle: "Activiteiten", href: "/beheer/logging", colorClass: "amber" as const, disabled: !permissions.canAccessLogging },
-        { title: "Test Modus", value: "Inschakelen", icon: <UserCheck />, subtitle: "Impersonatie", href: "/beheer/impersonate", colorClass: "teal" as const, disabled: !permissions.isIct },
-    ];
+    const groups = getGroups(stats);
 
     const renderSection = (title: string, items: any[], icon: React.ReactNode) => {
-        const visibleItems = items.filter(i => !i.disabled);
-        if (visibleItems.length === 0) return null;
+        if (items.length === 0) return null;
 
         return (
             <div className="space-y-5">
@@ -97,7 +113,7 @@ export async function DashboardHub({
                     <div className="h-px flex-1 bg-gradient-to-r from-[var(--beheer-border)] to-transparent" />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {visibleItems.map((item, i) => (
+                    {items.map((item, i) => (
                         <ActionCard 
                             key={i} 
                             title={item.title}
@@ -115,9 +131,11 @@ export async function DashboardHub({
 
     return (
         <div className="space-y-12">
-            {renderSection("Content", contentItems, <Layout />)}
-            {renderSection("Beheer", manageItems, <Users />)}
-            {renderSection("Systeem", systemItems, <Settings />)}
+            {groups.map((group, idx) => (
+                <React.Fragment key={idx}>
+                    {renderSection(group.title, group.items, group.icon)}
+                </React.Fragment>
+            ))}
         </div>
     );
 }
@@ -125,7 +143,7 @@ export async function DashboardHub({
 /**
  * Skeleton helper for DashboardHub.
  */
-function renderSkeletonSection(title: string, icon: React.ReactNode) {
+function RenderSkeletonSection({ title, icon, count }: { title: string, icon: React.ReactNode, count: number }) {
     return (
         <div className="space-y-5">
             <div className="flex items-center gap-3 px-1">
@@ -136,7 +154,7 @@ function renderSkeletonSection(title: string, icon: React.ReactNode) {
                 <div className="h-px flex-1 bg-[var(--beheer-border)] opacity-10" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[...Array(4)].map((_, i) => (
+                {[...Array(count)].map((_, i) => (
                     <ActionCard key={i} isLoading={true} />
                 ))}
             </div>

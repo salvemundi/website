@@ -8,9 +8,9 @@ import AdminReisTableIsland from '@/components/islands/admin/AdminReisTableIslan
 import { Plane, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getSystemDirectus } from '@/lib/directus';
-import { readItems } from '@directus/sdk';
 import { getReisSiteSettings } from '@/server/actions/reis.actions';
+import { checkAdminAccess } from '@/server/actions/admin.actions';
+import { getAdminTrips, getAdminTripById } from '@/server/actions/reis-admin-core.actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,13 +26,9 @@ export async function generateMetadata({ searchParams }: AdminReisPageProps): Pr
     
     if (tripIdParam) {
         try {
-            const trip = await getSystemDirectus().request(readItems('trips', {
-                filter: { id: { _eq: Number(tripIdParam) } },
-                fields: ['name'] as any,
-                limit: 1
-            }));
-            if (trip && trip[0]) {
-                title = `${trip[0].name} - Aanmeldingen | SV Salve Mundi`;
+            const trip = await getAdminTripById(Number(tripIdParam));
+            if (trip) {
+                title = `${trip.name} - Aanmeldingen | SV Salve Mundi`;
             }
         } catch (e) {
             // Fallback to default
@@ -43,6 +39,8 @@ export async function generateMetadata({ searchParams }: AdminReisPageProps): Pr
 }
 
 export default async function AdminReisPage({ searchParams }: AdminReisPageProps) {
+    const { user } = await checkAdminAccess();
+
     // We pass searchParams down to the content component which handles the actual fetching
     return (
         <main className="min-h-screen bg-[var(--bg-main)]">
@@ -69,11 +67,7 @@ async function AdminReisDashboardContent({ searchParams }: AdminReisPageProps) {
     
     try {
         const [tripsRes, settingsRes] = await Promise.all([
-            getSystemDirectus().request(readItems('trips', {
-                fields: ['id', 'name', 'event_date', 'start_date', 'end_date', 'allow_final_payments'] as any,
-                sort: ['-event_date'],
-                limit: -1
-            })),
+            getAdminTrips(),
             getReisSiteSettings()
         ]);
         

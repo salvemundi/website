@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { MapPin, Loader2 } from 'lucide-react';
 import { getStickers } from '@/server/actions/admin-stickers.actions';
 import StickerManagementIsland from '@/components/islands/admin/StickerManagementIsland';
+import { checkAdminAccess } from '@/server/actions/admin.actions';
 
 export const metadata = {
     title: 'Sticker Beheer | Salve Mundi',
@@ -9,8 +10,7 @@ export const metadata = {
 };
 
 export default async function StickersAdminPage() {
-    // Fetch initial stickers on server
-    const stickers = await getStickers().catch(() => []);
+    const { user } = await checkAdminAccess();
 
     return (
         <main className="min-h-screen bg-[var(--bg-main)]">
@@ -20,8 +20,13 @@ export default async function StickersAdminPage() {
                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--beheer-text-muted)] animate-pulse">Geodata ophalen...</p>
                 </div>
             }>
-                <StickerManagementIsland initialStickers={stickers} />
+                <StickersDataLoader />
             </Suspense>
         </main>
     );
+}
+
+async function StickersDataLoader() {
+    const stickers = await getStickers().catch(() => []);
+    return <StickerManagementIsland initialStickers={stickers} />;
 }

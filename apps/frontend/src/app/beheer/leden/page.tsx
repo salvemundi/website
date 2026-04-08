@@ -35,18 +35,6 @@ export default async function LedenPage({
     const params = await searchParams;
     const tab = (params.tab as 'active' | 'inactive') || 'active';
 
-    return (
-        <div className="min-h-screen bg-[var(--bg-main)]">
-            <Suspense key={tab} fallback={<MemberListSkeleton />}>
-                <LedenDataLoader 
-                    tab={tab} 
-                />
-            </Suspense>
-        </div>
-    );
-}
-
-async function LedenDataLoader({ tab }: { tab: 'active' | 'inactive' }) {
     const session = await auth.api.getSession({
         headers: await headers()
     });
@@ -65,6 +53,18 @@ async function LedenDataLoader({ tab }: { tab: 'active' | 'inactive' }) {
         );
     }
 
+    return (
+        <div className="min-h-screen bg-[var(--bg-main)]">
+            <Suspense key={tab} fallback={<MemberListSkeleton />}>
+                <LedenDataLoader 
+                    tab={tab} 
+                />
+            </Suspense>
+        </div>
+    );
+}
+
+async function LedenDataLoader({ tab }: { tab: 'active' | 'inactive' }) {
     let members: any[] = [];
     let totalCount = 0;
 

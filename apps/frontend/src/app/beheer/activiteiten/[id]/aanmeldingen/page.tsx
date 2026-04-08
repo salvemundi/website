@@ -21,20 +21,22 @@ export const metadata: Metadata = {
 export default async function AanmeldingenPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;
     
+    // Check initial session to avoid ghost skeletons for guests
+    const session = await auth.api.getSession({
+        headers: await headers()
+    });
+    if (!session || !session.user) return <AdminUnauthorized title="Activiteit Aanmeldingen" />;
+
     return (
         <main className="min-h-screen bg-[var(--bg-main)]">
             <Suspense fallback={<AanmeldingenListSkeleton />}>
-                <SignupsDataLoader id={resolvedParams.id} />
+                <SignupsDataLoader id={resolvedParams.id} session={session} />
             </Suspense>
         </main>
     );
 }
 
-async function SignupsDataLoader({ id }: { id: string }) {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
-    if (!session || !session.user) return <AdminUnauthorized title="Activiteit Aanmeldingen" />;
+async function SignupsDataLoader({ id, session }: { id: string, session: any }) {
 
     const user = session.user as any;
     const memberships = user.committees || [];
