@@ -7,6 +7,7 @@ import { Skeleton } from '../../ui/Skeleton';
 
 interface JoinSectionIslandProps {
     isLoading?: boolean;
+    serverUser?: any | null; // Optional server-side user status
 }
 
 /**
@@ -14,15 +15,22 @@ interface JoinSectionIslandProps {
  * Hybride loading-state om CLS te voorkomen tijdens sessie-checks.
  */
 export const JoinSectionIsland: React.FC<JoinSectionIslandProps> = ({ 
-    isLoading = false 
+    isLoading = false,
+    serverUser = undefined 
 }) => {
     const [mounted, setMounted] = useState(false);
     useEffect(() => { setMounted(true); }, []);
 
-    const { data: session, isPending } = authClient.useSession();
-    const user = session?.user as (Record<string, unknown> & { membership_status?: string; membership_expiry?: string | null }) | null ?? null;
+    // Try client-side hook if serverUser isn't provided
+    const { data: session, isPending: clientPending } = authClient.useSession();
+    
+    // Resolve identity: Use serverUser if passed, else fallback to client session
+    const user = serverUser !== undefined 
+        ? serverUser 
+        : (session?.user as any ?? null);
 
-    const isReallyLoading = isLoading || !mounted || isPending;
+    // Identity-aware loading logic
+    const isReallyLoading = isLoading || !mounted || (serverUser === undefined && clientPending);
 
     // Loading state: toon skeleton om CLS te voorkomen
     if (isReallyLoading) {

@@ -30,13 +30,17 @@ interface StickerMapIslandProps {
 export default function StickerMapIsland({
     initialStickers,
     user,
-    isLoading = false
-}: StickerMapIslandProps) {
+    isLoading = false,
+    isAuthenticated: serverAuth = undefined
+}: StickerMapIslandProps & { isAuthenticated?: boolean }) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [stickers, setStickers] = useState(initialStickers);
     const [isPending, startTransition] = useTransition();
     const [isLocating, setIsLocating] = useState(false);
-    
+
+    // Resolve auth status for skeleton
+    const isAuthenticated = serverAuth !== undefined ? serverAuth : !!user;
+
     // UI State
     const [showAddModal, setShowAddModal] = useState(false);
     const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -169,6 +173,7 @@ export default function StickerMapIsland({
                     
                     {/* Floating Controls Skeleton */}
                     <div className="absolute top-4 left-4 right-4 md:right-auto md:w-80 space-y-3">
+                        {/* Filter box skeleton */}
                         <div className="bg-[var(--bg-card)]/90 backdrop-blur-md rounded-2xl p-4 border border-white/10 space-y-4">
                             <Skeleton className="h-4 w-24 bg-[var(--text-muted)]/10" rounded="full" />
                             <div className="space-y-3">
@@ -176,9 +181,22 @@ export default function StickerMapIsland({
                                 <Skeleton className="h-8 w-full bg-[var(--text-muted)]/5" rounded="lg" />
                             </div>
                         </div>
-                        <div className="bg-[var(--bg-card)]/90 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-                            <Skeleton className="h-12 w-full bg-[var(--text-muted)]/10" rounded="xl" />
-                        </div>
+
+                        {/* Identity-aware CTA skeleton */}
+                        {isAuthenticated ? (
+                            <div className="bg-[var(--bg-card)]/90 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+                                <Skeleton className="h-12 w-full bg-theme-purple/20" rounded="xl" />
+                                <Skeleton className="h-3 w-3/4 mx-auto mt-2 bg-[var(--text-muted)]/10" rounded="full" />
+                            </div>
+                        ) : (
+                            <div className="bg-orange-500/80 backdrop-blur-md rounded-2xl p-4 border border-white/20 flex gap-3">
+                                <Skeleton className="w-10 h-10 bg-white/20 shrink-0" rounded="lg" />
+                                <div className="space-y-2 flex-1">
+                                    <Skeleton className="h-4 w-2/3 bg-white/20" rounded="full" />
+                                    <Skeleton className="h-3 w-full bg-white/10" rounded="full" />
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

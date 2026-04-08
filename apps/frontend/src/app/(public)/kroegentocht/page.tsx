@@ -15,18 +15,10 @@ export const metadata = {
     description: 'Schrijf je in voor de gezelligste kroegentocht van Eindhoven!',
 };
 
-async function TicketsSection() {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
-
-    if (!session?.user?.email) return null;
-
-    const tickets = await getKroegentochtTickets(session.user.email);
-    
+async function TicketsSection({ userEmail }: { userEmail: string }) {
+    const tickets = await getKroegentochtTickets(userEmail);
     if (tickets.length === 0) return null;
-
-    return <KroegentochtTicketsIsland initialTickets={tickets} userEmail={session.user.email} />;
+    return <KroegentochtTicketsIsland initialTickets={tickets} userEmail={userEmail} />;
 }
 
 async function RegistrationSection() {
@@ -44,8 +36,6 @@ async function RegistrationSection() {
         );
     }
 
-    // Site settings logic (extracted from legacy siteSettings.show)
-    // In V7 we use the event's show property directly or can add a secondary check if needed
     if (!event.show) {
         return (
             <div className="bg-slate-100 dark:bg-white/5 p-8 rounded-3xl text-center border border-slate-200 dark:border-white/10">
@@ -60,12 +50,10 @@ async function RegistrationSection() {
 
     return (
         <div className="flex flex-col lg:flex-row gap-8 items-start">
-            {/* Left: Form */}
             <div className="w-full lg:w-1/2">
                 <KroegentochtFormIsland event={event} />
             </div>
             
-            {/* Right: Info Panels (restored from legacy) */}
             <div className="w-full lg:w-1/2 flex flex-col gap-6">
                 <section className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-lg">
                     <h2 className="text-xl sm:text-2xl font-black text-[var(--color-purple-theme)] mb-6 flex items-center gap-3">
@@ -74,7 +62,7 @@ async function RegistrationSection() {
                     </h2>
                     <div className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-400 leading-relaxed space-y-4">
                         {event.description ? (
-                            event.description.split('\n').map((p, i) => (
+                            event.description.split('\n').map((p: string, i: number) => (
                                 <p key={i}>{p}</p>
                             ))
                         ) : (
@@ -155,7 +143,12 @@ async function RegistrationSection() {
     );
 }
 
-export default function KroegentochtPage() {
+export default async function KroegentochtPage() {
+    const session = await auth.api.getSession({
+        headers: await headers()
+    });
+    const isAuthenticated = !!session;
+
     return (
         <div>
             <PageHeader
@@ -168,9 +161,11 @@ export default function KroegentochtPage() {
             />
 
             <main className="mx-auto max-w-7xl px-4 py-8 sm:py-10 md:py-12">
-                <Suspense fallback={<KroegentochtTicketsSkeleton />}>
-                    <TicketsSection />
-                </Suspense>
+                {isAuthenticated && (
+                    <Suspense fallback={<KroegentochtTicketsSkeleton />}>
+                        <TicketsSection userEmail={session.user.email!} />
+                    </Suspense>
+                )}
 
                 <Suspense fallback={
                     <div className="flex flex-col lg:flex-row gap-8">

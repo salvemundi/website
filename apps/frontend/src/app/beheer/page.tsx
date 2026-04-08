@@ -38,8 +38,8 @@ export default async function BeheerPage() {
                     
                     {/* Main Hub: Navigation & Key Stats */}
                     <div className={isLimitedAccess ? 'w-full space-y-12' : 'lg:col-span-8 space-y-12'}>
-                        <Suspense fallback={<DashboardHub isLoading />}>
-                            <DashboardHub />
+                        <Suspense fallback={<DashboardHub isLoading permissions={permissions} />}>
+                            <DashboardHub permissions={permissions} />
                         </Suspense>
 
                         {!isLimitedAccess && (
