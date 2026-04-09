@@ -34,7 +34,7 @@ export default function CouponForm({
     };
 
     return (
-        <form onSubmit={handleSubmit} className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] p-8 mb-12 space-y-8 shadow-2xl relative overflow-hidden animate-in fade-in slide-in-from-top-4 duration-500">
+        <form onSubmit={handleSubmit} autoComplete="off" className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] p-8 mb-12 space-y-8 shadow-2xl relative overflow-hidden animate-in fade-in slide-in-from-top-4 duration-500">
             {/* Glow Effect */}
             <div className="absolute -top-24 -right-24 h-48 w-48 bg-[var(--beheer-accent)]/5 blur-3xl rounded-full" />
             

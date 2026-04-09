@@ -18,7 +18,7 @@ export default async function BeheerCouponsPage() {
 
     return (
         <main className="min-h-screen bg-[var(--bg-main)]">
-            <Suspense fallback={<CouponPageLoader />}>
+            <Suspense fallback={<CouponManagementIsland isLoading={true} />}>
                 <CouponDataLoader />
             </Suspense>
         </main>
@@ -28,13 +28,4 @@ export default async function BeheerCouponsPage() {
 async function CouponDataLoader() {
     const coupons = await getCoupons().catch(() => []);
     return <CouponManagementIsland initialCoupons={coupons} />;
-}
-
-function CouponPageLoader() {
-    return (
-        <div className="container mx-auto px-4 py-16 flex flex-col items-center justify-center">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-[var(--beheer-accent)]/20 border-t-[var(--beheer-accent)] mb-4" />
-            <p className="text-[var(--beheer-text-muted)] font-bold uppercase tracking-widest text-xs">Coupons laden...</p>
-        </div>
-    );
 }

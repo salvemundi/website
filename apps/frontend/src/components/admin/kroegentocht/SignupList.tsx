@@ -13,13 +13,18 @@ import {
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
+import { PubCrawlSignup } from '@salvemundi/validations';
+
+interface ExtendedSignup extends PubCrawlSignup {
+    participants?: { name: string; initial: string }[];
+}
 
 interface SignupListProps {
-    signups: any[];
-    eventId: number;
+    signups: ExtendedSignup[];
+    eventId: number | string;
     eventName: string;
-    onDelete: (id: number) => void;
-    onEdit: (id: number) => void;
+    onDelete: (id: number | string) => void;
+    onEdit: (id: number | string) => void;
 }
 
 export default function SignupList({
@@ -44,7 +49,7 @@ export default function SignupList({
     });
 
     const exportToExcel = () => {
-        const rows: any[] = [];
+        const rows: Record<string, any>[] = [];
         filteredSignups.forEach(signup => {
             const participants = signup.participants || [];
             if (participants.length > 0) {
@@ -151,9 +156,9 @@ export default function SignupList({
                                                     </a>
                                                 </div>
                                                 <div className="text-[10px] font-mono text-[var(--text-muted)] uppercase">{signup.email}</div>
-                                                {signup.participants?.length > 0 && (
+                                                {signup.participants && signup.participants.length > 0 && (
                                                     <div className="mt-2 space-y-1 pl-3 border-l-2 border-[var(--theme-purple)]/20">
-                                                        {signup.participants.map((p: any, i: number) => (
+                                                        {signup.participants.map((p, i: number) => (
                                                             <div key={i} className="text-[11px] text-[var(--text-light)] font-medium">
                                                                 • {p.name} {p.initial}.
                                                             </div>
@@ -184,13 +189,13 @@ export default function SignupList({
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex justify-end gap-1">
                                                 <button 
-                                                    onClick={() => onEdit(signup.id)}
+                                                    onClick={() => signup.id && onEdit(signup.id)}
                                                     className="p-2 rounded-lg hover:bg-[var(--theme-purple)]/10 text-[var(--text-muted)] hover:text-[var(--theme-purple)] transition-all active:scale-90"
                                                 >
                                                     <Edit className="h-4 w-4" />
                                                 </button>
                                                 <button 
-                                                    onClick={() => onDelete(signup.id)}
+                                                    onClick={() => signup.id && onDelete(signup.id)}
                                                     className="p-2 rounded-lg hover:bg-red-500/10 text-[var(--text-muted)] hover:text-red-500 transition-all active:scale-90"
                                                 >
                                                     <Trash2 className="h-4 w-4" />

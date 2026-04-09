@@ -32,7 +32,7 @@ export default async function AzureSyncPage() {
     return (
         <div className="min-h-screen bg-[var(--bg-main)]">
             <div className="container mx-auto px-4 py-8 max-w-7xl relative z-10">
-                <Suspense fallback={<SyncSkeleton />}>
+                <Suspense fallback={<AzureSyncIsland isLoading={true} />}>
                     <AzureSyncIsland />
                 </Suspense>
             </div>

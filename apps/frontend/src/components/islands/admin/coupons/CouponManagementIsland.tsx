@@ -16,12 +16,17 @@ import CouponRow from './CouponRow';
 import CouponForm from './CouponForm';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 interface Props {
-    initialCoupons: Coupon[];
+    initialCoupons?: Coupon[];
+    isLoading?: boolean;
 }
 
-export default function CouponManagementIsland({ initialCoupons }: Props) {
+export default function CouponManagementIsland({ 
+    initialCoupons = [], 
+    isLoading = false 
+}: Props) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [coupons, setCoupons] = useState<Coupon[]>(initialCoupons);
     const [showForm, setShowForm] = useState(false);
@@ -67,7 +72,7 @@ export default function CouponManagementIsland({ initialCoupons }: Props) {
     const handleDelete = async (id: number) => {
         if (!confirm('Weet je zeker dat je deze coupon wilt verwijderen?')) return;
         setDeletingId(id);
-        const res = await deleteCoupon(id);
+        const res = await deleteCoupon(Number(id));
         if (res.success) {
             setCoupons(prev => prev.filter(c => c.id !== id));
             showToast('Coupon succesvol verwijderd', 'success');
@@ -99,26 +104,31 @@ export default function CouponManagementIsland({ initialCoupons }: Props) {
     return (
         <>
             <AdminToolbar 
-                title="Coupons Beheer"
-                subtitle="Beheer kortingscodes en acties voor het lidmaatschap"
+                isLoading={isLoading}
+                title={isLoading ? "" : "Coupons Beheer"}
+                subtitle={isLoading ? "" : "Beheer kortingscodes en acties voor het lidmaatschap"}
                 backHref="/beheer"
                 actions={
-                    <button
-                        onClick={() => { setShowForm(!showForm); setFormError(null); }}
-                        className={`flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] rounded-[var(--beheer-radius)] font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 cursor-pointer ${
-                            showForm 
-                            ? 'bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text-muted)] hover:border-[var(--beheer-accent)]/50' 
-                            : 'bg-[var(--beheer-accent)] text-white shadow-[var(--shadow-glow)] hover:opacity-90'
-                        }`}
-                    >
-                        {showForm ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                        {showForm ? 'Annuleren' : 'Nieuwe Coupon'}
-                    </button>
+                    isLoading ? (
+                        <Skeleton className="h-[var(--beheer-btn-height)] w-24" />
+                    ) : (
+                        <button
+                            onClick={() => { setShowForm(!showForm); setFormError(null); }}
+                            className={`flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] rounded-[var(--beheer-radius)] font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 cursor-pointer ${
+                                showForm 
+                                ? 'bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text-muted)] hover:border-[var(--beheer-accent)]/50' 
+                                : 'bg-[var(--beheer-accent)] text-white shadow-[var(--shadow-glow)] hover:opacity-90'
+                            }`}
+                        >
+                            {showForm ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                            {showForm ? 'Annuleren' : 'Nieuwe Coupon'}
+                        </button>
+                    )
                 }
             />
 
-            <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <AdminStatsBar stats={adminStats} />
+            <div className={`container mx-auto px-4 py-8 max-w-7xl ${isLoading ? 'animate-pulse' : 'animate-in fade-in slide-in-from-bottom-4 duration-700'}`}>
+                <AdminStatsBar stats={adminStats} isLoading={isLoading} />
 
                 {showForm && (
                     <CouponForm 
@@ -132,16 +142,26 @@ export default function CouponManagementIsland({ initialCoupons }: Props) {
                 {/* Main Table */}
                 <div className="space-y-4">
                     <div className="flex items-center justify-between border-l-4 border-[var(--beheer-active)] pl-4 py-1">
-                        <h2 className="text-[10px] font-black text-[var(--beheer-text)] flex items-center gap-3 uppercase tracking-widest">
-                            Geldige Coupons
-                            <span className="px-3 py-1 rounded-full bg-[var(--beheer-active)]/20 text-[var(--beheer-active)] text-[9px] shadow-sm border border-[var(--beheer-active)]/20">
-                                {validCoupons.length}
-                            </span>
-                        </h2>
+                        {isLoading ? (
+                            <Skeleton className="h-4 w-32" />
+                        ) : (
+                            <h2 className="text-[10px] font-black text-[var(--beheer-text)] flex items-center gap-3 uppercase tracking-widest">
+                                Geldige Coupons
+                                <span className="px-3 py-1 rounded-full bg-[var(--beheer-active)]/20 text-[var(--beheer-active)] text-[9px] shadow-sm border border-[var(--beheer-active)]/20">
+                                    {validCoupons.length}
+                                </span>
+                            </h2>
+                        )}
                     </div>
 
                     <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] overflow-hidden shadow-xl transition-all">
-                        {validCoupons.length === 0 ? (
+                        {isLoading ? (
+                            <div className="space-y-4 p-8">
+                                {[...Array(3)].map((_, i) => (
+                                    <Skeleton key={i} className="h-16 w-full rounded-2xl" />
+                                ))}
+                            </div>
+                        ) : validCoupons.length === 0 ? (
                             <div className="py-24 text-center">
                                 <Ticket className="h-12 w-12 text-[var(--beheer-text-muted)] mx-auto mb-4 opacity-10" />
                                 <p className="font-black uppercase tracking-widest text-[10px] text-[var(--beheer-text-muted)]">Geen geldige coupons gevonden</p>

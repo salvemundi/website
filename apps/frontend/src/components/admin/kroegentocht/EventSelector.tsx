@@ -4,10 +4,12 @@ import { Calendar, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 
+import { PubCrawlEvent } from '@salvemundi/validations';
+
 interface EventSelectorProps {
-    events: any[];
-    selectedEventId: number | null;
-    onSelect: (event: any) => void;
+    events: PubCrawlEvent[];
+    selectedEventId: string | number | null;
+    onSelect: (event: PubCrawlEvent) => void;
     showPastEvents: boolean;
     setShowPastEvents: (val: boolean) => void;
 }
@@ -24,7 +26,7 @@ export default function EventSelector({
 
     const filteredEvents = showPastEvents 
         ? events 
-        : events.filter(e => new Date(e.date) >= today);
+        : events.filter(e => e.date && new Date(e.date) >= today);
 
     return (
         <div className="bg-[var(--bg-card)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)]/30 p-6">
@@ -53,8 +55,8 @@ export default function EventSelector({
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {filteredEvents.map(event => {
-                        const eventDate = new Date(event.date);
-                        const isUpcoming = eventDate >= today;
+                        const eventDate = event.date ? new Date(event.date) : new Date(0);
+                        const isUpcoming = event.date ? eventDate >= today : false;
                         const isSelected = selectedEventId === event.id;
 
                         return (

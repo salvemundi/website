@@ -24,7 +24,7 @@ export default async function AdminActiviteitenPage({
 
     return (
         <main className="min-h-screen bg-[var(--bg-main)]">
-            <Suspense fallback={<AdminActivitiesSkeleton />}>
+            <Suspense fallback={<AdminActivitiesIsland isLoading={true} />}>
                 <ActivitiesDataLoader searchParams={sParams} session={session} />
             </Suspense>
         </main>
