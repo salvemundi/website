@@ -7,13 +7,8 @@ import {
     Mail, 
     ChevronRight 
 } from 'lucide-react';
-
-interface Committee {
-    id: number;
-    name: string;
-    email?: string | null;
-    isStandard?: boolean;
-}
+import { Input } from '@/shared/ui/Input';
+import type { Committee } from '@/server/queries/admin-vereniging.queries';
 
 interface Props {
     committees: Committee[];
@@ -48,7 +43,7 @@ export default function CommitteeSidebar({
                 <div className="space-y-4">
                     <div className="relative group">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--beheer-text-muted)] group-focus-within:text-[var(--beheer-accent)] transition-colors" />
-                        <input
+                        <Input
                             type="text"
                             placeholder="Zoek commissie..."
                             value={searchQuery}

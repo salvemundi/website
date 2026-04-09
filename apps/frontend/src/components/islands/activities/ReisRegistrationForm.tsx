@@ -178,7 +178,7 @@ export function ReisRegistrationForm({
                                 {...field}
                                 id="field-first_name"
                                 placeholder="Voornaam"
-                                autoComplete="given-name"
+                                autoComplete="off"
                                 suppressHydrationWarning
                             />
                         )}
@@ -197,7 +197,7 @@ export function ReisRegistrationForm({
                                 {...field}
                                 id="field-last_name"
                                 placeholder="Achternaam (incl. tussenvoegsel)"
-                                autoComplete="family-name"
+                                autoComplete="off"
                                 suppressHydrationWarning
                             />
                         )}
@@ -214,7 +214,7 @@ export function ReisRegistrationForm({
                                 id="field-email"
                                 type="email"
                                 placeholder="jouw@email.nl"
-                                autoComplete="email"
+                                autoComplete="off"
                                 suppressHydrationWarning
                                 data-lpignore="true"
                             />
@@ -231,7 +231,7 @@ export function ReisRegistrationForm({
                                 {...field}
                                 id="field-date_of_birth"
                                 placeholder="dd-mm-jjjj"
-                                autoComplete="bday"
+                                autoComplete="off"
                             />
                         )}
                     />
@@ -246,7 +246,7 @@ export function ReisRegistrationForm({
                                 {...field}
                                 id="field-phone_number"
                                 placeholder="06 12345678"
-                                autoComplete="tel"
+                                autoComplete="off"
                             />
                         )}
                     />

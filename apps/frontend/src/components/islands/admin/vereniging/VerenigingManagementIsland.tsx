@@ -5,7 +5,7 @@ import {
     Users, 
     RefreshCw, 
 } from 'lucide-react';
-import type { Committee, CommitteeMember } from '@/server/actions/admin-committees.actions';
+import type { Committee, CommitteeMember } from '@/server/queries/admin-vereniging.queries';
 import {
     getCommittees,
     getCommitteeMembers,
@@ -46,6 +46,7 @@ export default function VerenigingManagementIsland({ initialCommittees, totalUni
     const [showAll, setShowAll] = useState(false);
 
     const [membersLoading, setMembersLoading] = useState(false);
+    const [isInitialMemberLoading, setIsInitialMemberLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
 
@@ -89,9 +90,11 @@ export default function VerenigingManagementIsland({ initialCommittees, totalUni
         setAddError(null);
         setNewMemberEmail('');
         setMembersLoading(true);
+        setIsInitialMemberLoading(true);
         const m = await getCommitteeMembers(c.id.toString()).catch(() => []);
         setMembers(m);
         setMembersLoading(false);
+        setIsInitialMemberLoading(false);
     }, []);
 
     const handleAddMember = async (e: React.FormEvent) => {
@@ -220,7 +223,7 @@ export default function VerenigingManagementIsland({ initialCommittees, totalUni
                             <CommitteeDetail 
                                 selected={selected}
                                 members={members}
-                                membersLoading={membersLoading}
+                                isInitialMemberLoading={isInitialMemberLoading}
                                 actionLoading={actionLoading}
                                 editingDetail={editingDetail}
                                 onToggleEditing={() => setEditingDetail(!editingDetail)}
