@@ -55,7 +55,7 @@ export default async function LedenPage({
 
     return (
         <div className="min-h-screen bg-[var(--bg-main)]">
-            <Suspense key={tab} fallback={<MemberListSkeleton />}>
+            <Suspense key={tab} fallback={<LedenOverzichtIsland isLoading={true} />}>
                 <LedenDataLoader 
                     tab={tab} 
                 />

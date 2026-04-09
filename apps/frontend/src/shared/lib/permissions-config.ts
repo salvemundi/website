@@ -13,7 +13,8 @@ export enum AdminResource {
     Logging = 'admin:logging',
     Sync = 'admin:sync',
     Permissions = 'admin:permissions',
-    Users = 'admin:users'
+    Users = 'admin:users',
+    Kroegentocht = 'admin:kroegentocht'
 }
 
 export interface PermissionRequirement {
@@ -67,5 +68,8 @@ export const RESOURCE_PERMISSIONS: Record<AdminResource, PermissionRequirement> 
     },
     [AdminResource.Users]: { 
         allowedCommitteeIds: [COMMITTEES.ICT, COMMITTEES.BESTUUR] 
+    },
+    [AdminResource.Kroegentocht]: { 
+        allowedCommitteeIds: [COMMITTEES.ICT, COMMITTEES.BESTUUR, COMMITTEES.FEEST] 
     },
 };

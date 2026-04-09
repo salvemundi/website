@@ -19,6 +19,7 @@ export interface UserPermissions {
     canAccessCoupons: boolean;
     canAccessPermissions: boolean;
     canAccessStickers: boolean;
+    canAccessKroegentocht: boolean;
 }
 
 /**
@@ -67,5 +68,6 @@ export function getPermissions(committees: Committee[] = []): UserPermissions {
         canAccessCoupons: hasPermission(committees, AdminResource.Coupons),
         canAccessPermissions: hasPermission(committees, AdminResource.Permissions),
         canAccessStickers: hasPermission(committees, AdminResource.Stickers),
+        canAccessKroegentocht: hasPermission(committees, AdminResource.Kroegentocht),
     };
 }

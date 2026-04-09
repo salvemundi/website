@@ -65,6 +65,7 @@ export default function LedenFilters({
                     onChange={(e) => onSearchChange(e.target.value)}
                     className="w-full pl-11 pr-5 py-3 rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] placeholder:text-[var(--beheer-text-muted)] focus:ring-2 focus:ring-[var(--beheer-accent)]/20 focus:border-[var(--beheer-accent)] outline-none transition-all shadow-sm font-bold uppercase tracking-widest text-[10px]"
                     suppressHydrationWarning
+                    autoComplete="off"
                 />
                 {isPending && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-[var(--beheer-accent)]" />}
             </div>

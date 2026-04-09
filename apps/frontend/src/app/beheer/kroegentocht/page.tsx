@@ -16,12 +16,7 @@ export default async function KroegentochtPage() {
 
     return (
         <main className="min-h-screen bg-[var(--bg-main)]">
-            <Suspense fallback={
-                <div className="flex flex-col items-center justify-center py-40">
-                    <Loader2 className="h-12 w-12 animate-spin text-[var(--beheer-accent)] mb-6" />
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--beheer-text-muted)] animate-pulse">Data synchroniseren...</p>
-                </div>
-            }>
+            <Suspense fallback={<KroegentochtManagementIsland isLoading={true} />}>
                 <KroegentochtDataLoader />
             </Suspense>
         </main>
