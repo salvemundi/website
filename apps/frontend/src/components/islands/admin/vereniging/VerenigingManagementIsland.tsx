@@ -109,8 +109,8 @@ export default function VerenigingManagementIsland({ initialCommittees, totalUni
         } else {
             setNewMemberEmail('');
             showToast('Lid succesvol toegevoegd aan de commissie', 'success');
-            // Reload members after short delay
-            setTimeout(() => handleSelectCommittee(selected), 2000);
+            // Sync is done on server, so we can reload immediately
+            handleSelectCommittee(selected);
         }
         setAddingMember(false);
     };
