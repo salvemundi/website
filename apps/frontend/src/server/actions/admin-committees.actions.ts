@@ -1,29 +1,31 @@
 'use server';
 
 import { auth } from '@/server/auth/auth';
-import { revalidateTag, revalidatePath } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { headers } from 'next/headers';
 
 import { isSuperAdmin } from '@/lib/auth-utils';
 import { getSystemDirectus } from '@/lib/directus';
 import { updateItem, readUsers } from '@directus/sdk';
 import { USER_ID_FIELDS } from '@salvemundi/validations';
+import type { 
+    Committee, 
+    CommitteeMember 
+} from '@/server/queries/admin-vereniging.queries';
 import { 
     getCommitteesInternal, 
     getCommitteeMembersInternal, 
     getUniqueCommitteeMembersCountInternal,
-    type Committee,
-    type CommitteeMember
 } from '@/server/queries/admin-vereniging.queries';
-
-export type { Committee, CommitteeMember };
 
 const getAzureManagementUrl = () => process.env.AZURE_MANAGEMENT_SERVICE_URL;
 
-const serviceHeaders = () => {
+const serviceHeaders = (contentType = true) => {
     const token = process.env.INTERNAL_SERVICE_TOKEN;
     if (!token) throw new Error('INTERNAL_SERVICE_TOKEN is missing');
-    return { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
+    const h: Record<string, string> = { Authorization: `Bearer ${token}` };
+    if (contentType) h['Content-Type'] = 'application/json';
+    return h;
 };
 
 async function checkAccess() {
@@ -112,7 +114,7 @@ export async function removeCommitteeMember(
     await checkAccess();
     const azRes = await fetch(`${getAzureManagementUrl()}/api/groups/${encodeURIComponent(azureGroupId)}/members/${encodeURIComponent(entraId)}`, {
         method: 'DELETE',
-        headers: serviceHeaders(),
+        headers: serviceHeaders(false),
     });
     if (!azRes.ok) {
         const err = await azRes.json().catch(() => ({}));
@@ -145,7 +147,7 @@ export async function toggleCommitteeLeader(
         const method = currentIsLeader ? 'DELETE' : 'POST';
         await fetch(path, {
             method,
-            headers: serviceHeaders(),
+            headers: serviceHeaders(!currentIsLeader),
             body: currentIsLeader ? undefined : JSON.stringify({ userId: entraId }),
         }).catch(e => console.warn('[committees] Azure owner sync failed:', e));
     }

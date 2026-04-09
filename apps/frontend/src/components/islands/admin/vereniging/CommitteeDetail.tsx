@@ -15,12 +15,14 @@ import {
     ExternalLink, 
     Loader2 
 } from 'lucide-react';
-import type { Committee, CommitteeMember } from '@/server/actions/admin-committees.actions';
+import type { Committee, CommitteeMember } from '@/server/queries/admin-vereniging.queries';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { Input } from '@/shared/ui/Input';
 
 interface Props {
     selected: Committee;
     members: CommitteeMember[];
-    membersLoading: boolean;
+    isInitialMemberLoading: boolean;
     actionLoading: string | null;
     editingDetail: boolean;
     onToggleEditing: () => void;
@@ -45,7 +47,7 @@ const slugify = (name: string) =>
 export default function CommitteeDetail({
     selected,
     members,
-    membersLoading,
+    isInitialMemberLoading,
     actionLoading,
     editingDetail,
     onToggleEditing,
@@ -122,6 +124,7 @@ export default function CommitteeDetail({
                                     value={editShortDesc}
                                     onChange={e => onShortDescChange(e.target.value)}
                                     rows={2}
+                                    autoComplete="off"
                                     className="w-full px-6 py-4 rounded-xl bg-[var(--beheer-card-soft)] border-none text-sm text-[var(--beheer-text)] placeholder:text-[var(--beheer-text-muted)] focus:ring-4 focus:ring-[var(--beheer-accent)]/10 transition-all resize-none font-medium leading-relaxed"
                                     placeholder="Korte pakkende tekst over de commissie..."
                                 />
@@ -132,6 +135,7 @@ export default function CommitteeDetail({
                                     value={editDesc}
                                     onChange={e => onDescChange(e.target.value)}
                                     rows={12}
+                                    autoComplete="off"
                                     className="w-full px-6 py-4 rounded-xl bg-[var(--beheer-card-soft)] border-none text-sm text-[var(--beheer-text)] placeholder:text-[var(--beheer-text-muted)] focus:ring-4 focus:ring-[var(--beheer-accent)]/10 transition-all font-mono leading-relaxed"
                                     placeholder="### Onze missie..."
                                 />
@@ -166,7 +170,7 @@ export default function CommitteeDetail({
                                 <div className="absolute left-5 top-1/2 -translate-y-1/2 flex items-center gap-2 text-[var(--beheer-text-muted)] group-focus-within:text-[var(--beheer-accent)] transition-colors opacity-50">
                                     <UserPlus className="h-4 w-4" />
                                 </div>
-                                <input
+                                <Input
                                     type="email"
                                     placeholder="Kopieer e-mail om lid toe te voegen..."
                                     value={newMemberEmail}
@@ -196,10 +200,19 @@ export default function CommitteeDetail({
                 </div>
 
                 <div className="p-8 md:p-10">
-                    {membersLoading ? (
-                        <div className="py-24 text-center">
-                            <Loader2 className="h-10 w-10 text-[var(--beheer-accent)] animate-spin mx-auto mb-4" />
-                            <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-[10px] opacity-40">Lidmaatschappen synchroniseren...</p>
+                    {isInitialMemberLoading ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            {[1, 2, 3, 4].map(i => (
+                                <div key={i} className="flex items-center justify-between p-5 bg-[var(--beheer-card-bg)] rounded-3xl border border-[var(--beheer-border)] relative overflow-hidden">
+                                     <div className="flex items-center gap-4 min-w-0">
+                                        <Skeleton className="h-12 w-12 shrink-0 rounded-2xl" />
+                                        <div className="space-y-2">
+                                            <Skeleton className="h-3 w-32" />
+                                            <Skeleton className="h-2 w-24 opacity-50" />
+                                        </div>
+                                     </div>
+                                </div>
+                            ))}
                         </div>
                     ) : members.length === 0 ? (
                         <div className="py-24 text-center bg-[var(--beheer-card-soft)]/20 rounded-[var(--beheer-radius)] border-2 border-dashed border-[var(--beheer-border)]">
