@@ -7,6 +7,7 @@ import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import ActivityCardSkeleton from '@/components/ui/activities/ActivityCardSkeleton';
+import { formatDate as coreFormatDate } from '@/shared/lib/utils/date';
 
 interface ActiviteitCardProps {
     isLoading?: boolean;
@@ -103,18 +104,11 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
 
     const formatDate = (value?: string, endValue?: string) => {
         if (!value) return 'Datum volgt';
-        const parsed = new Date(value);
-        if (Number.isNaN(parsed.getTime())) {
-            return value;
-        }
-
-        const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
-        const startFormatted = parsed.toLocaleDateString('nl-NL', options);
+        const startFormatted = coreFormatDate(value);
 
         if (endValue && endValue !== value) {
-            const endParsed = new Date(endValue);
-            if (!Number.isNaN(endParsed.getTime())) {
-                const endFormatted = endParsed.toLocaleDateString('nl-NL', options);
+            const endFormatted = coreFormatDate(endValue);
+            if (endFormatted !== 'Datum volgt') {
                 return `${startFormatted} t/m ${endFormatted}`;
             }
         }

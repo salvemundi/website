@@ -21,6 +21,7 @@ import {
     ActionCard,
     ListCard 
 } from './AdminCards';
+import { formatDate } from '@/shared/lib/utils/date';
 import { 
     getDashboardStats, 
     getUpcomingBirthdays, 
@@ -197,7 +198,7 @@ export async function BirthdaysList({ isLoading = false }: { isLoading?: boolean
                                         {person.first_name} {person.last_name}
                                     </p>
                                     <p className="text-[9px] font-bold tracking-widest text-[var(--beheer-text-muted)] opacity-60">
-                                        {person.isToday ? '🎉 Vandaag!' : new Date(person.birthday).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' })}
+                                        {person.isToday ? '🎉 Vandaag!' : formatDate(person.birthday)}
                                     </p>
                                 </div>
                             </div>
@@ -305,7 +306,7 @@ export async function ActivitySignupsList({ isLoading = false }: { isLoading?: b
                                         {isPast && <span className="text-[7px] font-black bg-[var(--beheer-border)] text-[var(--beheer-text-muted)] px-1.5 py-0.5 rounded-full tracking-widest opacity-60">Verleden</span>}
                                     </div>
                                     <p className="text-[9px] font-bold text-[var(--beheer-text-muted)] tracking-widest opacity-60">
-                                        {ev.event_date ? new Date(ev.event_date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }) : 'Geen datum'}
+                                        {ev.event_date ? formatDate(ev.event_date) : 'Geen datum'}
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-3">

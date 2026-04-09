@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import type { Coupon } from '@/server/actions/admin-coupons.actions';
 import { getComputedCouponStatus } from '@/lib/coupon-utils';
+import { formatDate } from '@/shared/lib/utils/date';
 
 interface Props {
     coupon: Coupon;
@@ -81,11 +82,11 @@ export default function CouponRow({
             <td className="px-8 py-6 whitespace-nowrap hidden lg:table-cell">
                 <div className="flex flex-col gap-1.5 text-[9px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">
                     {coupon.valid_from && (
-                        <span className="flex items-center gap-2 opacity-70"><div className="w-1 h-1 rounded-full bg-emerald-500" /> Van: {new Date(coupon.valid_from).toLocaleDateString('nl-NL')}</span>
+                        <span className="flex items-center gap-2 opacity-70"><div className="w-1 h-1 rounded-full bg-emerald-500" /> Van: {formatDate(coupon.valid_from)}</span>
                     )}
                     {coupon.valid_until ? (
                         <span className={`flex items-center gap-2 ${status.type === 'expired' ? 'text-red-500' : 'opacity-70'}`}>
-                            <div className={`w-1 h-1 rounded-full ${status.type === 'expired' ? 'bg-red-500 animate-pulse' : 'bg-amber-500'}`} /> Tot: {new Date(coupon.valid_until).toLocaleDateString('nl-NL')}
+                            <div className={`w-1 h-1 rounded-full ${status.type === 'expired' ? 'bg-red-500 animate-pulse' : 'bg-amber-500'}`} /> Tot: {formatDate(coupon.valid_until)}
                         </span>
                     ) : (
                         <span className="flex items-center gap-2 opacity-30 italic"><div className="w-1 h-1 rounded-full bg-[var(--beheer-border)]" /> Geen limiet</span>

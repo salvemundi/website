@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { Calendar, Clock, MapPin } from 'lucide-react';
 import { getImageUrl } from '@/lib/image-utils'; // Assumption: provided by legacy
 import type { Activiteit } from '@salvemundi/validations';
+import { formatDate } from '@/shared/lib/utils/date';
 
 interface FeaturedEventProps {
     event: Activiteit;
@@ -20,11 +21,7 @@ export default function FeaturedEvent({ event, onEventClick }: FeaturedEventProp
         ? new Date(`${eventDateStr}T${eventTimeStr}`)
         : new Date(eventDateStr);
 
-    const formattedDate = eventDate.toLocaleDateString('nl-NL', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-    });
+    const formattedDate = formatDate(event.datum_start);
 
     const formattedTime = (() => {
         if (eventTimeStr) {

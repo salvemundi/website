@@ -3,6 +3,7 @@ import { type Activity } from '@salvemundi/validations';
 import { Calendar, Clock, MapPin, Tag } from 'lucide-react';
 import { Skeleton } from '../Skeleton';
 import Link from 'next/link';
+import { formatDate } from '@/shared/lib/utils/date';
 
 interface EventCardProps {
     isLoading?: boolean;
@@ -28,7 +29,7 @@ export const EventCard: React.FC<EventCardProps> = ({
     // Gebruik props of activity
     const displayTitle = title || (activity as any)?.name || (activity as any)?.title || (activity as any)?.titel || 'Evenement';
     const displayCategory = category || 'Activiteit';
-    const displayDate = date || ((activity as any)?.event_date || (activity as any)?.datum_start ? new Date((activity as any)?.event_date || (activity as any)?.datum_start).toLocaleDateString() : 'Binnenkort');
+    const displayDate = date || formatDate((activity as any)?.event_date || (activity as any)?.datum_start);
 
     // Skeleton-state: render exact dezelfde afmetingen
     if (isLoading) {

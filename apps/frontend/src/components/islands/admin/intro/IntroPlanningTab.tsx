@@ -12,6 +12,7 @@ import {
     LayoutGrid, 
     Calendar 
 } from 'lucide-react';
+import { formatDate } from '@/shared/lib/utils/date';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import type { IntroPlanningItem } from '@salvemundi/validations';
@@ -111,7 +112,7 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                             <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-2">
                                     <span className="text-[10px] font-black text-[var(--beheer-accent)] uppercase tracking-widest bg-[var(--beheer-accent)]/5 px-2 py-0.5 rounded">{item.day || ''}</span>
-                                    {item.date && <span className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">{format(new Date(item.date), 'd MMM yyyy', { locale: nl })}</span>}
+                                    {item.date && <span className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">{formatDate(item.date)}</span>}
                                 </div>
                                 <h4 className="font-black uppercase tracking-tight text-base text-[var(--beheer-text)]">{item.title}</h4>
                                 <p className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] mt-1 opacity-70">

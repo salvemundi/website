@@ -11,6 +11,7 @@ import { authClient } from '@/lib/auth-client';
 import type { HeroBanner, Activiteit } from '@salvemundi/validations';
 import { getImageUrl } from '@/lib/image-utils';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { formatDate } from '@/shared/lib/utils/date';
 
 
 interface HeroIslandProps {
@@ -20,16 +21,6 @@ interface HeroIslandProps {
     activiteiten?: Activiteit[];
 }
 
-// Formatteert een ISO datetime string naar een leesbare Nederlandse datum.
-function formatEventDate(dateString: string): string {
-    try {
-        const date = new Date(dateString);
-        if (Number.isNaN(date.getTime())) return 'Datum volgt';
-        return date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' });
-    } catch {
-        return 'Datum volgt';
-    }
-}
 
 /**
  * Client Island — Belangrijkste visuele sectie van de homepage.
@@ -157,7 +148,7 @@ export function HeroIsland({ isLoading = false, banners = [], activiteiten = [] 
                                                         Volgende evenement
                                                     </p>
                                                     <p className="mt-2 text-base sm:text-lg font-bold text-[var(--color-purple-300)] dark:text-white truncate">
-                                                        {nextEvent.titel} • {formatEventDate(nextEvent.datum_start)}
+                                                        {nextEvent.titel} • {formatDate(nextEvent.datum_start)}
                                                     </p>
                                                     <p className="mt-1 text-xs sm:text-sm text-[var(--text-muted)] line-clamp-2">
                                                         {nextEvent.beschrijving ?? 'Kom gezellig langs bij ons volgende evenement!'}

@@ -9,6 +9,7 @@ import KroegentochtTicketsIsland from '@/components/islands/kroegentocht/Kroegen
 import KroegentochtSkeleton, { KroegentochtFormSkeleton, KroegentochtTicketsSkeleton, KroegentochtInfoSkeleton } from '@/components/ui/kroegentocht/KroegentochtSkeleton';
 import { Info, MapPin, Calendar, Clock, Beer, AlertCircle, Users, Mail, ShieldAlert } from 'lucide-react';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
+import { formatDate } from '@/shared/lib/utils/date';
 
 export const metadata = {
     title: 'Kroegentocht | SV Salve Mundi',
@@ -50,8 +51,7 @@ async function RegistrationSection() {
         );
     }
 
-    const eventDate = event.date ? new Date(event.date) : null;
-    const formattedDate = eventDate ? eventDate.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBA';
+    const formattedDate = formatDate(event.date);
 
     return (
         <div className="flex flex-col lg:flex-row gap-8 items-start">

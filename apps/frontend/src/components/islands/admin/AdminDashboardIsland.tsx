@@ -7,6 +7,7 @@ import {
     Settings, ShieldCheck, ChevronRight 
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { formatDate } from '@/shared/lib/utils/date';
 
 interface StatProps {
     title: string;
@@ -139,7 +140,7 @@ const AdminDashboardIsland: React.FC<AdminDashboardIslandProps> = ({ stats, birt
                                     <span className="font-black text-[var(--beheer-text)] text-xs uppercase tracking-tight truncate max-w-[120px]">{b.name}</span>
                                 </div>
                                 <span className="text-[10px] font-black px-3 py-1 bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-[var(--beheer-text-muted)] rounded-full uppercase tracking-widest">
-                                    {new Date(b.date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}
+                                    {formatDate(b.date)}
                                 </span>
                             </div>
                         )) : (

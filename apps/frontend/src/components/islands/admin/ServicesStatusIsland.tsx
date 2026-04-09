@@ -15,6 +15,7 @@ import {
 import { getServicesStatusAction, type ServiceStatus } from '@/server/actions/services-status.actions';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
+import { formatDate } from '@/shared/lib/utils/date';
 
 export default function ServicesStatusIsland() {
     const [statuses, setStatuses] = useState<ServiceStatus[]>([]);
@@ -158,7 +159,7 @@ export default function ServicesStatusIsland() {
 
                 {lastUpdated && (
                     <p className="mt-8 text-center text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">
-                        Laatst gecontroleerd: {lastUpdated.toLocaleTimeString()} · Volgende auto-refresh in 30s
+                        Laatst gecontroleerd: {formatDate(lastUpdated, true)} · Volgende auto-refresh in 30s
                     </p>
                 )}
             </div>
