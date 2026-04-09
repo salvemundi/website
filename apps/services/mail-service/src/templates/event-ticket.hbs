@@ -4,24 +4,21 @@
     
     <p>Je hebt je succesvol ingeschreven voor <strong>{{eventName}}</strong>! Je ticket is zojuist gegenereerd en staat voor je klaar.</p>
     
-    <div class="details">
-        <p style="text-align: center; margin-bottom: 10px; font-weight: 800; color: #a4539b; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Event Details</p>
-        <h2 style="text-align: center; color: #5e2b52; margin: 10px 0; font-weight: 900; font-size: 20px;">{{eventName}}</h2>
-        <p style="text-align: center; font-weight: 700; margin: 5px 0;">{{eventDate}}</p>
-        
-        <div style="text-align: center; margin: 25px 0; padding: 15px; background: #ffffff; border: 1px solid #eee; border-radius: 12px;">
-            <p style="font-[var(--theme-purple)] font-weight: 800; text-transform: uppercase; font-size: 10px; letter-spacing: 1px; margin-bottom: 10px;">Scannen bij Entree</p>
-            {{#if qrToken}}
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={{qrToken}}" alt="Ticket QR Code" style="width: 180px; height: 180px;">
-            {{else}}
-                <p style="font-style: italic; color: #8a7a8c;">Je QR-code is beschikbaar op de website.</p>
-            {{/if}}
-        </div>
-
-        <p style="text-align: center; font-size: 11px; color: #8a7a8c; margin-top: 15px; border-top: 1px dashed #d9c7db; padding-top: 10px;">Signup ID: #{{signupId}}</p>
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h2 style="color: #5e2b52; margin: 10px 0; font-weight: 900; font-size: 22px;">{{eventName}}</h2>
+        <p style="font-weight: 700; margin: 5px 0; color: #a4539b;">{{eventDate}}</p>
     </div>
 
-    <p>Je kunt je officiële ticket op elk moment online bekijken. Scan de bovenstaande code bij de entree van het evenement.</p>
+    <div style="text-align: center; margin: 25px 0; padding: 25px; background: #ffffff; border: 1px solid #eee; border-radius: 12px; border: 2px dashed #a4539b;">
+        <p style="color: #a4539b; font-weight: 800; text-transform: uppercase; font-size: 10px; letter-spacing: 1.5px; margin-bottom: 15px;">Scannen bij Entree</p>
+        {{#if qrToken}}
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={{qrToken}}" alt="Ticket QR Code" width="180" height="180" style="display: block; margin: 0 auto; border: 0;">
+        {{else}}
+            <p style="font-style: italic; color: #8a7a8c;">Je QR-code is online beschikbaar.</p>
+        {{/if}}
+    </div>
+
+    <p>Je kunt je ticket op elk moment online bekijken of downloaden. Scan de bovenstaande code bij de entree van het evenement.</p>
     
     <p style="text-align: center;">
         {{#if hasAccount}}
@@ -33,7 +30,11 @@
 
     <p>We raden je aan om alvast een screenshot te maken van je QR-code voor het geval internet op locatie slecht is.</p>
 
-    <p>Veel plezier!</p>
+    <div class="reference-data">
+        <p><strong>Referentie Details:</strong></p>
+        <p>Inschrijving ID: {{signupId}}<br>
+        Event: {{eventName}}</p>
+    </div>
 
-    <p>Met paarse groet,<br><strong>Bestuur Salve Mundi</strong></p>
+    <p style="margin-top: 30px;">Met paarse groet,<br><strong>Bestuur Salve Mundi</strong></p>
 {{/layout}}

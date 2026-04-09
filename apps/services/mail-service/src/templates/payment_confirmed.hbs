@@ -4,22 +4,12 @@
     
     {{#if (eq registrationType 'trip_signup')}}
         <p>Hoera! Je betaling voor de <strong>Reis ({{eventName}})</strong> is succesvol verwerkt.</p>
-        <div class="details">
-            <p><strong>Transactie ID:</strong> {{paymentId}}</p>
-            <p><strong>Registratie ID:</strong> {{registrationId}}</p>
-            <p><strong>Type:</strong> Reis Inschrijving</p>
-        </div>
         <p>Je kunt de status van je aanmelding en de details van de reis op elk moment bekijken via je dashboard.</p>
         <p style="text-align: center;">
             <a href="https://salvemundi.nl/reis" class="button">Naar Reis Dashboard</a>
         </p>
     {{else if (eq registrationType 'pub_crawl_signup')}}
         <p>Hoera! Je betaling voor de <strong>{{eventName}}</strong> is succesvol verwerkt.</p>
-        <div class="details">
-            <p><strong>Transactie ID:</strong> {{paymentId}}</p>
-            <p><strong>Registratie ID:</strong> {{registrationId}}</p>
-            <p><strong>Type:</strong> {{eventName}} Inschrijving</p>
-        </div>
         <p>Je tickets zijn nu beschikbaar in je Salve Mundi profiel. Je kunt ze op elk moment bekijken en downloaden via de onderstaande knop.</p>
         <p style="text-align: center;">
             <a href="https://salvemundi.nl/profiel" class="button">Bekijk Mijn Tickets</a>
@@ -27,21 +17,15 @@
         <p>Vergeet niet je QR-code(s) mee te nemen naar het startpunt van de kroegentocht! We hebben er zin in.</p>
     {{else}}
         <p>Hoera! Je betaling voor de <strong>{{eventName}}</strong> is succesvol verwerkt.</p>
-        <div class="details">
-            <p><strong>Transactie ID:</strong> {{paymentId}}</p>
-            <p><strong>Registratie ID:</strong> {{registrationId}}</p>
-            <p><strong>Type:</strong> {{eventName}} Inschrijving</p>
-        </div>
         <p>Bedankt voor je betaling!</p>
         
-        <div style="text-align: center; margin: 30px 0; padding: 20px; background: #fff; border-radius: 20px; border: 2px dashed #a4539b;">
-            <p style="font-weight: 800; color: #a4539b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;">Je Ticket QR-Code</p>
+        <div style="text-align: center; margin: 30px 0; padding: 25px; background: #ffffff; border-radius: 20px; border: 2px dashed #a4539b;">
+            <p style="font-weight: 800; color: #a4539b; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 20px; font-size: 11px;">Je Ticket QR-Code</p>
             {{#if qrToken}}
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{qrToken}}" alt="Ticket QR Code" style="width: 200px; height: 200px;">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{qrToken}}" alt="Ticket QR Code" width="200" height="200" style="display: block; margin: 0 auto; border: 0;">
             {{else}}
-                <p style="font-style: italic; color: #8a7a8c;">Je QR-code is beschikbaar op de website.</p>
+                <p style="font-style: italic; color: #8a7a8c;">Je QR-code is online beschikbaar.</p>
             {{/if}}
-            <p style="font-size: 11px; color: #8a7a8c; margin-top: 15px;">Registratie: #{{registrationId}}</p>
         </div>
 
         <p style="text-align: center;">
@@ -55,5 +39,12 @@
         </p>
     {{/if}}
 
-    <p>Met paarse groet,<br><strong>Bestuur Salve Mundi</strong></p>
+    <div class="reference-data">
+        <p><strong>Referentie Details:</strong></p>
+        <p>Transactie ID: {{paymentId}}<br>
+        Registratie ID: {{registrationId}}<br>
+        Type: {{eventName}} Inschrijving</p>
+    </div>
+
+    <p style="margin-top: 30px;">Met paarse groet,<br><strong>Bestuur Salve Mundi</strong></p>
 {{/layout}}
