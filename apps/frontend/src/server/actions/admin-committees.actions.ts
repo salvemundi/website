@@ -17,6 +17,7 @@ import {
     getCommitteeMembersInternal, 
     getUniqueCommitteeMembersCountInternal,
 } from '@/server/queries/admin-vereniging.queries';
+import { triggerUserSyncAction } from './azure-sync.actions';
 
 const getAzureManagementUrl = () => process.env.AZURE_MANAGEMENT_SERVICE_URL;
 
@@ -104,6 +105,8 @@ export async function addCommitteeMember(
         return { success: false, error: 'Bewerking in Azure mislukt. Probeer het later opnieuw.' };
     }
 
+    await triggerUserSyncAction(user.entra_id);
+
     return { success: true };
 }
 
@@ -121,6 +124,9 @@ export async function removeCommitteeMember(
         console.error('[AdminCommittees] Remove member Azure error:', err);
         return { success: false, error: 'Verwijderen uit Azure groep mislukt.' };
     }
+
+    await triggerUserSyncAction(entraId);
+
     return { success: true };
 }
 
