@@ -17,6 +17,11 @@ export const PaymentSuccessEventSchema = BaseEventSchema.extend({
     accessToken: z.string().optional(),
 });
 
+export const ActivitySignupEventSchema = BaseEventSchema.extend({
+    email: z.string().email(),
+    name: z.string(),
+    eventName: z.string(),
+    eventDate: z.string(),
     signupId: z.union([z.string(), z.number()]),
     qrToken: z.string().optional(),
     accessToken: z.string().optional(),
