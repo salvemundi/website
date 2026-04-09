@@ -17,6 +17,7 @@ import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
+import { formatDate } from '@/shared/lib/utils/date';
 
 export default function AuditLogIsland() {
     const { toast, showToast, hideToast } = useAdminToast();
@@ -272,7 +273,7 @@ export default function AuditLogIsland() {
                                                 </button>
                                             </td>
                                             <td className="p-4 text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest whitespace-nowrap">
-                                                {new Date(s.created_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                                {formatDate(s.created_at, true)}
                                             </td>
                                             <td className="p-4">
                                                 <div className="flex flex-col min-w-0">
@@ -354,7 +355,7 @@ export default function AuditLogIsland() {
                                     logs.map(log => (
                                         <tr key={log.id} className="hover:bg-[var(--beheer-accent)]/[0.02] transition-colors group">
                                             <td className="p-4 text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest whitespace-nowrap">
-                                                {new Date(log.created_at).toLocaleString('nl-NL')}
+                                                {formatDate(log.created_at, true)}
                                             </td>
                                             <td className="p-4">
                                                 <span className="font-black text-[var(--beheer-text)] uppercase tracking-tight text-xs">

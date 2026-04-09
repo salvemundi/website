@@ -4,6 +4,7 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 import Map, { Marker, Popup, NavigationControl, GeolocateControl } from 'react-map-gl/maplibre';
 import { MapPin, Camera, X } from 'lucide-react';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import { formatDate } from '@/shared/lib/utils/date';
 
 /**
  * Public Directus URL for client-side asset loading.
@@ -198,7 +199,7 @@ export default function StickerMap({
 
                             <div className="mt-4 pt-4 border-t border-[var(--border-color)]/20 flex flex-col gap-1">
                                 <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest" suppressHydrationWarning>
-                                    Toegevoegd op {new Date(popupInfo.date_created).toLocaleDateString('nl-NL')}
+                                    Toegevoegd op {formatDate(popupInfo.date_created)}
                                 </p>
                                 {typeof popupInfo.user_created === 'object' && (
                                     <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">

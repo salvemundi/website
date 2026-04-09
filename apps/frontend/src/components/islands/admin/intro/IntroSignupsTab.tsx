@@ -12,6 +12,7 @@ import {
     Trash2, 
     Eye 
 } from 'lucide-react';
+import { formatDate } from '@/shared/lib/utils/date';
 
 interface IntroSignupRow {
     id: number;
@@ -132,7 +133,7 @@ export default function IntroSignupsTab({ signups, onDelete, onExport, deletingI
                                                     {s.date_of_birth && (
                                                         <div className="flex flex-col gap-1.5 font-bold">
                                                             <span className="opacity-50 font-black">Geboortedatum</span>
-                                                            <span className="text-[var(--beheer-text)] text-sm">{s.date_of_birth}</span>
+                                                            <span className="text-[var(--beheer-text)] text-sm">{formatDate(s.date_of_birth)}</span>
                                                         </div>
                                                     )}
                                                     {s.favorite_gif && (

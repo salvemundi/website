@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { CheckCircle, Users, AlertTriangle, Info, AlertCircle } from 'lucide-react';
+import { formatDate } from '@/shared/lib/utils/date';
 
 interface SyncStatusData {
     active: boolean;
@@ -35,7 +36,7 @@ export default function SyncStatus({ status, progress, lastUpdated }: SyncStatus
                         {lastUpdated && (
                             <>
                                 <span>•</span>
-                                <p>Laatst bijgewerkt: {lastUpdated.toLocaleTimeString()}</p>
+                                <p>Laatst bijgewerkt: {formatDate(lastUpdated, true)}</p>
                             </>
                         )}
                     </div>

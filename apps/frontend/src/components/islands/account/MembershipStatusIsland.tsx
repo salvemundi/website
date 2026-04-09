@@ -6,6 +6,7 @@ import { initiateMembershipPaymentAction } from '@/server/actions/membership.act
 import type { SignupFormData } from '@salvemundi/validations';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
+import { formatDate } from '@/shared/lib/utils/date';
 
 export interface MembershipUserData {
     id: string;
@@ -88,7 +89,7 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
                         <div className="mt-4 pt-4 border-t border-purple-100 dark:border-purple-800/30">
                             <p className="opacity-70 dark:text-white/70 text-sm flex items-center gap-2">
                                 <span className="w-1.5 h-1.5 rounded-full bg-theme-purple dark:bg-purple-400"></span>
-                                Geldig tot: <span className="font-bold">{new Date(user.membership_expiry).toLocaleDateString('nl-NL')}</span>
+                                Geldig tot: <span className="font-bold">{formatDate(user.membership_expiry)}</span>
                             </p>
                         </div>
                     )}

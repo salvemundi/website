@@ -11,6 +11,7 @@ import {
     Download
 } from 'lucide-react';
 import QRDisplay from '@/shared/ui/QRDisplay';
+import { formatDate } from '@/shared/lib/utils/date';
 
 interface TicketListIslandProps {
     tickets: any[];
@@ -77,7 +78,7 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
                                     <QrCode className="h-6 w-6" />
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest">{new Date(ticket.date_created).toLocaleDateString('nl-NL')}</p>
+                                    <p className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest">{formatDate(ticket.date_created)}</p>
                                     <p className="text-[10px] font-black text-[var(--theme-purple)] uppercase tracking-widest">#{ticket.id}</p>
                                 </div>
                             </div>
@@ -89,7 +90,7 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
                             <div className="space-y-2 border-t border-[var(--border-color)]/30 pt-4">
                                 <div className="flex items-center gap-2 text-[var(--text-muted)]">
                                     <Calendar className="h-3 w-3" />
-                                    <span className="text-[10px] font-bold uppercase">{new Date(ticket.event_id?.event_date).toLocaleDateString('nl-NL')}</span>
+                                    <span className="text-[10px] font-bold uppercase">{formatDate(ticket.event_id?.event_date)}</span>
                                 </div>
                                 <div className="flex items-center gap-2 text-[var(--text-muted)]">
                                     <MapPin className="h-3 w-3" />
@@ -132,7 +133,7 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
                             <div className="w-full grid grid-cols-2 gap-4 border-t border-[var(--border-color)]/50 pt-8">
                                 <div className="space-y-1">
                                     <p className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest">Inschrijfdatum</p>
-                                    <p className="text-sm font-bold text-[var(--text-main)] uppercase">{new Date(selectedTicket.date_created).toLocaleDateString('nl-NL')}</p>
+                                    <p className="text-sm font-bold text-[var(--text-main)] uppercase">{formatDate(selectedTicket.date_created)}</p>
                                 </div>
                                 <div className="space-y-1 text-right">
                                     <p className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest">Status</p>
