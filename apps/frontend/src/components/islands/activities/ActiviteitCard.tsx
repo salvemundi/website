@@ -134,9 +134,6 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                 className={`group relative z-0 overflow-hidden w-full rounded-2xl bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-5 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 ${isPast ? 'opacity-60 filter grayscale' : ''}`}
                 aria-busy="false"
             >
-                {/* Decorative background element */}
-                <span className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-[var(--theme-purple)]/5 transition-transform duration-500 group-hover:scale-125 pointer-events-none" />
-                
                 <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
                     <div className="flex-1 min-w-[200px]">
                         <div className="flex items-center gap-2 mb-1">
@@ -208,11 +205,9 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     return (
         <div
             onClick={onShowDetails}
-            className={`group relative z-0 overflow-visible w-full rounded-[1.75rem] bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-5 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 group-hover:z-10 ${isPast ? 'opacity-60 filter grayscale' : ''}`}
+            className={`group relative z-0 overflow-hidden w-full rounded-[1.75rem] bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-5 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 ${isPast ? 'opacity-60 filter grayscale' : ''}`}
             aria-busy="false"
         >
-            <span className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-[var(--theme-purple)]/10 transition-transform duration-500 group-hover:scale-125 pointer-events-none" />
-
             <div className="relative z-10 h-44 sm:h-48 mb-5 rounded-2xl overflow-hidden shadow-inner bg-[var(--bg-soft)]">
                 {image ? (
                     <Image

@@ -8,8 +8,9 @@ import {
 import { z } from 'zod';
 
 /**
- * PURE QUERIES: No 'use server' and No headers() calls.
- * Safe to use in both Server Component renders and Server Actions.
+ * Pure database queries for event management.
+ * Designed to be safe for both RSC (React Server Components) and Server Actions
+ * by avoiding headers() or other request-bound context.
  */
 
 export async function getActivitiesInternal(onlyPublished = true): Promise<Activiteit[]> {
@@ -23,29 +24,37 @@ export async function getActivitiesInternal(onlyPublished = true): Promise<Activ
         `;
         const { rows } = await query(sql);
 
-        const mappedData = rows.map((item) => ({
-            id: String(item.id ?? ''),
-            titel: item.name ?? '',
-            beschrijving: item.description ?? null,
-            locatie: item.location ?? null,
-            datum_start: item.event_date ? new Date(item.event_date).toISOString() : new Date().toISOString(),
-            datum_eind: item.event_date_end ? new Date(item.event_date_end).toISOString() : null,
-            afbeelding_id: item.image ?? null,
-            status: item.status ?? undefined,
-            price_members: item.price_members != null ? Number(item.price_members) : 0,
-            price_non_members: item.price_non_members != null ? Number(item.price_non_members) : 0,
-            only_members: item.only_members ?? false,
-            registration_deadline: item.registration_deadline ?? null,
-            contact: item.contact ?? null,
-            event_time: item.event_time ?? null,
-            event_time_end: item.event_time_end ?? null,
-            committee_name: item.committee_name || null,
-        }));
+        const mappedData = rows.map((item) => {
+            const safeISO = (d: any) => {
+                if (!d) return null;
+                const date = d instanceof Date ? d : new Date(d);
+                return isNaN(date.getTime()) ? null : date.toISOString();
+            };
+            
+            return {
+                id: String(item.id ?? ''),
+                titel: item.name ?? '',
+                beschrijving: item.description ?? null,
+                locatie: item.location ?? null,
+                datum_start: safeISO(item.event_date) || new Date().toISOString(),
+                datum_eind: safeISO(item.event_date_end),
+                afbeelding_id: item.image ?? null,
+                status: item.status ?? undefined,
+                price_members: item.price_members != null ? Number(item.price_members) : 0,
+                price_non_members: item.price_non_members != null ? Number(item.price_non_members) : 0,
+                only_members: item.only_members ?? false,
+                registration_deadline: safeISO(item.registration_deadline),
+                contact: item.contact ?? null,
+                event_time: item.event_time ?? null,
+                event_time_end: item.event_time_end ?? null,
+                committee_name: item.committee_name || null,
+            };
+        });
 
         const parsed = activiteitenSchema.safeParse(mappedData);
         if (!parsed.success) {
-            console.error('[AdminEventQueries] Zod validation failed:', parsed.error.flatten().fieldErrors);
-            return mappedData as any; // Fallback
+            console.error('[AdminEventQueries] Zod validation failed:', JSON.stringify(parsed.error.format(), null, 2));
+            return mappedData as any;
         }
 
         return parsed.data;
@@ -69,19 +78,25 @@ export async function getActivityByIdInternal(id: string): Promise<Activiteit | 
         const item = rows?.[0];
         if (!item) return null;
 
+        const safeISO = (d: any) => {
+            if (!d) return null;
+            const date = d instanceof Date ? d : new Date(d);
+            return isNaN(date.getTime()) ? null : date.toISOString();
+        };
+
         const mapped = {
             id: String(item.id ?? ''),
             titel: item.name ?? '',
             beschrijving: item.description ?? null,
             locatie: item.location ?? null,
-            datum_start: item.event_date ? new Date(item.event_date).toISOString() : new Date().toISOString(),
-            datum_eind: item.event_date_end ? new Date(item.event_date_end).toISOString() : null,
+            datum_start: safeISO(item.event_date) || new Date().toISOString(),
+            datum_eind: safeISO(item.event_date_end),
             afbeelding_id: item.image ?? null,
             status: item.status ?? undefined,
             price_members: item.price_members != null ? Number(item.price_members) : 0,
             price_non_members: item.price_non_members != null ? Number(item.price_non_members) : 0,
             only_members: item.only_members ?? false,
-            registration_deadline: item.registration_deadline ?? null,
+            registration_deadline: safeISO(item.registration_deadline),
             contact: item.contact ?? null,
             event_time: item.event_time ?? null,
             event_time_end: item.event_time_end ?? null,
@@ -89,7 +104,11 @@ export async function getActivityByIdInternal(id: string): Promise<Activiteit | 
         };
 
         const parsed = activiteitenSchema.element.safeParse(mapped);
-        return parsed.success ? parsed.data : (mapped as any);
+        if (!parsed.success) {
+            console.error('[AdminEventQueries] getActivityByIdInternal Zod failed:', JSON.stringify(parsed.error.format(), null, 2));
+            return mapped as any;
+        }
+        return parsed.data;
     } catch (error) {
         console.error('[AdminEventQueries] getActivityByIdInternal failed:', error);
         return null;

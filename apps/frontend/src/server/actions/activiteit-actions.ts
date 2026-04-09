@@ -153,17 +153,8 @@ export async function signupForActivity(data: EventSignupForm) {
         const signupId = await createEventSignupDb(payload);
         if (!signupId) throw new Error('Could not write to database');
 
-        // Sync back to Directus - now awaited for data integrity
-        try {
-            await directus.request(createItem('event_signups', { ...payload, id: signupId }));
-        } catch (err) {
-            console.error('[Activities] Directus sync error:', err);
-            // Cleanup DB if sync fails
-            await deleteEventSignupDb(signupId);
-            await logAdminAction('activity_signup_rollback', 'ERROR', { id: signupId, error: String(err), action: 'rollback_delete' });
-            return { success: false, error: 'Synchronisatie met CMS mislukt. Inschrijving niet voltooid.' };
-        }
-
+        // Note: Directus and our SQL query share the same database table.
+        // We revalidate to ensure Next.js cache stays in sync with the primary DB.
         revalidateTag(`event_signups_${parsed.data.event_id}`, 'default');
 
         if ((price ?? 0) > 0) {
@@ -347,7 +338,7 @@ export async function getSignupStatus(id?: string, transactionId?: string, cache
 }
 
 /**
- * Fetches the tickets (signups) for the current logged-in user (SQL-First).
+ * Fetches the tickets (signups) for the current logged-in user.
  */
 export async function getMyTickets() {
     const session = await auth.api.getSession({ headers: await headers() });
