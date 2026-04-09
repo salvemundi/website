@@ -10,8 +10,10 @@ import {
     MapPin, 
     ArrowRight,
     Download,
-    UserPlus
+    UserPlus,
+    Save
 } from 'lucide-react';
+import { toPng } from 'html-to-image';
 import { getSignupStatus } from '@/server/actions/activiteit-actions';
 import Link from 'next/link';
 import QRDisplay from '@/shared/ui/QRDisplay';
@@ -69,6 +71,29 @@ export default function ConfirmationIsland({
 
         checkStatus();
     }, [initialId, initialTransactionId, retryCount]);
+    
+    const downloadTicket = async (elementId: string, ticketName: string) => {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+        
+        try {
+            // Wait a tiny bit to ensure QR is fully rendered if needed
+            const dataUrl = await toPng(element, { 
+                quality: 0.95,
+                backgroundColor: '#121212', // Match dark theme bg
+                style: {
+                    borderRadius: '0', // Keep as captured
+                }
+            });
+            
+            const link = document.createElement('a');
+            link.download = `Ticket-${ticketName.replace(/\s+/g, '-')}-${Date.now()}.png`;
+            link.href = dataUrl;
+            link.click();
+        } catch (err) {
+            console.error('[Download] Failed to generate ticket image:', err);
+        }
+    };
 
     const renderContent = () => {
         if (status === 'loading') {
@@ -129,10 +154,13 @@ export default function ConfirmationIsland({
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 max-w-5xl mx-auto">
-
+                    <div className="flex flex-wrap justify-center gap-6 max-w-6xl mx-auto">
                         {Array.from({ length: amount }).map((_, i) => (
-                            <div key={i} className="p-8 rounded-[3rem] bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xl space-y-6 relative overflow-hidden group">
+                            <div 
+                                key={i} 
+                                id={`ticket-card-${i}`} 
+                                className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] min-w-[300px] max-w-[380px] p-8 rounded-[3rem] bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xl space-y-6 relative overflow-hidden"
+                            >
                                 <div className="flex flex-col items-center gap-4">
                                     <p className="text-[10px] font-black text-[var(--theme-purple)] uppercase tracking-[0.2em]">TICKET {i + 1} / {amount}</p>
                                     <div className="p-4 bg-white rounded-3xl shadow-lg ring-1 ring-black/5">
@@ -145,6 +173,14 @@ export default function ConfirmationIsland({
                                         </p>
                                     </div>
                                 </div>
+                                
+                                <button 
+                                    onClick={() => downloadTicket(`ticket-card-${i}`, eventName)}
+                                    className="absolute top-4 right-4 p-3 rounded-full bg-[var(--bg-soft)] border border-[var(--border-color)] text-[var(--text-muted)] hover:bg-[var(--theme-purple)] hover:text-white hover:scale-110 transition-all shadow-lg backdrop-blur-md"
+                                    title="Download Ticket"
+                                >
+                                    <Save className="h-5 w-5" />
+                                </button>
                             </div>
                         ))}
                     </div>
