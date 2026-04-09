@@ -1,13 +1,12 @@
 {{#> layout headerTitle="MEMBERSHIP RENEWED"}}
-    <div class="status-badge success">Lidmaatschap Verlengd</div>
+    <div class="status-badge">Lidmaatschap Verlengd</div>
     <p>Beste {{firstName}},</p>
     
     <p>Hoera! Je lidmaatschap bij <strong>Salve Mundi</strong> is succesvol verlengd. We zijn ontzettend blij dat je weer een jaar bij ons blijft!</p>
     
-    <div class="details">
-        <p style="text-align: center; margin-bottom: 10px; font-weight: 800; color: #a4539b; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Vernieuwingsdetails</p>
-        <p><strong>Nieuwe Vervaldatum:</strong> {{expiryDate}}</p>
-        <p><strong>Bedrag:</strong> € {{amount}}</p>
+    <div style="background: #ffffff; border: 2px dashed #a4539b; padding: 25px; border-radius: 20px; margin: 30px 0; text-align: center;">
+        <p style="text-transform: uppercase; font-size: 10px; letter-spacing: 1.5px; color: #a4539b; font-weight: 800; margin-bottom: 10px;">Lidmaatschap Status</p>
+        <p style="font-size: 18px; font-weight: 400; margin: 5px 0;">Je bent lid tot: <strong style="color: #5e2b52;">{{expiryDate}}</strong></p>
     </div>
 
     <p>Je hebt nu weer een jaar lang onbeperkt toegang tot al onze activiteiten, kortingen en gezelligheid. Je kunt je actuele gegevens altijd bekijken in je profiel.</p>
@@ -18,5 +17,11 @@
 
     <p>Bedankt voor je voortdurende steun en we zien je snel bij de volgende activiteit!</p>
 
-    <p>Met paarse groet,<br><strong>Bestuur Salve Mundi</strong></p>
+    <div class="reference-data">
+        <p><strong>Referentie Details:</strong></p>
+        <p>Bedrag: € {{amount}}<br>
+        Lid ID: {{userId}}</p>
+    </div>
+
+    <p style="margin-top: 30px;">Met paarse groet,<br><strong>Bestuur Salve Mundi</strong></p>
 {{/layout}}

@@ -7,28 +7,34 @@
     
     <p>Bedankt voor je inschrijving voor de reis van <strong>Salve Mundi</strong>! We hebben je aanmelding in goede orde ontvangen.</p>
     
-    <div class="details">
-        <p style="text-align: center; margin-bottom: 10px; font-weight: 800; color: #a4539b; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Aanmeldingsdetails</p>
-        <p><strong>Status:</strong> {{statusDisplay}}</p>
+    <div style="background: #ffffff; border: 2px dashed #a4539b; padding: 25px; border-radius: 20px; margin: 30px 0;">
+        <p style="text-align: center; text-transform: uppercase; font-size: 10px; letter-spacing: 1.5px; color: #a4539b; font-weight: 800; margin-bottom: 15px;">Aanmeldingsstatus</p>
         
         {{#if (eq status 'waitlist')}}
-            <p style="color: #e65100; font-style: italic; margin-top: 10px;">Je staat momenteel op de wachtlijst omdat het maximaal aantal deelnemers is bereikt. We laten het je direct weten zodra er een plekje voor je vrijkomt.</p>
+            <p style="color: #e65100; font-style: italic; text-align: center;">Je staat momenteel op de <strong>wachtlijst</strong> omdat het maximaal aantal deelnemers is bereikt. We laten het je weten zodra er een plekje vrijkomt.</p>
         {{else if (eq status 'confirmed')}}
-            <p style="color: #2e7d32; font-weight: 700; margin-top: 10px;">Hoera! Je bent direct bevestigd voor deze reis. Je ontvangt binnenkort meer informatie over de aanbetaling.</p>
+            <p style="color: #2e7d32; font-weight: 700; text-align: center; font-size: 18px;">Hoera! Je bent direct bevestigd voor deze reis.</p>
+            <p style="text-align: center; font-size: 13px; color: #555; margin-top: 5px;">Je ontvangt binnenkort meer informatie over de aanbetaling.</p>
         {{else}}
-            <p style="margin-top: 10px;">Je aanmelding wordt momenteel beoordeeld door de commissie. Zodra dit is gebeurd, ontvang je instructies voor de volgende stappen.</p>
+            <p style="text-align: center;">Je aanmelding wordt momenteel beoordeeld door de commissie. Zodra dit is gebeurd, ontvang je instructies voor de volgende stappen.</p>
         {{/if}}
     </div>
 
     <p>Je kunt de actuele status van de reis en je eigen inschrijving altijd bekijken op onze website:</p>
     
     <p style="text-align: center;">
-        <a href="https://salvemundi.nl/reis" class="button">Bekijk Reis Status</a>
+        <a href="https://salvemundi.nl/reis" class="button">Bekijk Reis Dashboard</a>
     </p>
 
     <p>Heb je nog vragen? Stuur dan gerust een mailtje naar de Reiscommissie via <a href="mailto:reis@salvemundi.nl">reis@salvemundi.nl</a>.</p>
 
     <p>We hebben er zin in!</p>
 
-    <p>Met paarse groet,<br><strong>De Reiscommissie</strong></p>
+    <div class="reference-data">
+        <p><strong>Referentie Details:</strong></p>
+        <p>Trip: {{eventName}}<br>
+        Registratie ID: {{registrationId}}</p>
+    </div>
+
+    <p style="margin-top: 30px;">Met paarse groet,<br><strong>De Reiscommissie</strong></p>
 {{/layout}}
