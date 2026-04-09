@@ -69,7 +69,8 @@
         color: var(--text-main);
         font-weight: 500;
         font-size: var(--font-size-base);
-        transition: all 0.2s ease;
+        /* Stabiliteit boven animatie: alleen focus-gerelateerde transities */
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
         appearance: none;
     }
 
@@ -88,15 +89,7 @@
         color: var(--text-main);
     }
 
-    /* ── Autofill Fix ──────────────────────────────────────────────────────── */
-    /* Prevents browsers from forcing a white/yellow background in dark mode */
-    .dark .form-input:-webkit-autofill,
-    .dark .form-input:-webkit-autofill:hover,
-    .dark .form-input:-webkit-autofill:focus {
-        -webkit-text-fill-color: var(--text-main);
-        -webkit-box-shadow: 0 0 0px 1000px #1a141b inset !important;
-        transition: background-color 5000s ease-in-out 0s;
-    }
+    /* Autofill management moved to dedicated autofill.css for global stability */
 
     textarea.form-input {
         min-height: 100px;
@@ -195,19 +188,6 @@
     }
 
     /* ── Dark Mode — Card Contrast Fix ─────────────────────────────────────── */
-    /* Cards need visual lift from the page background in dark mode.
-     Targeting both system preference and Tailwind's .dark class strategy.   */
-    @media (prefers-color-scheme: dark) {
-        :is(.activity-card, .card, .card-activity, .activity, .beheer-activiteit, .directus-card) {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            box-shadow: var(--shadow-card-elevated);
-            border-radius: 0.5rem;
-            backdrop-filter: blur(4px);
-        }
-    }
-
     .dark :is(.activity-card, .card, .card-activity, .activity, .beheer-activiteit, .directus-card) {
         background-color: var(--bg-card);
         border: 1px solid var(--border-color);

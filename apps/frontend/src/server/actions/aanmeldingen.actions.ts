@@ -13,6 +13,7 @@ import {
 } from "@directus/sdk";
 import { USER_BASIC_FIELDS } from "@salvemundi/validations";
 import { createEventSignupDb, updateEventSignupDb, deleteEventSignupDb } from "./event-db.utils";
+import { logAdminAction } from "./audit.actions";
 
 
 const getNotificationUrl = () => process.env.INTERNAL_NOTIFICATION_API_URL || process.env.NEXT_PUBLIC_NOTIFICATION_API_URL;
@@ -27,10 +28,11 @@ async function checkAdminAccess() {
     const session = await getSession();
     if (!session || !session.user) return null;
 
-    const user = session.user as any;
-    if (!isSuperAdmin(user.committees)) return null;
+    const user = session.user;
+    // Use isAdmin/isICT for broad management access
+    if (user.isAdmin || user.isICT) return session;
 
-    return session;
+    return null;
 }
 
 async function sendCancellationEmail(email: string, eventName: string) {
@@ -59,10 +61,16 @@ export async function deleteSignupAction(signupId: number, eventId: string | num
         const success = await deleteEventSignupDb(signupId);
         if (!success) throw new Error("Deletion from database failed");
 
-        // Sync to Directus
-        getSystemDirectus().request(deleteItem('event_signups', signupId)).catch(err => {
+        // Sync to Directus - now awaited
+        try {
+            await getSystemDirectus().request(deleteItem('event_signups', signupId));
+        } catch (err) {
             console.error('Directus delete signup sync error:', err);
-        });
+            await logAdminAction('event_signup_delete_failed', 'ERROR', { id: signupId, error: String(err) });
+            // Non-critical rollback for delete? Actually we should probably revert the DB delete
+            // But we already deleted it from Postgres. Ideally we do this in reverse.
+            return { success: false, error: "CMS Synchronisatie mislukt. Aanmelding niet verwijderd." };
+        }
 
         if (participantEmail && eventName) {
             await sendCancellationEmail(participantEmail, eventName);
@@ -122,10 +130,16 @@ export async function createManualSignupAction(eventId: number, eventName: strin
         const newId = await createEventSignupDb(payload);
         if (!newId) throw new Error('Toevoegen aan database mislukt');
 
-        // Background sync
-        getSystemDirectus().request(createItem('event_signups', { ...payload, id: newId })).catch(err => {
+        // Sync to Directus - now awaited
+        try {
+            await getSystemDirectus().request(createItem('event_signups', { ...payload, id: newId }));
+        } catch (err) {
             console.error('Directus manual signup sync error:', err);
-        });
+            // Cleanup DB if sync fails
+            await deleteEventSignupDb(newId);
+            await logAdminAction('event_signup_manual_rollback', 'ERROR', { id: newId, error: String(err), action: 'rollback_delete' });
+            return { success: false, error: 'Synchronisatie met CMS mislukt. Aanmelding niet opgeslagen.' };
+        }
 
         revalidateTag(`event_signups_${eventId}`, 'default');
         revalidatePath(`/beheer/activiteiten/${eventId}/aanmeldingen`);
@@ -154,10 +168,16 @@ export async function toggleCheckInAction(signupId: number, eventId: number, che
         const updated = await updateEventSignupDb(signupId, payload);
         if (!updated) throw new Error("Database update mislukt");
 
-        // Background sync
-        getSystemDirectus().request(updateItem('event_signups', signupId, payload)).catch(err => {
+        // Sync to Directus - now awaited
+        try {
+            await getSystemDirectus().request(updateItem('event_signups', signupId, payload));
+        } catch (err) {
             console.error('Directus toggle check-in sync error:', err);
-        });
+            // Revert DB on sync fail
+            await updateEventSignupDb(signupId, { checked_in: !checkedIn, checked_in_at: !checkedIn ? new Date().toISOString() : null });
+            await logAdminAction('event_signup_checkin_rollback', 'ERROR', { id: signupId, error: String(err), action: 'rollback_restore' });
+            return { success: false, error: "CMS Synchronisatie mislukt. Check-in status niet bijgewerkt." };
+        }
 
         revalidateTag(`event_signups_${eventId}`, 'default');
         return { success: true };

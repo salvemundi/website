@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { dateOfBirthSchema, phoneNumberSchema } from './shared.zod.js';
 
 export const reisSiteSettingsSchema = z.object({
     id: z.string().optional(),
@@ -52,18 +53,19 @@ export const reisSignupFormSchema = z.object({
     first_name: z.string().min(1, 'Voornaam is verplicht'),
     last_name: z.string().min(1, 'Achternaam is verplicht'),
     email: z.string().email('Ongeldig e-mailadres'),
-    phone_number: z.string().min(5, 'Telefoonnummer is verplicht'),
-    date_of_birth: z.string().min(1, 'Geboortedatum is verplicht'),
+    phone_number: phoneNumberSchema,
+    date_of_birth: dateOfBirthSchema,
     terms_accepted: z.boolean().refine(val => val === true, {
         message: 'Je moet de algemene voorwaarden accepteren.',
     }),
+    website: z.string().optional(), // Honeypot
 });
 
 export const reisPaymentEnrichmentSchema = z.object({
     first_name: z.string().min(1, 'Voornaam is verplicht'),
     last_name: z.string().min(1, 'Achternaam is verplicht'),
-    phone_number: z.string().min(5, 'Telefoonnummer is verplicht'),
-    date_of_birth: z.string().min(1, 'Geboortedatum is verplicht'),
+    phone_number: phoneNumberSchema,
+    date_of_birth: dateOfBirthSchema,
     id_document: z.string().min(1, 'ID-documenttype is verplicht'),
     document_number: z.string().optional().nullable(),
     allergies: z.string().optional().nullable(),
@@ -71,7 +73,7 @@ export const reisPaymentEnrichmentSchema = z.object({
     willing_to_drive: z.boolean().optional().nullable(),
 }).refine(data => {
     if (data.id_document && data.id_document !== 'none') {
-        return !!data.document_number && data.document_number.length > 0;
+        return typeof data.document_number === 'string' && data.document_number.length > 0;
     }
     return true;
 }, {

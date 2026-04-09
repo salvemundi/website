@@ -23,7 +23,8 @@ import { readItems, createItem, readUsers } from '@directus/sdk';
 import { query } from '@/lib/db';
 import { auth } from '@/server/auth/auth';
 import { headers as nextHeaders } from 'next/headers';
-import { fetchUserSignupStatusDb, fetchPublicTripsDb, insertTripSignupDb } from './reis-db.utils';
+import { logAdminAction } from './audit.actions';
+import { fetchUserSignupStatusDb, fetchPublicTripsDb, insertTripSignupDb, deleteTripSignupDb } from './reis-db.utils';
 import { getRedis } from '@/server/auth/redis-client';
 import { randomUUID } from 'crypto';
 
@@ -201,15 +202,24 @@ async function getTripSignups(tripId: number): Promise<ReisTripSignup[]> {
 }
 
 export async function createTripSignup(data: ReisSignupForm, tripId: number): Promise<{ success: boolean; message?: string }> {
-    const session = await auth.api.getSession({ headers: await nextHeaders() });
-    
+    const { rateLimit } = await import('../utils/ratelimit');
+    const { success: rateLimitSuccess } = await rateLimit('trip-signup', 10, 600); // 10 pogingen per 10 min
+    if (!rateLimitSuccess) {
+        return { success: false, message: 'Te veel aanmeldingen vanaf dit IP-adres. Probeer het over een kwartier opnieuw.' };
+    }
+
     const parsed = reisSignupFormSchema.safeParse(data);
     if (!parsed.success) {
         console.error('Zod validation failed for signup:', parsed.error.flatten().fieldErrors);
         return { success: false, message: 'Ongeldige invoer. Controleer de velden en probeer het opnieuw.' };
     }
 
+    if (parsed.data.website) {
+        return { success: false, message: 'Spam gedetecteerd.' };
+    }
+
     const { email } = parsed.data;
+    const session = await auth.api.getSession({ headers: await nextHeaders() });
 
     const [existingSignups, siteSettings] = await Promise.all([
         getTripSignups(tripId),
@@ -252,94 +262,135 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
     const participantsCount = existingSignups.filter(s => s.status === 'confirmed' || s.status === 'registered').length;
     const shouldBeWaitlisted = participantsCount >= targetTrip.max_participants;
 
-    const isCommitteeMember = !!(session?.user as any)?.committees?.length;
+        const isCommitteeMember = !!(session?.user as any)?.committees?.length;
 
-    const redis = await getRedis();
-    const lockKey = `lock:trip:${tripId}:signup`;
-    const lockToken = Math.random().toString(36).substring(2);
-    let lockAcquired = false;
+        const redis = await getRedis();
+        const lockKey = `lock:trip:${tripId}:signup`;
+        const lockToken = Math.random().toString(36).substring(2);
+        let lockAcquired = false;
 
-    // Retry mechanism for the lock (spin-lock with backoff)
-    for (let i = 0; i < 10; i++) {
-        const result = await redis.set(lockKey, lockToken, 'PX', 10000, 'NX'); // 10s TTL
-        if (result === 'OK') {
-            lockAcquired = true;
-            break;
-        }
-        await new Promise(resolve => setTimeout(resolve, 200 + Math.random() * 300));
-    }
-
-    if (!lockAcquired) {
-        return { success: false, message: 'De server is momenteel erg druk. Probeer het over een paar seconden opnieuw.' };
-    }
-
-    try {
-        const [existingSignups, siteSettings] = await Promise.all([
-            getTripSignups(tripId),
-            getReisSiteSettings()
-        ]);
-        
-        const isReisEnabled = siteSettings?.show ?? true;
-        if (!isReisEnabled) {
-            return { success: false, message: 'Inschrijvingen voor de reis zijn momenteel gesloten.' };
-        }
-
-        if (userId) {
-            const existing = existingSignups.find(s => s.directus_relations === userId && s.status !== 'cancelled');
-            if (existing) {
-                return { success: false, message: 'Je bent al aangemeld voor deze reis.' };
+        // Retry mechanism for the lock (spin-lock with backoff)
+        for (let i = 0; i < 10; i++) {
+            const result = await redis.set(lockKey, lockToken, 'PX', 10000, 'NX'); // 10s TTL
+            if (result === 'OK') {
+                lockAcquired = true;
+                break;
             }
+            await new Promise(resolve => setTimeout(resolve, 200 + Math.random() * 300));
         }
 
-        const trips = await getUpcomingTrips();
-        const targetTrip = trips.find(t => t.id === tripId);
-        if (!targetTrip) {
-            return { success: false, message: 'Reis niet gevonden.' };
+        if (!lockAcquired) {
+            return { success: false, message: 'De server is momenteel erg druk. Probeer het over een paar seconden opnieuw.' };
         }
 
-        // 3. Trip-specific registration check inside lock
-        const registrationStartDate = targetTrip.registration_start_date ? new Date(targetTrip.registration_start_date) : null;
-        const now = new Date();
-        
-        // Default to true if no date is set, so the toggle works immediately
-        const isRegistrationDateReached = registrationStartDate ? now >= registrationStartDate : true;
-        
-        // canSignUp is true ONLY if both the trip switch (registration_open) AND the start date are satisfied.
-        const canSignUp = Boolean(targetTrip.registration_open && isRegistrationDateReached);
+        try {
+            const [existingSignups, siteSettings] = await Promise.all([
+                getTripSignups(tripId),
+                getReisSiteSettings()
+            ]);
+            
+            const isReisEnabled = siteSettings?.show ?? true;
+            if (!isReisEnabled) {
+                return { success: false, message: 'Inschrijvingen voor de reis zijn momenteel gesloten.' };
+            }
 
-        if (!canSignUp) {
-            return { success: false, message: 'De inschrijving voor deze reis is momenteel niet geopend.' };
-        }
+            if (userId) {
+                const existing = existingSignups.find(s => s.directus_relations === userId && s.status !== 'cancelled');
+                if (existing) {
+                    return { success: false, message: 'Je bent al aangemeld voor deze reis.' };
+                }
+            }
 
-        const participantsCount = existingSignups.filter(s => s.status === 'confirmed' || s.status === 'registered').length;
-        const shouldBeWaitlisted = participantsCount >= targetTrip.max_participants;
+            const trips = await getUpcomingTrips();
+            const targetTrip = trips.find(t => t.id === tripId);
+            if (!targetTrip) {
+                return { success: false, message: 'Reis niet gevonden.' };
+            }
 
-        const payload = {
-            trip_id: Number(tripId),
-            first_name: parsed.data.first_name,
-            last_name: parsed.data.last_name,
-            email: parsed.data.email,
-            phone_number: parsed.data.phone_number,
-            date_of_birth: parsed.data.date_of_birth,
-            terms_accepted: parsed.data.terms_accepted,
-            directus_relations: userId || null, 
-            status: shouldBeWaitlisted ? ('waitlist' as const) : ('registered' as const),
-            role: isCommitteeMember ? ('crew' as const) : ('participant' as const),
-            deposit_paid: false,
-            full_payment_paid: false,
-            access_token: randomUUID(),
-            date_created: new Date().toISOString()
-        };
-        
-        const signupId = await insertTripSignupDb(payload);
-        if (!signupId) throw new Error('Database insert failed');
+            // 3. Trip-specific registration check inside lock
+            const registrationStartDate = targetTrip.registration_start_date ? new Date(targetTrip.registration_start_date) : null;
+            const now = new Date();
+            
+            // Default to true if no date is set, so the toggle works immediately
+            const isRegistrationDateReached = registrationStartDate ? now >= registrationStartDate : true;
+            
+            // canSignUp is true ONLY if both the trip switch (registration_open) AND the start date are satisfied.
+            const canSignUp = Boolean(targetTrip.registration_open && isRegistrationDateReached);
 
-        getSystemDirectus().request(createItem('trip_signups', payload as any)).catch(err => {
-            console.error('Directus sync error:', err);
-        });
-        
-        revalidatePath('/reis');
-        revalidatePath('/beheer/reis');
+            if (!canSignUp) {
+                return { success: false, message: 'De inschrijving voor deze reis is momenteel niet geopend.' };
+            }
+
+            const participantsCount = existingSignups.filter(s => s.status === 'confirmed' || s.status === 'registered').length;
+            const shouldBeWaitlisted = participantsCount >= targetTrip.max_participants;
+
+            const payload = {
+                trip_id: Number(tripId),
+                first_name: parsed.data.first_name,
+                last_name: parsed.data.last_name,
+                email: parsed.data.email,
+                phone_number: parsed.data.phone_number,
+                date_of_birth: parsed.data.date_of_birth,
+                terms_accepted: parsed.data.terms_accepted,
+                directus_relations: userId || null, 
+                status: shouldBeWaitlisted ? ('waitlist' as const) : ('registered' as const),
+                role: isCommitteeMember ? ('crew' as const) : ('participant' as const),
+                deposit_paid: false,
+                full_payment_paid: false,
+                access_token: randomUUID(),
+                created_at: new Date().toISOString()
+            };
+            
+            const signupId = await insertTripSignupDb(payload);
+            if (!signupId) throw new Error('Database insert failed');
+
+            // Sync to Directus - now awaited for data integrity
+            try {
+                await getSystemDirectus().request(createItem('trip_signups', { ...payload, id: signupId }));
+            } catch (err: any) {
+                // If Directus says the ID already exists, it might be a retry, a race condition,
+                // or a sequence overlap between Postgres and Directus.
+                const firstError = err.errors?.[0];
+                const isUniqueError = 
+                    firstError?.extensions?.code === 'RECORD_NOT_UNIQUE' || 
+                    firstError?.message?.toLowerCase().includes('unique') || 
+                    (err.message || '').toLowerCase().includes('unique');
+                
+                if (isUniqueError) {
+                    try {
+                        // Fetch the record specifically BY ID to see what's in Directus
+                        const existingRecords = await getSystemDirectus().request(readItems('trip_signups', {
+                            filter: { id: { _eq: signupId } } as any,
+                            fields: ['id', 'trip_id', 'directus_relations', 'email'] as any,
+                            limit: 1
+                        }));
+
+                        const existing = existingRecords?.[0];
+                        // Verify if it's the same registration attempt (same trip and same user or same email)
+                        const matchesTrip = existing && Number(existing.trip_id) === Number(payload.trip_id);
+                        const matchesUser = userId && existing.directus_relations === userId;
+                        const matchesEmail = !userId && existing.email === payload.email;
+
+                        if (matchesTrip && (matchesUser || matchesEmail)) {
+                            console.log(`[ReisSync] Idempotent success: record ${signupId} already exists in Directus.`);
+                            return { success: true };
+                        } else if (existing) {
+                            console.error(`[ReisSync] CRITICAL: ID collision on ID ${signupId}. Record belongs to someone else.`);
+                        }
+                    } catch (checkErr) {
+                        console.error('[ReisSync] Error during idempotency check:', checkErr);
+                    }
+                }
+
+                console.error('Directus sync error:', err);
+                // Cleanup DB if sync fails
+                await deleteTripSignupDb(signupId);
+                await logAdminAction('trip_signup_rollback', 'ERROR', { id: signupId, error: String(err), action: 'rollback_delete' });
+                return { success: false, message: 'Synchronisatie met CMS mislukt. Inschrijving niet voltooid.' };
+            }
+            
+            revalidatePath('/reis');
+            revalidatePath('/beheer/reis');
 
         const statusDisplay = payload.status === 'waitlist' ? 'Wachtlijst' : 'Geregistreerd (Beoordeling)';
         const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://salvemundi.nl';

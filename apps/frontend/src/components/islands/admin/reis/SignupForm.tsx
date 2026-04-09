@@ -10,6 +10,7 @@ import {
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import type { TripSignup } from '@salvemundi/validations';
+import { DateInput } from '@/shared/ui/DateInput';
 
 interface SignupFormProps {
     signup: TripSignup;
@@ -32,7 +33,7 @@ export default function SignupForm({ signup }: SignupFormProps) {
                     <Input label="Achternaam" name="last_name" defaultValue={signup.last_name} required />
                     <Input label="Email" name="email" type="email" defaultValue={signup.email} required className="md:col-span-2" />
                     <Input label="Telefoon" name="phone_number" defaultValue={signup.phone_number || ''} />
-                    <Input label="Geboortedatum" name="date_of_birth" type="date" defaultValue={signup.date_of_birth ? format(new Date(signup.date_of_birth), 'yyyy-MM-dd') : ''} />
+                    <DateAndLabel label="Geboortedatum" name="date_of_birth" defaultValue={signup.date_of_birth ? format(new Date(signup.date_of_birth), 'yyyy-MM-dd') : ''} />
                     <Select label="ID Type" name="id_document" defaultValue={signup.id_document || ''}>
                         <option value="">Niet opgegeven</option>
                         <option value="passport">Paspoort</option>
@@ -101,6 +102,21 @@ export default function SignupForm({ signup }: SignupFormProps) {
                     </div>
                 </div>
             </div>
+        </div>
+    );
+}
+
+function DateAndLabel({ label, defaultValue, name }: any) {
+    const [val, setVal] = React.useState(defaultValue);
+    return (
+        <div className="space-y-2">
+            <label className="block text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text)] px-1">{label}</label>
+            <DateInput 
+                name={name} 
+                value={val} 
+                onChange={(newVal) => setVal(newVal)}
+                autoComplete="off"
+            />
         </div>
     );
 }

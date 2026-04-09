@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { phoneNumberSchema } from './shared.zod.js';
 
 export const whatsappGroupSchema = z.object({
   id: z.string().or(z.number()),
@@ -66,5 +67,5 @@ export const eventSignupSchema = z.object({
 
 export const updateProfileSchema = z.object({
   minecraft_username: z.string().optional().nullable(),
-  phone_number: z.string().optional().nullable(),
+  phone_number: phoneNumberSchema.optional().or(z.literal('')).nullable(),
 });

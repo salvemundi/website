@@ -1,10 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { submitIntroParentSignup } from '@/server/actions/intro.actions';
 import { FormField } from '@/shared/ui/FormField';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { Heart } from 'lucide-react';
+import { introParentSignupFormSchema, type IntroParentSignupForm } from '@salvemundi/validations';
 
 interface IntroParentIslandProps {
     userName: string;
@@ -13,39 +16,34 @@ interface IntroParentIslandProps {
 }
 
 export const IntroParentIsland = ({ userName, userEmail, initialPhone }: IntroParentIslandProps) => {
-    const [phone, setPhone] = useState(initialPhone);
-    const [motivation, setMotivation] = useState('');
-
     const [submitted, setSubmitted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [phoneError, setPhoneError] = useState<string | null>(null);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError(null);
-        setPhoneError(null);
-
-        if (!phone || phone.length < 10) {
-            setPhoneError('Ongeldig telefoonnummer');
-            return;
+    const {
+        register,
+        control,
+        handleSubmit,
+        formState: { errors }
+    } = useForm<IntroParentSignupForm>({
+        resolver: zodResolver(introParentSignupFormSchema),
+        defaultValues: {
+            telefoonnummer: initialPhone,
+            motivation: '',
         }
+    });
 
-        if (!motivation) {
-            setError('Motivatie is verplicht');
-            return;
-        }
-
+    const onSubmit = async (data: IntroParentSignupForm) => {
         setIsSubmitting(true);
+        setError(null);
 
         try {
-            const result = await submitIntroParentSignup({
-                telefoonnummer: phone,
-                motivation: motivation,
-            });
+            const result = await submitIntroParentSignup(data);
 
             if (result.success) {
                 setSubmitted(true);
+            } else {
+                setError(result.error || 'Er is een fout opgetreden.');
             }
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Er is een fout opgetreden bij het versturen van je aanmelding.';
@@ -67,7 +65,7 @@ export const IntroParentIsland = ({ userName, userEmail, initialPhone }: IntroPa
     }
 
     return (
-        <form onSubmit={handleSubmit} className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg space-y-4" autoComplete="off">
             <div className="flex items-center gap-2 mb-4">
                 <Heart className="w-5 h-5 lg:w-6 lg:h-6 text-theme-purple" />
                 <h3 className="text-xl lg:text-2xl font-bold text-theme-purple">Word Intro Ouder!</h3>
@@ -81,25 +79,29 @@ export const IntroParentIsland = ({ userName, userEmail, initialPhone }: IntroPa
                 </p>
             </div>
 
-            <FormField label="Telefoonnummer" required error={phoneError ?? undefined}>
-                <PhoneInput
+            <FormField id="field-telefoonnummer" label="Telefoonnummer" required error={errors.telefoonnummer?.message}>
+                <Controller
                     name="telefoonnummer"
-                    value={phone}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => { setPhone(e.target.value); setPhoneError(null); }}
-                    required
-                    autoComplete="tel"
-                    error={!!phoneError}
+                    control={control}
+                    render={({ field }) => (
+                        <PhoneInput
+                            {...field}
+                            id="field-telefoonnummer"
+                            required
+                            autoComplete="one-time-code"
+                        />
+                    )}
                 />
             </FormField>
 
-            <FormField label="Motivatie" required error={error ?? undefined}>
+            <FormField id="field-motivation" label="Motivatie" required error={errors.motivation?.message}>
                 <textarea
-                    name="motivation"
-                    value={motivation}
-                    onChange={(e) => { setMotivation(e.target.value); setError(null); }}
+                    {...register('motivation')}
+                    id="field-motivation"
                     required
                     rows={4}
                     className="form-input w-full"
+                    autoComplete="off"
                 />
             </FormField>
 

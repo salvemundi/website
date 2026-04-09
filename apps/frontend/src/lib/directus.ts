@@ -19,8 +19,6 @@ export function getSystemDirectus() {
                 urlObj.searchParams.set('v', cacheBuster);
                 const urlStr = urlObj.toString();
                 
-                // Server-side logging to verify consistency during pentesting/debugging
-                console.log(`[DIRECTUS_FETCH] ${options?.method || 'GET'} ${urlStr}`);
 
                 // Add next tags for sticker-related items to enable granular revalidation
                 const nextOptions: any = (options as any)?.next || {};

@@ -109,7 +109,7 @@ export async function getPendingSignupsAction() {
             })),
             ...tripSignups.map((s: any) => ({
                 id: s.id.toString(),
-                created_at: s.date_created,
+                created_at: s.created_at,
                 email: s.email,
                 first_name: s.first_name,
                 last_name: s.last_name,

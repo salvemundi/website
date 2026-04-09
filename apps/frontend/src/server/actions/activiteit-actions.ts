@@ -13,6 +13,7 @@ import {
     getActivityByIdInternal,
     getActivitySignupsInternal 
 } from "@/server/queries/admin-event.queries";
+import { logAdminAction } from './audit.actions';
 import { 
     createEventSignupDb, 
     deleteEventSignupDb,
@@ -91,9 +92,9 @@ export async function getActivitySignups(eventId: string) {
  */
 export async function signupForActivity(data: EventSignupForm) {
     const { rateLimit } = await import('../utils/ratelimit');
-    const { success } = await rateLimit('event-signup', 3, 300);
+    const { success } = await rateLimit('event-signup', 10, 600); // 10 pogingen per 10 min
     if (!success) {
-        return { success: false, error: 'Too many requests. Please try again soon.' };
+        return { success: false, error: 'Te veel aanmeldingen vanaf dit IP-adres. Probeer het over een kwartier opnieuw.' };
     }
 
     const parsed = eventSignupFormSchema.safeParse(data);
@@ -118,7 +119,7 @@ export async function signupForActivity(data: EventSignupForm) {
             return { success: false, error: 'Deze activiteit is alleen voor leden.' };
         }
 
-        const user = session?.user as any;
+        const user = session?.user;
         const isMember = user?.membership_status === 'active';
         const price = (isMember ? activity.price_members : activity.price_non_members) ?? 0;
 
@@ -152,10 +153,16 @@ export async function signupForActivity(data: EventSignupForm) {
         const signupId = await createEventSignupDb(payload);
         if (!signupId) throw new Error('Could not write to database');
 
-        // Async sync back to Directus for admin dashboard
-        directus.request(createItem('event_signups', { ...payload, id: signupId })).catch(err => {
+        // Sync back to Directus - now awaited for data integrity
+        try {
+            await directus.request(createItem('event_signups', { ...payload, id: signupId }));
+        } catch (err) {
             console.error('[Activities] Directus sync error:', err);
-        });
+            // Cleanup DB if sync fails
+            await deleteEventSignupDb(signupId);
+            await logAdminAction('activity_signup_rollback', 'ERROR', { id: signupId, error: String(err), action: 'rollback_delete' });
+            return { success: false, error: 'Synchronisatie met CMS mislukt. Inschrijving niet voltooid.' };
+        }
 
         revalidateTag(`event_signups_${parsed.data.event_id}`, 'default');
 

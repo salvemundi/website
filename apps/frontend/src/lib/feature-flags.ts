@@ -21,14 +21,13 @@ export async function getDisabledRoutes(): Promise<string[]> {
             return JSON.parse(cached);
         }
 
-        console.log(`[Feature-Flags] Cache MISS. Fetching fresh from Postgres...`);
         const { rows } = await query('SELECT route_match FROM feature_flags WHERE is_active = false');
 
         const routes = rows
             .map((flag: any) => flag.route_match)
             .filter((route: string | null | undefined): route is string => Boolean(route));
 
-        console.log(`[Feature-Flags] Fetched fresh from Postgres: [${routes.join(', ')}] (Count: ${routes.length})`);
+        console.log(`[Feature-Flags] Fresh fetch: [${routes.join(', ') || 'None'}]`);
         
         // Update Redis cache
         await redis.set(FLAGS_CACHE_KEY, JSON.stringify(routes), 'EX', CACHE_TTL);

@@ -20,6 +20,7 @@ interface ReisFormIslandProps {
     canSignUp: boolean;
     registrationStartText: string;
     participantsCount: number;
+    initialUser?: any;
 }
 
 export function ReisFormIsland({ 
@@ -29,14 +30,23 @@ export function ReisFormIsland({
     nextTrip, 
     userSignup, 
     canSignUp, 
-    registrationStartText 
+    registrationStartText,
+    initialUser 
 }: ReisFormIslandProps) {
     const { data: session } = authClient.useSession();
     const router = useRouter();
-    const currentUser = session?.user;
+    
+    // We prioritize the server-provided user to avoid any flicker.
+    // IMPORTANT: We REMOVE the sessionPending check here. 
+    // The form should be in the HTML immediately for the browser to avoid autofill "shocks".
+    const currentUser = initialUser || session?.user;
+    
+    // We only show loading if we don't have the trip data yet.
+    const isReallyLoading = isLoading;
+    
     const [refreshing, setRefreshing] = useState(false);
 
-    if (isLoading) {
+    if (isReallyLoading) {
         if (isReisDisabled) {
             return (
                 <section className="w-full lg:w-1/2 bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-lg p-8 animate-pulse text-center" aria-busy="true">

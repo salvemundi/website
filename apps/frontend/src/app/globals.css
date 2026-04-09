@@ -17,19 +17,13 @@
    waardoor dark:text-white lekt naar light mode op systemen met OS-dark voorkeur. */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* 2. Domain stylesheets — order matters for cascade */
 @import "./styles/theme.css";
-/* Dark mode overrides & semantic aliases  */
 @import "./styles/base.css";
-/* Fonts, html/body, :root, links          */
 @import "./styles/animations.css";
-/* Keyframes & animation utilities         */
+
 @import "./styles/components.css";
-/* Forms, buttons, gradients, admin, cards */
 @import "./styles/vendor.css";
-/* Timeline / Chrono third-party overrides */
 @import "./styles/maps.css";
-/* Mapbox / MapLibre popup & marker styles */
 @import "./styles/sponsors.css";
 /* Infinite-scroll sponsor banner            */
 
@@ -142,3 +136,6 @@
    --font-size-4xl: 2.25rem;
    --font-size-5xl: 3rem;
 }
+
+/* Stabilize Autofill - Import at the absolute bottom to ensure it overrides defaults */
+@import "./styles/autofill.css";

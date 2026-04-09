@@ -1,12 +1,13 @@
 import { z } from 'zod';
+import { dateOfBirthSchema, phoneNumberSchema } from './shared.zod.js';
 
 export const introSignupFormSchema = z.object({
     voornaam: z.string().min(1, 'Voornaam is verplicht'),
     tussenvoegsel: z.string().optional(),
     achternaam: z.string().min(1, 'Achternaam is verplicht'),
-    geboortedatum: z.string().min(1, 'Geboortedatum is verplicht'),
+    geboortedatum: dateOfBirthSchema,
     email: z.string().email('Ongeldig e-mailadres'),
-    telefoonnummer: z.string().min(10, 'Ongeldig telefoonnummer'),
+    telefoonnummer: phoneNumberSchema,
     favorieteGif: z.string().url('Ongeldige URL').optional().or(z.literal('')),
     website: z.string().optional(),
 });
@@ -14,7 +15,7 @@ export const introSignupFormSchema = z.object({
 export type IntroSignupForm = z.infer<typeof introSignupFormSchema>;
 
 export const introParentSignupFormSchema = z.object({
-    telefoonnummer: z.string().min(10, 'Ongeldig telefoonnummer'),
+    telefoonnummer: phoneNumberSchema,
     motivation: z.string().min(1, 'Motivatie is verplicht'),
 });
 

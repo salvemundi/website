@@ -1,11 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, Clock, Lock } from 'lucide-react';
 import { createTripSignup, getCurrentUserProfileAction } from '@/server/actions/reis.actions';
-import type { ReisTrip } from '@salvemundi/validations';
+import { type ReisTrip, reisSignupFormSchema, type ReisSignupForm } from '@salvemundi/validations';
 import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
+import { DateInput } from '@/shared/ui/DateInput';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import AdminToast from '@/components/ui/admin/AdminToast';
@@ -26,100 +29,54 @@ export function ReisRegistrationForm({
     onRefresh
 }: ReisRegistrationFormProps) {
     const [isSuccess, setIsSuccess] = useState(false);
-    const [form, setForm] = useState({
-        first_name: '',
-        last_name: '',
-        email: '',
-        phone_number: '',
-        date_of_birth: '' as string,
-        terms_accepted: false,
-    });
     const [loading, setLoading] = useState(false);
     const { toast, showToast, hideToast } = useAdminToast();
-    const [localError, setLocalError] = useState<string | null>(null);
 
-    useEffect(() => {
-        const prefillData = async () => {
-            if (!currentUser) return;
-
-            // Helper to format date for input type="date" (YYYY-MM-DD)
-            const formatDateForInput = (dateStr?: string | null) => {
-                if (!dateStr) return '';
-                try {
-                    // Check if already in YYYY-MM-DD format to avoid timezone shifts
-                    if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) return dateStr;
-
-                    const date = new Date(dateStr);
-                    if (isNaN(date.getTime())) return '';
-                    return date.toISOString().split('T')[0];
-                } catch {
-                    return '';
-                }
-            };
-
-            // 1. Initial pre-fill from basic session data (prioritize this)
-            setForm(prev => {
-                const birthdateFromAuth = formatDateForInput((currentUser as any).date_of_birth);
-                const phoneFromAuth = (currentUser as any).phone_number || '';
-
-                return {
-                    ...prev,
-                    last_name: prev.last_name || (currentUser as any).last_name || '',
-                    email: prev.email || currentUser?.email || '',
-                    phone_number: prev.phone_number || phoneFromAuth,
-                    date_of_birth: prev.date_of_birth || birthdateFromAuth,
-                };
-            });
-
-            // 2. Enrich with full profile from Directus (fallback/enhancement)
-            const profile = await getCurrentUserProfileAction();
-            if (profile.success && profile.data) {
-                setForm(prev => ({
-                    ...prev,
-                    // First name is explicitly NOT pre-filled as requested
-                    last_name: prev.last_name || profile.data.last_name || '',
-                    email: prev.email || profile.data.email || '',
-                    phone_number: prev.phone_number || profile.data.phone_number || '',
-                    date_of_birth: prev.date_of_birth || formatDateForInput(profile.data.date_of_birth),
-                }));
-            }
-        };
-
-        prefillData();
-    }, [currentUser]);
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value, type } = e.target as HTMLInputElement;
-        if (type === 'checkbox') {
-            setForm({ ...form, [name]: (e.target as HTMLInputElement).checked });
-        } else {
-            setForm({ ...form, [name]: value });
+    const formatDateForInput = (dateStr?: string | null) => {
+        if (!dateStr) return '';
+        try {
+            if (typeof dateStr === 'string' && dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) return dateStr;
+            const date = new Date(dateStr!);
+            if (isNaN(date.getTime())) return '';
+            return date.toISOString().split('T')[0];
+        } catch {
+            return '';
         }
-        if (localError) setLocalError(null);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLocalError(null);
-
-        if (!form.first_name || !form.last_name || !form.email || !form.phone_number || !form.date_of_birth) {
-            setLocalError('Vul alle verplichte velden in.');
-            return;
+    const {
+        register,
+        control,
+        handleSubmit,
+        formState
+    } = useForm<ReisSignupForm>({
+        resolver: zodResolver(reisSignupFormSchema),
+        defaultValues: {
+            first_name: currentUser?.first_name || '',
+            last_name: currentUser?.last_name || '',
+            email: currentUser?.email || '',
+            phone_number: currentUser?.phone_number || '',
+            date_of_birth: formatDateForInput(currentUser?.date_of_birth),
+            terms_accepted: false,
         }
+    });
 
-        if (!form.terms_accepted) {
-            setLocalError('Je moet de algemene voorwaarden accepteren om door te gaan.');
-            return;
-        }
+    const { errors } = formState;
 
-        if (!nextTrip) {
-            setLocalError('Er is momenteel geen reis beschikbaar.');
-            return;
-        }
+    useEffect(() => {
+        console.log('REIS_FORM_V7.5_SSR_LOADED');
+    }, []);
+
+    // SSR pattern: Data wordt nu direct via props in defaultValues geladen.
+    // Dit voorkomt reset() conflicten met browser autofill.
+
+
+    const onSubmit = async (data: ReisSignupForm) => {
+        if (!nextTrip) return;
 
         setLoading(true);
         try {
-            const result = await createTripSignup(form as any, nextTrip.id);
+            const result = await createTripSignup(data as any, nextTrip.id);
             if (!result.success) {
                 showToast(result.message || 'Fout bij inschrijven.', 'error');
             } else {
@@ -152,7 +109,7 @@ export function ReisRegistrationForm({
                 <p className="text-theme-text-muted mb-6">
                     {currentUser 
                         ? 'Bedankt voor je inschrijving. Je status wordt nu bijgewerkt...' 
-                        : `Bedankt voor je inschrijving! We hebben een bevestigingsmail gestuurd naar ${form.email}. Check ook je spam-folder.`}
+                        : 'Bedankt voor je inschrijving! Check je mail voor de bevestiging.'}
                 </p>
                 {!currentUser && (
                     <button 
@@ -188,11 +145,7 @@ export function ReisRegistrationForm({
         return (
             <div className="flex flex-col items-center justify-center py-10 px-6 text-center bg-gray-500/5 rounded-2xl border border-gray-500/10 animate-in fade-in duration-700">
                 <div className="w-12 h-12 bg-gray-500/10 rounded-full flex items-center justify-center mb-4 text-gray-500 opacity-60">
-                    {isWaitingForDate ? (
-                        <Clock className="w-6 h-6 animate-pulse" />
-                    ) : (
-                        <Lock className="w-6 h-6" />
-                    )}
+                    {isWaitingForDate ? <Clock className="w-6 h-6 animate-pulse" /> : <Lock className="w-6 h-6" />}
                 </div>
                 <h3 className="text-lg font-bold text-gray-700 dark:text-gray-300 mb-1">
                     {isWaitingForDate ? 'Binnenkort Open' : 'Inschrijving Gesloten'}
@@ -200,96 +153,114 @@ export function ReisRegistrationForm({
                 <p className="text-theme-text-muted text-sm max-w-xs">
                     {registrationStartText}
                 </p>
-                <div className="mt-6 pt-6 border-t border-gray-500/10 w-full font-medium">
-                    <p className="text-[10px] uppercase tracking-wider text-theme-text-muted/60">
-                        Houd onze socials in de gaten voor updates
-                    </p>
-                </div>
             </div>
         );
     }
 
     return (
-        <form className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500" onSubmit={handleSubmit}>
-            {localError && (
-                <div className="bg-red-500/10 text-red-500 px-4 py-3 rounded-xl border border-red-500/20 text-sm font-medium">
-                    {localError}
-                </div>
-            )}
-
-            <p className="text-theme-text dark:text-white/90 text-sm mb-2">
+        <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex flex-col gap-4"
+            autoComplete="off"
+            suppressHydrationWarning
+        >
+            <p className="text-theme-text dark:text-white/90 text-sm mb-2 font-medium">
                 Let op: dit is een vrijblijvende aanmelding. De daadwerkelijke betaling volgt later.
             </p>
 
             <div className="flex flex-col gap-4">
-                <div className="grid grid-cols-1 gap-4">
-                    <FormField label="Voornaam" required error={localError && !form.first_name ? 'Verplicht' : undefined}>
-                        <Input
-                            name="first_name"
-                            value={form.first_name}
-                            onChange={handleChange}
-                            required
-                            placeholder="Voornaam"
-                            autoComplete="given-name"
-                        />
-                        <span className="text-xs text-theme-text-muted/80 mt-1 block font-normal">
-                            Gebruik je volledige naam zoals op je paspoort/ID
-                        </span>
-                    </FormField>
-                </div>
+                <FormField id="field-first_name" label="Voornaam" required error={errors.first_name?.message}>
+                    <Controller
+                        name="first_name"
+                        control={control}
+                        render={({ field }) => (
+                            <Input
+                                {...field}
+                                id="field-first_name"
+                                placeholder="Voornaam"
+                                autoComplete="given-name"
+                                suppressHydrationWarning
+                            />
+                        )}
+                    />
+                    <span className="text-[10px] text-theme-text-muted/80 mt-1 block font-bold uppercase tracking-wider">
+                        Gebruik je volledige naam zoals op je paspoort/ID
+                    </span>
+                </FormField>
 
-                <FormField label="Tussenvoegsel & Achternaam" required error={localError && !form.last_name ? 'Verplicht' : undefined}>
-                    <Input
+                <FormField id="field-last_name" label="Tussenvoegsel & Achternaam" required error={errors.last_name?.message}>
+                    <Controller
                         name="last_name"
-                        value={form.last_name}
-                        onChange={handleChange}
-                        required
-                        placeholder="Achternaam (incl. tussenvoegsel)"
-                        autoComplete="family-name"
+                        control={control}
+                        render={({ field }) => (
+                            <Input
+                                {...field}
+                                id="field-last_name"
+                                placeholder="Achternaam (incl. tussenvoegsel)"
+                                autoComplete="family-name"
+                                suppressHydrationWarning
+                            />
+                        )}
                     />
                 </FormField>
 
-                <FormField label="E-mailadres" required error={localError && !form.email ? 'Verplicht' : undefined}>
-                    <Input
-                        type="email"
+                <FormField id="field-email" label="E-mailadres" required error={errors.email?.message}>
+                    <Controller
                         name="email"
-                        value={form.email}
-                        onChange={handleChange}
-                        required
-                        placeholder="jouw@email.nl"
-                        autoComplete="email"
+                        control={control}
+                        render={({ field }) => (
+                            <Input
+                                {...field}
+                                id="field-email"
+                                type="email"
+                                placeholder="jouw@email.nl"
+                                autoComplete="email"
+                                suppressHydrationWarning
+                                data-lpignore="true"
+                            />
+                        )}
                     />
                 </FormField>
 
-                <FormField label="Geboortedatum" required error={localError && !form.date_of_birth ? 'Verplicht' : undefined}>
-                    <Input
-                        type="date"
+                <FormField id="field-date_of_birth" label="Geboortedatum" required error={errors.date_of_birth?.message}>
+                    <Controller
                         name="date_of_birth"
-                        value={form.date_of_birth}
-                        onChange={handleChange}
-                        required
-                        autoComplete="bday"
+                        control={control}
+                        render={({ field }) => (
+                            <DateInput
+                                {...field}
+                                id="field-date_of_birth"
+                                placeholder="dd-mm-jjjj"
+                                autoComplete="bday"
+                            />
+                        )}
                     />
                 </FormField>
 
-                <FormField label="Telefoonnummer" required error={localError && !form.phone_number ? 'Verplicht' : undefined}>
-                    <PhoneInput
+                <FormField id="field-phone_number" label="Telefoonnummer" required error={errors.phone_number?.message}>
+                    <Controller
                         name="phone_number"
-                        value={form.phone_number}
-                        onChange={handleChange}
-                        required
-                        autoComplete="tel"
+                        control={control}
+                        render={({ field }) => (
+                            <PhoneInput
+                                {...field}
+                                id="field-phone_number"
+                                placeholder="06 12345678"
+                                autoComplete="tel"
+                            />
+                        )}
                     />
                 </FormField>
             </div>
 
-            <label className="flex items-start gap-3 text-theme-text dark:text-white mt-2 cursor-pointer group">
+            <label 
+                htmlFor="terms_accepted"
+                className="flex items-start gap-3 text-theme-text dark:text-white mt-2 cursor-pointer group"
+            >
                 <input
+                    {...register('terms_accepted')}
+                    id="terms_accepted"
                     type="checkbox"
-                    name="terms_accepted"
-                    checked={form.terms_accepted}
-                    onChange={handleChange}
-                    required
                     className="mt-1 h-5 w-5 rounded border-theme-purple/20 accent-theme-purple transition-all group-hover:scale-110"
                 />
                 <span className="text-sm leading-snug">
@@ -299,6 +270,10 @@ export function ReisRegistrationForm({
                     </a>
                 </span>
             </label>
+            {errors.terms_accepted && <p className="text-xs text-red-500 font-bold">{errors.terms_accepted.message}</p>}
+
+            {/* Honeypot at bottom to avoid breaking browser autofill sections */}
+            <input {...register('website')} type="text" className="hidden" tabIndex={-1} autoComplete="off" suppressHydrationWarning />
 
             <button
                 type="submit"
@@ -313,5 +288,5 @@ export function ReisRegistrationForm({
             <AdminToast toast={toast} onClose={hideToast} />
         </form>
     );
-
 }
+

@@ -179,7 +179,7 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName,
                         </div>
                     )}
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
                         {activeTab === 'member' ? (
                             <div className="relative">
                                 <label className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">
@@ -226,6 +226,7 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName,
                                                 }}
                                                 className="beheer-input pl-12"
                                                 autoFocus
+                                                autoComplete="off"
                                             />
                                             {isSearchingMember && (
                                                 <div className="absolute right-4 top-1/2 -translate-y-1/2">
@@ -269,6 +270,7 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName,
                                         onChange={(e) => setGuestName(e.target.value)}
                                         className="beheer-input"
                                         placeholder="Volledige naam"
+                                        autoComplete="off"
                                     />
                                 </div>
                                 <div>
@@ -281,6 +283,7 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName,
                                         onChange={(e) => setGuestEmail(e.target.value)}
                                         className="beheer-input"
                                         placeholder="email@voorbeeld.nl"
+                                        autoComplete="off"
                                     />
                                 </div>
                                 <div>
@@ -292,6 +295,7 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName,
                                         onChange={(e) => setGuestPhone(e.target.value)}
                                         className="beheer-input"
                                         placeholder="Optioneel"
+                                        autoComplete="off"
                                     />
                                 </div>
                             </div>

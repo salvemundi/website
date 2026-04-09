@@ -11,5 +11,10 @@ declare module "better-auth" {
         avatar?: string;
         minecraft_username?: string;
         committees?: any[];
+        isAdmin?: boolean;
+        isICT?: boolean;
+    }
+    interface Session {
+        user: User;
     }
 }

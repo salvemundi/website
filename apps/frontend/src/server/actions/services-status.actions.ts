@@ -21,7 +21,7 @@ async function checkSystemAdminAccess() {
     const memberships = user.committees || [];
     
     // Only ICT and Bestuur are allowed to see system status
-    const hasAccess = memberships.some((c: any) => 
+    const hasAccess = user.isAdmin || user.isICT || memberships.some((c: any) => 
         c.id === COMMITTEES.ICT || c.id === COMMITTEES.BESTUUR
     );
     
