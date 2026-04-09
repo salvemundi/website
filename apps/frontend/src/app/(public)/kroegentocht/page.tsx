@@ -22,7 +22,12 @@ async function TicketsSection({ userEmail }: { userEmail: string }) {
 }
 
 async function RegistrationSection() {
-    const event = await getKroegentochtEvent();
+    const [event, session] = await Promise.all([
+        getKroegentochtEvent(),
+        auth.api.getSession({
+            headers: await headers()
+        })
+    ]);
 
     if (!event) {
         return (
@@ -51,7 +56,7 @@ async function RegistrationSection() {
     return (
         <div className="flex flex-col lg:flex-row gap-8 items-start">
             <div className="w-full lg:w-1/2">
-                <KroegentochtFormIsland event={event} />
+                <KroegentochtFormIsland event={event} initialUser={session?.user} />
             </div>
             
             <div className="w-full lg:w-1/2 flex flex-col gap-6">

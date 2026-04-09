@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useState, useTransition, useEffect, useRef } from 'react';
+import React, { useTransition, useEffect, useRef } from 'react';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { initiateKroegentochtPayment } from '@/server/actions/kroegentocht.actions';
-import { type PubCrawlEvent, type PubCrawlParticipant } from '@salvemundi/validations';
-import { Plus, Minus, User, Mail, Building, Ticket, AlertCircle } from 'lucide-react';
+import { type PubCrawlEvent, pubCrawlSignupSchema, type PubCrawlParticipant } from '@salvemundi/validations';
+import { Plus, Minus, Mail, Building, Ticket, AlertCircle } from 'lucide-react';
 
 const ASSOCIATIONS = [
     'Salve Mundi',
@@ -30,62 +32,83 @@ const ASSOCIATIONS = [
 interface KroegentochtFormIslandProps {
     isLoading?: boolean;
     event?: PubCrawlEvent;
+    initialUser?: any;
 }
 
-export default function KroegentochtFormIsland({ isLoading = false, event = {} as PubCrawlEvent }: KroegentochtFormIslandProps) {
+type KroegentochtFormData = {
+    email: string;
+    association: string;
+    customAssociation?: string;
+    amount_tickets: number;
+    participants: PubCrawlParticipant[];
+    website: string; // Honeypot
+};
+
+export default function KroegentochtFormIsland({ 
+    isLoading = false, 
+    event = {} as PubCrawlEvent, 
+    initialUser 
+}: KroegentochtFormIslandProps) {
     const [isPending, startTransition] = useTransition();
-    const [amount, setAmount] = useState(1);
-    const [participants, setParticipants] = useState<PubCrawlParticipant[]>([{ name: '', initial: '' }]);
-    const [email, setEmail] = useState('');
-    const [association, setAssociation] = useState('');
-    const [customAssociation, setCustomAssociation] = useState('');
-    const [website, setWebsite] = useState(''); // Honeypot
-    const [error, setError] = useState<string | null>(null);
     const errorRef = useRef<HTMLDivElement>(null);
 
-    // Sync participants array size with amount
-    useEffect(() => {
-        if (participants.length < amount) {
-            const extra = Array(amount - participants.length).fill(null).map(() => ({ name: '', initial: '' }));
-            setParticipants([...participants, ...extra]);
-        } else if (participants.length > amount) {
-            setParticipants(participants.slice(0, amount));
+    const {
+        register,
+        control,
+        handleSubmit,
+        watch,
+        setValue,
+        formState: { errors }
+    } = useForm<KroegentochtFormData>({
+        defaultValues: {
+            email: initialUser?.email || '',
+            association: (initialUser as any)?.association || '',
+            customAssociation: '',
+            amount_tickets: 1,
+            participants: [{ 
+                name: initialUser?.first_name || '', 
+                initial: initialUser?.last_name ? initialUser.last_name.slice(0, 1).toUpperCase() : '' 
+            }],
+            website: '',
         }
-    }, [amount]);
+    });
+
+    // REIS_FORM_V7.6_SSR: Skeletons en useEffect prefills verwijderd voor maximale stabiliteit.
+
+
+    const { fields, append, remove } = useFieldArray({
+        control,
+        name: 'participants'
+    });
+
+    const amount = watch('amount_tickets');
+    const association = watch('association');
 
     useEffect(() => {
-        if (error && errorRef.current) {
-            errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const currentLength = fields.length;
+        if (amount > currentLength) {
+            for (let i = 0; i < amount - currentLength; i++) {
+                append({ name: '', initial: '' });
+            }
+        } else if (amount < currentLength) {
+            for (let i = 0; i < currentLength - amount; i++) {
+                remove(fields.length - 1 - i);
+            }
         }
-    }, [error]);
+    }, [amount, append, remove, fields.length]);
 
-    const handleParticipantChange = (index: number, field: keyof PubCrawlParticipant, value: string) => {
-        const newParticipants = [...participants];
-        if (field === 'initial') {
-            newParticipants[index] = { ...newParticipants[index], [field]: value.slice(0, 1).toUpperCase() };
-        } else {
-            newParticipants[index] = { ...newParticipants[index], [field]: value };
-        }
-        setParticipants(newParticipants);
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError(null);
-
-        // Honeypot check
-        if (website) {
-            return;
-        }
+    const onSubmit = async (data: KroegentochtFormData) => {
+        if (data.website) return;
 
         startTransition(async () => {
-            const finalAssociation = association === 'Anders' ? customAssociation : association;
+            const finalAssociation = data.association === 'Anders' ? data.customAssociation : data.association;
+            const participants = data.participants;
             
             const formData = {
-                name: `${participants[0].name} ${participants[0].initial}`,
-                email,
-                association: finalAssociation,
-                amount_tickets: amount,
+                name: `${participants[0].name} ${participants[0].initial}`.trim(),
+                email: data.email,
+                association: finalAssociation || '',
+                amount_tickets: data.amount_tickets,
                 pub_crawl_event_id: event.id,
                 name_initials: JSON.stringify(participants),
             };
@@ -94,36 +117,16 @@ export default function KroegentochtFormIsland({ isLoading = false, event = {} a
 
             if (result.success && result.checkoutUrl) {
                 window.location.href = result.checkoutUrl;
-            } else {
-                setError(result.error || 'Er is een fout opgetreden bij het aanmaken van de betaling.');
             }
         });
     };
 
-    if (isLoading) {
-        return (
-            <section className="w-full bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-lg p-5 sm:p-6 md:p-8" aria-busy="true">
-                <Skeleton className="h-9 w-72 mb-8 bg-[var(--color-purple-theme)]/10" rounded="lg" />
-                
-                <div className="space-y-6">
-                    {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="space-y-3">
-                            <Skeleton className="h-3 w-24 bg-[var(--color-purple-theme)]/10" rounded="full" />
-                            <Skeleton className="h-12 w-full bg-[var(--color-purple-theme)]/5" rounded="xl" />
-                        </div>
-                    ))}
-                    <div className="pt-8 border-t border-[var(--color-purple-theme)]/5">
-                        <Skeleton className="h-32 w-full bg-[var(--color-purple-theme)]/5" rounded="2xl" />
-                    </div>
-                    <Skeleton className="h-14 w-full bg-[var(--color-purple-theme)]/20" rounded="xl" />
-                </div>
-            </section>
-        );
-    }
+    // Skeletons verwijderd om browser autofill niet te blokkeren.
+
 
     return (
         <section className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-6 md:p-8">
-            <h2 className="text-2xl sm:text-3xl font-black text-[var(--color-purple-theme)] mb-4 flex items-center gap-3">
+            <h2 className="text-2xl sm:text-3xl font-black text-[var(--theme-purple)] mb-4 flex items-center gap-3">
                 <Ticket className="w-8 h-8" />
                 Inschrijven
             </h2>
@@ -131,59 +134,30 @@ export default function KroegentochtFormIsland({ isLoading = false, event = {} a
                 Vul hieronder je gegevens in en reserveer je plek voor de kroegentocht. 
                 Tickets kosten slechts <strong>€1,00</strong> per stuk!
             </p>
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-                {error && (
-                    <div ref={errorRef} className="p-4 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-xl text-red-600 dark:text-red-400 text-sm font-medium flex items-center gap-2">
-                        <AlertCircle className="w-4 h-4 shrink-0" />
-                        {error}
-                    </div>
-                )}
-
-                {/* Honeypot */}
-                <div className="opacity-0 absolute top-0 left-0 h-0 w-0 -z-10 pointer-events-none overflow-hidden" aria-hidden="true">
-                    <label htmlFor="website">Website</label>
-                    <input
-                        type="text"
-                        id="website"
-                        name="website"
-                        value={website}
-                        onChange={(e) => setWebsite(e.target.value)}
-                        tabIndex={-1}
-                        autoComplete="off"
-                        suppressHydrationWarning
-                    />
-
-                </div>
-
-                <FormField label="E-mailadres" required>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" autoComplete="off">
+                <FormField id="field-email" label="E-mailadres" required error={errors.email?.message}>
                     <div className="relative">
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         <Input
+                            {...register('email')}
+                            id="field-email"
                             type="email"
-                            name="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
                             placeholder="jouw@email.nl"
                             className="pl-10"
-                            required
                         />
                     </div>
                 </FormField>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField label="Vereniging" required>
+                    <FormField id="field-association" label="Vereniging" required error={errors.association?.message}>
                         <div className="relative">
                             <Building className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                             <select
-                                name="association"
-                                value={association}
-                                onChange={(e) => setAssociation(e.target.value)}
+                                {...register('association')}
+                                id="field-association"
                                 className="form-input pl-10"
-                                required
                                 suppressHydrationWarning
                             >
-
                                 <option value="" className="text-slate-500">Selecteer vereniging</option>
                                 {ASSOCIATIONS.map(a => (
                                     <option key={a} value={a} className="text-slate-900 dark:text-white bg-white dark:bg-slate-900">
@@ -195,13 +169,11 @@ export default function KroegentochtFormIsland({ isLoading = false, event = {} a
                     </FormField>
 
                     {association === 'Anders' && (
-                        <FormField label="Naam vereniging" required>
+                        <FormField id="field-customAssociation" label="Naam vereniging" required error={errors.customAssociation?.message}>
                             <Input
-                                name="customAssociation"
-                                value={customAssociation}
-                                onChange={(e) => setCustomAssociation(e.target.value)}
+                                {...register('customAssociation')}
+                                id="field-customAssociation"
                                 placeholder="Naam van je vereniging"
-                                required
                             />
                         </FormField>
                     )}
@@ -215,7 +187,7 @@ export default function KroegentochtFormIsland({ isLoading = false, event = {} a
                         <div className="flex items-center gap-4 bg-slate-50 dark:bg-white/5 p-1 rounded-xl border border-slate-100 dark:border-white/10">
                             <button
                                 type="button"
-                                onClick={() => setAmount(Math.max(1, amount - 1))}
+                                onClick={() => setValue('amount_tickets', Math.max(1, amount - 1))}
                                 className="p-2 hover:bg-white dark:hover:bg-white/10 rounded-lg transition-colors disabled:opacity-30"
                                 disabled={amount <= 1}
                             >
@@ -224,7 +196,7 @@ export default function KroegentochtFormIsland({ isLoading = false, event = {} a
                             <span className="w-8 text-center font-black text-lg">{amount}</span>
                             <button
                                 type="button"
-                                onClick={() => setAmount(Math.min(10, amount + 1))}
+                                onClick={() => setValue('amount_tickets', Math.min(10, amount + 1))}
                                 className="p-2 hover:bg-white dark:hover:bg-white/10 rounded-lg transition-colors disabled:opacity-30"
                                 disabled={amount >= 10}
                             >
@@ -234,31 +206,35 @@ export default function KroegentochtFormIsland({ isLoading = false, event = {} a
                     </div>
 
                     <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                        {participants.map((p, i) => (
-                            <div key={i} className="bg-white dark:bg-white/5 rounded-xl p-4 border border-slate-100 dark:border-white/10 shadow-sm animate-in slide-in-from-left-2 duration-300" style={{ animationDelay: `${i * 50}ms` }}>
+                        {fields.map((field, index) => (
+                            <div key={field.id} className="bg-white dark:bg-white/5 rounded-xl p-4 border border-slate-100 dark:border-white/10 shadow-sm">
                                 <div className="flex items-center gap-2 mb-3">
-                                    <div className="w-6 h-6 rounded-full bg-[var(--color-purple-theme)] text-white flex items-center justify-center text-[10px] font-bold">
-                                        {i + 1}
+                                    <div className="w-6 h-6 rounded-full bg-[var(--theme-purple)] text-white flex items-center justify-center text-[10px] font-bold">
+                                        {index + 1}
                                     </div>
-                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Deelnemer {i + 1}</span>
+                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Deelnemer {index + 1}</span>
                                 </div>
                                 <div className="flex gap-3">
                                     <div className="flex-grow">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Voornaam + tussenvoegsel</label>
+                                        <label htmlFor={`field-participants-${index}-name`} className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Voornaam + tussenvoegsel</label>
                                         <Input
+                                            {...register(`participants.${index}.name`)}
+                                            id={`field-participants-${index}-name`}
                                             placeholder="Bijv. Jan van"
-                                            value={p.name}
-                                            onChange={(e) => handleParticipantChange(i, 'name', e.target.value)}
                                             required
                                         />
                                     </div>
                                     <div className="w-24">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">1e letter achtern.</label>
+                                        <label htmlFor={`field-participants-${index}-initial`} className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">1e letter achtern.</label>
                                         <Input
+                                            {...register(`participants.${index}.initial`, {
+                                                onChange: (e) => {
+                                                    setValue(`participants.${index}.initial`, e.target.value.slice(0, 1).toUpperCase());
+                                                }
+                                            })}
+                                            id={`field-participants-${index}-initial`}
                                             placeholder="Bijv. S"
                                             maxLength={1}
-                                            value={p.initial}
-                                            onChange={(e) => handleParticipantChange(i, 'initial', e.target.value)}
                                             className="text-center uppercase font-bold"
                                             required
                                         />
@@ -272,7 +248,7 @@ export default function KroegentochtFormIsland({ isLoading = false, event = {} a
                 <button
                     type="submit"
                     disabled={isPending}
-                    className="w-full bg-[var(--color-purple-theme)] hover:bg-[var(--color-purple-600)] text-white font-black py-4 rounded-xl sm:rounded-2xl transition-all shadow-lg shadow-purple-500/20 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 text-lg"
+                    className="w-full bg-[var(--theme-purple)] hover:bg-[var(--color-purple-600)] text-white font-black py-4 rounded-xl sm:rounded-2xl transition-all shadow-lg shadow-purple-500/20 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 text-lg"
                 >
                     {isPending ? (
                         <>
@@ -283,7 +259,14 @@ export default function KroegentochtFormIsland({ isLoading = false, event = {} a
                         `Betalen & Inschrijven (€${(amount * 1.00).toFixed(2).replace('.', ',')})`
                     )}
                 </button>
+
+                {/* Honeypot at bottom to avoid breaking browser autofill sections */}
+                <div className="opacity-0 absolute top-0 left-0 h-0 w-0 -z-10 pointer-events-none overflow-hidden" aria-hidden="true">
+                    <label htmlFor="website">Website</label>
+                    <input {...register('website')} id="website" tabIndex={-1} autoComplete="off" suppressHydrationWarning />
+                </div>
             </form>
         </section>
     );
 }
+

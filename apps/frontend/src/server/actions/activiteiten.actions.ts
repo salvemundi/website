@@ -129,10 +129,15 @@ export async function deleteActivity(eventId: number) {
         const success = await deleteEventDb(eventId);
         if (!success) throw new Error("Deletion from database failed");
 
-        // Sync to Directus in the background
-        getSystemDirectus().request(deleteItem('events', eventId)).catch(err => {
+        // Sync to Directus - now awaited for data integrity
+        try {
+            await getSystemDirectus().request(deleteItem('events', eventId));
+        } catch (err) {
             console.error('Directus delete sync error:', err);
-        });
+            await logAdminAction('activity_delete_failed', 'ERROR', { id: eventId, error: String(err) });
+            // We consider the action failed if CMS sync fails to avoid ghost data
+            return { success: false, error: "CMS Synchronisatie mislukt. Activiteit is niet verwijderd." };
+        }
 
         await logAdminAction('activity_deleted', 'SUCCESS', { id: eventId });
         
@@ -141,7 +146,8 @@ export async function deleteActivity(eventId: number) {
         revalidatePath('/beheer');
         return { success: true };
     } catch (error) {
-        return { success: false, error: "Deletion failed" };
+        console.error('Error in deleteActivity:', error);
+        return { success: false, error: "Verwijderen mislukt" };
     }
 }
 
@@ -195,10 +201,16 @@ export async function createActivityAction(prevState: any, formData: FormData): 
 
         await logAdminAction('activity_created', 'SUCCESS', { id: newId, data: directusPayload });
 
-        // Background sync to Directus
-        getSystemDirectus().request(createItem('events', { ...directusPayload, id: newId })).catch(err => {
+        // Sync to Directus - now awaited for data integrity
+        try {
+            await getSystemDirectus().request(createItem('events', { ...directusPayload, id: newId }));
+        } catch (err) {
             console.error('Directus insert sync error:', err);
-        });
+            // Cleanup: delete from DB if CMS sync fails to maintain atomicity
+            await deleteEventDb(newId);
+            await logAdminAction('activity_create_rollback', 'ERROR', { id: newId, error: String(err), action: 'rollback_delete' });
+            return { success: false, error: 'Synchronisatie met CMS mislukt. Activiteit is niet aangemaakt.' };
+        }
 
         revalidateTag('events', 'default');
         revalidatePath('/beheer/activiteiten');
@@ -221,15 +233,16 @@ export async function updateActivityAction(eventId: number, prevState: any, form
 
     try {
         const existing = await getSystemDirectus().request(readItems('events', {
-            fields: [...EVENT_ID_FIELDS, 'committee_id' as any],
+            fields: ['*'], // Fetch everything for potential rollback
             filter: { id: { _eq: eventId } },
             limit: 1
         }));
         
         if (!existing || existing.length === 0) return { error: "Activity not found", success: false };
+        const oldData = existing[0];
         
         if (!isPowerful) {
-            const isMember = existing[0].committee_id ? memberships.some((c: any) => String(c.id) === String(existing[0].committee_id)) : false;
+            const isMember = oldData.committee_id ? memberships.some((c: any) => String(c.id) === String(oldData.committee_id)) : false;
             if (!isMember) return { error: "Insufficient permissions for this activity", success: false };
         }
 
@@ -271,10 +284,16 @@ export async function updateActivityAction(eventId: number, prevState: any, form
         const updated = await updateEventDb(eventId, directusPayload);
         if (!updated) throw new Error('Database update failed');
 
-        // Background sync to Directus
-        getSystemDirectus().request(updateItem('events', eventId, directusPayload)).catch(err => {
+        // Sync to Directus - now awaited for data integrity
+        try {
+            await getSystemDirectus().request(updateItem('events', eventId, directusPayload));
+        } catch (err) {
             console.error('Directus update sync error:', err);
-        });
+            // Rollback Postgres to maintain atomicity
+            await updateEventDb(eventId, oldData);
+            await logAdminAction('activity_update_rollback', 'ERROR', { id: eventId, error: String(err), action: 'rollback_restore' });
+            return { success: false, error: 'Synchronisatie met CMS mislukt. Wijzigingen niet opgeslagen.' };
+        }
 
         await logAdminAction('activity_updated', 'SUCCESS', { id: eventId, data: directusPayload });
 

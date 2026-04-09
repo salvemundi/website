@@ -62,16 +62,16 @@ export async function hasParentSignup(): Promise<boolean> {
     }
 }
 
-export async function submitIntroSignup(data: IntroSignupForm) {
+export async function submitIntroSignup(data: IntroSignupForm): Promise<{ success: boolean; error?: string }> {
     const parsed = introSignupFormSchema.safeParse(data);
     if (!parsed.success) {
-        throw new Error('Validatie mislukt');
+        return { success: false, error: 'Validatie mislukt' };
     }
 
     const { rateLimit } = await import('../utils/ratelimit');
     const { success } = await rateLimit('intro-signup', 3, 300);
     if (!success) {
-        throw new Error('Te veel aanmeldingen vanaf dit IP-adres. Probeer het later opnieuw.');
+        return { success: false, error: 'Te veel aanmeldingen vanaf dit IP-adres. Probeer het later opnieuw.' };
     }
 
     // Bot detection (honeypot)
@@ -113,24 +113,24 @@ export async function submitIntroSignup(data: IntroSignupForm) {
     return { success: true };
 }
 
-export async function submitIntroParentSignup(data: IntroParentSignupForm) {
+export async function submitIntroParentSignup(data: IntroParentSignupForm): Promise<{ success: boolean; error?: string }> {
     const session = await auth.api.getSession({
         headers: await headers(),
     });
 
     if (!session?.user) {
-        throw new Error('Je moet ingelogd zijn als lid om je aan te melden als Intro Ouder');
+        return { success: false, error: 'Je moet ingelogd zijn als lid om je aan te melden als Intro Ouder' };
     }
 
     const { rateLimit } = await import('../utils/ratelimit');
     const { success } = await rateLimit('intro-parent-signup', 3, 300);
     if (!success) {
-        throw new Error('Te veel aanmeldingen. Probeer het over een paar minuten opnieuw.');
+        return { success: false, error: 'Te veel aanmeldingen. Probeer het over een paar minuten opnieuw.' };
     }
 
     const parsed = introParentSignupFormSchema.safeParse(data);
     if (!parsed.success) {
-        throw new Error('Validatie mislukt');
+        return { success: false, error: 'Validatie mislukt' };
     }
     const payload = {
         user_id: session.user.id,

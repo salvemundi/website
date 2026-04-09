@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { dateOfBirthSchema, phoneNumberSchema } from './shared.zod.js';
 
 /**
  * Schema for the membership signup form
@@ -8,8 +9,8 @@ export const signupSchema = z.object({
     tussenvoegsel: z.string().optional(),
     achternaam: z.string().min(1, 'Achternaam is verplicht'),
     email: z.string().email('Ongeldig e-mailadres'),
-    geboortedatum: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Ongeldig datumformaat (YYYY-MM-DD)'),
-    telefoon: z.string().min(10, 'Ongeldig telefoonnummer'),
+    geboortedatum: dateOfBirthSchema,
+    telefoon: phoneNumberSchema,
     coupon: z.string().optional(),
 });
 

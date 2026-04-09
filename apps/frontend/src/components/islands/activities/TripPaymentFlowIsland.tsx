@@ -28,6 +28,7 @@ import type {
     ReisPaymentEnrichment
 } from '@salvemundi/validations';
 import ActivitySelector from './ActivitySelector';
+import { DateInput } from '@/shared/ui/DateInput';
 import { 
     updateSignupDetails, 
     syncSignupActivities, 
@@ -246,10 +247,11 @@ export default function TripPaymentFlowIsland({
                                             <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 flex items-center gap-2">
                                                 <Calendar className="w-3 h-3" /> Geboortedatum *
                                             </label>
-                                            <input 
-                                                type="date"
+                                            <DateInput 
+                                                name="date_of_birth"
                                                 value={enrichment.date_of_birth}
-                                                onChange={(e) => setEnrichment({...enrichment, date_of_birth: e.target.value})}
+                                                onChange={(val) => setEnrichment({...enrichment, date_of_birth: val})}
+                                                autoComplete="off"
                                                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500/50 transition-all font-medium"
                                             />
                                         </div>

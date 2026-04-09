@@ -7,6 +7,9 @@ import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import Link from 'next/link';
 import { getImageUrl } from '@/lib/image-utils';
+import { auth } from '@/server/auth/auth';
+import { headers } from 'next/headers';
+import { getCurrentUserProfileAction } from '@/server/actions/reis.actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,14 +26,27 @@ export default async function ReisPage() {
 
     let participantsCount = 0;
     let userSignup = null;
+    let currentUserProfile = null;
 
+    // 2. Fetch User & Signup status
+    const sessionHeaders = await headers();
+    const session = await auth.api.getSession({ headers: sessionHeaders });
+    
     if (nextTrip) {
-        const [count, signup] = await Promise.all([
+        const promises: [Promise<number>, Promise<any>, Promise<any>?] = [
             getTripParticipantsCount(nextTrip.id),
             getUserTripSignup(nextTrip.id)
-        ]);
+        ];
+
+        if (session?.user) {
+            promises.push(getCurrentUserProfileAction());
+        }
+
+        const [count, signup, profileResult] = await Promise.all(promises);
+        
         participantsCount = count;
         userSignup = signup;
+        currentUserProfile = profileResult?.success ? profileResult.data : session?.user;
     }
 
     // 2. Logic for registration availability (Calculated on Server)
@@ -76,6 +92,7 @@ export default async function ReisPage() {
                                 canSignUp={canSignUp}
                                 registrationStartText={registrationStartText}
                                 participantsCount={participantsCount}
+                                initialUser={currentUserProfile}
                             />
                         </Suspense>
 

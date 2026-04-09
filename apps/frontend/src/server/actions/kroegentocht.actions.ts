@@ -11,10 +11,10 @@ import {
     PUB_CRAWL_TICKET_FIELDS,
     EVENT_FIELDS
 } from '@salvemundi/validations';
-const EVENT_ID_FIELDS = ['id'] as const;
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { revalidateTag } from 'next/cache';
+import { logAdminAction } from './audit.actions';
 
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems, createItem, deleteItem } from '@directus/sdk';
@@ -108,9 +108,19 @@ export async function getKroegentochtTickets(email: string): Promise<PubCrawlTic
 }
 
 export async function initiateKroegentochtPayment(formData: any) {
+    const { rateLimit } = await import('../utils/ratelimit');
+    const { success: rateLimitSuccess } = await rateLimit('kroegentocht-signup', 15, 600); // 15 pogingen per 10 min
+    if (!rateLimitSuccess) {
+        return { success: false, error: 'Te veel aanmeldingen vanaf dit IP-adres. Probeer het over een kwartier opnieuw.' };
+    }
+
     const parsed = pubCrawlSignupSchema.safeParse(formData);
     if (!parsed.success) {
         return { success: false, errors: parsed.error.flatten().fieldErrors };
+    }
+
+    if (parsed.data.website) {
+        return { success: false, error: 'Spam gedetecteerd.' };
     }
 
     try {
@@ -157,17 +167,27 @@ export async function initiateKroegentochtPayment(formData: any) {
         }
         await createPubCrawlTicketsDb(signupId, ticketsTable);
 
-        getSystemDirectus().request(createItem('pub_crawl_signups', {
-            id: signupId,
-            name: parsed.data.name,
-            email: parsed.data.email,
-            association: parsed.data.association,
-            amount_tickets: parsed.data.amount_tickets,
-            name_initials: parsed.data.name_initials,
-            pub_crawl_event_id: Number(parsed.data.pub_crawl_event_id) as any,
-            payment_status: 'open',
-            directus_relations: userId || null,
-        } as any)).catch((e: any) => console.error('[Kroegentocht] Sync failed:', e));
+        // Sync to Directus - now awaited for data integrity
+        try {
+            await getSystemDirectus().request(createItem('pub_crawl_signups', {
+                id: signupId,
+                name: parsed.data.name,
+                email: parsed.data.email,
+                association: parsed.data.association,
+                amount_tickets: parsed.data.amount_tickets,
+                name_initials: parsed.data.name_initials,
+                pub_crawl_event_id: Number(parsed.data.pub_crawl_event_id) as any,
+                payment_status: 'open',
+                directus_relations: userId || null,
+            }));
+        } catch (err) {
+            console.error('[Kroegentocht] Sync failed:', err);
+            // Cleanup DB if sync fails
+            await deletePubCrawlTicketsBySignupIdDb(signupId);
+            await deletePubCrawlSignupDb(signupId);
+            await logAdminAction('kroegentocht_signup_rollback', 'ERROR', { id: signupId, error: String(err), action: 'rollback_delete' });
+            return { success: false, error: 'Synchronisatie met CMS mislukt. Inschrijving niet voltooid.' };
+        }
 
         const financeUrl = `${getFinanceServiceUrl()}/api/payments/create`;
         const paymentRes = await fetchWithTimeout(financeUrl, {

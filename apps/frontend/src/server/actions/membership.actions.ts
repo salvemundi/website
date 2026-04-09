@@ -85,7 +85,7 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
         headers: await headers()
     });
 
-    const user = session?.user as any;
+    const user = session?.user;
     const isExpired = user && user.membership_status !== 'active';
 
     const baseAmount = 20.00;

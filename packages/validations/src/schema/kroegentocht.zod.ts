@@ -37,6 +37,7 @@ export const pubCrawlSignupSchema = z.object({
     name_initials: z.string(), // JSON string voor legacy compatibiliteit
     payment_status: z.enum(['open', 'paid', 'failed', 'canceled', 'expired']).default('open'),
     directus_relations: z.string().optional().nullable(),
+    website: z.string().optional(), // Honeypot
 });
 
 /**

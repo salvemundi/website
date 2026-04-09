@@ -59,8 +59,8 @@ export async function getEventSignupsWithCheckIn(eventId: number | string) {
     try {
         const list = await getSystemDirectus().request<any[]>(readItems('event_signups', {
             filter: { event_id: { _eq: eventId as any } },
-            fields: ['id' as any, 'event_id' as any, 'checked_in' as any, 'checked_in_at' as any, 'date_created' as any, 'participant_name' as any, 'participant_email' as any, 'participant_phone' as any, 'qr_token' as any],
-            sort: ['checked_in_at', '-date_created'] as any
+            fields: ['id' as any, 'event_id' as any, 'checked_in' as any, 'checked_in_at' as any, 'created_at' as any, 'participant_name' as any, 'participant_email' as any, 'participant_phone' as any, 'qr_token' as any],
+            sort: ['checked_in_at', '-created_at'] as any
         }));
         return list || [];
     } catch (err) {

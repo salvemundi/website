@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
+import { DateInput } from '@/shared/ui/DateInput';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { validateCouponAction, initiateMembershipPaymentAction } from '@/server/actions/membership.actions';
 import { signupSchema, type SignupFormData } from '@salvemundi/validations';
@@ -23,6 +24,7 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
 
     const {
         register,
+        control,
         handleSubmit,
         watch,
         setValue,
@@ -83,7 +85,8 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
     return (
         <form
             onSubmit={handleSubmit(onSubmit)}
-            className="flex flex-col gap-4 animate-in fade-in duration-500"
+            className="flex flex-col gap-4"
+            autoComplete="off"
             suppressHydrationWarning
         >
             <p className="text-theme-text dark:text-white/90 mb-2">
@@ -91,60 +94,105 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField label="Voornaam" required error={errors.voornaam?.message}>
-                    <Input
-                        {...register('voornaam')}
-                        autoComplete="given-name"
+                <FormField id="field-voornaam" label="Voornaam" required error={errors.voornaam?.message}>
+                    <Controller
+                        name="voornaam"
+                        control={control}
+                        render={({ field }) => (
+                            <Input
+                                {...field}
+                                id="field-voornaam"
+                                autoComplete="given-name"
+                                suppressHydrationWarning
+                            />
+                        )}
                     />
                 </FormField>
-                <FormField label="Achternaam" required error={errors.achternaam?.message}>
-                    <Input
-                        {...register('achternaam')}
-                        autoComplete="family-name"
+                <FormField id="field-achternaam" label="Achternaam" required error={errors.achternaam?.message}>
+                    <Controller
+                        name="achternaam"
+                        control={control}
+                        render={({ field }) => (
+                            <Input
+                                {...field}
+                                id="field-achternaam"
+                                autoComplete="family-name"
+                                suppressHydrationWarning
+                            />
+                        )}
                     />
                 </FormField>
             </div>
 
-            <FormField label="Tussenvoegsel" error={errors.tussenvoegsel?.message}>
-                <Input
-                    {...register('tussenvoegsel')}
-                    autoComplete="additional-name"
+            <FormField id="field-tussenvoegsel" label="Tussenvoegsel" error={errors.tussenvoegsel?.message}>
+                <Controller
+                    name="tussenvoegsel"
+                    control={control}
+                    render={({ field }) => (
+                        <Input
+                            {...field}
+                            id="field-tussenvoegsel"
+                            autoComplete="additional-name"
+                            suppressHydrationWarning
+                        />
+                    )}
                 />
             </FormField>
 
-            <FormField label="E-mailadres" required error={errors.email?.message}>
-                <Input
-                    type="email"
-                    {...register('email')}
-                    autoComplete="email"
+            <FormField id="field-email" label="E-mailadres" required error={errors.email?.message}>
+                <Controller
+                    name="email"
+                    control={control}
+                    render={({ field }) => (
+                        <Input
+                            {...field}
+                            type="email"
+                            id="field-email"
+                            autoComplete="email"
+                            suppressHydrationWarning
+                        />
+                    )}
                 />
             </FormField>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField label="Geboortedatum" required error={errors.geboortedatum?.message}>
-                    <Input
-                        type="date"
-                        {...register('geboortedatum')}
-                        autoComplete="bday"
+                <FormField id="field-geboortedatum" label="Geboortedatum" required error={errors.geboortedatum?.message}>
+                    <Controller
+                        name="geboortedatum"
+                        control={control}
+                        render={({ field }) => (
+                            <DateInput
+                                {...field}
+                                id="field-geboortedatum"
+                                autoComplete="bday"
+                                error={!!errors.geboortedatum}
+                            />
+                        )}
                     />
                 </FormField>
-                <FormField label="Telefoonnummer" required error={errors.telefoon?.message}>
-                    <PhoneInput
+                <FormField id="field-telefoon" label="Telefoonnummer" required error={errors.telefoon?.message}>
+                    <Controller
                         name="telefoon"
-                        value={telefoonValue}
-                        onChange={(e) => setValue('telefoon', e.target.value, { shouldValidate: true })}
-                        autoComplete="tel"
-                        error={!!errors.telefoon}
+                        control={control}
+                        render={({ field }) => (
+                            <PhoneInput
+                                {...field}
+                                id="field-telefoon"
+                                autoComplete="tel"
+                                error={!!errors.telefoon}
+                            />
+                        )}
                     />
                 </FormField>
             </div>
 
             <div className="border-t border-purple-100 dark:border-white/10 pt-6 mt-6">
-                <label className="form-label mb-2">Heb je een coupon code?</label>
+                <label htmlFor="coupon_code" className="form-label mb-2">Heb je een coupon code?</label>
                 <div className="flex gap-2">
                     <input
                         type="text"
                         {...register('coupon')}
+                        id="coupon_code"
                         placeholder="Bijv. ACTIE2024"
                         autoComplete="off"
                         className="form-input uppercase flex-grow"

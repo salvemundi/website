@@ -48,13 +48,14 @@ export default function ProfielGaming({
                     {isLoading ? (
                         <Skeleton className="h-6 w-32 bg-[var(--color-purple-500)]/10" rounded="md" />
                     ) : isEditingMinecraft ? (
-                        <form onSubmit={handleSubmitMinecraft(onSaveMinecraft)} className="flex flex-col w-full gap-2">
+                        <form onSubmit={handleSubmitMinecraft(onSaveMinecraft)} className="flex flex-col w-full gap-2" autoComplete="off">
                             <div className="flex w-full items-center gap-2">
                                 <input 
                                     {...registerMinecraft("minecraft_username")}
                                     type="text" 
                                     className={`flex-1 bg-white dark:bg-black/40 border ${minecraftErrors.minecraft_username ? 'border-red-500 ring-1 ring-red-500' : 'border-slate-300 dark:border-white/20'} rounded-lg px-3 py-1.5 text-sm font-medium focus:ring-2 focus:ring-[var(--color-purple-500)] focus:border-transparent outline-none`}
                                     placeholder="Username"
+                                    autoComplete="off"
                                 />
                                 <button type="submit" disabled={isPending} className="p-1.5 bg-[var(--color-purple-500)] text-white rounded-lg hover:bg-[var(--color-purple-600)] transition-colors">
                                     {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}

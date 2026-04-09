@@ -42,6 +42,9 @@ export const auth = betterAuth({
             avatar: { type: "string" },
             minecraft_username: { type: "string" },
             entra_id: { type: "string" },
+            isAdmin: { type: "boolean" },
+            isICT: { type: "boolean" },
+            role: { type: "string" },
         }
     },
     session: {

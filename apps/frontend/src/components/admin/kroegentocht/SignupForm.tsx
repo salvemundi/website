@@ -53,7 +53,7 @@ export default function SignupForm({ signup }: SignupFormProps) {
 
     return (
         <>
-        <form onSubmit={handleSubmit} className="space-y-8 max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <form onSubmit={handleSubmit} className="space-y-8 max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500" autoComplete="off">
             <div className="bg-[var(--bg-card)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)]/30 overflow-hidden">
                 <div className="p-8 border-b border-[var(--border-color)]/30 bg-[var(--bg-main)]/30">
                     <h2 className="text-2xl font-black text-[var(--text-main)] uppercase tracking-tight flex items-center gap-3">
@@ -75,6 +75,7 @@ export default function SignupForm({ signup }: SignupFormProps) {
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-bold text-[var(--text-main)]"
                                 required
+                                autoComplete="off"
                             />
                         </div>
 
@@ -88,6 +89,7 @@ export default function SignupForm({ signup }: SignupFormProps) {
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                 className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-bold text-[var(--text-main)]"
                                 required
+                                autoComplete="off"
                             />
                         </div>
                     </div>
@@ -102,6 +104,7 @@ export default function SignupForm({ signup }: SignupFormProps) {
                                 value={formData.association}
                                 onChange={(e) => setFormData({ ...formData, association: e.target.value })}
                                 className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-bold text-[var(--text-main)]"
+                                autoComplete="off"
                             />
                         </div>
 
@@ -113,6 +116,7 @@ export default function SignupForm({ signup }: SignupFormProps) {
                                 value={formData.payment_status}
                                 onChange={(e) => setFormData({ ...formData, payment_status: e.target.value })}
                                 className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-bold text-[var(--text-main)] appearance-none"
+                                autoComplete="off"
                             >
                                 <option value="paid">✅ Betaald</option>
                                 <option value="open">⏳ Open</option>

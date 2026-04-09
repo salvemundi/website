@@ -29,8 +29,8 @@ export async function fetchUserSignupStatusDb(userId: string, tripId: number): P
         const sanitized = {
             ...raw,
             date_of_birth: raw.date_of_birth instanceof Date ? raw.date_of_birth.toISOString() : raw.date_of_birth,
-            date_created: raw.date_created instanceof Date ? raw.date_created.toISOString() : (raw.date_created || raw.created_at || new Date().toISOString()),
-            created_at: raw.created_at || new Date().toISOString(),
+            date_created: (raw.created_at instanceof Date ? raw.created_at : new Date(raw.created_at)).toISOString(),
+            created_at: (raw.created_at instanceof Date ? raw.created_at : new Date(raw.created_at)).toISOString(),
             deposit_paid: !!raw.deposit_paid,
             full_payment_paid: !!raw.full_payment_paid,
             willing_to_drive: !!raw.willing_to_drive,
@@ -68,8 +68,8 @@ export async function fetchAllTripSignupsDb(tripId: number): Promise<ReisTripSig
         const sanitized = (res.rows || []).map(raw => ({
             ...raw,
             date_of_birth: raw.date_of_birth instanceof Date ? raw.date_of_birth.toISOString() : raw.date_of_birth,
-            date_created: raw.date_created instanceof Date ? raw.date_created.toISOString() : (raw.date_created || raw.created_at || new Date().toISOString()),
-            created_at: raw.created_at || new Date().toISOString(),
+            date_created: (raw.created_at instanceof Date ? raw.created_at : new Date(raw.created_at)).toISOString(),
+            created_at: (raw.created_at instanceof Date ? raw.created_at : new Date(raw.created_at)).toISOString(),
             deposit_paid: !!raw.deposit_paid,
             full_payment_paid: !!raw.full_payment_paid,
             willing_to_drive: !!raw.willing_to_drive,
@@ -106,8 +106,8 @@ export async function fetchTripSignupByIdDb(signupId: number): Promise<ReisTripS
         const sanitized = {
             ...raw,
             date_of_birth: raw.date_of_birth instanceof Date ? raw.date_of_birth.toISOString() : raw.date_of_birth,
-            date_created: raw.date_created instanceof Date ? raw.date_created.toISOString() : (raw.date_created || raw.created_at || new Date().toISOString()),
-            created_at: raw.created_at || new Date().toISOString(),
+            date_created: (raw.created_at instanceof Date ? raw.created_at : new Date(raw.created_at)).toISOString(),
+            created_at: (raw.created_at instanceof Date ? raw.created_at : new Date(raw.created_at)).toISOString(),
             deposit_paid: !!raw.deposit_paid,
             full_payment_paid: !!raw.full_payment_paid,
             willing_to_drive: !!raw.willing_to_drive,

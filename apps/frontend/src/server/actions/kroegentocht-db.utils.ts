@@ -157,7 +157,7 @@ export async function fetchUserPubCrawlSignupsDb(userId: string): Promise<any[]>
              FROM pub_crawl_signups s
              JOIN pub_crawl_events e ON s.pub_crawl_event_id = e.id
              WHERE s.directus_relations = $1
-             ORDER BY s.date_created DESC`,
+             ORDER BY s.created_at DESC`,
             [userId]
         );
         return (res.rows || []).map(row => ({
@@ -192,7 +192,7 @@ export async function createPubCrawlSignupDb(data: {
     try {
         const res = await query(
             `INSERT INTO pub_crawl_signups 
-             (name, email, association, amount_tickets, name_initials, pub_crawl_event_id, payment_status, directus_relations, date_created)
+             (name, email, association, amount_tickets, name_initials, pub_crawl_event_id, payment_status, directus_relations, created_at)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
              RETURNING id`,
             [
