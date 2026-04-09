@@ -36,12 +36,22 @@
         
         <div style="text-align: center; margin: 30px 0; padding: 20px; background: #fff; border-radius: 20px; border: 2px dashed #a4539b;">
             <p style="font-weight: 800; color: #a4539b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;">Je Ticket QR-Code</p>
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{qrToken}}" alt="Ticket QR Code" style="width: 200px; height: 200px;">
+            {{#if qrToken}}
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{qrToken}}" alt="Ticket QR Code" style="width: 200px; height: 200px;">
+            {{else}}
+                <p style="font-style: italic; color: #8a7a8c;">Je QR-code is beschikbaar op de website.</p>
+            {{/if}}
             <p style="font-size: 11px; color: #8a7a8c; margin-top: 15px;">Registratie: #{{registrationId}}</p>
         </div>
 
         <p style="text-align: center;">
-            <a href="https://salvemundi.nl/profiel" class="button">Mijn Tickets op de Website</a>
+            {{#if hasAccount}}
+                <a href="https://salvemundi.nl/profiel" class="button">Bekijk Mijn Tickets</a>
+            {{else if confirmationUrl}}
+                <a href="{{confirmationUrl}}" class="button">Toon Mijn Ticket Online</a>
+            {{else}}
+                <p style="font-size: 11px; color: #8a7a8c; text-align: center;">Scan de bovenstaande code bij de entree.</p>
+            {{/if}}
         </p>
     {{/if}}
 

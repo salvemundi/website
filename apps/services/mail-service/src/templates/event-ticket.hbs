@@ -11,7 +11,11 @@
         
         <div style="text-align: center; margin: 25px 0; padding: 15px; background: #ffffff; border: 1px solid #eee; border-radius: 12px;">
             <p style="font-[var(--theme-purple)] font-weight: 800; text-transform: uppercase; font-size: 10px; letter-spacing: 1px; margin-bottom: 10px;">Scannen bij Entree</p>
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={{qrToken}}" alt="Ticket QR Code" style="width: 180px; height: 180px;">
+            {{#if qrToken}}
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={{qrToken}}" alt="Ticket QR Code" style="width: 180px; height: 180px;">
+            {{else}}
+                <p style="font-style: italic; color: #8a7a8c;">Je QR-code is beschikbaar op de website.</p>
+            {{/if}}
         </div>
 
         <p style="text-align: center; font-size: 11px; color: #8a7a8c; margin-top: 15px; border-top: 1px dashed #d9c7db; padding-top: 10px;">Signup ID: #{{signupId}}</p>
@@ -20,7 +24,11 @@
     <p>Je kunt je officiële ticket op elk moment online bekijken. Scan de bovenstaande code bij de entree van het evenement.</p>
     
     <p style="text-align: center;">
-        <a href="https://salvemundi.nl/profiel/tickets" class="button">Toon Mijn Tickets</a>
+        {{#if hasAccount}}
+            <a href="https://salvemundi.nl/profiel/tickets" class="button">Toon Mijn Tickets</a>
+        {{else if confirmationUrl}}
+            <a href="{{confirmationUrl}}" class="button">Open Mijn Ticket Online</a>
+        {{/if}}
     </p>
 
     <p>We raden je aan om alvast een screenshot te maken van je QR-code voor het geval internet op locatie slecht is.</p>

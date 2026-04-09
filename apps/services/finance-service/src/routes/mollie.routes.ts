@@ -38,15 +38,6 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
             const mollie = getMollieClient();
             const payment = await mollie.payments.get(id);
 
-            // 2. Update payment_status in PostgreSQL (matches Directus schema)
-            await fastify.db.query(
-                `UPDATE transactions SET payment_status = $1, updated_at = NOW() WHERE mollie_id = $2`,
-                [payment.status, id]
-            );
-
-            // 3. Trigger Cache Invalidation for Next.js
-            const { CacheInvalidationService } = await import('../services/cache-invalidation.js');
-
             const metadata = payment.metadata as { 
                 userId?: string; 
                 registrationId?: string | number; 
@@ -57,14 +48,34 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
             } | null;
             const userId = metadata?.userId;
 
+            // 2. Update payment_status in PostgreSQL (matches Directus schema)
+            const dbUpdate = await fastify.db.query(
+                `UPDATE transactions SET payment_status = $1, updated_at = NOW() WHERE mollie_id = $2 RETURNING access_token, registration`,
+                [payment.status, id]
+            );
+            const accessToken = dbUpdate.rows[0]?.access_token;
+            const registrationId = dbUpdate.rows[0]?.registration || metadata?.registrationId;
+
+            // 3. Trigger Cache Invalidation for Next.js
+            const { CacheInvalidationService } = await import('../services/cache-invalidation.js');
+
             if (userId) {
                 await CacheInvalidationService.queueInvalidation(fastify.redis, userId);
             }
 
             // 4. Publish Event to Redis Stream & Direct Update to Directus
             if (payment.status === 'paid') {
-                const registrationId = metadata?.registrationId;
                 const registrationType = metadata?.registrationType;
+
+                // Fetch qr_token if it's an event signup
+                let qrToken: string | undefined = undefined;
+                if (registrationId && registrationType === 'event_signup') {
+                    const qrResult = await fastify.db.query(
+                        `SELECT qr_token FROM event_signups WHERE id = $1`,
+                        [registrationId]
+                    );
+                    qrToken = qrResult.rows[0]?.qr_token;
+                }
                 const email = (payment as any).consumerEmail || metadata?.email;
 
                 const eventData = {
@@ -76,6 +87,8 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
                     registrationType: registrationType,
                     isContribution: !!metadata?.isContribution,
                     isNewMember: (metadata as any)?.isNewMember === 'true' || (metadata as any)?.isNewMember === true,
+                    qrToken: qrToken,
+                    accessToken: accessToken,
                     timestamp: new Date().toISOString()
                 };
 

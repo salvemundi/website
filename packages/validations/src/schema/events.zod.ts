@@ -13,14 +13,13 @@ export const PaymentSuccessEventSchema = BaseEventSchema.extend({
     registrationType: z.enum(['event_signup', 'pub_crawl_signup', 'trip_signup', 'membership']).optional(),
     isContribution: z.boolean().optional(),
     isNewMember: z.boolean().optional(),
+    qrToken: z.string().optional(),
+    accessToken: z.string().optional(),
 });
 
-export const ActivitySignupEventSchema = BaseEventSchema.extend({
-    email: z.string().email(),
-    name: z.string(),
-    eventName: z.string(),
-    eventDate: z.string(),
     signupId: z.union([z.string(), z.number()]),
+    qrToken: z.string().optional(),
+    accessToken: z.string().optional(),
 });
 
 export type BaseEvent = z.infer<typeof BaseEventSchema>;

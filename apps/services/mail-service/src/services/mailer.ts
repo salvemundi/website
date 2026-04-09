@@ -56,7 +56,18 @@ export class MailerService {
 
             // 3. Dispatch via Microsoft Graph
             const senderEmail = process.env.AZURE_MAIL_SENDER || 'info@salvemundi.nl';
-            
+
+            // Map template ID to a user-friendly subject
+            const subjectMap: Record<string, string> = {
+                'payment_confirmed': 'Betaling Bevestigd',
+                'event-ticket': 'Je Ticket is Klaar!',
+                'membership_renewal': 'Lidmaatschap Verlengd',
+                'pub_crawl_ticket': 'Je Tickets voor de Kroegentocht',
+                'welcome_payment': 'Welkom bij Salve Mundi',
+                'event_signup': 'Inschrijving Bevestigd'
+            };
+            const userFriendlySubject = subjectMap[templateId] || templateId.replace(/[-_]/g, ' ');
+
             const response = await fetch(`https://graph.microsoft.com/v1.0/users/${senderEmail}/sendMail`, {
                 method: 'POST',
                 headers: {
@@ -65,7 +76,7 @@ export class MailerService {
                 },
                 body: JSON.stringify({
                     message: {
-                        subject: `Salve Mundi - ${templateId}`,
+                        subject: `Salve Mundi - ${userFriendlySubject}`,
                         body: {
                             contentType: 'HTML',
                             content: htmlContent

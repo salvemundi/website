@@ -198,7 +198,9 @@ export async function signupForActivity(data: EventSignupForm) {
                 name: parsed.data.name,
                 eventName: activity.titel,
                 eventDate: activity.datum_start,
-                signupId: signupId
+                signupId: signupId,
+                qrToken: qrToken,
+                accessToken: qrToken // Use qrToken as temporary access token for free events
             };
 
             await redis.xadd('v7:events', '*', 'payload', JSON.stringify(eventPayload));
@@ -298,6 +300,15 @@ export async function getSignupStatus(id?: string, transactionId?: string, cache
                 return { status: signup?.payment_status === 'paid' ? 'paid' : paymentStatus, signup, transaction: trans };
             } else if (productType === 'membership') {
                 return { status: paymentStatus, transaction: trans, isMembership: true };
+            }
+        }
+
+        // 3.5 Fallback for guest free signups (No transaction, but has qr_token)
+        if (id && /^\d+$/.test(id) && transactionId) {
+            const signupId = parseInt(id);
+            const signup = await fetchEventSignupByIdDb(signupId);
+            if (signup && signup.qr_token === transactionId) {
+                return { status: signup.payment_status || 'paid', signup };
             }
         }
 

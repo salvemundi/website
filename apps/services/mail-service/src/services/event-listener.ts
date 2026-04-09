@@ -124,14 +124,25 @@ export class EventListenerService {
                 const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL!;
                 const directusToken = process.env.DIRECTUS_STATIC_TOKEN!;
 
-                let templateId = 'welcome_payment';
+                let templateId = 'payment_confirmed';
                 let mailData: any = {
                     paymentId: data.paymentId,
                     userId: data.userId,
                     registrationId: data.registrationId,
                     registrationType: data.registrationType,
-                    eventName: 'Evenement'
+                    eventName: 'Evenement',
+                    qrToken: data.qrToken,
+                    accessToken: data.accessToken
                 };
+
+                // Check if user has an account
+                mailData.hasAccount = data.userId ? true : (data.email ? await this.checkUserHasAccount(directusUrl, directusToken, data.email) : false);
+
+                // Build confirmation URL if registrationId and accessToken are present
+                if (data.registrationId && data.accessToken) {
+                    const baseUrl = process.env.PUBLIC_URL || 'https://salvemundi.nl';
+                    mailData.confirmationUrl = `${baseUrl}/activiteiten/bevestiging?id=${data.registrationId}&t=${data.accessToken}`;
+                }
 
                 // Handle Membership (New vs Renewal)
                 if ((data as any).isContribution || data.registrationType === 'membership') {
@@ -225,6 +236,19 @@ export class EventListenerService {
                                 const eventData: any = await eventRes.json();
                                 mailData.eventName = eventData?.data?.name || 'Evenement';
                             }
+
+                            // If qrToken is missing from event and it's an event_signup, try to fetch it
+                            if (!mailData.qrToken && data.registrationId) {
+                                try {
+                                    const qrRes = await fetch(`${directusUrl}/items/event_signups/${data.registrationId}?fields=qr_token`, {
+                                        headers: { 'Authorization': `Bearer ${directusToken}` }
+                                    });
+                                    const qrJson: any = await qrRes.json();
+                                    mailData.qrToken = qrJson?.data?.qr_token;
+                                } catch (qrErr) {
+                                    console.error('[MailEventListener] Failed to fetch qr_token:', qrErr);
+                                }
+                            }
                         }
                     } catch (fetchErr) {
                         console.error('[MailEventListener] Failed to fetch event name:', fetchErr);
@@ -236,12 +260,27 @@ export class EventListenerService {
 
             } else if (payload.event === 'ACTIVITY_SIGNUP_SUCCESS') {
                 const data = ActivitySignupEventSchema.parse(payload);
+                
+                const hasAccount = await this.checkUserHasAccount(
+                    process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL!,
+                    process.env.DIRECTUS_STATIC_TOKEN!,
+                    data.email
+                );
+
+                let confirmationUrl = '';
+                if (data.signupId && data.accessToken) {
+                    const baseUrl = process.env.PUBLIC_URL || 'https://salvemundi.nl';
+                    confirmationUrl = `${baseUrl}/activiteiten/bevestiging?id=${data.signupId}&t=${data.accessToken}`;
+                }
 
                 await MailWorkerService.queueMail(redis, data.email, 'event-ticket', {
                     name: data.name,
                     eventName: data.eventName,
                     eventDate: data.eventDate,
-                    signupId: data.signupId
+                    signupId: data.signupId,
+                    qrToken: data.qrToken,
+                    hasAccount,
+                    confirmationUrl
                 });
 
                 console.log(`[MailEventListener] Queued activity ticket mail for ${data.email}`);
