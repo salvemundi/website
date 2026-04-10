@@ -9,7 +9,7 @@ export const pubCrawlEventSchema = z.object({
     description: z.string().nullable().optional(),
     email: z.string().email().nullable().optional(),
     image: z.string().nullable().optional(),
-    date: z.string().nullable().optional(),
+    date: z.coerce.string().nullable().optional(),
     show: z.boolean().nullable().optional().default(true), // Default to true if missing
     disabled_message: z.string().nullable().optional(),
     price: z.number().optional().default(1),
