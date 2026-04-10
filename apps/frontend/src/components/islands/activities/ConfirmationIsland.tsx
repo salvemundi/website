@@ -32,7 +32,7 @@ interface SignupData {
     tickets?: Array<{ qr_token: string }>;
     qr_token?: string;
     id?: string | number;
-    event_id?: { name: string };
+    event_id?: { id?: string | number; name: string };
 }
 
 export default function ConfirmationIsland({ 
@@ -44,6 +44,7 @@ export default function ConfirmationIsland({
     const [status, setStatus] = useState<'loading' | PaymentStatus | 'timeout'>('loading');
     const [signupData, setSignupData] = useState<SignupData | null>(null);
     const [isMembership, setIsMembership] = useState(false);
+    const [isTrip, setIsTrip] = useState(false);
     const [retryCount, setRetryCount] = useState(0);
 
     // Skip effect if we are just a server-side skeleton
@@ -58,23 +59,36 @@ export default function ConfirmationIsland({
                 if (res.status === 'paid') {
                     setSignupData(res.signup as SignupData);
                     setIsMembership(!!res.isMembership);
+                    setIsTrip(!!res.isTrip);
                     setStatus('paid');
                 } else if (res.status === 'canceled') {
                     setStatus('failed');
-                    setSignupData({ errorType: 'canceled' });
+                    setIsMembership(!!res.isMembership);
+                    setIsTrip(!!res.isTrip);
+                    setSignupData(prev => ({ 
+                        ...prev, 
+                        ...(res.signup as SignupData),
+                        errorType: 'canceled' 
+                    }));
                 } else if (res.status === 'failed' || res.status === 'expired') {
                     setStatus('failed');
-                    setSignupData({ errorType: res.status as 'failed' | 'expired' });
+                    setIsMembership(!!res.isMembership);
+                    setIsTrip(!!res.isTrip);
+                    setSignupData(prev => ({ 
+                        ...prev, 
+                        ...(res.signup as SignupData),
+                        errorType: res.status as 'failed' | 'expired' 
+                    }));
                 } else if (retryCount < 60) { 
                     // Increment retry counter to trigger next poll after 1s
                     setTimeout(() => setRetryCount(prev => prev + 1), 1000);
                 } else {
-                    console.error('[StatusCheck] Polling timeout');
+                    console.error(`[StatusCheck] Polling timeout after ${retryCount} retries for ID: ${initialId}`);
                     setStatus('timeout');
                     setSignupData({ errorType: 'timeout' });
                 }
             } catch (err) {
-                console.error('[StatusCheck] Error:', err);
+                console.error(`[StatusCheck] Error during poll for ID: ${initialId}:`, err);
                 setStatus('error');
             }
         };
@@ -246,12 +260,16 @@ export default function ConfirmationIsland({
                         </p>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <button 
-                            onClick={() => window.location.reload()}
+                        <a 
+                            href={
+                                isMembership ? '/lidmaatschap' : 
+                                isTrip ? '/reis' : 
+                                (signupData?.event_id?.id ? `/activiteiten/${signupData.event_id.id}` : '/activiteiten')
+                            }
                             className="inline-flex h-14 px-10 rounded-2xl bg-[var(--theme-purple)] text-white font-black items-center justify-center gap-2 hover:scale-105 transition-all shadow-xl shadow-[var(--theme-purple)]/20 uppercase tracking-widest"
                         >
                             Opnieuw Proberen
-                        </button>
+                        </a>
                         <a href="/" className="inline-flex h-14 px-10 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] font-black items-center justify-center gap-2 hover:bg-[var(--bg-soft)] transition-all uppercase tracking-widest">
                             Terug naar Home
                         </a>

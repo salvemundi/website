@@ -24,6 +24,7 @@ import {
     fetchPubCrawlSignupByIdDb,
     fetchUserPubCrawlSignupsDb
 } from './kroegentocht-db.utils';
+import { fetchTripSignupByIdDb } from './reis-db.utils';
 import { 
     getFinanceServiceUrl, 
     getInternalHeaders, 
@@ -226,6 +227,7 @@ export interface SignupStatusResult {
     status: PaymentStatus;
     signup?: DbEventSignup | DbPubCrawlSignup | DbTripSignup | any;
     isMembership?: boolean;
+    isTrip?: boolean;
     errorType?: string;
 }
 
@@ -247,14 +249,20 @@ export async function getSignupStatus(
     
     if (financeId) {
         try {
-            const FINANCE_SERVICE_URL = getFinanceServiceUrl() || 'http://finance-service:3001';
-            const finRes = await fetch(`${FINANCE_SERVICE_URL}/api/finance/status/${financeId}`, { cache: 'no-store' });
+            const FINANCE_SERVICE_URL = getFinanceServiceUrl() || process.env.INTERNAL_FINANCE_URL || 'http://finance-service:3001';
+            const finRes = await fetch(`${FINANCE_SERVICE_URL}/api/finance/status/${financeId}`, { 
+                cache: 'no-store',
+                signal: AbortSignal.timeout(5000) // Don't hang the poll forever
+            });
+            
             if (finRes.ok) {
                 const finData = await finRes.json();
                 paymentStatus = (finData.payment_status as PaymentStatus) || 'open';
+            } else {
+                console.warn(`[SignupStatus] Finance Service returned ${finRes.status} for ${financeId}`);
             }
         } catch (err) {
-            console.error('[SignupStatus] Finance status check failed:', err);
+            console.error(`[SignupStatus] Finance status fetch failed for ${financeId}:`, err);
         }
     }
 
@@ -272,17 +280,35 @@ export async function getSignupStatus(
             const krotoSignup = await fetchPubCrawlSignupByIdDb(signupId);
             if (krotoSignup) {
                 krotoSignup.amount_tickets = krotoSignup.tickets?.length || 1;
-                krotoSignup.event_id = { name: krotoSignup.pub_crawl_event_id?.name || 'Pub Crawl' };
+                krotoSignup.event_id = { 
+                    id: krotoSignup.pub_crawl_event_id.id,
+                    name: krotoSignup.pub_crawl_event_id?.name || 'Pub Crawl' 
+                };
                 const status = krotoSignup.payment_status !== 'open' ? krotoSignup.payment_status : paymentStatus;
                 return { status: status as PaymentStatus, signup: krotoSignup };
+            }
+
+            const tripSignup = await fetchTripSignupByIdDb(signupId);
+            if (tripSignup) {
+                const status = (tripSignup.deposit_paid || tripSignup.full_payment_paid) ? 'paid' : paymentStatus;
+                return { 
+                    status: status as PaymentStatus, 
+                    signup: tripSignup,
+                    isTrip: true 
+                };
             }
         }
 
         // Broad transaction lookup using tokens or unique identifiers
         if (financeId) {
             const transRes = await query(
-                'SELECT payment_status, product_type, registration FROM transactions WHERE access_token = $1 OR mollie_id = $1 OR registration = $2 LIMIT 1',
-                [financeId, (typeof id === 'string' && /^\d+$/.test(id)) ? id : null]
+                `SELECT payment_status, product_type, registration 
+                 FROM transactions 
+                 WHERE access_token::text = $1 
+                    OR mollie_id::text = $1 
+                    OR registration::text = $2 
+                 LIMIT 1`,
+                [String(financeId), id ? String(id) : null]
             );
             
             if (transRes.rows.length > 0) {
@@ -327,8 +353,21 @@ export async function getSignupStatus(
                 const isOwner = user?.id && krotoSignup.directus_relations === user.id;
                 if (isAdmin || isOwner) {
                     krotoSignup.amount_tickets = krotoSignup.tickets?.length || 1;
-                    krotoSignup.event_id = { name: krotoSignup.pub_crawl_event_id?.name || 'Pub Crawl' };
+                    krotoSignup.event_id = { 
+                        id: krotoSignup.pub_crawl_event_id.id,
+                        name: krotoSignup.pub_crawl_event_id?.name || 'Pub Crawl' 
+                    };
                     return { status: (krotoSignup.payment_status as PaymentStatus) || paymentStatus, signup: krotoSignup };
+                }
+                return { status: 'unauthorized' };
+            }
+
+            const tripSignup = await fetchTripSignupByIdDb(signupId);
+            if (tripSignup) {
+                const isOwner = user?.id && tripSignup.directus_relations === user.id;
+                if (isAdmin || isOwner) {
+                    const status = (tripSignup.deposit_paid || tripSignup.full_payment_paid) ? 'paid' : paymentStatus;
+                    return { status: status as PaymentStatus, signup: tripSignup, isTrip: true };
                 }
                 return { status: 'unauthorized' };
             }
