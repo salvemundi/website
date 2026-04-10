@@ -53,7 +53,26 @@ export const pubCrawlTicketSchema = z.object({
     checked_in_at: z.string().nullable().optional(),
 });
 
+export const pubCrawlSignupFormSchema = z.object({
+    email: z.string().email('Ongeldig e-mailadres'),
+    association: z.string().min(1, 'Vereniging is verplicht'),
+    customAssociation: z.string().optional(),
+    amount_tickets: z.number().min(1, 'Minimaal 1 ticket').max(10, 'Maximaal 10 tickets'),
+    participants: z.array(pubCrawlParticipantSchema).min(1),
+    website: z.string().optional(), // Honeypot
+    pub_crawl_event_id: z.union([z.string(), z.number()]),
+}).refine((data) => {
+    if (data.association === 'Anders' && (!data.customAssociation || data.customAssociation.trim() === '')) {
+        return false;
+    }
+    return true;
+}, {
+    message: 'Naam van de vereniging is verplicht',
+    path: ['customAssociation'],
+});
+
 export type PubCrawlEvent = z.infer<typeof pubCrawlEventSchema>;
 export type PubCrawlParticipant = z.infer<typeof pubCrawlParticipantSchema>;
 export type PubCrawlSignup = z.infer<typeof pubCrawlSignupSchema>;
+export type PubCrawlSignupForm = z.infer<typeof pubCrawlSignupFormSchema>;
 export type PubCrawlTicket = z.infer<typeof pubCrawlTicketSchema>;
