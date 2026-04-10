@@ -54,7 +54,21 @@ export class MailerService {
             // 2. Authenticate with Azure (using cached TokenService)
             const accessToken = await TokenService.getAccessToken(redis);
 
-            // 3. Dispatch via Microsoft Graph
+            // 3. Prepare Logo Attachment (CID)
+            const logoPath = path.join(__dirname, '../../../../apps/frontend/public/img/newlogo.png');
+            let logoAttachment = null;
+            if (fs.existsSync(logoPath)) {
+                logoAttachment = {
+                    '@odata.type': '#microsoft.graph.fileAttachment',
+                    name: 'logo.png',
+                    contentType: 'image/png',
+                    contentBytes: fs.readFileSync(logoPath).toString('base64'),
+                    contentId: 'logo',
+                    isInline: true
+                };
+            }
+
+            // 4. Dispatch via Microsoft Graph
             const senderEmail = process.env.AZURE_MAIL_SENDER || 'info@salvemundi.nl';
 
             // Map template ID to a user-friendly subject
@@ -87,7 +101,8 @@ export class MailerService {
                                     address: to
                                 }
                             }
-                        ]
+                        ],
+                        attachments: logoAttachment ? [logoAttachment] : []
                     }
                 })
             });
