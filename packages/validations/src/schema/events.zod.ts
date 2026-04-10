@@ -15,6 +15,8 @@ export const PaymentSuccessEventSchema = BaseEventSchema.extend({
     isNewMember: z.boolean().optional(),
     qrToken: z.string().optional(),
     accessToken: z.string().optional(),
+    firstName: z.string().optional(),
+    lastName: z.string().optional(),
 });
 
 export const ActivitySignupEventSchema = BaseEventSchema.extend({

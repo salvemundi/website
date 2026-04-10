@@ -8,7 +8,7 @@ import { getSystemDirectus } from "@/lib/directus";
 import { readUsers } from "@directus/sdk";
 import { USER_FULL_FIELDS } from "@salvemundi/validations";
 
-const AZURE_SYNC_URL = "http://100.77.182.130:3002";
+const AZURE_SYNC_URL = process.env.AZURE_SYNC_SERVICE_URL || "http://localhost:3002";
 const INTERNAL_TOKEN = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
 
 async function checkSyncAccess(targetId?: string) {

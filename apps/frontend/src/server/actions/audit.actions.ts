@@ -81,8 +81,33 @@ export async function getPendingSignupsAction() {
             sort: ['-created_at'] as any
         }))) as any[];
 
+        // 4. Memberships (Paid but pending manual approval)
+        const membershipSignups = (await getSystemDirectus().request(readItems('transactions' as any, {
+            fields: ['mollie_id', 'created_at', 'email', 'first_name', 'last_name', 'product_name', 'amount', 'payment_status', 'approval_status', 'user_id'],
+            filter: {
+                _and: [
+                    { product_type: { _eq: 'membership' } },
+                    { payment_status: { _eq: 'paid' } },
+                    { approval_status: { _eq: 'pending' } }
+                ]
+            },
+            sort: ['-created_at'] as any
+        }))) as any[];
+
         // Aggregate and map
         const aggregated: PendingSignup[] = [
+            ...membershipSignups.map((s: any) => ({
+                id: s.mollie_id,
+                created_at: s.created_at,
+                email: s.email,
+                first_name: s.first_name,
+                last_name: s.last_name,
+                product_name: s.product_name,
+                amount: parseFloat(s.amount || '0'),
+                approval_status: 'pending' as any,
+                payment_status: s.payment_status,
+                type: (s.user_id ? 'membership_renewal' : 'membership_new') as any
+            })),
             ...eventSignups.map((s: any) => ({
                 id: s.id.toString(),
                 created_at: s.created_at,
@@ -135,7 +160,21 @@ export async function approveSignupAction(id: string, type: string) {
     const collection = type === 'event' ? 'event_signups' : type === 'pub_crawl' ? 'pub_crawl_signups' : 'trip_signups';
 
     try {
-        await getSystemDirectus().request(updateItem(collection as any, id as any, { approval_status: 'approved' }));
+        if (type.startsWith('membership')) {
+            // Internal call to finance-service to release the payment and trigger Azure sync
+            const res = await fetch(`${process.env.FINANCE_SERVICE_URL}/api/payments/approve`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${process.env.INTERNAL_SERVICE_TOKEN}`
+                },
+                body: JSON.stringify({ mollieId: id })
+            });
+
+            if (!res.ok) throw new Error(`Finance approval failed: ${await res.text()}`);
+        } else {
+            await getSystemDirectus().request(updateItem(collection as any, id as any, { approval_status: 'approved' }));
+        }
         
         await logAdminAction('signup_approved', 'SUCCESS', { 
             signup_id: id, 
@@ -157,7 +196,13 @@ export async function rejectSignupAction(id: string, type: string) {
     const collection = type === 'event' ? 'event_signups' : type === 'pub_crawl' ? 'pub_crawl_signups' : 'trip_signups';
 
     try {
-        await getSystemDirectus().request(updateItem(collection as any, id as any, { approval_status: 'rejected' }));
+        if (type.startsWith('membership')) {
+            // Update transaction to rejected
+            const { query } = await import('@/lib/db');
+            await query('UPDATE transactions SET approval_status = $1 WHERE mollie_id = $2', ['rejected', id]);
+        } else {
+            await getSystemDirectus().request(updateItem(collection as any, id as any, { approval_status: 'rejected' }));
+        }
         
         await logAdminAction('signup_rejected', 'SUCCESS', { 
             signup_id: id, 

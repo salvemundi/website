@@ -1,6 +1,7 @@
 import { Redis } from 'ioredis';
 import { ProvisionWorkerService } from './provision-worker.js';
-import { PaymentSuccessEventSchema } from '@salvemundi/validations'; // Belangrijk: gebruik het gedeelde contract!
+import { AuditService } from './audit.service.js';
+import { PaymentSuccessEventSchema } from '@salvemundi/validations';
 
 export class EventListenerService {
     private static readonly STREAM_KEY = 'v7:events';
@@ -30,7 +31,6 @@ export class EventListenerService {
                 if (response && response.length > 0) {
                     for (const [stream, messages] of response) {
                         for (const [id, fields] of messages) {
-                            // Convert flat fields array [f1, v1, f2, v2] to object
                             const data: any = {};
                             for (let i = 0; i < fields.length; i += 2) {
                                 data[fields[i]] = fields[i + 1];
@@ -54,13 +54,42 @@ export class EventListenerService {
             console.log(`[AzureEventListener] Received event: ${rawData.event}`);
 
             if (rawData.event === 'PAYMENT_SUCCESS') {
-                // Valideer de inkomende payload met Zod
                 const data = PaymentSuccessEventSchema.parse(rawData);
                 
-                // DE FIX: Alleen provisionen als het daadwerkelijk een lidmaatschap is!
-                if (data.registrationType === 'membership' && data.userId) {
-                    await ProvisionWorkerService.queueProvisioning(redis, data.userId, data.paymentId);
-                    console.log(`[AzureEventListener] Queued membership provisioning for user ${data.userId}`);
+                if (data.registrationType === 'membership') {
+                    if (data.userId) {
+                        // 1. Existing user: Membership Renewal / Extension
+                        await ProvisionWorkerService.queueProvisioning(redis, data.userId, data.paymentId);
+                        await AuditService.logMembershipRenewal(data.email, data.userId, data.paymentId);
+                        console.log(`[AzureEventListener] Queued renewal for user ${data.userId}`);
+                    } else {
+                        // 2. New user: Membership Provisioning (Direct to Management Service)
+                        const managementUrl = process.env.AZURE_MANAGEMENT_SERVICE_URL;
+                        const token = process.env.INTERNAL_SERVICE_TOKEN;
+
+                        if (managementUrl && token) {
+                            const res = await fetch(`${managementUrl}/api/provisioning/user`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${token}`
+                                },
+                                body: JSON.stringify({
+                                    email: data.email,
+                                    firstName: data.firstName,
+                                    lastName: data.lastName,
+                                    paymentId: data.paymentId
+                                })
+                            });
+
+                            if (!res.ok) throw new Error(`Management service error: ${await res.text()}`);
+                            
+                            await AuditService.logMembershipProvisioning(data.email, data.firstName || '', data.lastName || '', data.paymentId);
+                            console.log(`[AzureEventListener] Triggered new user provisioning for ${data.email}`);
+                        } else {
+                            console.warn('[AzureEventListener] Skipping provisioning: AZURE_MANAGEMENT_SERVICE_URL or token missing');
+                        }
+                    }
                 } else {
                     console.log(`[AzureEventListener] Ignored PAYMENT_SUCCESS for non-membership type: ${data.registrationType}`);
                 }

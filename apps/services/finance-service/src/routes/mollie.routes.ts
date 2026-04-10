@@ -56,15 +56,38 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
             const accessToken = dbUpdate.rows[0]?.access_token;
             const registrationId = dbUpdate.rows[0]?.registration || metadata?.registrationId;
 
-            // 3. Trigger Cache Invalidation for Next.js
-            const { CacheInvalidationService } = await import('../services/cache-invalidation.js');
-
             if (userId) {
+                const { CacheInvalidationService } = await import('../services/cache-invalidation.js');
                 await CacheInvalidationService.queueInvalidation(fastify.redis, userId);
             }
 
-            // 4. Publish Event to Redis Stream & Direct Update to Directus
-            if (payment.status === 'paid') {
+            // [NEW] Check Manual Approval Status for Memberships
+            const isContribution = !!metadata?.isContribution;
+            let manualApproval = false;
+            try {
+                const { createDirectus, rest, staticToken, readItems } = await import('@directus/sdk');
+                const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL!;
+                const directusToken = process.env.DIRECTUS_STATIC_TOKEN!;
+                const directus = createDirectus(directusUrl).with(staticToken(directusToken)).with(rest());
+
+                const flags = await directus.request(readItems('feature_flags' as any, {
+                    filter: { name: { _eq: 'manual_approval' } },
+                    fields: ['is_active']
+                }));
+                manualApproval = (flags?.[0] as any)?.is_active ?? false;
+            } catch (authErr) {
+                fastify.log.error(`[FINANCE] Failed to check manual_approval flag: ${authErr}`);
+            }
+
+            const approvalStatus = (isContribution && manualApproval) ? 'pending' : 'approved';
+            
+            await fastify.db.query(
+                `UPDATE transactions SET approval_status = $1 WHERE mollie_id = $2`,
+                [approvalStatus, id]
+            );
+
+            // 4. Publish Event & Processing (Only if approved or NOT a membership)
+            if (payment.status === 'paid' && (approvalStatus === 'approved')) {
                 const registrationType = metadata?.registrationType;
 
                 // Fetch qr_token if it's an event signup
@@ -162,6 +185,8 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
                         }
                     }
                 }
+            } else if (payment.status === 'paid' && approvalStatus === 'pending') {
+                fastify.log.info(`[FINANCE] Payment ${id} is PAID but pending manual approval.`);
             }
 
             return { success: true };

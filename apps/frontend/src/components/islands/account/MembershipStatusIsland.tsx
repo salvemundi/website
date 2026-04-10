@@ -113,6 +113,14 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
                 <p className="opacity-80 text-lg leading-relaxed">
                     Je lidmaatschap is verlopen. Om weer toegang te krijgen tot alle activiteiten en je account te behouden, vragen we je de jaarlijkse contributie te voldoen.
                 </p>
+                {baseAmount === 10 && (
+                    <div className="mt-4 p-3 bg-purple-500/10 border border-purple-500/20 rounded-2xl flex items-center gap-3">
+                        <span className="bg-purple-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase">Actief Lid</span>
+                        <p className="text-sm font-bold text-theme-purple dark:text-purple-400">
+                            Commissie-korting toegepast: Jouw verlenging kost slechts €10,00.
+                        </p>
+                    </div>
+                )}
             </div>
 
             <div className="bg-purple-50 dark:bg-white/5 border border-purple-100 dark:border-white/10 rounded-3xl p-6 mb-8 text-center">

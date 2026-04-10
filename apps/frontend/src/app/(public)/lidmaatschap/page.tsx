@@ -11,10 +11,19 @@ export const metadata = {
     description: 'Beheer je lidmaatschap bij Salve Mundi en krijg toegang tot exclusieve activiteiten.',
 };
 
+import { fetchUserCommitteesDb } from '@/server/actions/user-db.utils';
+
 async function MembershipDynamicContent({ session }: { session: any }) {
     const user = session?.user as any;
     const isGuest = !user;
-    const baseAmount = 20.00;
+    const isExpired = user && user.membership_status !== 'active';
+    
+    // Fetch committees to check if user is an active member
+    const committees = user ? await fetchUserCommitteesDb(user.id) : [];
+    const isCommitteeMember = committees.length > 0;
+    
+    // Pricing logic: Regular 20.00, Committee Renewal 10.00
+    const baseAmount = (isCommitteeMember && isExpired) ? 10.00 : 20.00;
 
     return (
         <>

@@ -68,9 +68,12 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 ? (productTypeMap[registrationType] || registrationType)
                 : (isContribution ? 'membership' : 'other');
 
-            let regColumnStr = '';
-            let valTokens = '$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11';
-            let params: any[] = [
+            // 2. Build SQL dynamically to avoid parameter count mismatches
+            const columns = [
+                'mollie_id', 'amount', 'payment_status', 'product_name', 'product_type',
+                'user_id', 'email', 'first_name', 'last_name', 'access_token'
+            ];
+            const params = [
                 payment.id,
                 amount,
                 'open',
@@ -80,31 +83,29 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 email || null,
                 firstName || null,
                 lastName || null,
-                accessToken,
-                null
+                accessToken
             ];
 
             if (registrationType === 'event_signup') {
-                regColumnStr = ', registration';
-                params[10] = registrationId;
+                columns.push('registration');
+                params.push(registrationId);
             } else if (registrationType === 'trip_signup') {
-                regColumnStr = ', trip_signup';
-                params[10] = registrationId;
+                columns.push('trip_signup');
+                params.push(registrationId);
             } else if (registrationType === 'pub_crawl_signup') {
-                regColumnStr = ', pub_crawl_signup';
-                params[10] = registrationId;
+                columns.push('pub_crawl_signup');
+                params.push(registrationId);
             } else if (registrationType === 'membership') {
-                regColumnStr = ', membership';
-                params[10] = registrationId;
+                columns.push('membership');
+                params.push(registrationId);
             }
 
-            // 2. Store transaction in PostgreSQL
+            const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
             const dbResult = await fastify.db.query(
                 `INSERT INTO transactions (
-                    mollie_id, amount, payment_status, product_name, product_type,
-                    user_id, email, first_name, last_name, access_token${regColumnStr},
+                    ${columns.join(', ')},
                     created_at, updated_at
-                ) VALUES (${valTokens}, NOW(), NOW()) RETURNING id`,
+                ) VALUES (${placeholders}, NOW(), NOW()) RETURNING id`,
                 params
             );
 
@@ -124,6 +125,60 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
         } catch (err: any) {
             fastify.log.error({ err, message: err?.message, code: err?.code, detail: err?.detail }, '[FINANCE] Error creating payment');
             return reply.status(500).send({ error: 'Failed to create payment', message: err.message });
+        }
+    });
+
+    /**
+     * POST /api/payments/approve
+     * Manually approves a pending payment and triggers automated processing.
+     */
+    fastify.post('/approve', async (request: any, reply) => {
+        const { mollieId } = request.body;
+        if (!mollieId) return reply.status(400).send({ error: 'Missing mollieId' });
+
+        try {
+            // 1. Update approval_status
+            await fastify.db.query(
+                `UPDATE transactions SET approval_status = 'approved', updated_at = NOW() WHERE mollie_id = $1`,
+                [mollieId]
+            );
+
+            // 2. Fetch transaction details to re-trigger event
+            // Note: In a real system, we would call a centralized "finalizePayment" function.
+            // Here we'll rely on the azure-sync-service listener to pick up the change or 
+            // the webhook handler to have published a success event that we now 'validate'.
+            
+            // To be robust, we publish the success event NOW because it was skipped during webhook.
+            const result = await fastify.db.query(`SELECT * FROM transactions WHERE mollie_id = $1`, [mollieId]);
+            const tx = result.rows[0];
+
+            if (!tx || tx.payment_status !== 'paid') {
+                return reply.status(400).send({ error: 'Transaction not found or not paid yet' });
+            }
+
+            const eventData = {
+                event: 'PAYMENT_SUCCESS',
+                userId: tx.user_id,
+                paymentId: tx.mollie_id,
+                email: tx.email,
+                registrationId: tx.registration || tx.trip_signup || tx.pub_crawl_signup || tx.membership,
+                registrationType: tx.product_type === 'pub_crawl' ? 'pub_crawl_signup' : 
+                                 tx.product_type === 'trip' ? 'trip_signup' : 
+                                 tx.product_type === 'event' ? 'event_signup' : tx.product_type,
+                isContribution: tx.product_type === 'membership',
+                accessToken: tx.access_token,
+                firstName: tx.first_name,
+                lastName: tx.last_name,
+                timestamp: new Date().toISOString()
+            };
+
+            await fastify.redis.xadd('v7:events', '*', 'payload', JSON.stringify(eventData));
+            fastify.log.info(`[FINANCE] Manually approved and published success event for ${mollieId}`);
+
+            return { success: true };
+        } catch (err: any) {
+            fastify.log.error(`[FINANCE] Approval failed for ${mollieId}:`, err);
+            return reply.status(500).send({ error: 'Approval failed', message: err.message });
         }
     });
 }
