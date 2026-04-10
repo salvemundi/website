@@ -82,7 +82,11 @@ export class ProvisionWorkerService {
                         }
 
                         // 4. Queue Welcome Email (ONLY after azure + sync success)
-                        console.log(`[ProvisionWorker] Sending welcome email to ${task.email}...`);
+                        console.log(`[ProvisionWorker] Sending combined welcome & payment email to ${task.email}...`);
+                        
+                        const now = new Date();
+                        const expiryDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate()).toISOString().split('T')[0];
+
                         const mailRes = await fetch(`${process.env.MAIL_SERVICE_URL}/api/mail/send`, {
                             method: 'POST',
                             headers: {
@@ -91,10 +95,13 @@ export class ProvisionWorkerService {
                             },
                             body: JSON.stringify({
                                 to: task.email,
-                                templateId: 'account_created',
+                                templateId: 'welcome_payment',
                                 data: {
-                                    name: task.firstName,
-                                    temporaryPassword: result.temporaryPassword
+                                    firstName: task.firstName,
+                                    accountEmail: result.userPrincipalName,
+                                    temporaryPassword: result.temporaryPassword,
+                                    expiryDate: expiryDate,
+                                    userId: result.id
                                 }
                             })
                         });

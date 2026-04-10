@@ -139,14 +139,23 @@ export class EventListenerService {
                 mailData.hasAccount = data.userId ? true : (data.email ? await this.checkUserHasAccount(directusUrl, directusToken, data.email) : false);
 
                 // Build confirmation URL if registrationId and accessToken are present
+                const baseUrl = process.env.PUBLIC_URL || 'https://salvemundi.nl';
                 if (data.registrationId && data.accessToken) {
-                    const baseUrl = process.env.PUBLIC_URL || 'https://salvemundi.nl';
-                    mailData.confirmationUrl = `${baseUrl}/activiteiten/bevestiging?id=${data.registrationId}&t=${data.accessToken}`;
+                    const path = data.registrationType === 'membership' || (data as any).isContribution ? '/lidmaatschap/bevestiging' :
+                                 data.registrationType === 'trip_signup' ? '/reis/bevestiging' :
+                                 '/activiteiten/bevestiging';
+                    
+                    mailData.confirmationUrl = `${baseUrl}${path}?id=${data.registrationId}&t=${data.accessToken}`;
                 }
 
                 // Handle Membership (New vs Renewal)
                 if ((data as any).isContribution || data.registrationType === 'membership') {
-                    templateId = data.isNewMember ? 'welcome_payment' : 'membership_renewal';
+                    if (data.isNewMember) {
+                        console.log(`[MailEventListener] Skipping welcome_payment for new member ${data.email}. Handled by provisioning service.`);
+                        return;
+                    }
+
+                    templateId = 'membership_renewal';
                     try {
                         const userRes = await fetch(`${directusUrl}/users/${data.userId}?fields=first_name,membership_expiry`, {
                             headers: { 'Authorization': `Bearer ${directusToken}` }
@@ -155,6 +164,11 @@ export class EventListenerService {
                         mailData.firstName = userData?.data?.first_name || 'Lid';
                         mailData.expiryDate = userData?.data?.membership_expiry || 'Onbekend';
                         mailData.amount = '20.00';
+                        
+                        // Ensure confirmationUrl is also available for renewals
+                        if (!mailData.confirmationUrl && data.paymentId) {
+                            mailData.confirmationUrl = `${baseUrl}/lidmaatschap/bevestiging?transaction_id=${data.paymentId}&t=${data.accessToken || ''}`;
+                        }
                     } catch (err) {
                         console.error('[MailEventListener] Failed to fetch user info for renewal:', err);
                     }

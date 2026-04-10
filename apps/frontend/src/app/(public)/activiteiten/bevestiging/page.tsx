@@ -27,12 +27,7 @@ export default async function ActiviteitenConfirmationPage({ searchParams }: Pag
                 contentPadding="py-16"
             />
             <div className="container mx-auto px-4 max-w-7xl">
-                <Suspense fallback={
-                    <div className="flex flex-col items-center justify-center py-40 animate-pulse">
-                        <div className="w-16 h-16 bg-[var(--theme-purple)]/10 rounded-full mb-4" />
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Gegevens verifiëren...</p>
-                    </div>
-                }>
+                <Suspense fallback={<ConfirmationIsland isLoading={true} />}>
                     <ConfirmationIsland 
                         initialId={id} 
                         initialTransactionId={transaction_id || t} 

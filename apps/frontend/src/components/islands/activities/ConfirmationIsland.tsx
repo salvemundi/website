@@ -11,65 +11,70 @@ import {
     ArrowRight,
     Download,
     UserPlus,
-    Save
+    Save,
+    RefreshCw
 } from 'lucide-react';
 import { toPng } from 'html-to-image';
-import { getSignupStatus } from '@/server/actions/activiteit-actions';
-import Link from 'next/link';
+import { getSignupStatus, type PaymentStatus } from '@/server/actions/activiteit-actions';
 import QRDisplay from '@/shared/ui/QRDisplay';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 interface ConfirmationIslandProps {
     initialId?: string;
     initialTransactionId?: string;
     isLoggedIn?: boolean;
+    isLoading?: boolean;
+}
+
+interface SignupData {
+    errorType?: 'canceled' | 'failed' | 'expired' | 'timeout';
+    amount_tickets?: number;
+    tickets?: Array<{ qr_token: string }>;
+    qr_token?: string;
+    id?: string | number;
+    event_id?: { name: string };
 }
 
 export default function ConfirmationIsland({ 
     initialId, 
     initialTransactionId,
-    isLoggedIn = false
+    isLoggedIn = false,
+    isLoading = false
 }: ConfirmationIslandProps) {
-    const [status, setStatus] = useState<'loading' | 'paid' | 'open' | 'failed' | 'error'>('loading');
-    const [signupData, setSignupData] = useState<any>(null);
+    const [status, setStatus] = useState<'loading' | PaymentStatus | 'timeout'>('loading');
+    const [signupData, setSignupData] = useState<SignupData | null>(null);
     const [isMembership, setIsMembership] = useState(false);
     const [retryCount, setRetryCount] = useState(0);
 
+    // Skip effect if we are just a server-side skeleton
     useEffect(() => {
-        /**
-         * We poll for the payment status because Mollie webhooks might take a few 
-         * seconds to reach our Directus backend. 30 seconds (15 retries * 2s) 
-         * covers the typical 'fast' payment window.
-         */
+        if (isLoading) return;
+        
         const checkStatus = async () => {
             try {
                 const ts = Date.now().toString();
-                console.log(`[StatusCheck] Polling status (retry: ${retryCount})...`);
-                
                 const res = await getSignupStatus(initialId, initialTransactionId, ts);
-                console.log(`[StatusCheck] Server response:`, res.status);
                 
                 if (res.status === 'paid') {
-                    console.log(`[StatusCheck] SUCCESS: Payment confirmed!`);
-                    setSignupData(res.signup);
+                    setSignupData(res.signup as SignupData);
                     setIsMembership(!!res.isMembership);
                     setStatus('paid');
                 } else if (res.status === 'canceled') {
-                    console.warn(`[StatusCheck] CANCELED: Payment was canceled by user`);
                     setStatus('failed');
                     setSignupData({ errorType: 'canceled' });
                 } else if (res.status === 'failed' || res.status === 'expired') {
-                    console.warn(`[StatusCheck] FAILED: Payment status is ${res.status}`);
                     setStatus('failed');
-                    setSignupData({ errorType: res.status });
+                    setSignupData({ errorType: res.status as 'failed' | 'expired' });
                 } else if (retryCount < 60) { 
-                    // Poll faster (every 1s) to show result immediately after bank confirmation
+                    // Increment retry counter to trigger next poll after 1s
                     setTimeout(() => setRetryCount(prev => prev + 1), 1000);
                 } else {
-                    console.error(`[StatusCheck] TIMEOUT: No success after max retries.`);
-                    setStatus('open');
+                    console.error('[StatusCheck] Polling timeout');
+                    setStatus('timeout');
+                    setSignupData({ errorType: 'timeout' });
                 }
             } catch (err) {
-                console.error('[StatusCheck] Error checking status:', err);
+                console.error('[StatusCheck] Error:', err);
                 setStatus('error');
             }
         };
@@ -101,14 +106,29 @@ export default function ConfirmationIsland({
     };
 
     const renderContent = () => {
-        if (status === 'loading') {
+        if (isLoading || status === 'loading') {
             return (
-                <div className="flex flex-col items-center justify-center py-20 animate-in fade-in duration-500">
-                    <div className="w-20 h-20 rounded-full bg-[var(--theme-purple)]/5 flex items-center justify-center mb-6">
-                        <Loader2 className="h-10 w-10 text-[var(--theme-purple)] animate-spin" />
+                <div className="space-y-12 animate-in fade-in duration-500">
+                    <div className="space-y-4 text-center">
+                        <Skeleton className="w-24 h-24 rounded-full mx-auto" />
+                        <Skeleton className="h-12 md:h-20 w-3/4 max-w-2xl mx-auto rounded-3xl" />
+                        <Skeleton className="h-6 w-1/2 max-w-sm mx-auto rounded-xl" />
                     </div>
-                    <h2 className="text-2xl font-black text-[var(--text-main)] uppercase tracking-tighter italic">Status <span className="text-[var(--theme-purple)]">Controleren</span></h2>
-                    <p className="text-[var(--text-muted)] mt-2 font-medium">We verifiëren je gegevens bij de bank...</p>
+
+                    <div className="flex flex-wrap justify-center gap-6 max-w-6xl mx-auto">
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] min-w-[300px] max-w-[380px] p-8 rounded-[3rem] bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xl space-y-6">
+                                <div className="flex flex-col items-center gap-4">
+                                    <Skeleton className="h-4 w-24 rounded-full" />
+                                    <Skeleton className="h-[180px] w-[180px] rounded-3xl" />
+                                    <div className="space-y-2 text-center w-full">
+                                        <Skeleton className="h-6 w-3/4 mx-auto rounded-lg" />
+                                        <Skeleton className="h-3 w-1/2 mx-auto rounded-md" />
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             );
         }
@@ -240,22 +260,36 @@ export default function ConfirmationIsland({
             );
         }
 
+        const isTimeout = signupData?.errorType === 'timeout';
+
         return (
             <div className="py-20 text-center space-y-8 animate-in zoom-in-95 duration-500">
                 <div className="w-24 h-24 bg-orange-500/10 rounded-full flex items-center justify-center mx-auto ring-1 ring-orange-500/20">
-                    <Loader2 className="h-12 w-12 text-orange-500 animate-spin" />
+                    {isTimeout ? <RefreshCw className="h-12 w-12 text-orange-500 animate-spin-slow" /> : <Loader2 className="h-12 w-12 text-orange-500 animate-spin" />}
                 </div>
                 <div className="space-y-2">
-                    <h2 className="text-4xl font-black text-[var(--text-main)] uppercase tracking-tighter italic">Betaling <span className="text-orange-500">Open</span></h2>
+                    <h2 className="text-4xl font-black text-[var(--text-main)] uppercase tracking-tighter italic">
+                        {isTimeout ? 'Status' : 'Betaling'} <span className="text-orange-500">{isTimeout ? 'Onduidelijk' : 'Open'}</span>
+                    </h2>
                     <p className="text-[var(--text-muted)] text-lg font-medium max-w-md mx-auto">
-                        Je betaling staat nog open. Zodra we de bevestiging van de bank hebben, sturen we je ticket per e-mail.
+                        {isTimeout 
+                            ? 'Het duurt langer dan normaal om de status te verifiëren. Check je bank-app of wacht een momentje op de mail.'
+                            : 'Je betaling staat nog op open. Zodra we de bevestiging van de bank hebben, sturen we je ticket per e-mail.'}
                     </p>
                 </div>
-                {isLoggedIn && (
-                    <a href="/profiel/tickets" className="inline-flex h-14 px-10 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] font-black items-center justify-center gap-2 hover:bg-[var(--bg-soft)] transition-all uppercase tracking-widest">
-                        Check Mijn Tickets
-                    </a>
-                )}
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button 
+                        onClick={() => window.location.reload()}
+                        className="inline-flex h-14 px-10 rounded-2xl bg-[var(--theme-purple)] text-white font-black items-center justify-center gap-2 hover:scale-105 transition-all shadow-xl shadow-[var(--theme-purple)]/20 uppercase tracking-widest"
+                    >
+                        Check Opnieuw
+                    </button>
+                    {isLoggedIn && (
+                        <a href="/profiel/tickets" className="inline-flex h-14 px-10 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] font-black items-center justify-center gap-2 hover:bg-[var(--bg-soft)] transition-all uppercase tracking-widest">
+                            Mijn Tickets
+                        </a>
+                    )}
+                </div>
             </div>
         );
     };
