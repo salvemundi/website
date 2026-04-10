@@ -131,6 +131,7 @@ export class EventListenerService {
                     registrationId: data.registrationId,
                     registrationType: data.registrationType,
                     eventName: 'Evenement',
+                    firstName: data.firstName || 'Lid',
                     qrToken: data.qrToken,
                     accessToken: data.accessToken
                 };
@@ -150,8 +151,8 @@ export class EventListenerService {
 
                 // Handle Membership (New vs Renewal)
                 if ((data as any).isContribution || data.registrationType === 'membership') {
-                    if (data.isNewMember) {
-                        console.log(`[MailEventListener] Skipping welcome_payment for new member ${data.email}. Handled by provisioning service.`);
+                    if (data.isNewMember || !data.userId) {
+                        console.log(`[MailEventListener] Skipping welcome_payment for member ${data.email}. Handled by provisioning service or missing userId.`);
                         return;
                     }
 
@@ -161,7 +162,7 @@ export class EventListenerService {
                             headers: { 'Authorization': `Bearer ${directusToken}` }
                         });
                         const userData: any = await userRes.json();
-                        mailData.firstName = userData?.data?.first_name || 'Lid';
+                        mailData.firstName = userData?.data?.first_name || data.firstName || 'Lid';
                         mailData.expiryDate = userData?.data?.membership_expiry || 'Onbekend';
                         mailData.amount = '20.00';
                         
