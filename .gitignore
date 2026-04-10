@@ -55,18 +55,11 @@ next-env.d.ts
 .prettiercache
 
 # Temporary local test files and scripts
-docs_content.txt
-read_docs.py
-convert_docs.py
-test-pipeline.ps1
-legacy_membership.js
-legacy_sync.js
-main_repo.txt
 Docs/
 Docs
 *.txt
+apps/frontend/scripts/
 tmp/
 PROJECT_CONTEXT.md
 # RedisInsight
 infrastructure/databases.json
-
