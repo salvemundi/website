@@ -43,7 +43,10 @@ export default function PaymentStatusIsland({
             if (currentStatus === 'paid') {
                 setStatus('paid');
                 onSuccess?.();
-            } else if (['expired', 'canceled', 'failed'].includes(currentStatus || '')) {
+            } else if (currentStatus === 'canceled') {
+                setStatus('failed');
+                setAttempts(999); // Stop polling
+            } else if (['expired', 'failed'].includes(currentStatus || '')) {
                 setStatus('failed');
                 onExpire?.();
             } else {

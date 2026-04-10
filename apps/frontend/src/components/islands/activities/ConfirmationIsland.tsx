@@ -53,9 +53,14 @@ export default function ConfirmationIsland({
                     setSignupData(res.signup);
                     setIsMembership(!!res.isMembership);
                     setStatus('paid');
-                } else if (res.status === 'failed' || res.status === 'canceled' || res.status === 'expired') {
+                } else if (res.status === 'canceled') {
+                    console.warn(`[StatusCheck] CANCELED: Payment was canceled by user`);
+                    setStatus('failed');
+                    setSignupData({ errorType: 'canceled' });
+                } else if (res.status === 'failed' || res.status === 'expired') {
                     console.warn(`[StatusCheck] FAILED: Payment status is ${res.status}`);
                     setStatus('failed');
+                    setSignupData({ errorType: res.status });
                 } else if (retryCount < 60) { 
                     // Poll faster (every 1s) to show result immediately after bank confirmation
                     setTimeout(() => setRetryCount(prev => prev + 1), 1000);
@@ -200,20 +205,37 @@ export default function ConfirmationIsland({
         }
 
         if (status === 'failed') {
+            const isCanceled = signupData?.errorType === 'canceled';
+            const isExpired = signupData?.errorType === 'expired';
+
             return (
                 <div className="py-20 text-center space-y-8 animate-in zoom-in-95 duration-500">
                     <div className="w-24 h-24 bg-red-500/10 rounded-full flex items-center justify-center mx-auto ring-1 ring-red-500/20">
                         <XCircle className="h-12 w-12 text-red-500" />
                     </div>
                     <div className="space-y-2">
-                        <h2 className="text-4xl font-black text-[var(--text-main)] uppercase tracking-tighter italic">Betaling <span className="text-red-500">Mislukt</span></h2>
+                        <h2 className="text-4xl font-black text-[var(--text-main)] uppercase tracking-tighter italic">
+                            Betaling <span className="text-red-500">{isCanceled ? 'Gecanceld' : isExpired ? 'Verlopen' : 'Mislukt'}</span>
+                        </h2>
                         <p className="text-[var(--text-muted)] text-lg font-medium max-w-md mx-auto">
-                            Helaas is je betaling niet gelukt. Probeer het opnieuw of neem contact op als dit probleem blijft optreden.
+                            {isCanceled 
+                                ? 'Je hebt de betaling afgebroken. Geen zorgen, je gegevens zijn nog niet verwerkt.' 
+                                : isExpired
+                                ? 'De betaalsessie is verlopen. Probeer het opnieuw om je inschrijving te voltooien.'
+                                : 'Helaas is je betaling niet gelukt. Probeer het opnieuw of neem contact op als dit probleem blijft optreden.'}
                         </p>
                     </div>
-                    <a href="/" className="inline-flex h-14 px-10 rounded-2xl bg-[var(--theme-purple)] text-white font-black items-center justify-center gap-2 hover:scale-105 transition-all shadow-xl shadow-[var(--theme-purple)]/20 uppercase tracking-widest">
-                        Probeer Opnieuw
-                    </a>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <button 
+                            onClick={() => window.location.reload()}
+                            className="inline-flex h-14 px-10 rounded-2xl bg-[var(--theme-purple)] text-white font-black items-center justify-center gap-2 hover:scale-105 transition-all shadow-xl shadow-[var(--theme-purple)]/20 uppercase tracking-widest"
+                        >
+                            Opnieuw Proberen
+                        </button>
+                        <a href="/" className="inline-flex h-14 px-10 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] font-black items-center justify-center gap-2 hover:bg-[var(--bg-soft)] transition-all uppercase tracking-widest">
+                            Terug naar Home
+                        </a>
+                    </div>
                 </div>
             );
         }

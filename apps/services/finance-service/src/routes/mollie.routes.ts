@@ -187,6 +187,33 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
                 }
             } else if (payment.status === 'paid' && approvalStatus === 'pending') {
                 fastify.log.info(`[FINANCE] Payment ${id} is PAID but pending manual approval.`);
+            } else if (['failed', 'canceled', 'expired'].includes(payment.status)) {
+                fastify.log.info(`[FINANCE] Payment ${id} failed with status: ${payment.status}. Logging to system_logs.`);
+                try {
+                    const { createDirectus, rest, staticToken, createItem } = await import('@directus/sdk');
+                    const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL!;
+                    const directusToken = process.env.DIRECTUS_STATIC_TOKEN!;
+                    const directus = createDirectus(directusUrl).with(staticToken(directusToken)).with(rest());
+
+                    const adminPayload = {
+                        action: 'PAYMENT_FAILED',
+                        mollie_id: id,
+                        status: payment.status,
+                        email: metadata?.email,
+                        name: `${(metadata as any)?.firstName || ''} ${(metadata as any)?.lastName || ''}`.trim(),
+                        amount: payment.amount?.value,
+                        product_type: metadata?.registrationType || 'membership',
+                        timestamp: new Date().toISOString()
+                    };
+
+                    await directus.request(createItem('system_logs' as any, {
+                        type: 'payment_failed',
+                        status: 'INFO',
+                        payload: adminPayload
+                    }));
+                } catch (logErr) {
+                    fastify.log.error(`[FINANCE] Failed to log payment failure for ${id}: ${logErr}`);
+                }
             }
 
             return { success: true };
