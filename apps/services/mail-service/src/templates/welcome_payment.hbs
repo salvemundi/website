@@ -1,0 +1,43 @@
+{{#> layout headerTitle="WELCOME TO SALVE MUNDI"}}
+    <div class="status-badge">Welkom bij de Vereniging!</div>
+    <p>Beste {{firstName}},</p>
+    
+    <p>Welkom bij <strong>SV Salve Mundi</strong>, de studievereniging van Fontys ICT! We hebben je betaling voor het lidmaatschap succesvol ontvangen en je account is aangemaakt.</p>
+    
+    <div style="background: #ffffff; border: 2px dashed #a4539b; padding: 25px; border-radius: 20px; margin: 30px 0; text-align: center;">
+        <p style="text-transform: uppercase; font-size: 10px; letter-spacing: 1.5px; color: #a4539b; font-weight: 800; margin-bottom: 10px;">Lidmaatschap Status</p>
+        <p style="font-size: 18px; font-weight: 400; margin: 5px 0;">Je bent lid tot: <strong style="color: #5e2b52;">{{expiryDate}}</strong></p>
+    </div>
+
+    {{#if temporaryPassword}}
+    <div style="background: #f8f1f8; border: 1px solid #d9c7db; padding: 30px; border-radius: 20px; margin: 30px 0;">
+        <p style="text-align: center; font-weight: 800; color: #5e2b52; text-transform: uppercase; font-size: 12px; letter-spacing: 1.5px; margin-bottom: 20px;">Je Inloggegevens</p>
+        
+        <div style="background: #ffffff; padding: 20px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #eee; text-align: center;">
+            <p style="margin: 0; font-size: 11px; color: #8a7a8c; text-transform: uppercase; font-weight: 700;">Gebruikersnaam / E-mail</p>
+            <p style="margin: 5px 0 0; font-size: 18px; font-weight: 800; color: #121212;">{{accountEmail}}</p>
+        </div>
+
+        <div style="background: #ffffff; padding: 20px; border-radius: 12px; border: 1px solid #eee; text-align: center;">
+            <p style="margin: 0; font-size: 11px; color: #8a7a8c; text-transform: uppercase; font-weight: 700;">Tijdelijk Wachtwoord</p>
+            <p style="margin: 5px 0 0; font-family: 'Courier New', monospace; font-size: 24px; font-weight: 900; color: #a4539b; letter-spacing: 2px;">{{temporaryPassword}}</p>
+        </div>
+        
+        <p style="font-size: 12px; color: #8a7a8c; font-style: italic; text-align: center; margin-top: 15px;">Je wordt gevraagd dit wachtwoord te wijzigen bij de eerste keer inloggen.</p>
+    </div>
+    {{/if}}
+
+    <p>Je hebt nu onbeperkt toegang tot al onze activiteiten, ledenvoordelen en natuurlijk de gezelligheid in onze verenigingsruimte. Vergeet niet je profiel aan te vullen op onze website.</p>
+    
+    <p style="text-align: center; margin: 30px 0;">
+        <a href="https://salvemundi.nl/profiel" class="button">Direct Inloggen</a>
+    </p>
+
+    <div class="reference-data">
+        <p><strong>Referentie Details:</strong></p>
+        <p>Lid ID: {{userId}}<br>
+        Type: SV Salve Mundi Lidmaatschap</p>
+    </div>
+
+    <p style="margin-top: 30px;">We hopen je snel te zien bij een van onze activiteiten!<br><br>Met paarse groet,<br><strong>Bestuur Salve Mundi</strong></p>
+{{/layout}}

@@ -23,6 +23,9 @@
     <p>Je kunt de actuele status van de reis en je eigen inschrijving altijd bekijken op onze website:</p>
     
     <p style="text-align: center;">
+        {{#if confirmationUrl}}
+            <a href="{{confirmationUrl}}" class="button" style="margin-bottom: 10px;">Bekijk Live Status</a>
+        {{/if}}
         <a href="https://salvemundi.nl/reis" class="button">Bekijk Reis Dashboard</a>
     </p>
 

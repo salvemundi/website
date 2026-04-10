@@ -28,8 +28,9 @@ import {
     getFinanceServiceUrl, 
     getInternalHeaders, 
     fetchWithTimeout, 
-    checkAdminAccess 
+    checkAdminAccess
 } from './activiteit-utils';
+import { query } from '@/lib/db';
 
 /**
  * Fetches all published activities directly from the database (SQL-first).
@@ -219,16 +220,30 @@ export async function signupForActivity(data: EventSignupForm) {
     }
 }
 
+export type PaymentStatus = 'paid' | 'open' | 'failed' | 'canceled' | 'expired' | 'error' | 'unauthorized';
+
+export interface SignupStatusResult {
+    status: PaymentStatus;
+    signup?: DbEventSignup | DbPubCrawlSignup | DbTripSignup | any;
+    isMembership?: boolean;
+    errorType?: string;
+}
+
 /**
- * Fetches the status of a specific signup (Event, Pub Crawl, Trip, or Membership).
- * Uses SQL-first approach for registration data and Finance Service for payment verification.
+ * Resolves the payment and registration status for a given identifier.
+ * Primarily uses the Finance Service for live payment status and 
+ * falls back to the local database for descriptive registration data.
  */
-export async function getSignupStatus(id?: string, transactionId?: string, cacheBuster?: string) {
+export async function getSignupStatus(
+    id?: string, 
+    transactionId?: string, 
+    cacheBuster?: string
+): Promise<SignupStatusResult> {
     noStore();
     
-    // 1. Finance Service Verification (Source of Truth for Payments)
-    let paymentStatus = 'open';
+    // Determine the identifier to check against the Finance Service
     const financeId = transactionId || id;
+    let paymentStatus: PaymentStatus = 'open';
     
     if (financeId) {
         try {
@@ -236,106 +251,84 @@ export async function getSignupStatus(id?: string, transactionId?: string, cache
             const finRes = await fetch(`${FINANCE_SERVICE_URL}/api/finance/status/${financeId}`, { cache: 'no-store' });
             if (finRes.ok) {
                 const finData = await finRes.json();
-                paymentStatus = finData.payment_status || 'open';
+                paymentStatus = (finData.payment_status as PaymentStatus) || 'open';
             }
         } catch (err) {
-            console.error('[Activities] Finance status check failed:', err);
+            console.error('[SignupStatus] Finance status check failed:', err);
         }
     }
 
     try {
-        // 2. Direct Registration Lookup (Numeric ID provided in URL)
-        if (id && /^\d+$/.test(id)) {
+        // Direct registration lookup by numeric database ID
+        if (typeof id === 'string' && /^\d+$/.test(id)) {
             const signupId = parseInt(id);
             
             const eventSignup = await fetchEventSignupByIdDb(signupId);
             if (eventSignup) {
-                return { status: eventSignup.payment_status === 'paid' ? 'paid' : paymentStatus, signup: eventSignup };
+                const status = eventSignup.payment_status !== 'open' ? eventSignup.payment_status : paymentStatus;
+                return { status: status as PaymentStatus, signup: eventSignup };
             }
 
             const krotoSignup = await fetchPubCrawlSignupByIdDb(signupId);
             if (krotoSignup) {
                 krotoSignup.amount_tickets = krotoSignup.tickets?.length || 1;
                 krotoSignup.event_id = { name: krotoSignup.pub_crawl_event_id?.name || 'Pub Crawl' };
-                return { status: krotoSignup.payment_status === 'paid' ? 'paid' : paymentStatus, signup: krotoSignup };
+                const status = krotoSignup.payment_status !== 'open' ? krotoSignup.payment_status : paymentStatus;
+                return { status: status as PaymentStatus, signup: krotoSignup };
             }
         }
 
-        // 3. Fallback to Transaction Lookup (token/transactionId provided)
-        if (transactionId) {
-            const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(transactionId);
-            const filter: any = { _or: [] };
-            if (isUuid) {
-                filter._or.push({ access_token: { _eq: transactionId } });
-                filter._or.push({ mollie_id: { _eq: transactionId } });
-            } else if (/^\d+$/.test(transactionId)) {
-                filter._or.push({ id: { _eq: parseInt(transactionId) } });
-            } else {
-                filter._or.push({ mollie_id: { _eq: transactionId } });
-            }
-
-            const transactions = await getSystemDirectus().request(readItems('transactions', {
-                fields: TRANSACTION_FIELDS as any,
-                filter,
-                limit: 1,
-                params: { t: Date.now().toString() }
-            })) as unknown as DbTransaction[];
-
-            const trans = transactions?.[0];
-            if (!trans) return { status: paymentStatus === 'paid' ? 'paid' : 'error' };
-
-            const productType = trans.product_type;
-            const regId = typeof trans.registration === 'object' ? trans.registration?.id : trans.registration;
-            const krotoId = typeof trans.pub_crawl_signup === 'object' ? trans.pub_crawl_signup?.id : trans.pub_crawl_signup;
-
-            if (productType === 'event_signup' && regId) {
-                const signup = await fetchEventSignupByIdDb(Number(regId));
-                return { status: signup?.payment_status === 'paid' ? 'paid' : paymentStatus, signup, transaction: trans };
-            } else if (productType === 'pub_crawl_signup' && krotoId) {
-                const signup = await fetchPubCrawlSignupByIdDb(Number(krotoId));
-                if (signup) {
-                    signup.amount_tickets = signup.tickets?.length || 1;
-                    signup.event_id = { name: signup.pub_crawl_event_id?.name || 'Pub Crawl' };
-                }
-                return { status: signup?.payment_status === 'paid' ? 'paid' : paymentStatus, signup, transaction: trans };
-            } else if (productType === 'membership') {
-                return { status: paymentStatus, transaction: trans, isMembership: true };
+        // Broad transaction lookup using tokens or unique identifiers
+        if (financeId) {
+            const transRes = await query(
+                'SELECT payment_status, product_type, registration FROM transactions WHERE access_token = $1 OR mollie_id = $1 OR registration = $2 LIMIT 1',
+                [financeId, (typeof id === 'string' && /^\d+$/.test(id)) ? id : null]
+            );
+            
+            if (transRes.rows.length > 0) {
+                const trans = transRes.rows[0];
+                const status = trans.payment_status !== 'open' ? trans.payment_status : paymentStatus;
+                return { 
+                    status: status as PaymentStatus, 
+                    isMembership: trans.product_type === 'membership' 
+                };
             }
         }
 
-        // 3.5 Fallback for guest free signups (No transaction, but has qr_token)
-        if (id && /^\d+$/.test(id) && transactionId) {
-            const signupId = parseInt(id);
-            const signup = await fetchEventSignupByIdDb(signupId);
+        // Fallback for guest-only signups (free events or non-transactional items)
+        if (typeof id === 'string' && /^\d+$/.test(id) && typeof transactionId === 'string') {
+            const signup = await fetchEventSignupByIdDb(parseInt(id));
             if (signup && signup.qr_token === transactionId) {
-                return { status: signup.payment_status || 'paid', signup };
+                return { 
+                    status: (signup.payment_status as PaymentStatus) || 'paid', 
+                    signup 
+                };
             }
         }
 
-        // 4. Manual Verification / Detail Lookup (Requires Login)
-        if (id && /^\d+$/.test(id)) {
-            const session = await auth.api.getSession({ headers: await headers() });
-            const userId = session?.user?.id;
-            const user = session?.user as any;
-            const isAdmin = user?.role === 'admin' || user?.role === '06e78cf9-f9c3-4f9e-a86d-1907de634567'; 
+        // Administrative verification: requires valid session and ownership/admin privileges
+        if (typeof id === 'string' && /^\d+$/.test(id)) {
             const signupId = parseInt(id);
+            const session = await auth.api.getSession({ headers: await headers() });
+            const user = session?.user as { id: string; role?: string };
+            const isAdmin = user?.role === 'admin' || user?.role === '06e78cf9-f9c3-4f9e-a86d-1907de634567'; 
 
             const signup = await fetchEventSignupByIdDb(signupId);
             if (signup) {
-                const isOwner = userId && signup.directus_relations === userId;
+                const isOwner = user?.id && signup.directus_relations === user.id;
                 if (isAdmin || isOwner) {
-                    return { status: signup.payment_status || paymentStatus, signup };
+                    return { status: (signup.payment_status as PaymentStatus) || paymentStatus, signup };
                 }
                 return { status: 'unauthorized' };
             }
 
             const krotoSignup = await fetchPubCrawlSignupByIdDb(signupId);
             if (krotoSignup) {
-                const isOwner = userId && krotoSignup.directus_relations === userId;
+                const isOwner = user?.id && krotoSignup.directus_relations === user.id;
                 if (isAdmin || isOwner) {
                     krotoSignup.amount_tickets = krotoSignup.tickets?.length || 1;
                     krotoSignup.event_id = { name: krotoSignup.pub_crawl_event_id?.name || 'Pub Crawl' };
-                    return { status: krotoSignup.payment_status || paymentStatus, signup: krotoSignup };
+                    return { status: (krotoSignup.payment_status as PaymentStatus) || paymentStatus, signup: krotoSignup };
                 }
                 return { status: 'unauthorized' };
             }
@@ -343,7 +336,7 @@ export async function getSignupStatus(id?: string, transactionId?: string, cache
 
         return { status: paymentStatus };
     } catch (error) {
-        console.error('[Activities] getSignupStatus failed:', error);
+        console.error('[SignupStatus] Resolution failed:', error);
         return { status: 'error' };
     }
 }
