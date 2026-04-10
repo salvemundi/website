@@ -62,10 +62,11 @@ export class GraphService {
      * Creates a new user in Microsoft Entra ID.
      */
     static async createUser(
-        email: string, 
+        upn: string, 
         firstName: string, 
         lastName: string, 
         token: string,
+        personalEmail: string,
         phoneNumber?: string,
         dateOfBirth?: string
     ) {
@@ -79,8 +80,10 @@ export class GraphService {
         const user: any = {
             accountEnabled: true,
             displayName: `${firstName} ${lastName}`,
-            mailNickname: email.split('@')[0],
-            userPrincipalName: email,
+            mailNickname: upn.split('@')[0],
+            userPrincipalName: upn,
+            otherMails: [personalEmail],
+            mail: upn, // Set primary mail to the new UPN
             passwordProfile: {
                 forceChangePasswordNextSignIn: true,
                 password: tempPassword
