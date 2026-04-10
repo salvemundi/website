@@ -6,6 +6,8 @@ import {
     pubCrawlEventSchema,
     pubCrawlTicketSchema,
     pubCrawlSignupSchema,
+    pubCrawlSignupFormSchema,
+    type PubCrawlSignupForm,
     PUB_CRAWL_EVENT_FIELDS,
     PUB_CRAWL_SIGNUP_FIELDS,
     PUB_CRAWL_TICKET_FIELDS,
@@ -18,7 +20,7 @@ import { cache } from 'react';
 import { logAdminAction } from './audit.actions';
 
 import { getSystemDirectus } from '@/lib/directus';
-import { readItems, createItem, deleteItem } from '@directus/sdk';
+import { readItems, createItem, updateItem, deleteItem } from '@directus/sdk';
 import { 
     createPubCrawlSignupDb, 
     deletePubCrawlSignupDb, 
@@ -193,26 +195,42 @@ export async function initiateKroegentochtPayment(formData: any) {
         }
         await createPubCrawlTicketsDb(signupId, ticketsTable);
 
-        // Sync to Directus - now awaited for data integrity
+        // Sync to Directus - now with Fallback to Upsert
+        const syncPayload = {
+            id: signupId,
+            name: parsed.data.name,
+            email: parsed.data.email,
+            association: parsed.data.association,
+            amount_tickets: parsed.data.amount_tickets,
+            name_initials: parsed.data.name_initials,
+            pub_crawl_event_id: Number(parsed.data.pub_crawl_event_id) as any,
+            payment_status: 'open',
+            directus_relations: userId || null,
+        };
+
         try {
-            await getSystemDirectus().request(createItem('pub_crawl_signups', {
-                id: signupId,
-                name: parsed.data.name,
-                email: parsed.data.email,
-                association: parsed.data.association,
-                amount_tickets: parsed.data.amount_tickets,
-                name_initials: parsed.data.name_initials,
-                pub_crawl_event_id: Number(parsed.data.pub_crawl_event_id) as any,
-                payment_status: 'open',
-                directus_relations: userId || null,
-            }));
-        } catch (err) {
-            console.error('[Kroegentocht] Sync failed:', err);
-            // Cleanup DB if sync fails
-            await deletePubCrawlTicketsBySignupIdDb(signupId);
-            await deletePubCrawlSignupDb(signupId);
-            await logAdminAction('kroegentocht_signup_rollback', 'ERROR', { id: signupId, error: String(err), action: 'rollback_delete' });
-            return { success: false, error: 'Synchronisatie met CMS mislukt. Inschrijving niet voltooid.' };
+            await getSystemDirectus().request(createItem('pub_crawl_signups', syncPayload));
+        } catch (err: any) {
+            const errorMsg = String(err?.message || '');
+            if (errorMsg.includes('unique') || (err?.errors && JSON.stringify(err.errors).includes('unique'))) {
+                console.log(`[Kroegentocht] Sync collision for ID ${signupId}, attempting update fallback...`);
+                try {
+                    await getSystemDirectus().request(updateItem('pub_crawl_signups', signupId, syncPayload));
+                } catch (updateErr) {
+                    console.error('[Kroegentocht] Sync update fallback failed:', updateErr);
+                    // Rollback both if even update fails
+                    await deletePubCrawlTicketsBySignupIdDb(signupId);
+                    await deletePubCrawlSignupDb(signupId);
+                    return { success: false, error: 'Synchronisatie met CMS mislukt (collision fallback failed).' };
+                }
+            } else {
+                console.error('[Kroegentocht] Sync failed:', err);
+                // Cleanup DB if sync fails for other reasons
+                await deletePubCrawlTicketsBySignupIdDb(signupId);
+                await deletePubCrawlSignupDb(signupId);
+                await logAdminAction('kroegentocht_signup_rollback', 'ERROR', { id: signupId, error: String(err), action: 'rollback_delete' });
+                return { success: false, error: 'Synchronisatie met CMS mislukt. Inschrijving niet voltooid.' };
+            }
         }
 
         const financeUrl = `${getFinanceServiceUrl()}/api/payments/create`;

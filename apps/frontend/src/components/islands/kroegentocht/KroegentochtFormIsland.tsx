@@ -7,8 +7,15 @@ import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { initiateKroegentochtPayment } from '@/server/actions/kroegentocht.actions';
-import { type PubCrawlEvent, pubCrawlSignupSchema, type PubCrawlParticipant } from '@salvemundi/validations';
+import { 
+    type PubCrawlEvent, 
+    pubCrawlSignupFormSchema, 
+    type PubCrawlSignupForm,
+    type PubCrawlParticipant 
+} from '@salvemundi/validations';
 import { Plus, Minus, Mail, Building, Ticket, AlertCircle } from 'lucide-react';
+import { useAdminToast } from '@/hooks/use-admin-toast';
+import AdminToast from '@/components/ui/admin/AdminToast';
 
 const ASSOCIATIONS = [
     'Salve Mundi',
@@ -35,20 +42,14 @@ interface KroegentochtFormIslandProps {
     initialUser?: any;
 }
 
-type KroegentochtFormData = {
-    email: string;
-    association: string;
-    customAssociation?: string;
-    amount_tickets: number;
-    participants: PubCrawlParticipant[];
-    website: string; // Honeypot
-};
+// Type removed since it's now defined in @salvemundi/validations as PubCrawlSignupForm
 
 export default function KroegentochtFormIsland({ 
     isLoading = false, 
     event = {} as PubCrawlEvent, 
     initialUser 
 }: KroegentochtFormIslandProps) {
+    const { toast, showToast, hideToast } = useAdminToast();
     const [isPending, startTransition] = useTransition();
     const errorRef = useRef<HTMLDivElement>(null);
 
@@ -59,7 +60,8 @@ export default function KroegentochtFormIsland({
         watch,
         setValue,
         formState: { errors }
-    } = useForm<KroegentochtFormData>({
+    } = useForm<PubCrawlSignupForm>({
+        resolver: zodResolver(pubCrawlSignupFormSchema),
         defaultValues: {
             email: initialUser?.email || '',
             association: (initialUser as any)?.association || '',
@@ -70,6 +72,7 @@ export default function KroegentochtFormIsland({
                 initial: '' 
             }],
             website: '',
+            pub_crawl_event_id: event.id,
         }
     });
 
@@ -97,7 +100,7 @@ export default function KroegentochtFormIsland({
         }
     }, [amount, append, remove, fields.length]);
 
-    const onSubmit = async (data: KroegentochtFormData) => {
+    const onSubmit = async (data: PubCrawlSignupForm) => {
         if (data.website) return;
 
         startTransition(async () => {
@@ -105,18 +108,19 @@ export default function KroegentochtFormIsland({
             const participants = data.participants;
             
             const formData = {
+                ...data,
                 name: `${participants[0].name} ${participants[0].initial}`.trim(),
-                email: data.email,
                 association: finalAssociation || '',
-                amount_tickets: data.amount_tickets,
-                pub_crawl_event_id: event.id,
                 name_initials: JSON.stringify(participants),
+                pub_crawl_event_id: Number(event.id),
             };
 
             const result = await initiateKroegentochtPayment(formData);
 
             if (result.success && result.checkoutUrl) {
                 window.location.href = result.checkoutUrl;
+            } else {
+                showToast(result.error || 'Er ging iets mis bij het starten van de betaling.', 'error');
             }
         });
     };
@@ -266,6 +270,7 @@ export default function KroegentochtFormIsland({
                     <input {...register('website')} id="website" tabIndex={-1} autoComplete="off" suppressHydrationWarning />
                 </div>
             </form>
+            <AdminToast toast={toast} onClose={hideToast} />
         </section>
     );
 }
