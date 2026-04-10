@@ -166,7 +166,7 @@ export default function EventForm({ event }: EventFormProps) {
                                 {formData.image ? (
                                     <div className="relative w-full h-40 rounded-[var(--radius-xl)] overflow-hidden border-2 border-[var(--theme-purple)]/30">
                                         <img 
-                                            src={`http://100.77.182.130:8055/assets/${formData.image}?width=400`} 
+                                            src={`${process.env.NEXT_PUBLIC_DIRECTUS_URL}/assets/${formData.image}?width=400`} 
                                             alt="Preview" 
                                             className="w-full h-full object-cover"
                                         />

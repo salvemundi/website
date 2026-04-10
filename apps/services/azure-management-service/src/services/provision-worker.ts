@@ -24,7 +24,7 @@ export class ProvisionWorkerService {
         const task: ProvisionTask = {
             ...data,
             retries: 0,
-            maxRetries: 5
+            maxRetries: 10
         };
         // Use zadd for scheduled/retryable tasks
         await redis.zadd(this.QUEUE_KEY, Date.now(), JSON.stringify(task));
@@ -66,7 +66,23 @@ export class ProvisionWorkerService {
 
                         console.log(`[ProvisionWorker] Azure account created for ${task.email}`);
 
-                        // 3. Queue Welcome Email
+                        // 3. Sync to Directus (Strict Seqential: Sync BEFORE Mail)
+                        if (process.env.AZURE_SYNC_SERVICE_URL) {
+                            console.log(`[ProvisionWorker] Triggering immediate sync for Entra ID ${result.id}...`);
+                            const syncRes = await fetch(`${process.env.AZURE_SYNC_SERVICE_URL}/api/sync/run/${encodeURIComponent(result.id)}`, {
+                                method: 'POST',
+                                headers: { 'Authorization': `Bearer ${process.env.INTERNAL_SERVICE_TOKEN}` }
+                            });
+                            
+                            if (!syncRes.ok) {
+                                const errorText = await syncRes.text();
+                                throw new Error(`Sync service failed: ${errorText}`);
+                            }
+                            console.log(`[ProvisionWorker] Sync completed for ${task.email}`);
+                        }
+
+                        // 4. Queue Welcome Email (ONLY after azure + sync success)
+                        console.log(`[ProvisionWorker] Sending welcome email to ${task.email}...`);
                         const mailRes = await fetch(`${process.env.MAIL_SERVICE_URL}/api/mail/send`, {
                             method: 'POST',
                             headers: {
@@ -84,14 +100,7 @@ export class ProvisionWorkerService {
                         });
 
                         if (!mailRes.ok) throw new Error(`Mail service failed: ${mailRes.statusText}`);
-
-                        // 4. Trigger Sync (Optional but recommended for immediate result)
-                        if (process.env.AZURE_SYNC_SERVICE_URL) {
-                            await fetch(`${process.env.AZURE_SYNC_SERVICE_URL}/api/sync/run/${encodeURIComponent(result.id)}`, {
-                                method: 'POST',
-                                headers: { 'Authorization': `Bearer ${process.env.INTERNAL_SERVICE_TOKEN}` }
-                            }).catch((err: any) => console.warn('[ProvisionWorker] Sync trigger failed (non-critical):', err.message));
-                        }
+                        console.log(`[ProvisionWorker] Welcome email successful for ${task.email}`);
 
                         // Success -> Remove task
                         await redis.zrem(this.QUEUE_KEY, taskJson);

@@ -207,7 +207,7 @@ export default function AuditLogIsland() {
                 <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] shadow-xl overflow-hidden">
                     <div className="p-6 border-b border-[var(--beheer-border)]/50 flex flex-wrap items-center justify-between gap-4">
                         <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
-                            {['all', 'event', 'trip', 'pub_crawl'].map(type => (
+                            {['all', 'event', 'trip', 'pub_crawl', 'membership'].map(type => (
                                 <button
                                     key={type}
                                     onClick={() => setFilterType(type)}

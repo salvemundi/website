@@ -88,7 +88,12 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
     const user = session?.user;
     const isExpired = user && user.membership_status !== 'active';
 
-    const baseAmount = 20.00;
+    // Fetch committees for pricing (Active members pay €10 for renewal)
+    const { fetchUserCommitteesDb } = await import('../actions/user-db.utils');
+    const committees = user ? await fetchUserCommitteesDb(user.id) : [];
+    const isCommitteeMember = committees.length > 0;
+
+    const baseAmount = (isCommitteeMember && isExpired) ? 10.00 : 20.00;
 
     const url = `${getFinanceServiceUrl()}/api/payments/create`;
 
@@ -99,6 +104,7 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
             body: JSON.stringify({
                 amount: baseAmount,
                 description: isExpired ? 'Verlenging Salve Mundi Lidmaatschap' : 'Inschrijving Salve Mundi Lidmaatschap',
+                registrationType: 'membership',
                 isContribution: true,
                 isNewMember: !isExpired,
                 userId: user?.id || null,
