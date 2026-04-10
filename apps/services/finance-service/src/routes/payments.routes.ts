@@ -157,6 +157,7 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                                  tx.product_type === 'trip' ? 'trip_signup' : 
                                  tx.product_type === 'event' ? 'event_signup' : tx.product_type,
                 isContribution: tx.product_type === 'membership',
+                isNewMember: !tx.user_id && tx.product_type === 'membership',
                 accessToken: tx.access_token,
                 firstName: tx.first_name,
                 lastName: tx.last_name,
