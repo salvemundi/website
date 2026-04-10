@@ -1,6 +1,6 @@
 {{#> layout headerTitle="KROEGENTOCHT TICKETS"}}
     <div class="status-badge">Betaling Bevestigd</div>
-    <p>Hoi <strong>{{name}}</strong>,</p>
+    <p>Hoi <strong>{{firstName}}</strong>,</p>
 
     <p>Je betaling voor de <strong>Kroegentocht</strong> is ontvangen! Hieronder vind je jouw ticket(s). Neem deze mee naar het startpunt.</p>
 
@@ -32,7 +32,10 @@
 
     <div class="reference-data">
         <p><strong>Referentie Details:</strong></p>
-        <p>Email: {{email}}<br>
+        <p>Transactie ID: {{paymentId}}<br>
+        Inschrijving ID: {{signupId}}<br>
+        Email: {{email}}<br>
+        Event: {{eventName}}<br>
         Totaal Tickets: {{totalTickets}}</p>
     </div>
 

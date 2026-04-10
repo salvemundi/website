@@ -171,6 +171,7 @@ export class EventListenerService {
                         const signup = signupJson?.data;
 
                         const signupName = signup?.name || 'Deelnemer';
+                        const firstName = signupName.split(' ')[0];
                         const eventName = signup?.pub_crawl_event_id?.name || 'Kroegentocht';
                         const amountTickets = signup?.amount_tickets || 1;
 
@@ -189,6 +190,10 @@ export class EventListenerService {
 
                         mailData = {
                             name: signupName,
+                            firstName,
+                            email: data.email,
+                            paymentId: data.paymentId,
+                            signupId: data.registrationId,
                             eventName,
                             tickets,
                             totalTickets: tickets.length,
