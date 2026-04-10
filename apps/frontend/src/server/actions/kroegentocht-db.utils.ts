@@ -24,6 +24,7 @@ export async function fetchPubCrawlEventsDb(): Promise<PubCrawlEvent[]> {
 
         const items = (res.rows || []).map(raw => ({
             ...raw,
+            date: raw.date instanceof Date ? raw.date.toISOString().split('T')[0] : raw.date,
             price: 1,
             max_tickets_per_person: 10,
             show: raw.show !== false,

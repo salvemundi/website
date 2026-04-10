@@ -66,8 +66,8 @@ export default function KroegentochtFormIsland({
             customAssociation: '',
             amount_tickets: 1,
             participants: [{ 
-                name: initialUser?.first_name || '', 
-                initial: initialUser?.last_name ? initialUser.last_name.slice(0, 1).toUpperCase() : '' 
+                name: '', 
+                initial: '' 
             }],
             website: '',
         }

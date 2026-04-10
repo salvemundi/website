@@ -13,7 +13,8 @@ import {
 } from '@salvemundi/validations';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
-import { revalidateTag } from 'next/cache';
+import { revalidateTag, unstable_cache as cacheTag } from 'next/cache';
+import { cache } from 'react';
 import { logAdminAction } from './audit.actions';
 
 import { getSystemDirectus } from '@/lib/directus';
@@ -59,25 +60,50 @@ async function fetchWithTimeout(url: string, options: RequestInit & { timeout?: 
     }
 }
 
-export async function getKroegentochtEvent(): Promise<PubCrawlEvent | null> {
-    const today = new Date().toISOString().split('T')[0];
-    
-    try {
-        const events = await fetchPubCrawlEventsDb();
-        const event = events.find((e: any) => e.date >= today);
-        if (!event) return null;
+export const getKroegentochtEvent = cache(async (): Promise<PubCrawlEvent | null> => {
+    return await cacheTag(
+        async () => {
+            const today = new Date().toISOString().split('T')[0];
+            
+            try {
+                const events = await fetchPubCrawlEventsDb();
+                // Sort ascending to find the nearest upcoming event
+                const nearestEvents = [...events].sort((a, b) => {
+                    const dateA = a.date ? new Date(a.date).getTime() : 0;
+                    const dateB = b.date ? new Date(b.date).getTime() : 0;
+                    return dateA - dateB;
+                });
 
-        // Hardcode price and tickets per user request
-        event.price = 1;
-        event.max_tickets_per_person = 10;
+                const event = nearestEvents.find((e: any) => e.date >= today);
 
-        const parsed = pubCrawlEventSchema.safeParse(event);
-        return parsed.success ? parsed.data : null;
-    } catch (error: any) {
-        console.error('[kroegentocht.actions#getEvent] Error:', error);
-        return null;
-    }
-}
+                if (!event) {
+                    console.log('[Kroegentocht] No future events found');
+                    return null;
+                }
+
+                // Apply defaults/overrides
+                if (!event.email) event.email = 'feest@salvemundi.nl';
+                event.price = 1;
+                event.max_tickets_per_person = 10;
+
+                const parsed = pubCrawlEventSchema.safeParse(event);
+                if (!parsed.success) {
+                    console.error('[Kroegentocht] Parsing failed:', parsed.error.format());
+                    return null;
+                }
+                return parsed.data;
+            } catch (error: any) {
+                console.error('[kroegentocht.actions#getEvent] Error:', error);
+                return null;
+            }
+        },
+        ['kroegentocht-active-event'],
+        {
+            tags: ['kroegentocht-event', 'kroegentocht-events'],
+            revalidate: 3600 // 1 hour backup revalidation
+        }
+    )();
+});
 
 export async function getKroegentochtTickets(email: string): Promise<PubCrawlTicket[]> {
     try {
