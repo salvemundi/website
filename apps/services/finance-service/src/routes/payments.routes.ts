@@ -86,18 +86,9 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 accessToken
             ];
 
-            if (registrationType === 'event_signup') {
+            if (['event_signup', 'trip_signup', 'pub_crawl_signup', 'membership'].includes(registrationType)) {
                 columns.push('registration');
-                params.push(registrationId);
-            } else if (registrationType === 'trip_signup') {
-                columns.push('trip_signup');
-                params.push(registrationId);
-            } else if (registrationType === 'pub_crawl_signup') {
-                columns.push('pub_crawl_signup');
-                params.push(registrationId);
-            } else if (registrationType === 'membership') {
-                columns.push('membership');
-                params.push(registrationId);
+                params.push(registrationId || null);
             }
 
             const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
@@ -161,7 +152,7 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 userId: tx.user_id,
                 paymentId: tx.mollie_id,
                 email: tx.email,
-                registrationId: tx.registration || tx.trip_signup || tx.pub_crawl_signup || tx.membership,
+                registrationId: tx.registration || tx.trip_signup || tx.pub_crawl_signup,
                 registrationType: tx.product_type === 'pub_crawl' ? 'pub_crawl_signup' : 
                                  tx.product_type === 'trip' ? 'trip_signup' : 
                                  tx.product_type === 'event' ? 'event_signup' : tx.product_type,

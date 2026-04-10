@@ -156,7 +156,7 @@ export default async function tripRoutes(fastify: FastifyInstance) {
             await fastify.db.query(
                 `INSERT INTO transactions (
                     mollie_id, amount, payment_status, product_name, product_type,
-                    user_id, email, first_name, last_name, access_token, trip_signup,
+                    user_id, email, first_name, last_name, access_token, registration,
                     created_at, updated_at
                 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW())`,
                 [
