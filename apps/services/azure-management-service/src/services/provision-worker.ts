@@ -51,15 +51,29 @@ export class ProvisionWorkerService {
                     const task: ProvisionTask = JSON.parse(taskJson);
 
                     try {
-                        console.log(`[ProvisionWorker] Provisioning ${task.email}...`);
+                        const normalize = (str: string) => {
+                            return str
+                                .toLowerCase()
+                                .normalize('NFD')
+                                .replace(/[\u0300-\u036f]/g, '') // Remove accents/diacritics
+                                .replace(/[^a-z0-9]/g, '.')    // Replace non-alphanumeric with dots
+                                .replace(/\.+/g, '.')          // Remove consecutive dots
+                                .trim();
+                        };
+
+                        const upnPrefix = `${normalize(task.firstName)}.${normalize(task.lastName)}`.replace(/\.+/g, '.').replace(/^\.|\.$/g, '');
+                        const upn = `${upnPrefix}@lid.salvemundi.nl`;
+
+                        console.log(`[ProvisionWorker] Provisioning ${task.email} as ${upn}...`);
                         
                         // 2. Create User in Azure
                         const token = await TokenService.getAccessToken();
                         const result = await GraphService.createUser(
-                            task.email,
+                            upn,
                             task.firstName,
                             task.lastName,
                             token,
+                            task.email, // Passing original email as personalEmail
                             task.phoneNumber,
                             task.dateOfBirth
                         );
