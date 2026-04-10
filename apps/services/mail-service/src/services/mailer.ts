@@ -55,7 +55,7 @@ export class MailerService {
             const accessToken = await TokenService.getAccessToken(redis);
 
             // 3. Prepare Logo Attachment (CID)
-            const logoPath = path.join(__dirname, '../../../../apps/frontend/public/img/newlogo.png');
+            const logoPath = path.join(__dirname, '../assets/newlogo.png');
             let logoAttachment = null;
             if (fs.existsSync(logoPath)) {
                 logoAttachment = {
