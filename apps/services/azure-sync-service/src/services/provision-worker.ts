@@ -10,7 +10,7 @@ interface ProvisionTask {
 }
 
 export class ProvisionWorkerService {
-    private static readonly QUEUE_KEY = 'azure_provision_queue';
+    private static readonly QUEUE_KEY = 'v7:queue:provision:sync_existing';
     private static shouldStop = false;
 
     static async queueProvisioning(redis: Redis, userId: string, paymentId?: string) {

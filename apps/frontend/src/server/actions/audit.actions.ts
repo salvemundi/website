@@ -282,3 +282,62 @@ export async function getSystemLogsAction(limit: number = 50) {
         return { success: false, error: "Kon logs niet ophalen." };
     }
 }
+
+export async function getQueueStatusAction() {
+    noStore();
+    const admin = await checkAuditAccess();
+    if (!admin) return { success: false, error: "Unauthorized" };
+
+    try {
+        const res = await fetch(`${process.env.AZURE_MANAGEMENT_SERVICE_URL}/api/monitoring/status`, {
+            headers: {
+                'Authorization': `Bearer ${process.env.INTERNAL_SERVICE_TOKEN}`
+            }
+        });
+
+        if (!res.ok) throw new Error('Management service monitoring failed');
+        const data = await res.json();
+        
+        return { success: true, data };
+    } catch (err) {
+        return { success: false, error: "Kon wachtrij status niet ophalen." };
+    }
+}
+
+export async function bulkApproveSignupsAction(items: { id: string; type: string }[]) {
+    const admin = await checkAuditAccess();
+    if (!admin) return { success: false, error: "Unauthorized" };
+
+    const results = await Promise.allSettled(
+        items.map(item => approveSignupAction(item.id, item.type))
+    );
+
+    const failures = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.success));
+    
+    revalidatePath('/beheer/logging');
+    
+    if (failures.length > 0) {
+        return { success: false, error: `${failures.length} items konden niet worden goedgekeurd.` };
+    }
+
+    return { success: true };
+}
+
+export async function bulkRejectSignupsAction(items: { id: string; type: string }[]) {
+    const admin = await checkAuditAccess();
+    if (!admin) return { success: false, error: "Unauthorized" };
+
+    const results = await Promise.allSettled(
+        items.map(item => rejectSignupAction(item.id, item.type))
+    );
+
+    const failures = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.success));
+    
+    revalidatePath('/beheer/logging');
+
+    if (failures.length > 0) {
+        return { success: false, error: `${failures.length} items konden niet worden afgewezen.` };
+    }
+
+    return { success: true };
+}
