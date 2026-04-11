@@ -41,15 +41,15 @@ export function ReisSignupStatus({ userSignup, nextTrip, error }: ReisSignupStat
                 </div>
             </div>
 
-            <div className="bg-white/50 dark:bg-white/5 rounded-2xl p-6 border border-theme-purple/10 mb-6">
-                <p className="text-sm font-semibold text-theme-text-muted uppercase tracking-wider mb-2">Huidige status</p>
+            <div className="bg-white/50 dark:bg-black/5 rounded-2xl p-6 border border-theme-purple/10 mb-6">
+                <p className="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">Huidige status</p>
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <div>
                         <p className="text-2xl sm:text-3xl font-black text-theme-purple dark:text-theme-white break-words">
                             {getSignupStatusDisplay(userSignup)}
                         </p>
                         {userSignup.status === 'registered' && (
-                            <p className="text-xs text-theme-text-muted mt-1 italic">
+                            <p className="text-xs text-[var(--text-muted)] mt-1 italic">
                                 Je aanmelding wordt momenteel beoordeeld door de commissie.
                             </p>
                         )}
@@ -89,7 +89,7 @@ export function ReisSignupStatus({ userSignup, nextTrip, error }: ReisSignupStat
                                         <Utensils className="h-5 w-5 group-hover:scale-110 transition-transform" />
                                         Activiteiten beheren
                                     </Link>
-                                    <p className="text-xs italic text-gray-500 leading-relaxed">
+                                    <p className="text-xs italic text-[var(--text-muted)] leading-relaxed">
                                         De restbetaling is momenteel nog niet geopend. Je kunt wel alvast je activiteiten doorgeven of wijzigen.
                                     </p>
                                 </>
