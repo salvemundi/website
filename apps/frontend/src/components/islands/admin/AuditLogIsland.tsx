@@ -58,6 +58,9 @@ export default function AuditLogIsland() {
 
     const filteredSignups = useMemo(() => {
         if (filterType === 'all') return signups;
+        if (filterType === 'membership') {
+            return signups.filter(s => s.type === 'membership_new' || s.type === 'membership_renewal');
+        }
         return signups.filter(s => s.type === filterType);
     }, [signups, filterType]);
 
