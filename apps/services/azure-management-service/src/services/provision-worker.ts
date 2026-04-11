@@ -14,7 +14,7 @@ interface ProvisionTask {
 }
 
 export class ProvisionWorkerService {
-    private static readonly QUEUE_KEY = 'azure_provision_queue';
+    private static readonly QUEUE_KEY = 'v7:queue:provision:new_user';
     private static shouldStop = false;
 
     /**

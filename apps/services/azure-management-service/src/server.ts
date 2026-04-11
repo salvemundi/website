@@ -4,6 +4,7 @@ import redisPlugin from './plugins/redis.js';
 import provisioningRoutes from './routes/provisioning.js';
 import groupRoutes from './routes/groups.js';
 import userRoutes from './routes/users.js';
+import monitoringRoutes from './routes/monitoring.js';
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ fastify.register(redisPlugin);
 fastify.register(provisioningRoutes, { prefix: '/api/provisioning' });
 fastify.register(groupRoutes, { prefix: '/api/groups' });
 fastify.register(userRoutes, { prefix: '/api/users' });
+fastify.register(monitoringRoutes, { prefix: '/api/monitoring' });
 
 fastify.get('/health', async () => {
     return { status: 'ok', service: 'azure-management-service' };
