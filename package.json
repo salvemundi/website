@@ -9,7 +9,9 @@
   "scripts": {
     "dev": "pnpm -r dev",
     "build": "pnpm -r build",
-    "lint": "pnpm -r lint"
+    "lint": "pnpm -r lint",
+    "type-check": "pnpm -r --parallel exec tsc --noEmit",
+    "validate": "pnpm type-check && pnpm lint && pnpm build"
   },
   "pnpm": {
     "overrides": {

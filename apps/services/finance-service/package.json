@@ -6,7 +6,8 @@
     "scripts": {
         "dev": "fastify start -w -a 0.0.0.0 -l info src/server.ts",
         "start": "fastify start -a 0.0.0.0 -l info dist/server.js",
-        "build": "tsc"
+        "build": "tsc",
+        "type-check": "tsc --noEmit"
     },
     "dependencies": {
         "@mollie/api-client": "^4.0.1",
