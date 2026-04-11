@@ -1,8 +1,8 @@
 import React, { Suspense } from 'react';
 import PageHeader from '@/components/ui/layout/PageHeader';
 import { getReisSiteSettings, getUpcomingTrips, getUserTripSignup, getTripParticipantsCount } from '@/server/actions/reis.actions';
-import { ReisFormIsland } from '@/components/islands/activities/ReisFormIsland';
-import { ReisInfoIsland } from '@/components/islands/activities/ReisInfoIsland';
+import { ReisFormIsland } from '@/components/islands/reis/ReisFormIsland';
+import { ReisInfoIsland } from '@/components/islands/reis/ReisInfoIsland';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import Link from 'next/link';

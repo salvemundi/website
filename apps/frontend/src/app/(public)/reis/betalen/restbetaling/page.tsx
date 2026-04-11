@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTripSignupByToken } from '@/server/actions/reis-payment.actions';
-import TripPaymentFlowIsland from '@/components/islands/activities/TripPaymentFlowIsland';
+import TripPaymentFlowIsland from '@/components/islands/reis/TripPaymentFlowIsland';
 import { Loader2, CheckCircle2, Search, Home } from 'lucide-react';
 
 export const metadata: Metadata = {

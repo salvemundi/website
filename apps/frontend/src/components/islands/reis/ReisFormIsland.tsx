@@ -49,16 +49,16 @@ export function ReisFormIsland({
     if (isReallyLoading) {
         if (isReisDisabled) {
             return (
-                <section className="w-full lg:w-1/2 bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-lg p-8 animate-pulse text-center" aria-busy="true">
+                <section className="w-full lg:w-1/2 bg-[var(--bg-card)] dark:border dark:border-[var(--border-color)]/20 rounded-2xl sm:rounded-3xl shadow-lg p-8 animate-pulse text-center" aria-busy="true">
                     <Skeleton className="mx-auto h-8 w-1/3 bg-theme-purple/10 mb-4" rounded="lg" />
-                    <Skeleton className="mx-auto h-4 w-3/4 bg-[var(--text-muted)]/5" rounded="full" />
+                    <Skeleton className="mx-auto h-4 w-3/4 bg-[var(--text-muted)]/10" rounded="full" />
                 </section>
             );
         }
 
         if (isSignedUp) {
             return (
-                <section className="w-full lg:w-1/2 bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-lg p-8 animate-pulse" aria-busy="true">
+                <section className="w-full lg:w-1/2 bg-[var(--bg-card)] dark:border dark:border-[var(--border-color)]/20 rounded-2xl sm:rounded-3xl shadow-lg p-8 animate-pulse" aria-busy="true">
                     <div className="flex justify-between items-center mb-10">
                         <Skeleton className="h-8 w-1/2 bg-theme-purple/10" rounded="lg" />
                         <Skeleton className="h-8 w-8 bg-theme-purple/5" rounded="md" />
@@ -66,8 +66,8 @@ export function ReisFormIsland({
                     <div className="bg-theme-purple/5 rounded-2xl p-6 mb-6">
                         <Skeleton className="h-6 w-1/3 bg-theme-purple/10 mb-4" rounded="md" />
                         <div className="space-y-3">
-                            <Skeleton className="h-4 w-full bg-theme-purple/5" rounded="full" />
-                            <Skeleton className="h-4 w-3/4 bg-theme-purple/5" rounded="full" />
+                            <Skeleton className="h-4 w-full bg-theme-purple/10" rounded="full" />
+                            <Skeleton className="h-4 w-3/4 bg-theme-purple/10" rounded="full" />
                         </div>
                     </div>
                     <Skeleton className="h-12 w-full bg-theme-purple/20" rounded="xl" />
@@ -76,27 +76,27 @@ export function ReisFormIsland({
         }
 
         return (
-            <section className="w-full lg:w-1/2 bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-lg p-5 sm:p-6 md:p-8 animate-pulse" aria-busy="true">
+            <section className="w-full lg:w-1/2 bg-[var(--bg-card)] dark:border dark:border-[var(--border-color)]/20 rounded-2xl sm:rounded-3xl shadow-lg p-5 sm:p-6 md:p-8 animate-pulse" aria-busy="true">
                 <Skeleton className="h-10 w-3/4 sm:w-1/2 bg-theme-purple/10 mb-8" rounded="lg" />
                 <div className="flex flex-col gap-6">
                     <Skeleton className="h-5 w-full bg-[var(--text-muted)]/10" rounded="md" />
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-3">
                             <Skeleton className="h-3 w-1/4 bg-[var(--text-muted)]/10" rounded="full" />
-                            <Skeleton className="h-12 w-full bg-[var(--text-muted)]/5" rounded="xl" />
+                            <Skeleton className="h-12 w-full bg-[var(--bg-main)]/50" rounded="xl" />
                         </div>
                         <div className="space-y-3">
                             <Skeleton className="h-3 w-1/4 bg-[var(--text-muted)]/10" rounded="full" />
-                            <Skeleton className="h-12 w-full bg-[var(--text-muted)]/5" rounded="xl" />
+                            <Skeleton className="h-12 w-full bg-[var(--bg-main)]/50" rounded="xl" />
                         </div>
                     </div>
                     <div className="space-y-3">
                         <Skeleton className="h-3 w-1/4 bg-[var(--text-muted)]/10" rounded="full" />
-                        <Skeleton className="h-12 w-full bg-[var(--text-muted)]/5" rounded="xl" />
+                        <Skeleton className="h-12 w-full bg-[var(--bg-main)]/50" rounded="xl" />
                     </div>
                     <div className="space-y-3">
                         <Skeleton className="h-3 w-1/4 bg-[var(--text-muted)]/10" rounded="full" />
-                        <Skeleton className="h-12 w-full bg-[var(--text-muted)]/5" rounded="xl" />
+                        <Skeleton className="h-12 w-full bg-[var(--bg-main)]/50" rounded="xl" />
                     </div>
                     <Skeleton className="h-14 w-full bg-theme-purple/20 rounded-xl mt-6" />
                 </div>
@@ -124,7 +124,7 @@ export function ReisFormIsland({
     };
 
     return (
-        <section className="w-full lg:w-1/2 bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-lg p-5 sm:p-6 md:p-8 relative">
+        <section className="w-full lg:w-1/2 bg-[var(--bg-card)] dark:border dark:border-[var(--border-color)]/20 rounded-2xl sm:rounded-3xl shadow-lg p-5 sm:p-6 md:p-8 relative">
             <div className="flex justify-between items-center mb-4 sm:mb-6">
                 <h1 className="text-2xl sm:text-3xl font-bold text-theme-purple dark:text-theme-white">
                     Inschrijven voor de Reis
@@ -132,7 +132,7 @@ export function ReisFormIsland({
                 <button
                     onClick={handleRefresh}
                     disabled={refreshing}
-                    className="p-2 text-theme-text-muted hover:text-theme-purple transition-colors disabled:opacity-50"
+                    className="p-2 text-[var(--text-muted)] hover:text-theme-purple transition-colors disabled:opacity-50"
                     title="Gegevens vernieuwen"
                 >
                     <RefreshCcw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />

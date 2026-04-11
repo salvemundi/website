@@ -3,8 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, Clock, Lock } from 'lucide-react';
-import { createTripSignup, getCurrentUserProfileAction } from '@/server/actions/reis.actions';
+import { createTripSignup } from '@/server/actions/reis.actions';
 import { type ReisTrip, reisSignupFormSchema, type ReisSignupForm } from '@salvemundi/validations';
 import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
@@ -12,6 +11,10 @@ import { DateInput } from '@/shared/ui/DateInput';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import AdminToast from '@/components/ui/admin/AdminToast';
+
+// Sub-components
+import { RegistrationSuccess } from './registration/RegistrationSuccess';
+import { RegistrationClosed } from './registration/RegistrationClosed';
 
 interface ReisRegistrationFormProps {
     nextTrip: ReisTrip | null;
@@ -63,14 +66,6 @@ export function ReisRegistrationForm({
 
     const { errors } = formState;
 
-    useEffect(() => {
-        console.log('REIS_FORM_V7.5_SSR_LOADED');
-    }, []);
-
-    // SSR pattern: Data wordt nu direct via props in defaultValues geladen.
-    // Dit voorkomt reset() conflicten met browser autofill.
-
-
     const onSubmit = async (data: ReisSignupForm) => {
         if (!nextTrip) return;
 
@@ -99,27 +94,10 @@ export function ReisRegistrationForm({
 
     if (isSuccess) {
         return (
-            <div className="flex flex-col items-center justify-center py-10 px-4 text-center bg-theme-purple/5 rounded-2xl border border-theme-purple/10">
-                <div className="w-16 h-16 bg-theme-purple/20 rounded-full flex items-center justify-center mb-4">
-                    <svg className="w-8 h-8 text-theme-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                    </svg>
-                </div>
-                <h2 className="text-2xl font-bold text-theme-purple dark:text-theme-white mb-2">Inschrijving Ontvangen!</h2>
-                <p className="text-theme-text-muted mb-6">
-                    {currentUser 
-                        ? 'Bedankt voor je inschrijving. Je status wordt nu bijgewerkt...' 
-                        : 'Bedankt voor je inschrijving! Check je mail voor de bevestiging.'}
-                </p>
-                {!currentUser && (
-                    <button 
-                        onClick={() => setIsSuccess(false)}
-                        className="text-sm font-semibold text-theme-purple hover:underline"
-                    >
-                        Nog iemand inschrijven?
-                    </button>
-                )}
-            </div>
+            <RegistrationSuccess 
+                currentUser={currentUser} 
+                onReset={() => setIsSuccess(false)} 
+            />
         );
     }
 
@@ -132,7 +110,7 @@ export function ReisRegistrationForm({
                     </svg>
                 </div>
                 <h2 className="text-xl font-bold text-theme-purple dark:text-theme-white mb-2">Geen reis gepland</h2>
-                <p className="text-theme-text-muted text-sm max-w-xs">
+                <p className="text-[var(--text-muted)] text-sm max-w-xs">
                     Momenteel is er geen reis gepland. Houd deze pagina in de gaten voor nieuwe data!
                 </p>
             </div>
@@ -140,21 +118,7 @@ export function ReisRegistrationForm({
     }
 
     if (!canSignUp) {
-        const isWaitingForDate = registrationStartText.includes('opent op');
-        
-        return (
-            <div className="flex flex-col items-center justify-center py-10 px-6 text-center bg-gray-500/5 rounded-2xl border border-gray-500/10 animate-in fade-in duration-700">
-                <div className="w-12 h-12 bg-gray-500/10 rounded-full flex items-center justify-center mb-4 text-gray-500 opacity-60">
-                    {isWaitingForDate ? <Clock className="w-6 h-6 animate-pulse" /> : <Lock className="w-6 h-6" />}
-                </div>
-                <h3 className="text-lg font-bold text-gray-700 dark:text-gray-300 mb-1">
-                    {isWaitingForDate ? 'Binnenkort Open' : 'Inschrijving Gesloten'}
-                </h3>
-                <p className="text-theme-text-muted text-sm max-w-xs">
-                    {registrationStartText}
-                </p>
-            </div>
-        );
+        return <RegistrationClosed registrationStartText={registrationStartText} />;
     }
 
     return (
@@ -183,7 +147,7 @@ export function ReisRegistrationForm({
                             />
                         )}
                     />
-                    <span className="text-[10px] text-theme-text-muted/80 mt-1 block font-bold uppercase tracking-wider">
+                    <span className="text-[10px] text-[var(--text-muted)]/80 mt-1 block font-bold uppercase tracking-wider">
                         Gebruik je volledige naam zoals op je paspoort/ID
                     </span>
                 </FormField>
@@ -289,4 +253,3 @@ export function ReisRegistrationForm({
         </form>
     );
 }
-
