@@ -61,5 +61,7 @@ Docs
 apps/frontend/scripts/
 tmp/
 PROJECT_CONTEXT.md
+.agent/
+.agents/
 # RedisInsight
 infrastructure/databases.json
