@@ -12,9 +12,9 @@
         "@azure/identity": "^4.13.0",
         "@fastify/rate-limit": "^10.3.0",
         "@salvemundi/validations": "workspace:*",
-        "fastify": "5.1.0",
+        "fastify": "5.2.1",
         "fastify-plugin": "^5.1.0",
-        "handlebars": "^4.7.8",
+        "handlebars": "^4.7.9",
         "ioredis": "^5.6.0",
         "pg": "^8.13.0",
         "qrcode": "^1.5.4"

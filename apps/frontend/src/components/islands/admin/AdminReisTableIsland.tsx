@@ -11,6 +11,7 @@ import ReisTable from '@/components/admin/reis/ReisTable';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import { mapActivityOptionIdToName, parseActivityOptions, parseSelectedOptions } from '@/lib/reis';
+import { downloadCSV } from '@/lib/utils/export';
 
 interface AdminReisTableIslandProps {
     initialSignups: TripSignup[];
@@ -156,13 +157,11 @@ export default function AdminReisTableIsland({
         }
     };
 
-    const downloadExcel = async () => {
+    const downloadCSVExport = async () => {
         if (filteredSignups.length === 0) return;
 
         try {
-            const XLSX = await import('xlsx');
-
-            const excelData = filteredSignups.map(signup => {
+            const csvData = filteredSignups.map(signup => {
                 const idDoc = signup.id_document || '';
                 const idDocLabel = idDoc === 'passport' ? 'Paspoort' : idDoc === 'id_card' ? 'ID Kaart' : idDoc;
 
@@ -202,21 +201,10 @@ export default function AdminReisTableIsland({
                 };
             });
 
-            const worksheet = XLSX.utils.json_to_sheet(excelData);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, 'Aanmeldingen');
-
-            const maxWidth = 50;
-            const colWidths = Object.keys(excelData[0] || {}).map(key => ({
-                wch: Math.min(maxWidth, Math.max(key.length, ...excelData.map(row => String(row[key as keyof typeof row] || '').length)))
-            }));
-            worksheet['!cols'] = colWidths;
-
-            XLSX.writeFile(workbook, `reis-aanmeldingen-${trip.name || 'export'}-${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
-            showToast('Excel bestand succesvol gegenereerd', 'success');
+            downloadCSV(csvData, `reis-aanmeldingen-${trip.name || 'export'}-${format(new Date(), 'yyyy-MM-dd')}.csv`);
+            showToast('CSV bestand succesvol gegenereerd', 'success');
         } catch (error) {
-            
-            showToast('Export mislukt - kon de Excel bibliotheek niet laden.', 'error');
+            showToast('Export mislukt.', 'error');
         }
     };
 
@@ -260,7 +248,7 @@ export default function AdminReisTableIsland({
                 onStatusChange={setStatusFilter}
                 roleFilter={roleFilter}
                 onRoleChange={setRoleFilter}
-                onDownloadExcel={downloadExcel}
+                onDownloadExcel={downloadCSVExport}
                 hasResults={filteredSignups.length > 0}
             />
 
