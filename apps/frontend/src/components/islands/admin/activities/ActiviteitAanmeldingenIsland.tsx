@@ -4,7 +4,7 @@ import { useState, useMemo, useOptimistic, useTransition } from 'react';
 import { Search, Download, Mail, Phone, CheckCircle, XCircle, Clock, Trash2, UserPlus, CheckCircle2, Circle, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import * as XLSX from 'xlsx';
+import { downloadCSV } from '@/lib/utils/export';
 import { deleteSignupAction, toggleCheckInAction } from '@/server/actions/aanmeldingen.actions';
 import ManualSignupModal from './ManualSignupModal';
 import { useRouter } from 'next/navigation';
@@ -137,7 +137,7 @@ export default function ActiviteitAanmeldingenIsland({
         );
     }
 
-    const exportToXLSX = () => {
+    const exportToCSV = () => {
         if (filteredSignups.length === 0) return;
 
         const data = filteredSignups.map(signup => ({
@@ -149,12 +149,8 @@ export default function ActiviteitAanmeldingenIsland({
             'Inschrijfdatum': signup.created_at ? format(new Date(signup.created_at), 'dd-MM-yyyy HH:mm', { locale: nl }) : 'Onbekend'
         }));
 
-        const ws = XLSX.utils.json_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Aanmeldingen");
-        
-        const fileName = `Aanmeldingen_${(event.name || 'Activiteit').replace(/[^a-z0-9]/gi, '_')}_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
-        XLSX.writeFile(wb, fileName);
+        const fileName = `Aanmeldingen_${(event.name || 'Activiteit').replace(/[^a-z0-9]/gi, '_')}_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+        downloadCSV(data, fileName);
     };
 
     async function handleToggleCheckIn(signupId: number, currentCheckedIn: boolean) {
@@ -214,7 +210,7 @@ export default function ActiviteitAanmeldingenIsland({
                     ) : (
                         <>
                             <button
-                                onClick={exportToXLSX}
+                                onClick={exportToCSV}
                                 disabled={filteredSignups.length === 0}
                                 className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-xs font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50"
                             >

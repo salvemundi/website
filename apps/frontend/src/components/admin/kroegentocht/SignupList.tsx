@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import * as XLSX from 'xlsx';
+import { downloadCSV } from '@/lib/utils/export';
 import { PubCrawlSignup } from '@salvemundi/validations';
 
 interface ExtendedSignup extends PubCrawlSignup {
@@ -48,7 +48,7 @@ export default function SignupList({
         return matchesSearch && matchesStatus;
     });
 
-    const exportToExcel = () => {
+    const exportToCSV = () => {
         const rows: Record<string, any>[] = [];
         filteredSignups.forEach(signup => {
             const participants = signup.participants || [];
@@ -71,13 +71,8 @@ export default function SignupList({
             }
         });
 
-        const ws = XLSX.utils.json_to_sheet(rows);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Aanmeldingen');
-        ws['!cols'] = [{ wch: 30 }, { wch: 20 }, { wch: 30 }];
-        
-        const filename = `kroegentocht-${eventName.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
-        XLSX.writeFile(wb, filename);
+        const filename = `kroegentocht-${eventName.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+        downloadCSV(rows, filename);
     };
 
     return (
@@ -113,12 +108,12 @@ export default function SignupList({
                         </button>
 
                         <button
-                            onClick={exportToExcel}
+                            onClick={exportToCSV}
                             disabled={filteredSignups.length === 0}
                             className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-black text-xs uppercase tracking-widest rounded-[var(--radius-xl)] shadow-lg shadow-green-600/20 transition-all active:scale-95 disabled:opacity-50"
                         >
                             <Download className="h-4 w-4" />
-                            Export Excel
+                            Export CSV
                         </button>
                     </div>
                 </div>

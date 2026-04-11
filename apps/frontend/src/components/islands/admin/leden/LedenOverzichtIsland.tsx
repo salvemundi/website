@@ -10,7 +10,7 @@ import {
     Download,
     Loader2
 } from 'lucide-react';
-import * as XLSX from 'xlsx';
+import { downloadCSV } from '@/lib/utils/export';
 import { sendMembershipReminderAction } from '@/server/actions/leden.actions';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
@@ -93,7 +93,7 @@ export default function LedenOverzichtIsland({
         setIsSendingReminder(false);
     };
 
-    const exportToXLSX = () => {
+    const exportToCSV = () => {
         const data = filteredMembers.map(m => ({
             Naam: `${m.first_name} ${m.last_name}`,
             Email: m.email,
@@ -101,10 +101,7 @@ export default function LedenOverzichtIsland({
             Status: isMembershipActive(m) ? 'Actief' : 'Niet Actief'
         }));
 
-        const ws = XLSX.utils.json_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Leden");
-        XLSX.writeFile(wb, `Leden_Overzicht_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+        downloadCSV(data, `Leden_Overzicht_${format(new Date(), 'yyyy-MM-dd')}.csv`);
     };
 
     const activeCount = members.filter(m => isMembershipActive(m)).length;
@@ -132,7 +129,7 @@ export default function LedenOverzichtIsland({
                     ) : (
                         <div className="flex gap-2">
                             <button
-                                onClick={exportToXLSX}
+                                onClick={exportToCSV}
                                 className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-xs font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95"
                                 title="Exporteer naar Excel"
                             >

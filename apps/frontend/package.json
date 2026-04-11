@@ -14,7 +14,7 @@
         "@directus/sdk": "^21.1.0",
         "@hookform/resolvers": "^5.2.2",
         "@salvemundi/validations": "workspace:*",
-        "better-auth": "1.5.5",
+        "better-auth": "1.6.2",
         "date-fns": "^4.1.0",
         "framer-motion": "^12.34.5",
         "html-to-image": "^1.11.13",
@@ -23,7 +23,7 @@
         "isomorphic-dompurify": "^3.3.0",
         "lucide-react": "^0.475.0",
         "maplibre-gl": "^5.21.0",
-        "next": "16.1.7",
+        "next": "16.2.3",
         "pg": "^8.19.0",
         "qrcode": "^1.5.4",
         "qrcode.react": "^4.2.0",
@@ -34,7 +34,7 @@
         "react-map-gl": "^8.1.0",
         "server-only": "^0.0.1",
         "swiper": "^12.1.2",
-        "xlsx": "^0.18.5",
+
         "zod": "^3.23.8"
     },
     "devDependencies": {

@@ -17,11 +17,22 @@
     "overrides": {
       "react": "^19.2.0",
       "react-dom": "^19.2.0",
-      "better-auth": "1.5.6",
-      "@better-auth/core": "1.5.6",
+      "better-auth": "1.6.2",
+      "@better-auth/core": "1.6.2",
       "@better-auth/cli": "1.4.21",
       "@better-auth/utils": "0.4.0",
-      "@better-auth/telemetry": "1.5.6"
+      "@better-auth/telemetry": "1.6.2",
+      "next": "16.2.3",
+      "axios": "1.15.0",
+      "handlebars": "4.7.9",
+      "fastify": "5.8.3",
+      "defu": "6.1.5",
+      "drizzle-orm": "0.45.2",
+      "lodash": "4.18.0",
+      "flatted": "3.4.2",
+      "picomatch": "4.0.4",
+      "brace-expansion": "5.0.5",
+      "vite": "7.3.2"
     },
     "peerDependencyRules": {
       "allowedVersions": {
