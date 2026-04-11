@@ -5,7 +5,8 @@
     "type": "module",
     "scripts": {
         "dev": "fastify start -w -a 0.0.0.0 -l info src/server.ts",
-        "build": "tsc"
+        "build": "tsc",
+        "type-check": "tsc --noEmit"
     },
     "dependencies": {
         "@azure/identity": "^4.13.0",

@@ -7,7 +7,8 @@
         "build": "cross-env NODE_OPTIONS='--no-deprecation' next build",
         "start": "next start",
         "lint": "eslint src",
-        "check-lint": "eslint src"
+        "check-lint": "eslint src",
+        "type-check": "tsc --noEmit"
     },
     "dependencies": {
         "@directus/sdk": "^21.1.0",
