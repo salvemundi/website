@@ -49,7 +49,7 @@ export async function getCoupons(): Promise<Coupon[]> {
             is_active: !!i.is_active
         })) as Coupon[];
     } catch (e) {
-        console.error('[AdminCouponsQueries] Fetch failed:', e);
+        
         return [];
     }
 }

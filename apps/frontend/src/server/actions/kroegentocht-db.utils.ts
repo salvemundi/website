@@ -1,7 +1,7 @@
 'use server';
 
 import 'server-only';
-import { query } from '@/lib/db';
+import { query } from '@/lib/database';
 import { 
     pubCrawlEventSchema, 
     pubCrawlSignupSchema, 
@@ -35,7 +35,7 @@ export async function fetchPubCrawlEventsDb(): Promise<PubCrawlEvent[]> {
 
         return parsed.data;
     } catch (error: any) {
-        console.error('[KroegDb#fetchEvents] Error:', error);
+        
         return [];
     }
 }
@@ -69,7 +69,7 @@ export async function fetchPubCrawlSignupsDb(eventId: number): Promise<(PubCrawl
             participants: ticketsBySignup[raw.id] || []
         })) as any;
     } catch (error: any) {
-        console.error('[KroegDb#fetchSignups] Error:', error);
+        
         return [];
     }
 }
@@ -108,7 +108,7 @@ export async function fetchPubCrawlSignupByIdDb(signupId: number): Promise<any |
             tickets: ticketRes.rows || []
         };
     } catch (error: any) {
-        console.error('[KroegDb#fetchSignupById] Error:', error);
+        
         return null;
     }
 }
@@ -126,7 +126,7 @@ export async function fetchPubCrawlTicketsDb(eventId: number): Promise<PubCrawlT
         );
         return res.rows || [];
     } catch (error: any) {
-        console.error('[KroegDb#fetchTickets] Error:', error);
+        
         return [];
     }
 }
@@ -143,7 +143,7 @@ export async function getPubCrawlTicketCountDb(eventId: number): Promise<number>
         );
         return parseInt(res.rows[0]?.total || '0', 10);
     } catch (error: any) {
-        console.error('[KroegDb#getTicketCount] Error:', error);
+        
         return 0;
     }
 }
@@ -172,7 +172,7 @@ export async function fetchUserPubCrawlSignupsDb(userId: string): Promise<any[]>
             }
         }));
     } catch (error: any) {
-        console.error('[KroegDb#fetchUserSignups] Error:', error);
+        
         return [];
     }
 }
@@ -212,7 +212,7 @@ export async function createPubCrawlSignupDb(data: {
         if (!id) throw new Error('Insert failed');
         return id;
     } catch (error: any) {
-        console.error('[KroegDb#createSignup] Error:', error);
+        
         throw error;
     }
 }
@@ -237,7 +237,7 @@ export async function createPubCrawlTicketsDb(signupId: number, tickets: { name:
             values
         );
     } catch (error: any) {
-        console.error('[KroegDb#createTickets] Error:', error);
+        
         throw error;
     }
 }

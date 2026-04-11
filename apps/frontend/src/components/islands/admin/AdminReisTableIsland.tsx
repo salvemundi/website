@@ -10,7 +10,7 @@ import ReisFilters from '@/components/admin/reis/ReisFilters';
 import ReisTable from '@/components/admin/reis/ReisTable';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
-import { mapActivityOptionIdToName, parseActivityOptions, parseSelectedOptions } from '@/lib/reis-utils';
+import { mapActivityOptionIdToName, parseActivityOptions, parseSelectedOptions } from '@/lib/reis';
 
 interface AdminReisTableIslandProps {
     initialSignups: TripSignup[];
@@ -80,7 +80,7 @@ export default function AdminReisTableIsland({
                 showToast(res.error || 'Fout bij bijwerken status.', 'error');
             }
         } catch (error) {
-            console.error('Failed to update status:', error);
+            
             showToast('Fout bij bijwerken status.', 'error');
         } finally {
             setActionStates(prev => {
@@ -104,7 +104,7 @@ export default function AdminReisTableIsland({
                 showToast(res.error || 'Fout bij verwijderen aanmelding.', 'error');
             }
         } catch (error) {
-            console.error('Failed to delete signup:', error);
+            
             showToast('Fout bij verwijderen aanmelding.', 'error');
         } finally {
             setActionStates(prev => {
@@ -149,7 +149,7 @@ export default function AdminReisTableIsland({
             }
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Onbekende fout';
-            console.error('Failed to send payment email:', error);
+            
             showToast(`Fout bij verzenden email: ${message}`, 'error');
         } finally {
             setSendingEmailTo(null);
@@ -194,11 +194,11 @@ export default function AdminReisTableIsland({
                     'Activiteiten': activitiesStr,
                     'Wil rijden': signup.willing_to_drive ? 'Ja' : 'Nee',
                     'Rol': signup.role === 'crew' ? 'Crew' : 'Deelnemer',
-                    'Status': getStatusBadge(signup.status).label,
+                    'Status': getStatusBadge(signup.status || 'registered').label,
                     'Betalingstatus': getPaymentStatus(signup).label,
                     'Aanbetaling betaald op': signup.deposit_paid_at ? format(new Date(signup.deposit_paid_at), 'dd-MM-yyyy HH:mm') : '',
                     'Volledige betaling op': signup.full_payment_paid_at ? format(new Date(signup.full_payment_paid_at), 'dd-MM-yyyy HH:mm') : '',
-                    'Aangemeld op': signup.created_at ? format(new Date(signup.created_at), 'dd-MM-yyyy HH:mm') : '',
+                    'Aangemeld op': signup.date_created ? format(new Date(signup.date_created), 'dd-MM-yyyy HH:mm') : '',
                 };
             });
 
@@ -215,7 +215,7 @@ export default function AdminReisTableIsland({
             XLSX.writeFile(workbook, `reis-aanmeldingen-${trip.name || 'export'}-${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
             showToast('Excel bestand succesvol gegenereerd', 'success');
         } catch (error) {
-            console.error('Failed to export excel:', error);
+            
             showToast('Export mislukt - kon de Excel bibliotheek niet laden.', 'error');
         }
     };

@@ -12,7 +12,7 @@ import {
     ToggleRight 
 } from 'lucide-react';
 import type { Coupon } from '@/server/actions/admin-coupons.actions';
-import { getComputedCouponStatus } from '@/lib/coupon-utils';
+import { getComputedCouponStatus } from '@/lib/coupons';
 import { formatDate } from '@/shared/lib/utils/date';
 
 interface Props {

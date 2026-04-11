@@ -5,7 +5,7 @@ import { useState, useRef, useOptimistic, useActionState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save, Upload, X, Loader2 } from 'lucide-react';
 import { updateActivityAction } from '@/server/actions/activiteiten.actions';
-import { getImageUrl } from '@/lib/image-utils';
+import { getImageUrl } from '@/lib/utils/image-utils';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';

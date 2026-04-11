@@ -37,6 +37,6 @@ export function isMemberAdmin(committees: Committee[] | null | undefined): boole
  * @param committees List of committees
  * @returns boolean
  */
-export function isCommitteeMember(committees: any[] | null | undefined): boolean {
+export function isCommitteeMember(committees: Committee[] | null | undefined): boolean {
     return Array.isArray(committees) && committees.length > 0;
 }

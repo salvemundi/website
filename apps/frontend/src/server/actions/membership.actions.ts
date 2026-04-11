@@ -11,8 +11,7 @@ import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { revalidateTag } from 'next/cache';
 import { rateLimit } from '../utils/ratelimit';
-import { getSystemDirectus } from '@/lib/directus';
-import { readItem } from '@directus/sdk';
+import { query } from '@/lib/database';
 
 
 const getFinanceServiceUrl = () =>
@@ -60,10 +59,10 @@ export async function validateCouponAction(formData: FormData) {
             };
         }
  
-        console.error('[membership.actions#validateCoupon] Service error:', data);
+        
         return { success: false, error: 'De opgegeven coupon is niet geldig of de service is niet bereikbaar.' };
     } catch (error) {
-        console.error('[membership.actions#validateCoupon] Error:', error);
+        
         return { success: false, error: 'Fout bij valideren van coupon' };
     }
 }
@@ -89,7 +88,7 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
     const isExpired = user && user.membership_status !== 'active';
 
     // Fetch committees for pricing (Active members pay €10 for renewal)
-    const { fetchUserCommitteesDb } = await import('../actions/user-db.utils');
+    const { fetchUserCommitteesDb } = await import('./user-db.utils');
     const committees = user ? await fetchUserCommitteesDb(user.id) : [];
     const isCommitteeMember = committees.length > 0;
 
@@ -124,10 +123,10 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
             return { success: true, checkoutUrl: data.checkoutUrl };
         }
  
-        console.error('[membership.actions#initiatePayment] Service error:', data);
+        
         return { success: false, error: 'Er is een fout opgetreden bij het aanmaken van de betaling.' };
     } catch (error) {
-        console.error('[membership.actions#initiatePayment] Error:', error);
+        
         return { success: false, error: 'Kan geen verbinding maken met betaalservice' };
     }
 }
@@ -140,24 +139,27 @@ export async function getTransactionStatusAction(transactionId: string) {
     }
 
     try {
-        const transaction = await getSystemDirectus().request(readItem('transactions', parsed.data.id, {
-            fields: [...TRANSACTION_FIELDS]
-        }));
+        const { rows } = await query(
+            'SELECT payment_status, user_id FROM transactions WHERE id = $1 LIMIT 1',
+            [parsed.data.id]
+        );
 
-        if ((transaction as any)?.payment_status === 'paid') {
+        if (!rows || rows.length === 0) return { status: 'error' };
+        const transaction = rows[0];
+
+        if (transaction.payment_status === 'paid') {
             // Revalidate user data if payment was successful
             if (transaction.user_id) {
-                const userId = typeof (transaction as any).user_id === 'object' ? (transaction as any).user_id.id : (transaction as any).user_id;
-                revalidateTag(`user-${userId}`, 'default');
+                revalidateTag(`user-${transaction.user_id}`, 'default');
             }
             return { status: 'paid' };
-        } else if (['failed', 'canceled', 'expired'].includes(transaction?.payment_status ?? '')) {
+        } else if (['failed', 'canceled', 'expired'].includes(transaction.payment_status ?? '')) {
             return { status: 'failed' };
         }
 
         return { status: 'open' };
     } catch (error) {
-        console.error('[membership.actions#getTransactionStatusAction] Error:', error);
+        
         return { status: 'error' };
     }
 }

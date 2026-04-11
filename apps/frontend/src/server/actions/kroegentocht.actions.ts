@@ -30,7 +30,7 @@ import {
     fetchPubCrawlSignupByIdDb,
     fetchPubCrawlEventsDb
 } from './kroegentocht-db.utils';
-import { query } from '@/lib/db';
+import { query } from '@/lib/database';
 import crypto from 'crypto';
 
 const getFinanceServiceUrl = () =>
@@ -79,7 +79,7 @@ export const getKroegentochtEvent = cache(async (): Promise<PubCrawlEvent | null
                 const event = nearestEvents.find((e: any) => e.date >= today);
 
                 if (!event) {
-                    console.log('[Kroegentocht] No future events found');
+                    
                     return null;
                 }
 
@@ -90,12 +90,12 @@ export const getKroegentochtEvent = cache(async (): Promise<PubCrawlEvent | null
 
                 const parsed = pubCrawlEventSchema.safeParse(event);
                 if (!parsed.success) {
-                    console.error('[Kroegentocht] Parsing failed:', parsed.error.format());
+                    
                     return null;
                 }
                 return parsed.data;
             } catch (error: any) {
-                console.error('[kroegentocht.actions#getEvent] Error:', error);
+                
                 return null;
             }
         },
@@ -130,7 +130,7 @@ export async function getKroegentochtTickets(email: string): Promise<PubCrawlTic
         const parsed = items.map((t: any) => pubCrawlTicketSchema.safeParse(t).data).filter(Boolean);
         return parsed as PubCrawlTicket[];
     } catch (error: any) {
-        console.error('[kroegentocht.actions#getTickets] Error:', error);
+        
         return [];
     }
 }
@@ -213,18 +213,18 @@ export async function initiateKroegentochtPayment(formData: any) {
         } catch (err: any) {
             const errorMsg = String(err?.message || '');
             if (errorMsg.includes('unique') || (err?.errors && JSON.stringify(err.errors).includes('unique'))) {
-                console.log(`[Kroegentocht] Sync collision for ID ${signupId}, attempting update fallback...`);
+                
                 try {
                     await getSystemDirectus().request(updateItem('pub_crawl_signups', signupId, syncPayload));
                 } catch (updateErr) {
-                    console.error('[Kroegentocht] Sync update fallback failed:', updateErr);
+                    
                     // Rollback both if even update fails
                     await deletePubCrawlTicketsBySignupIdDb(signupId);
                     await deletePubCrawlSignupDb(signupId);
                     return { success: false, error: 'Synchronisatie met CMS mislukt (collision fallback failed).' };
                 }
             } else {
-                console.error('[Kroegentocht] Sync failed:', err);
+                
                 // Cleanup DB if sync fails for other reasons
                 await deletePubCrawlTicketsBySignupIdDb(signupId);
                 await deletePubCrawlSignupDb(signupId);
@@ -258,16 +258,14 @@ export async function initiateKroegentochtPayment(formData: any) {
         try {
             await deletePubCrawlTicketsBySignupIdDb(signupId);
             await deletePubCrawlSignupDb(signupId);
-            getSystemDirectus().request(deleteItem('pub_crawl_signups', signupId))
-                .catch((e: any) => console.error(`[Kroegentocht] Sync cleanup failed:`, e));
+            getSystemDirectus().request(deleteItem('pub_crawl_signups', signupId)).catch(() => {});
         } catch (cleanupErr: any) {
-            console.error(`[Kroegentocht] Cleanup failed:`, cleanupErr);
         }
 
         return { success: false, error: 'Failed to initiate payment. Please try again later.' };
 
     } catch (error: any) {
-        console.error('[Kroegentocht#initiatePayment] Error:', error);
+        
         return { success: false, error: 'An internal error occurred.' };
     }
 }
@@ -286,7 +284,7 @@ export async function getKroegentochtStatus(signupId: string) {
 
         return { status: 'open' };
     } catch (error: any) {
-        console.error('[Kroegentocht#getStatus] Error:', error);
+        
         return { status: 'error' };
     }
 }

@@ -4,7 +4,7 @@ import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
 import { logAdminAction } from "./audit.actions";
-import { isSuperAdmin } from "@/lib/auth-utils";
+import { isSuperAdmin } from "@/lib/auth";
 
 import { getSystemDirectus } from "@/lib/directus";
 import { readItems, deleteItem, updateItem } from "@directus/sdk";
@@ -42,7 +42,7 @@ export async function getStickers() {
             id: Number(s.id)
         }));
     } catch (e) {
-        console.error('[AdminStickers] Fetch failed:', e);
+        
         throw new Error('Could not fetch stickers');
     }
 }
@@ -60,7 +60,7 @@ export async function deleteSticker(id: number) {
 
         return { success: true };
     } catch (error) {
-        console.error('[AdminStickers] Delete failed:', error);
+        
         throw new Error('Could not delete sticker');
     }
 }
@@ -75,7 +75,7 @@ export async function updateSticker(id: number, data: any) {
         revalidateTag('stickers', 'max');
         return updated;
     } catch (e) {
-        console.error('[AdminStickers] Update failed:', e);
+        
         throw new Error('Could not update sticker');
     }
 }

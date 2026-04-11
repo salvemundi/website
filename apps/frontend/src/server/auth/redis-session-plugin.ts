@@ -43,7 +43,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                 }
                             }
                         } catch (e) {
-                            console.warn("[AUTH-REDIS] Cache read failed:", e);
+                            
                         }
                     }
                 }
@@ -177,7 +177,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                             Object.assign(sessionWithUser.user, getPermissions(targetUser.committees));
                                         }
                                     } catch (e) {
-                                        console.error("[AUTH-REDIS] Impersonation fetch failed:", e);
+                                        
                                     }
                                 }
 
@@ -189,7 +189,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                             }
                             return {};
                         } catch (error) {
-                            console.error("[AUTH-PLUGIN] Session enrichment error:", error);
+                            
                             return {};
                         }
                     }

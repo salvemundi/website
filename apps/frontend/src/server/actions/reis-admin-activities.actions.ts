@@ -14,7 +14,12 @@ import {
     createItem
 } from '@directus/sdk';
 import { requireReisAdmin } from './reis-admin-utils';
-import { createTripActivityDb, updateTripActivityDb, deleteTripActivityDb } from './reis-db.utils';
+import { 
+    createTripActivityDb, 
+    updateTripActivityDb, 
+    deleteTripActivityDb,
+    fetchSignupsByActivityIdDb
+} from './reis-db.utils';
 
 
 
@@ -47,8 +52,8 @@ export async function createTripActivity(prevState: any, formData: FormData) {
         const newId = await createTripActivityDb(validated.data);
         if (!newId) throw new Error('Database insert failed');
 
-        getSystemDirectus().request(createItem('trip_activities', validated.data as any)).catch(err => {
-            console.error('Directus sync error:', err);
+        getSystemDirectus().request(createItem('trip_activities', validated.data)).catch(err => {
+            
         });
 
         revalidateTag('trip_activities', 'default');
@@ -60,7 +65,7 @@ export async function createTripActivity(prevState: any, formData: FormData) {
         return { success: true };
     } catch (error) {
         const message = error instanceof Error ? error.message : 'Onbekende fout';
-        console.error('[AdminReisActivities#createTripActivity] Error:', error);
+        
         return { success: false, error: message };
     }
 }
@@ -97,8 +102,8 @@ export async function updateTripActivity(prevState: any, formData: FormData) {
         const success = await updateTripActivityDb(id, validated.data);
         if (!success) throw new Error('Database update failed');
 
-        getSystemDirectus().request(updateItem('trip_activities', id, validated.data as any)).catch(err => {
-            console.error('Directus sync error:', err);
+        getSystemDirectus().request(updateItem('trip_activities', id, validated.data)).catch(err => {
+            
         });
 
         revalidateTag('trip_activities', 'default');
@@ -110,7 +115,7 @@ export async function updateTripActivity(prevState: any, formData: FormData) {
         return { success: true };
     } catch (error) {
         const message = error instanceof Error ? error.message : 'Onbekende fout';
-        console.error('[AdminReisActivities#updateTripActivity] Error:', error);
+        
         return { success: false, error: message };
     }
 }
@@ -123,7 +128,7 @@ export async function deleteTripActivity(id: number) {
         if (!success) throw new Error('Database delete failed');
 
         getSystemDirectus().request(deleteItem('trip_activities', id)).catch(err => {
-            console.error('Directus sync error:', err);
+            
         });
 
         revalidateTag('trip_activities', 'default');
@@ -135,23 +140,17 @@ export async function deleteTripActivity(id: number) {
         return { success: true };
     } catch (error) {
         const message = error instanceof Error ? error.message : 'Onbekende fout';
-        console.error('[AdminReisActivities#deleteTripActivity] Error:', error);
+        
         return { success: false, error: message };
     }
 }
 
 export async function getActivitySignups(activityId: number) {
     await requireReisAdmin();
-
     try {
-        const signups = await getSystemDirectus().request(readItems('trip_signup_activities', {
-            filter: { trip_activity_id: { _eq: activityId } },
-            fields: ['id', 'selected_options', { trip_signup_id: ['id', 'first_name', 'last_name', 'email'] }] as any
-        }));
-
-        return signups ?? [];
+        return await fetchSignupsByActivityIdDb(activityId);
     } catch (error) {
-        console.error('[AdminReisActivities#getActivitySignups] Error:', error);
+        
         return [];
     }
 }

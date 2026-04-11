@@ -101,7 +101,7 @@ async function EditFormLoader({ id, session }: { id: string, session: any }) {
             </div>
         );
     } catch (e) {
-        console.error("Error loading edit form:", e);
+        
         return <div className="p-8 text-center text-red-500 font-bold">Er is een fout opgetreden bij het laden van de gegevens. Probeer het later opnieuw.</div>;
     }
 }

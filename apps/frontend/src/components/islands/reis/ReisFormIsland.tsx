@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import type { ReisTrip, ReisTripSignup } from '@salvemundi/validations';
-import { authClient } from '@/lib/auth-client';
+import { authClient } from '@/lib/auth';
 import { ReisSignupStatus } from './ReisSignupStatus';
 import { ReisRegistrationForm } from './ReisRegistrationForm';
 import { RefreshCcw } from 'lucide-react';
@@ -116,7 +116,7 @@ export function ReisFormIsland({
             // Trigger the server component to re-render with fresh data
             router.refresh();
         } catch (error) {
-            console.error('[REIS_ISLAND] Refresh failed:', error);
+            
         } finally {
             // Keep the spinner going for a moment to indicate activity
             setTimeout(() => setRefreshing(false), 800);

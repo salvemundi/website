@@ -2,7 +2,7 @@
 
 import React, { Suspense } from 'react';
 import { redirect } from 'next/navigation';
-import { authClient } from '@/lib/auth-client';
+import { authClient } from '@/lib/auth';
 import { COMMITTEES } from '@/shared/lib/permissions-config';
 import ServicesStatusIsland from '@/components/islands/admin/ServicesStatusIsland';
 import SyncSkeleton from '@/components/ui/admin/SyncSkeleton';

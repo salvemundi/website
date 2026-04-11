@@ -3,7 +3,7 @@
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
-import { isSuperAdmin } from '@/lib/auth-utils';
+import { isSuperAdmin } from '@/lib/auth';
 
 import { getSystemDirectus } from '@/lib/directus';
 import { 
@@ -62,7 +62,7 @@ export async function getCoupons(): Promise<Coupon[]> {
             is_active: !!i.is_active
         })) as Coupon[];
     } catch (e) {
-        console.error('[AdminCoupons] Fetch failed:', e);
+        
         throw new Error('Kon coupons niet ophalen');
     }
 }
@@ -117,7 +117,7 @@ export async function createCoupon(formData: FormData): Promise<{ success: boole
         revalidatePath('/beheer/coupons');
         return { success: true };
     } catch (e) {
-        console.error('[AdminCoupons] Create failed:', e);
+        
         // Directus SDK errors might contain more info, but for simplicity:
         return { success: false, error: 'Aanmaken mislukt (controleer op unieke code)' };
     }
@@ -130,7 +130,7 @@ export async function deleteCoupon(id: number): Promise<{ success: boolean; erro
         revalidatePath('/beheer/coupons');
         return { success: true };
     } catch (e) {
-        console.error('[AdminCoupons] Delete failed:', e);
+        
         return { success: false, error: 'Verwijderen mislukt (wordt mogelijk nog gebruikt)' };
     }
 }
@@ -142,7 +142,7 @@ export async function toggleCouponActive(id: number, currentActive: boolean): Pr
         revalidatePath('/beheer/coupons');
         return { success: true };
     } catch (e) {
-        console.error('[AdminCoupons] Toggle active failed:', e);
+        
         return { success: false, error: 'Bijwerken mislukt' };
     }
 }

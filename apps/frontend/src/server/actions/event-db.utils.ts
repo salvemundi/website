@@ -1,4 +1,4 @@
-import { query } from '@/lib/db';
+import { query } from '@/lib/database';
 
 /**
  * Event Operations
@@ -41,7 +41,7 @@ export async function createEventDb(data: any): Promise<number | null> {
         const { rows } = await query(sql, params);
         return rows[0]?.id || null;
     } catch (error) {
-        console.error('Error in createEventDb:', error);
+        
         return null;
     }
 }
@@ -72,7 +72,7 @@ export async function updateEventDb(id: number, data: any): Promise<boolean> {
         const { rows } = await query(sql, params);
         return rows.length > 0;
     } catch (error) {
-        console.error('Error in updateEventDb:', error);
+        
         return false;
     }
 }
@@ -82,7 +82,7 @@ export async function deleteEventDb(id: number): Promise<boolean> {
         const { rowCount } = await query(`DELETE FROM events WHERE id = $1`, [id]);
         return (rowCount ?? 0) > 0;
     } catch (error) {
-        console.error('Error in deleteEventDb:', error);
+        
         return false;
     }
 }
@@ -117,7 +117,7 @@ export async function createEventSignupDb(data: any): Promise<number | null> {
         const { rows } = await query(sql, params);
         return rows[0]?.id || null;
     } catch (error) {
-        console.error('Error in createEventSignupDb:', error);
+        
         return null;
     }
 }
@@ -144,7 +144,7 @@ export async function updateEventSignupDb(id: number, data: any): Promise<boolea
         const { rows } = await query(sql, params);
         return rows.length > 0;
     } catch (error) {
-        console.error('Error in updateEventSignupDb:', error);
+        
         return false;
     }
 }
@@ -154,7 +154,7 @@ export async function deleteEventSignupDb(id: number): Promise<boolean> {
         const { rowCount } = await query(`DELETE FROM event_signups WHERE id = $1`, [id]);
         return (rowCount ?? 0) > 0;
     } catch (error) {
-        console.error('Error in deleteEventSignupDb:', error);
+        
         return false;
     }
 }
@@ -184,7 +184,7 @@ export async function fetchUserEventSignupsDb(userId: string): Promise<any[]> {
             }
         }));
     } catch (error) {
-        console.error('Error in fetchUserEventSignupsDb:', error);
+        
         return [];
     }
 }
@@ -217,7 +217,7 @@ export async function fetchEventSignupByIdDb(id: number): Promise<any | null> {
             }
         };
     } catch (error) {
-        console.error('Error in fetchEventSignupByIdDb:', error);
+        
         return null;
     }
 }

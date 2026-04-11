@@ -1,7 +1,7 @@
 'use server';
 
 import 'server-only';
-import { query } from '@/lib/db';
+import { query } from '@/lib/database';
 import { 
     reisTripSignupSchema,
     type ReisTripSignup, 
@@ -40,14 +40,14 @@ export async function fetchUserSignupStatusDb(userId: string, tripId: number): P
 
         const parsed = reisTripSignupSchema.safeParse(sanitized);
         if (!parsed.success) {
-            console.error('[ReisDbUtils#fetchUserSignupStatusDb] Zod validation failed:', parsed.error.flatten().fieldErrors);
+            
             // Return raw with casting as fallback if validation is too strict for DB nulls
             return sanitized as ReisTripSignup;
         }
 
         return parsed.data as ReisTripSignup;
     } catch (error) {
-        console.error('[ReisDbUtils#fetchUserSignupStatusDb] Error:', error);
+        
         return null;
     }
 }
@@ -79,13 +79,13 @@ export async function fetchAllTripSignupsDb(tripId: number): Promise<ReisTripSig
 
         const parsed = z.array(reisTripSignupSchema).safeParse(sanitized);
         if (!parsed.success) {
-            console.error('[ReisDbUtils#fetchAllTripSignupsDb] Zod validation failed:', parsed.error.flatten().fieldErrors);
+            
             return sanitized as any as ReisTripSignup[];
         }
 
         return parsed.data as ReisTripSignup[];
     } catch (error) {
-        console.error('[ReisDbUtils#fetchAllTripSignupsDb] Error:', error);
+        
         return [];
     }
 }
@@ -117,13 +117,13 @@ export async function fetchTripSignupByIdDb(signupId: number): Promise<ReisTripS
 
         const parsed = reisTripSignupSchema.safeParse(sanitized);
         if (!parsed.success) {
-            console.error('[ReisDbUtils#fetchTripSignupByIdDb] Zod validation failed:', parsed.error.flatten().fieldErrors);
+            
             return sanitized as ReisTripSignup;
         }
 
         return parsed.data as ReisTripSignup;
     } catch (error) {
-        console.error('[ReisDbUtils#fetchTripSignupByIdDb] Error:', error);
+        
         return null;
     }
 }
@@ -152,7 +152,36 @@ export async function fetchTripSignupActivitiesDb(tripId: number): Promise<any[]
             }
         }));
     } catch (error) {
-        console.error('[ReisDbUtils#fetchTripSignupActivitiesDb] Error:', error);
+        
+        return [];
+    }
+}
+
+/**
+ * Fetches all signups for a specific activity.
+ */
+export async function fetchSignupsByActivityIdDb(activityId: number): Promise<any[]> {
+    try {
+        const { rows } = await query(
+            `SELECT sa.id, sa.selected_options, 
+                    ts.id as signup_id, ts.first_name, ts.last_name, ts.email
+             FROM trip_signup_activities sa
+             JOIN trip_signups ts ON sa.trip_signup_id = ts.id
+             WHERE sa.trip_activity_id = $1`,
+            [activityId]
+        );
+        return (rows || []).map(row => ({
+            id: row.id,
+            selected_options: row.selected_options,
+            trip_signup_id: {
+                id: row.signup_id,
+                first_name: row.first_name,
+                last_name: row.last_name,
+                email: row.email
+            }
+        }));
+    } catch (error) {
+        
         return [];
     }
 }
@@ -183,7 +212,7 @@ export async function fetchFullTripsDb(): Promise<any[]> {
             registration_start_date: t.registration_start_date instanceof Date ? t.registration_start_date.toISOString() : t.registration_start_date
         }));
     } catch (error) {
-        console.error('[ReisDbUtils#fetchFullTripsDb] Error:', error);
+        
         return [];
     }
 }
@@ -205,7 +234,7 @@ export async function fetchTripActivitiesByTripIdDb(tripId: number): Promise<any
             max_selections: a.max_selections !== null ? Number(a.max_selections) : null,
         }));
     } catch (error) {
-        console.error('[ReisDbUtils#fetchTripActivitiesByTripIdDb] Error:', error);
+        
         return [];
     }
 }
@@ -223,8 +252,57 @@ export async function fetchAllTripsDb(): Promise<any[]> {
         );
         return res.rows || [];
     } catch (error) {
-        console.error('[ReisDbUtils#fetchAllTripsDb] Error:', error);
+        
         return [];
+    }
+}
+
+/**
+ * Fetches selected activities for a specific registration.
+ */
+export async function fetchSelectedSignupActivitiesDb(signupId: number): Promise<any[]> {
+    try {
+        const { rows } = await query(
+            'SELECT * FROM trip_signup_activities WHERE trip_signup_id = $1',
+            [signupId]
+        );
+        return rows || [];
+    } catch (error) {
+        
+        return [];
+    }
+}
+
+/**
+ * Fetches a single trip by ID.
+ */
+export async function fetchTripByIdDb(tripId: number): Promise<any | null> {
+    try {
+        const { rows } = await query(
+            'SELECT * FROM trips WHERE id = $1 LIMIT 1',
+            [tripId]
+        );
+        if (!rows || rows.length === 0) return null;
+        
+        const t = rows[0];
+        return {
+            ...t,
+            max_participants: t.max_participants !== null ? Number(t.max_participants) : 0,
+            max_crew: t.max_crew !== null ? Number(t.max_crew) : 0,
+            base_price: t.base_price !== null ? Number(t.base_price) : 0,
+            crew_discount: t.crew_discount !== null ? Number(t.crew_discount) : 0,
+            deposit_amount: t.deposit_amount !== null ? Number(t.deposit_amount) : 0,
+            registration_open: !!t.registration_open,
+            is_bus_trip: !!t.is_bus_trip,
+            allow_final_payments: !!t.allow_final_payments,
+            start_date: t.start_date instanceof Date ? t.start_date.toISOString() : t.start_date,
+            end_date: t.end_date instanceof Date ? t.end_date.toISOString() : t.end_date,
+            event_date: t.event_date instanceof Date ? t.event_date.toISOString() : t.event_date,
+            registration_start_date: t.registration_start_date instanceof Date ? t.registration_start_date.toISOString() : t.registration_start_date
+        };
+    } catch (error) {
+        
+        return null;
     }
 }
 /**
@@ -242,7 +320,7 @@ export async function updateTripDb(id: number, data: any): Promise<boolean> {
         );
         return true;
     } catch (error) {
-        console.error('[ReisDbUtils#updateTripDb] Error:', error);
+        
         return false;
     }
 }
@@ -262,7 +340,7 @@ export async function insertTripSignupDb(payload: any): Promise<number | null> {
         );
         return res.rows[0]?.id || null;
     } catch (error) {
-        console.error('[ReisDbUtils#insertTripSignupDb] Error:', error);
+        
         return null;
     }
 }
@@ -282,7 +360,7 @@ export async function updateTripSignupDb(id: number, data: any): Promise<boolean
         );
         return true;
     } catch (error) {
-        console.error('[ReisDbUtils#updateTripSignupDb] Error:', error);
+        
         return false;
     }
 }
@@ -295,7 +373,7 @@ export async function deleteTripSignupDb(id: number): Promise<boolean> {
         await query(`DELETE FROM trip_signups WHERE id = $1`, [id]);
         return true;
     } catch (error) {
-        console.error('[ReisDbUtils#deleteTripSignupDb] Error:', error);
+        
         return false;
     }
 }
@@ -315,7 +393,7 @@ export async function createTripDb(data: any): Promise<number | null> {
         );
         return res.rows[0]?.id || null;
     } catch (error) {
-        console.error('[ReisDbUtils#createTripDb] Error:', error);
+        
         return null;
     }
 }
@@ -342,7 +420,7 @@ export async function fetchPublicTripsDb(): Promise<any[]> {
             registration_start_date: t.registration_start_date instanceof Date ? t.registration_start_date.toISOString() : t.registration_start_date
         }));
     } catch (error) {
-        console.error('[ReisDbUtils#fetchPublicTripsDb] Error:', error);
+        
         return [];
     }
 }
@@ -362,7 +440,7 @@ export async function createTripActivityDb(data: any): Promise<number | null> {
         );
         return res.rows[0]?.id || null;
     } catch (error) {
-        console.error('[ReisDbUtils#createTripActivityDb] Error:', error);
+        
         return null;
     }
 }
@@ -382,7 +460,7 @@ export async function updateTripActivityDb(id: number, data: any): Promise<boole
         );
         return true;
     } catch (error) {
-        console.error('[ReisDbUtils#updateTripActivityDb] Error:', error);
+        
         return false;
     }
 }
@@ -395,7 +473,7 @@ export async function deleteTripActivityDb(id: number): Promise<boolean> {
         await query(`DELETE FROM trip_activities WHERE id = $1`, [id]);
         return true;
     } catch (error) {
-        console.error('[ReisDbUtils#deleteTripActivityDb] Error:', error);
+        
         return false;
     }
 }

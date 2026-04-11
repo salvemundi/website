@@ -48,10 +48,10 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
                 });
 
                 if (!azureRes.ok) {
-                    console.error("[updateUserProfile] Azure update failed:", await azureRes.text());
+                    
                 }
             } catch (azureErr) {
-                console.error("[updateUserProfile] Azure connection error:", azureErr);
+                
             }
         }
 
@@ -66,13 +66,13 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
 
         const entraId = (user as any).entra_id;
         if (parsed.data.phone_number && entraId) {
-            await triggerUserSyncAction(entraId).catch(e => console.error("[updateUserProfile] Post-update sync trigger failed:", e));
+            await triggerUserSyncAction(entraId).catch(() => {});
         }
 
         revalidatePath('/profiel');
         return { success: true };
     } catch (err) {
-        console.error('[profiel.actions#updateUserProfile] Error:', err);
+        
         return { success: false, error: 'Bijwerken mislukt' };
     }
 }

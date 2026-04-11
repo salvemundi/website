@@ -7,7 +7,7 @@ import {
     Loader2 
 } from 'lucide-react';
 
-import { mapActivityOptionIdToName, parseActivityOptions, parseSelectedOptions } from '@/lib/reis-utils';
+import { mapActivityOptionIdToName, parseActivityOptions, parseSelectedOptions } from '@/lib/reis';
 
 interface Signup {
     id: number;

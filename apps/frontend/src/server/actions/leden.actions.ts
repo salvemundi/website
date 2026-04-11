@@ -6,7 +6,7 @@ import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
 import { getSystemDirectus } from "@/lib/directus";
 import { readItems, updateItem, updateUser, readUsers, readUser } from "@directus/sdk";
-import { isSuperAdmin, isMemberAdmin } from "@/lib/auth-utils";
+import { isSuperAdmin, isMemberAdmin } from "@/lib/auth";
 import { logAdminAction } from "./audit.actions";
 import { USER_FULL_FIELDS, COMMITTEE_FIELDS, USER_ID_FIELDS } from "@salvemundi/validations";
 
@@ -31,8 +31,10 @@ async function checkAdminAccess() {
     });
     if (!session || !session.user) return null;
     
-    const user = session.user as any;
-    if (!isMemberAdmin(user.committees)) return null;
+    const { fetchUserCommitteesDb } = await import("./user-db.utils");
+    const committees = await fetchUserCommitteesDb(session.user.id);
+    
+    if (!isMemberAdmin(committees)) return null;
     return session;
 }
 
@@ -61,7 +63,7 @@ export async function manageAzureMembershipAction(userId: string, azureGroupId: 
 
         if (!mgmtRes.ok) {
             const errorData = await mgmtRes.json().catch(() => ({ error: 'Onbekende fout' }));
-            console.error('[LedenAction] Azure Management Error:', errorData);
+            
             return { success: false, error: "Fout bij communicatie met de Azure Management service." };
         }
 
@@ -74,7 +76,7 @@ export async function manageAzureMembershipAction(userId: string, azureGroupId: 
         });
 
         if (!syncRes.ok) {
-            console.warn(`[LedenAction] Azure Sync voor ${directusUserId} is gefaald of traag, maar Azure is bijgewerkt.`);
+            
         }
 
     // Revalidate
@@ -84,7 +86,7 @@ export async function manageAzureMembershipAction(userId: string, azureGroupId: 
 
         return { success: true };
     } catch (err: any) {
-        console.error("[LedenAction] Error:", err);
+        
         return { success: false, error: "Er is een fout opgetreden bij het bijwerken in Azure." };
     }
 }
@@ -139,9 +141,12 @@ export async function updateMemberProfileAction(
     try {
         await getSystemDirectus().request(updateUser(directusUserId, payload));
 
-        const user: any = await getSystemDirectus().request(readUser(directusUserId, {
-            fields: [...USER_ID_FIELDS] as any
-        }));
+        const { fetchUserProfileByEmailDb } = await import("./user-db.utils");
+        // We need user email to fetch profile via SQL helper (or just use direct query if id is known)
+        // Since we have the ID, let's use a quick SQL query here
+        const { query } = await import("@/lib/database");
+        const { rows } = await query('SELECT entra_id FROM directus_users WHERE id = $1 LIMIT 1', [directusUserId]);
+        const user = rows?.[0];
 
         if (user?.entra_id && AZURE_MGMT_URL && INTERNAL_TOKEN) {
             await fetch(`${AZURE_MGMT_URL}/api/users/${encodeURIComponent(user.entra_id)}`, {
@@ -155,7 +160,7 @@ export async function updateMemberProfileAction(
                     phoneNumber: payload.phone_number,
                     dateOfBirth: payload.date_of_birth
                 })
-            }).catch(e => console.error('[updateMemberProfile] Azure sync failed:', e));
+            }).catch(() => {});
         }
 
         revalidatePath(`/beheer/leden/${directusUserId}`);
@@ -168,7 +173,7 @@ export async function updateMemberProfileAction(
 
         return { success: true };
     } catch (err) {
-        console.error('[updateMemberProfile] Error:', err);
+        
         return { success: false, error: 'Opslaan mislukt' };
     }
 }
@@ -189,12 +194,10 @@ export async function renewMembershipAction(
     }
 
     try {
-        const users: any = await getSystemDirectus().request(readUsers({
-            fields: [...USER_FULL_FIELDS] as any,
-            filter: { id: { _eq: directusUserId } } as any,
-            limit: 1
-        }));
-        const user = users?.[0];
+        const { fetchUserProfileByEmailDb } = await import("./user-db.utils");
+        const { query } = await import("@/lib/database");
+        const { rows } = await query('SELECT * FROM directus_users WHERE id = $1 LIMIT 1', [directusUserId]);
+        const user = rows?.[0];
         if (!user) return { success: false, error: 'Kon lid niet ophalen' };
         
         const today = new Date();
@@ -208,11 +211,9 @@ export async function renewMembershipAction(
         await getSystemDirectus().request(updateUser(directusUserId, { membership_expiry: newExpiryStr } as any));
 
         if (user.entra_id && AZURE_MGMT_URL && INTERNAL_TOKEN) {
-            const committees: any = await getSystemDirectus().request(readItems('committees', {
-                filter: { name: { _eq: 'Leden_Actief_Lidmaatschap' } },
-                fields: [...COMMITTEE_FIELDS],
-                limit: 1
-            }));
+            const { rows: committees } = await (await import("@/lib/database")).query(
+                "SELECT azure_group_id FROM committees WHERE name = 'Leden_Actief_Lidmaatschap' LIMIT 1"
+            );
             const activeGroupId = committees?.[0]?.azure_group_id;
 
             if (activeGroupId) {
@@ -220,15 +221,14 @@ export async function renewMembershipAction(
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${INTERNAL_TOKEN}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ userId: user.entra_id })
-                }).catch(e => console.warn('[renewMembership] Azure group update failed:', e));
+                }).catch(() => {});
             }
         }
 
         if (AZURE_SYNC_URL && INTERNAL_TOKEN) {
             fetch(`${AZURE_SYNC_URL}/api/sync/run/${encodeURIComponent(directusUserId)}`, {
                 method: 'POST',
-                headers: { Authorization: `Bearer ${INTERNAL_TOKEN}` },
-            }).catch(e => console.warn('[renewMembership] Sync trigger failed:', e));
+            }).catch(() => {});
         }
 
         revalidatePath(`/beheer/leden/${directusUserId}`);
@@ -243,7 +243,7 @@ export async function renewMembershipAction(
 
         return { success: true, newExpiry: newExpiryStr };
     } catch (err) {
-        console.error('[renewMembership] Error:', err);
+        
         return { success: false, error: 'Er is een fout opgetreden' };
     }
 }
@@ -256,9 +256,9 @@ export async function provisionAzureAccountAction(directusUserId: string) {
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
-        const user: any = await getSystemDirectus().request(readUser(directusUserId, {
-            fields: [...USER_FULL_FIELDS] as any
-        }));
+        const { query } = await import("@/lib/database");
+        const { rows } = await query('SELECT * FROM directus_users WHERE id = $1 LIMIT 1', [directusUserId]);
+        const user = rows?.[0];
 
         if (!user || !user.email) return { success: false, error: "Lid niet gevonden of geen e-mailadres." };
 
@@ -292,7 +292,7 @@ export async function provisionAzureAccountAction(directusUserId: string) {
 
         return { success: true };
     } catch (err: any) {
-        console.error("[ProvisionAction] Error:", err);
+        
         return { success: false, error: "Interne fout bij provisioning." };
     }
 }

@@ -12,12 +12,12 @@ import {
     PUB_CRAWL_SIGNUP_FIELDS,
     PUB_CRAWL_TICKET_FIELDS
 } from '@salvemundi/validations';
-import { isSuperAdmin } from "@/lib/auth-utils";
+import { isSuperAdmin } from "@/lib/auth";
 import { getRedis } from '@/server/auth/redis-client';
-import { FLAGS_CACHE_KEY } from '@/lib/feature-flags';
+import { FLAGS_CACHE_KEY } from '@/lib/config/feature-flags';
 
 import { getSystemDirectus } from "@/lib/directus";
-import { query } from '@/lib/db';
+import { query } from '@/lib/database';
 import { 
     readItems, 
     readItem, 
@@ -53,7 +53,7 @@ export async function getPubCrawlEvents(): Promise<PubCrawlEvent[]> {
         // Direct DB fetch to bypass API cache
         return await fetchPubCrawlEventsDb();
     } catch (e) {
-        console.error('[AdminKroegentocht] Fetch events failed:', e);
+        
         throw new Error('Kon events niet ophalen');
     }
 }
@@ -69,7 +69,7 @@ export async function getPubCrawlEvent(id: string | number): Promise<PubCrawlEve
         event.max_tickets_per_person = 10;
         return pubCrawlEventSchema.parse(event);
     } catch (e) {
-        console.error('[AdminKroegentocht] Fetch event failed:', e);
+        
         throw new Error('Kon event niet ophalen');
     }
 }
@@ -89,7 +89,7 @@ export async function upsertPubCrawlEvent(data: Partial<PubCrawlEvent>) {
         revalidateTag('kroegentocht-event', 'default');
         return { success: true };
     } catch (e) {
-        console.error('[AdminKroegentocht] Upsert event failed:', e);
+        
         throw new Error('Opslaan van event mislukt');
     }
 }
@@ -101,7 +101,7 @@ export async function uploadPubCrawlImage(formData: FormData) {
         const response = await client.request(uploadFiles(formData));
         return response;
     } catch (e) {
-        console.error('[AdminKroegentocht] Upload failed:', e);
+        
         throw new Error('Afbeelding uploaden mislukt');
     }
 }
@@ -113,7 +113,7 @@ export async function getPubCrawlSignups(eventId: number) {
         // Direct DB fetch to bypass API cache
         return await fetchPubCrawlSignupsDb(eventId);
     } catch (e) {
-        console.error('[AdminKroegentocht] Fetch signups failed:', e);
+        
         throw new Error('Kon aanmeldingen niet ophalen');
     }
 }
@@ -124,7 +124,7 @@ export async function getPubCrawlSignup(id: number) {
         // Direct DB fetch to bypass API cache
         return await fetchPubCrawlSignupByIdDb(id);
     } catch (e) {
-        console.error('[AdminKroegentocht] Fetch signup failed:', e);
+        
         throw new Error('Kon aanmelding niet ophalen');
     }
 }
@@ -136,12 +136,10 @@ export async function deletePubCrawlSignup(id: number, eventId: number) {
         revalidateTag(`signups-${eventId}`, 'default');
 
         // Background sync to Directus
-        getSystemDirectus().request(deleteItem('pub_crawl_signups', id))
-            .catch(e => console.error('[AdminKroegentocht] Directus delete sync failed:', e));
+        getSystemDirectus().request(deleteItem('pub_crawl_signups', id)).catch(() => {});
 
         return { success: true };
     } catch (e) {
-        console.error('[AdminKroegentocht] Delete signup failed:', e);
         throw new Error('Verwijderen mislukt');
     }
 }
@@ -153,12 +151,10 @@ export async function updatePubCrawlSignup(id: number, eventId: number, data: an
         revalidateTag(`signups-${eventId}`, 'default');
 
         // Background sync to Directus
-        getSystemDirectus().request(updateItem('pub_crawl_signups', id, data))
-            .catch(e => console.error('[AdminKroegentocht] Directus update sync failed:', e));
+        getSystemDirectus().request(updateItem('pub_crawl_signups', id, data)).catch(() => {});
 
         return { success: true };
     } catch (e) {
-        console.error('[AdminKroegentocht] Update signup failed:', e);
         throw new Error('Bijwerken mislukt');
     }
 }
@@ -188,7 +184,7 @@ export async function toggleKroegentochtVisibility(): Promise<{ success: boolean
             const redis = await getRedis();
             await redis.del(FLAGS_CACHE_KEY);
         } catch (e) {
-            console.error('[AdminKroegentocht] Redis clear failed:', e);
+            
         }
 
         // Wait for Directus cache consistency
@@ -202,12 +198,12 @@ export async function toggleKroegentochtVisibility(): Promise<{ success: boolean
             const redis = await getRedis();
             await redis.del(FLAGS_CACHE_KEY);
         } catch (e) {
-            console.error('[AdminKroegentocht] Final Redis clear failed:', e);
+            
         }
 
         return { success: true, show: newStatus };
     } catch (e) {
-        console.error('[AdminKroegentocht] Toggle visibility failed:', e);
+        
         return { success: false, error: 'Bijwerken mislukt' };
     }
 }
@@ -220,7 +216,7 @@ export async function getKroegentochtSettings() {
         const isVisible = rows && rows.length > 0 ? !!rows[0].is_active : true;
         return { show: isVisible };
     } catch (e) {
-        console.error('[AdminKroegentocht] Get settings failed:', e);
+        
         return { show: true };
     }
 }

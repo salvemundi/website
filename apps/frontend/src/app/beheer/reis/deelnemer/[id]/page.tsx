@@ -83,7 +83,7 @@ async function DeelnemerDataWrapper({ signupId }: { signupId: number }) {
 
     return (
         <ReisDeelnemerDetailIsland 
-            initialSignup={{ ...signup, date_created: signup.created_at } as any}
+            initialSignup={signup}
             trips={trips as any}
             allActivities={activities as any}
             initialSelectedActivities={participantActivities}

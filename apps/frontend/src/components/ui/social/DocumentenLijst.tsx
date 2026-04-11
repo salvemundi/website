@@ -1,5 +1,5 @@
 import type { Document } from '@salvemundi/validations';
-import { getImageUrl } from '@/lib/image-utils';
+import { getImageUrl } from '@/lib/utils/image-utils';
 
 interface DocumentenLijstProps {
     /** Lijst van documenten opgehaald door de server action */

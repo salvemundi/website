@@ -47,7 +47,7 @@ async function getCommittees(user: any) {
             );
         }
     } catch (error) {
-        console.error("Failed to fetch committees for activity creation:", error);
+        
         return [];
     }
 }

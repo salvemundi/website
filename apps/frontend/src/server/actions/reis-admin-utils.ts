@@ -1,6 +1,6 @@
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
-import { isSuperAdmin } from '@/lib/auth-utils';
+import { isSuperAdmin } from '@/lib/auth';
 
 export async function requireReisAdmin() {
     const session = await auth.api.getSession({
@@ -12,7 +12,10 @@ export async function requireReisAdmin() {
     }
 
     const user = session.user;
-    if (!isSuperAdmin((user as any).committees ?? [])) {
+    const { fetchUserCommittees } = await import('./qr-db.utils');
+    const committees = await fetchUserCommittees(user.id);
+
+    if (!isSuperAdmin(committees)) {
         throw new Error('Forbidden: SuperAdmin rechten vereist voor reisbeheer');
     }
 

@@ -1,4 +1,4 @@
-import { query } from '@/lib/db';
+import { query } from '@/lib/database';
 import { 
     type IntroBlog, 
     type IntroPlanningItem,
@@ -31,7 +31,7 @@ export async function getIntroStatsInternal() {
             planning: Number(stats?.planning ?? 0),
         };
     } catch (e) {
-        console.error('[AdminIntroQueries] getIntroStatsInternal failed:', e);
+        
         return { signups: 0, parents: 0, blogs: 0, planning: 0 };
     }
 }
@@ -42,7 +42,7 @@ export async function getIntroSignupsInternal() {
         const { rows } = await query(sql);
         return rows as any[];
     } catch (e) {
-        console.error('[AdminIntroQueries] getIntroSignupsInternal failed:', e);
+        
         throw new Error('Kon aanmeldingen niet ophalen');
     }
 }
@@ -53,7 +53,7 @@ export async function getIntroParentSignupsInternal() {
         const { rows } = await query(sql);
         return rows as any[];
     } catch (e) {
-        console.error('[AdminIntroQueries] getIntroParentSignupsInternal failed:', e);
+        
         throw new Error('Kon ouder-aanmeldingen niet ophalen');
     }
 }
@@ -74,12 +74,12 @@ export async function getIntroBlogsInternal(): Promise<IntroBlog[]> {
 
         const parsed = z.array(introBlogSchema).safeParse(mapped);
         if (!parsed.success) {
-            console.warn('[AdminIntroQueries] Blogs validation warning:', parsed.error.format());
+            
             return mapped as IntroBlog[];
         }
         return parsed.data;
     } catch (e) {
-        console.error('[AdminIntroQueries] getIntroBlogsInternal failed:', e);
+        
         throw new Error('Kon blogs niet ophalen');
     }
 }
@@ -100,12 +100,12 @@ export async function getIntroPlanningInternal(): Promise<IntroPlanningItem[]> {
 
         const parsed = z.array(introPlanningSchema).safeParse(mapped);
         if (!parsed.success) {
-            console.warn('[AdminIntroQueries] Planning validation warning:', parsed.error.format());
+            
             return mapped as IntroPlanningItem[];
         }
         return parsed.data;
     } catch (e) {
-        console.error('[AdminIntroQueries] getIntroPlanningInternal failed:', e);
+        
         throw new Error('Kon planning niet ophalen');
     }
 }

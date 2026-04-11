@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Sponsor } from '@salvemundi/validations';
-import { getImageUrl } from '@/lib/image-utils';
+import { getImageUrl } from '@/lib/utils/image-utils';
 import { Skeleton } from '../Skeleton';
 
 interface SponsorsSectionProps {

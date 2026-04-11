@@ -30,7 +30,7 @@ export default function ServicesStatusIsland() {
             setStatuses(data);
             setLastUpdated(new Date());
         } catch (err) {
-            console.error('Failed to fetch services status:', err);
+            
         } finally {
             setIsLoading(false);
             setIsRefreshing(false);

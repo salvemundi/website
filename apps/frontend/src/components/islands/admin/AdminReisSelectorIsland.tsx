@@ -50,7 +50,7 @@ export default function AdminReisSelectorIsland({
                     showToast(result.error || 'Fout bij bijwerken zichtbaarheid', 'error');
                 }
             } catch (err) {
-                console.error(err);
+                
                 showToast('Er is een onverwachte fout opgetreden', 'error');
             }
         });

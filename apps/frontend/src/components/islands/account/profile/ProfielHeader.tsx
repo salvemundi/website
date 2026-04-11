@@ -6,7 +6,7 @@ import { Users2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { Tile } from './ProfielUI';
-import { getImageUrl } from '@/lib/image-utils';
+import { getImageUrl } from '@/lib/utils/image-utils';
 import { Skeleton } from '../../../ui/Skeleton';
 
 interface ProfielHeaderProps {

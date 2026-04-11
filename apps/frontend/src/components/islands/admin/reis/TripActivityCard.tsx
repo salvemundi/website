@@ -8,7 +8,7 @@ import {
     Euro, 
     LayoutGrid 
 } from 'lucide-react';
-import { getImageUrl } from '@/lib/image-utils';
+import { getImageUrl } from '@/lib/utils/image-utils';
 
 interface TripActivity {
     id: number;

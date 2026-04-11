@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Calendar } from 'lucide-react';
-import { getImageUrl } from '@/lib/image-utils';
+import { getImageUrl } from '@/lib/utils/image-utils';
  // Keeping legacy getImageUrl logic, assuming it returns directus URL
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';

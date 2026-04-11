@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { type PubCrawlTicket } from '@salvemundi/validations';
 import QRDisplay from '@/shared/ui/QRDisplay';
-import qrService from '@/lib/qr-service';
+import { generateQRCode } from '@/lib/utils/qr-service';
 import { Ticket, Download, CheckCircle2 } from 'lucide-react';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
@@ -59,7 +59,7 @@ export default function KroegentochtTicketsIsland({ isLoading = false, initialTi
             ctx.stroke();
 
             // QR Code
-            const qrDataUrl = await qrService.generateQRCode(ticket.qr_token);
+            const qrDataUrl = await generateQRCode(ticket.qr_token);
             const qrImg = new Image();
             qrImg.crossOrigin = "anonymous";
             
@@ -85,7 +85,7 @@ export default function KroegentochtTicketsIsland({ isLoading = false, initialTi
             link.click();
             showToast('Ticket succesvol gegenereerd', 'success');
         } catch (e) {
-            console.error('Failed to download ticket:', e);
+            
             showToast('Er is een fout opgetreden bij het genereren van je ticket.', 'error');
         }
     };

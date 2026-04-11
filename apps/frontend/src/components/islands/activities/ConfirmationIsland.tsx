@@ -83,12 +83,12 @@ export default function ConfirmationIsland({
                     // Increment retry counter to trigger next poll after 1s
                     setTimeout(() => setRetryCount(prev => prev + 1), 1000);
                 } else {
-                    console.error(`[StatusCheck] Polling timeout after ${retryCount} retries for ID: ${initialId}`);
+                    
                     setStatus('timeout');
                     setSignupData({ errorType: 'timeout' });
                 }
             } catch (err) {
-                console.error(`[StatusCheck] Error during poll for ID: ${initialId}:`, err);
+                
                 setStatus('error');
             }
         };
@@ -115,7 +115,7 @@ export default function ConfirmationIsland({
             link.href = dataUrl;
             link.click();
         } catch (err) {
-            console.error('[Download] Failed to generate ticket image:', err);
+            
         }
     };
 

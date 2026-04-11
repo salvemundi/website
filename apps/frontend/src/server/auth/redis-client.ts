@@ -33,7 +33,7 @@ export async function getRedis() {
             maxRetriesPerRequest: null,
             retryStrategy: (times) => {
                 if (times > 10) {
-                    console.error('[AUTH-REDIS] Max reconnection retries reached. Stopping spam.');
+                    
                     return null; // Stop reconnecting after 10 tries
                 }
                 return Math.min(times * 100, 3000);
@@ -42,14 +42,14 @@ export async function getRedis() {
 
         redisClient.on('error', (err: Error) => {
             // Only log errors if they are not just "ECONNREFUSED" or only log them once in a while
-            console.error('[AUTH-REDIS] Client error:', err.message);
+            
         });
 
         isConnecting = false;
         return redisClient;
     } catch (e: any) {
         isConnecting = false;
-        console.error('[AUTH-REDIS] Failed to initialize Redis client:', e.message);
+        
         throw e;
     }
 }

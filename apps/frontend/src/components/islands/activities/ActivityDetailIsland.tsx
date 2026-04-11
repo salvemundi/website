@@ -5,7 +5,7 @@ import SafeHtml from '@/components/ui/security/SafeHtml';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 import { Activiteit } from '@salvemundi/validations';
 import { buildCommitteeEmail, formatDutchDate, formatTime } from '@/shared/lib/activity-utils';
-import { getImageUrl } from '@/lib/image-utils';
+import { getImageUrl } from '@/lib/utils/image-utils';
 import { Skeleton } from '@/components/ui/Skeleton';
 
 interface ActivityDetailIslandProps {

@@ -1,3 +1,4 @@
+import 'server-only';
 import { ImageResponse } from 'next/og';
 
 export const OG_IMAGE_SIZE = {

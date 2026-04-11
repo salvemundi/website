@@ -16,7 +16,9 @@ import {
     fetchTripSignupByIdDb, 
     fetchTripSignupActivitiesDb,
     updateTripSignupDb,
-    deleteTripSignupDb
+    deleteTripSignupDb,
+    fetchSignupsByActivityIdDb,
+    fetchSelectedSignupActivitiesDb
 } from './reis-db.utils';
 import { getSystemDirectus } from '@/lib/directus';
 import { 
@@ -31,36 +33,9 @@ export async function getTripSignups(tripId: number) {
     await requireReisAdmin();
 
     try {
-        const dbSignups = await fetchAllTripSignupsDb(tripId);
-        if (dbSignups.length > 0) {
-            return dbSignups as TripSignup[];
-        }
-
-        const signups = await getSystemDirectus().request(readItems('trip_signups', {
-            filter: { trip_id: { _eq: tripId } },
-            fields: TRIP_SIGNUP_FIELDS as any,
-            sort: ['-created_at'] as any,
-            limit: -1
-        })) as unknown as DbTripSignup[];
-
-        const sanitized = (signups ?? []).map(s => ({
-            ...s,
-            created_at: s.created_at,
-            deposit_paid: !!s.deposit_paid,
-            full_payment_paid: !!s.full_payment_paid,
-            willing_to_drive: !!s.willing_to_drive,
-        }));
-
-        const parsed = z.array(tripSignupSchema).safeParse(sanitized);
-
-        if (!parsed.success) {
-            console.error('Zod validation failed on Directus fallback:', parsed.error.flatten().fieldErrors);
-            return [];
-        }
-
-        return parsed.data;
+        return await fetchAllTripSignupsDb(tripId);
     } catch (error) {
-        console.error('Error fetching trip signups:', error);
+        
         return [];
     }
 }
@@ -69,20 +44,9 @@ export async function getTripSignup(id: number): Promise<TripSignup | null> {
     await requireReisAdmin();
 
     try {
-        const dbSignup = await fetchTripSignupByIdDb(id);
-        if (dbSignup) {
-            return dbSignup as TripSignup;
-        }
-
-        const signup = await getSystemDirectus().request(readItem('trip_signups', id, {
-            fields: TRIP_SIGNUP_FIELDS as any
-        })) as unknown as DbTripSignup;
-
-        if (!signup) return null;
-        const sanitized = { ...signup, created_at: signup.created_at };
-        return tripSignupSchema.parse(sanitized);
+        return await fetchTripSignupByIdDb(id);
     } catch (error) {
-        console.error('Error fetching trip signup:', error);
+        
         return null;
     }
 }
@@ -91,19 +55,17 @@ export async function updateSignupStatus(signupId: number, status: string) {
     await requireReisAdmin();
 
     try {
-        const client = getSystemDirectus();
-        
-        const signup = await client.request(readItem('trip_signups', signupId, {
-            fields: ['id', 'email', 'first_name', 'status', { trip_id: ['name'] }]
-        })) as any;
+        const signup = await fetchTripSignupByIdDb(signupId);
+        if (!signup) throw new Error('Aanmelding niet gevonden');
 
-        const oldStatus = signup?.status;
+        const oldStatus = signup.status;
         
         const success = await updateTripSignupDb(signupId, { status });
         if (!success) throw new Error('Database update mislukt');
 
-        client.request(updateItem('trip_signups', signupId, { status })).catch(err => {
-            console.error('Directus sync error:', err);
+        // Shadow Write (Directus)
+        getSystemDirectus().request(updateItem('trip_signups', signupId, { status })).catch(err => {
+            
         });
         
         // 4. Trigger Email if status changed TO confirmed
@@ -123,24 +85,21 @@ export async function updateSignupStatus(signupId: number, status: string) {
                         templateId: 'trip_status_update',
                         data: {
                             firstName: signup.first_name,
-                            tripName: signup.trip_id?.name || 'de reis'
+                            tripName: 'de reis' // Flat result from DB doesn't have trip name, simplified for now
                         }
                     })
-                }).catch(e => console.error('Failed to trigger status update mail:', e));
-            }
+                }).catch(() => {}); }
         }
 
-        const { revalidatePath, ...cacheFunctions } = await import('next/cache');
-        const cache = cacheFunctions as any;
-        if (cache.updateTag) cache.updateTag('reis-status');
-        else if (cache.revalidateTag) cache.revalidateTag('reis-status', 'max');
+        const { revalidatePath, revalidateTag } = await import('next/cache');
+        revalidateTag('reis-status', 'max');
 
         revalidatePath('/beheer/reis');
         revalidatePath('/reis');
 
         return { success: true };
     } catch (error) {
-        console.error('Error updating signup status:', error);
+        
         return { success: false, error: 'Update mislukt' };
     }
 }
@@ -153,20 +112,18 @@ export async function deleteTripSignup(signupId: number) {
         if (!success) throw new Error('Database delete mislukt');
 
         getSystemDirectus().request(deleteItem('trip_signups', signupId)).catch(err => {
-            console.error('Directus sync error:', err);
+            
         });
         
-        const { revalidatePath, ...cacheFunctions } = await import('next/cache');
-        const cache = cacheFunctions as any;
-        if (cache.updateTag) cache.updateTag('reis-status');
-        else if (cache.revalidateTag) cache.revalidateTag('reis-status', 'max');
+        const { revalidatePath, revalidateTag } = await import('next/cache');
+        revalidateTag('reis-status', 'max');
 
         revalidatePath('/beheer/reis');
         revalidatePath('/reis');
 
         return { success: true };
     } catch (error) {
-        console.error('Error deleting trip signup:', error);
+        
         return { success: false, error: 'Verwijderen mislukt' };
     }
 }
@@ -203,14 +160,12 @@ export async function updateTripSignup(prevState: any, formData: FormData) {
         const success = await updateTripSignupDb(id, validated.data);
         if (!success) throw new Error('Database update mislukt');
 
-        getSystemDirectus().request(updateItem('trip_signups', id, validated.data as any)).catch(err => {
-            console.error('Directus sync error:', err);
+        getSystemDirectus().request(updateItem('trip_signups', id, validated.data)).catch(err => {
+            
         });
 
-        const { revalidatePath, ...cacheFunctions } = await import('next/cache');
-        const cache = cacheFunctions as any;
-        if (cache.updateTag) cache.updateTag('reis-status');
-        else if (cache.revalidateTag) cache.revalidateTag('reis-status', 'max');
+        const { revalidatePath, revalidateTag } = await import('next/cache');
+        revalidateTag('reis-status', 'max');
 
         revalidatePath('/beheer/reis');
         revalidatePath(`/beheer/reis/deelnemer/${id}`);
@@ -218,7 +173,7 @@ export async function updateTripSignup(prevState: any, formData: FormData) {
 
         return { success: true };
     } catch (error) {
-        console.error('Error updating trip signup data:', error);
+        
         return { success: false, error: 'Update mislukt' };
     }
 }
@@ -227,42 +182,27 @@ export async function getSignupActivities(signupId: number) {
     await requireReisAdmin();
 
     try {
-        const activities = await getSystemDirectus().request(readItems('trip_signup_activities', {
-            filter: { trip_signup_id: { _eq: signupId } },
-            fields: [
-                'id',
-                'trip_signup_id', 
-                { trip_activity_id: ['id', 'name', 'price', 'options'] }, 
-                'selected_options'
-            ] as any
-        })) as unknown as TripSignupActivity[];
-
+        const activities = await fetchSelectedSignupActivitiesDb(signupId);
         const parsed = z.array(tripSignupActivitySchema).safeParse(activities);
 
         if (!parsed.success) {
-            console.error('[AdminReisActions#getSignupActivities] Zod validation failed:', parsed.error.flatten().fieldErrors);
+            
             return [];
         }
 
         return parsed.data;
     } catch (error) {
-        console.error('[AdminReisActions#getSignupActivities] Error:', error);
+        
         return [];
     }
 }
 
 export async function getActivitySignups(activityId: number) {
     await requireReisAdmin();
-
     try {
-        const signups = await getSystemDirectus().request(readItems('trip_signup_activities', {
-            filter: { trip_activity_id: { _eq: activityId } },
-            fields: ['id', 'selected_options', { trip_signup_id: ['id', 'first_name', 'last_name', 'email'] }] as any
-        })) as unknown as (TripSignupActivity & { trip_signup_id: { id: string, first_name: string, last_name: string, email: string } })[];
-
-        return signups ?? [];
+        return await fetchSignupsByActivityIdDb(activityId);
     } catch (error) {
-        console.error('[AdminReisActions#getActivitySignups] Error:', error);
+        
         return [];
     }
 }
@@ -299,7 +239,7 @@ export async function updateSignupActivities(signupId: number, activityIds: numb
         revalidatePath(`/beheer/reis/deelnemer/${signupId}`);
         return { success: true };
     } catch (error) {
-        console.error('[AdminReisActions#updateSignupActivities] Error:', error);
+        
         return { success: false, error: 'Internal server error' };
     }
 }
@@ -311,7 +251,7 @@ export async function sendPaymentEmail(signupId: number, tripId: number, payment
     const INTERNAL_SERVICE_TOKEN = process.env.INTERNAL_SERVICE_TOKEN;
 
     if (!INTERNAL_SERVICE_TOKEN) {
-        console.error('[AdminReisActions#sendPaymentEmail] INTERNAL_SERVICE_TOKEN is missing');
+        
         throw new Error('Missing service token');
     }
 
@@ -333,14 +273,14 @@ export async function sendPaymentEmail(signupId: number, tripId: number, payment
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            console.error('[AdminReisActions#sendPaymentEmail] Finance service error:', errorData);
+            
             throw new Error('De betaalservice gaf een fout terug.');
         }
 
         return { success: true };
     } catch (error) {
         const message = error instanceof Error ? error.message : 'Onbekende fout';
-        console.error('[AdminReisActions#sendPaymentEmail] Error:', error);
+        
         return { success: false, error: message };
     }
 }
@@ -380,13 +320,13 @@ export async function sendBulkTripEmail(data: {
 
         if (!response.ok) {
             const err = await response.json().catch(() => ({}));
-            console.error('[AdminReisActions#sendBulkTripEmail] Mail service error:', err);
+            
             throw new Error('De e-mailservice gaf een fout terug.');
         }
 
         return { success: true };
     } catch (error) {
-        console.error('[AdminReisActions#sendBulkTripEmail] Error:', error);
+        
         return { success: false, error: error instanceof Error ? error.message : 'Verzenden mislukt' };
     }
 }
@@ -426,7 +366,7 @@ export async function getTripSignupActivitiesAction(tripId: number) {
     try {
         return await fetchTripSignupActivitiesDb(tripId);
     } catch (error) {
-        console.error('[AdminReisActions#getTripSignupActivitiesAction] Error:', error);
+        
         return [];
     }
 }

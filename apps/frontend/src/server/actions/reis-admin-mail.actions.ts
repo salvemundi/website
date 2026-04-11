@@ -9,7 +9,7 @@ export async function sendPaymentEmail(signupId: number, tripId: number, payment
     await requireReisAdmin();
 
     if (!INTERNAL_SERVICE_TOKEN) {
-        console.error('[AdminReisActions#sendPaymentEmail] INTERNAL_SERVICE_TOKEN is missing');
+        
         throw new Error('Missing service token');
     }
 
@@ -31,14 +31,14 @@ export async function sendPaymentEmail(signupId: number, tripId: number, payment
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            console.error('[AdminReisActions#sendPaymentEmail] Finance service error:', errorData);
+            
             throw new Error('De betaalservice gaf een fout terug.');
         }
 
         return { success: true };
     } catch (error) {
         const message = error instanceof Error ? error.message : 'Onbekende fout';
-        console.error('[AdminReisActions#sendPaymentEmail] Error:', error);
+        
         return { success: false, error: message };
     }
 }
@@ -77,13 +77,13 @@ export async function sendBulkTripEmail(data: {
 
         if (!response.ok) {
             const err = await response.json().catch(() => ({}));
-            console.error('[AdminReisActions#sendBulkTripEmail] Mail service error:', err);
+            
             throw new Error('De e-mailservice gaf een fout terug.');
         }
 
         return { success: true };
     } catch (error) {
-        console.error('[AdminReisActions#sendBulkTripEmail] Error:', error);
+        
         return { success: false, error: error instanceof Error ? error.message : 'Verzenden mislukt' };
     }
 }

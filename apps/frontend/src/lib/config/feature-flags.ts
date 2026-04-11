@@ -1,6 +1,7 @@
+import 'server-only';
 import { getRedis } from '@/server/auth/redis-client';
 import { unstable_noStore as noStore } from 'next/cache';
-import { query } from '@/lib/db';
+import { query } from '@/lib/database';
 
 export const FLAGS_CACHE_KEY = 'site:disabled_routes';
 const CACHE_TTL = 60; // 60 seconden
@@ -27,13 +28,13 @@ export async function getDisabledRoutes(): Promise<string[]> {
             .map((flag: any) => flag.route_match)
             .filter((route: string | null | undefined): route is string => Boolean(route));
 
-        console.log(`[Feature-Flags] Fresh fetch: [${routes.join(', ') || 'None'}]`);
+        
         
         // Update Redis cache
         await redis.set(FLAGS_CACHE_KEY, JSON.stringify(routes), 'EX', CACHE_TTL);
         return routes;
     } catch (err) {
-        console.error('[Feature-Flags] Error fetching disabled routes:', err);
+        
         return [];
     }
 }

@@ -1,75 +1,90 @@
-'use server';
+import { query } from '@/lib/database';
+import { z } from 'zod';
 
-import 'server-only';
-import { query } from '@/lib/db';
+export const userProfileSchema = z.object({
+    id: z.string().uuid(),
+    first_name: z.string().nullable().optional(),
+    last_name: z.string().nullable().optional(),
+    email: z.string().email(),
+    avatar: z.string().uuid().nullable().optional(),
+    membership_status: z.string().nullable().optional(),
+    phone_number: z.string().nullable().optional(),
+    date_of_birth: z.string().nullable().optional(),
+    entra_id: z.string().nullable().optional(),
+    membership_expiry: z.string().nullable().optional(),
+    description: z.string().nullable().optional(),
+    location: z.string().nullable().optional(),
+    title: z.string().nullable().optional(),
+    tags: z.array(z.string()).nullable().optional(),
+    admin_access: z.boolean().nullable().optional(),
+});
 
-export interface DbUserMetadata {
-    id: string;
-    first_name: string | null;
-    last_name: string | null;
-    email: string | null;
-    fontys_email: string | null;
-    membership_status: string | null;
-    membership_expiry: string | null;
-    phone_number: string | null;
-    date_of_birth: string | null;
-    avatar: string | null;
-    minecraft_username: string | null;
-}
+export type UserProfile = z.infer<typeof userProfileSchema>;
 
-export interface DbCommittee {
-    id: number;
-    name: string;
-    is_leader: boolean;
+/**
+ * Fetches a user profile directly from the database by email.
+ */
+export async function fetchUserProfileByEmailDb(email: string): Promise<UserProfile | null> {
+    const { rows } = await query(
+        `SELECT id, first_name, last_name, email, avatar, 
+                membership_status, phone_number, date_of_birth, 
+                entra_id, membership_expiry, description, 
+                location, title, tags, admin_access
+         FROM directus_users 
+         WHERE LOWER(email) = LOWER($1) 
+         LIMIT 1`,
+        [email]
+    );
+
+    if (!rows || rows.length === 0) return null;
+
+    const raw = rows[0];
+    const parsed = userProfileSchema.safeParse({
+        ...raw,
+        date_of_birth: raw.date_of_birth instanceof Date ? raw.date_of_birth.toISOString() : raw.date_of_birth,
+        membership_expiry: raw.membership_expiry instanceof Date ? raw.membership_expiry.toISOString() : raw.membership_expiry,
+    });
+
+    if (!parsed.success) {
+        // Fallback to raw if validation fails slightly but we have the ID (common in Directus nullable fields)
+        return raw as UserProfile;
+    }
+
+    return parsed.data;
 }
 
 /**
- * Fetches basic user metadata.
+ * Fetches the committees a user belongs to.
  */
-export async function fetchUserMetadataDb(userId: string): Promise<DbUserMetadata | null> {
-    try {
-        const res = await query(
-            `SELECT id, first_name, last_name, email, fontys_email, 
-                    membership_status, membership_expiry, phone_number, 
-                    date_of_birth, avatar, minecraft_username 
-             FROM directus_users WHERE id = $1`,
-            [userId]
-        );
-
-        if (res.rowCount === 0) return null;
-        
-        const row = res.rows[0];
-        return {
-            ...row,
-            membership_expiry: row.membership_expiry instanceof Date ? row.membership_expiry.toISOString() : row.membership_expiry,
-            date_of_birth: row.date_of_birth instanceof Date ? row.date_of_birth.toISOString() : row.date_of_birth,
-        };
-    } catch (error: any) {
-        console.error('[UserDb#fetchMetadata] Error:', error);
-        return null;
-    }
+export async function fetchUserCommitteesDb(userId: string): Promise<any[]> {
+    const { rows } = await query(
+        `SELECT c.id, c.name, c.display_name, c.is_superadmin
+         FROM committees c
+         JOIN committees_directus_users_1 cdu ON c.id = cdu.committees_id
+         WHERE cdu.directus_users_id = $1`,
+        [userId]
+    );
+    return rows || [];
 }
 
 /**
- * Fetches user committees.
+ * Fetches user metadata (membership, phone, dob) directly by ID.
  */
-export async function fetchUserCommitteesDb(userId: string): Promise<DbCommittee[]> {
-    try {
-        const res = await query(
-            `SELECT c.id, c.name, cm.is_leader
-             FROM committee_members cm
-             JOIN committees c ON cm.committee_id = c.id
-             WHERE cm.user_id = $1`,
-            [userId]
-        );
+export async function fetchUserMetadataDb(userId: string): Promise<any | null> {
+    const { rows } = await query(
+        `SELECT membership_status, membership_expiry, phone_number, date_of_birth, minecraft_username 
+         FROM directus_users 
+         WHERE id = $1 
+         LIMIT 1`,
+        [userId]
+    );
 
-        return res.rows.map(row => ({
-            id: row.id,
-            name: row.name,
-            is_leader: !!row.is_leader
-        }));
-    } catch (error: any) {
-        console.error('[UserDb#fetchCommittees] Error:', error);
-        return [];
-    }
+    if (!rows || rows.length === 0) return null;
+
+    const raw = rows[0];
+    return {
+        ...raw,
+        date_of_birth: raw.date_of_birth instanceof Date ? raw.date_of_birth.toISOString() : raw.date_of_birth,
+        membership_expiry: raw.membership_expiry instanceof Date ? raw.membership_expiry.toISOString() : raw.membership_expiry,
+    };
 }

@@ -15,7 +15,7 @@ import {
     sendActivityReminder, 
     sendActivityCustomNotification 
 } from '@/server/actions/activiteiten.actions';
-import { isSuperAdmin } from '@/lib/auth-utils';
+import { isSuperAdmin } from '@/lib/auth';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 

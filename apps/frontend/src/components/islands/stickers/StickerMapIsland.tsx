@@ -92,7 +92,7 @@ export default function StickerMapIsland({
                         country
                     }));
                 } catch (err) {
-                    console.error('Reverse geocoding failed:', err);
+                    
                 }
 
                 setShowAddModal(true);

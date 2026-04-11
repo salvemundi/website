@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Instagram, Facebook, Linkedin } from 'lucide-react';
-import { authClient } from '@/lib/auth-client';
-import { ROUTES } from '@/lib/routes';
+import { authClient } from '@/lib/auth';
+import { ROUTES } from '@/lib/config/routes';
 import type { Committee, Document } from '@salvemundi/validations';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 

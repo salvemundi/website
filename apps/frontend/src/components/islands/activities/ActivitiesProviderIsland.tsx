@@ -208,7 +208,7 @@ export default function ActivitiesProviderIsland({
                                         a.remove();
                                         window.URL.revokeObjectURL(url);
                                     } catch (err) {
-                                        console.warn('Calendar sync failed, falling back to webcal/open:', err);
+                                        
                                         try {
                                             const webcalUrl = calendarUrl.replace(/^https?:/, 'webcal:');
                                             window.location.href = webcalUrl;

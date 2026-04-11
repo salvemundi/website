@@ -3,7 +3,7 @@
 import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
-import { isSuperAdmin } from "@/lib/auth-utils";
+import { isSuperAdmin } from "@/lib/auth";
 import { getSystemDirectus } from "@/lib/directus";
 import { readUsers } from "@directus/sdk";
 import { USER_FULL_FIELDS } from "@salvemundi/validations";
@@ -48,13 +48,13 @@ export async function triggerFullSyncAction(options?: { fields: string[]; forceL
 
         if (!res.ok) {
             const errorData = await res.json().catch(() => ({ error: 'Sync service onbeschikbaar' }));
-            console.error("[AzureSyncAction] Service error:", errorData);
+            
             return { success: false, error: "De synchronisatie service is momenteel niet bereikbaar." };
         }
 
         return { success: true, message: "Synchronisatie taak succesvol gestart." };
     } catch (err) {
-        console.error("[AzureSyncAction] Full sync error:", err);
+        
         return { success: false, error: "Kon geen verbinding maken met de sync service." };
     }
 }
@@ -101,7 +101,7 @@ export async function triggerUserSyncAction(userId: string) {
 
         if (!res.ok) {
             const errorData = await res.json().catch(() => ({ error: 'Sync service onbeschikbaar' }));
-            console.error("[AzureSyncAction] Service error:", errorData);
+            
             return { success: false, error: "De synchronisatie service is momenteel niet bereikbaar." };
         }
 
@@ -111,7 +111,7 @@ export async function triggerUserSyncAction(userId: string) {
 
         return { success: true, message: `Synchronisatie voor gebruiker ${userId} voltooid.` };
     } catch (err) {
-        console.error("[AzureSyncAction] User sync error:", err);
+        
         return { success: false, error: "Kon geen verbinding maken met de sync service." };
     }
 }
@@ -140,7 +140,7 @@ export async function getSyncStatusAction() {
 
         return await res.json();
     } catch (err) {
-        console.error("[AzureSyncAction] Get status error:", err);
+        
         return { success: false, error: "Kon status niet ophalen." };
     }
 }
@@ -161,7 +161,7 @@ export async function stopSyncAction() {
         }
         return { success: true };
     } catch (error: any) {
-        console.error('[Action] stopSyncAction error:', error);
+        
         return { success: false, error: error.message };
     }
 }

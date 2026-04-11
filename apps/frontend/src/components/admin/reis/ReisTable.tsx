@@ -91,7 +91,7 @@ export default function ReisTable({
                                     signup={signup}
                                     isExpanded={expandedIds.includes(signup.id)}
                                     onToggleExpand={onToggleExpand}
-                                    statusBadge={getStatusBadge(signup.status)}
+                                    statusBadge={getStatusBadge(signup.status || 'registered')}
                                     paymentStatus={getPaymentStatus(signup)}
                                     isStatusLoading={actionStates.status.has(signup.id)}
                                     isDeleteLoading={actionStates.delete.has(signup.id)}

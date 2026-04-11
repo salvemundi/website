@@ -73,7 +73,7 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
                 window.location.href = result.checkoutUrl;
             } else if (result.errors) {
                 // Handle Zod server-side errors if any returned
-                console.error('Validation errors:', result.errors);
+                
             } else {
                 showToast(result.error || 'Er ging iets mis', 'error');
             }

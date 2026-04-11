@@ -3,7 +3,7 @@
 import { z } from 'zod';
 import { auth } from '@/server/auth/auth';
 import { revalidateTag, revalidatePath, unstable_noStore as noStore } from "next/cache";
-import { isSuperAdmin } from "@/lib/auth-utils";
+import { isSuperAdmin } from "@/lib/auth";
 import { headers } from 'next/headers';
 import { 
     INTRO_BLOG_FIELDS, 
@@ -40,9 +40,9 @@ const introNotificationSchema = z.object({
 
 import { AdminResource } from '@/shared/lib/permissions-config';
 import { getRedis } from '@/server/auth/redis-client';
-import { FLAGS_CACHE_KEY } from '@/lib/feature-flags';
+import { FLAGS_CACHE_KEY } from '@/lib/config/feature-flags';
 import { hasPermission } from '@/shared/lib/permissions';
-import { query } from '@/lib/db';
+import { query } from '@/lib/database';
 
 async function checkIntroAdminAccess() {
     const session = await auth.api.getSession({ headers: await headers() });
@@ -75,7 +75,7 @@ export async function deleteIntroSignup(id: number): Promise<{ success: boolean;
         revalidatePath('/beheer/intro');
         return { success: true };
     } catch (e) {
-        console.error('[AdminIntro] Delete signup failed:', e);
+        
         return { success: false, error: 'Verwijderen mislukt' };
     }
 }
@@ -93,7 +93,7 @@ export async function deleteIntroParentSignup(id: number): Promise<{ success: bo
         revalidatePath('/beheer/intro');
         return { success: true };
     } catch (e) {
-        console.error('[AdminIntro] Delete parent signup failed:', e);
+        
         return { success: false, error: 'Verwijderen mislukt' };
     }
 }
@@ -136,7 +136,7 @@ export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ succe
             is_published: !!result.is_published
         } as IntroBlog };
     } catch (e) {
-        console.error('[AdminIntro] Upsert blog failed:', e);
+        
         return { success: false, error: 'Opslaan mislukt' };
     }
 }
@@ -148,7 +148,7 @@ export async function deleteIntroBlog(id: number): Promise<{ success: boolean; e
         revalidatePath('/beheer/intro');
         return { success: true };
     } catch (e) {
-        console.error('[AdminIntro] Delete blog failed:', e);
+        
         return { success: false, error: 'Verwijderen mislukt' };
     }
 }
@@ -195,7 +195,7 @@ export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Pro
             description: result.description || ''
         } as IntroPlanningItem };
     } catch (e) {
-        console.error('[AdminIntro] Upsert planning failed:', e);
+        
         return { success: false, error: 'Opslaan mislukt' };
     }
 }
@@ -207,7 +207,7 @@ export async function deleteIntroPlanning(id: number): Promise<{ success: boolea
         revalidatePath('/beheer/intro');
         return { success: true };
     } catch (e) {
-        console.error('[AdminIntro] Delete planning failed:', e);
+        
         return { success: false, error: 'Verwijderen mislukt' };
     }
 }
@@ -227,26 +227,26 @@ export async function toggleIntroVisibility(): Promise<{ success: boolean; show?
         
         if (flag) {
             await query('UPDATE feature_flags SET is_active = $1 WHERE id = $2', [newStatus, flag.id]);
-            console.log(`[AdminIntro] Toggle (SQL): DB was ${oldStatus}, setting to ${newStatus} (ID: ${flag.id})`);
+            
         } else {
             await query('INSERT INTO feature_flags (name, route_match, is_active) VALUES ($1, $2, $3)', 
                 ['Intro Inschrijving', route, newStatus]);
-            console.log(`[AdminIntro] Toggle (SQL): Created new flag for ${route} with is_active: ${newStatus}`);
+            
         }
 
         // 1. Immediate clear to disrupt any current stale requests
         try {
             const redis = await getRedis();
             await redis.del(FLAGS_CACHE_KEY);
-            console.log(`[AdminIntro] Initial Redis cache clear (immediate)`);
+            
         } catch (e) {
-            console.error('[AdminIntro] Initial Redis clear failed:', e);
+            
         }
 
         // 2. Wait for Directus DB/Cache consistency if other systems read via API
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        console.log(`[AdminIntro] Revalidating: feature_flags (profile: default)`);
+        
         revalidateTag('feature_flags', 'default');
         revalidatePath('/', 'layout');
         revalidatePath('/beheer/intro');
@@ -255,14 +255,14 @@ export async function toggleIntroVisibility(): Promise<{ success: boolean; show?
         try {
             const redis = await getRedis();
             const deletedRows = await redis.del(FLAGS_CACHE_KEY);
-            console.log(`[AdminIntro] Final Redis cache clear. Keys deleted: ${deletedRows}`);
+            
         } catch (e) {
-            console.error('[AdminIntro] Final Redis clear failed:', e);
+            
         }
         
         return { success: true, show: newStatus };
     } catch (e) {
-        console.error('[AdminIntro] Toggle visibility failed:', e);
+        
         return { success: false, error: 'Bijwerken mislukt' };
     }
 }

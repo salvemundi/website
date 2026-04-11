@@ -1,4 +1,4 @@
-import { query } from '@/lib/db';
+import { query } from '@/lib/database';
 import { 
     activiteitenSchema, 
     type Activiteit,
@@ -53,13 +53,13 @@ export async function getActivitiesInternal(onlyPublished = true): Promise<Activ
 
         const parsed = activiteitenSchema.safeParse(mappedData);
         if (!parsed.success) {
-            console.error('[AdminEventQueries] Zod validation failed:', JSON.stringify(parsed.error.format(), null, 2));
+            
             return mappedData as any;
         }
 
         return parsed.data;
     } catch (error) {
-        console.error('[AdminEventQueries] getActivitiesInternal failed:', error);
+        
         return [];
     }
 }
@@ -105,12 +105,12 @@ export async function getActivityByIdInternal(id: string): Promise<Activiteit | 
 
         const parsed = activiteitenSchema.element.safeParse(mapped);
         if (!parsed.success) {
-            console.error('[AdminEventQueries] getActivityByIdInternal Zod failed:', JSON.stringify(parsed.error.format(), null, 2));
+            
             return mapped as any;
         }
         return parsed.data;
     } catch (error) {
-        console.error('[AdminEventQueries] getActivityByIdInternal failed:', error);
+        
         return null;
     }
 }
@@ -131,7 +131,7 @@ export async function getActivitySignupsInternal(eventId: string): Promise<any[]
         const { rows } = await query(sql, [eventId]);
         return rows;
     } catch (error) {
-        console.error(`[AdminEventQueries] Error fetching signups for ${eventId}:`, error);
+        
         return [];
     }
 }
@@ -185,7 +185,7 @@ export async function getActivitiesWithSignupCountsInternal(search?: string, fil
             image: r.image ? { id: r.image } : null // Map to object for AdminActivitySchema compatibility
         }));
     } catch (error) {
-        console.error('[AdminEventQueries] getActivitiesWithSignupCountsInternal failed:', error);
+        
         return [];
     }
 }
