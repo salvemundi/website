@@ -7,7 +7,7 @@ import {
     Ticket, Plus, CheckCircle, X, Clock, ToggleLeft, ToggleRight
 } from 'lucide-react';
 import type { Coupon } from '@/server/actions/admin-coupons.actions';
-import { getComputedCouponStatus } from '@/lib/coupon-utils';
+import { getComputedCouponStatus } from '@/lib/coupons';
 import { createCoupon, deleteCoupon, toggleCouponActive, getCoupons } from '@/server/actions/admin-coupons.actions';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';

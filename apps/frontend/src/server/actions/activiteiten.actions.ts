@@ -24,7 +24,7 @@ import {
 } from "@/server/queries/admin-event.queries";
 const EVENT_ID_FIELDS = ['id'] as const;
 import { logAdminAction } from "./audit.actions";
-import { isSuperAdmin } from "@/lib/auth-utils";
+import { isSuperAdmin } from "@/lib/auth";
 import { createEventDb, updateEventDb, deleteEventDb } from "./event-db.utils";
 
 
@@ -133,7 +133,7 @@ export async function deleteActivity(eventId: number) {
         try {
             await getSystemDirectus().request(deleteItem('events', eventId));
         } catch (err) {
-            console.error('Directus delete sync error:', err);
+            
             await logAdminAction('activity_delete_failed', 'ERROR', { id: eventId, error: String(err) });
             // We consider the action failed if CMS sync fails to avoid ghost data
             return { success: false, error: "CMS Synchronisatie mislukt. Activiteit is niet verwijderd." };
@@ -146,7 +146,7 @@ export async function deleteActivity(eventId: number) {
         revalidatePath('/beheer');
         return { success: true };
     } catch (error) {
-        console.error('Error in deleteActivity:', error);
+        
         return { success: false, error: "Verwijderen mislukt" };
     }
 }
@@ -169,7 +169,7 @@ export async function createActivityAction(prevState: any, formData: FormData): 
             const res = await getSystemDirectus().request(uploadFiles(fileData));
             imageId = res.id;
         } catch (e) {
-            console.error('Image upload failed during activity creation:', e);
+            
         }
     }
 
@@ -205,7 +205,7 @@ export async function createActivityAction(prevState: any, formData: FormData): 
         try {
             await getSystemDirectus().request(createItem('events', { ...directusPayload, id: newId }));
         } catch (err) {
-            console.error('Directus insert sync error:', err);
+            
             // Cleanup: delete from DB if CMS sync fails to maintain atomicity
             await deleteEventDb(newId);
             await logAdminAction('activity_create_rollback', 'ERROR', { id: newId, error: String(err), action: 'rollback_delete' });
@@ -218,7 +218,7 @@ export async function createActivityAction(prevState: any, formData: FormData): 
 
         return { success: true, id: newId };
     } catch (error) {
-        console.error('Error in createActivityAction:', error);
+        
         return { error: 'Fout bij opslaan in de database', success: false };
     }
 }
@@ -288,7 +288,7 @@ export async function updateActivityAction(eventId: number, prevState: any, form
         try {
             await getSystemDirectus().request(updateItem('events', eventId, directusPayload));
         } catch (err) {
-            console.error('Directus update sync error:', err);
+            
             // Rollback Postgres to maintain atomicity
             await updateEventDb(eventId, oldData);
             await logAdminAction('activity_update_rollback', 'ERROR', { id: eventId, error: String(err), action: 'rollback_restore' });
@@ -305,7 +305,7 @@ export async function updateActivityAction(eventId: number, prevState: any, form
         
         return { success: true };
     } catch (error) {
-        console.error("Failed to update activity:", error);
+        
         return { error: 'Internal server error', success: false };
     }
 }

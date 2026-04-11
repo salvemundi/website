@@ -16,9 +16,9 @@ import {
     uploadFiles
 } from '@directus/sdk';
 import { requireReisAdmin } from './reis-admin-utils';
-import { query } from '@/lib/db';
+import { query } from '@/lib/database';
 import { getRedis } from '@/server/auth/redis-client';
-import { FLAGS_CACHE_KEY } from '@/lib/feature-flags';
+import { FLAGS_CACHE_KEY } from '@/lib/config/feature-flags';
 import { revalidateTag } from 'next/cache';
 import { createTripDb, updateTripDb, fetchAllTripsDb } from './reis-db.utils';
 
@@ -37,9 +37,11 @@ async function handleImageUpload(formData: FormData): Promise<string | null> {
     try {
         const client = getSystemDirectus();
         const response = await client.request(uploadFiles(uploadFormData));
-        return (response as any).id;
+        // Directus SDK returns the uploaded file object or array of objects
+        const fileObj = Array.isArray(response) ? response[0] : response;
+        return fileObj?.id || null;
     } catch (error) {
-        console.error('Image upload failed:', error);
+        
         return null;
     }
 }
@@ -49,7 +51,7 @@ async function handleImageUpload(formData: FormData): Promise<string | null> {
      try {
          return await fetchAllTripsDb();
      } catch (error) {
-         console.error('[AdminReisActions] getAdminTrips failed:', error);
+         
          return [];
      }
  }
@@ -60,7 +62,7 @@ async function handleImageUpload(formData: FormData): Promise<string | null> {
          const { rows } = await query('SELECT id, name FROM trips WHERE id = $1 LIMIT 1', [id]);
          return rows?.[0] || null;
      } catch (error) {
-         console.error('[AdminReisActions] getAdminTripById failed:', error);
+         
          return null;
      }
  }
@@ -98,8 +100,8 @@ export async function createTrip(prevState: any, formData: FormData) {
         const newId = await createTripDb(validated.data);
         if (!newId) throw new Error('Database insert failed');
 
-        getSystemDirectus().request(updateItem('trips', newId, validated.data as any)).catch(err => {
-            console.error('Directus sync error:', err);
+        getSystemDirectus().request(updateItem('trips', newId, validated.data)).catch(err => {
+            
         });
 
         revalidatePath('/beheer/reis');
@@ -109,7 +111,7 @@ export async function createTrip(prevState: any, formData: FormData) {
         
         return { success: true };
     } catch (error) {
-        console.error('Error creating trip:', error);
+        
         return { success: false, error: error instanceof Error ? error.message : 'Internal server error' };
     }
 }
@@ -149,8 +151,8 @@ export async function updateTrip(prevState: any, formData: FormData) {
         const success = await updateTripDb(id, validated.data);
         if (!success) throw new Error('Database update failed');
 
-        getSystemDirectus().request(updateItem('trips', id, validated.data as any)).catch(err => {
-            console.error('Directus sync error:', err);
+        getSystemDirectus().request(updateItem('trips', id, validated.data)).catch(err => {
+            
         });
 
         revalidatePath('/beheer/reis');
@@ -160,7 +162,7 @@ export async function updateTrip(prevState: any, formData: FormData) {
         
         return { success: true };
     } catch (error) {
-        console.error('Error updating trip:', error);
+        
         return { success: false, error: error instanceof Error ? error.message : 'Internal server error' };
     }
 }
@@ -174,7 +176,7 @@ export async function deleteTrip(id: number) {
         revalidatePath('/beheer/reis/activiteiten');
         return { success: true };
     } catch (error) {
-        console.error('Error deleting trip:', error);
+        
         return { success: false, error: error instanceof Error ? error.message : 'Internal server error' };
     }
 }
@@ -203,7 +205,7 @@ export async function toggleReisVisibility(): Promise<{ success: boolean; show?:
             const redis = await getRedis();
             await redis.del(FLAGS_CACHE_KEY);
         } catch (e) {
-            console.error('Initial Redis clear failed:', e);
+            
         }
 
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -218,12 +220,12 @@ export async function toggleReisVisibility(): Promise<{ success: boolean; show?:
             const redis = await getRedis();
             await redis.del(FLAGS_CACHE_KEY);
         } catch (e) {
-            console.error('Final Redis clear failed:', e);
+            
         }
         
         return { success: true, show: newStatus };
     } catch (e) {
-        console.error('Toggle visibility failed:', e);
+        
         return { success: false, error: 'Bijwerken mislukt' };
     }
 }

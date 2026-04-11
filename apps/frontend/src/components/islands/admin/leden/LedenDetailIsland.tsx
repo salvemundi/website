@@ -14,7 +14,7 @@ import {
     provisionAzureAccountAction 
 } from '@/server/actions/leden.actions';
 import { triggerUserSyncAction } from '@/server/actions/azure-sync.actions';
-import { getImageUrl } from '@/lib/image-utils';
+import { getImageUrl } from '@/lib/utils/image-utils';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 

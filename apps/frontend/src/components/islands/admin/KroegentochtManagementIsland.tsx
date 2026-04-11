@@ -65,7 +65,7 @@ export default function KroegentochtManagementIsland({
             const data = await getPubCrawlSignups(Number(eventId));
             setSignups(data);
         } catch (err) {
-            console.error(err);
+            
             showToast('Kon aanmeldingen niet laden. Controleer je verbinding.', 'error');
         } finally {
             setIsLoadingSignups(false);
@@ -92,7 +92,7 @@ export default function KroegentochtManagementIsland({
                     router.refresh(); // Force re-fetch of layout data (like navbar)
                 }
             } catch (err) {
-                console.error(err);
+                
                 showToast('Fout bij bijwerken zichtbaarheid', 'error');
             }
         });

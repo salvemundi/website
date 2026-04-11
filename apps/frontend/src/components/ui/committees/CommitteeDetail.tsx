@@ -1,7 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { type Committee } from '@salvemundi/validations';
-import { getImageUrl } from '@/lib/image-utils';
+import { getImageUrl } from '@/lib/utils/image-utils';
 import { Mail, Shield, User, Users, Calendar, Instagram, Facebook, Globe, History, LayoutGrid, UserPlus } from 'lucide-react';
 import { Skeleton } from '../Skeleton';
 

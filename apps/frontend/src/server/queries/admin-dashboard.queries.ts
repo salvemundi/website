@@ -1,4 +1,4 @@
-import { query } from '@/lib/db';
+import { query } from '@/lib/database';
 import { DashboardStatsSchema, type DashboardStats, type RecentActivity, RecentActivitySchema } from '@salvemundi/validations';
 import { z } from 'zod';
 
@@ -75,7 +75,7 @@ export async function getDashboardStatsInternal(): Promise<DashboardStats> {
 
         return DashboardStatsSchema.parse(stats);
     } catch (error) {
-        console.error('[AdminDashboardQueries] getDashboardStatsInternal failed:', error);
+        
         return {
             totalMembers: 0,
             upcomingEventsCount: 0,
@@ -117,7 +117,7 @@ export async function getRecentActivitiesInternal(): Promise<RecentActivity[]> {
 
         return z.array(RecentActivitySchema).parse(mapped);
     } catch (error) {
-        console.error('[AdminDashboardQueries] getRecentActivitiesInternal failed:', error);
+        
         return [];
     }
 }

@@ -4,19 +4,29 @@ import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
 
-import { getSystemDirectus } from "@/lib/directus";
-import { readItems, createItem, uploadFiles } from "@directus/sdk";
-import { STICKER_FIELDS } from "@salvemundi/validations";
+import { query } from "@/lib/database";
 
 export async function getPublicStickers() {
     try {
-        return await getSystemDirectus().request(readItems('Stickers', {
-            fields: [...STICKER_FIELDS, { user_created: ['id', 'first_name', 'last_name', 'avatar'] }] as any,
-            sort: ['-date_created'],
-            limit: -1
+        const { rows } = await query(
+            `SELECT s.*, u.id as user_id, u.first_name, u.last_name, u.avatar
+             FROM Stickers s
+             LEFT JOIN directus_users u ON s.user_created = u.id
+             ORDER BY s.date_created DESC`,
+            []
+        );
+
+        return (rows || []).map(row => ({
+            ...row,
+            user_created: row.user_id ? {
+                id: row.user_id,
+                first_name: row.first_name,
+                last_name: row.last_name,
+                avatar: row.avatar
+            } : null
         }));
     } catch (error) {
-        console.error('[Stickers] Error fetching stickers:', error);
+        
         return [];
     }
 }
@@ -42,6 +52,8 @@ export async function createStickerPublic(data: any) {
     };
 
     try {
+        const { getSystemDirectus } = await import("@/lib/directus");
+        const { createItem } = await import("@directus/sdk");
         const result = await getSystemDirectus().request(createItem('Stickers', payload));
 
         revalidatePath('/beheer/stickers');
@@ -49,7 +61,7 @@ export async function createStickerPublic(data: any) {
         revalidateTag('stickers', 'max');
         return result;
     } catch (error) {
-        console.error('[Stickers] Sticker create error:', error);
+        
         throw new Error('Kon sticker niet opslaan.');
     }
 }
@@ -66,11 +78,14 @@ export async function uploadFileAction(formData: FormData) {
         throw new Error('Te veel bestanden geüpload. Probeer het later opnieuw.');
     }
     try {
+        const { getSystemDirectus } = await import("@/lib/directus");
+        const { uploadFiles } = await import("@directus/sdk");
         const directus = getSystemDirectus();
         const result = await directus.request(uploadFiles(formData));
-        return (result as any).id;
+        const fileObj = Array.isArray(result) ? result[0] : result;
+        return fileObj?.id || null;
     } catch (error) {
-        console.error('[Stickers] Photo upload failed:', error);
+        
         throw new Error('Foto upload mislukt op de server.');
     }
 }

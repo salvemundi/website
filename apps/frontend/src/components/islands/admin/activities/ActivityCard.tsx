@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import { getImageUrl } from '@/lib/image-utils';
+import { getImageUrl } from '@/lib/utils/image-utils';
 
 interface AdminActivity {
     id: number;

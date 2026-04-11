@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import type { SafeHaven } from '@salvemundi/validations';
 import { Mail, Phone } from 'lucide-react';
-import { getImageUrl } from '@/lib/image-utils';
+import { getImageUrl } from '@/lib/utils/image-utils';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 import { Skeleton } from '../Skeleton';
 

@@ -26,7 +26,7 @@ import {
     updateTrip, 
     deleteTrip 
 } from '@/server/actions/reis-admin-core.actions';
-import { getImageUrl } from '@/lib/image-utils';
+import { getImageUrl } from '@/lib/utils/image-utils';
 import type { Trip } from '@salvemundi/validations';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminToast from '@/components/ui/admin/AdminToast';

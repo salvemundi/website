@@ -32,6 +32,7 @@
         "react-hook-form": "^7.71.2",
         "react-imask": "^7.6.1",
         "react-map-gl": "^8.1.0",
+        "server-only": "^0.0.1",
         "swiper": "^12.1.2",
         "xlsx": "^0.18.5",
         "zod": "^3.23.8"

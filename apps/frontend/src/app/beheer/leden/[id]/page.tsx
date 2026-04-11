@@ -73,7 +73,7 @@ async function LidDataLoader({ id, session }: { id: string, session: any }) {
             })
         );
     } catch (e: any) {
-        console.error("[LidDataLoader] Failed to fetch committees:", e.message, e?.errors || e);
+        
     }
 
     // Fetch Activity History (Signups) via email
@@ -88,7 +88,7 @@ async function LidDataLoader({ id, session }: { id: string, session: any }) {
             })
         );
     } catch (e: any) {
-        console.error("[LidDataLoader] Failed to fetch signups:", e.message, e?.errors || e);
+        
     }
 
     let allCommittees: any[] = [];
@@ -102,7 +102,7 @@ async function LidDataLoader({ id, session }: { id: string, session: any }) {
                 })
             );
         } catch (e: any) {
-            console.error("[LidDataLoader] Failed to fetch all committees:", e.message, e?.errors || e);
+            
         }
     }
 

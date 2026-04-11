@@ -29,7 +29,7 @@ export async function checkAdminAccess() {
     const user = session.user;
     // user is typed from Better-Auth but committees is enriched as Committee[] by our session plugin
     const permissions = (user as { committees?: Committee[] }).committees || [];
-    const { isSuperAdmin } = await import('@/lib/auth-utils');
+    const { isSuperAdmin } = await import('@/lib/auth');
     if (!isSuperAdmin(permissions)) return null;
     return session;
 }

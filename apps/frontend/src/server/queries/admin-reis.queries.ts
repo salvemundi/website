@@ -19,14 +19,14 @@ export async function getTrips(): Promise<Trip[]> {
         const parsed = z.array(tripSchema).safeParse(sanitized);
 
         if (!parsed.success) {
-            console.error('[AdminReisQueries#getTrips] Zod validation failed:', parsed.error.format());
+            
             // Fallback to sanitized raw if validation fails slightly, to keep UI working
             return sanitized as any; 
         }
 
         return parsed.data;
     } catch (error) {
-        console.error('[AdminReisQueries#getTrips] Error:', error);
+        
         return [];
     }
 }
@@ -41,7 +41,7 @@ export async function getTripActivities(tripId: number): Promise<TripActivity[]>
         const activities = await fetchTripActivitiesByTripIdDb(tripId);
         return activities as TripActivity[];
     } catch (error) {
-        console.error('[AdminReisQueries#getTripActivities] Error:', error);
+        
         return [];
     }
 }

@@ -23,7 +23,7 @@ export default async function BeheerLayout({ children }: BeheerLayoutProps) {
     const hasCommitteeAccess = Array.isArray(user?.committees) && user.committees.length > 0;
 
     if (!hasCommitteeAccess) {
-        console.warn(`[SECURITY] Ongeautoriseerde toegangspoging tot /beheer door ${user?.email || 'onbekende gebruiker'}`);
+        
         notFound();
     }
 

@@ -8,9 +8,9 @@ import { notFound } from 'next/navigation';
 import LedenOverzichtIsland from '@/components/islands/admin/leden/LedenOverzichtIsland';
 import MemberListSkeleton from '@/components/ui/admin/leden/MemberListSkeleton';
 import { getSystemDirectus } from '@/lib/directus';
-import { getImageUrl } from '@/lib/image-utils';
+import { getImageUrl } from '@/lib/utils/image-utils';
 import { readUsers, readRoles } from '@directus/sdk';
-import { isSuperAdmin, isMemberAdmin } from '@/lib/auth-utils';
+import { isSuperAdmin, isMemberAdmin } from '@/lib/auth';
 
 const EXCLUDED_EMAILS = [
     'youtube@salvemundi.nl',
@@ -89,7 +89,7 @@ async function LedenDataLoader({ tab }: { tab: 'active' | 'inactive' }) {
             totalCount = res.length;
         }
     } catch (e: any) {
-        console.error("Failed to fetch members:", e);
+        
         return (
             <div className="container mx-auto px-4 py-8">
                 <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-6 text-amber-700 dark:text-amber-400 flex items-center gap-4">

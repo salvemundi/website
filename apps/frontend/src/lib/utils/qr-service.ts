@@ -24,14 +24,9 @@ export async function generateQRCode(data: string): Promise<string> {
         });
         return dataUrl;
     } catch (err) {
-        console.error('Failed to generate QR code:', err);
+        
         throw new Error('Failed to generate QR code');
     }
 }
 
-const qrService = {
-    generateQRToken,
-    generateQRCode,
-};
-
-export default qrService;
+// Default export removed to follow named-export standard.

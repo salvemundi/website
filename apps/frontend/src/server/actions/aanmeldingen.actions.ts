@@ -4,7 +4,7 @@ import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
 import { getSystemDirectus } from "@/lib/directus";
-import { isSuperAdmin } from "@/lib/auth-utils";
+import { isSuperAdmin } from "@/lib/auth";
 import { 
     deleteItem,
     createItem,
@@ -49,7 +49,7 @@ async function sendCancellationEmail(email: string, eventName: string) {
             })
         });
     } catch (e) {
-        console.error('Cancellation email failed', e);
+        
     }
 }
 
@@ -65,7 +65,7 @@ export async function deleteSignupAction(signupId: number, eventId: string | num
         try {
             await getSystemDirectus().request(deleteItem('event_signups', signupId));
         } catch (err) {
-            console.error('Directus delete signup sync error:', err);
+            
             await logAdminAction('event_signup_delete_failed', 'ERROR', { id: signupId, error: String(err) });
             // Non-critical rollback for delete? Actually we should probably revert the DB delete
             // But we already deleted it from Postgres. Ideally we do this in reverse.
@@ -81,7 +81,7 @@ export async function deleteSignupAction(signupId: number, eventId: string | num
         revalidatePath('/beheer/activiteiten');
         return { success: true };
     } catch (error) {
-        console.error("Failed to delete signup:", error);
+        
         return { success: false, error: "Deletion failed" };
     }
 }
@@ -102,7 +102,7 @@ export async function searchMembersAction(query: string) {
         );
         return { success: true, data: (users || []) as any[] };
     } catch (error) {
-        console.error("Failed to search members:", error);
+        
         return { success: false, error: "Search failed", data: [] };
     }
 }
@@ -134,7 +134,7 @@ export async function createManualSignupAction(eventId: number, eventName: strin
         try {
             await getSystemDirectus().request(createItem('event_signups', { ...payload, id: newId }));
         } catch (err) {
-            console.error('Directus manual signup sync error:', err);
+            
             // Cleanup DB if sync fails
             await deleteEventSignupDb(newId);
             await logAdminAction('event_signup_manual_rollback', 'ERROR', { id: newId, error: String(err), action: 'rollback_delete' });
@@ -146,7 +146,7 @@ export async function createManualSignupAction(eventId: number, eventName: strin
         revalidatePath('/beheer/activiteiten');
         return { success: true };
     } catch (error: any) {
-        console.error("Failed to create manual signup:", error);
+        
         const errMessage = error?.errors?.[0]?.message || "";
         if (errMessage.includes('UNIQUE') || errMessage.includes('duplicate')) {
             return { success: false, error: "This person is already signed up." };
@@ -172,7 +172,7 @@ export async function toggleCheckInAction(signupId: number, eventId: number, che
         try {
             await getSystemDirectus().request(updateItem('event_signups', signupId, payload));
         } catch (err) {
-            console.error('Directus toggle check-in sync error:', err);
+            
             // Revert DB on sync fail
             await updateEventSignupDb(signupId, { checked_in: !checkedIn, checked_in_at: !checkedIn ? new Date().toISOString() : null });
             await logAdminAction('event_signup_checkin_rollback', 'ERROR', { id: signupId, error: String(err), action: 'rollback_restore' });
@@ -182,7 +182,7 @@ export async function toggleCheckInAction(signupId: number, eventId: number, che
         revalidateTag(`event_signups_${eventId}`, 'default');
         return { success: true };
     } catch (error) {
-        console.error("Failed to toggle check-in:", error);
+        
         return { success: false, error: "Failed to update check-in" };
     }
 }

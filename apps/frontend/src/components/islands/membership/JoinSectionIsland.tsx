@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { authClient } from '@/lib/auth-client';
+import { authClient } from '@/lib/auth';
 import { Skeleton } from '../../ui/Skeleton';
 
 interface JoinSectionIslandProps {

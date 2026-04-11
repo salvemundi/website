@@ -3,7 +3,7 @@
 import React, { useMemo, useState, useEffect, useOptimistic, useTransition } from 'react';
 import { startOfDay, isBefore } from 'date-fns';
 import { useRouter } from 'next/navigation';
-import { authClient } from '@/lib/auth-client';
+import { authClient } from '@/lib/auth';
 import type { EventSignup } from '@salvemundi/validations';
 import { updateProfileSchema } from '@salvemundi/validations';
 import { useForm } from 'react-hook-form';

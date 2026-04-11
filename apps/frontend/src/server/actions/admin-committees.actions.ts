@@ -4,7 +4,7 @@ import { auth } from '@/server/auth/auth';
 import { revalidatePath } from "next/cache";
 import { headers } from 'next/headers';
 
-import { isSuperAdmin } from '@/lib/auth-utils';
+import { isSuperAdmin } from '@/lib/auth';
 import { getSystemDirectus } from '@/lib/directus';
 import { updateItem, readUsers } from '@directus/sdk';
 import { USER_ID_FIELDS } from '@salvemundi/validations';
@@ -72,7 +72,7 @@ export async function updateCommitteeDetails(
         revalidatePath('/beheer/committees');
         return { success: true };
     } catch (e) {
-        console.error('[AdminCommittees] Update failed:', e);
+        
         return { success: false, error: 'Opslaan mislukt' };
     }
 }
@@ -101,7 +101,7 @@ export async function addCommitteeMember(
     });
     if (!azRes.ok) {
         const err = await azRes.json().catch(() => ({}));
-        console.error('[AdminCommittees] Add member Azure error:', err);
+        
         return { success: false, error: 'Bewerking in Azure mislukt. Probeer het later opnieuw.' };
     }
 
@@ -121,7 +121,7 @@ export async function removeCommitteeMember(
     });
     if (!azRes.ok) {
         const err = await azRes.json().catch(() => ({}));
-        console.error('[AdminCommittees] Remove member Azure error:', err);
+        
         return { success: false, error: 'Verwijderen uit Azure groep mislukt.' };
     }
 
@@ -142,7 +142,7 @@ export async function toggleCommitteeLeader(
         await getSystemDirectus().request(updateItem('committee_members' as any, membershipId, { is_leader: !currentIsLeader }));
         revalidatePath('/beheer/vereniging');
     } catch (e) {
-        console.error('[AdminCommittees] Toggle leader failed:', e);
+        
         return { success: false, error: 'Bijwerken mislukt' };
     }
 
@@ -155,7 +155,7 @@ export async function toggleCommitteeLeader(
             method,
             headers: serviceHeaders(!currentIsLeader),
             body: currentIsLeader ? undefined : JSON.stringify({ userId: entraId }),
-        }).catch(e => console.warn('[committees] Azure owner sync failed:', e));
+        }).catch(() => {});
     }
 
     return { success: true };

@@ -189,7 +189,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                 showToast(res.error || 'Bijwerken mislukt', 'error');
             }
         } catch (err) {
-            console.error(err);
+            
             showToast('Er is een onverwachte fout opgetreden', 'error');
         } finally {
             setTogglingVisibility(false);

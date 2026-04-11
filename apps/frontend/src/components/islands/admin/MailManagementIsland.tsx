@@ -38,7 +38,7 @@ export default function MailManagementIsland({ initialSettings }: MailManagement
                 showToast(res.error || 'Bijwerken mislukt', 'error');
             }
         } catch (err) {
-            console.error(err);
+            
             showToast('Er is een onverwachte fout opgetreden', 'error');
         } finally {
             setTogglingId(null);

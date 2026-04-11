@@ -4,38 +4,33 @@ import { safeHavensSchema, type SafeHaven } from '@salvemundi/validations';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 
-import { getSystemDirectus } from '@/lib/directus';
-import { readItems } from '@directus/sdk';
-import { SAFE_HAVEN_FIELDS } from '@salvemundi/validations';
+import { query } from '@/lib/database';
 
 async function fetchSafeHavensFromDirectus(): Promise<SafeHaven[]> {
     try {
-        const rawData = await getSystemDirectus().request(readItems('safe_havens', {
-            fields: [...SAFE_HAVEN_FIELDS],
-            limit: 10
-        }));
+        const { rows } = await query(
+            'SELECT id, contact_name, email, phone_number, image, sort FROM safe_havens LIMIT 10',
+            []
+        );
 
-        const mappedData = (rawData as any[]).map((item) => ({
+        const mappedData = (rows || []).map((item) => ({
             id: item.id,
             naam: item.contact_name,
             email: item.email,
             telefoon: item.phone_number,
             afbeelding_id: item.image,
-            status: 'published',
+            status: 'published' as const,
             sort: item.sort ?? 0,
         }));
 
         const parsed = safeHavensSchema.safeParse(mappedData);
         if (!parsed.success) {
-            console.error('[safe-haven.actions#fetchSafeHavensFromDirectus] Zod validatie mislukt:', {
-                fieldErrors: parsed.error.flatten().fieldErrors,
-            });
             return [];
         }
 
         return parsed.data;
     } catch (err: unknown) {
-        console.error('[safe-haven.actions#fetchSafeHavensFromDirectus] Fetch mislukt:', err);
+        
         return [];
     }
 }

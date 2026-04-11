@@ -21,7 +21,7 @@ export async function getCommittees(): Promise<Committee[]> {
                 }
             }
         } catch (cacheErr) {
-            console.warn('[committees.actions#getCommittees] Cache retrieval failed:', cacheErr);
+            
         }
 
         const committeesData = await getSystemDirectus().request(readItems('committees', {
@@ -55,7 +55,7 @@ export async function getCommittees(): Promise<Committee[]> {
         const parsed = committeesSchema.safeParse(committeesWithMembers);
 
         if (!parsed.success) {
-            console.error('[committees.actions#getCommittees] Validation failed:', JSON.stringify(parsed.error.format(), null, 2));
+            
             return [];
         }
 
@@ -63,12 +63,12 @@ export async function getCommittees(): Promise<Committee[]> {
             const redis = await getRedis();
             await redis.setex(COMMITTEES_CACHE_KEY, COMMITTEES_TTL, JSON.stringify(parsed.data));
         } catch (cacheStoreErr) {
-            console.warn('[committees.actions#getCommittees] Cache storage failed:', cacheStoreErr);
+            
         }
 
         return parsed.data;
     } catch (err) {
-        console.error('[committees.actions#getCommittees] Error:', err);
+        
         return [];
     }
 }

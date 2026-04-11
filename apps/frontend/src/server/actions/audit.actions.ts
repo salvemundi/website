@@ -18,8 +18,8 @@ import {
     PUB_CRAWL_SIGNUP_FIELDS,
     SYSTEM_LOG_FIELDS
 } from "@salvemundi/validations";
-import { isSuperAdmin } from "@/lib/auth-utils";
-import { query } from '@/lib/db';
+import { isSuperAdmin } from "@/lib/auth";
+import { query } from '@/lib/database';
 
 export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' | 'INFO', payload?: any) {
     try {
@@ -37,7 +37,7 @@ export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' |
             }
         }));
     } catch (e) {
-        console.warn('[Audit] Failed to log action:', e);
+        
     }
 }
 
@@ -60,7 +60,7 @@ export async function getPendingSignupsAction() {
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
-        console.log("[AuditAction] Fetching all types of pending signups...");
+        
         // Fetch from all 3 collections
         // 1. Events
         const eventSignups = (await getSystemDirectus().request(readItems('event_signups', {
@@ -95,7 +95,7 @@ export async function getPendingSignupsAction() {
             },
             sort: ['-created_at'] as any
         }))) as any[];
-        console.log(`[AuditAction] Found ${membershipSignups.length} pending memberships.`);
+        
 
         // Aggregate and map
         const aggregated: PendingSignup[] = [
@@ -151,7 +151,7 @@ export async function getPendingSignupsAction() {
 
         return { success: true, data: aggregated.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) };
     } catch (err) {
-        console.error("[AuditAction] Fetch error:", err);
+        
         return { success: false, error: "Kon inschrijvingen niet ophalen." };
     }
 }
@@ -187,7 +187,7 @@ export async function approveSignupAction(id: string, type: string) {
         revalidatePath('/beheer/logging');
         return { success: true };
     } catch (err) {
-        console.error("[AuditAction] Approve error:", err);
+        
         return { success: false, error: "Goedkeuren mislukt." };
     }
 }
@@ -201,7 +201,7 @@ export async function rejectSignupAction(id: string, type: string) {
     try {
         if (type.startsWith('membership')) {
             // Update transaction to rejected
-            const { query } = await import('@/lib/db');
+            const { query } = await import('@/lib/database');
             await query('UPDATE transactions SET approval_status = $1 WHERE mollie_id = $2', ['rejected', id]);
         } else {
             await getSystemDirectus().request(updateItem(collection as any, id as any, { approval_status: 'rejected' }));
@@ -215,7 +215,7 @@ export async function rejectSignupAction(id: string, type: string) {
         revalidatePath('/beheer/logging');
         return { success: true };
     } catch (err) {
-        console.error("[AuditAction] Reject error:", err);
+        
         return { success: false, error: "Afwijzen mislukt." };
     }
 }
@@ -230,7 +230,7 @@ export async function getAuditSettingsAction() {
         const flag = rows?.[0];
         return { success: true, data: { manual_approval: !!flag?.is_active } };
     } catch (e) {
-        console.error("[AuditAction] Settings fetch error (SQL):", e);
+        
         return { success: true, data: { manual_approval: false } };
     }
 }
@@ -245,11 +245,11 @@ export async function updateAuditSettingsAction(manualApproval: boolean) {
 
         if (flagId) {
             await query('UPDATE feature_flags SET is_active = $1 WHERE id = $2', [manualApproval, flagId]);
-            console.log(`[AuditAction] Update setting (SQL): manual_approval = ${manualApproval}`);
+            
         } else {
             await query('INSERT INTO feature_flags (name, is_active, route_match) VALUES ($1, $2, $3)', 
                 ['manual_approval', manualApproval, 'SYSTEM']);
-            console.log(`[AuditAction] Create setting (SQL): manual_approval = ${manualApproval}`);
+            
         }
         
         await logAdminAction('settings_change', 'SUCCESS', { 
@@ -260,7 +260,7 @@ export async function updateAuditSettingsAction(manualApproval: boolean) {
         revalidateTag('audit_settings', 'default');
         return { success: true };
     } catch (error) {
-        console.error("[AuditAction] Settings update error (SQL):", error);
+        
         return { success: false, error: "Bijwerken instellingen mislukt." };
     }
 }
@@ -278,7 +278,7 @@ export async function getSystemLogsAction(limit: number = 50) {
         
         return { success: true, data: logs };
     } catch (err) {
-        console.error("[AuditAction] Logs fetch error:", err);
+        
         return { success: false, error: "Kon logs niet ophalen." };
     }
 }

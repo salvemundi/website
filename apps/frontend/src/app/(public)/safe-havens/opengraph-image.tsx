@@ -1,4 +1,4 @@
-import { generateOGImage } from '@/lib/og-utils';
+import { generateOGImage } from '@/lib/utils/og-utils';
 
 export const runtime = 'edge';
 export const alt = 'Safe Havens - Salve Mundi';

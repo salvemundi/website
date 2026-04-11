@@ -31,7 +31,7 @@ export default async function AdminReisTripsFetcher({ searchParams }: AdminReisT
         reisSettings = settingsRes || { show: true };
     } catch (e) {
         const message = e instanceof Error ? e.message : 'Onbekende fout';
-        console.error('[AdminReisTripsFetcher] Error fetching data:', message);
+        
         // Do not throw to prevent build failures, return empty
     }
 

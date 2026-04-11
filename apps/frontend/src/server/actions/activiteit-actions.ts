@@ -31,7 +31,7 @@ import {
     fetchWithTimeout, 
     checkAdminAccess
 } from './activiteit-utils';
-import { query } from '@/lib/db';
+import { query } from '@/lib/database';
 
 /**
  * Fetches all published activities directly from the database (SQL-first).
@@ -56,7 +56,7 @@ export const getActivities = cache(async (userId?: string): Promise<(Activiteit 
             is_signed_up: signedUpEventIds.has(activity.id) || (activity as any).type === 'pub_crawl' && signedUpPubCrawlIds.has(activity.id)
         }));
     } catch (error) {
-        console.error('[Activities] getActivities failed:', error);
+        
         return [];
     }
 });
@@ -68,7 +68,7 @@ export const getActivityById = cache(async (id: string): Promise<Activiteit | nu
     try {
         return await getActivityByIdInternal(id);
     } catch (error) {
-        console.error(`[Activities] getActivityById failed for ${id}:`, error);
+        
         return null;
     }
 });
@@ -83,7 +83,7 @@ export async function getActivitySignups(eventId: string) {
     try {
         return await getActivitySignupsInternal(eventId);
     } catch (error) {
-        console.error(`[Activities] getActivitySignups failed for ${eventId}:`, error);
+        
         return [];
     }
 }
@@ -127,7 +127,7 @@ export async function signupForActivity(data: EventSignupForm) {
 
         // Extra check for existing signups (Guest by email or Member by ID)
         // This acts as a primary check before the DB constraint catches it
-        const { query } = await import('@/lib/db');
+        const { query } = await import('@/lib/database');
         const existingCheck = await query(
             `SELECT id FROM event_signups 
              WHERE event_id = $1 AND (participant_email = $2 OR (directus_relations IS NOT NULL AND directus_relations = $3))
@@ -180,12 +180,12 @@ export async function signupForActivity(data: EventSignupForm) {
                 return { success: true, checkoutUrl: paymentData.checkoutUrl };
             }
             
-            console.error('[Activities] Payment service error:', paymentData);
+            
             try {
                 await deleteEventSignupDb(signupId);
                 getSystemDirectus().request(deleteItem('event_signups', signupId)).catch(() => {});
             } catch (cleanupErr) {
-                console.error(`[Activities] Cleanup failed for ${signupId}:`, cleanupErr);
+                
             }
 
             return { success: false, error: 'Could not create payment for this signup.' };
@@ -210,7 +210,7 @@ export async function signupForActivity(data: EventSignupForm) {
             return { success: true, message: 'Inschrijving geslaagd!' };
         }
     } catch (error: any) {
-        console.error('[Activities] Signup error:', error);
+        
         
         // Postgres Code 23505: Unique Violation
         if (error.code === '23505') {
@@ -259,10 +259,10 @@ export async function getSignupStatus(
                 const finData = await finRes.json();
                 paymentStatus = (finData.payment_status as PaymentStatus) || 'open';
             } else {
-                console.warn(`[SignupStatus] Finance Service returned ${finRes.status} for ${financeId}`);
+                
             }
         } catch (err) {
-            console.error(`[SignupStatus] Finance status fetch failed for ${financeId}:`, err);
+            
         }
     }
 
@@ -375,7 +375,7 @@ export async function getSignupStatus(
 
         return { status: paymentStatus };
     } catch (error) {
-        console.error('[SignupStatus] Resolution failed:', error);
+        
         return { status: 'error' };
     }
 }
@@ -431,7 +431,7 @@ export async function getMyTickets() {
             return dateB - dateA;
         });
     } catch (error) {
-        console.error('[Activities] getMyTickets failed:', error);
+        
         return [];
     }
 }

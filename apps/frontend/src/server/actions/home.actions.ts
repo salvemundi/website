@@ -36,13 +36,13 @@ export async function getHeroBanners(): Promise<HeroBanner[]> {
 
         const parsed = heroBannersSchema.safeParse(mappedData);
         if (!parsed.success) {
-            console.error('[home.actions#getHeroBanners] Zod validation failed');
+            
             return [];
         }
 
         return parsed.data;
     } catch (err: unknown) {
-        console.error('[home.actions#getHeroBanners] Error:', err);
+        
         return [];
     }
 }
@@ -127,7 +127,7 @@ export async function getUpcomingActiviteiten(limit = 4): Promise<Activiteit[]> 
         const parsed = activiteitenSchema.safeParse(allEvents);
         return parsed.success ? (parsed.data as any) : [];
     } catch (err: unknown) {
-        console.error('[home.actions#getUpcomingActiviteiten] Error:', err);
+        
         return [];
     }
 }
@@ -144,7 +144,7 @@ export async function getSponsors(): Promise<Sponsor[]> {
         const parsed = sponsorsSchema.safeParse(rawData);
         return parsed.success ? parsed.data : [];
     } catch (err: unknown) {
-        console.error('[home.actions#getSponsors] Error:', err);
+        
         return [];
     }
 }

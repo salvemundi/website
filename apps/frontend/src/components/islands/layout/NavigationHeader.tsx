@@ -8,10 +8,10 @@ import {
     Menu, X, Sparkles, Shield, MapPin, LogOut,
     Home, User, CalendarDays, Users, Beer, Map, Mail,
 } from 'lucide-react';
-import { authClient } from '@/lib/auth-client';
+import { authClient } from '@/lib/auth';
 import { ThemeToggle } from '@/components/islands/layout/ThemeToggle';
-import { ROUTES } from '@/lib/routes';
-import { getImageUrl } from '@/lib/image-utils';
+import { ROUTES } from '@/lib/config/routes';
+import { getImageUrl } from '@/lib/utils/image-utils';
 interface NavigationHeaderProps {
     disabledRoutes?: string[];
     initialSession?: { user?: SessionUser | null } | null;
@@ -298,7 +298,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                                     try {
                                         await authClient.signIn.social({ provider: 'microsoft', callbackURL: '/profiel' });
                                     } catch (error) {
-                                        console.error('Fout bij inloggen:', error);
+                                        
                                     }
                                 }}
                                 className="flex cursor-pointer items-center justify-center gap-2 rounded-full font-semibold px-3 py-1.5 h-8 w-[88px] text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg bg-[var(--color-purple-50)] text-[var(--color-purple-700)]"
@@ -473,7 +473,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                                             try {
                                                 await authClient.signIn.social({ provider: 'microsoft', callbackURL: '/profiel' });
                                             } catch (error) {
-                                                console.error('Fout bij inloggen:', error);
+                                                
                                             }
                                         }}
                                         className="flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow-sm transition cursor-pointer"

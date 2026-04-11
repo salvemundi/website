@@ -37,7 +37,7 @@ import { createDirectus, staticToken, rest } from "@directus/sdk";
 import { AdminResource } from '@/shared/lib/permissions-config';
 import { getPermissions, hasPermission, type UserPermissions } from '@/shared/lib/permissions';
 import { getRedis } from "@/server/auth/redis-client";
-import { getComputedCouponStatus } from "@/lib/coupon-utils";
+import { getComputedCouponStatus } from "@/lib/coupons";
 import { fetchUserMetadataDb, fetchUserCommitteesDb } from "./user-db.utils";
 
 const pool = new Pool({
@@ -79,7 +79,7 @@ export async function checkAdminAccess() {
             user.committees = committees;
         }
     } catch (e: any) {
-        console.error("[Auth#checkAdminAccess] SQL enrichment failed:", e);
+        
     }
 
     if (!user.name && (user.first_name || user.last_name)) {
@@ -248,7 +248,7 @@ export async function setImpersonateToken(token: string) {
             );
             impCommittees = rows;
         } catch (e) {
-            console.error("[setImpersonateToken] Failed to fetch committees:", e);
+            
         }
 
         const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();

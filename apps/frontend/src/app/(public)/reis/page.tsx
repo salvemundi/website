@@ -6,7 +6,7 @@ import { ReisInfoIsland } from '@/components/islands/reis/ReisInfoIsland';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import Link from 'next/link';
-import { getImageUrl } from '@/lib/image-utils';
+import { getImageUrl } from '@/lib/utils/image-utils';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { getCurrentUserProfileAction } from '@/server/actions/reis.actions';

@@ -13,18 +13,16 @@ import {
     tripSignupActivitySchema,
     type ReisPaymentEnrichment
 } from '@salvemundi/validations';
-import { getSystemDirectus } from '@/lib/directus';
+import { query } from '@/lib/database';
 import { 
-    readItem, 
-    readItems, 
-    updateItem, 
-    createItem, 
-    deleteItems 
-} from '@directus/sdk';
+    fetchTripSignupByIdDb, 
+    fetchTripByIdDb, 
+    fetchTripActivitiesByTripIdDb,
+    fetchSelectedSignupActivitiesDb
+} from './reis-db.utils';
 import { auth } from '@/server/auth/auth';
 import { headers as nextHeaders } from 'next/headers';
 import { getRedis } from '@/server/auth/redis-client';
-import { query } from '@/lib/db';
 
 /**
  * Validates if the current request has access to a signup.
@@ -33,40 +31,25 @@ import { query } from '@/lib/db';
  */
 async function validateAccess(signupId: number, token?: string) {
     try {
-        const directus = getSystemDirectus();
         const headers = await nextHeaders();
         const session = await auth.api.getSession({ headers });
 
-        const filter: any = { id: { _eq: signupId } };
+        const signup = await fetchTripSignupByIdDb(signupId);
+        if (!signup) {
+            return { authorized: false, error: 'Aanmelding niet gevonden.' };
+        }
         
-        // If guest token provided, use it
-        if (token) {
-            filter.access_token = { _eq: token };
+        // 1. Guest access via token
+        if (token && signup.access_token === token) {
+            return { authorized: true, signup };
         } 
-        // Otherwise, require session and check ownership
-        else if (session?.user?.id) {
-            filter.directus_relations = { _eq: session.user.id };
+        
+        // 2. Logged in user access via ownership
+        if (session?.user?.id && signup.directus_relations === session.user.id) {
+            return { authorized: true, signup };
         } 
-        else {
-            return { authorized: false, error: 'Geen toegang. Log in of gebruik de link uit de e-mail.' };
-        }
-
-        const signup = await directus.request(readItems('trip_signups', {
-            filter,
-            fields: [...TRIP_SIGNUP_FIELDS] as any,
-            limit: 1
-        }));
-
-        if (!signup || signup.length === 0) {
-            return { authorized: false, error: 'Aanmelding niet gevonden of ongeldig token.' };
-        }
-
-        const validated = tripSignupSchema.safeParse(signup[0]);
-        if (!validated.success) {
-            return { authorized: false, error: 'Database inconsistentie: Ongeldige aanmelding.' };
-        }
-
-        return { authorized: true, signup: validated.data };
+        
+        return { authorized: false, error: 'Geen toegang. Log in of gebruik de link uit de e-mail.' };
     } catch (err) {
         return { authorized: false, error: 'Interne fout bij autorisatie check.' };
     }
@@ -77,39 +60,33 @@ export async function getTripSignupByToken(signupId: number, token?: string) {
         const access = await validateAccess(signupId, token);
         if (!access.authorized || !access.signup) return { success: false, error: access.error };
 
-        const directus = getSystemDirectus();
         const signup = access.signup;
 
-        // 2. Fetch Trip and Activities
+        // 2. Fetch Trip and Activities via SQL
         const [tripRaw, allActivitiesRaw, selectedActivitiesRaw] = await Promise.all([
-            directus.request(readItem('trips', signup.trip_id as number, { fields: [...TRIP_FIELDS] as any })),
-            directus.request(readItems('trip_activities', {
-                filter: { trip_id: { _eq: signup.trip_id }, is_active: { _eq: true } },
-                fields: [...TRIP_ACTIVITY_FIELDS] as any,
-                sort: ['display_order'] as any
-            })),
-            directus.request(readItems('trip_signup_activities', {
-                filter: { trip_signup_id: { _eq: signupId } },
-                fields: [...TRIP_SIGNUP_ACTIVITY_FIELDS] as any
-            }))
+            fetchTripByIdDb(signup.trip_id),
+            fetchTripActivitiesByTripIdDb(signup.trip_id),
+            fetchSelectedSignupActivitiesDb(signupId)
         ]);
+
+        if (!tripRaw) return { success: false, error: 'Reisgegevens niet gevonden.' };
 
         // 3. Robust Zod parsing
         const tripVal = tripSchema.safeParse(tripRaw);
         if (!tripVal.success) {
-            console.error('[getTripSignupByToken] Trip schema mismatch:', tripVal.error.format());
-            return { success: false, error: 'Reisgegevens zijn niet compatibel met de huidige websiteversie.' };
+            
+            return { success: false, error: 'Reisgegevens zijn niet compatibel.' };
         }
 
-        const activitiesVal = tripActivitySchema.array().safeParse(allActivitiesRaw);
+        const activitiesVal = tripActivitySchema.array().safeParse(allActivitiesRaw.filter(a => a.is_active));
         if (!activitiesVal.success) {
-            console.error('[getTripSignupByToken] Activities schema mismatch:', activitiesVal.error.format());
+            
             return { success: false, error: 'Sommige reisactiviteiten bevatten ongeldige data.' };
         }
 
         const selectionsVal = tripSignupActivitySchema.array().safeParse(selectedActivitiesRaw);
         if (!selectionsVal.success) {
-            console.error('[getTripSignupByToken] Selections schema mismatch:', selectionsVal.error.format());
+            
             return { success: false, error: 'Je eerdere activiteitskeuzes konden niet worden geladen.' };
         }
 
@@ -124,7 +101,7 @@ export async function getTripSignupByToken(signupId: number, token?: string) {
         };
 
     } catch (err: any) {
-        console.error('Error fetching signup by token:', err);
+        
         return { success: false, error: 'Er is een fout opgetreden bij het ophalen van je gegevens. Probeer het later opnieuw.' };
     }
 }
@@ -147,13 +124,16 @@ export async function updateSignupDetails(signupId: number, data: ReisPaymentEnr
 
         await query(`UPDATE trip_signups SET ${setClause} WHERE id = $1`, [signupId, ...values]);
 
-        getSystemDirectus().request(updateItem('trip_signups', signupId, validated.data as any)).catch(err => {
-            console.error('Directus sync error:', err);
+        // Shadow Write (Directus)
+        const { getSystemDirectus } = await import('@/lib/directus');
+        const { updateItem } = await import('@directus/sdk');
+        getSystemDirectus().request(updateItem('trip_signups', signupId, validated.data)).catch(err => {
+            
         });
 
         return { success: true };
     } catch (err: any) {
-        console.error('Error updating signup details:', err);
+        
         return { success: false, error: 'Opslaan mislukt door een serverfout.' };
     }
 }
@@ -169,7 +149,7 @@ export async function syncSignupActivities(signupId: number, selections: { activ
 
         // 1. Simple 10s spin-lock
         for (let i = 0; i < 20; i++) {
-            const res = await (redis as any).set(lockKey, 'locked', 'EX', 10, 'NX');
+            const res = await redis.set(lockKey, 'locked', 'EX', 10, 'NX');
             if (res === 'OK') {
                 lockAcquired = true;
                 break;
@@ -218,7 +198,7 @@ export async function syncSignupActivities(signupId: number, selections: { activ
             await redis.del(lockKey);
         }
     } catch (err) {
-        console.error('Error syncing signup activities:', err);
+        
         return { success: false, error: 'Synchroniseren van activiteiten mislukt.' };
     }
 }
@@ -250,7 +230,7 @@ export async function initiateTripPaymentAction(signupId: number, paymentType: '
         return { success: true, checkoutUrl: data.checkoutUrl };
 
     } catch (err) {
-        console.error('Error initiating trip payment:', err);
+        
         return { success: false, error: 'Interne fout bij starten betaling.' };
     }
 }
@@ -265,7 +245,7 @@ export async function getPaymentStatusAction(mollieId: string) {
         const response = await fetch(`${FINANCE_SERVICE_URL}/api/finance/status/${mollieId}`);
         
         if (!response.ok) {
-            console.error('[getPaymentStatusAction] Finance service returned error:', response.status);
+            
             return { success: false, error: 'Status ophalen mislukt bij betaalservice.' };
         }
 
@@ -275,7 +255,7 @@ export async function getPaymentStatusAction(mollieId: string) {
             payment_status: data.payment_status as 'paid' | 'open' | 'expired' | 'failed' | 'canceled'
         };
     } catch (err) {
-        console.error('[reis-payment.actions#getPaymentStatusAction] Error:', err);
+        
         return { success: false, error: 'Interne fout bij ophalen betaalstatus.' };
     }
 }

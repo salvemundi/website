@@ -55,7 +55,7 @@ export async function GET(
             },
         });
     } catch (error) {
-        console.error('[api/assets] Proxy error:', error);
+        
         return new NextResponse('Internal Server Error', { status: 500 });
     }
 }

@@ -142,7 +142,7 @@ export default function ReisDeelnemerDetailIsland({
                         <div className="bg-[var(--beheer-card-bg)]/50 backdrop-blur-sm rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] p-6 space-y-4">
                             <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">
                                 <span>Aangemeld op</span>
-                                <span className="text-[var(--beheer-text)]">{initialSignup.created_at ? initialSignup.created_at.toString() : '-'}</span>
+                                <span className="text-[var(--beheer-text)]">{initialSignup.date_created ? initialSignup.date_created.toString() : '-'}</span>
                             </div>
                             <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">
                                 <span>Deelnemer ID</span>

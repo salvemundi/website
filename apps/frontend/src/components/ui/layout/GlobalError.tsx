@@ -17,7 +17,7 @@ export default function GlobalError({
 }: GlobalErrorProps) {
     useEffect(() => {
         // Log the error to an error reporting service if available
-        console.error('Caught error:', error);
+        
     }, [error]);
 
     return (

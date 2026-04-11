@@ -41,7 +41,7 @@ export async function getCommitteesInternal(): Promise<Committee[]> {
             name: i.name || '',
         })) as Committee[];
     } catch (e) {
-        console.error('[AdminVerenigingQueries] Fetch committees failed:', e);
+        
         return [];
     }
 }
@@ -67,7 +67,7 @@ export async function getCommitteeMembersInternal(committeeId: string): Promise<
                 isLeader: r.is_leader || false,
             }));
     } catch (e) {
-        console.error('[AdminVerenigingQueries] Fetch members failed:', e);
+        
         return [];
     }
 }
@@ -89,7 +89,7 @@ export async function getUniqueCommitteeMembersCountInternal(): Promise<number> 
 
         return uniqueUserIds.size;
     } catch (e) {
-        console.error('[AdminVerenigingQueries] Unique count failed:', e);
+        
         return 0;
     }
 }

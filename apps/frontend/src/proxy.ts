@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-import { PUBLIC_ROUTES } from '@/lib/routes';
+import { PUBLIC_ROUTES } from '@/lib/config/routes';
 import { getRedis } from '@/server/auth/redis-client';
-import { getDisabledRoutes, FLAGS_CACHE_KEY } from '@/lib/feature-flags';
+import { getDisabledRoutes, FLAGS_CACHE_KEY } from '@/lib/config/feature-flags';
 
 
 /**
@@ -59,7 +59,7 @@ async function proxy(request: NextRequest) {
 
     const disabledRoutes = await getDisabledRoutes();
     if (disabledRoutes.some(r => pathname === r || pathname.startsWith(`${r}/`))) {
-        console.warn(`[Proxy] BLOCKED: Route ${pathname} is disabled. Rewriting to /404`);
+        
         return withSecurity(NextResponse.rewrite(new URL('/404', request.url)));
     }
 
@@ -118,7 +118,7 @@ async function proxy(request: NextRequest) {
 
             return nextWithNonce();
         } catch (error) {
-            console.error('[Proxy] Auth gating critical error:', error);
+            
             return withSecurity(NextResponse.rewrite(new URL('/404', request.url)));
         }
     }

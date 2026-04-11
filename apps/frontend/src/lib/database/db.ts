@@ -1,3 +1,4 @@
+import 'server-only';
 import { Pool } from 'pg';
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -12,7 +13,7 @@ const pool = new Pool({
 });
 
 pool.on('error', (err) => {
-    console.error('[DB-Pool] Unexpected error on idle client', err);
+    
 });
 
 export async function query(text: string, params?: any[]) {
@@ -23,7 +24,7 @@ export async function query(text: string, params?: any[]) {
         // console.debug(`[DB-Query] Executed in ${duration}ms`, { text, rows: res.rowCount });
         return res;
     } catch (e) {
-        console.error('[DB-Query] Error:', e);
+        
         throw e;
     }
 }

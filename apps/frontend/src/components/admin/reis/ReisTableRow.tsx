@@ -5,7 +5,7 @@ import { format } from 'date-fns';
 import { Loader2, Edit, Trash2, Send, AlertCircle, ChevronDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { TripSignup, TripSignupActivity } from '@salvemundi/validations';
-import { mapActivityOptionIdToName, parseActivityOptions, parseSelectedOptions } from '@/lib/reis-utils';
+import { mapActivityOptionIdToName, parseActivityOptions, parseSelectedOptions } from '@/lib/reis';
 
 interface ReisTableRowProps {
     signup: TripSignup;
@@ -65,7 +65,7 @@ export default function ReisTableRow({
                     ) : (
                         <div className="relative group min-w-[120px]">
                             <select
-                                value={signup.status}
+                                value={signup.status || 'registered'}
                                 onClick={(e) => e.stopPropagation()}
                                 onChange={(e) => onStatusChange(signup.id, e.target.value)}
                                 className={`beheer-status-select status-${signup.status}`}>

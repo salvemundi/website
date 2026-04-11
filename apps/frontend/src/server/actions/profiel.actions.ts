@@ -14,7 +14,7 @@ import {
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 
-import { query } from '@/lib/db';
+import { query } from '@/lib/database';
 import { fetchUserPubCrawlSignupsDb } from './kroegentocht-db.utils';
 import { fetchUserEventSignupsDb } from './event-db.utils';
 
@@ -31,13 +31,13 @@ export async function getUserEventSignups(overrideUserId?: string): Promise<Even
         const parsed = eventSignupSchema.array().safeParse(registrations);
 
         if (!parsed.success) {
-            console.error('[Profiel#getEventSignups] Validation failed:', parsed.error.flatten());
+            
             return registrations as any;
         }
 
         return parsed.data;
     } catch (err: any) {
-        console.error('[Profiel#getEventSignups] failed:', err);
+        
         return [];
     }
 }
@@ -53,7 +53,7 @@ export async function getUserPubCrawlSignups(overrideUserId?: string): Promise<a
     try {
         return await fetchUserPubCrawlSignupsDb(targetUserId);
     } catch (err: any) {
-        console.error('[Profiel#getPubCrawlSignups] failed:', err);
+        
         return [];
     }
 }
@@ -77,13 +77,13 @@ export async function getUserTransactions(overrideUserId?: string): Promise<Tran
         const parsed = transactionSchema.array().safeParse(res.rows);
 
         if (!parsed.success) {
-            console.error('[Profiel#getTransactions] Validation failed:', parsed.error.flatten());
+            
             return res.rows as any;
         }
 
         return parsed.data;
     } catch (err: any) {
-        console.error('[Profiel#getTransactions] failed:', err);
+        
         return [];
     }
 }
@@ -101,13 +101,13 @@ export async function getWhatsAppGroups(): Promise<WhatsAppGroup[]> {
         const parsed = whatsappGroupSchema.array().safeParse(res.rows);
 
         if (!parsed.success) {
-            console.error('[Profiel#getWhatsAppGroups] Validation failed:', parsed.error.flatten());
+            
             return res.rows as any;
         }
 
         return parsed.data;
     } catch (err: any) {
-        console.error('[Profiel#getWhatsAppGroups] failed:', err);
+        
         return [];
     }
 }

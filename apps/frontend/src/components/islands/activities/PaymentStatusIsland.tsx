@@ -58,7 +58,7 @@ export default function PaymentStatusIsland({
                 }
             }
         } catch (err) {
-            console.error('[PaymentStatus] Check failed:', err);
+            
             if (attempts < maxAttempts) {
                 setAttempts(prev => prev + 1);
             }

@@ -13,7 +13,7 @@ import { headers } from 'next/headers';
 
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems, createItem } from '@directus/sdk';
-import { query } from '@/lib/db';
+import { query } from '@/lib/database';
 import { revalidateTag, revalidatePath, unstable_noStore as noStore } from 'next/cache';
 
 const getMailUrl = () => process.env.MAIL_SERVICE_URL;
@@ -38,7 +38,7 @@ export async function getIntroSettings() {
             disabled_message: data?.message ?? 'De inschrijvingen voor de introweek zijn momenteel gesloten.',
         };
     } catch (e) {
-        console.error('[IntroAction] getIntroSettings (SQL) failed:', e);
+        
         return { show: false, disabled_message: 'De inschrijvingen voor de introweek zijn momenteel gesloten.' };
     }
 }
@@ -91,7 +91,7 @@ export async function submitIntroSignup(data: IntroSignupForm): Promise<{ succes
     try {
         await getSystemDirectus().request(createItem('intro_signups' as any, payload as any));
     } catch (e) {
-        console.error('[IntroAction] Failed in Directus creation:', e);
+        
         throw new Error('Er is een fout opgetreden bij je inschrijving');
     }
 
@@ -108,7 +108,7 @@ export async function submitIntroSignup(data: IntroSignupForm): Promise<{ succes
                 phone: payload.phone_number,
             }
         })
-    }).catch(e => console.error('[IntroAction] Mail trigger proxy failed', e));
+    }).catch(() => {});
 
     return { success: true };
 }
@@ -147,7 +147,7 @@ export async function submitIntroParentSignup(data: IntroParentSignupForm): Prom
         revalidatePath('/beheer/intro');
         return { success: true };
     } catch (e) {
-        console.error('[IntroParentAction] Failed:', e);
+        
         throw new Error('Er is een fout opgetreden tijdens de intro-ouder inschrijving');
     }
 }

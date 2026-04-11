@@ -69,7 +69,7 @@ export default function AzureSyncIsland({ isLoading: propIsLoading = false }: { 
                 setLastUpdated(new Date());
             }
         } catch (err) {
-            console.error('Failed to fetch sync status:', err);
+            
         } finally {
             setIsLoading(false);
         }

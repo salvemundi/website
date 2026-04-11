@@ -7,9 +7,9 @@ import 'swiper/css';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
-import { authClient } from '@/lib/auth-client';
+import { authClient } from '@/lib/auth';
 import type { HeroBanner, Activiteit } from '@salvemundi/validations';
-import { getImageUrl } from '@/lib/image-utils';
+import { getImageUrl } from '@/lib/utils/image-utils';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { formatDate } from '@/shared/lib/utils/date';
 

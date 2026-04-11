@@ -74,7 +74,7 @@ async function AdminReisDashboardContent({ searchParams }: AdminReisPageProps) {
         trips = tripsRes || [];
         reisSettings = settingsRes || { show: true };
     } catch (e) {
-        console.error('[AdminReisPage] Error fetching dashboard data:', e);
+        
     }
 
     if (!trips || trips.length === 0) {
@@ -125,7 +125,7 @@ async function AdminReisSignupsTable({ tripId, trip }: { tripId: number, trip: a
             getTripSignupActivitiesAction(tripId)
         ]);
     } catch (e: any) {
-        console.error('[AdminReisSignupsTable] Error fetching signups data:', e.message);
+        
     }
 
     // Initialize map for all signups to avoid "Loading..." state in UI

@@ -1,6 +1,6 @@
 'use server';
 
-import { query } from '@/lib/db';
+import { query } from '@/lib/database';
 import { checkAdminAccess } from './admin.actions';
 import { revalidatePath } from 'next/cache';
 
@@ -23,7 +23,7 @@ export async function getMailSettings() {
             }))
         };
     } catch (e) {
-        console.error('[AdminMailAction] getMailSettings failed:', e);
+        
         return { success: false, error: 'Ophalen mail instellingen mislukt' };
     }
 }
@@ -41,7 +41,7 @@ export async function toggleMailSetting(key: string) {
         revalidatePath('/beheer/mail');
         return { success: true };
     } catch (e) {
-        console.error('[AdminMailAction] toggleMailSetting failed:', e);
+        
         return { success: false, error: 'Bijwerken instelling mislukt' };
     }
 }

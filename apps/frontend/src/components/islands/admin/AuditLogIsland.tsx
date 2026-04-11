@@ -45,7 +45,7 @@ export default function AuditLogIsland() {
             if (settingsRes.success && settingsRes.data) setManualApproval(settingsRes.data.manual_approval);
             if (logsRes.success && logsRes.data) setLogs(logsRes.data);
         } catch (err) {
-            console.error("Failed to load audit data", err);
+            
             showToast('Fout bij laden audit data', 'error');
         } finally {
             setIsLoading(false);

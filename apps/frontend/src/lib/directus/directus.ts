@@ -1,5 +1,4 @@
 import 'server-only';
-import 'server-only';
 import { createDirectus, rest, staticToken } from '@directus/sdk';
 import { type DirectusSchema } from '@salvemundi/validations';
 
@@ -21,7 +20,7 @@ export function getSystemDirectus() {
                 
 
                 // Add next tags for sticker-related items to enable granular revalidation
-                const nextOptions: any = (options as any)?.next || {};
+                const nextOptions = (options as any)?.next || {};
                 const tags: string[] = nextOptions.tags || [];
 
                 if (urlStr.includes('/items/Stickers') && !tags.includes('stickers')) {
@@ -34,22 +33,24 @@ export function getSystemDirectus() {
                     tags.push('reis-status');
                 }
 
-                return fetch(urlStr, {
+                const requestInit: RequestInit = {
                     ...options,
                     headers: {
-                        ...(options as any)?.headers,
+                        ...(options?.headers as Record<string, string>),
                         'Cache-Control': 'no-cache, no-store, must-revalidate',
                         'Pragma': 'no-cache',
                         'Expires': '0',
                     },
-                    cache: 'no-store', // Absolutely bypass Data Cache
+                    cache: 'no-store',
                     next: {
                         ...nextOptions,
                         tags,
-                        revalidate: 0 // Invalidate-on-demand behavior
+                        revalidate: 0
                     },
-                    signal: AbortSignal.timeout(15000), // Slightly more generous timeout for high load
-                } as any);
+                    signal: AbortSignal.timeout(15000),
+                };
+
+                return fetch(urlStr, requestInit);
             }
         }
     })
