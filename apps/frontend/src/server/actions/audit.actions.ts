@@ -2,7 +2,7 @@
 
 import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
-import { revalidateTag, revalidatePath } from "next/cache";
+import { revalidateTag, revalidatePath, unstable_noStore as noStore } from "next/cache";
 import { getSystemDirectus } from "@/lib/directus";
 import { 
     readItems, 
@@ -55,10 +55,12 @@ async function checkAuditAccess() {
 }
 
 export async function getPendingSignupsAction() {
+    noStore();
     const admin = await checkAuditAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
+        console.log("[AuditAction] Fetching all types of pending signups...");
         // Fetch from all 3 collections
         // 1. Events
         const eventSignups = (await getSystemDirectus().request(readItems('event_signups', {
@@ -93,6 +95,7 @@ export async function getPendingSignupsAction() {
             },
             sort: ['-created_at'] as any
         }))) as any[];
+        console.log(`[AuditAction] Found ${membershipSignups.length} pending memberships.`);
 
         // Aggregate and map
         const aggregated: PendingSignup[] = [
