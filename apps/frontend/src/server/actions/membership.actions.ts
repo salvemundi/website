@@ -13,6 +13,7 @@ import { revalidateTag } from 'next/cache';
 import { rateLimit } from '../utils/ratelimit';
 import { query } from '@/lib/database';
 import { getExpandedEnv } from '../utils/env';
+import { getValidCoupon } from '../utils/coupon.utils';
 
 const getFinanceServiceUrl = () =>
     getExpandedEnv('FINANCE_SERVICE_URL');
@@ -38,62 +39,20 @@ export async function validateCouponAction(formData: FormData) {
         return { success: false, error: 'Te veel verzoeken. Probeer het later opnieuw.' };
     }
 
-    try {
-        // Direct SQL validation (Pentest-safe via $1 parameters)
-        const sql = `
-            SELECT 
-                discount_type, 
-                discount_value, 
-                description, 
-                usage_count, 
-                usage_limit, 
-                valid_from, 
-                valid_until, 
-                is_active
-            FROM coupons
-            WHERE UPPER(coupon_code) = UPPER($1)
-            LIMIT 1
-        `;
+    const result = await getValidCoupon(parsed.data.couponCode);
 
-        const result = await query(sql, [parsed.data.couponCode.trim()]);
-        const coupon = result.rows[0];
-
-        if (!coupon) {
-            return { success: false, error: 'Coupon niet gevonden' };
-        }
-
-        // 1. Manual Toggle Check
-        if (!coupon.is_active) {
-            return { success: false, error: 'Deze coupon is momenteel niet actief' };
-        }
-
-        // 2. Date Validation Logic
-        const now = new Date();
-        
-        if (coupon.valid_from && new Date(coupon.valid_from) > now) {
-            return { success: false, error: 'Deze coupon is nog niet geldig' };
-        }
-
-        if (coupon.valid_until && new Date(coupon.valid_until) < now) {
-            return { success: false, error: 'Deze coupon is verlopen' };
-        }
-
-        // 3. Usage Limit Check
-        if (coupon.usage_limit !== null && (coupon.usage_count || 0) >= coupon.usage_limit) {
-            return { success: false, error: 'Deze coupon is al maximaal gebruikt' };
-        }
-
-        return {
-            success: true,
-            discount: Number(coupon.discount_value),
-            type: coupon.discount_type,
-            description: coupon.description || `Korting: ${coupon.discount_value}${coupon.discount_type === 'percentage' ? '%' : ' EUR'}`
-        };
-    } catch (error: any) {
-        // Log the error for internal monitoring (Server-side only)
-        // In a real production app, use a dedicated logger here.
-        return { success: false, error: 'Fout bij valideren van coupon' };
+    if (!result.valid || !result.coupon) {
+        return { success: false, error: result.error || 'Coupon niet gevonden' };
     }
+
+    const { coupon } = result;
+
+    return {
+        success: true,
+        discount: coupon.discount_value,
+        type: coupon.discount_type,
+        description: `Korting: ${coupon.discount_value}${coupon.discount_type === 'percentage' ? '%' : ' EUR'}`
+    };
 }
 
 export async function initiateMembershipPaymentAction(formData: SignupFormData) {
@@ -122,6 +81,21 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
     const isCommitteeMember = committees.length > 0;
 
     const baseAmount = (isCommitteeMember && isExpired) ? 10.00 : 20.00;
+    let finalAmount = baseAmount;
+
+    // Server-side Price Re-calculation & Coupon Re-validation (Pentest/IDOR Mitigation)
+    if (parsed.data.coupon) {
+        const result = await getValidCoupon(parsed.data.coupon);
+        if (result.valid && result.coupon) {
+            const { coupon } = result;
+            const discountValue = coupon.discount_type === 'percentage' 
+                ? (baseAmount * coupon.discount_value / 100) 
+                : coupon.discount_value;
+            
+            // Strictly enforce bounds: Min €0.01 (Mollie), Max baseAmount
+            finalAmount = Math.max(0.01, Math.min(baseAmount, baseAmount - discountValue));
+        }
+    }
 
     const url = `${getFinanceServiceUrl()}/api/payments/create`;
 
@@ -130,7 +104,7 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
             method: 'POST',
             headers: getInternalHeaders(),
             body: JSON.stringify({
-                amount: baseAmount,
+                amount: finalAmount,
                 description: isExpired ? 'Verlenging Salve Mundi Lidmaatschap' : 'Inschrijving Salve Mundi Lidmaatschap',
                 registrationType: 'membership',
                 isContribution: true,
