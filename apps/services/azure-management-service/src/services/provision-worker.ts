@@ -62,12 +62,12 @@ export class ProvisionWorkerService {
                         };
 
                         const upnPrefix = `${normalize(task.firstName)}.${normalize(task.lastName)}`.replace(/\.+/g, '.').replace(/^\.|\.$/g, '');
-                        const upn = `${upnPrefix}@lid.salvemundi.nl`;
-
-                        console.log(`[ProvisionWorker] Provisioning ${task.email} as ${upn}...`);
                         
                         // 2. Create User in Azure
                         const token = await TokenService.getAccessToken();
+                        const upn = await GraphService.generateUniqueUpn(upnPrefix, token);
+                        
+                        console.log(`[ProvisionWorker] Provisioning ${task.email} as ${upn}...`);
                         
                         const formatLocalDate = (date: Date) => {
                             return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -151,6 +151,32 @@ export class ProvisionWorkerService {
                             await redis.zadd(this.QUEUE_KEY, Date.now() + delay, JSON.stringify(task));
                         } else {
                             console.error(`[ProvisionWorker] Max retries reached for ${task.email}`);
+                            // Graceful failure logging: create a system_log in Directus
+                            try {
+                                const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL;
+                                const directusToken = process.env.DIRECTUS_STATIC_TOKEN;
+                                if (directusUrl && directusToken) {
+                                    await fetch(`${directusUrl}/items/system_logs`, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Authorization': `Bearer ${directusToken}`,
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: JSON.stringify({
+                                            type: 'provisioning_failed',
+                                            status: 'ERROR',
+                                            payload: { 
+                                                email: task.email, 
+                                                name: `${task.firstName} ${task.lastName}`, 
+                                                error: err.message,
+                                                timestamp: new Date().toISOString()
+                                            }
+                                        })
+                                    });
+                                }
+                            } catch (logErr) {
+                                console.error(`[ProvisionWorker] Failed to write system_logs for dead-letter ${task.email}`, logErr);
+                            }
                         }
                     }
                 }

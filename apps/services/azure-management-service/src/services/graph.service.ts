@@ -60,6 +60,38 @@ export class GraphService {
     }
 
     /**
+     * Resolves a unique User Principal Name by checking active directory
+     * and appending a number if the chosen name is already taken.
+     */
+    static async generateUniqueUpn(baseName: string, token: string, domain: string = 'lid.salvemundi.nl'): Promise<string> {
+        const client = this.getClient(token);
+        let candidateUpn = `${baseName}@${domain}`;
+        let counter = 0;
+
+        while (true) {
+            if (counter > 0) {
+                candidateUpn = `${baseName}${counter}@${domain}`;
+            }
+
+            try {
+                const response = await client.api('/users')
+                    .filter(`userPrincipalName eq '${candidateUpn}'`)
+                    .select('id')
+                    .get();
+
+                if (!response.value || response.value.length === 0) {
+                    return candidateUpn;
+                }
+            } catch (err: any) {
+                console.error(`[GraphService] Error verifying UPN ${candidateUpn}:`, err.message);
+                throw err;
+            }
+
+            counter++;
+        }
+    }
+
+    /**
      * Creates a new user in Microsoft Entra ID.
      */
     static async createUser(
