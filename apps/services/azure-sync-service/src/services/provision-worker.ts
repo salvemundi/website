@@ -1,5 +1,5 @@
 import { Redis } from 'ioredis';
-import { SyncJob } from './sync.job.js';
+import { SyncJob } from './sync/sync-job.js';
 import { TokenService } from './token.service.js';
 
 interface ProvisionTask {

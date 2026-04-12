@@ -148,4 +148,26 @@ export class GraphService {
 
         return result;
     }
+    
+    /**
+     * Adds a member to a group in Azure AD.
+     */
+    static async addGroupMember(groupId: string, userId: string, token: string) {
+        const client = this.getClient(token);
+        const memberUrl = `https://graph.microsoft.com/v1.0/directoryObjects/${userId}`;
+
+        return await client.api(`/groups/${groupId}/members/$ref`)
+            .post({
+                "@odata.id": memberUrl
+            });
+    }
+
+    /**
+     * Removes a member from a group in Azure AD.
+     */
+    static async removeGroupMember(groupId: string, userId: string, token: string) {
+        const client = this.getClient(token);
+        return await client.api(`/groups/${groupId}/members/${userId}/$ref`)
+            .delete();
+    }
 }

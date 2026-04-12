@@ -39,11 +39,15 @@ export async function getPendingSignupsInternal(): Promise<PendingSignup[]> {
     }
 }
 
-export async function getSystemLogsInternal(limit: number = 50): Promise<{ logs: any[]; totalCount: number }> {
+export async function getSystemLogsInternal(limit: number = 50, source: 'admin' | 'system' = 'admin'): Promise<{ logs: any[]; totalCount: number }> {
     try {
+        const filter = source === 'admin' 
+            ? "WHERE type NOT LIKE 'system_%'" 
+            : "WHERE type LIKE 'system_%'";
+
         const [logsResult, countResult] = await Promise.all([
-            query(`SELECT * FROM system_logs ORDER BY created_at DESC LIMIT $1`, [limit]),
-            query(`SELECT COUNT(*)::int AS total FROM system_logs`)
+            query(`SELECT * FROM system_logs ${filter} ORDER BY created_at DESC LIMIT $1`, [limit]),
+            query(`SELECT COUNT(*)::int AS total FROM system_logs ${filter}`)
         ]);
         
         const logs = logsResult.rows.map(r => ({
