@@ -75,6 +75,7 @@ export async function DashboardHub({
             title: "Systeem",
             icon: <Settings />,
             items: [
+                { title: "Azure Sync", value: "Beheer", icon: <Zap />, subtitle: "Azure AD", href: "/beheer/sync", colorClass: "blue" as const, disabled: !permissions.canAccessSync },
                 { title: "Mail", value: "Beheer", icon: <Mail />, subtitle: "Mailinglijsten", href: "/beheer/mail", colorClass: "purple" as const, disabled: !permissions.canAccessMail },
                 { title: "Logboek", value: "Bekijken", icon: <FileText />, subtitle: "Activiteiten", href: "/beheer/logging", colorClass: "amber" as const, disabled: !permissions.canAccessLogging },
                 { title: "Test Modus", value: "Inschakelen", icon: <UserCheck />, subtitle: "Impersonatie", href: "/beheer/impersonate", colorClass: "teal" as const, disabled: !permissions.isIct },

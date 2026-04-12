@@ -171,14 +171,15 @@ export class SyncJob {
      * Entry point for a single user synchronization.
      */
     static async syncByEntraId(redis: Redis, entraId: string, token: string) {
-        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-        if (!uuidRegex.test(entraId)) throw new Error(`Onveldige Entra ID format: "${entraId}".`);
+        console.log(`[SYNC] [single-${entraId}] Starting single-user sync...`);
+        const startTime = Date.now();
 
         const [committees, allLeden, allMemberships] = await Promise.all([
             DirectusService.getAllCommittees(),
             DirectusService.getAllUsers(),
             DirectusService.getAllCommitteeMembers()
         ]);
+        console.log(`[SYNC] [single-${entraId}] Pre-fetched Directus data in ${Date.now() - startTime}ms`);
 
         const committeeCache = new Map<string, any>();
         for (const c of committees) if (c.azure_group_id) committeeCache.set(c.azure_group_id, c);
@@ -193,15 +194,20 @@ export class SyncJob {
             membershipCache.set(m.user_id, list);
         }
 
+        console.log(`[SYNC] [single-${entraId}] Fetching user from Graph...`);
         const aUser = await GraphService.getUser(entraId, token);
         if (!aUser) throw new Error(`Entra ID ${entraId} niet gevonden in Azure AD.`);
+        console.log(`[SYNC] [single-${entraId}] Graph user fetched: ${aUser.mail || aUser.userPrincipalName}`);
 
         const membershipMap = new Map<string, Map<number, boolean>>();
         const userMap = new Map<number, boolean>();
+        
+        console.log(`[SYNC] [single-${entraId}] Fetching user groups from Graph...`);
         const userGroups = await GraphService.getUserGroups(aUser.id, token);
         for (const group of userGroups) {
             const dComm = committeeCache.get(group.id);
             if (!dComm) continue;
+            // Note: Parallelizing this could help if there are many groups
             const owners = await GraphService.getGroupOwners(group.id, token);
             userMap.set(dComm.id, owners.includes(aUser.id));
         }
@@ -212,6 +218,7 @@ export class SyncJob {
             jobId: `single-${entraId}`, startTime: new Date().toISOString()
         };
 
+        console.log(`[SYNC] [single-${entraId}] Fetching main group details (Active/Expired)...`);
         const mainGroupDetails = await GraphService.getBatchGroupDetails([GROUP_ACTIVE_LID, GROUP_EXPIRED_LID], token);
         const mainMembershipState = new Map<string, Set<string>>();
         for (const [groupId, details] of mainGroupDetails) {
@@ -221,9 +228,10 @@ export class SyncJob {
                 mainMembershipState.set(entraId, s);
             }
         }
+        console.log(`[SYNC] [single-${entraId}] Pre-sync setup completed in ${Date.now() - startTime}ms`);
 
         const ctx: SyncContext & { membershipMap: Map<string, Map<number, boolean>> } = {
-            redis, status, options: { fields: ['membership_expiry', 'geboortedatum', 'phone_number', 'committees'] },
+            redis, status, options: { fields: ['membership_expiry', 'geboortedatum', 'phone_number'] },
             token, committeeCache, ownerCache: new Map(), userCacheByEntra, membershipCache, membershipMap, mainMembershipState
         };
 

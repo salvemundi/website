@@ -287,6 +287,14 @@ export default function AuditLogIsland() {
                             logs={systemLogs}
                             onRefresh={loadData}
                             title="Systeem Events"
+                            actions={
+                                <a
+                                    href="/beheer/sync"
+                                    className="flex items-center gap-2 px-3 py-1.5 bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-[var(--beheer-accent)]/20 transition-all active:scale-95"
+                                >
+                                    Sync Beheren
+                                </a>
+                            }
                         />
                     )}
 

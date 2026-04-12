@@ -17,7 +17,7 @@ import {
     getCommitteeMembersInternal, 
     getUniqueCommitteeMembersCountInternal,
 } from '@/server/queries/admin-vereniging.queries';
-import { triggerUserSyncAction } from './azure-sync.actions';
+import { triggerUserSyncAction } from './azure-sync/sync-tasks.actions';
 
 const getAzureManagementUrl = () => process.env.AZURE_MANAGEMENT_SERVICE_URL;
 

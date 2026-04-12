@@ -38,10 +38,10 @@ export default async function syncRoutes(fastify: FastifyInstance) {
 
             return { message: 'Sync job started' };
         } catch (err: any) {
-            fastify.log.error(`[SYNC] Failed to start job: ${err.message}`);
+            fastify.log.error(`[SYNC] Failed to start job: ${err.stack || err.message}`);
             return reply.status(500).send({
                 error: 'Failed to start sync job',
-                details: err.message
+                details: err.message || String(err)
             });
         }
     });
@@ -59,10 +59,10 @@ export default async function syncRoutes(fastify: FastifyInstance) {
             await SyncJob.syncByEntraId(fastify.redis, userId, accessToken);
             return { message: `Sync for Entra ID ${userId} completed` };
         } catch (err: any) {
-            fastify.log.error(`[SYNC] Failed to sync user ${userId}: ${err.message}`);
+            fastify.log.error(`[SYNC] Failed to sync user ${userId}: ${err.stack || err.message || err}`);
             return reply.status(500).send({
                 error: 'Failed to sync user',
-                details: err.message
+                details: err.message || (typeof err === 'object' ? JSON.stringify(err) : String(err))
             });
         }
     });

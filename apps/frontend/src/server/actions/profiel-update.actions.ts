@@ -11,7 +11,7 @@ import { getSystemDirectus } from '@/lib/directus';
 import { updateUser } from '@directus/sdk';
 import { getRedis } from '@/server/auth/redis-client';
 import { cookies } from 'next/headers';
-import { triggerUserSyncAction } from './azure-sync.actions';
+import { triggerUserSyncAction } from './azure-sync/sync-tasks.actions';
 
 export async function updateUserProfile(data: z.infer<typeof updateProfileSchema>) {
     const session = await auth.api.getSession({ headers: await headers() });
