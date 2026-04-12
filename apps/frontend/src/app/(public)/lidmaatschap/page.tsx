@@ -11,6 +11,8 @@ export const metadata = {
     description: 'Beheer je lidmaatschap bij Salve Mundi en krijg toegang tot exclusieve activiteiten.',
 };
 
+export const dynamic = 'force-dynamic';
+
 import { fetchUserCommitteesDb } from '@/server/actions/user-db.utils';
 
 async function MembershipDynamicContent({ session }: { session: any }) {
@@ -18,8 +20,17 @@ async function MembershipDynamicContent({ session }: { session: any }) {
     const isGuest = !user;
     const isExpired = user && user.membership_status !== 'active';
     
-    // Fetch committees to check if user is an active member
-    const committees = user ? await fetchUserCommitteesDb(user.id) : [];
+    // Fetch committees to check if user is an active member for pricing
+    let committees = [];
+    if (user) {
+        try {
+            committees = await fetchUserCommitteesDb(user.id);
+        } catch (error) {
+            console.error('[Membership] Error fetching committees:', error);
+            throw new Error('Er is een fout opgetreden bij het laden van je gegevens. Probeer het later opnieuw.');
+        }
+    }
+    
     const isCommitteeMember = committees.length > 0;
     
     // Pricing logic: Regular 20.00, Committee Renewal 10.00
