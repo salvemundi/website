@@ -6,31 +6,33 @@ import { headers } from 'next/headers';
 
 import { query } from '@/lib/database';
 
-async function fetchSafeHavensFromDirectus(): Promise<SafeHaven[]> {
+async function fetchSafeHavensFromDirectus(isAuthenticated: boolean): Promise<SafeHaven[]> {
     try {
-        const { rows } = await query(
-            'SELECT id, contact_name, email, phone_number, image, sort FROM safe_havens LIMIT 10',
-            []
-        );
+        const queryText = isAuthenticated
+            ? 'SELECT id, contact_name, email, phone_number, image FROM safe_havens LIMIT 10'
+            : 'SELECT id, contact_name, image FROM safe_havens LIMIT 10';
+
+        const { rows } = await query(queryText, []);
 
         const mappedData = (rows || []).map((item) => ({
             id: item.id,
             naam: item.contact_name,
-            email: item.email,
-            telefoon: item.phone_number,
+            email: item.email || null,
+            telefoon: item.phone_number || null,
             afbeelding_id: item.image,
             status: 'published' as const,
-            sort: item.sort ?? 0,
+            sort: 0,
         }));
 
         const parsed = safeHavensSchema.safeParse(mappedData);
         if (!parsed.success) {
+            console.error('Safe Haven parsing error:', parsed.error);
             return [];
         }
 
         return parsed.data;
     } catch (err: unknown) {
-        
+        console.error('Safe Haven DB error:', err);
         return [];
     }
 }
@@ -38,11 +40,5 @@ async function fetchSafeHavensFromDirectus(): Promise<SafeHaven[]> {
 export async function getSafeHavens(): Promise<SafeHaven[]> {
     const session = await auth.api.getSession({ headers: await headers() });
     const isAuthenticated = !!session?.user;
-    const allHavens = await fetchSafeHavensFromDirectus();
-
-    return allHavens.map((haven) => ({
-        ...haven,
-        email: isAuthenticated ? haven.email : null,
-        telefoon: isAuthenticated ? haven.telefoon : null,
-    }));
+    return fetchSafeHavensFromDirectus(isAuthenticated);
 }
