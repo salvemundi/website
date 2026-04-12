@@ -17,7 +17,7 @@ COPY apps/services/mail-service/package.json ./apps/services/mail-service/
 COPY packages/validations/package.json ./packages/validations/
 
 # Install dependencies
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --no-frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --no-frozen-lockfile --ignore-patch
 
 # Step 1: Build Shared Logic (packages/validations)
 COPY packages/validations ./packages/validations

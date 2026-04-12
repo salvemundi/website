@@ -12,7 +12,7 @@ COPY patches ./patches
 COPY apps/services/azure-management-service/package.json apps/services/azure-management-service/tsconfig.json ./apps/services/azure-management-service/
 COPY packages/validations/package.json packages/validations/tsconfig.json ./packages/validations/
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --no-frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --no-frozen-lockfile --ignore-patch
 
 # Step 1: Build Shared Logic (packages/validations)
 COPY packages/validations ./packages/validations
