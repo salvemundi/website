@@ -45,8 +45,6 @@ export async function validateCouponAction(formData: FormData) {
     const url = `${serviceUrl}/api/coupons/validate`;
 
     try {
-        console.log(`[CouponValidation] Fetching ${url} for ${parsed.data.couponCode}...`);
-
         const response = await fetch(url, {
             method: 'POST',
             headers: getInternalHeaders(),
@@ -57,8 +55,6 @@ export async function validateCouponAction(formData: FormData) {
         // 1. Check if response is JSON and parse it
         const contentType = response.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
-            const text = await response.text();
-            console.error(`[CouponValidation] Non-JSON response (Status: ${response.status}):`, text.substring(0, 200));
             return { success: false, error: 'Betaalservice gaf een ongeldig antwoord. Probeer het later opnieuw.' };
         }
 
@@ -75,7 +71,6 @@ export async function validateCouponAction(formData: FormData) {
  
         // 2. Handle specific error codes if available
         if (response.status === 401) {
-            console.error('[CouponValidation] Internal Auth Failed: Check Tokens');
             return { success: false, error: 'Authenticatiefout met de betaalservice.' };
         }
 
@@ -84,8 +79,6 @@ export async function validateCouponAction(formData: FormData) {
             error: data.error || 'De opgegeven coupon is niet geldig of de service is niet bereikbaar.' 
         };
     } catch (error: any) {
-        console.error('[CouponValidation] Fetch Exception:', error.message, 'Target URL:', url);
-        
         // Provide a clearer error message for connection failures
         if (error.name === 'TimeoutError' || error.message.includes('fetch failed')) {
             return { success: false, error: 'Kon geen verbinding maken met de betaalservice. Controleer de netwerkverbinding.' };
