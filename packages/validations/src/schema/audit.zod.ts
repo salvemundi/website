@@ -11,7 +11,7 @@ export const PendingSignupSchema = z.object({
     approval_status: z.enum(['pending', 'approved', 'rejected', 'auto_approved']),
     payment_status: z.string(),
     coupon_code: z.string().optional().nullable(),
-    type: z.enum(['membership_new', 'membership_renewal', 'event', 'pub_crawl', 'trip'])
+    type: z.enum(['membership_new', 'membership_renewal'])
 });
 
 export type PendingSignup = z.infer<typeof PendingSignupSchema>;

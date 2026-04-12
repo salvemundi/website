@@ -13,8 +13,6 @@ interface PendingTabProps {
     isBulkProcessing: 'approve' | 'reject' | null;
     filteredSignups: PendingSignup[];
     selectedIds: Set<string>;
-    filterType: string;
-    onSetFilterType: (type: string) => void;
     onToggleSelectAll: () => void;
     onToggleSelectOne: (id: string) => void;
     onApprove: (id: string, type: string) => void;
@@ -30,8 +28,6 @@ export default function PendingTab({
     isBulkProcessing,
     filteredSignups,
     selectedIds,
-    filterType,
-    onSetFilterType,
     onToggleSelectAll,
     onToggleSelectOne,
     onApprove,
@@ -44,17 +40,7 @@ export default function PendingTab({
         <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] shadow-xl overflow-hidden">
             <div className="p-6 border-b border-[var(--beheer-border)]/50 flex flex-wrap items-center justify-between gap-4">
                 <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
-                    {['all', 'event', 'trip', 'pub_crawl', 'membership'].map(type => (
-                        <button
-                            key={type}
-                            onClick={() => onSetFilterType(type)}
-                            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${filterType === type 
-                                ? 'bg-[var(--beheer-accent)] text-white shadow-[var(--shadow-glow)]' 
-                                : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] hover:bg-[var(--beheer-card-soft)]'}`}
-                        >
-                            {type.replace('_', ' ')}
-                        </button>
-                    ))}
+                    <span className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">Lidmaatschap Wachtrij</span>
                 </div>
                 
                 <div className="flex items-center gap-3">

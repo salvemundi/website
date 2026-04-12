@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
     Clock, Tag, Server, RefreshCw, History, Shield
 } from 'lucide-react';
@@ -37,8 +37,6 @@ export default function AuditLogIsland() {
     const [isBulkProcessing, setIsBulkProcessing] = useState<'approve' | 'reject' | null>(null);
     const [manualApproval, setManualApproval] = useState(false);
     
-    // Filters
-    const [filterType, setFilterType] = useState<string>('all');
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
     const loadData = async () => {
@@ -66,13 +64,8 @@ export default function AuditLogIsland() {
         loadData();
     }, []);
 
-    const filteredSignups = useMemo(() => {
-        if (filterType === 'all') return signups;
-        if (filterType === 'membership') {
-            return signups.filter(s => s.type === 'membership_new' || s.type === 'membership_renewal');
-        }
-        return signups.filter(s => s.type === filterType);
-    }, [signups, filterType]);
+    // Only membership types remain in the queue
+    const filteredSignups = signups;
 
     const handleApprove = async (id: string, type: string) => {
         setIsProcessing(id);
@@ -248,8 +241,6 @@ export default function AuditLogIsland() {
                             isBulkProcessing={isBulkProcessing}
                             filteredSignups={filteredSignups}
                             selectedIds={selectedIds}
-                            filterType={filterType}
-                            onSetFilterType={setFilterType}
                             onToggleSelectAll={toggleSelectAll}
                             onToggleSelectOne={toggleSelectOne}
                             onApprove={handleApprove}

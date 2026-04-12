@@ -62,25 +62,18 @@ export async function approveSignupAction(id: string, type: string) {
     const admin = await checkAuditAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
 
-    const collection = type === 'event' ? 'event_signups' : type === 'pub_crawl' ? 'pub_crawl_signups' : 'trip_signups';
-
     try {
-        if (type.startsWith('membership')) {
-            // Internal call to finance-service to release the payment and trigger Azure sync
-            const res = await fetch(`${process.env.FINANCE_SERVICE_URL}/api/payments/approve`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${process.env.INTERNAL_SERVICE_TOKEN}`
-                },
-                body: JSON.stringify({ mollieId: id })
-            });
+        // Internal call to finance-service to release the payment and trigger Azure sync
+        const res = await fetch(`${process.env.FINANCE_SERVICE_URL}/api/payments/approve`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.INTERNAL_SERVICE_TOKEN}`
+            },
+            body: JSON.stringify({ mollieId: id })
+        });
 
-            if (!res.ok) throw new Error(`Finance approval failed: ${await res.text()}`);
-        } else {
-            // event/pub_crawl/trip signups don't have approval_status;
-            // approval is implicit (payment already confirmed). Just log it.
-        }
+        if (!res.ok) throw new Error(`Finance approval failed: ${await res.text()}`);
         
         await logAdminAction('signup_approved', 'SUCCESS', { 
             signup_id: id, 
@@ -99,19 +92,9 @@ export async function rejectSignupAction(id: string, type: string) {
     const admin = await checkAuditAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
 
-    const collection = type === 'event' ? 'event_signups' : type === 'pub_crawl' ? 'pub_crawl_signups' : 'trip_signups';
-
     try {
-        if (type.startsWith('membership')) {
-            // Update transaction to rejected
-            await query('UPDATE transactions SET approval_status = $1 WHERE mollie_id = $2', ['rejected', id]);
-        } else if (type === 'trip') {
-            await query(`UPDATE trip_signups SET status = 'cancelled' WHERE id = $1`, [id]);
-        } else if (type === 'event') {
-            await query(`UPDATE event_signups SET payment_status = 'cancelled' WHERE id = $1`, [id]);
-        } else if (type === 'pub_crawl') {
-            await query(`UPDATE pub_crawl_signups SET payment_status = 'cancelled' WHERE id = $1`, [id]);
-        }
+        // Update transaction to rejected
+        await query('UPDATE transactions SET approval_status = $1 WHERE mollie_id = $2', ['rejected', id]);
         
         await logAdminAction('signup_rejected', 'SUCCESS', { 
             signup_id: id, 
