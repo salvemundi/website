@@ -5,7 +5,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import { signupForActivity } from '@/server/actions/activiteit-actions';
-import { eventSignupFormSchema, type EventSignupForm } from '@salvemundi/validations';
+import { eventSignupFormSchema, type EventSignupForm } from '@salvemundi/validations/schema/activity.zod';
 import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
 import { PhoneInput } from '@/shared/ui/PhoneInput';

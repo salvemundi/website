@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Sponsor } from '@salvemundi/validations';
+import type { Sponsor } from '@salvemundi/validations/schema/home.zod';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { Skeleton } from '../Skeleton';
 

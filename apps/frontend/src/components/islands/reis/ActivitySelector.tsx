@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Check, Info, Plus, X } from 'lucide-react';
-import type { TripActivity, TripSignupActivity } from '@salvemundi/validations';
+import type { TripActivity, TripSignupActivity } from '@salvemundi/validations/schema/admin-reis.zod';
 
 interface ActivitySelectorProps {
     activities: TripActivity[];

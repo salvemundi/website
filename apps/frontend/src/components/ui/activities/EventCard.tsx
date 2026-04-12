@@ -1,5 +1,5 @@
 import React from 'react';
-import { type Activity } from '@salvemundi/validations';
+import { type Activity } from '@salvemundi/validations/schema/activity.zod';
 import { Calendar, Clock, MapPin, Tag } from 'lucide-react';
 import { Skeleton } from '../Skeleton';
 import Link from 'next/link';

@@ -41,3 +41,6 @@ export const validateCouponSchema = z.object({
 export const transactionStatusSchema = z.object({
     id: z.string().min(1, 'Transactie ID is verplicht'),
 });
+
+export type ValidateCoupon = z.infer<typeof validateCouponSchema>;
+export type TransactionStatus = z.infer<typeof transactionStatusSchema>;

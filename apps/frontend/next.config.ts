@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import withSerwistInit from '@serwist/next';
 
 const nextConfig: NextConfig = {
     output: 'standalone',
@@ -8,7 +9,10 @@ const nextConfig: NextConfig = {
     experimental: {
         ppr: false,
         serverSourceMaps: true,
+        webpackBuildWorker: false,
+        workerThreads: false,
     },
+    staticPageGenerationTimeout: 1000,
     logging: false,
     images: {
         remotePatterns: [
@@ -68,6 +72,21 @@ const nextConfig: NextConfig = {
         ];
     },
     transpilePackages: ['better-auth'],
+    webpack: (config) => {
+        config.resolve.fallback = { 
+            ...config.resolve.fallback,
+            fs: false, 
+            net: false, 
+            tls: false 
+        };
+        return config;
+    },
 };
 
+const withSerwist = withSerwistInit({
+    swSrc: 'src/sw.ts',
+    swDest: 'public/sw.js',
+});
+
+// export default withSerwist(nextConfig);
 export default nextConfig;

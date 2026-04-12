@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { format } from 'date-fns';
 import { CreditCard, Clock, Tag, CheckCircle } from 'lucide-react';
-import type { Transaction } from '@salvemundi/validations';
+import type { Transaction } from '@salvemundi/validations/schema/profiel.zod';
 import { Skeleton } from '../../ui/Skeleton';
 
 interface TransactionsIslandProps {

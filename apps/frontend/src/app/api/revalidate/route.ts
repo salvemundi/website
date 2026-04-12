@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
-import { timingSafeCompare } from '@salvemundi/validations';
+import { timingSafeCompare } from '@salvemundi/validations/security';
 
 export async function POST(request: NextRequest) {
     const token = process.env.INTERNAL_SERVICE_TOKEN;

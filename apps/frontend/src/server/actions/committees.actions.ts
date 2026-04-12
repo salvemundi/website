@@ -1,6 +1,7 @@
 'use server';
 
-import { committeesSchema, type Committee, COMMITTEE_FIELDS, COMMITTEE_MEMBER_FIELDS } from '@salvemundi/validations';
+import { committeesSchema, type Committee } from '@salvemundi/validations/schema/committees.zod';
+import { COMMITTEE_FIELDS, COMMITTEE_MEMBER_FIELDS } from '@salvemundi/validations/directus/fields';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 import { getRedis } from '@/server/auth/redis-client';

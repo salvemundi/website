@@ -10,7 +10,7 @@ import {
     Trash2, 
     FileText 
 } from 'lucide-react';
-import type { IntroBlog } from '@salvemundi/validations';
+import type { IntroBlog } from '@salvemundi/validations/schema/intro.zod';
 import { Field, inputClass } from './IntroTabComponents';
 
 interface Props {

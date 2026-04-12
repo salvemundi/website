@@ -8,7 +8,7 @@ import { Input } from '@/shared/ui/Input';
 import { DateInput } from '@/shared/ui/DateInput';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { validateCouponAction, initiateMembershipPaymentAction } from '@/server/actions/membership.actions';
-import { signupSchema, type SignupFormData } from '@salvemundi/validations';
+import { signupSchema, type SignupFormData } from '@salvemundi/validations/schema/membership.zod';
 import { calculateDiscountedPrice } from '@/shared/lib/price-utils';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';

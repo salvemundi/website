@@ -13,7 +13,7 @@ import {
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { downloadCSV } from '@/lib/utils/export';
-import { PubCrawlSignup } from '@salvemundi/validations';
+import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 
 interface ExtendedSignup extends PubCrawlSignup {
     participants?: { name: string; initial: string }[];

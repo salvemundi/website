@@ -15,7 +15,7 @@ import {
     bulkApproveSignupsAction,
     bulkRejectSignupsAction
 } from '@/server/actions/audit.actions';
-import { PendingSignup } from '@salvemundi/validations';
+import { type PendingSignup } from '@salvemundi/validations/schema/audit.zod';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';

@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Plane, Loader2, Edit2, ChevronDown } from 'lucide-react';
-import type { Trip } from '@salvemundi/validations';
+import type { Trip } from '@salvemundi/validations/schema/admin-reis.zod';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { useState, useTransition } from 'react';

@@ -1,4 +1,4 @@
-import type { Document } from '@salvemundi/validations';
+import type { Document } from '@salvemundi/validations/schema/website.zod';
 import { getImageUrl } from '@/lib/utils/image-utils';
 
 interface DocumentenLijstProps {

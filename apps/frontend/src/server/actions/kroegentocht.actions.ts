@@ -7,12 +7,14 @@ import {
     pubCrawlTicketSchema,
     pubCrawlSignupSchema,
     pubCrawlSignupFormSchema,
-    type PubCrawlSignupForm,
-    PUB_CRAWL_EVENT_FIELDS,
-    PUB_CRAWL_SIGNUP_FIELDS,
+    type PubCrawlSignupForm
+} from '@salvemundi/validations/schema/kroegentocht.zod';
+import { 
+    PUB_CRAWL_EVENT_FIELDS, 
+    PUB_CRAWL_SIGNUP_FIELDS, 
     PUB_CRAWL_TICKET_FIELDS,
     EVENT_FIELDS
-} from '@salvemundi/validations';
+} from '@salvemundi/validations/directus/fields';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { revalidateTag, unstable_cache as cacheTag } from 'next/cache';

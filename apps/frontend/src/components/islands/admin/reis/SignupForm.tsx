@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import type { TripSignup } from '@salvemundi/validations';
+import type { TripSignup } from '@salvemundi/validations/schema/admin-reis.zod';
 import { DateInput } from '@/shared/ui/DateInput';
 
 interface SignupFormProps {

@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { Instagram, Facebook, Linkedin } from 'lucide-react';
 import { authClient } from '@/lib/auth';
 import { ROUTES } from '@/lib/config/routes';
-import type { Committee, Document } from '@salvemundi/validations';
+import type { Committee } from '@salvemundi/validations/schema/committees.zod';
+import type { Document } from '@salvemundi/validations/schema/website.zod';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 
 // ─── Props ────────────────────────────────────────────────────────────────────

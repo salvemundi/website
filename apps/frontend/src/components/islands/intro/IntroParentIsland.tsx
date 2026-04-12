@@ -7,7 +7,7 @@ import { submitIntroParentSignup } from '@/server/actions/intro.actions';
 import { FormField } from '@/shared/ui/FormField';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { Heart } from 'lucide-react';
-import { introParentSignupFormSchema, type IntroParentSignupForm } from '@salvemundi/validations';
+import { introParentSignupFormSchema, type IntroParentSignupForm } from '@salvemundi/validations/schema/intro.zod';
 
 interface IntroParentIslandProps {
     userName: string;

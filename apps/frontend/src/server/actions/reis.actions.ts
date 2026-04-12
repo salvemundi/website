@@ -10,13 +10,15 @@ import {
     type ReisTrip,
     type ReisTripSignup,
     type ReisSignupForm,
-    FEATURE_FLAG_FIELDS,
-    TRIP_FIELDS,
-    TRIP_SIGNUP_FIELDS,
-    SAFE_TRIP_SIGNUP_FIELDS,
-    USER_FULL_FIELDS,
-    TRIP_ID_FIELDS
-} from '@salvemundi/validations';
+} from '@salvemundi/validations/schema/reis.zod';
+import { 
+    FEATURE_FLAG_FIELDS, 
+    TRIP_FIELDS, 
+    TRIP_SIGNUP_FIELDS, 
+    SAFE_TRIP_SIGNUP_FIELDS, 
+    USER_FULL_FIELDS, 
+    TRIP_ID_FIELDS 
+} from '@salvemundi/validations/directus/fields';
 
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems, createItem, readUsers } from '@directus/sdk';

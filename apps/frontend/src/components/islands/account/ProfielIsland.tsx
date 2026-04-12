@@ -4,8 +4,7 @@ import React, { useMemo, useState, useEffect, useOptimistic, useTransition } fro
 import { startOfDay, isBefore } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth';
-import type { EventSignup } from '@salvemundi/validations';
-import { updateProfileSchema } from '@salvemundi/validations';
+import { type EventSignup, updateProfileSchema } from '@salvemundi/validations/schema/profiel.zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { updateUserProfile } from '@/server/actions/profiel-update.actions';

@@ -1,4 +1,6 @@
 import { Suspense } from 'react';
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 import { notFound } from 'next/navigation';
 import { getActivityById } from '@/server/actions/activiteit-actions';
 import ActivityDetailIsland from '@/components/islands/activities/ActivityDetailIsland';

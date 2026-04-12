@@ -3,7 +3,7 @@ import { readItems } from '@directus/sdk';
 import { 
     COMMITTEE_FIELDS, 
     COMMITTEE_MEMBER_FIELDS 
-} from '@salvemundi/validations';
+} from '@salvemundi/validations/directus/fields';
 
 /**
  * PURE QUERIES: No 'use server' and No headers() calls.

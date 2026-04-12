@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import FlipClock from './FlipClock';
-import type { Activiteit } from '@salvemundi/validations';
+import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { Skeleton } from '@/components/ui/Skeleton';
 
 interface ActivitiesBannerIslandProps {

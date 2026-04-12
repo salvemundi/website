@@ -7,7 +7,7 @@ import { getImageUrl } from '@/lib/utils/image-utils';
  // Keeping legacy getImageUrl logic, assuming it returns directus URL
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import type { ReisTrip } from '@salvemundi/validations';
+import type { ReisTrip } from '@salvemundi/validations/schema/reis.zod';
 import { SafeHtml } from '@/components/ui/security/SafeHtml';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 

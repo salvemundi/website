@@ -8,7 +8,7 @@ import CalendarView from "./CalendarView";
 import FeaturedEvent from "./FeaturedEvent";
 import DayDetails from "./DayDetails";
 import EventList from "./EventList";
-import type { Activiteit } from '@salvemundi/validations';
+import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { Skeleton } from "@/components/ui/Skeleton";
 import ActivityCardSkeleton from "@/components/ui/activities/ActivityCardSkeleton";
 
@@ -247,7 +247,7 @@ export default function ActivitiesProviderIsland({
                                 {selectedDay && (
                                     <DayDetails
                                         selectedDay={selectedDay}
-                                        events={events}
+                                        activities={events}
                                         onClose={() => setSelectedDay(null)}
                                         onEventClick={handleShowDetails}
                                     />

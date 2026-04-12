@@ -9,7 +9,7 @@ import {
     type PubCrawlEvent, 
     type PubCrawlSignup,
     type PubCrawlTicket
-} from '@salvemundi/validations';
+} from '@salvemundi/validations/schema/kroegentocht.zod';
 import { z } from 'zod';
 
 /**

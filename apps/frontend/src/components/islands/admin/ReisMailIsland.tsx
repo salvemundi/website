@@ -25,7 +25,7 @@ import {
     sendBulkTripEmail, 
     sendBulkPaymentEmails 
 } from '@/server/actions/reis-admin-signups.actions';
-import type { Trip, TripSignup } from '@salvemundi/validations';
+import type { Trip, TripSignup } from '@salvemundi/validations/schema/admin-reis.zod';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import AdminToast from '@/components/ui/admin/AdminToast';

@@ -6,10 +6,9 @@ import {
     tripSignupSchema,
     tripSignupActivitySchema,
     type TripSignup,
-    TRIP_SIGNUP_FIELDS,
-    type DbTripSignup,
     type TripSignupActivity
-} from '@salvemundi/validations';
+} from '@salvemundi/validations/schema/admin-reis.zod';
+import { TRIP_SIGNUP_FIELDS } from '@salvemundi/validations/directus/fields';
 import { requireReisAdmin } from './reis-admin-utils';
 import { 
     fetchAllTripSignupsDb, 

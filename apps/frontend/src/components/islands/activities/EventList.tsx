@@ -5,7 +5,7 @@ import ActiviteitCard from './ActiviteitCard';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { isEventPast } from '@/shared/lib/utils/date';
 import { useAuth } from '@/features/auth/providers/auth-provider';
-import type { Activiteit } from '@salvemundi/validations';
+import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
 
 interface EventListProps {
     events: (Activiteit & { is_signed_up?: boolean })[];

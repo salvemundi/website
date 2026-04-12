@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { query } from '@/lib/database';
-import { type Committee, committeeSchema } from '@salvemundi/validations';
+import { type Committee, committeeSchema } from '@salvemundi/validations/schema/committees.zod';
 
 export const eventSignupSchema = z.object({
     id: z.number(),

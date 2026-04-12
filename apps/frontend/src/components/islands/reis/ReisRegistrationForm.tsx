@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createTripSignup } from '@/server/actions/reis.actions';
-import { type ReisTrip, reisSignupFormSchema, type ReisSignupForm } from '@salvemundi/validations';
+import { type ReisTrip, reisSignupFormSchema, type ReisSignupForm } from '@salvemundi/validations/schema/reis.zod';
 import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
 import { DateInput } from '@/shared/ui/DateInput';

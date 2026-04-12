@@ -10,7 +10,7 @@ import AdminReisDashboardSkeleton from '@/components/ui/admin/AdminReisDashboard
 
 import { getReisSiteSettings } from '@/server/actions/reis.actions';
 
-import type { Trip } from '@salvemundi/validations';
+import type { Trip } from '@salvemundi/validations/schema/admin-reis.zod';
 
 interface AdminReisTripsFetcherProps {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;

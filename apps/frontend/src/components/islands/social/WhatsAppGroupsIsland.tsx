@@ -1,6 +1,6 @@
 'use client';
 
-import { WhatsAppGroup } from '@salvemundi/validations';
+import { type WhatsAppGroup } from '@salvemundi/validations/schema/profiel.zod';
 import { MessageCircle, ExternalLink, ShieldAlert } from 'lucide-react';
 import Link from 'next/link';
 import { stripHtml } from '@/shared/lib/text';

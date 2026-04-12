@@ -1,5 +1,5 @@
 import { query } from '@/lib/database';
-import { DashboardStatsSchema, type DashboardStats, type RecentActivity, RecentActivitySchema } from '@salvemundi/validations';
+import { DashboardStatsSchema, type DashboardStats, type RecentActivity, RecentActivitySchema } from '@salvemundi/validations/schema/admin-dashboard.zod';
 import { z } from 'zod';
 
 /**

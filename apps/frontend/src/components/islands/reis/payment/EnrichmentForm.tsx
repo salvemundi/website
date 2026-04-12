@@ -10,7 +10,8 @@ import {
     Bus 
 } from 'lucide-react';
 import { DateInput } from '@/shared/ui/DateInput';
-import { Trip, ReisPaymentEnrichment } from '@salvemundi/validations';
+import { type ReisPaymentEnrichment } from '@salvemundi/validations/schema/reis.zod';
+import { type Trip } from '@salvemundi/validations/schema/admin-reis.zod';
 
 interface EnrichmentFormProps {
     trip: Trip;

@@ -4,9 +4,9 @@ import {
     signupSchema, 
     validateCouponSchema, 
     transactionStatusSchema, 
-    type SignupFormData,
-    TRANSACTION_FIELDS 
-} from '@salvemundi/validations';
+    type SignupFormData
+} from '@salvemundi/validations/schema/membership.zod';
+import { TRANSACTION_FIELDS } from '@salvemundi/validations/directus/fields';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { revalidateTag } from 'next/cache';

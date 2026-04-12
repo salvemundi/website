@@ -69,3 +69,8 @@ export const updateProfileSchema = z.object({
   minecraft_username: z.string().optional().nullable(),
   phone_number: phoneNumberSchema.optional().or(z.literal('')).nullable(),
 });
+
+export type WhatsAppGroup = z.infer<typeof whatsappGroupSchema>;
+export type Transaction = z.infer<typeof transactionSchema>;
+export type EventSignup = z.infer<typeof eventSignupSchema>;
+export type UpdateProfileData = z.infer<typeof updateProfileSchema>;

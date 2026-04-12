@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import type { ReisTrip, ReisTripSignup } from '@salvemundi/validations';
+import type { ReisTrip, ReisTripSignup } from '@salvemundi/validations/schema/reis.zod';
 import { authClient } from '@/lib/auth';
 import { ReisSignupStatus } from './ReisSignupStatus';
 import { ReisRegistrationForm } from './ReisRegistrationForm';

@@ -4,9 +4,9 @@ import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import {
     tripSchema,
-    TRIP_FIELDS,
-    type DbTrip
-} from '@salvemundi/validations';
+} from '@salvemundi/validations/schema/admin-reis.zod';
+import { TRIP_FIELDS } from '@salvemundi/validations/directus/fields';
+import { type DbTrip } from '@salvemundi/validations/directus/schema';
 import { getSystemDirectus } from '@/lib/directus';
 import { 
     readItems, 

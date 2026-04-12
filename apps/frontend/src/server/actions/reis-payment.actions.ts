@@ -5,14 +5,18 @@ import {
     TRIP_FIELDS, 
     TRIP_SIGNUP_FIELDS, 
     TRIP_ACTIVITY_FIELDS,
-    TRIP_SIGNUP_ACTIVITY_FIELDS,
-    reisPaymentEnrichmentSchema,
+    TRIP_SIGNUP_ACTIVITY_FIELDS
+} from '@salvemundi/validations/directus/fields';
+import { 
+    reisPaymentEnrichmentSchema
+} from '@salvemundi/validations/schema/reis.zod';
+import {
     tripSchema,
     tripSignupSchema,
     tripActivitySchema,
-    tripSignupActivitySchema,
-    type ReisPaymentEnrichment
-} from '@salvemundi/validations';
+    tripSignupActivitySchema
+} from '@salvemundi/validations/schema/admin-reis.zod';
+import { type ReisPaymentEnrichment } from '@salvemundi/validations/schema/reis.zod';
 import { query } from '@/lib/database';
 import { 
     fetchTripSignupByIdDb, 

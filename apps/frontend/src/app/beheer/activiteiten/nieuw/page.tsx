@@ -7,7 +7,7 @@ import { readItems } from '@directus/sdk';
 import ActiviteitNieuwIsland from '@/components/islands/admin/activities/ActiviteitNieuwIsland';
 import ActiviteitNieuwSkeleton from '@/components/ui/admin/activities/ActiviteitNieuwSkeleton';
 
-export const experimental_ppr = true;
+
 
 async function getCommittees(user: any) {
     const memberships = user.committees || [];

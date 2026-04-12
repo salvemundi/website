@@ -1,7 +1,7 @@
 'use client';
 
 import { AlertCircle } from 'lucide-react';
-import type { TripSignup, TripSignupActivity } from '@salvemundi/validations';
+import type { TripSignup, TripSignupActivity } from '@salvemundi/validations/schema/admin-reis.zod';
 import ReisTableRow from './ReisTableRow';
 
 interface ReisTableProps {

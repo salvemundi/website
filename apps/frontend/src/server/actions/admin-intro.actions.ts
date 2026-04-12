@@ -10,12 +10,14 @@ import {
     INTRO_PLANNING_FIELDS,
     FEATURE_FLAG_FIELDS,
     INTRO_SIGNUP_FIELDS,
-    INTRO_PARENT_SIGNUP_FIELDS,
+    INTRO_PARENT_SIGNUP_FIELDS
+} from '@salvemundi/validations/directus/fields';
+import {
     introBlogSchema,
     introPlanningSchema,
     type IntroBlog,
     type IntroPlanningItem
-} from '@salvemundi/validations';
+} from '@salvemundi/validations/schema/intro.zod';
 
 import { 
     getIntroStatsInternal, 
