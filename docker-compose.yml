@@ -58,6 +58,8 @@ services:
       - REDIS_URL=${REDIS_URL}
       - PUBLIC_URL=${PUBLIC_URL}
       - MAIL_SERVICE_URL=http://mail-service:3003
+      - AZURE_MANAGEMENT_SERVICE_URL=http://management-service:3004
+      - AZURE_SYNC_SERVICE_URL=http://sync-service:3002
       - NEXT_APP_INTERNAL_URL=http://frontend:3000
       - TZ=Europe/Amsterdam
     volumes:
@@ -80,6 +82,7 @@ services:
       - DIRECTUS_STATIC_TOKEN=${DIRECTUS_STATIC_TOKEN}
       - DIRECTUS_SERVICE_URL=${INTERNAL_DIRECTUS_URL}
       - AZURE_MANAGEMENT_SERVICE_URL=http://management-service:3004
+      - MAIL_SERVICE_URL=http://mail-service:3003
       - REDIS_URL=${REDIS_URL}
       - TZ=Europe/Amsterdam
     volumes:
@@ -102,6 +105,7 @@ services:
       - AZURE_MAIL_SENDER=${AZURE_MAIL_SENDER}
       - DIRECTUS_STATIC_TOKEN=${DIRECTUS_STATIC_TOKEN}
       - DIRECTUS_SERVICE_URL=${INTERNAL_DIRECTUS_URL}
+      - PUBLIC_URL=${PUBLIC_URL}
       - REDIS_URL=${REDIS_URL}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}

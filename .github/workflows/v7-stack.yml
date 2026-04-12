@@ -200,9 +200,10 @@ jobs:
             echo "COMPOSE_PROJECT_NAME=v7-${ENV_NAME}" >> .env
             echo "TRUST_PROXY=true" >> .env
             echo "INTERNAL_DIRECTUS_URL=http://v7-core-directus:8055" >> .env
-            echo "AZURE_SYNC_SERVICE_URL=http://v7-acc-sync:3002" >> .env
-            echo "MAIL_SERVICE_URL=http://v7-acc-mail:3003" >> .env
-            echo "NEXT_APP_INTERNAL_URL=http://v7-acc-app:3000" >> .env
+            echo "AZURE_SYNC_SERVICE_URL=http://v7-${ENV_NAME}-sync:3002" >> .env
+            echo "AZURE_MANAGEMENT_SERVICE_URL=http://v7-${ENV_NAME}-management:3004" >> .env
+            echo "MAIL_SERVICE_URL=http://v7-${ENV_NAME}-mail:3003" >> .env
+            echo "NEXT_APP_INTERNAL_URL=http://v7-${ENV_NAME}-app:3000" >> .env
             echo "DB_HOST=v7-core-db" >> .env
 
             if [ ! -z "$REDIS_PASSWORD" ]; then
