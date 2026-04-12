@@ -17,7 +17,7 @@ COPY apps/services/mail-service/package.json ./apps/services/mail-service/
 COPY packages/validations/package.json ./packages/validations/
 
 # Install dependencies (including devDeps)
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --no-frozen-lockfile --ignore-patch
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --no-frozen-lockfile
 
 # Build shared validations first
 COPY packages/validations ./packages/validations

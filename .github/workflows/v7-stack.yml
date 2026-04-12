@@ -40,6 +40,7 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter=@salvemundi/validations build
+      - run: pnpm type-check
       - run: pnpm -r lint
 
   build-frontend:
