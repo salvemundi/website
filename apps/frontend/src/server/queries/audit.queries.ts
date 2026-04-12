@@ -39,23 +39,23 @@ export async function getPendingSignupsInternal(): Promise<PendingSignup[]> {
     }
 }
 
-export async function getSystemLogsInternal(limit: number = 50): Promise<any[]> {
+export async function getSystemLogsInternal(limit: number = 50): Promise<{ logs: any[]; totalCount: number }> {
     try {
-        const sql = `
-            SELECT * FROM system_logs
-            ORDER BY created_at DESC
-            LIMIT $1
-        `;
-        const { rows } = await query(sql, [limit]);
+        const [logsResult, countResult] = await Promise.all([
+            query(`SELECT * FROM system_logs ORDER BY created_at DESC LIMIT $1`, [limit]),
+            query(`SELECT COUNT(*)::int AS total FROM system_logs`)
+        ]);
         
-        return rows.map(r => ({
+        const logs = logsResult.rows.map(r => ({
             ...r,
             created_at: r.created_at instanceof Date ? r.created_at.toISOString() : r.created_at,
             payload: typeof r.payload === 'string' ? JSON.parse(r.payload) : r.payload
         }));
+
+        return { logs, totalCount: countResult.rows[0]?.total ?? 0 };
     } catch (error) {
         console.error('[AuditQueries] Failed to fetch system logs:', error);
-        return [];
+        return { logs: [], totalCount: 0 };
     }
 }
 
