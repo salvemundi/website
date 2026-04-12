@@ -1,7 +1,6 @@
 'use client';
 
-import React from 'react';
-import SyncStatus from '@/components/admin/sync/SyncStatus';
+import React, { useState, useEffect } from 'react';
 import SyncLogs from '@/components/admin/sync/SyncLogs';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Info, Activity } from 'lucide-react';
@@ -16,7 +15,14 @@ interface SyncMonitorIslandProps {
 }
 
 export default function SyncMonitorIsland({ isLoading, status, progress, lastUpdated, resultFilter, setResultFilter }: SyncMonitorIslandProps) {
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
     if (isLoading && !status) {
+
         return (
             <div className="bg-[var(--beheer-card-bg)] p-8 rounded-[2rem] border border-[var(--beheer-border)] shadow-sm skeleton-active min-h-[400px]">
                 <div className="h-4 w-32 mb-4" />
@@ -36,7 +42,7 @@ export default function SyncMonitorIsland({ isLoading, status, progress, lastUpd
                         <h3 className="text-xl font-black text-[var(--beheer-text)] uppercase tracking-tight">Sync Monitor</h3>
                         {lastUpdated && (
                             <p className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mt-1">
-                                Laatste update: {lastUpdated.toLocaleTimeString()}
+                                Laatste update: {mounted ? lastUpdated.toLocaleTimeString() : '--:--:--'}
                             </p>
                         )}
                     </div>
