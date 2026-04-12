@@ -196,6 +196,26 @@
         border-radius: 0.5rem;
         backdrop-filter: blur(4px);
     }
+
+    /* ── Skeleton Mask (Vercel/Meta Best Practice) ────────────────────────── */
+    .skeleton-active {
+        @apply pointer-events-none select-none relative overflow-hidden;
+    }
+
+    .skeleton-active * {
+        visibility: hidden !important; /* Preserves geometry, hides content */
+    }
+
+    .skeleton-active::before {
+        content: "";
+        @apply absolute inset-0 animate-pulse bg-[var(--beheer-card-soft)] rounded-[inherit] z-10;
+        background-image: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.05),
+            transparent
+        );
+    }
 }
 /* ── Beheer Dropdowns & Selects ────────────────────────────────────────── */
 .beheer-select {

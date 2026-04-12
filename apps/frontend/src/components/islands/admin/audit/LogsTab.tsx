@@ -9,20 +9,24 @@ interface LogsTabProps {
     logs: any[];
     onRefresh: () => void;
     title?: string;
+    actions?: React.ReactNode;
 }
 
-export default function LogsTab({ isLoading, logs, onRefresh, title = "Activiteitslogboek" }: LogsTabProps) {
+export default function LogsTab({ isLoading, logs, onRefresh, title = "Activiteitslogboek", actions }: LogsTabProps) {
     return (
         <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] shadow-xl overflow-hidden">
             <div className="p-6 border-b border-[var(--beheer-border)]/50 flex justify-between items-center">
                 <h3 className="text-lg font-black text-[var(--beheer-text)] uppercase tracking-tight">{title}</h3>
-                <button 
-                    onClick={onRefresh}
-                    disabled={isLoading}
-                    className="p-2 text-slate-400 hover:text-purple-600 transition-colors"
-                >
-                    <RefreshCw className={`h-5 w-5 ${isLoading ? 'animate-spin' : ''}`} />
-                </button>
+                <div className="flex items-center gap-2">
+                    {actions}
+                    <button 
+                        onClick={onRefresh}
+                        disabled={isLoading}
+                        className="p-2 text-slate-400 hover:text-purple-600 transition-colors"
+                    >
+                        <RefreshCw className={`h-5 w-5 ${isLoading ? 'animate-spin' : ''}`} />
+                    </button>
+                </div>
             </div>
             <div className="overflow-x-auto">
                 <table className="w-full text-left">

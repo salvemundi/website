@@ -110,7 +110,7 @@ export const USER_FULL_FIELDS = [
     ...USER_BASIC_FIELDS,
     // Essential for Azure AD synchronization and auth flows
     'phone_number', 'date_of_birth', 'entra_id', 'membership_expiry', 'description', 
-    'location', 'title', 'tags', 'admin_access', 'committees'
+    'location', 'title', 'tags', 'admin_access'
 ] as const;
 
 export const HERO_BANNER_FIELDS = [
