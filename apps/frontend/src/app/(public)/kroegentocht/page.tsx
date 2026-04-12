@@ -72,7 +72,7 @@ async function RegistrationSection() {
                             ))
                         ) : (
                             <>
-                                <p>De jaarlijkse Kroegentocht is een van de grootste evenementen die tweemaal per jaar wordt georganiseerd!</p>
+                                <p>De jaarlijkse Kroegentocht is een van de grootste activiteiten die tweemaal per jaar wordt georganiseerd!</p>
                                 <p>Dit is een fantastische kans om verschillende kroegen te bezoeken, nieuwe mensen te ontmoeten en een onvergetelijke avond te beleven met andere studenten en verenigingen.</p>
                             </>
                         )}
@@ -82,7 +82,7 @@ async function RegistrationSection() {
                 <section className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-lg">
                     <h2 className="text-xl sm:text-2xl font-black text-[var(--color-purple-theme)] mb-6 flex items-center gap-3">
                         <Calendar className="w-7 h-7" />
-                        Evenement Details
+                        Activiteit Details
                     </h2>
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -162,7 +162,7 @@ export default async function KroegentochtPage() {
                 contentPadding="py-20"
                 imageFilter="brightness(0.55)"
                 variant="centered"
-                description="Hét evenement van het jaar! Verken de beste kroegen van Eindhoven met je medestudenten."
+                description="Dé activiteit van het jaar! Verken de beste kroegen van Eindhoven met je medestudenten."
             />
 
             <main className="mx-auto max-w-7xl px-4 py-8 sm:py-10 md:py-12">

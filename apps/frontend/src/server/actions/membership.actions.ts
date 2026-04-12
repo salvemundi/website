@@ -13,12 +13,14 @@ import { revalidateTag } from 'next/cache';
 import { rateLimit } from '../utils/ratelimit';
 import { query } from '@/lib/database';
 
+import { getExpandedEnv } from '../utils/env';
+
 
 const getFinanceServiceUrl = () =>
-    process.env.FINANCE_SERVICE_URL;
+    getExpandedEnv('FINANCE_SERVICE_URL');
 
 const getInternalHeaders = () => {
-    const token = process.env.INTERNAL_SERVICE_TOKEN;
+    const token = getExpandedEnv('INTERNAL_SERVICE_TOKEN');
     return {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
@@ -39,14 +41,26 @@ export async function validateCouponAction(formData: FormData) {
     }
 
 
-    const url = `${getFinanceServiceUrl()}/api/coupons/validate`;
+    const serviceUrl = getFinanceServiceUrl();
+    const url = `${serviceUrl}/api/coupons/validate`;
 
     try {
+        console.log(`[CouponValidation] Fetching ${url} for ${parsed.data.couponCode}...`);
+
         const response = await fetch(url, {
             method: 'POST',
             headers: getInternalHeaders(),
             body: JSON.stringify({ couponCode: parsed.data.couponCode }),
+            signal: AbortSignal.timeout(10000), // Prevent hanging
         });
+
+        // 1. Check if response is JSON and parse it
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            console.error(`[CouponValidation] Non-JSON response (Status: ${response.status}):`, text.substring(0, 200));
+            return { success: false, error: 'Betaalservice gaf een ongeldig antwoord. Probeer het later opnieuw.' };
+        }
 
         const data = await response.json();
 
@@ -59,10 +73,24 @@ export async function validateCouponAction(formData: FormData) {
             };
         }
  
+        // 2. Handle specific error codes if available
+        if (response.status === 401) {
+            console.error('[CouponValidation] Internal Auth Failed: Check Tokens');
+            return { success: false, error: 'Authenticatiefout met de betaalservice.' };
+        }
+
+        return { 
+            success: false, 
+            error: data.error || 'De opgegeven coupon is niet geldig of de service is niet bereikbaar.' 
+        };
+    } catch (error: any) {
+        console.error('[CouponValidation] Fetch Exception:', error.message, 'Target URL:', url);
         
-        return { success: false, error: 'De opgegeven coupon is niet geldig of de service is niet bereikbaar.' };
-    } catch (error) {
-        
+        // Provide a clearer error message for connection failures
+        if (error.name === 'TimeoutError' || error.message.includes('fetch failed')) {
+            return { success: false, error: 'Kon geen verbinding maken met de betaalservice. Controleer de netwerkverbinding.' };
+        }
+
         return { success: false, error: 'Fout bij valideren van coupon' };
     }
 }

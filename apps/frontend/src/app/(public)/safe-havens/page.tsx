@@ -19,7 +19,7 @@ import PageHeader from '@/components/ui/layout/PageHeader';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 
 export const metadata: Metadata = {
-    title: 'Vertrouwenspersonen',
+    title: 'Safe Havens',
     description: 'Een veilig aanspreekpunt waar je terechtkunt met zorgen, vragen of problemen. Wij luisteren zonder te oordelen.',
 };
 
@@ -252,7 +252,7 @@ export default function SafeHavensPage() {
                                         <div className="flex items-center gap-3">
                                             <Shield className="h-5 w-5" />
                                             <span className="font-semibold text-sm sm:text-base">
-                                                Fontys Vertrouwenspersoon
+                                                Fontys Safe Haven
                                             </span>
                                         </div>
                                         <ExternalLink className="h-4 w-4 opacity-80 group-hover:opacity-100" />

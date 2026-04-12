@@ -47,7 +47,7 @@ export function KroegentochtInfo({
                         ))
                     ) : (
                         <>
-                            <p>De jaarlijkse Kroegentocht is een van de grootste evenementen die tweemaal per jaar wordt georganiseerd!</p>
+                            <p>De jaarlijkse Kroegentocht is een van de grootste activiteiten die tweemaal per jaar wordt georganiseerd!</p>
                             <p>Dit is een fantastische kans om verschillende kroegen te bezoeken, nieuwe mensen te ontmoeten en een onvergetelijke avond te beleven met andere studenten en verenigingen.</p>
                         </>
                     )}
@@ -57,7 +57,7 @@ export function KroegentochtInfo({
             <section className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-lg">
                 <h2 className="text-xl sm:text-2xl font-black text-[var(--color-purple-theme)] mb-6 flex items-center gap-3">
                     <Calendar className="w-7 h-7" />
-                    Evenement Details
+                    Activiteit Details
                 </h2>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">

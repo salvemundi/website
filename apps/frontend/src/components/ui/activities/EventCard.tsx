@@ -15,7 +15,7 @@ interface EventCardProps {
 }
 
 /**
- * UI Component voor een evenement-kaart.
+ * UI Component voor een activiteit-kaart.
  * Hybride loading-state direct geïntegreerd om CLS te voorkomen.
  */
 export const EventCard: React.FC<EventCardProps> = ({ 
@@ -27,7 +27,7 @@ export const EventCard: React.FC<EventCardProps> = ({
     href = "#"
 }) => {
     // Gebruik props of activity
-    const displayTitle = title || (activity as any)?.name || (activity as any)?.title || (activity as any)?.titel || 'Evenement';
+    const displayTitle = title || (activity as any)?.name || (activity as any)?.title || (activity as any)?.titel || 'Activiteit';
     const displayCategory = category || 'Activiteit';
     const displayDate = date || formatDate((activity as any)?.event_date || (activity as any)?.datum_start);
 

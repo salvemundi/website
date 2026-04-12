@@ -60,7 +60,7 @@ export default function ProfielSignups({
             ) : filteredSignups.length === 0 ? (
                 <div className="rounded-3xl border-2 border-dashed border-slate-300 dark:border-white/20 bg-slate-50 dark:bg-black/10 p-12 text-center shadow-inner">
                     <p className="text-[var(--color-purple-700)] dark:text-white font-bold text-lg mb-2">
-                        Je hebt je nog niet ingeschreven voor evenementen.
+                        Je hebt je nog niet ingeschreven voor activiteiten.
                     </p>
                     <p className="text-[var(--text-muted)] text-sm mb-6">
                         Bekijk de kalender om aankomende activiteiten te ontdekken
@@ -69,7 +69,7 @@ export default function ProfielSignups({
                         href="/activiteiten"
                         className="inline-flex items-center gap-2 rounded-full bg-[var(--color-purple-500)] px-8 py-3 text-sm font-bold text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
                     >
-                        Ontdek evenementen
+                        Ontdek activiteiten
                     </Link>
                 </div>
             ) : (

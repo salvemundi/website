@@ -37,8 +37,10 @@ async function proxy(request: NextRequest) {
     };
 
     const nextWithNonce = () => {
-        // Avoid cloning the request body for POST requests to prevent TypeError in Node.js Proxy
-        if (request.method === 'POST') {
+        // Avoid cloning the request body for requests that might have one (POST, PUT, PATCH, DELETE)
+        // to prevent 'TypeError: controller[kState].transformAlgorithm is not a function' in Node.js Proxy
+        const methodsWithBody = ['POST', 'PUT', 'PATCH', 'DELETE'];
+        if (methodsWithBody.includes(request.method)) {
             return withSecurity(NextResponse.next());
         }
 
@@ -127,8 +129,8 @@ async function proxy(request: NextRequest) {
 }
 
 export const config = {
-    // Exclude API routes, static files, images, etc.
-    matcher: ['/((?!_next/static|_next/image|fonts|img|api/assets|favicon.ico|robots.txt|.well-known).*)'],
+    // Exclude API routes, static files, images, and PWA assets (sw.js, manifest, workbox)
+    matcher: ['/((?!_next/static|_next/image|fonts|img|api/assets|favicon.ico|robots.txt|.well-known|sw.js|manifest.json|manifest.webmanifest|workbox-).*)'],
 };
 
 export default proxy;

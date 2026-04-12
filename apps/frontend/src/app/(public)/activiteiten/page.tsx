@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 
 export const metadata = {
     title: 'Activiteiten | SV Salve Mundi',
-    description: 'Bekijk alle evenementen, trainingen en feesten van Salve Mundi.',
+    description: 'Bekijk alle activiteiten, trainingen en feesten van Salve Mundi.',
 };
 
 async function ActivitiesBannerData({ session }: { session: any }) {
@@ -39,7 +39,7 @@ export default async function ActivitiesPage() {
                 contentPadding="py-20"
                 imageFilter="brightness(0.65)"
                 variant="centered"
-                description="Bekijk alle evenementen, trainingen en feesten van Salve Mundi."
+                description="Bekijk alle activiteiten, trainingen en feesten van Salve Mundi."
             >
                 <Suspense fallback={<ActivitiesBannerIsland isLoading events={[]} />}>
                     <ActivitiesBannerData session={session} />

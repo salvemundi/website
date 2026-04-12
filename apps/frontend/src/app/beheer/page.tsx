@@ -30,7 +30,7 @@ export default async function BeheerPage() {
         <main className="min-h-screen bg-[var(--bg-main)] pb-24">
             <AdminToolbar 
                 title="Beheer Dashboard" 
-                subtitle={`Welkom terug, ${user?.first_name || 'Admin'}. Beheer de vereniging en evenementen vanaf één plek.`}
+                subtitle={`Welkom terug, ${user?.first_name || 'Admin'}. Beheer de vereniging en activiteiten vanaf één plek.`}
             />
 
             <div className="container mx-auto px-4 py-8 md:py-12 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700">

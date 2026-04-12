@@ -177,7 +177,7 @@ export default function ConfirmationIsland({
             }
 
             const amount = signupData?.amount_tickets || (signupData?.tickets?.length) || 1;
-            const eventName = signupData?.event_id?.name || 'Evenement';
+            const eventName = signupData?.event_id?.name || 'Activiteit';
 
             return (
                 <div className="space-y-12 animate-in zoom-in-95 duration-500">
