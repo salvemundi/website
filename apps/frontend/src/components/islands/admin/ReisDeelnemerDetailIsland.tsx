@@ -14,7 +14,7 @@ import {
     deleteTripSignup, 
     updateSignupActivities 
 } from '@/server/actions/reis-admin-signups.actions';
-import type { Trip, TripSignup, TripActivity } from '@salvemundi/validations';
+import type { Trip, TripSignup, TripActivity } from '@salvemundi/validations/schema/admin-reis.zod';
 import { differenceInYears } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';

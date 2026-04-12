@@ -3,7 +3,7 @@ import NextLink from 'next/link';
 import { Users, ChevronRight, History } from 'lucide-react';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { slugify } from '@/shared/lib/utils/slug';
-import type { Committee } from '@salvemundi/validations';
+import type { Committee } from '@salvemundi/validations/schema/committees.zod';
 import Image from 'next/image';
 import { Skeleton } from '../Skeleton';
 

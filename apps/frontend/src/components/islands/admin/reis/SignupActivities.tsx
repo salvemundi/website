@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Utensils, Save, Loader2, Check } from 'lucide-react';
-import type { TripActivity } from '@salvemundi/validations';
+import type { TripActivity } from '@salvemundi/validations/schema/admin-reis.zod';
 
 interface SignupActivitiesProps {
     allActivities: TripActivity[];

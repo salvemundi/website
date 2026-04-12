@@ -7,7 +7,7 @@ import { headers } from 'next/headers';
 import { isSuperAdmin } from '@/lib/auth';
 import { getSystemDirectus } from '@/lib/directus';
 import { updateItem, readUsers } from '@directus/sdk';
-import { USER_ID_FIELDS } from '@salvemundi/validations';
+import { USER_ID_FIELDS } from '@salvemundi/validations/directus/fields';
 import type { 
     Committee, 
     CommitteeMember 

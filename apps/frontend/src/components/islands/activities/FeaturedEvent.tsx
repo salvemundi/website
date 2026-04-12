@@ -3,12 +3,12 @@
 import Image from 'next/image';
 import { Calendar, Clock, MapPin } from 'lucide-react';
 import { getImageUrl } from '@/lib/utils/image-utils'; // Assumption: provided by legacy
-import type { Activiteit } from '@salvemundi/validations';
+import type { Activity } from '@salvemundi/validations/schema/activity.zod';
 import { formatDate } from '@/shared/lib/utils/date';
 
 interface FeaturedEventProps {
-    event: Activiteit;
-    onEventClick: (event: Activiteit) => void;
+    event: Activity;
+    onEventClick: (event: Activity) => void;
 }
 
 export default function FeaturedEvent({ event, onEventClick }: FeaturedEventProps) {

@@ -1,10 +1,7 @@
 import { query } from '@/lib/database';
-import { 
-    activiteitenSchema, 
-    type Activiteit,
-    type DbEventSignup,
-    EVENT_SIGNUP_FIELDS 
-} from '@salvemundi/validations';
+import { activitiesSchema, type Activiteit } from '@salvemundi/validations/schema/activity.zod';
+import { type DbEventSignup } from '@salvemundi/validations/directus/schema';
+import { EVENT_SIGNUP_FIELDS } from '@salvemundi/validations/directus/fields';
 import { z } from 'zod';
 
 /**
@@ -51,7 +48,7 @@ export async function getActivitiesInternal(onlyPublished = true): Promise<Activ
             };
         });
 
-        const parsed = activiteitenSchema.safeParse(mappedData);
+        const parsed = activitiesSchema.safeParse(mappedData);
         if (!parsed.success) {
             
             return mappedData as any;
@@ -103,7 +100,7 @@ export async function getActivityByIdInternal(id: string): Promise<Activiteit | 
             committee_name: item.committee_name || null,
         };
 
-        const parsed = activiteitenSchema.element.safeParse(mapped);
+        const parsed = activitiesSchema.element.safeParse(mapped);
         if (!parsed.success) {
             
             return mapped as any;

@@ -3,7 +3,7 @@
 import React, { useTransition } from 'react';
 import DeletionTimer from '@/components/ui/account/DeletionTimer';
 import { initiateMembershipPaymentAction } from '@/server/actions/membership.actions';
-import type { SignupFormData } from '@salvemundi/validations';
+import type { SignupFormData } from '@salvemundi/validations/schema/membership.zod';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import { formatDate } from '@/shared/lib/utils/date';

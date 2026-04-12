@@ -5,7 +5,7 @@ import { query } from '@/lib/database';
 import { 
     reisTripSignupSchema,
     type ReisTripSignup, 
-} from '@salvemundi/validations';
+} from '@salvemundi/validations/schema/reis.zod';
 import { z } from 'zod';
 
 /**

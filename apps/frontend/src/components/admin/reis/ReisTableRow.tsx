@@ -4,7 +4,7 @@ import { Fragment } from 'react';
 import { format } from 'date-fns';
 import { Loader2, Edit, Trash2, Send, AlertCircle, ChevronDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import type { TripSignup, TripSignupActivity } from '@salvemundi/validations';
+import type { TripSignup, TripSignupActivity } from '@salvemundi/validations/schema/admin-reis.zod';
 import { mapActivityOptionIdToName, parseActivityOptions, parseSelectedOptions } from '@/lib/reis';
 
 interface ReisTableRowProps {

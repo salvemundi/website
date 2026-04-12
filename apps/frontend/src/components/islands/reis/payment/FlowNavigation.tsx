@@ -1,6 +1,6 @@
 import React from 'react';
 import { Loader2, ChevronRight, ArrowRight } from 'lucide-react';
-import { Trip } from '@salvemundi/validations';
+import { type Trip } from '@salvemundi/validations/schema/admin-reis.zod';
 
 interface FlowNavigationProps {
     step: number;

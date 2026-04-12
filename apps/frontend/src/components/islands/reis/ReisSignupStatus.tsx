@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { CheckCircle2, CreditCard, Utensils } from 'lucide-react';
-import type { ReisTrip, ReisTripSignup } from '@salvemundi/validations';
+import type { ReisTrip, ReisTripSignup } from '@salvemundi/validations/schema/reis.zod';
 
 interface ReisSignupStatusProps {
     userSignup: ReisTripSignup;

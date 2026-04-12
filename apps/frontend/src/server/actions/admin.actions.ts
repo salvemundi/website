@@ -6,8 +6,8 @@ import { headers, cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { getSystemDirectus } from "@/lib/directus";
 import { readMe, readItems, readUsers, aggregate } from "@directus/sdk";
+import { type DbDirectusUser as DirectusUser } from "@salvemundi/validations/directus/schema";
 import {
-    type DbDirectusUser as DirectusUser,
     USER_BASIC_FIELDS,
     EVENT_FIELDS,
     EVENT_SIGNUP_FIELDS,
@@ -18,16 +18,18 @@ import {
     PUB_CRAWL_SIGNUP_FIELDS,
     TRIP_FIELDS,
     TRIP_SIGNUP_FIELDS,
-    USER_BASIC_FIELDS as USER_ID_FIELDS, // Fallback if missing, or check fields.ts
-    DashboardStats,
+    USER_ID_FIELDS
+} from "@salvemundi/validations/directus/fields";
+import {
+    type DashboardStats,
     DashboardStatsSchema,
-    Birthday,
+    type Birthday,
     BirthdaySchema,
-    RecentActivity,
+    type RecentActivity,
     RecentActivitySchema,
-    TopSticker,
+    type TopSticker,
     TopStickerSchema
-} from "@salvemundi/validations";
+} from "@salvemundi/validations/schema/admin-dashboard.zod";
 import { 
     getDashboardStatsInternal, 
     getRecentActivitiesInternal 

@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { ChevronRight, Calendar } from 'lucide-react';
-import type { Activity } from '@salvemundi/validations';
+import type { Activity } from '@salvemundi/validations/schema/activity.zod';
 import { EventCard } from './EventCard';
 import { Skeleton } from '../Skeleton';
 

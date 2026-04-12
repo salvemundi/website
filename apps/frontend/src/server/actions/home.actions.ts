@@ -2,16 +2,20 @@
 
 import {
     heroBannersSchema,
-    activiteitenSchema,
     sponsorsSchema,
     type HeroBanner,
-    type Activiteit,
-    type Sponsor,
-    HERO_BANNER_FIELDS,
-    EVENT_FIELDS,
-    PUB_CRAWL_EVENT_FIELDS,
-    SPONSOR_FIELDS
-} from '@salvemundi/validations';
+    type Sponsor
+} from '@salvemundi/validations/schema/home.zod';
+import {
+    activitiesSchema,
+    type Activiteit
+} from '@salvemundi/validations/schema/activity.zod';
+import { 
+    HERO_BANNER_FIELDS, 
+    EVENT_FIELDS, 
+    PUB_CRAWL_EVENT_FIELDS, 
+    SPONSOR_FIELDS 
+} from '@salvemundi/validations/directus/fields';
 
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
@@ -124,7 +128,7 @@ export async function getUpcomingActiviteiten(limit = 4): Promise<Activiteit[]> 
             .sort((a, b) => new Date(a.datum_start).getTime() - new Date(b.datum_start).getTime())
             .slice(0, limit);
 
-        const parsed = activiteitenSchema.safeParse(allEvents);
+        const parsed = activitiesSchema.safeParse(allEvents);
         return parsed.success ? (parsed.data as any) : [];
     } catch (err: unknown) {
         

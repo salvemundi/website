@@ -9,7 +9,7 @@ import { Input } from '@/shared/ui/Input';
 import { DateInput } from '@/shared/ui/DateInput';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { Users, CheckCircle2 } from 'lucide-react';
-import { introSignupFormSchema, type IntroSignupForm } from '@salvemundi/validations';
+import { introSignupFormSchema, type IntroSignupForm } from '@salvemundi/validations/schema/intro.zod';
 
 export const IntroStudentIsland = () => {
     const [submitted, setSubmitted] = useState(false);

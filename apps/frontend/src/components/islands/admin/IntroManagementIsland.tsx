@@ -10,7 +10,7 @@ import {
     Bell 
 } from 'lucide-react';
 import { format } from 'date-fns';
-import type { IntroBlog, IntroPlanningItem } from '@salvemundi/validations';
+import type { IntroBlog, IntroPlanningItem } from '@salvemundi/validations/schema/intro.zod';
 import {
     getIntroSignups,
     getIntroParentSignups,

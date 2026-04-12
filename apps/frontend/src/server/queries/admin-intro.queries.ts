@@ -4,7 +4,7 @@ import {
     type IntroPlanningItem,
     introBlogSchema,
     introPlanningSchema
-} from '@salvemundi/validations';
+} from '@salvemundi/validations/schema/intro.zod';
 import { z } from 'zod';
 
 /**

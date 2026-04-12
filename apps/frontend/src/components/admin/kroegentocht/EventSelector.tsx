@@ -4,7 +4,7 @@ import { Calendar, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 
-import { PubCrawlEvent } from '@salvemundi/validations';
+import { type PubCrawlEvent } from '@salvemundi/validations/schema/pub-crawl.zod';
 
 interface EventSelectorProps {
     events: PubCrawlEvent[];

@@ -1,6 +1,21 @@
 'use server';
 
-import { activiteitenSchema, type Activiteit, eventSignupFormSchema, type EventSignupForm, type DbTrip, EVENT_FIELDS, EVENT_SIGNUP_FIELDS, TRANSACTION_FIELDS, PUB_CRAWL_SIGNUP_FIELDS, eventSignupSchema, type DbTransaction, type DbEventSignup, type DbPubCrawlSignup, type DbTripSignup } from '@salvemundi/validations';
+import { activitySchema as activiteitenSchema, type Activiteit } from '@salvemundi/validations/schema/activity.zod';
+import { eventSignupFormSchema, type EventSignupForm } from '@salvemundi/validations/schema/activity.zod';
+import { eventSignupSchema } from '@salvemundi/validations/schema/profiel.zod';
+import { 
+    EVENT_FIELDS, 
+    EVENT_SIGNUP_FIELDS, 
+    TRANSACTION_FIELDS, 
+    PUB_CRAWL_SIGNUP_FIELDS 
+} from '@salvemundi/validations/directus/fields';
+import { 
+    type DbTransaction, 
+    type DbEventSignup, 
+    type DbPubCrawlSignup, 
+    type DbTripSignup,
+    type DbTrip 
+} from '@salvemundi/validations/directus/schema';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { revalidateTag, unstable_noStore as noStore } from 'next/cache';

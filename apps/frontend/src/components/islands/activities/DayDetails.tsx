@@ -3,17 +3,17 @@
 import { X, Clock, MapPin } from 'lucide-react';
 import { format, isSameDay, parseISO } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import type { Activiteit } from '@salvemundi/validations';
+import type { Activity } from '@salvemundi/validations/schema/activity.zod';
 
 interface DayDetailsProps {
     selectedDay: Date;
-    events: Activiteit[];
+    activities: Activity[];
     onClose: () => void;
-    onEventClick: (event: Activiteit) => void;
+    onEventClick: (event: Activity) => void;
 }
 
-export default function DayDetails({ selectedDay, events, onClose, onEventClick }: DayDetailsProps) {
-    const dayEvents = events.filter(event => isSameDay(parseISO(event.datum_start), selectedDay));
+export default function DayDetails({ selectedDay, activities, onClose, onEventClick }: DayDetailsProps) {
+    const dayEvents = activities.filter(event => isSameDay(parseISO(event.datum_start), selectedDay));
 
     return (
         <div className="rounded-3xl bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-6 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-300">

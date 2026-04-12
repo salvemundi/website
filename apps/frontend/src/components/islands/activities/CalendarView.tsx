@@ -15,21 +15,14 @@ import {
 import { nl } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-interface CalendarEvent {
-    id: number | string;
-    titel: string;
-    datum_start: string;
-    datum_eind?: string | null;
-    committee_name?: string | null;
-    afbeelding_id?: string | null;
-}
+import { type Activiteit } from '@salvemundi/validations/schema/activity.zod';
 
 interface CalendarViewProps {
     currentDate: Date;
-    events: CalendarEvent[];
+    events: Activiteit[];
     selectedDay?: Date | null;
     onSelectDay: (day: Date) => void;
-    onEventClick: (event: CalendarEvent) => void;
+    onEventClick: (event: Activiteit) => void;
     onPrevMonth: () => void;
     onNextMonth: () => void;
     onGoToDate?: (date: Date) => void;

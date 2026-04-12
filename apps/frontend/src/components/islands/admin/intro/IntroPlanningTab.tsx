@@ -15,7 +15,7 @@ import {
 import { formatDate } from '@/shared/lib/utils/date';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import type { IntroPlanningItem } from '@salvemundi/validations';
+import type { IntroPlanningItem } from '@salvemundi/validations/schema/intro.zod';
 import { Field, inputClass } from './IntroTabComponents';
 
 interface Props {

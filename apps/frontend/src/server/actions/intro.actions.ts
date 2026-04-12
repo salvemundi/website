@@ -4,10 +4,12 @@ import {
     introSignupFormSchema, 
     introParentSignupFormSchema, 
     type IntroSignupForm, 
-    type IntroParentSignupForm,
+    type IntroParentSignupForm
+} from '@salvemundi/validations/schema/intro.zod';
+import { 
     FEATURE_FLAG_FIELDS, 
     INTRO_PARENT_SIGNUP_FIELDS 
-} from '@salvemundi/validations';
+} from '@salvemundi/validations/directus/fields';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 

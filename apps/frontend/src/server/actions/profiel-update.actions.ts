@@ -4,7 +4,7 @@ import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { updateProfileSchema } from '@salvemundi/validations';
+import { updateProfileSchema } from '@salvemundi/validations/schema/profiel.zod';
 
 
 import { getSystemDirectus } from '@/lib/directus';

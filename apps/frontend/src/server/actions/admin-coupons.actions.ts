@@ -12,7 +12,7 @@ import {
     deleteItem, 
     createItem 
 } from '@directus/sdk';
-import { COUPON_FIELDS } from '@salvemundi/validations';
+import { COUPON_FIELDS } from '@salvemundi/validations/directus/fields';
 
 import { AdminResource } from '@/shared/lib/permissions-config';
 import { hasPermission } from '@/shared/lib/permissions';

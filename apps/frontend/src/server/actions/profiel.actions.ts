@@ -4,13 +4,15 @@ import {
     type Transaction,
     type WhatsAppGroup,
     type EventSignup,
-    EVENT_SIGNUP_FIELDS,
-    TRANSACTION_FIELDS,
-    WHATSAPP_GROUP_FIELDS,
     eventSignupSchema,
     transactionSchema,
     whatsappGroupSchema
-} from '@salvemundi/validations';
+} from '@salvemundi/validations/schema/profiel.zod';
+import { 
+    EVENT_SIGNUP_FIELDS,
+    TRANSACTION_FIELDS,
+    WHATSAPP_GROUP_FIELDS
+} from '@salvemundi/validations/directus/fields';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 

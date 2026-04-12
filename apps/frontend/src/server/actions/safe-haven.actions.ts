@@ -1,6 +1,6 @@
 'use server';
 
-import { safeHavensSchema, type SafeHaven } from '@salvemundi/validations';
+import { safeHavensSchema, type SafeHaven } from '@salvemundi/validations/schema/safe-havens.zod';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 

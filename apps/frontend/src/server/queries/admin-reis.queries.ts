@@ -4,7 +4,7 @@ import {
     tripSchema,
     type Trip,
     type TripActivity
-} from '@salvemundi/validations';
+} from '@salvemundi/validations/schema/admin-reis.zod';
 import { z } from 'zod';
 
 /**

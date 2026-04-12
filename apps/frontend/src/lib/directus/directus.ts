@@ -1,6 +1,6 @@
 import 'server-only';
 import { createDirectus, rest, staticToken } from '@directus/sdk';
-import { type DirectusSchema } from '@salvemundi/validations';
+import { type DirectusSchema } from '@salvemundi/validations/directus/schema';
 
 const directusUrl = process.env.DIRECTUS_SERVICE_URL!;
 

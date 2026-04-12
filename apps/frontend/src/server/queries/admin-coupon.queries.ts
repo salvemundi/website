@@ -1,6 +1,6 @@
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
-import { COUPON_FIELDS } from '@salvemundi/validations';
+import { COUPON_FIELDS } from '@salvemundi/validations/directus/fields';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { AdminResource } from '@/shared/lib/permissions-config';

@@ -9,3 +9,6 @@ export const memberSchema = z.object({
 });
 
 export const memberUpdateSchema = memberSchema.partial();
+
+export type Member = z.infer<typeof memberSchema>;
+export type MemberUpdate = z.infer<typeof memberUpdateSchema>;

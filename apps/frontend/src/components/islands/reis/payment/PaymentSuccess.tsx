@@ -1,6 +1,6 @@
 import React from 'react';
 import { CheckCircle2, Home } from 'lucide-react';
-import { Trip } from '@salvemundi/validations';
+import { type Trip } from '@salvemundi/validations/schema/admin-reis.zod';
 
 interface PaymentSuccessProps {
     trip: Trip;

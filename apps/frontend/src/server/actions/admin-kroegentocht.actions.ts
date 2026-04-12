@@ -7,11 +7,13 @@ import {
     pubCrawlEventSchema, 
     pubCrawlSignupSchema, 
     type PubCrawlEvent, 
-    type PubCrawlSignup,
-    PUB_CRAWL_EVENT_FIELDS,
-    PUB_CRAWL_SIGNUP_FIELDS,
-    PUB_CRAWL_TICKET_FIELDS
-} from '@salvemundi/validations';
+    type PubCrawlSignup
+} from '@salvemundi/validations/schema/kroegentocht.zod';
+import { 
+    PUB_CRAWL_EVENT_FIELDS, 
+    PUB_CRAWL_SIGNUP_FIELDS, 
+    PUB_CRAWL_TICKET_FIELDS 
+} from '@salvemundi/validations/directus/fields';
 import { isSuperAdmin } from "@/lib/auth";
 import { getRedis } from '@/server/auth/redis-client';
 import { FLAGS_CACHE_KEY } from '@/lib/config/feature-flags';

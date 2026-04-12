@@ -3,12 +3,12 @@
 import React, { useState, useMemo } from 'react';
 import { Info, AlertCircle } from 'lucide-react';
 import { 
-    Trip, 
-    TripSignup, 
-    TripActivity, 
-    TripSignupActivity,
-    ReisPaymentEnrichment
-} from '@salvemundi/validations';
+    type Trip, 
+    type TripSignup, 
+    type TripActivity, 
+    type TripSignupActivity 
+} from '@salvemundi/validations/schema/admin-reis.zod';
+import { type ReisPaymentEnrichment } from '@salvemundi/validations/schema/reis.zod';
 import ActivitySelector from './ActivitySelector';
 import { 
     updateSignupDetails, 
