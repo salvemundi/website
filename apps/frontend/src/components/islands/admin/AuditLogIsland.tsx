@@ -31,6 +31,7 @@ export default function AuditLogIsland() {
     const [activeTab, setActiveTab] = useState<'pending' | 'logs' | 'queues'>('pending');
     const [signups, setSignups] = useState<PendingSignup[]>([]);
     const [logs, setLogs] = useState<any[]>([]);
+    const [logsTotalCount, setLogsTotalCount] = useState(0);
     const [queueData, setQueueData] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState<string | null>(null);
@@ -51,7 +52,10 @@ export default function AuditLogIsland() {
 
             if (signupsRes.success && signupsRes.data) setSignups(signupsRes.data);
             if (settingsRes.success && settingsRes.data) setManualApproval(settingsRes.data.manual_approval);
-            if (logsRes.success && logsRes.data) setLogs(logsRes.data);
+            if (logsRes.success) {
+                setLogs(logsRes.data);
+                setLogsTotalCount(logsRes.totalCount);
+            }
             if (queueRes.success && queueRes.data) setQueueData(queueRes.data.queues);
         } catch (err) {
             showToast('Fout bij laden audit data', 'error');
@@ -75,7 +79,10 @@ export default function AuditLogIsland() {
                 setSignups(prev => prev.filter(s => s.id !== id));
                 showToast('Inschrijving goedgekeurd', 'success');
                 const logsRes = await getSystemLogsAction(50);
-                if (logsRes.success && logsRes.data) setLogs(logsRes.data);
+                if (logsRes.success) {
+                    setLogs(logsRes.data);
+                    setLogsTotalCount(logsRes.totalCount);
+                }
             } else {
                 showToast(res.error || 'Goedkeuren mislukt', 'error');
             }
@@ -95,7 +102,10 @@ export default function AuditLogIsland() {
                 setSignups(prev => prev.filter(s => s.id !== id));
                 showToast('Inschrijving afgewezen', 'info');
                 const logsRes = await getSystemLogsAction(50);
-                if (logsRes.success && logsRes.data) setLogs(logsRes.data);
+                if (logsRes.success) {
+                    setLogs(logsRes.data);
+                    setLogsTotalCount(logsRes.totalCount);
+                }
             } else {
                 showToast(res.error || 'Afwijzen mislukt', 'error');
             }
@@ -162,7 +172,10 @@ export default function AuditLogIsland() {
         if (res.success) {
             showToast(`Automatische goedkeuring ${newValue ? 'uitgeschakeld' : 'ingeschakeld'}`, 'success');
             const logsRes = await getSystemLogsAction(50);
-            if (logsRes.success && logsRes.data) setLogs(logsRes.data);
+            if (logsRes.success) {
+                setLogs(logsRes.data);
+                setLogsTotalCount(logsRes.totalCount);
+            }
         } else {
             showToast('Fout bij bijwerken instellingen', 'error');
             setManualApproval(!newValue);
@@ -187,7 +200,7 @@ export default function AuditLogIsland() {
     const adminStats = [
         { label: 'Wachtrij', value: signups.length, icon: Clock, trend: 'Pending' },
         { label: 'Modus', value: manualApproval ? 'Manueel' : 'Auto', icon: Shield, trend: 'Approval' },
-        { label: 'Systeem', value: logs.length, icon: History, trend: 'Logs' },
+        { label: 'Systeem', value: logsTotalCount, icon: History, trend: 'Logs' },
     ];
 
     return (

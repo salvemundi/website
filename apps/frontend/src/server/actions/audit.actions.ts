@@ -10,6 +10,10 @@ import {
     getSystemLogsInternal, 
     insertSystemLogInternal 
 } from "@/server/queries/audit.queries";
+import { type PendingSignup } from "@salvemundi/validations/schema/audit.zod";
+
+type ActionResponse<T> = { success: true; data: T } | { success: false; error: string };
+type LogsResponse = { success: true; data: any[]; totalCount: number } | { success: false; error: string };
 
 export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' | 'INFO', payload?: any) {
     try {
@@ -44,7 +48,7 @@ async function checkAuditAccess() {
     return session;
 }
 
-export async function getPendingSignupsAction() {
+export async function getPendingSignupsAction(): Promise<ActionResponse<PendingSignup[]>> {
     noStore();
     const admin = await checkAuditAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
@@ -154,13 +158,13 @@ export async function updateAuditSettingsAction(manualApproval: boolean) {
     }
 }
 
-export async function getSystemLogsAction(limit: number = 50) {
+export async function getSystemLogsAction(limit: number = 50): Promise<LogsResponse> {
     const admin = await checkAuditAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
-        const logs = await getSystemLogsInternal(limit);
-        return { success: true, data: logs };
+        const result = await getSystemLogsInternal(limit);
+        return { success: true, data: result.logs, totalCount: result.totalCount };
     } catch (err) {
         console.error('[AuditActions] Failed to fetch system logs:', err);
         return { success: false, error: "Kon logs niet ophalen." };
