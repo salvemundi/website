@@ -68,6 +68,11 @@ export class ProvisionWorkerService {
                         
                         // 2. Create User in Azure
                         const token = await TokenService.getAccessToken();
+                        
+                        const now = new Date();
+                        const paymentDate = now.toISOString().split('T')[0]; // YYYY-MM-DD
+                        const expiryDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate()).toISOString().split('T')[0];
+
                         const result = await GraphService.createUser(
                             upn,
                             task.firstName,
@@ -75,7 +80,9 @@ export class ProvisionWorkerService {
                             token,
                             task.email, // Passing original email as personalEmail
                             task.phoneNumber,
-                            task.dateOfBirth
+                            task.dateOfBirth,
+                            paymentDate,
+                            expiryDate
                         );
 
                         console.log(`[ProvisionWorker] Azure account created for ${task.email}`);
@@ -98,9 +105,6 @@ export class ProvisionWorkerService {
                         // 4. Queue Welcome Email (ONLY after azure + sync success)
                         console.log(`[ProvisionWorker] Sending combined welcome & payment email to ${task.email}...`);
                         
-                        const now = new Date();
-                        const expiryDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate()).toISOString().split('T')[0];
-
                         const mailRes = await fetch(`${process.env.MAIL_SERVICE_URL}/api/mail/send`, {
                             method: 'POST',
                             headers: {
