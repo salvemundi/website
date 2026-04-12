@@ -85,6 +85,7 @@ export default function SyncOverview({
                                     type="checkbox" 
                                     checked={forceLink} 
                                     onChange={e => setForceLink(e.target.checked)}
+                                    suppressHydrationWarning
                                     className="h-5 w-5 rounded-lg border-2 border-[var(--beheer-border)] text-[var(--beheer-accent)] focus:ring-[var(--beheer-accent)] transition-all cursor-pointer"
                                 />
                                 <div>
@@ -97,6 +98,7 @@ export default function SyncOverview({
                                     type="checkbox" 
                                     checked={activeOnly} 
                                     onChange={e => setActiveOnly(e.target.checked)}
+                                    suppressHydrationWarning
                                     className="h-5 w-5 rounded-lg border-2 border-[var(--beheer-border)] text-[var(--beheer-accent)] focus:ring-[var(--beheer-accent)] transition-all cursor-pointer"
                                 />
                                 <div>
@@ -161,6 +163,7 @@ export default function SyncOverview({
                             onChange={e => setUserId(e.target.value)}
                             placeholder="Azure Entra ID (bijv. d3a1b2...)"
                             autoComplete="off"
+                            suppressHydrationWarning
                             className="w-full p-4 bg-[var(--beheer-card-soft)] border border-[var(--beheer-border)] rounded-2xl focus:outline-none focus:ring-2 focus:ring-[var(--beheer-accent)]/20 focus:border-[var(--beheer-accent)] transition-all text-[var(--beheer-text)] font-semibold"
                         />
                         <button

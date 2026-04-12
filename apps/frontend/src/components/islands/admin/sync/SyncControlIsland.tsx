@@ -129,6 +129,7 @@ export default function SyncControlIsland({
                             type="text"
                             value={userId}
                             autoComplete="off"
+                            suppressHydrationWarning
                             onChange={(e) => setUserId?.(e.target.value)}
                             placeholder="Entra ID (UUID)..."
                             className="w-full px-6 py-4 bg-[var(--beheer-card-soft)] border border-[var(--beheer-border)] rounded-2xl text-xs font-bold focus:outline-none focus:border-[var(--beheer-accent)] transition-all"
