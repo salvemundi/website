@@ -146,13 +146,13 @@ export function HeroIsland({ isLoading = false, banners = [], activiteiten = [] 
                                             <div className="w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-4 sm:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-4 min-h-[90px] sm:min-h-[100px]">
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[var(--color-purple-300)]/60 dark:text-white/60">
-                                                        Volgende evenement
+                                                        Volgende activiteit
                                                     </p>
                                                     <p className="mt-2 text-base sm:text-lg font-bold text-[var(--color-purple-300)] dark:text-white truncate">
                                                         {nextEvent.titel} • {formatDate(nextEvent.datum_start)}
                                                     </p>
                                                     <p className="mt-1 text-xs sm:text-sm text-[var(--text-muted)] line-clamp-2">
-                                                        {nextEvent.beschrijving ?? 'Kom gezellig langs bij ons volgende evenement!'}
+                                                        {nextEvent.beschrijving ?? 'Kom gezellig langs bij onze volgende activiteit!'}
                                                     </p>
                                                 </div>
                                                 <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-[var(--color-purple-300)]/10 dark:bg-white/10 text-[var(--color-purple-300)] dark:text-white flex items-center justify-center shadow-md transition-all group-hover/event:bg-gradient-theme group-hover/event:text-[var(--text-main)]">
@@ -166,13 +166,13 @@ export function HeroIsland({ isLoading = false, banners = [], activiteiten = [] 
                                     {(!isReallyLoading && !showMembershipLink && !nextEvent) && (
                                         <div className="w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-4 sm:p-6 shadow-lg backdrop-blur min-h-[90px] sm:min-h-[100px]">
                                             <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[var(--color-purple-300)]/60 dark:text-white/60">
-                                                Volgende evenement
+                                                Volgende activiteit
                                             </p>
                                             <p className="mt-2 text-base sm:text-lg font-bold text-[var(--color-purple-300)] dark:text-white">
                                                 Binnenkort meer activiteiten
                                             </p>
                                             <p className="mt-1 text-xs sm:text-sm text-[var(--text-muted)] line-clamp-2">
-                                                Check regelmatig onze agenda voor nieuwe evenementen en activiteiten.
+                                                Check regelmatig onze agenda voor nieuwe activiteiten.
                                             </p>
                                         </div>
                                     )}

@@ -104,7 +104,7 @@ export default function ActiviteitNieuwIsland({
         <>
             <AdminToolbar 
                 title="Nieuwe Activiteit"
-                subtitle="Creëer een nieuw evenement voor SV Salve Mundi"
+                subtitle="Creëer een nieuwe activiteit voor SV Salve Mundi"
                 backHref="/beheer/activiteiten"
             />
             <div className="container mx-auto px-4 py-12 max-w-5xl">

@@ -188,7 +188,7 @@ export default function AdminActivitiesIsland({
             <AdminToolbar 
                 isLoading={isLoading}
                 title={isLoading ? "" : "Activiteiten Beheer"}
-                subtitle={isLoading ? "" : "Organiseer en beheer alle evenementen van Salve Mundi"}
+                subtitle={isLoading ? "" : "Organiseer en beheer alle activiteiten van Salve Mundi"}
                 backHref="/beheer"
                 actions={
                     isLoading ? (

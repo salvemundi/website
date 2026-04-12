@@ -33,7 +33,7 @@ export default function EventSignupIsland({
     price = 0,
     isPast: serverIsPast = false,
     isPast: clientIsPast = false,
-    eventName = 'Evenement',
+    eventName = 'Activiteit',
     initialUser,
     verifiedPaymentStatus,
     initialQrToken
@@ -129,7 +129,7 @@ export default function EventSignupIsland({
             <div className="h-full flex flex-col justify-center items-center p-12 rounded-[2rem] bg-slate-50/50 border border-dashed border-slate-300 dark:border-white/10 text-center space-y-4">
                 <AlertCircle className="h-12 w-12 text-slate-300" />
                 <div>
-                    <h3 className="text-xl font-black text-slate-400 uppercase">Evenement Afgelopen</h3>
+                    <h3 className="text-xl font-black text-slate-400 uppercase">Activiteit Afgelopen</h3>
                     <p className="text-sm text-slate-400/80 font-medium max-w-[200px] mx-auto">Helaas kun je je voor deze activiteit niet meer aanmelden.</p>
                 </div>
             </div>
@@ -143,7 +143,7 @@ export default function EventSignupIsland({
                     <h3 className="text-2xl font-black text-[var(--theme-purple)] flex items-center gap-3">
                         <Users className="h-6 w-6" /> Inschrijven
                     </h3>
-                    <p className="text-[10px] uppercase font-black text-[var(--text-muted)] tracking-[0.2em] mt-1 ml-9">Evenement Tickets</p>
+                    <p className="text-[10px] uppercase font-black text-[var(--text-muted)] tracking-[0.2em] mt-1 ml-9">Activiteit Tickets</p>
                 </div>
                 <div className="text-right">
                     <span className="block text-[10px] uppercase font-black text-[var(--text-muted)] tracking-[0.2em] mb-1">Prijs</span>

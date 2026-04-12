@@ -62,7 +62,7 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
                     </div>
                     <div>
                         <p className="font-bold text-green-700 dark:text-green-400 text-lg leading-tight">Actief Lid</p>
-                        <p className="text-sm opacity-80 dark:text-white/70">Je bent een volwaardig lid van Salve Mundi.</p>
+                        <p className="text-sm opacity-80 dark:text-white/70">Je bent een lid van Salve Mundi.</p>
                     </div>
                 </div>
 

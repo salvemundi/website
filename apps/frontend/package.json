@@ -3,8 +3,8 @@
     "version": "1.0.0",
     "private": true,
     "scripts": {
-        "dev": "cross-env NODE_OPTIONS='--no-deprecation --max-old-space-size=4096' next dev --webpack",
-        "build": "cross-env NODE_OPTIONS='--no-deprecation --max-old-space-size=4096' next build --webpack",
+        "dev": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=4096\" next dev --webpack",
+        "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=4096\" next build --webpack",
         "start": "next start",
         "lint": "eslint src",
         "check-lint": "eslint src",

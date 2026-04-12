@@ -11,7 +11,7 @@ interface EventsSectionProps {
 }
 
 /**
- * UI Component voor de evenementen-sectie op de homepagina.
+ * UI Component voor de activiteiten-sectie op de homepagina.
  * Beheert de grid van EventCards en hun loading states.
  */
 export function EventsSection({ isLoading = false, activities = [] }: EventsSectionProps) {
@@ -49,10 +49,6 @@ export function EventsSection({ isLoading = false, activities = [] }: EventsSect
                 <div className="flex flex-col gap-6 rounded-xl bg-gradient-theme px-6 sm:px-10 pt-8 sm:pt-10 md:pt-12 pb-8 sm:pb-10 md:pt-12 shadow-xl">
                         <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
                             <div className="space-y-4">
-                                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--color-purple-500)]/10 border border-[var(--color-purple-500)]/20 text-[10px] font-black uppercase tracking-widest text-[var(--color-purple-600)] dark:text-[var(--color-purple-300)] backdrop-blur-sm">
-                                    <div className="h-1.5 w-1.5 rounded-full bg-[var(--color-purple-500)] animate-pulse" />
-                                    Binnenkort
-                                </span>
                                 <h2 className="text-3xl font-black tracking-tight text-[var(--text-main)] sm:text-4xl md:text-5xl lg:text-6xl gradient-text">
                                     Onze Activiteiten
                                 </h2>

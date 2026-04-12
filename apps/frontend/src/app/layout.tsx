@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Suspense } from 'react';
 import './globals.css';
 import NavigationHeader from '@/components/islands/layout/NavigationHeader';
@@ -13,6 +13,13 @@ import { checkAdminAccess } from '@/server/actions/admin.actions';
 import { headers } from 'next/headers';
 import { connection } from 'next/server';
 
+export const viewport: Viewport = {
+    themeColor: [
+        { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+        { media: '(prefers-color-scheme: dark)', color: '#1a141b' },
+    ],
+};
+
 export const metadata: Metadata = {
     metadataBase: new URL(process.env.PUBLIC_URL!),
     title: 'Salve Mundi V7',
@@ -22,10 +29,6 @@ export const metadata: Metadata = {
         statusBarStyle: 'default',
         title: 'Salve Mundi',
     },
-    themeColor: [
-        { media: '(prefers-color-scheme: light)', color: '#ffffff' },
-        { media: '(prefers-color-scheme: dark)', color: '#1a141b' },
-    ],
 };
 
 export default async function RootLayout({

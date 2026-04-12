@@ -172,7 +172,7 @@ export default function ActivityDetailIsland({ isLoading = false, activity, chil
                             <div className="flex items-center gap-3 mb-8">
                                 <div className="h-8 w-2 bg-[var(--theme-purple)] rounded-full shadow-[0_0_15px_var(--theme-purple)]" />
                                 <h2 className="text-2xl font-black text-[var(--theme-purple)] uppercase tracking-widest">
-                                    {isLoading ? <div className="h-8 w-48 bg-[var(--bg-soft)] rounded" /> : 'Over dit evenement'}
+                                    {isLoading ? <div className="h-8 w-48 bg-[var(--bg-soft)] rounded" /> : 'Over deze activiteit'}
                                 </h2>
                             </div>
                             <div className="prose prose-purple max-w-none text-[var(--text-main)] font-medium leading-relaxed">

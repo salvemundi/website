@@ -11,7 +11,7 @@ interface SafeHavenCardProps {
 }
 
 /**
- * UI Component voor een Vertrouwenspersoon (Safe Haven) kaart.
+ * UI Component voor een Safe Haven kaart.
  * Zorgt voor een consistente visuele presentatie die aansluit bij de vastgestelde ontwerprichtlijnen.
  * Ondersteunt nu een geïntegreerde loading-state.
  */
@@ -53,7 +53,7 @@ export default function SafeHavenCard({ isLoading = false, safeHaven }: SafeHave
                                 {safeHaven?.naam}
                             </h3>
                             <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                                Vertrouwenspersoon
+                                Safe Haven
                             </p>
                         </>
                     )}

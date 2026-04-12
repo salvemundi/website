@@ -40,7 +40,7 @@ export default async function StickersPage() {
                                 {stickers.length}+
                             </div>
                             <div className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">
-                                Locaties Geregistreerd
+                                Stikkers Geplakt
                             </div>
                         </div>
                     </div>

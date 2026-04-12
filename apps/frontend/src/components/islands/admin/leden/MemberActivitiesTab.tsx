@@ -35,7 +35,7 @@ export default function MemberActivitiesTab({ signups }: Props) {
         <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] overflow-hidden shadow-sm animate-in fade-in duration-500">
             <div className="p-8 border-b border-[var(--beheer-border)]">
                 <h3 className="text-xl font-black text-[var(--beheer-text)] leading-tight uppercase tracking-tight">Activiteiten Historie</h3>
-                <p className="text-xs text-[var(--beheer-text-muted)] font-black uppercase tracking-widest mt-1 opacity-60">Recente inschrijvingen voor evenementen</p>
+                <p className="text-xs text-[var(--beheer-text-muted)] font-black uppercase tracking-widest mt-1 opacity-60">Recente inschrijvingen voor activiteiten</p>
             </div>
             
             {signups.length === 0 ? (
