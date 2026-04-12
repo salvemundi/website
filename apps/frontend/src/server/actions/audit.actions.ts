@@ -3,30 +3,20 @@
 import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag, revalidatePath, unstable_noStore as noStore } from "next/cache";
-import { getSystemDirectus } from "@/lib/directus";
-import { 
-    readItems, 
-    updateItem,
-    readSingleton,
-    updateSingleton,
-    createItem
-} from "@directus/sdk";
-import { 
-    PendingSignup, 
-    EVENT_SIGNUP_FIELDS,
-    TRIP_SIGNUP_FIELDS,
-    PUB_CRAWL_SIGNUP_FIELDS,
-    SYSTEM_LOG_FIELDS
-} from "@salvemundi/validations";
 import { isSuperAdmin } from "@/lib/auth";
 import { query } from '@/lib/database';
+import { 
+    getPendingSignupsInternal, 
+    getSystemLogsInternal, 
+    insertSystemLogInternal 
+} from "@/server/queries/audit.queries";
 
 export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' | 'INFO', payload?: any) {
     try {
         const session = await auth.api.getSession({ headers: await headers() });
         const user = session?.user as any;
         
-        await getSystemDirectus().request(createItem('system_logs' as any, {
+        await insertSystemLogInternal({
             type,
             status,
             payload: {
@@ -35,9 +25,9 @@ export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' |
                 admin_name: user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : 'Systeem',
                 timestamp: new Date().toISOString()
             }
-        }));
+        });
     } catch (e) {
-        
+        console.error('[AuditActions] Failed to log admin action:', e);
     }
 }
 
@@ -60,98 +50,10 @@ export async function getPendingSignupsAction() {
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
-        
-        // Fetch from all 3 collections
-        // 1. Events
-        const eventSignups = (await getSystemDirectus().request(readItems('event_signups', {
-            fields: [...EVENT_SIGNUP_FIELDS, { event_id: ['name'] }] as any,
-            filter: { payment_status: { _eq: 'open' } },
-            sort: ['-created_at'] as any
-        }))) as any[];
-
-        // 2. Pub Crawl
-        const pubCrawlSignups = (await getSystemDirectus().request(readItems('pub_crawl_signups' as any, {
-            fields: [...PUB_CRAWL_SIGNUP_FIELDS, { pub_crawl_event_id: ['name'] }] as any,
-            filter: { payment_status: { _eq: 'open' } },
-            sort: ['-created_at'] as any
-        }))) as any[];
-
-        // 3. Trips
-        const tripSignups = (await getSystemDirectus().request(readItems('trip_signups' as any, {
-            fields: [...TRIP_SIGNUP_FIELDS, { trip_id: ['name'] }] as any,
-            filter: { status: { _eq: 'registered' } },
-            sort: ['-created_at'] as any
-        }))) as any[];
-
-        // 4. Memberships (Paid but pending manual approval)
-        const membershipSignups = (await getSystemDirectus().request(readItems('transactions' as any, {
-            fields: ['mollie_id', 'created_at', 'email', 'first_name', 'last_name', 'product_name', 'amount', 'payment_status', 'approval_status', 'user_id'],
-            filter: {
-                _and: [
-                    { product_type: { _eq: 'membership' } },
-                    { payment_status: { _eq: 'paid' } },
-                    { approval_status: { _eq: 'pending' } }
-                ]
-            },
-            sort: ['-created_at'] as any
-        }))) as any[];
-        
-
-        // Aggregate and map
-        const aggregated: PendingSignup[] = [
-            ...membershipSignups.map((s: any) => ({
-                id: s.mollie_id,
-                created_at: s.created_at,
-                email: s.email,
-                first_name: s.first_name,
-                last_name: s.last_name,
-                product_name: s.product_name,
-                amount: parseFloat(s.amount || '0'),
-                approval_status: 'pending' as any,
-                payment_status: s.payment_status,
-                type: (s.user_id ? 'membership_renewal' : 'membership_new') as any
-            })),
-            ...eventSignups.map((s: any) => ({
-                id: s.id.toString(),
-                created_at: s.created_at,
-                email: s.participant_email,
-                first_name: s.participant_name.split(' ')[0],
-                last_name: s.participant_name.split(' ').slice(1).join(' '),
-                product_name: s.event_id?.name || 'Onbekend Event',
-                amount: 0,
-                approval_status: 'pending' as any,
-                payment_status: s.payment_status,
-                type: 'event' as const
-            })),
-            ...pubCrawlSignups.map((s: any) => ({
-                id: s.id.toString(),
-                created_at: s.created_at,
-                email: s.email,
-                first_name: s.name.split(' ')[0],
-                last_name: s.name.split(' ').slice(1).join(' '),
-                product_name: s.pub_crawl_event_id?.name || 'Kroegentocht',
-                amount: 0,
-                approval_status: 'pending' as any,
-                payment_status: s.payment_status,
-                type: 'pub_crawl' as const
-            })),
-            ...tripSignups.map((s: any) => ({
-                id: s.id.toString(),
-                created_at: s.created_at,
-                email: s.email,
-                first_name: s.first_name,
-                last_name: s.last_name,
-                product_name: s.trip_id?.name || 'Studiereis',
-                amount: 0,
-                approval_status: s.approval_status as any,
-                payment_status: s.payment_status,
-                type: 'trip' as const
-            }))
-        ];
-
-        return { success: true, data: aggregated.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) };
+        const aggregated = await getPendingSignupsInternal();
+        return { success: true, data: aggregated };
     } catch (err) {
-        
+        console.error('[AuditActions] Failed to fetch pending signups:', err);
         return { success: false, error: "Kon inschrijvingen niet ophalen." };
     }
 }
@@ -176,7 +78,8 @@ export async function approveSignupAction(id: string, type: string) {
 
             if (!res.ok) throw new Error(`Finance approval failed: ${await res.text()}`);
         } else {
-            await getSystemDirectus().request(updateItem(collection as any, id as any, { approval_status: 'approved' }));
+            const table = type === 'event' ? 'event_signups' : type === 'pub_crawl' ? 'pub_crawl_signups' : 'trip_signups';
+            await query(`UPDATE ${table} SET approval_status = 'approved' WHERE id = $1`, [id]);
         }
         
         await logAdminAction('signup_approved', 'SUCCESS', { 
@@ -201,10 +104,10 @@ export async function rejectSignupAction(id: string, type: string) {
     try {
         if (type.startsWith('membership')) {
             // Update transaction to rejected
-            const { query } = await import('@/lib/database');
             await query('UPDATE transactions SET approval_status = $1 WHERE mollie_id = $2', ['rejected', id]);
         } else {
-            await getSystemDirectus().request(updateItem(collection as any, id as any, { approval_status: 'rejected' }));
+            const table = type === 'event' ? 'event_signups' : type === 'pub_crawl' ? 'pub_crawl_signups' : 'trip_signups';
+            await query(`UPDATE ${table} SET approval_status = 'rejected' WHERE id = $1`, [id]);
         }
         
         await logAdminAction('signup_rejected', 'SUCCESS', { 
@@ -270,15 +173,10 @@ export async function getSystemLogsAction(limit: number = 50) {
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
-        const logs = await getSystemDirectus().request(readItems('system_logs' as any, {
-            fields: [...SYSTEM_LOG_FIELDS],
-            sort: ['-created_at'],
-            limit
-        }));
-        
+        const logs = await getSystemLogsInternal(limit);
         return { success: true, data: logs };
     } catch (err) {
-        
+        console.error('[AuditActions] Failed to fetch system logs:', err);
         return { success: false, error: "Kon logs niet ophalen." };
     }
 }
