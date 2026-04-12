@@ -24,7 +24,11 @@ export async function query(text: string, params?: any[]) {
         // console.debug(`[DB-Query] Executed in ${duration}ms`, { text, rows: res.rowCount });
         return res;
     } catch (e) {
-        
+        console.error('[DB-Query Error]', {
+            message: e instanceof Error ? e.message : 'Unknown error',
+            text,
+            params,
+        });
         throw e;
     }
 }

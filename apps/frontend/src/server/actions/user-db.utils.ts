@@ -58,10 +58,10 @@ export async function fetchUserProfileByEmailDb(email: string): Promise<UserProf
  */
 export async function fetchUserCommitteesDb(userId: string): Promise<any[]> {
     const { rows } = await query(
-        `SELECT c.id, c.name, c.display_name, c.is_superadmin
+        `SELECT c.id, c.name
          FROM committees c
-         JOIN committees_directus_users_1 cdu ON c.id = cdu.committees_id
-         WHERE cdu.directus_users_id = $1`,
+         JOIN committee_members cm ON c.id = cm.committee_id
+         WHERE cm.user_id = $1`,
         [userId]
     );
     return rows || [];
