@@ -69,9 +69,12 @@ export class ProvisionWorkerService {
                         // 2. Create User in Azure
                         const token = await TokenService.getAccessToken();
                         
+                        const formatLocalDate = (date: Date) => {
+                            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                        };
                         const now = new Date();
-                        const paymentDate = now.toISOString().split('T')[0]; // YYYY-MM-DD
-                        const expiryDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate()).toISOString().split('T')[0];
+                        const paymentDate = formatLocalDate(now);
+                        const expiryDate = formatLocalDate(new Date(now.getFullYear() + 1, now.getMonth(), now.getDate()));
 
                         const result = await GraphService.createUser(
                             upn,

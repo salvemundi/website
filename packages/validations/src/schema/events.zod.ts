@@ -17,6 +17,8 @@ export const PaymentSuccessEventSchema = BaseEventSchema.extend({
     accessToken: z.string().optional(),
     firstName: z.string().optional(),
     lastName: z.string().optional(),
+    phoneNumber: z.string().optional(),
+    dateOfBirth: z.string().optional(),
 });
 
 export const ActivitySignupEventSchema = BaseEventSchema.extend({

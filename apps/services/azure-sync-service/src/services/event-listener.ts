@@ -78,6 +78,8 @@ export class EventListenerService {
                                     email: data.email,
                                     firstName: data.firstName,
                                     lastName: data.lastName,
+                                    phoneNumber: data.phoneNumber,
+                                    dateOfBirth: data.dateOfBirth,
                                     paymentId: data.paymentId
                                 })
                             });

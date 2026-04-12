@@ -112,6 +112,10 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
                     isNewMember: (metadata as any)?.isNewMember === 'true' || (metadata as any)?.isNewMember === true,
                     qrToken: qrToken,
                     accessToken: accessToken,
+                    firstName: (metadata as any)?.firstName,
+                    lastName: (metadata as any)?.lastName,
+                    phoneNumber: (metadata as any)?.phoneNumber,
+                    dateOfBirth: (metadata as any)?.dateOfBirth,
                     timestamp: new Date().toISOString()
                 };
 
