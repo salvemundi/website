@@ -12,7 +12,7 @@ import {
     pubCrawlSignupFormSchema, 
     type PubCrawlSignupForm,
     type PubCrawlParticipant 
-} from '@salvemundi/validations/schema/kroegentocht.zod';
+} from '@salvemundi/validations/schema/pub-crawl.zod';
 import { Plus, Minus, Mail, Building, Ticket, AlertCircle } from 'lucide-react';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import AdminToast from '@/components/ui/admin/AdminToast';

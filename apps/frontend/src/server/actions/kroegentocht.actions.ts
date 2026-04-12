@@ -8,7 +8,7 @@ import {
     pubCrawlSignupSchema,
     pubCrawlSignupFormSchema,
     type PubCrawlSignupForm
-} from '@salvemundi/validations/schema/kroegentocht.zod';
+} from '@salvemundi/validations/schema/pub-crawl.zod';
 import { 
     PUB_CRAWL_EVENT_FIELDS, 
     PUB_CRAWL_SIGNUP_FIELDS, 

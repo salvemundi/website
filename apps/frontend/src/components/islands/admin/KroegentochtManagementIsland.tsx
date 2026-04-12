@@ -27,7 +27,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 
 import EventSelector from '@/components/admin/kroegentocht/EventSelector';
 import SignupList from '@/components/admin/kroegentocht/SignupList';
-import { type PubCrawlEvent, type PubCrawlSignup } from '@salvemundi/validations/schema/kroegentocht.zod';
+import { type PubCrawlEvent, type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 
 interface ExtendedSignup extends PubCrawlSignup {
     participants?: { name: string; initial: string }[];
