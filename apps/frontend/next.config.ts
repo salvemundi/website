@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
     // Uitgeschakeld vanwege instabiliteit op Acceptance (Eternal Skeletons)
     // cacheComponents: true,
     productionBrowserSourceMaps: false,
+    serverExternalPackages: ['isomorphic-dompurify', 'jsdom'],
     experimental: {
         ppr: false,
         serverSourceMaps: true,
