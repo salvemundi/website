@@ -8,6 +8,7 @@ WORKDIR /app
 # 2. Builder Stage
 FROM base AS builder
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY patches ./patches
 COPY apps/services/azure-management-service/package.json apps/services/azure-management-service/tsconfig.json ./apps/services/azure-management-service/
 COPY packages/validations/package.json packages/validations/tsconfig.json ./packages/validations/
 
