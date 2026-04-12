@@ -28,10 +28,12 @@ import QueuesTab from './audit/QueuesTab';
 
 export default function AuditLogIsland() {
     const { toast, showToast, hideToast } = useAdminToast();
-    const [activeTab, setActiveTab] = useState<'pending' | 'logs' | 'queues'>('pending');
+    const [activeTab, setActiveTab] = useState<'pending' | 'admin_logs' | 'system_logs' | 'queues'>('pending');
     const [signups, setSignups] = useState<PendingSignup[]>([]);
-    const [logs, setLogs] = useState<any[]>([]);
-    const [logsTotalCount, setLogsTotalCount] = useState(0);
+    const [adminLogs, setAdminLogs] = useState<any[]>([]);
+    const [systemLogs, setSystemLogs] = useState<any[]>([]);
+    const [adminLogsTotalCount, setAdminLogsTotalCount] = useState(0);
+    const [systemLogsTotalCount, setSystemLogsTotalCount] = useState(0);
     const [queueData, setQueueData] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState<string | null>(null);
@@ -43,18 +45,23 @@ export default function AuditLogIsland() {
     const loadData = async () => {
         setIsLoading(true);
         try {
-            const [signupsRes, settingsRes, logsRes, queueRes] = await Promise.all([
+            const [signupsRes, settingsRes, adminLogsRes, systemLogsRes, queueRes] = await Promise.all([
                 getPendingSignupsAction(),
                 getAuditSettingsAction(),
-                getSystemLogsAction(50),
+                getSystemLogsAction(50, 'admin'),
+                getSystemLogsAction(50, 'system'),
                 getQueueStatusAction()
             ]);
 
             if (signupsRes.success && signupsRes.data) setSignups(signupsRes.data);
             if (settingsRes.success && settingsRes.data) setManualApproval(settingsRes.data.manual_approval);
-            if (logsRes.success) {
-                setLogs(logsRes.data);
-                setLogsTotalCount(logsRes.totalCount);
+            if (adminLogsRes.success) {
+                setAdminLogs(adminLogsRes.data);
+                setAdminLogsTotalCount(adminLogsRes.totalCount);
+            }
+            if (systemLogsRes.success) {
+                setSystemLogs(systemLogsRes.data);
+                setSystemLogsTotalCount(systemLogsRes.totalCount);
             }
             if (queueRes.success && queueRes.data) setQueueData(queueRes.data.queues);
         } catch (err) {
@@ -78,10 +85,10 @@ export default function AuditLogIsland() {
             if (res.success) {
                 setSignups(prev => prev.filter(s => s.id !== id));
                 showToast('Inschrijving goedgekeurd', 'success');
-                const logsRes = await getSystemLogsAction(50);
-                if (logsRes.success) {
-                    setLogs(logsRes.data);
-                    setLogsTotalCount(logsRes.totalCount);
+                const adminLogsRes = await getSystemLogsAction(50, 'admin');
+                if (adminLogsRes.success) {
+                    setAdminLogs(adminLogsRes.data);
+                    setAdminLogsTotalCount(adminLogsRes.totalCount);
                 }
             } else {
                 showToast(res.error || 'Goedkeuren mislukt', 'error');
@@ -101,10 +108,10 @@ export default function AuditLogIsland() {
             if (res.success) {
                 setSignups(prev => prev.filter(s => s.id !== id));
                 showToast('Inschrijving afgewezen', 'info');
-                const logsRes = await getSystemLogsAction(50);
-                if (logsRes.success) {
-                    setLogs(logsRes.data);
-                    setLogsTotalCount(logsRes.totalCount);
+                const adminLogsRes = await getSystemLogsAction(50, 'admin');
+                if (adminLogsRes.success) {
+                    setAdminLogs(adminLogsRes.data);
+                    setAdminLogsTotalCount(adminLogsRes.totalCount);
                 }
             } else {
                 showToast(res.error || 'Afwijzen mislukt', 'error');
@@ -171,10 +178,10 @@ export default function AuditLogIsland() {
         const res = await updateAuditSettingsAction(newValue);
         if (res.success) {
             showToast(`Automatische goedkeuring ${newValue ? 'uitgeschakeld' : 'ingeschakeld'}`, 'success');
-            const logsRes = await getSystemLogsAction(50);
-            if (logsRes.success) {
-                setLogs(logsRes.data);
-                setLogsTotalCount(logsRes.totalCount);
+            const adminLogsRes = await getSystemLogsAction(50, 'admin');
+            if (adminLogsRes.success) {
+                setAdminLogs(adminLogsRes.data);
+                setAdminLogsTotalCount(adminLogsRes.totalCount);
             }
         } else {
             showToast('Fout bij bijwerken instellingen', 'error');
@@ -199,8 +206,8 @@ export default function AuditLogIsland() {
 
     const adminStats = [
         { label: 'Wachtrij', value: signups.length, icon: Clock, trend: 'Pending' },
-        { label: 'Modus', value: manualApproval ? 'Manueel' : 'Auto', icon: Shield, trend: 'Approval' },
-        { label: 'Systeem', value: logsTotalCount, icon: History, trend: 'Logs' },
+        { label: 'Beheerder', value: adminLogsTotalCount, icon: Shield, trend: 'Actions' },
+        { label: 'Systeem', value: systemLogsTotalCount, icon: History, trend: 'Events' },
     ];
 
     return (
@@ -233,8 +240,9 @@ export default function AuditLogIsland() {
                     <div className="flex gap-1 bg-[var(--beheer-card-soft)] p-1 rounded-2xl w-fit border border-[var(--beheer-border)]">
                         {[
                             { id: 'pending', label: 'Wachtrij', icon: Clock },
-                            { id: 'logs', label: 'Logboek', icon: Tag },
-                            { id: 'queues', label: 'Wachtrijen', icon: Server },
+                            { id: 'admin_logs', label: 'Beheerder', icon: Shield },
+                            { id: 'system_logs', label: 'Systeem', icon: Server },
+                            { id: 'queues', label: 'Wachtrijen', icon: RefreshCw },
                         ].map(tab => (
                             <button
                                 key={tab.id}
@@ -264,11 +272,21 @@ export default function AuditLogIsland() {
                         />
                     )}
 
-                    {activeTab === 'logs' && (
+                    {activeTab === 'admin_logs' && (
                         <LogsTab 
                             isLoading={isLoading}
-                            logs={logs}
+                            logs={adminLogs}
                             onRefresh={loadData}
+                            title="Beheerder Acties"
+                        />
+                    )}
+
+                    {activeTab === 'system_logs' && (
+                        <LogsTab 
+                            isLoading={isLoading}
+                            logs={systemLogs}
+                            onRefresh={loadData}
+                            title="Systeem Events"
                         />
                     )}
 

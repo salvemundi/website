@@ -26,6 +26,8 @@ interface SyncStatus {
     successCount: number;
     excludedCount: number;
     createdCount: number;
+    movedActiveCount: number;
+    movedExpiredCount: number;
     errors: { email: string; message: string; timestamp: string }[];
     warnings: { email: string; message: string }[];
     missingData: { email: string; reason: string }[];
@@ -173,6 +175,7 @@ export default function AzureSyncIsland({ isLoading: propIsLoading = false }: { 
         { label: 'Geslaagd', value: status?.successCount || 0, icon: CheckCircle, trend: 'Leden' },
         { label: 'Fouten', value: status?.errorCount || 0, icon: AlertCircle, trend: 'Issues' },
         { label: 'Nieuw', value: status?.createdCount || 0, icon: UserPlus, trend: 'Created' },
+        { label: 'Verlopen', value: status?.movedExpiredCount || 0, icon: Activity, trend: 'Moved' },
     ];
 
     return (

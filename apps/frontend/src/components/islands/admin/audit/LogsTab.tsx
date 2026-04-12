@@ -8,13 +8,14 @@ interface LogsTabProps {
     isLoading: boolean;
     logs: any[];
     onRefresh: () => void;
+    title?: string;
 }
 
-export default function LogsTab({ isLoading, logs, onRefresh }: LogsTabProps) {
+export default function LogsTab({ isLoading, logs, onRefresh, title = "Activiteitslogboek" }: LogsTabProps) {
     return (
         <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] shadow-xl overflow-hidden">
             <div className="p-6 border-b border-[var(--beheer-border)]/50 flex justify-between items-center">
-                <h3 className="text-lg font-black text-[var(--beheer-text)] uppercase tracking-tight">Activiteitslogboek</h3>
+                <h3 className="text-lg font-black text-[var(--beheer-text)] uppercase tracking-tight">{title}</h3>
                 <button 
                     onClick={onRefresh}
                     disabled={isLoading}

@@ -89,6 +89,16 @@ export class ProvisionWorkerService {
                         );
 
                         console.log(`[ProvisionWorker] Azure account created for ${task.email}`);
+                        
+                        // 2.1 Add to 'Leden_Actief_Lidmaatschap' group
+                        const activeGroupId = process.env.AZURE_ACTIVE_LID_GROUP_ID || '2e17c12a-28d6-49ae-981a-8b5b8d88db8a';
+                        try {
+                            console.log(`[ProvisionWorker] Adding user to group ${activeGroupId}...`);
+                            await GraphService.addGroupMember(activeGroupId, result.id, token);
+                        } catch (groupErr: any) {
+                            console.error(`[ProvisionWorker] Failed to add user to active lid group: ${groupErr.message}`);
+                            // We don't fail the whole task if this fails, but it's worth logging
+                        }
 
                         // 3. Sync to Directus (Strict Seqential: Sync BEFORE Mail)
                         if (process.env.AZURE_SYNC_SERVICE_URL) {

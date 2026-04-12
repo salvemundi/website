@@ -158,12 +158,12 @@ export async function updateAuditSettingsAction(manualApproval: boolean) {
     }
 }
 
-export async function getSystemLogsAction(limit: number = 50): Promise<LogsResponse> {
+export async function getSystemLogsAction(limit: number = 50, source: 'admin' | 'system' = 'admin'): Promise<LogsResponse> {
     const admin = await checkAuditAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
-        const result = await getSystemLogsInternal(limit);
+        const result = await getSystemLogsInternal(limit, source);
         return { success: true, data: result.logs, totalCount: result.totalCount };
     } catch (err) {
         console.error('[AuditActions] Failed to fetch system logs:', err);

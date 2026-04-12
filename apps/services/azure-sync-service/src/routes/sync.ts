@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { SyncJob } from '../services/sync.job.js';
+import { SyncJob } from '../services/sync/sync-job.js';
 import { TokenService } from '../services/token.service.js';
 import { timingSafeCompare } from '@salvemundi/validations';
 
