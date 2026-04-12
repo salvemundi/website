@@ -9,21 +9,15 @@ const pool = new Pool({
     port: Number(process.env.DB_PORT) || 5432,
 });
 
-pool.on('error', (err) => {
-    console.error('[DB-Pool] Unexpected error on idle client', err);
+pool.on('error', (_err) => {
+    // Silent error handler for idle clients to prevent service crash.
 });
 
 export async function query(text: string, params?: any[]) {
-    const start = Date.now();
     try {
         const res = await pool.query(text, params);
-        const duration = Date.now() - start;
-        if (process.env.NODE_ENV !== 'production') {
-            console.debug(`[DB-Query] Executed in ${duration}ms`, { rowCount: res.rowCount });
-        }
         return res;
     } catch (e) {
-        console.error('[DB-Query] Error:', e);
         throw e;
     }
 }

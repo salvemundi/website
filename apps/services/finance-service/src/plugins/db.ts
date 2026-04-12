@@ -1,21 +1,27 @@
 import { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
-import pg from 'pg';
+import { Pool } from 'pg';
 
 declare module 'fastify' {
     interface FastifyInstance {
-        db: pg.Client;
+        db: Pool;
     }
 }
 
 export default fp(async (fastify: FastifyInstance) => {
     // DB_URL should be provided in .env (e.g. postgresql://user:pass@host:port/db)
-    const client = new pg.Client({
+    const pool = new Pool({
         connectionString: process.env.DB_URL
     });
 
-    await client.connect();
-    fastify.decorate('db', client);
+    try {
+        await pool.query('SELECT NOW()'); // Verify connection
+        fastify.decorate('db', pool);
+        fastify.log.info('[FINANCE] Database pool initialized');
+    } catch (err: any) {
+        fastify.log.error(`[FINANCE] Error connecting database: ${err.message}`);
+        throw err;
+    }
 
     fastify.addHook('onClose', async (instance) => {
         await instance.db.end();
