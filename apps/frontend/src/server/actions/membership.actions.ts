@@ -12,9 +12,7 @@ import { headers } from 'next/headers';
 import { revalidateTag } from 'next/cache';
 import { rateLimit } from '../utils/ratelimit';
 import { query } from '@/lib/database';
-
 import { getExpandedEnv } from '../utils/env';
-
 
 const getFinanceServiceUrl = () =>
     getExpandedEnv('FINANCE_SERVICE_URL');
@@ -40,50 +38,60 @@ export async function validateCouponAction(formData: FormData) {
         return { success: false, error: 'Te veel verzoeken. Probeer het later opnieuw.' };
     }
 
-
-    const serviceUrl = getFinanceServiceUrl();
-    const url = `${serviceUrl}/api/coupons/validate`;
-
     try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: getInternalHeaders(),
-            body: JSON.stringify({ couponCode: parsed.data.couponCode }),
-            signal: AbortSignal.timeout(10000), // Prevent hanging
-        });
+        // Direct SQL validation (Pentest-safe via $1 parameters)
+        const sql = `
+            SELECT 
+                discount_type, 
+                discount_value, 
+                description, 
+                usage_count, 
+                usage_limit, 
+                valid_from, 
+                valid_until, 
+                is_active
+            FROM coupons
+            WHERE UPPER(coupon_code) = UPPER($1)
+            LIMIT 1
+        `;
 
-        // 1. Check if response is JSON and parse it
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-            return { success: false, error: 'Betaalservice gaf een ongeldig antwoord. Probeer het later opnieuw.' };
+        const result = await query(sql, [parsed.data.couponCode.trim()]);
+        const coupon = result.rows[0];
+
+        if (!coupon) {
+            return { success: false, error: 'Coupon niet gevonden' };
         }
 
-        const data = await response.json();
-
-        if (response.ok && data.valid) {
-            return {
-                success: true,
-                discount: data.discount_value,
-                type: data.discount_type,
-                description: data.description
-            };
-        }
- 
-        // 2. Handle specific error codes if available
-        if (response.status === 401) {
-            return { success: false, error: 'Authenticatiefout met de betaalservice.' };
+        // 1. Manual Toggle Check
+        if (!coupon.is_active) {
+            return { success: false, error: 'Deze coupon is momenteel niet actief' };
         }
 
-        return { 
-            success: false, 
-            error: data.error || 'De opgegeven coupon is niet geldig of de service is niet bereikbaar.' 
+        // 2. Date Validation Logic
+        const now = new Date();
+        
+        if (coupon.valid_from && new Date(coupon.valid_from) > now) {
+            return { success: false, error: 'Deze coupon is nog niet geldig' };
+        }
+
+        if (coupon.valid_until && new Date(coupon.valid_until) < now) {
+            return { success: false, error: 'Deze coupon is verlopen' };
+        }
+
+        // 3. Usage Limit Check
+        if (coupon.usage_limit !== null && (coupon.usage_count || 0) >= coupon.usage_limit) {
+            return { success: false, error: 'Deze coupon is al maximaal gebruikt' };
+        }
+
+        return {
+            success: true,
+            discount: Number(coupon.discount_value),
+            type: coupon.discount_type,
+            description: coupon.description || `Korting: ${coupon.discount_value}${coupon.discount_type === 'percentage' ? '%' : ' EUR'}`
         };
     } catch (error: any) {
-        // Provide a clearer error message for connection failures
-        if (error.name === 'TimeoutError' || error.message.includes('fetch failed')) {
-            return { success: false, error: 'Kon geen verbinding maken met de betaalservice. Controleer de netwerkverbinding.' };
-        }
-
+        // Log the error for internal monitoring (Server-side only)
+        // In a real production app, use a dedicated logger here.
         return { success: false, error: 'Fout bij valideren van coupon' };
     }
 }
