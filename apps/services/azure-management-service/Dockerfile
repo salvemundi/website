@@ -9,8 +9,12 @@ WORKDIR /app
 FROM base AS builder
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY patches ./patches
-COPY apps/services/azure-management-service/package.json apps/services/azure-management-service/tsconfig.json ./apps/services/azure-management-service/
-COPY packages/validations/package.json packages/validations/tsconfig.json ./packages/validations/
+COPY apps/frontend/package.json ./apps/frontend/
+COPY apps/services/finance-service/package.json ./apps/services/finance-service/
+COPY apps/services/azure-sync-service/package.json ./apps/services/azure-sync-service/
+COPY apps/services/mail-service/package.json ./apps/services/mail-service/
+COPY apps/services/azure-management-service/package.json ./apps/services/azure-management-service/
+COPY packages/validations/package.json ./packages/validations/
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --no-frozen-lockfile
 

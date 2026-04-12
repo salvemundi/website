@@ -7,7 +7,7 @@
     "node": ">=22.22.2"
   },
   "scripts": {
-    "dev": "pnpm -r dev",
+    "dev": "pnpm --filter @salvemundi/frontend dev",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
     "type-check": "pnpm -r --parallel exec tsc --noEmit",
