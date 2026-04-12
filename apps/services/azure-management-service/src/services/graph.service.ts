@@ -83,6 +83,8 @@ export class GraphService {
         const user: any = {
             accountEnabled: true,
             displayName: `${firstName} ${lastName}`,
+            givenName: firstName,
+            surname: lastName,
             mailNickname: upn.split('@')[0],
             userPrincipalName: upn,
             otherMails: [personalEmail],
@@ -132,6 +134,8 @@ export class GraphService {
         token: string,
         data: {
             displayName?: string;
+            givenName?: string;
+            surname?: string;
             phoneNumber?: string;
             dateOfBirth?: string;
             membershipExpiry?: string;
@@ -142,6 +146,8 @@ export class GraphService {
         const payload: any = {};
 
         if (data.displayName) payload.displayName = data.displayName;
+        if (data.givenName) payload.givenName = data.givenName;
+        if (data.surname) payload.surname = data.surname;
         if (data.phoneNumber) payload.mobilePhone = data.phoneNumber;
 
         if (data.dateOfBirth || data.membershipExpiry || data.originalPaymentDate) {

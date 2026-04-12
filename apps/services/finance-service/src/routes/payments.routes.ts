@@ -15,6 +15,8 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
             email,
             firstName,
             lastName,
+            phoneNumber,
+            dateOfBirth,
             isContribution,
             userId,
             redirectUrl
@@ -53,6 +55,10 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                     registrationType,
                     userId,
                     email,
+                    firstName,
+                    lastName,
+                    phoneNumber,
+                    dateOfBirth,
                     isContribution
                 }
             });
@@ -147,11 +153,16 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 return reply.status(400).send({ error: 'Transaction not found or not paid yet' });
             }
 
+            // Fetch full payment from Mollie to get metadata (names, phone, DOB)
+            const mollie = getMollieClient();
+            const payment = await mollie.payments.get(mollieId);
+            const metadata = payment.metadata as any;
+
             const eventData = {
                 event: 'PAYMENT_SUCCESS',
                 userId: tx.user_id,
                 paymentId: tx.mollie_id,
-                email: tx.email,
+                email: tx.email || metadata?.email,
                 registrationId: tx.registration || tx.trip_signup || tx.pub_crawl_signup,
                 registrationType: tx.product_type === 'pub_crawl' ? 'pub_crawl_signup' : 
                                  tx.product_type === 'trip' ? 'trip_signup' : 
@@ -159,8 +170,10 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 isContribution: tx.product_type === 'membership',
                 isNewMember: !tx.user_id && tx.product_type === 'membership',
                 accessToken: tx.access_token,
-                firstName: tx.first_name,
-                lastName: tx.last_name,
+                firstName: tx.first_name || metadata?.firstName,
+                lastName: tx.last_name || metadata?.lastName,
+                phoneNumber: metadata?.phoneNumber,
+                dateOfBirth: metadata?.dateOfBirth,
                 timestamp: new Date().toISOString()
             };
 
