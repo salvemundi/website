@@ -8,6 +8,7 @@ import { WhySalveMundiSection } from '@/components/ui/membership/WhySalveMundiSe
 import { JoinSectionIsland } from '@/components/islands/membership/JoinSectionIsland';
 import { SponsorsSection } from '@/components/ui/layout/SponsorsSection';
 import { HeroSkeleton, EventsSkeleton, SponsorsSkeleton } from '@/components/ui/layout/HomePageSkeleton';
+import { PwaInstallToast } from '@/components/ui/layout/PwaInstallToast';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 
@@ -76,6 +77,9 @@ export default async function HomePage() {
             <Suspense fallback={<SponsorsSkeleton />}>
                 <AsyncSponsors />
             </Suspense>
+
+            {/* PWA install toast — verschijnt na 2.5s als installeerbaar */}
+            <PwaInstallToast />
         </main>
     );
 }
