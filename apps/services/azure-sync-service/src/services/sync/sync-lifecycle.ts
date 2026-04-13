@@ -1,5 +1,6 @@
 import { AzureUser, GraphService } from '../graph.service.js';
 import { SyncContext, GROUP_ACTIVE_LID, GROUP_EXPIRED_LID } from './sync-types.js';
+import { ManagementService } from '../management.service.js';
 import { query } from '../../plugins/db.js';
 
 export class SyncLifecycle {
@@ -49,7 +50,7 @@ export class SyncLifecycle {
             // 2. Sync Azure Groups
             if (isActive) {
                 if (!userInActiveGroup) {
-                    await GraphService.addGroupMember(GROUP_ACTIVE_LID, aUser.id, ctx.token);
+                    await ManagementService.addGroupMember(GROUP_ACTIVE_LID, aUser.id);
                     await query(`INSERT INTO system_logs (type, status, payload, created_at) VALUES ($1, $2, $3, NOW())`, [
                         'system_group_move',
                         'SUCCESS',
@@ -57,7 +58,7 @@ export class SyncLifecycle {
                     ]);
                 }
                 if (userInExpiredGroup) {
-                    await GraphService.removeGroupMember(GROUP_EXPIRED_LID, aUser.id, ctx.token);
+                    await ManagementService.removeGroupMember(GROUP_EXPIRED_LID, aUser.id);
                     await query(`INSERT INTO system_logs (type, status, payload, created_at) VALUES ($1, $2, $3, NOW())`, [
                         'system_group_move',
                         'SUCCESS',
@@ -66,7 +67,7 @@ export class SyncLifecycle {
                 }
             } else {
                 if (userInActiveGroup) {
-                    await GraphService.removeGroupMember(GROUP_ACTIVE_LID, aUser.id, ctx.token);
+                    await ManagementService.removeGroupMember(GROUP_ACTIVE_LID, aUser.id);
                     await query(`INSERT INTO system_logs (type, status, payload, created_at) VALUES ($1, $2, $3, NOW())`, [
                         'system_group_move',
                         'SUCCESS',
@@ -74,7 +75,7 @@ export class SyncLifecycle {
                     ]);
                 }
                 if (!userInExpiredGroup) {
-                    await GraphService.addGroupMember(GROUP_EXPIRED_LID, aUser.id, ctx.token);
+                    await ManagementService.addGroupMember(GROUP_EXPIRED_LID, aUser.id);
                     await query(`INSERT INTO system_logs (type, status, payload, created_at) VALUES ($1, $2, $3, NOW())`, [
                         'system_group_move',
                         'SUCCESS',
