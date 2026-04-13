@@ -53,7 +53,7 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
 
     if (!isExpired) {
         return (
-            <div className="text-theme-text dark:text-white animate-in fade-in duration-500">
+            <div className="text-theme-text dark:text-white">
                 <div className="bg-green-500/10 dark:bg-green-500/20 border border-green-500/20 dark:border-green-500/40 p-5 rounded-2xl mb-6 flex items-start gap-4">
                     <div className="bg-green-500 rounded-full p-1 mt-0.5 shadow-sm shadow-green-500/20">
                         <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -103,7 +103,7 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
     }
 
     return (
-        <div className="text-theme-text dark:text-white animate-in fade-in duration-500">
+        <div className="text-theme-text dark:text-white">
             {user.membership_expiry && <DeletionTimer expiryDateStr={user.membership_expiry} />}
 
             <div className="mb-6">

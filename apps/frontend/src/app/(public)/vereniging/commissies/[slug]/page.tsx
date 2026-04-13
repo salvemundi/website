@@ -36,19 +36,29 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function CommitteePage({ params }: PageProps) {
     const { slug } = await params;
     
-    // Fallback title derived from slug for initial render
-    const displayTitle = slug.replace(/-/g, ' ').toUpperCase();
+    // NUCLEAR SSR: Fetch committee data before flushing the shell
+    const committee = await getCommitteeBySlug(slug);
+
+    if (!committee) {
+        return (
+            <PublicPageShell title="Commissie niet gevonden">
+                <main className="mx-auto max-w-app px-4 py-20 text-center">
+                    <h1 className="text-2xl font-bold">Deze commissie kon niet worden gevonden.</h1>
+                </main>
+            </PublicPageShell>
+        );
+    }
+
+    const cleanedName = committee.name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim().toUpperCase();
 
     return (
         <PublicPageShell 
-            title={displayTitle}
+            title={cleanedName}
             backgroundImage="/img/backgrounds/commissies-banner.png"
             imageFilter="brightness(0.65)"
         >
             <main className="mx-auto max-w-app px-4 py-12 md:py-20">
-                <Suspense fallback={<CommitteeDetail isLoading={true} />}>
-                    <CommitteeDetailDisplay slug={slug} />
-                </Suspense>
+                <CommitteeDetailDisplay committee={committee} />
             </main>
         </PublicPageShell>
     );

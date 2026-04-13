@@ -13,10 +13,11 @@ export const metadata = {
 
 export const dynamic = 'force-dynamic';
 
-async function MembershipDynamicContent({ session }: { session: any }) {
+export default async function MembershipPage() {
+    // NUCLEAR SSR: Fetch all data before flushing any part of the page content
+    const session = await auth.api.getSession({ headers: await headers() });
     const user = session?.user as any;
     const isGuest = !user;
-    const isExpired = user && user.membership_status !== 'active';
     
     let committees = [];
     if (user) {
@@ -27,54 +28,45 @@ async function MembershipDynamicContent({ session }: { session: any }) {
             throw new Error('Er is een fout opgetreden. Probeer het later opnieuw.');
         }
     }
+
+    const isExpired = user && user.membership_status !== 'active';
     const isCommitteeMember = committees.length > 0;
     const baseAmount = (isCommitteeMember && isExpired) ? 10.00 : 20.00;
-
-    return (
-        <main className="max-w-app mx-auto">
-            <div className="flex flex-col sm:flex-row gap-6 px-6 py-8 sm:py-10 md:py-12">
-                <section className={`bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-[2rem] shadow-xl p-6 sm:p-10 ${isGuest ? 'w-full sm:w-1/2' : 'w-full max-w-2xl mx-auto'}`}>
-                    <h1 className="text-4xl font-black text-theme-purple dark:text-purple-400 mb-8 tracking-tight">
-                        {isGuest ? 'INSCHRIJVEN' : (user?.membership_status === 'active' ? 'STATUS' : 'VERLENGEN')}
-                    </h1>
-
-                    {isGuest ? (
-                        <MembershipFormIsland baseAmount={baseAmount} />
-                    ) : (
-                        <MembershipStatusIsland user={user as MembershipUserData} baseAmount={baseAmount} />
-                    )}
-                </section>
-
-                {isGuest && (
-                    <aside className="w-full sm:w-1/2 flex flex-col gap-6">
-                        <div className="w-full text-center bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-[2rem] p-8 shadow-lg">
-                            <h2 className="text-3xl font-black text-theme-purple dark:text-purple-400 mb-4 tracking-tight">
-                                WAAROM WORDEN LID?
-                            </h2>
-                            <p className="text-lg opacity-80 leading-relaxed font-medium">
-                                Als lid van Salve Mundi krijg je toegang tot exclusieve activiteiten en workshops. 
-                                Word vandaag lid!
-                            </p>
-                        </div>
-                    </aside>
-                )}
-            </div>
-        </main>
-    );
-}
-
-export default async function MembershipPage() {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
-    const isGuest = !session?.user;
 
     return (
         <PublicPageShell
             title={isGuest ? "WORD LID!" : "MIJN LIDMAATSCHAP"}
             backgroundImage="" // Default gradient
         >
-            <MembershipDynamicContent session={session} />
+            <main className="max-w-app mx-auto">
+                <div className="flex flex-col sm:flex-row gap-6 px-6 py-8 sm:py-10 md:py-12">
+                    <section className={`bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-[2rem] shadow-xl p-6 sm:p-10 ${isGuest ? 'w-full sm:w-1/2' : 'w-full max-w-2xl mx-auto'}`}>
+                        <h1 className="text-4xl font-black text-theme-purple dark:text-purple-400 mb-8 tracking-tight">
+                            {isGuest ? 'INSCHRIJVEN' : (user?.membership_status === 'active' ? 'STATUS' : 'VERLENGEN')}
+                        </h1>
+
+                        {isGuest ? (
+                            <MembershipFormIsland baseAmount={baseAmount} />
+                        ) : (
+                            <MembershipStatusIsland user={user as MembershipUserData} baseAmount={baseAmount} />
+                        )}
+                    </section>
+
+                    {isGuest && (
+                        <aside className="w-full sm:w-1/2 flex flex-col gap-6">
+                            <div className="w-full text-center bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-[2rem] p-8 shadow-lg">
+                                <h2 className="text-3xl font-black text-theme-purple dark:text-purple-400 mb-4 tracking-tight">
+                                    WAAROM WORDEN LID?
+                                </h2>
+                                <p className="text-lg opacity-80 leading-relaxed font-medium">
+                                    Als lid van Salve Mundi krijg je toegang tot exclusieve activiteiten en workshops. 
+                                    Word vandaag lid!
+                                </p>
+                            </div>
+                        </aside>
+                    )}
+                </div>
+            </main>
         </PublicPageShell>
     );
 }

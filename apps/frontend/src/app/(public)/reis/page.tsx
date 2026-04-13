@@ -14,10 +14,12 @@ export const metadata = {
     description: 'Schrijf je in voor de jaarlijkse reis van Salve Mundi! Een onvergetelijke ervaring.',
 };
 
-async function ReisDataLoader() {
-    const [trips, siteSettings] = await Promise.all([
+export default async function ReisPage() {
+    // NUCLEAR SSR: Fetch all data before flushing any part of the page content
+    const [trips, siteSettings, session] = await Promise.all([
         getUpcomingTrips(),
-        getReisSiteSettings()
+        getReisSiteSettings(),
+        auth.api.getSession({ headers: await headers() })
     ]);
 
     const isReisEnabled = siteSettings?.show ?? true;
@@ -28,8 +30,6 @@ async function ReisDataLoader() {
     let userSignup = null;
     let currentUserProfile = null;
 
-    const session = await auth.api.getSession({ headers: await headers() });
-    
     if (nextTrip) {
         const promises: [Promise<number>, Promise<any>, Promise<any>?] = [
             getTripParticipantsCount(nextTrip.id),
@@ -61,35 +61,23 @@ async function ReisDataLoader() {
                 : 'Inschrijving tijdelijk niet beschikbaar'));
 
     return (
-        <div className="flex flex-col lg:flex-row gap-8 items-start animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <ReisFormIsland
-                nextTrip={nextTrip}
-                userSignup={userSignup}
-                canSignUp={canSignUp}
-                registrationStartText={registrationStartText}
-                participantsCount={participantsCount}
-                initialUser={currentUserProfile}
-            />
-            <ReisInfoIsland nextTrip={nextTrip} />
-        </div>
-    );
-}
-
-export default async function ReisPage() {
-    return (
         <PublicPageShell
             title="SALVE MUNDI REIS"
             description="Schrijf je in voor de jaarlijkse reis van Salve Mundi! Een onvergetelijke ervaring vol gezelligheid en avontuur."
-            backgroundImage="/img/backgrounds/reis-banner.jpg" 
-            fallback={
-                <div className="flex flex-col lg:flex-row gap-8 items-start animate-pulse">
-                    <div className="w-full lg:w-3/5 h-[500px] bg-[var(--bg-card)] rounded-3xl skeleton-active" />
-                    <div className="w-full lg:w-2/5 h-[400px] bg-[var(--bg-card)] rounded-3xl skeleton-active" />
-                </div>
-            }
+            backgroundImage="/img/backgrounds/reis-banner.jpg"
         >
             <main className="mx-auto max-w-app px-4 py-8 sm:py-10 md:py-12">
-                <ReisDataLoader />
+                <div className="flex flex-col lg:flex-row gap-8 items-start animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    <ReisFormIsland
+                        nextTrip={nextTrip}
+                        userSignup={userSignup}
+                        canSignUp={canSignUp}
+                        registrationStartText={registrationStartText}
+                        participantsCount={participantsCount}
+                        initialUser={currentUserProfile}
+                    />
+                    <ReisInfoIsland nextTrip={nextTrip} />
+                </div>
             </main>
         </PublicPageShell>
     );

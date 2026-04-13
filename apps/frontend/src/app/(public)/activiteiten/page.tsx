@@ -13,20 +13,18 @@ export const metadata = {
 
 export const dynamic = 'force-dynamic';
 
-async function ActivitiesBannerData({ session }: { session: any }) {
-    const events = await getActivities(session?.user?.id);
-    return <ActivitiesBannerIsland events={events as any} />;
-}
-
-async function ActivitiesListData({ session }: { session: any }) {
-    const events = await getActivities(session?.user?.id);
-    return <ActivitiesProviderIsland events={events as any} />;
-}
-
 export default async function ActivitiesPage() {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
+    // NUCLEAR SSR: Fetch all data before flushing any part of the page content
+    const sessionPromise = auth.api.getSession({ headers: await headers() });
+    const activitiesPromise = getActivities(); // Use a single fetch for all
+    
+    const [session, events] = await Promise.all([
+        sessionPromise.catch(() => null),
+        activitiesPromise.catch(() => [])
+    ]);
+    
+    // Stable server time for hydration-safe countdown and filtering
+    const serverTime = new Date().toISOString();
 
     return (
         <PublicPageShell
@@ -35,9 +33,9 @@ export default async function ActivitiesPage() {
             backgroundImage="/img/backgrounds/Kroto2025.jpg"
         >
             <div className="flex flex-col gap-12">
-                <ActivitiesBannerData session={session} />
+                <ActivitiesBannerIsland events={events as any} serverTime={serverTime} />
                 <main className="w-full px-4 py-8 sm:py-10 md:py-12">
-                    <ActivitiesListData session={session} />
+                    <ActivitiesProviderIsland events={events as any} serverTime={serverTime} />
                 </main>
             </div>
         </PublicPageShell>

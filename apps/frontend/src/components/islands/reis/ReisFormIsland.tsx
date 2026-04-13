@@ -35,72 +35,10 @@ export function ReisFormIsland({
     const router = useRouter();
     
     // We prioritize the server-provided user to avoid any flicker.
-    // IMPORTANT: We REMOVE the sessionPending check here. 
     // The form should be in the HTML immediately for the browser to avoid autofill "shocks".
     const currentUser = initialUser || session?.user;
     
-    // We only show loading if we don't have the trip data yet.
-    const isReallyLoading = isLoading;
-    
     const [refreshing, setRefreshing] = useState(false);
-
-    if (isReallyLoading) {
-        if (isReisDisabled) {
-            return (
-                <section className="w-full lg:w-1/2 bg-[var(--bg-card)] dark:border dark:border-[var(--border-color)]/20 rounded-2xl sm:rounded-3xl shadow-lg p-8 skeleton-active text-center" aria-busy="true">
-                    <div className="mx-auto h-8 w-1/3 bg-theme-purple/10 rounded-lg mb-4" />
-                    <div className="mx-auto h-4 w-3/4 bg-[var(--text-muted)]/10 rounded-full" />
-                </section>
-            );
-        }
-
-        if (isSignedUp) {
-            return (
-                <section className="w-full lg:w-1/2 bg-[var(--bg-card)] dark:border dark:border-[var(--border-color)]/20 rounded-2xl sm:rounded-3xl shadow-lg p-8 skeleton-active" aria-busy="true">
-                    <div className="flex justify-between items-center mb-10">
-                        <div className="h-8 w-1/2 bg-theme-purple/10 rounded-lg" />
-                        <div className="h-8 w-8 bg-theme-purple/5 rounded-md" />
-                    </div>
-                    <div className="bg-theme-purple/5 rounded-2xl p-6 mb-6">
-                        <div className="h-6 w-1/3 bg-theme-purple/10 mb-4 rounded-md" />
-                        <div className="space-y-3">
-                            <div className="h-4 w-full bg-theme-purple/10 rounded-full" />
-                            <div className="h-4 w-3/4 bg-theme-purple/10 rounded-full" />
-                        </div>
-                    </div>
-                    <div className="h-12 w-full bg-theme-purple/20 rounded-xl" />
-                </section>
-            );
-        }
-
-        return (
-            <section className="w-full lg:w-1/2 bg-[var(--bg-card)] dark:border dark:border-[var(--border-color)]/20 rounded-2xl sm:rounded-3xl shadow-lg p-5 sm:p-6 md:p-8 skeleton-active" aria-busy="true">
-                <div className="h-10 w-3/4 sm:w-1/2 bg-theme-purple/10 rounded-lg mb-8" />
-                <div className="flex flex-col gap-6">
-                    <div className="h-5 w-full bg-[var(--text-muted)]/10 rounded-md" />
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-3">
-                            <div className="h-3 w-1/4 bg-[var(--text-muted)]/10 rounded-full" />
-                            <div className="h-12 w-full bg-[var(--bg-main)]/50 rounded-xl" />
-                        </div>
-                        <div className="space-y-3">
-                            <div className="h-3 w-1/4 bg-[var(--text-muted)]/10 rounded-full" />
-                            <div className="h-12 w-full bg-[var(--bg-main)]/50 rounded-xl" />
-                        </div>
-                    </div>
-                    <div className="space-y-3">
-                        <div className="h-3 w-1/4 bg-[var(--text-muted)]/10 rounded-full" />
-                        <div className="h-12 w-full bg-[var(--bg-main)]/50 rounded-xl" />
-                    </div>
-                    <div className="space-y-3">
-                        <div className="h-3 w-1/4 bg-[var(--text-muted)]/10 rounded-full" />
-                        <div className="h-12 w-full bg-[var(--bg-main)]/50 rounded-xl" />
-                    </div>
-                    <div className="h-14 w-full bg-theme-purple/20 rounded-xl mt-6" />
-                </div>
-            </section>
-        );
-    }
 
     const handleRefresh = async () => {
         setRefreshing(true);

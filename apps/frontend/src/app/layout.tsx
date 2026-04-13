@@ -10,7 +10,6 @@ import { auth } from '@/server/auth/auth';
 import { checkAdminAccess } from '@/server/actions/admin.actions';
 import { headers } from 'next/headers';
 import { connection } from 'next/server';
-import RootLoadingState from '@/components/ui/layout/RootLoadingState';
 import { getHeroBanners, getUpcomingActiviteiten } from '@/server/actions/home.actions';
 import { getImageUrl } from '@/lib/utils/image-utils';
 
@@ -77,7 +76,7 @@ export default async function RootLayout({
                     <ImpersonationWrapper />
                 </Suspense>
 
-                <Suspense fallback={<RootLoadingState />}>
+                <Suspense fallback={null}>
                     <HeaderWrapper />
                     <main className="flex-grow pt-[var(--header-total-height,var(--header-height,72px))]">
                         {children}

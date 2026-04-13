@@ -8,11 +8,13 @@ interface FlipClockProps {
     targetDate: string;
     title?: string;
     href?: string;
+    serverTime?: number | string | Date;
 }
 
-const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href }) => {
+const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href, serverTime }) => {
     const calculateTimeLeft = useCallback(() => {
-        const difference = +new Date(targetDate) - +new Date();
+        const now = serverTime ? new Date(serverTime) : new Date();
+        const difference = +new Date(targetDate) - +now;
         let timeLeft = {
             days: 0,
             hours: 0,
@@ -30,23 +32,28 @@ const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href }) => {
         }
 
         return timeLeft;
-    }, [targetDate]);
+    }, [targetDate, serverTime]);
 
     const [timeLeft, setTimeLeft] = useState(() => calculateTimeLeft());
-    const [hasMounted, setHasMounted] = useState(false);
 
     useEffect(() => {
-        setHasMounted(true);
         const timer = setInterval(() => {
-            setTimeLeft(calculateTimeLeft());
+            // After hydration, we switch to calculating based on actual client time
+            // but we keep use of serverTime ref if we want to stay perfectly synced
+            // for simplicity we just proceed with real-time updates
+            const difference = +new Date(targetDate) - +new Date();
+            if (difference > 0) {
+                setTimeLeft({
+                    days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+                    hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+                    minutes: Math.floor((difference / 1000 / 60) % 60),
+                    seconds: Math.floor((difference / 1000) % 60)
+                });
+            }
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [calculateTimeLeft]);
-
-    if (!hasMounted) {
-        return null; // Prevent hydration mismatch
-    }
+    }, [targetDate]);
 
     const formatTime = (time: number) => {
         return time < 10 ? `0${time}` : `${time}`;
