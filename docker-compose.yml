@@ -92,6 +92,11 @@ services:
       - AZURE_MANAGEMENT_SERVICE_URL=http://management-service:3004
       - MAIL_SERVICE_URL=http://mail-service:3003
       - REDIS_URL=${REDIS_URL}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_HOST=v7-core-db
+      - DB_PORT=5432
       - TZ=Europe/Amsterdam
     restart: always
     healthcheck:
