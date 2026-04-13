@@ -17,9 +17,9 @@ export interface SyncStatus {
     errors: { email: string; message: string; timestamp: string; stack?: string }[];
     warnings: { email: string; message: string }[];
     missingData: { email: string; reason: string }[];
-    successfulUsers: { email: string }[];
+    successfulUsers: { email: string; changes?: { field: string; old: any; new: any }[] }[];
     excludedUsers: { email: string }[];
-    createdUsers: { email: string }[];
+    createdUsers: { email: string; changes?: { field: string; old: any; new: any }[] }[];
     startTime?: string;
     endTime?: string;
     lastHeartbeat?: string;

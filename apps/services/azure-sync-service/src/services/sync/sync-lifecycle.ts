@@ -8,13 +8,14 @@ export class SyncLifecycle {
      * Handles the transition between active and expired memberships.
      * Manages Azure groups and Directus membership_status.
      */
-    static async handleLifecycle(ctx: SyncContext, aUser: AzureUser, dUser: any, currentExpiry?: string | null) {
+    static async handleLifecycle(ctx: SyncContext, aUser: AzureUser, dUser: any, currentExpiry?: string | null): Promise<{ field: string; old: any; new: any }[]> {
+        const changes: { field: string; old: any; new: any }[] = [];
         const lockerKey = `lock:sync:user:${aUser.id}`;
         const hasLock = await ctx.redis.set(lockerKey, 'locked', 'EX', 30, 'NX');
         
         if (!hasLock) {
             console.warn(`[SYNC] Skip lifecycle for ${(aUser.mail || aUser.userPrincipalName)} - already being processed.`);
-            return;
+            return [];
         }
 
         try {
@@ -43,6 +44,7 @@ export class SyncLifecycle {
                         reason: isActive ? 'Expiry in future' : 'Expiry in past'
                     })
                 ]);
+                changes.push({ field: 'membership_status', old: currentStatus, new: desiredStatus });
                 if (desiredStatus === 'active') ctx.status.movedActiveCount++;
                 else ctx.status.movedExpiredCount++;
             }
@@ -56,6 +58,7 @@ export class SyncLifecycle {
                         'SUCCESS',
                         JSON.stringify({ email, action: 'added_to_active', group: 'Leden_Actief_Lidmaatschap' })
                     ]);
+                    changes.push({ field: 'Azure Group', old: 'Nee', new: 'Toevoegen aan Leden_Actief' });
                 }
                 if (userInExpiredGroup) {
                     await ManagementService.removeGroupMember(GROUP_EXPIRED_LID, aUser.id);
@@ -64,6 +67,7 @@ export class SyncLifecycle {
                         'SUCCESS',
                         JSON.stringify({ email, action: 'removed_from_expired', group: 'Leden_Verlopen_Lidmaatschap' })
                     ]);
+                    changes.push({ field: 'Azure Group', old: 'Ja', new: 'Verwijderen uit Leden_Verlopen' });
                 }
             } else {
                 if (userInActiveGroup) {
@@ -73,6 +77,7 @@ export class SyncLifecycle {
                         'SUCCESS',
                         JSON.stringify({ email, action: 'removed_from_active', group: 'Leden_Actief_Lidmaatschap' })
                     ]);
+                    changes.push({ field: 'Azure Group', old: 'Ja', new: 'Verwijderen uit Leden_Actief' });
                 }
                 if (!userInExpiredGroup) {
                     await ManagementService.addGroupMember(GROUP_EXPIRED_LID, aUser.id);
@@ -81,10 +86,12 @@ export class SyncLifecycle {
                         'SUCCESS',
                         JSON.stringify({ email, action: 'added_to_expired', group: 'Leden_Verlopen_Lidmaatschap' })
                     ]);
+                    changes.push({ field: 'Azure Group', old: 'Nee', new: 'Toevoegen aan Leden_Verlopen' });
                 }
             }
         } finally {
             await ctx.redis.del(lockerKey);
         }
+        return changes;
     }
 }
