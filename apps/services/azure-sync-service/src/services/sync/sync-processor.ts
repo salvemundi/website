@@ -10,6 +10,7 @@ export class SyncProcessor {
      */
     static async syncUserOptimized(ctx: SyncContext & { membershipMap: Map<string, Map<number, boolean>> }, aUser: AzureUser) {
         const email = (aUser.mail || aUser.userPrincipalName).toLowerCase();
+        const changes: { field: string; old: any; new: any }[] = [];
         
         let dUser = ctx.userCacheByEntra.get(aUser.id);
 
@@ -51,7 +52,8 @@ export class SyncProcessor {
                 membership_status: 'none'
             });
             ctx.status.createdCount++;
-            ctx.status.createdUsers.push({ email });
+            changes.push({ field: 'User', old: 'Bestaat niet', new: 'Nieuw lid aangemaakt' });
+            ctx.status.createdUsers.push({ email, changes });
         }
 
         if (ctx.options.activeOnly && dUser.status !== 'active') {
@@ -86,11 +88,20 @@ export class SyncProcessor {
         }
 
         if (Object.keys(updatePayload).length > 0) {
-            await DirectusService.updateUser(dUser.id, updatePayload);
+            // Track changes for existing user
+            for (const key of Object.keys(updatePayload)) {
+                if (dUser[key] !== updatePayload[key]) {
+                    changes.push({ field: key, old: dUser[key], new: updatePayload[key] });
+                }
+            }
+            if (changes.length > 0) {
+                await DirectusService.updateUser(dUser.id, updatePayload);
+            }
         }
 
         // LIFECYCLE MANAGEMENT
-        await SyncLifecycle.handleLifecycle(ctx, aUser, dUser, updatePayload.membership_expiry);
+        const lifecycleChanges = await SyncLifecycle.handleLifecycle(ctx, aUser, dUser, updatePayload.membership_expiry);
+        changes.push(...lifecycleChanges);
 
         // COMMITTEES
         if (fields.includes('committees')) {
@@ -102,16 +113,28 @@ export class SyncProcessor {
                     const mCommId = (typeof m.committee_id === 'object' && m.committee_id !== null) ? m.committee_id.id : m.committee_id;
                     return Number(mCommId) === Number(committeeId);
                 });
-                if (!existing) await DirectusService.addMemberToCommittee(dUser.id, committeeId, isLeader);
-                else if (existing.is_leader !== isLeader) await DirectusService.updateCommitteeMember(existing.id, { is_leader: isLeader });
+
+                if (!existing) {
+                    await DirectusService.addMemberToCommittee(dUser.id, committeeId, isLeader);
+                    changes.push({ field: 'Commissie', old: 'Geen', new: `Toegevoegd aan ID ${committeeId}${isLeader ? ' (Leider)' : ''}` });
+                } else if (existing.is_leader !== isLeader) {
+                    await DirectusService.updateCommitteeMember(existing.id, { is_leader: isLeader });
+                    changes.push({ field: `Commissie ${committeeId} status`, old: 'Lid', new: 'Leider' });
+                }
             }
 
             for (const current of currentMemberships) {
-                if (!azureMemberships.has(current.committee_id)) await DirectusService.removeMemberFromCommittee(current.id);
+                if (!azureMemberships.has(current.committee_id)) {
+                    await DirectusService.removeMemberFromCommittee(current.id);
+                    changes.push({ field: 'Commissie', old: `ID ${current.committee_id}`, new: 'Verwijderd' });
+                }
             }
         }
 
         ctx.status.successCount++;
-        ctx.status.successfulUsers.push({ email });
+        ctx.status.successfulUsers.push({ 
+            email, 
+            changes: changes.length > 0 ? changes : undefined 
+        });
     }
 }

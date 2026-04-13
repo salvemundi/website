@@ -9,11 +9,12 @@ interface ResultRowProps {
     type: 'success' | 'warning' | 'error' | 'info' | 'excluded';
     timestamp?: string;
     stack?: string;
+    changes?: { field: string; old: any; new: any }[];
 }
 
-function ResultRow({ email, message, type, timestamp, stack }: ResultRowProps) {
+function ResultRow({ email, message, type, timestamp, stack, changes }: ResultRowProps) {
     const [isExpanded, setIsExpanded] = useState(false);
-    const hasDetails = !!(timestamp || stack);
+    const hasDetails = !!(timestamp || stack || (changes && changes.length > 0));
     const icons = {
         success: <CheckCircle className="h-4 w-4 text-[var(--beheer-active)]" />,
         warning: <AlertTriangle className="h-4 w-4 text-amber-500" />,
@@ -62,6 +63,25 @@ function ResultRow({ email, message, type, timestamp, stack }: ResultRowProps) {
                                 <pre className="text-[9px] text-red-900/60 font-mono leading-relaxed overflow-x-auto p-3 bg-red-900/5 rounded-xl border border-red-900/10 custom-scrollbar">
                                     {stack}
                                 </pre>
+                            </div>
+                        )}
+                        {changes && changes.length > 0 && (
+                            <div className="space-y-2">
+                                <span className="text-[8px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">Wijzigingen:</span>
+                                <div className="space-y-1">
+                                    {changes.map((change, idx) => (
+                                        <div key={idx} className="flex flex-col gap-0.5 p-2 bg-[var(--beheer-card-bg)] rounded-xl border border-[var(--beheer-border)]/20">
+                                            <span className="text-[9px] font-black text-[var(--beheer-text)] uppercase">{change.field}</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[8px] text-[var(--beheer-text-muted)] truncate max-w-[100px]">{String(change.old ?? 'leeg')}</span>
+                                                <svg className="h-2 w-2 text-[var(--beheer-text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
+                                                </svg>
+                                                <span className="text-[8px] font-black text-[var(--beheer-active)] truncate max-w-[100px]">{String(change.new ?? 'leeg')}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         )}
                     </div>
@@ -118,12 +138,23 @@ export default function SyncLogs({ resultFilter, setResultFilter, status }: Sync
 
     if (resultFilter === 'all' || resultFilter === 'success') {
         items.push(...status.successfulUsers.map((u: any, i: number) => (
-            <ResultRow key={`s-${i}`} email={u.email} type="success" />
+            <ResultRow 
+                key={`s-${i}`} 
+                email={u.email} 
+                type="success" 
+                changes={u.changes}
+            />
         )));
     }
     if (resultFilter === 'all' || resultFilter === 'created') {
         items.push(...(status.createdUsers || []).map((u: any, i: number) => (
-            <ResultRow key={`c-${i}`} email={u.email} type="success" message="Nieuw lid aangemaakt" />
+            <ResultRow 
+                key={`c-${i}`} 
+                email={u.email} 
+                type="success" 
+                message="Nieuw lid aangemaakt" 
+                changes={u.changes}
+            />
         )));
     }
     if (resultFilter === 'all' || resultFilter === 'warnings') {
