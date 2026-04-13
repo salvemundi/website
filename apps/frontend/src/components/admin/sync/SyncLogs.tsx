@@ -1,15 +1,19 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { CheckCircle, AlertTriangle, X, Info, Users } from 'lucide-react';
 
 interface ResultRowProps {
     email: string;
     message?: string;
     type: 'success' | 'warning' | 'error' | 'info' | 'excluded';
+    timestamp?: string;
+    stack?: string;
 }
 
-function ResultRow({ email, message, type }: ResultRowProps) {
+function ResultRow({ email, message, type, timestamp, stack }: ResultRowProps) {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const hasDetails = !!(timestamp || stack);
     const icons = {
         success: <CheckCircle className="h-4 w-4 text-[var(--beheer-active)]" />,
         warning: <AlertTriangle className="h-4 w-4 text-amber-500" />,
@@ -19,15 +23,50 @@ function ResultRow({ email, message, type }: ResultRowProps) {
     };
 
     return (
-        <div className="p-4 flex items-start gap-4 hover:bg-[var(--beheer-card-soft)] transition-colors border-b border-[var(--beheer-border)] last:border-0">
-            <div className="mt-0.5">{icons[type]}</div>
-            <div className="min-w-0 flex-1">
-                <div className="text-[10px] font-black text-[var(--beheer-text)] uppercase tracking-tight truncate">{email}</div>
-                {message && <div className="text-[10px] text-[var(--beheer-text-muted)] font-black uppercase tracking-widest mt-1">{message}</div>}
+        <div 
+            className={`flex flex-col border-b border-[var(--beheer-border)] last:border-0 transition-colors ${hasDetails ? 'cursor-pointer hover:bg-[var(--beheer-card-soft)]/50' : ''}`}
+            onClick={() => hasDetails && setIsExpanded(!isExpanded)}
+        >
+            <div className="p-4 flex items-start gap-4 transition-colors">
+                <div className="mt-0.5">{icons[type]}</div>
+                <div className="min-w-0 flex-1">
+                    <div className="text-[10px] font-black text-[var(--beheer-text)] uppercase tracking-tight truncate">{email}</div>
+                    {message && <div className="text-[10px] text-[var(--beheer-text-muted)] font-black uppercase tracking-widest mt-1">{message}</div>}
+                </div>
+                <div className="ml-auto flex items-center gap-3">
+                    <div className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]/50">
+                        {type}
+                    </div>
+                    {hasDetails && (
+                        <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
+                            <svg className="h-3 w-3 text-[var(--beheer-text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
+                    )}
+                </div>
             </div>
-            <div className="ml-auto text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]/50">
-                {type}
-            </div>
+
+            {isExpanded && hasDetails && (
+                <div className="px-12 pb-6 animate-in slide-in-from-top-2 duration-300">
+                    <div className="p-4 bg-[var(--beheer-card-soft)] rounded-2xl border border-[var(--beheer-border)]/30 space-y-3">
+                        {timestamp && (
+                            <div className="flex items-center gap-2">
+                                <span className="text-[8px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">Tijdstip:</span>
+                                <span className="text-[9px] font-black text-[var(--beheer-text)] uppercase">{new Date(timestamp).toLocaleString()}</span>
+                            </div>
+                        )}
+                        {stack && (
+                            <div className="space-y-1.5">
+                                <span className="text-[8px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">Stack Trace:</span>
+                                <pre className="text-[9px] text-red-900/60 font-mono leading-relaxed overflow-x-auto p-3 bg-red-900/5 rounded-xl border border-red-900/10 custom-scrollbar">
+                                    {stack}
+                                </pre>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
@@ -99,7 +138,14 @@ export default function SyncLogs({ resultFilter, setResultFilter, status }: Sync
     }
     if (resultFilter === 'all' || resultFilter === 'errors') {
         items.push(...status.errors.map((e: any, i: number) => (
-            <ResultRow key={`e-${i}`} email={e.email} message={e.message} type="error" />
+            <ResultRow 
+                key={`e-${i}`} 
+                email={e.email} 
+                message={e.message} 
+                type="error" 
+                timestamp={e.timestamp}
+                stack={e.stack}
+            />
         )));
     }
     if (resultFilter === 'all' || resultFilter === 'excluded') {
