@@ -17,15 +17,15 @@ function ResultRow({ email, message, type, timestamp, stack, changes }: ResultRo
     const hasDetails = !!(timestamp || stack || (changes && changes.length > 0));
     const icons = {
         success: <CheckCircle className="h-4 w-4 text-[var(--beheer-active)]" />,
-        warning: <AlertTriangle className="h-4 w-4 text-amber-500" />,
+        warning: <AlertTriangle className="h-4 w-4 text-[var(--theme-warning)]" />,
         error: <X className="h-4 w-4 text-[var(--beheer-inactive)]" />,
-        info: <Info className="h-4 w-4 text-blue-500" />,
+        info: <Info className="h-4 w-4 text-[var(--theme-info)]" />,
         excluded: <Users className="h-4 w-4 text-[var(--beheer-text-muted)]" />,
     };
 
     return (
         <div 
-            className={`flex flex-col border-b border-[var(--beheer-border)] last:border-0 transition-colors ${hasDetails ? 'cursor-pointer hover:bg-[var(--beheer-card-soft)]/50' : ''}`}
+            className={`flex flex-col border-b border-[var(--beheer-border)]/10 last:border-0 transition-colors ${hasDetails ? 'cursor-pointer hover:bg-[var(--beheer-accent)]/5' : ''}`}
             onClick={() => hasDetails && setIsExpanded(!isExpanded)}
         >
             <div className="p-4 flex items-start gap-4 transition-colors">
@@ -39,8 +39,8 @@ function ResultRow({ email, message, type, timestamp, stack, changes }: ResultRo
                         {type}
                     </div>
                     {hasDetails && (
-                        <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
-                            <svg className="h-3 w-3 text-[var(--beheer-text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-180 text-[var(--beheer-accent)]' : 'text-[var(--beheer-text-muted)]'}`}>
+                            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
                             </svg>
                         </div>
@@ -49,7 +49,7 @@ function ResultRow({ email, message, type, timestamp, stack, changes }: ResultRo
             </div>
 
             {isExpanded && hasDetails && (
-                <div className="px-12 pb-6 animate-in slide-in-from-top-2 duration-300">
+                <div className="px-12 pb-6 animate-in fade-in slide-in-from-top-2 duration-300">
                     <div className="p-4 bg-[var(--beheer-card-soft)] rounded-2xl border border-[var(--beheer-border)]/30 space-y-3">
                         {timestamp && (
                             <div className="flex items-center gap-2">
@@ -60,7 +60,7 @@ function ResultRow({ email, message, type, timestamp, stack, changes }: ResultRo
                         {stack && (
                             <div className="space-y-1.5">
                                 <span className="text-[8px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">Stack Trace:</span>
-                                <pre className="text-[9px] text-red-900/60 font-mono leading-relaxed overflow-x-auto p-3 bg-red-900/5 rounded-xl border border-red-900/10 custom-scrollbar">
+                                <pre className="text-[9px] text-[var(--theme-error)]/70 font-mono leading-relaxed overflow-x-auto p-3 bg-[var(--theme-error)]/5 rounded-xl border border-[var(--theme-error)]/10 custom-scrollbar">
                                     {stack}
                                 </pre>
                             </div>
@@ -74,7 +74,7 @@ function ResultRow({ email, message, type, timestamp, stack, changes }: ResultRo
                                             <span className="text-[9px] font-black text-[var(--beheer-text)] uppercase">{change.field}</span>
                                             <div className="flex items-center gap-2">
                                                 <span className="text-[8px] text-[var(--beheer-text-muted)] truncate max-w-[100px]">{String(change.old ?? 'leeg')}</span>
-                                                <svg className="h-2 w-2 text-[var(--beheer-text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <svg className="h-2 w-2 text-[var(--beheer-text-muted)]/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
                                                 </svg>
                                                 <span className="text-[8px] font-black text-[var(--beheer-active)] truncate max-w-[100px]">{String(change.new ?? 'leeg')}</span>
@@ -101,13 +101,13 @@ interface FilterTabProps {
 
 function FilterTab({ active, label, count, onClick, color = 'indigo' }: FilterTabProps) {
     const colorVariants: Record<string, string> = {
-        indigo: 'bg-[var(--beheer-accent)] text-white',
-        green: 'bg-[var(--beheer-active)] text-white',
-        amber: 'bg-amber-500 text-white',
-        blue: 'bg-blue-500 text-white',
-        red: 'bg-[var(--beheer-inactive)] text-white',
-        slate: 'bg-[var(--beheer-text-muted)] text-white',
-        purple: 'bg-purple-500 text-white',
+        indigo: 'bg-[var(--beheer-accent)] text-white shadow-[var(--shadow-glow)]',
+        green: 'bg-[var(--beheer-active)] text-white shadow-lg shadow-[var(--beheer-active)]/20',
+        amber: 'bg-[var(--theme-warning)] text-white shadow-lg shadow-[var(--theme-warning)]/20',
+        blue: 'bg-[var(--theme-info)] text-white shadow-lg shadow-[var(--theme-info)]/20',
+        red: 'bg-[var(--beheer-inactive)] text-white shadow-lg shadow-[var(--beheer-inactive)]/20',
+        slate: 'bg-[var(--beheer-text-muted)] text-white shadow-lg shadow-[var(--beheer-text-muted)]/20',
+        purple: 'bg-[var(--beheer-accent)] text-white shadow-[var(--shadow-glow)]',
     };
 
     return (

@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getHeroBanners, getUpcomingActiviteiten, getSponsors } from '@/server/actions/home.actions';
@@ -7,10 +6,10 @@ import { EventsSection } from '@/components/ui/activities/EventsSection';
 import { WhySalveMundiSection } from '@/components/ui/membership/WhySalveMundiSection';
 import { JoinSectionIsland } from '@/components/islands/membership/JoinSectionIsland';
 import { SponsorsSection } from '@/components/ui/layout/SponsorsSection';
-import { HeroSkeleton, EventsSkeleton, SponsorsSkeleton } from '@/components/ui/layout/HomePageSkeleton';
 import { PwaInstallToast } from '@/components/ui/layout/PwaInstallToast';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
+import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 
 export const metadata: Metadata = {
     title: 'Home | SV Salve Mundi',
@@ -23,7 +22,7 @@ export const metadata: Metadata = {
 async function AsyncHero() {
     const [banners, activiteiten] = await Promise.all([
         getHeroBanners(),
-        getUpcomingActiviteiten(1), // Alleen nodig voor 'next event' kaart
+        getUpcomingActiviteiten(1),
     ]);
     return <HeroIsland banners={banners} activiteiten={activiteiten} />;
 }
@@ -46,7 +45,7 @@ async function AsyncSponsors() {
 
 /**
  * HomePage — Pure Server Component.
- * Onderdelen worden onafhankelijk gestreamed via granulaire Suspense (PPR).
+ * Modernized: Wrapped in PublicPageShell. Uses Masked Fallbacks (Zero-Drift).
  */
 export default async function HomePage() {
     const session = await auth.api.getSession({
@@ -56,30 +55,31 @@ export default async function HomePage() {
     const user = session?.user ?? null;
 
     return (
-        <main>
-            {/* Hero Section - Onafhankelijk laden */}
-            <Suspense fallback={<HeroSkeleton />}>
-                <AsyncHero />
-            </Suspense>
+        <PublicPageShell>
+            <main>
+                {/* Hero Section - Zero-Drift loading via mask */}
+                <Suspense fallback={<HeroIsland isLoading />}>
+                    <AsyncHero />
+                </Suspense>
 
-            {/* Aankomende activiteiten - Onafhankelijk laden */}
-            <Suspense fallback={<EventsSkeleton />}>
-                <AsyncEvents />
-            </Suspense>
+                {/* Aankomende activiteiten - Zero-Drift loading via mask */}
+                <Suspense fallback={<EventsSection isLoading />}>
+                    <AsyncEvents />
+                </Suspense>
 
-            {/* Statische "Waarom Salve Mundi?" sectie - Wordt direct getoond */}
-            <WhySalveMundiSection />
+                {/* Statische sectie - Wordt direct getoond */}
+                <WhySalveMundiSection />
 
-            {/* Conditioneel lid-worden CTA - Identity Aware */}
-            <JoinSectionIsland serverUser={user} />
+                {/* Identity Aware CTA */}
+                <JoinSectionIsland serverUser={user} />
 
-            {/* Scrollende sponsorbalk - Onafhankelijk laden */}
-            <Suspense fallback={<SponsorsSkeleton />}>
-                <AsyncSponsors />
-            </Suspense>
+                {/* Sponsoren - Zero-Drift loading via mask */}
+                <Suspense fallback={<SponsorsSection isLoading />}>
+                    <AsyncSponsors />
+                </Suspense>
 
-            {/* PWA install toast — verschijnt na 2.5s als installeerbaar */}
-            <PwaInstallToast />
-        </main>
+                <PwaInstallToast />
+            </main>
+        </PublicPageShell>
     );
 }

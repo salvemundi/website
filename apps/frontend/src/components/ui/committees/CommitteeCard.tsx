@@ -5,7 +5,6 @@ import { getImageUrl } from '@/lib/utils/image-utils';
 import { slugify } from '@/shared/lib/utils/slug';
 import type { Committee } from '@salvemundi/validations/schema/committees.zod';
 import Image from 'next/image';
-import { Skeleton } from '../Skeleton';
 
 interface CommitteeCardProps {
     isLoading?: boolean;
@@ -17,6 +16,10 @@ function cleanCommitteeName(name: string): string {
     return name?.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim() || '';
 }
 
+/**
+ * CommitteeCard: Zero-Drift modernization.
+ * Removed manual skeleton branches. Uses .skeleton-active for premium masking.
+ */
 export const CommitteeCard: React.FC<CommitteeCardProps> = ({ isLoading = false, committee = {} as Committee }) => {
     const cleanedName = cleanCommitteeName(committee.name || '');
     const isBestuur = cleanedName.toLowerCase().includes('bestuur');
@@ -30,79 +33,60 @@ export const CommitteeCard: React.FC<CommitteeCardProps> = ({ isLoading = false,
             isLeader: m.is_leader
         })) || [];
 
-    // Safe check for history (Directus specific field)
     const hasHistory = (committee as any).has_history ?? false;
 
     return (
         <div className={`${isBestuur ? 'md:col-span-2' : ''}`}>
-            <div className={`group flex h-full flex-col overflow-hidden rounded-[2rem] bg-[var(--bg-card)] dark:border dark:border-white/10 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl ${
-                isBestuur ? 'ring-4 ring-[var(--color-purple-500)]/20' : ''
-            }`} aria-busy={isLoading}>
+            <div 
+                className={`group flex h-full flex-col overflow-hidden rounded-[2rem] bg-[var(--bg-card)] dark:border dark:border-white/10 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl 
+                    ${isBestuur ? 'ring-4 ring-[var(--color-purple-500)]/20 shadow-purple-500/10' : ''}
+                    ${isLoading ? 'skeleton-active pointer-events-none' : ''}`} 
+                aria-busy={isLoading}
+            >
                 {/* Image Header */}
                 <div className="relative h-56 w-full overflow-hidden bg-gradient-to-br from-[var(--color-purple-500)]/10 to-[var(--color-purple-900)]/10">
-                    {isLoading ? (
-                        <Skeleton className="h-full w-full bg-[var(--color-purple-500)]/10" rounded="none" />
-                    ) : (
-                        <>
-                            <Image 
-                                src={getImageUrl(committee.image) ?? '/img/placeholder.svg'} 
-                                alt={committee.name} 
-                                fill 
-                                className="object-cover"
-                                unoptimized
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
-                            
-                            {isBestuur && (
-                                <div className="absolute right-4 top-4 rounded-full bg-[var(--color-purple-100)] px-3 py-1 text-xs font-bold text-[var(--color-purple-700)] shadow-lg uppercase tracking-wider">
-                                    Huidig Bestuur
-                                </div>
-                            )}
-                        </>
+                    <Image 
+                        src={getImageUrl(committee.image) ?? '/img/placeholder.svg'} 
+                        alt={committee.name || 'Committee'} 
+                        fill 
+                        className="object-cover"
+                        unoptimized
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                    
+                    {isBestuur && !isLoading && (
+                        <div className="absolute right-4 top-4 rounded-full bg-[var(--color-purple-100)] px-3 py-1 text-xs font-bold text-[var(--color-purple-700)] shadow-lg uppercase tracking-wider">
+                            Huidig Bestuur
+                        </div>
                     )}
                 </div>
 
                 {/* Content */}
                 <div className="flex flex-1 flex-col p-6 sm:p-8">
                     <div className="flex items-start justify-between gap-4 mb-4">
-                        <div className="flex-1">
-                            {isLoading ? (
-                                <Skeleton className="h-9 w-48 mb-2" rounded="lg" />
-                            ) : (
-                                <h3 className="text-2xl font-black tracking-tight text-[var(--text-main)] group-hover:text-[var(--color-purple-500)] transition-colors">
-                                    {cleanedName}
-                                </h3>
-                            )}
+                        <div className="flex-1 min-w-0">
+                            <h3 className="text-2xl font-black tracking-tight text-[var(--text-main)] group-hover:text-[var(--color-purple-500)] transition-colors truncate">
+                                {cleanedName || 'Loading Committee...'}
+                            </h3>
                             
                             <div className="flex items-center gap-2 mt-1">
-                                {isLoading ? (
-                                    <div className="flex items-center gap-2 mt-2">
-                                        <div className="flex -space-x-2">
-                                            {[1, 2, 3].map(i => <Skeleton key={i} className="h-6 w-6 bg-[var(--color-purple-500)]/10 border-2 border-[var(--bg-card)]" rounded="full" />)}
+                                <div className="flex -space-x-2">
+                                    {(isLoading ? [1, 2, 3] : members.slice(0, 3)).map((_, i) => (
+                                        <div key={i} className="relative h-6 w-6 rounded-full border-2 border-[var(--bg-card)] overflow-hidden bg-slate-200 dark:bg-slate-800">
+                                            {!isLoading && <Image src={members[i]?.avatar} alt="Member" fill className="object-cover" unoptimized />}
                                         </div>
-                                        <Skeleton className="h-3 w-20 bg-[var(--color-purple-500)]/10" rounded="full" />
-                                    </div>
-                                ) : (
-                                    <>
-                                        <div className="flex -space-x-2">
-                                            {members.slice(0, 3).map((m, i) => (
-                                                <div key={i} className="relative h-6 w-6 rounded-full border-2 border-[var(--bg-card)] overflow-hidden">
-                                                    <Image src={m.avatar} alt={m.name} fill className="object-cover" unoptimized />
-                                                </div>
-                                            ))}
-                                        </div>
-                                        <span className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest flex items-center gap-1.5 ml-1">
-                                            <Users className="h-3 w-3" />
-                                            {committee.members?.length || 0} Leden
-                                        </span>
-                                    </>
-                                )}
+                                    ))}
+                                </div>
+                                <span className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest flex items-center gap-1.5 ml-1">
+                                    <Users className="h-3 w-3" />
+                                    {isLoading ? '...' : (committee.members?.length || 0)} Leden
+                                </span>
                             </div>
                         </div>
 
                         {!isLoading && (
                             <NextLink 
-                                href={`/commissies/${slug}`}
+                                href={`/vereniging/commissies/${slug}`}
                                 className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--bg-soft)] text-[var(--color-purple-500)] transition group-hover:bg-[var(--color-purple-500)] group-hover:text-white"
                             >
                                 <ChevronRight className="h-6 w-6" />
@@ -110,38 +94,22 @@ export const CommitteeCard: React.FC<CommitteeCardProps> = ({ isLoading = false,
                         )}
                     </div>
 
-                    {isLoading ? (
-                        <div className="space-y-3 mb-8">
-                            <Skeleton className="h-4 w-full bg-[var(--color-purple-500)]/10" rounded="full" />
-                            <Skeleton className="h-4 w-full bg-[var(--color-purple-500)]/10" rounded="full" />
-                            <Skeleton className="h-4 w-2/3 bg-[var(--color-purple-500)]/10" rounded="full" />
-                        </div>
-                    ) : (
-                        <p className="mb-8 line-clamp-3 text-sm leading-relaxed text-[var(--text-muted)]">
-                            {committee.short_description || `Maak kennis met de ${cleanedName} van SV Salve Mundi. Een enthousiaste groep studenten die zich inzet voor de vereniging.`}
-                        </p>
-                    )}
+                    <p className="mb-8 line-clamp-3 text-sm leading-relaxed text-[var(--text-muted)]">
+                        {isLoading ? 'Loading description content for the committee...' : (committee.short_description || `Maak kennis met de ${cleanedName} van SV Salve Mundi.`)}
+                    </p>
 
                     {/* Footer Actions */}
                     <div className="mt-auto flex items-center justify-between pt-6 border-t border-[var(--border-color)]/20">
-                        {isLoading ? (
-                            <Skeleton className="h-10 w-32" rounded="xl" />
-                        ) : (
-                            <NextLink 
-                                href={`/commissies/${slug}`}
-                                className="text-sm font-black uppercase tracking-widest text-[var(--color-purple-500)] hover:underline decoration-2 underline-offset-4"
-                            >
-                                Meer informatie
-                            </NextLink>
-                        )}
+                        <NextLink 
+                            href={`/vereniging/commissies/${slug}`}
+                            className="text-sm font-black uppercase tracking-widest text-[var(--color-purple-500)] hover:underline decoration-2 underline-offset-4"
+                        >
+                            Meer informatie
+                        </NextLink>
 
-                        {!isLoading && (
-                            <div className="flex gap-2">
-                                {hasHistory && (
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--bg-soft)] text-[var(--text-muted)] transition hover:text-[var(--color-purple-500)]" title="Historie beschikbaar">
-                                        <History className="h-5 w-5" />
-                                    </div>
-                                )}
+                        {(hasHistory || isLoading) && !isBestuur && (
+                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--bg-soft)] text-[var(--text-muted)] transition" title="Historie">
+                                <History className="h-5 w-5" />
                             </div>
                         )}
                     </div>

@@ -255,7 +255,7 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
     }, [optimisticUser, isCommitteeMember]);
 
     return (
-        <div className={`grid grid-cols-1 md:grid-cols-12 gap-6 items-start ${isLoading ? 'pointer-events-none select-none' : ''}`}>
+        <div className={`grid grid-cols-1 md:grid-cols-12 gap-6 items-start ${isLoading ? 'skeleton-active' : ''}`} aria-busy={isLoading}>
             {/* Left Column */}
             <div className="md:col-span-12 lg:col-span-4 flex flex-col gap-6">
                 <ProfielHeader 
@@ -307,7 +307,7 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
                     setShowPastEvents={setShowPastEvents}
                 />
             </div>
-            <AdminToast toast={toast} onClose={hideToast} />
+            {!isLoading && <AdminToast toast={toast} onClose={hideToast} />}
         </div>
     );
 };

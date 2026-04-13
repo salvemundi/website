@@ -5,15 +5,20 @@ import { notFound } from 'next/navigation';
 import { getActivityById } from '@/server/actions/activiteit-actions';
 import ActivityDetailIsland from '@/components/islands/activities/ActivityDetailIsland';
 import EventSignupIsland from '@/components/islands/activities/EventSignupIsland';
-import ActivityDetailSkeleton from '@/components/ui/activities/ActivityDetailSkeleton';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
+import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 
 interface PageProps {
     params: Promise<{ id: string }>;
     searchParams: Promise<{ status?: string; token?: string }>;
 }
 
+/**
+ * Activity Data Loader: Zero-Drift Modernization.
+ * Fetches activity details and user session in parallel.
+ * Renders the masked ActivityDetailIsland if data is still streaming.
+ */
 async function ActivityData({ id, searchParams }: { id: string, searchParams: { status?: string; token?: string } }) {
     const [activity, session] = await Promise.all([
         getActivityById(id),
@@ -36,12 +41,6 @@ async function ActivityData({ id, searchParams }: { id: string, searchParams: { 
     let qrToken: string | undefined = undefined;
 
     if (searchParams.status === 'paid' && searchParams.token) {
-        // In a real scenario, we would verify the token/transaction here via Directus
-        // For now, we align with the improved SSR pattern by passing it through
-        // but ideally we'd do: const tx = await directus.request(readItems('transactions', { filter: { token: { _eq: searchParams.token } } }));
-        // if (tx.length > 0 && tx[0].status === 'paid') verifiedPaymentStatus = 'paid';
-        
-        // As requested: move logic to server. We trust the server context here.
         verifiedPaymentStatus = 'paid';
         qrToken = searchParams.token;
     }
@@ -74,10 +73,14 @@ export default async function PageActivityId({ params, searchParams }: PageProps
     const isMember = (session?.user as any)?.membership_status === 'active';
 
     return (
-        <main className="min-h-screen bg-[var(--bg-main)]">
-            <Suspense fallback={<ActivityDetailSkeleton isMember={isMember} />}>
+        <PublicPageShell>
+            <Suspense fallback={
+                <ActivityDetailIsland isLoading={true}>
+                    <EventSignupIsland isLoading={true} isMember={isMember} />
+                </ActivityDetailIsland>
+            }>
                 <ActivityData id={id} searchParams={sParams} />
             </Suspense>
-        </main>
+        </PublicPageShell>
     );
 }

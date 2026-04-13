@@ -39,6 +39,7 @@ export default function AdminReisSelectorIsland({
     };
 
     const handleToggleVisibility = () => {
+        if (isLoading) return;
         startTransition(async () => {
             try {
                 const result = await toggleReisVisibility();
@@ -58,83 +59,79 @@ export default function AdminReisSelectorIsland({
 
     const activeTrip = trips.find(t => t.id === selectedId) || trips[0];
 
+    const displayedTrips = isLoading 
+        ? Array(1).fill({ id: 0, name: 'Loading Trip...' }) 
+        : trips;
+
     return (
-        <>
-        <AdminToolbar 
-            isLoading={isLoading}
-            title={isLoading ? "" : (activeTrip?.name || 'Reis Beheer')}
-            subtitle={isLoading ? "" : "Bekijk aanmeldingen, beheer betalingen & configuratie"}
-            backHref="/beheer"
-            actions={
-                isLoading ? (
-                    <div className="flex gap-4 items-center">
-                        <Skeleton className="h-10 w-48 rounded-[var(--beheer-radius)]" />
-                        <Skeleton className="h-10 w-32 rounded-[var(--beheer-radius)]" />
-                        <Skeleton className="h-10 w-24 rounded-[var(--beheer-radius)]" />
-                        <Skeleton className="h-10 w-32 rounded-[var(--beheer-radius)]" />
+        <div className={`container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700 ${isLoading ? 'skeleton-active' : ''}`} aria-busy={isLoading}>
+            <div className="flex flex-wrap items-center gap-4">
+                <div className="relative group min-w-[200px]">
+                    <select
+                        value={isLoading ? 0 : selectedId}
+                        onChange={handleChange}
+                        className="beheer-select"
+                        disabled={isLoading}
+                    >
+                        {displayedTrips.map(trip => {
+                            if (isLoading) return <option key={0} value={0}>{trip.name}</option>;
+                            const displayStartDate = trip.start_date || trip.event_date;
+                            if (!displayStartDate) return <option key={trip.id} value={trip.id} className="bg-[var(--beheer-card-bg)]">{trip.name}</option>;
+
+                            const dateDisplay = trip.end_date
+                                ? `${format(new Date(displayStartDate), 'd MMM yyyy', { locale: nl })} - ${format(new Date(trip.end_date), 'd MMM yyyy', { locale: nl })}`
+                                : format(new Date(displayStartDate), 'd MMM yyyy', { locale: nl });
+
+                            return (
+                                <option key={trip.id} value={trip.id} className="text-sm font-black uppercase tracking-widest bg-[var(--beheer-card-bg)] text-[var(--beheer-text)]">
+                                    {trip.name} ({dateDisplay})
+                                </option>
+                            );
+                        })}
+                    </select>
+                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)] transition-colors opacity-40">
+                        <ChevronDown className="h-4 w-4" />
                     </div>
-                ) : (
-                    <>
-                        <div className="relative group min-w-[200px]">
-                            <select
-                                value={selectedId}
-                                onChange={handleChange}
-                                className="beheer-select"
-                            >
-                                {trips.map(trip => {
-                                    const displayStartDate = trip.start_date || trip.event_date;
-                                    if (!displayStartDate) return <option key={trip.id} value={trip.id} className="bg-[var(--beheer-card-bg)]">{trip.name}</option>;
+                </div>
 
-                                    const dateDisplay = trip.end_date
-                                        ? `${format(new Date(displayStartDate), 'd MMM yyyy', { locale: nl })} - ${format(new Date(trip.end_date), 'd MMM yyyy', { locale: nl })}`
-                                        : format(new Date(displayStartDate), 'd MMM yyyy', { locale: nl });
+                <AdminVisibilityToggle 
+                    isVisible={settings.show}
+                    onToggle={handleToggleVisibility}
+                    isPending={isPending}
+                    disabled={isLoading}
+                />
 
-                                    return (
-                                        <option key={trip.id} value={trip.id} className="text-sm font-black uppercase tracking-widest bg-[var(--beheer-card-bg)] text-[var(--beheer-text)]">
-                                            {trip.name} ({dateDisplay})
-                                        </option>
-                                    );
-                                })}
-                            </select>
-                            <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)] transition-colors opacity-40">
-                                <ChevronDown className="h-4 w-4" />
-                            </div>
-                        </div>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => router.push('/beheer/reis/mail')}
+                        disabled={isLoading}
+                        className="flex items-center justify-center gap-2 px-8 py-2 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-[10px] font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50"
+                    >
+                        <Plane className="h-4 w-4 rotate-45 text-[var(--beheer-accent)]" />
+                        Email
+                    </button>
 
-                        <AdminVisibilityToggle 
-                            isVisible={settings.show}
-                            onToggle={handleToggleVisibility}
-                            isPending={isPending}
-                        />
-
-                        <button
-                            onClick={() => router.push('/beheer/reis/mail')}
-                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-xs font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95"
-                        >
-                            <Plane className="h-4 w-4 rotate-45 text-[var(--beheer-accent)]" />
-                            Email
-                        </button>
-
-                        <button
-                            onClick={() => router.push('/beheer/reis/activiteiten')}
-                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
-                        >
-                            <Plane className="h-4 w-4" />
-                            Activiteiten
-                        </button>
-                        
-                        <button
-                            onClick={() => router.push('/beheer/reis/instellingen')}
-                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-xs font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95"
-                        >
-                            <Edit2 className="h-4 w-4" />
-                            Instellingen
-                        </button>
-                    </>
-                )
-            }
-        />
-        <AdminToast toast={toast} onClose={hideToast} />
-        </>
+                    <button
+                        onClick={() => router.push('/beheer/reis/activiteiten')}
+                        disabled={isLoading}
+                        className="flex items-center justify-center gap-2 px-8 py-2 bg-[var(--beheer-accent)] text-white font-black text-[10px] uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 disabled:opacity-50"
+                    >
+                        <Plane className="h-4 w-4" />
+                        Activiteiten
+                    </button>
+                    
+                    <button
+                        onClick={() => router.push('/beheer/reis/instellingen')}
+                        disabled={isLoading}
+                        className="flex items-center justify-center gap-2 px-8 py-2 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-[10px] font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50"
+                    >
+                        <Edit2 className="h-4 w-4" />
+                        Instellingen
+                    </button>
+                </div>
+            </div>
+            
+            <AdminToast toast={toast} onClose={hideToast} />
+        </div>
     );
 }

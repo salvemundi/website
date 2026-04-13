@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useEffect } from 'react';
+import { useState, useTransition, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     Users,
@@ -14,14 +14,11 @@ import { downloadCSV } from '@/lib/utils/export';
 import { sendMembershipReminderAction } from '@/server/actions/leden.actions';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import LedenFilters from './LedenFilters';
 import LedenTable from './LedenTable';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
-
-import { Skeleton } from '@/components/ui/Skeleton';
 
 interface Member {
     id: string;
@@ -33,43 +30,54 @@ interface Member {
 }
 
 interface LedenOverzichtIslandProps {
-    members?: Member[];
-    totalCount?: number;
-    searchQuery?: string;
     isLoading?: boolean;
+    initialMembers?: Member[];
+    initialTotalCount?: number;
 }
 
 export default function LedenOverzichtIsland({ 
-    members = [], 
-    totalCount = 0, 
-    searchQuery: initialSearchQuery = '',
-    isLoading = false
+    isLoading = false,
+    initialMembers = [], 
+    initialTotalCount = 0
 }: LedenOverzichtIslandProps) {
-    const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
     const [isPending, startTransition] = useTransition();
-    const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
+    const [searchQuery, setSearchQuery] = useState('');
     const [isSendingReminder, setIsSendingReminder] = useState(false);
     const [activeTab, setActiveTab] = useState<'active' | 'inactive'>('active');
+
     const isMembershipActive = (m: Member) => {
         if (!m.membership_expiry) return false;
         const todayStr = new Date().toISOString().substring(0, 10);
         return m.membership_expiry.substring(0, 10) >= todayStr;
     };
 
-    // Local search filtering
-    const filteredMembers = members.filter(m => {
-        const active = isMembershipActive(m);
-        const matchesTab = activeTab === 'active' ? active : !active;
-        
-        if (!searchQuery) return matchesTab;
+    const members = initialMembers;
+    const totalCount = initialTotalCount;
 
-        const searchLower = searchQuery.toLowerCase();
-        const fullName = `${m.first_name} ${m.last_name}`.toLowerCase();
-        const email = (m.email || '').toLowerCase();
+    const filteredMembers = useMemo(() => {
+        if (isLoading) return Array(10).fill({ 
+            id: 'loading', 
+            first_name: 'Loading', 
+            last_name: 'Member', 
+            email: 'loading.member@salvemundi.nl', 
+            membership_expiry: '2024-01-01', 
+            status: 'active' 
+        });
         
-        return matchesTab && (fullName.includes(searchLower) || email.includes(searchLower));
-    });
+        return members.filter(m => {
+            const active = isMembershipActive(m);
+            const matchesTab = activeTab === 'active' ? active : !active;
+            
+            if (!searchQuery) return matchesTab;
+
+            const searchLower = searchQuery.toLowerCase();
+            const fullName = `${m.first_name} ${m.last_name}`.toLowerCase();
+            const email = (m.email || '').toLowerCase();
+            
+            return matchesTab && (fullName.includes(searchLower) || email.includes(searchLower));
+        });
+    }, [members, activeTab, searchQuery, isLoading]);
 
     const formatDate = (dateString: string | null) => {
         if (!dateString) return 'Onbekend';
@@ -81,14 +89,14 @@ export default function LedenOverzichtIsland({
     };
 
     const handleSendReminder = async () => {
-        if (!confirm('Wil je een herinnering sturen naar alle leden die binnen 30 dagen hun lidmaatschap moeten verlengen?')) return;
+        if (!confirm('Herinnering sturen naar alle leden (binnen 30 dagen verlenging)?')) return;
         
         setIsSendingReminder(true);
         const res = await sendMembershipReminderAction(30);
         if (res.success) {
-            showToast(res.count === 0 ? 'Geen leden gevonden voor herinnering.' : `Herinnering verstuurd naar ${res.count} lid/leden!`, res.count === 0 ? 'info' : 'success');
+            showToast(res.count === 0 ? 'Geen leden gevonden.' : `Herinnering verstuurd naar ${res.count} leden!`, 'success');
         } else {
-            showToast(res.error || 'Fout bij versturen van herinneringen', 'error');
+            showToast(res.error || 'Fout bij versturen', 'error');
         }
         setIsSendingReminder(false);
     };
@@ -100,8 +108,7 @@ export default function LedenOverzichtIsland({
             'Lidmaatschap Tot': formatDate(m.membership_expiry),
             Status: isMembershipActive(m) ? 'Actief' : 'Niet Actief'
         }));
-
-        downloadCSV(data, `Leden_Overzicht_${format(new Date(), 'yyyy-MM-dd')}.csv`);
+        downloadCSV(data, `Leden_${format(new Date(), 'yyyy-MM-dd')}.csv`);
     };
 
     const activeCount = members.filter(m => isMembershipActive(m)).length;
@@ -114,62 +121,47 @@ export default function LedenOverzichtIsland({
     ];
 
     return (
-        <>
-            <AdminToolbar 
+        <div className={`container mx-auto px-4 py-8 max-w-7xl ${isLoading ? 'skeleton-active' : ''}`} aria-busy={isLoading}>
+            {/* Global Actions */}
+            <div className="flex justify-end gap-3 mb-8">
+                <button
+                    onClick={exportToCSV}
+                    disabled={isLoading}
+                    className="flex items-center gap-2 px-6 py-2 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-[10px] font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 shadow-sm disabled:opacity-50"
+                >
+                    <Download className="h-3.5 w-3.5" />
+                    Export
+                </button>
+                <button
+                    onClick={handleSendReminder}
+                    disabled={isSendingReminder || isLoading}
+                    className="flex items-center gap-2 px-6 py-2 bg-[var(--beheer-accent)] text-white font-black text-[10px] uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 disabled:opacity-50"
+                >
+                    {isSendingReminder ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Bell className="h-3.5 w-3.5" />}
+                    Reminder
+                </button>
+            </div>
+
+            <AdminStatsBar stats={adminStats} isLoading={isLoading} />
+
+            <LedenFilters 
                 isLoading={isLoading}
-                title={isLoading ? "" : "Leden Overzicht"}
-                subtitle={isLoading ? "" : "Beheer alle Salve Mundi leden en lidmaatschappen"}
-                backHref="/beheer"
-                actions={
-                    isLoading ? (
-                        <div className="flex gap-2">
-                            <Skeleton className="h-[var(--beheer-btn-height)] w-24" />
-                            <Skeleton className="h-[var(--beheer-btn-height)] w-28" />
-                        </div>
-                    ) : (
-                        <div className="flex gap-2">
-                            <button
-                                onClick={exportToCSV}
-                                className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-xs font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95"
-                                title="Exporteer naar Excel"
-                            >
-                                <Download className="h-4 w-4" />
-                                Export
-                            </button>
-                            <button
-                                onClick={handleSendReminder}
-                                disabled={isSendingReminder}
-                                className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 disabled:opacity-50"
-                            >
-                                {isSendingReminder ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bell className="h-4 w-4" />}
-                                Reminder
-                            </button>
-                        </div>
-                    )
-                }
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                isPending={isPending}
             />
 
-            <div className={`container mx-auto px-4 py-8 max-w-7xl ${isLoading ? 'animate-pulse' : 'animate-in fade-in duration-700'}`}>
-                <AdminStatsBar stats={adminStats} isLoading={isLoading} />
-
-                <LedenFilters 
-                    isLoading={isLoading}
-                    searchQuery={searchQuery}
-                    onSearchChange={setSearchQuery}
-                    activeTab={activeTab}
-                    onTabChange={setActiveTab}
-                    isPending={isPending}
-                />
-
-                <LedenTable 
-                    isLoading={isLoading}
-                    members={filteredMembers}
-                    isPending={isPending}
-                    formatDate={formatDate}
-                    isMembershipActive={isMembershipActive}
-                />
-            </div>
+            <LedenTable 
+                isLoading={isLoading}
+                members={filteredMembers}
+                isPending={isPending}
+                formatDate={formatDate}
+                isMembershipActive={isMembershipActive}
+            />
+            
             <AdminToast toast={toast} onClose={hideToast} />
-        </>
+        </div>
     );
 }

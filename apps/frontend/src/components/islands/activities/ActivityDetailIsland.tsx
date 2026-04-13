@@ -27,11 +27,11 @@ export default function ActivityDetailIsland({ isLoading = false, activity, chil
 
     return (
         <div 
-            className={`w-full flex flex-col min-h-screen bg-[var(--bg-main)] ${isLoading ? 'animate-pulse' : ''}`}
+            className={`w-full flex flex-col min-h-screen bg-[var(--bg-main)] ${isLoading ? 'skeleton-active' : ''}`}
             aria-busy={isLoading}
         >
             {/* Hero Banner Area */}
-            {isLoading || activity?.afbeelding_id ? (
+            {(isLoading || activity?.afbeelding_id) ? (
                 <div className="relative h-[45vh] min-h-[400px] w-full overflow-hidden bg-[var(--bg-soft)]">
                     {!isLoading && activity && (
                         <Image
@@ -46,25 +46,13 @@ export default function ActivityDetailIsland({ isLoading = false, activity, chil
                     <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-main)] via-[var(--bg-main)]/40 to-transparent" />
                     
                     <div className="absolute inset-x-0 bottom-0 max-w-7xl mx-auto px-4 pb-12">
-                        <div className="max-w-3xl space-y-4">
-                            {isLoading ? (
-                                <div className="space-y-6">
-                                    <Skeleton className="h-6 w-32 bg-[var(--theme-purple)]/30" rounded="full" />
-                                    <div className="space-y-3">
-                                        <Skeleton className="h-12 sm:h-16 w-3/4 bg-white/10" rounded="2xl" />
-                                        <Skeleton className="h-12 sm:h-16 w-1/2 bg-white/10" rounded="2xl" />
-                                    </div>
-                                </div>
-                            ) : (
-                                <>
-                                    <span className="inline-block px-4 py-1.5 rounded-full bg-[var(--theme-purple)] text-white text-[11px] font-black uppercase tracking-widest mb-4 shadow-xl border border-white/10">
-                                        {activity?.committee_name || 'Algemene Activiteit'}
-                                    </span>
-                                    <h1 className="text-4xl md:text-7xl font-black text-white dropshadow-sm tracking-tight leading-tight">
-                                        {activity?.titel}
-                                    </h1>
-                                </>
-                            )}
+                        <div className="max-w-3xl space-y-4 animate-in fade-in duration-700">
+                            <span className="inline-block px-4 py-1.5 rounded-full bg-[var(--theme-purple)] text-white text-[11px] font-black uppercase tracking-widest mb-4 shadow-xl border border-white/10">
+                                {isLoading ? 'LOADING_COMMITTEE' : (activity?.committee_name || 'Algemene Activiteit')}
+                            </span>
+                            <h1 className="text-4xl md:text-7xl font-black text-white dropshadow-sm tracking-tight leading-tight">
+                                {isLoading ? 'Loading Activity Title...' : activity?.titel}
+                            </h1>
                         </div>
                     </div>
                 </div>
@@ -97,18 +85,13 @@ export default function ActivityDetailIsland({ isLoading = false, activity, chil
                             </div>
                             <div className="min-w-0 flex-1">
                                 <p className="text-[10px] uppercase font-black text-[var(--theme-purple)]/40 tracking-[0.2em] mb-1">Datum & Tijd</p>
-                                {isLoading ? (
-                                    <div className="space-y-2">
-                                        <Skeleton className="h-5 w-3/4 bg-[var(--color-purple-500)]/10" rounded="md" />
-                                        <Skeleton className="h-4 w-1/2 bg-[var(--color-purple-500)]/5" rounded="md" />
-                                    </div>
-                                ) : (
-                                    <>
-                                        <p className="text-base font-bold text-[var(--text-main)] truncate">{activity ? formatDutchDate(activity.datum_start) : ''}</p>
-                                        {timeRange && (
-                                            <p className="text-sm font-medium text-[var(--text-muted)]">{timeRange}</p>
-                                        )}
-                                    </>
+                                <p className="text-base font-bold text-[var(--text-main)] truncate">
+                                    {isLoading ? '01 JANUARI 2024' : (activity ? formatDutchDate(activity.datum_start) : '')}
+                                </p>
+                                {(isLoading || timeRange) && (
+                                    <p className="text-sm font-medium text-[var(--text-muted)]">
+                                        {isLoading ? '12:00 - 18:00' : timeRange}
+                                    </p>
                                 )}
                             </div>
                         </div>
@@ -122,11 +105,9 @@ export default function ActivityDetailIsland({ isLoading = false, activity, chil
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-[10px] uppercase font-black text-[var(--theme-purple)]/40 tracking-[0.2em] mb-1">Locatie</p>
-                                    {isLoading ? (
-                                        <div className="h-5 w-2/3 bg-[var(--bg-soft)] rounded" />
-                                    ) : (
-                                        <p className="text-base font-bold text-[var(--text-main)]">{activity?.locatie}</p>
-                                    )}
+                                    <p className="text-base font-bold text-[var(--text-main)]">
+                                        {isLoading ? 'Activiteit Locatie Straat 1, Eindhoven' : activity?.locatie}
+                                    </p>
                                 </div>
                             </div>
                         )}
@@ -138,11 +119,9 @@ export default function ActivityDetailIsland({ isLoading = false, activity, chil
                             </div>
                             <div className="min-w-0 flex-1">
                                 <p className="text-[10px] uppercase font-black text-[var(--theme-purple)]/40 tracking-[0.2em] mb-1">Organisatie</p>
-                                {isLoading ? (
-                                    <Skeleton className="h-5 w-3/4 bg-[var(--color-purple-500)]/10" rounded="md" />
-                                ) : (
-                                    <p className="text-base font-bold text-[var(--text-main)] truncate">{activity?.committee_name || 'Bestuur'}</p>
-                                )}
+                                <p className="text-base font-bold text-[var(--text-main)] truncate">
+                                    {isLoading ? 'Organiserende Commissie' : (activity?.committee_name || 'Bestuur')}
+                                </p>
                             </div>
                         </div>
 
@@ -154,7 +133,7 @@ export default function ActivityDetailIsland({ isLoading = false, activity, chil
                             <div className="min-w-0 flex-1">
                                 <p className="text-[10px] uppercase font-black text-[var(--theme-purple)]/40 tracking-[0.2em] mb-1">Contact</p>
                                 {isLoading ? (
-                                    <Skeleton className="h-5 w-full bg-[var(--color-purple-500)]/10" rounded="md" />
+                                    <span className="text-sm font-bold text-[var(--text-muted)] italic">ict@salvemundi.nl</span>
                                 ) : committeeEmail ? (
                                     <div className="text-sm font-bold text-[var(--theme-purple)] truncate block">
                                         <ObfuscatedEmail email={committeeEmail} showIcon={false} />
@@ -172,16 +151,14 @@ export default function ActivityDetailIsland({ isLoading = false, activity, chil
                             <div className="flex items-center gap-3 mb-8">
                                 <div className="h-8 w-2 bg-[var(--theme-purple)] rounded-full shadow-[0_0_15px_var(--theme-purple)]" />
                                 <h2 className="text-2xl font-black text-[var(--theme-purple)] uppercase tracking-widest">
-                                    {isLoading ? <div className="h-8 w-48 bg-[var(--bg-soft)] rounded" /> : 'Over deze activiteit'}
+                                    {isLoading ? 'Loading Info' : 'Over deze activiteit'}
                                 </h2>
                             </div>
                             <div className="prose prose-purple max-w-none text-[var(--text-main)] font-medium leading-relaxed">
                                 {isLoading ? (
                                     <div className="space-y-4">
-                                        <div className="h-4 w-full bg-[var(--bg-soft)] rounded" />
-                                        <div className="h-4 w-full bg-[var(--bg-soft)] rounded" />
-                                        <div className="h-4 w-11/12 bg-[var(--bg-soft)] rounded" />
-                                        <div className="h-4 w-10/12 bg-[var(--bg-soft)] rounded" />
+                                        <p>Loading the core description for this Salve Mundi activity. This will include all rules, locations, and important details for attendees...</p>
+                                        <p>Please wait while we fetch the latest information from our database server. The layout will remain stable during this process.</p>
                                     </div>
                                 ) : (
                                     <SafeHtml html={activity?.beschrijving || 'Geen beschrijving beschikbaar.'} />
