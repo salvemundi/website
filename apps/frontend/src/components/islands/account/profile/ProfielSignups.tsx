@@ -6,7 +6,6 @@ import { Calendar, ChevronRight, CreditCard } from 'lucide-react';
 import { format, isBefore, startOfDay } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { Tile } from './ProfielUI';
-import { Skeleton } from '../../../ui/Skeleton';
 
 interface ProfielSignupsProps {
     isLoading?: boolean;

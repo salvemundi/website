@@ -13,6 +13,9 @@ import SyncMonitorIsland from '@/components/islands/admin/sync/SyncMonitorIsland
 import { SyncProvider } from '@/components/islands/admin/sync/SyncContext';
 import SyncHydrator from '@/components/islands/admin/sync/SyncHydrator';
 
+import { AdminGenericLoading } from '@/components/ui/admin/AdminLoadingFallbacks';
+import AdminPageShell from '@/components/ui/admin/AdminPageShell';
+
 export const metadata: Metadata = {
     title: 'Beheer Sync | SV Salve Mundi',
 };
@@ -32,40 +35,43 @@ async function checkSyncAccess() {
 }
 
 /**
- * Client component-driven hydrator that passes server data into the shared context.
+ * Server side data layer for the Sync page.
  */
-async function SyncDataLayer({ statusPromise }: { statusPromise: Promise<any> }) {
-    const status = await statusPromise;
-    return <SyncHydrator initialStatus={status} />;
-}
-
-export default async function AzureSyncPage() {
+async function SyncDataLoader() {
     const hasAccess = await checkSyncAccess();
+    if (!hasAccess) redirect('/beheer');
 
-    if (!hasAccess) {
-        redirect('/beheer');
-    }
-
-    // We fetch the status here to pass it as initialStatus for hydration
-    const statusPromise = getSyncStatusAction().catch(() => null);
+    const status = await getSyncStatusAction().catch(() => null);
 
     return (
-        <div className="min-h-screen bg-[var(--bg-main)]">
-            <SyncProvider initialStatus={null}>
-                <SyncHeaderIsland />
-                
-                <Suspense fallback={
-                    <div className="container mx-auto px-4 py-8 max-w-7xl relative z-10">
-                        <div className="space-y-8">
-                            <SyncStatsIsland />
+        <SyncProvider initialStatus={status}>
+            <SyncHydrator initialStatus={status} />
+            <div className="container mx-auto px-4 py-8 max-w-7xl relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="grid grid-cols-1 gap-8">
+                    <SyncStatsIsland />
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                        <div className="lg:col-span-4 h-full">
                             <SyncControlIsland />
+                        </div>
+                        <div className="lg:col-span-8">
                             <SyncMonitorIsland />
                         </div>
                     </div>
-                }>
-                    <SyncDataLayer statusPromise={statusPromise} />
-                </Suspense>
-            </SyncProvider>
-        </div>
+                </div>
+            </div>
+        </SyncProvider>
+    );
+}
+
+export default async function AzureSyncPage() {
+    return (
+        <AdminPageShell
+            title="Azure Sync Monitor"
+            subtitle="Beheer de synchronisatie tussen Salve Mundi en Azure AD / Microsoft 365."
+            backHref="/beheer"
+            fallback={<AdminGenericLoading />}
+        >
+            <SyncDataLoader />
+        </AdminPageShell>
     );
 }

@@ -16,8 +16,6 @@ import CouponRow from './CouponRow';
 import CouponForm from './CouponForm';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
-import { Skeleton } from '@/components/ui/Skeleton';
-
 interface Props {
     initialCoupons?: Coupon[];
     isLoading?: boolean;
@@ -110,7 +108,7 @@ export default function CouponManagementIsland({
                 backHref="/beheer"
                 actions={
                     isLoading ? (
-                        <Skeleton className="h-[var(--beheer-btn-height)] w-24" />
+                        <div className="h-[var(--beheer-btn-height)] w-24 skeleton-active" />
                     ) : (
                         <button
                             onClick={() => { setShowForm(!showForm); setFormError(null); }}
@@ -143,7 +141,7 @@ export default function CouponManagementIsland({
                 <div className="space-y-4">
                     <div className="flex items-center justify-between border-l-4 border-[var(--beheer-active)] pl-4 py-1">
                         {isLoading ? (
-                            <Skeleton className="h-4 w-32" />
+                            <div className="h-4 w-32 skeleton-active" />
                         ) : (
                             <h2 className="text-[10px] font-black text-[var(--beheer-text)] flex items-center gap-3 uppercase tracking-widest">
                                 Geldige Coupons
@@ -158,7 +156,7 @@ export default function CouponManagementIsland({
                         {isLoading ? (
                             <div className="space-y-4 p-8">
                                 {[...Array(3)].map((_, i) => (
-                                    <Skeleton key={i} className="h-16 w-full rounded-2xl" />
+                                    <div key={i} className="h-16 w-full rounded-2xl skeleton-active" />
                                 ))}
                             </div>
                         ) : validCoupons.length === 0 ? (

@@ -14,8 +14,6 @@ import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import { Users, UserCheck, UserMinus, DollarSign } from 'lucide-react';
 
-import { Skeleton } from '@/components/ui/Skeleton';
-
 interface Signup {
     id: number;
     participant_name: string;
@@ -204,8 +202,8 @@ export default function ActiviteitAanmeldingenIsland({
                 actions={
                     isLoading ? (
                         <div className="flex gap-3">
-                            <Skeleton className="h-[var(--beheer-btn-height)] w-28" />
-                            <Skeleton className="h-[var(--beheer-btn-height)] w-32" />
+                            <div className="h-[var(--beheer-btn-height)] w-28 skeleton-active" />
+                            <div className="h-[var(--beheer-btn-height)] w-32 skeleton-active" />
                         </div>
                     ) : (
                         <>
@@ -238,7 +236,7 @@ export default function ActiviteitAanmeldingenIsland({
                         <Search className="h-4 w-4 text-[var(--beheer-text-muted)] group-focus-within:text-[var(--beheer-accent)] transition-colors" />
                     </div>
                     {isLoading ? (
-                        <Skeleton className="w-full h-12 rounded-[var(--beheer-radius)]" />
+                        <div className="w-full h-12 rounded-[var(--beheer-radius)] skeleton-active" />
                     ) : (
                         <input
                             type="text"
@@ -277,17 +275,17 @@ export default function ActiviteitAanmeldingenIsland({
                                 <tbody className="divide-y divide-[var(--beheer-border)]">
                                     {[...Array(6)].map((_, i) => (
                                         <tr key={i}>
-                                            <td className="px-6 py-6"><Skeleton className="h-6 w-6 rounded-full" /></td>
-                                            <td className="px-6 py-6"><Skeleton className="h-4 w-32" /></td>
+                                            <td className="px-6 py-6"><div className="h-6 w-6 rounded-full skeleton-active" /></td>
+                                            <td className="px-6 py-6"><div className="h-4 w-32 skeleton-active" /></td>
                                             <td className="px-6 py-6 space-y-2">
-                                                <Skeleton className="h-3 w-40 opacity-50" />
-                                                <Skeleton className="h-3 w-32 opacity-30" />
+                                                <div className="h-3 w-40 opacity-50 skeleton-active" />
+                                                <div className="h-3 w-32 opacity-30 skeleton-active" />
                                             </td>
                                             <td className="px-6 py-6 space-y-2">
-                                                <Skeleton className="h-5 w-16" />
-                                                <Skeleton className="h-2 w-24 opacity-40" />
+                                                <div className="h-5 w-16 skeleton-active" />
+                                                <div className="h-2 w-24 opacity-40 skeleton-active" />
                                             </td>
-                                            <td className="px-6 py-6 text-right"><Skeleton className="h-8 w-8 rounded-xl ml-auto" /></td>
+                                            <td className="px-6 py-6 text-right"><div className="h-8 w-8 rounded-xl ml-auto skeleton-active" /></td>
                                         </tr>
                                     ))}
                                 </tbody>

@@ -17,8 +17,6 @@ import StickerMap from '@/components/ui/maps/StickerMap';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 
-import { Skeleton } from '@/components/ui/Skeleton';
-
 interface StickerMapIslandProps {
     isLoading?: boolean;
     initialStickers: any[];
@@ -159,7 +157,7 @@ export default function StickerMapIsland({
 
     if (isLoading) {
         return (
-            <div className="space-y-8 animate-pulse" aria-busy="true">
+            <div className="space-y-8 skeleton-active" aria-busy="true">
                 {/* Stats Header Area Skeleton */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {[1, 2, 3, 4].map((i) => (
@@ -169,31 +167,31 @@ export default function StickerMapIsland({
 
                 {/* Map Container Skeleton */}
                 <div className="relative">
-                    <Skeleton className="h-[600px] w-full bg-[var(--bg-card)]" rounded="3xl" />
+                    <div className="h-[600px] w-full bg-[var(--bg-card)] rounded-3xl" />
                     
                     {/* Floating Controls Skeleton */}
                     <div className="absolute top-4 left-4 right-4 md:right-auto md:w-80 space-y-3">
                         {/* Filter box skeleton */}
                         <div className="bg-[var(--bg-card)]/90 backdrop-blur-md rounded-2xl p-4 border border-white/10 space-y-4">
-                            <Skeleton className="h-4 w-24 bg-[var(--text-muted)]/10" rounded="full" />
+                            <div className="h-4 w-24 bg-[var(--text-muted)]/10 rounded-full" />
                             <div className="space-y-3">
-                                <Skeleton className="h-8 w-full bg-[var(--text-muted)]/5" rounded="lg" />
-                                <Skeleton className="h-8 w-full bg-[var(--text-muted)]/5" rounded="lg" />
+                                <div className="h-8 w-full bg-[var(--text-muted)]/5 rounded-lg" />
+                                <div className="h-8 w-full bg-[var(--text-muted)]/5 rounded-lg" />
                             </div>
                         </div>
 
                         {/* Identity-aware CTA skeleton */}
                         {isAuthenticated ? (
                             <div className="bg-[var(--bg-card)]/90 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-                                <Skeleton className="h-12 w-full bg-theme-purple/20" rounded="xl" />
-                                <Skeleton className="h-3 w-3/4 mx-auto mt-2 bg-[var(--text-muted)]/10" rounded="full" />
+                                <div className="h-12 w-full bg-[var(--beheer-accent)]/20 rounded-xl" />
+                                <div className="h-3 w-3/4 mx-auto mt-2 bg-[var(--text-muted)]/10 rounded-full" />
                             </div>
                         ) : (
                             <div className="bg-orange-500/80 backdrop-blur-md rounded-2xl p-4 border border-white/20 flex gap-3">
-                                <Skeleton className="w-10 h-10 bg-white/20 shrink-0" rounded="lg" />
+                                <div className="w-10 h-10 bg-white/20 shrink-0 rounded-lg" />
                                 <div className="space-y-2 flex-1">
-                                    <Skeleton className="h-4 w-2/3 bg-white/20" rounded="full" />
-                                    <Skeleton className="h-3 w-full bg-white/10" rounded="full" />
+                                    <div className="h-4 w-2/3 bg-white/20 rounded-full" />
+                                    <div className="h-3 w-full bg-white/10 rounded-full" />
                                 </div>
                             </div>
                         )}
@@ -395,10 +393,10 @@ function StatCard({ label, value, icon: Icon, color, isLoading = false }: any) {
         return (
             <div className="bg-[var(--bg-card)] rounded-2xl p-4 shadow-xl border border-white/5 flex items-center justify-between">
                 <div className="space-y-2 flex-1">
-                    <Skeleton className="h-3 w-12 bg-[var(--text-muted)]/10" rounded="full" />
-                    <Skeleton className="h-7 w-16 bg-[var(--text-muted)]/5" rounded="md" />
+                    <div className="h-3 w-12 bg-[var(--text-muted)]/10 rounded-full" />
+                    <div className="h-7 w-16 bg-[var(--text-muted)]/5 rounded-md" />
                 </div>
-                <Skeleton className="h-9 w-9 bg-slate-500/10" rounded="xl" />
+                <div className="h-9 w-9 bg-slate-500/10 rounded-xl" />
             </div>
         );
     }

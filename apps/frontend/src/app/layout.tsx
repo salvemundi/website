@@ -2,9 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Suspense } from 'react';
 import './globals.css';
 import NavigationHeader from '@/components/islands/layout/NavigationHeader';
-import NavigationHeaderSkeleton from '@/components/ui/layout/NavigationHeaderSkeleton';
 import FooterIsland from '@/components/islands/layout/FooterIsland';
-import FooterSkeleton from '@/components/ui/layout/FooterSkeleton';
 import ImpersonationBanner from '@/components/ui/admin/ImpersonationBanner';
 import { getDocumenten, getDisabledRoutes } from '@/server/actions/website.actions';
 import { getCommittees } from '@/server/actions/committees.actions';
@@ -72,7 +70,7 @@ export default async function RootLayout({
                     <ImpersonationWrapper />
                 </Suspense>
                 
-                <Suspense fallback={<NavigationHeaderSkeleton />}>
+                <Suspense fallback={<div className="h-[var(--header-total-height,var(--header-height,72px))] w-full bg-[var(--bg-card)] border-b border-[var(--border-color)] skeleton-active" />}>
                     <HeaderWrapper />
                 </Suspense>
 
@@ -82,7 +80,7 @@ export default async function RootLayout({
                     </Suspense>
                 </main>
 
-                <Suspense fallback={<FooterSkeleton />}>
+                <Suspense fallback={<div className="h-64 w-full bg-[var(--bg-card)] border-t border-[var(--border-color)] skeleton-active" />}>
                     <FooterWrapper />
                 </Suspense>
             </body>

@@ -42,8 +42,6 @@ interface EventProps {
     publish_date?: string | null;
 }
 
-import { Skeleton } from '@/components/ui/Skeleton';
-
 interface ActiviteitBewerkenIslandProps {
     event?: EventProps;
     committees?: Committee[];
@@ -138,29 +136,29 @@ export default function ActiviteitBewerkenIsland({
                     <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl p-8 sm:p-10 space-y-8 border border-[var(--beheer-border)] animate-pulse">
                         {/* Basic Info Skeleton */}
                         <div>
-                            <Skeleton className="h-3 w-20 mb-3" />
-                            <Skeleton className="h-14 w-full rounded-xl" />
+                            <div className="h-3 w-20 mb-3 skeleton-active" />
+                            <div className="h-14 w-full rounded-xl skeleton-active" />
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div>
-                                <Skeleton className="h-3 w-24 mb-3" />
-                                <Skeleton className="h-14 w-full rounded-xl" />
+                                <div className="h-3 w-24 mb-3 skeleton-active" />
+                                <div className="h-14 w-full rounded-xl skeleton-active" />
                             </div>
                             <div>
-                                <Skeleton className="h-3 w-20 mb-3" />
-                                <Skeleton className="h-14 w-full rounded-xl" />
+                                <div className="h-3 w-20 mb-3 skeleton-active" />
+                                <div className="h-14 w-full rounded-xl skeleton-active" />
                             </div>
                         </div>
 
                         <div>
-                            <Skeleton className="h-3 w-24 mb-3" />
-                            <Skeleton className="h-40 w-full rounded-xl" />
+                            <div className="h-3 w-24 mb-3 skeleton-active" />
+                            <div className="h-40 w-full rounded-xl skeleton-active" />
                         </div>
 
                         <div className="flex flex-col sm:flex-row gap-5 pt-6">
-                            <Skeleton className="flex-1 h-14 rounded-full" />
-                            <Skeleton className="sm:w-40 h-14 rounded-full" />
+                            <div className="flex-1 h-14 rounded-full skeleton-active" />
+                            <div className="sm:w-40 h-14 rounded-full skeleton-active" />
                         </div>
                     </div>
                 ) : (

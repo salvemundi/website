@@ -5,32 +5,36 @@ import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import { UserCircle } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import LedenDetailIsland from '@/components/islands/admin/leden/LedenDetailIsland';
-import MemberDetailSkeleton from '@/components/ui/admin/leden/MemberDetailSkeleton';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import { getSystemDirectus } from '@/lib/directus';
 
 // Correct Directus SDK imports
 import { readUser, readItems as dReadItems } from '@directus/sdk';
 
+import { AdminGenericLoading } from '@/components/ui/admin/AdminLoadingFallbacks';
+import AdminPageShell from '@/components/ui/admin/AdminPageShell';
+
 export default async function LidDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;
     
-    // Check initial session to avoid ghost skeletons for guests/unauthorized
+    return (
+        <AdminPageShell
+            title="Lid Detail"
+            backHref="/beheer/leden"
+            fallback={<AdminGenericLoading />}
+        >
+            <Suspense fallback={<AdminGenericLoading />}>
+                <LidDataLoader id={resolvedParams.id} />
+            </Suspense>
+        </AdminPageShell>
+    );
+}
+
+async function LidDataLoader({ id }: { id: string }) {
     const session = await auth.api.getSession({
         headers: await headers()
     });
     if (!session || !session.user) return <AdminUnauthorized title="Lid Detail" />;
-
-    return (
-        <main className="min-h-screen bg-[var(--bg-main)]">
-            <Suspense fallback={<MemberDetailSkeleton />}>
-                <LidDataLoader id={resolvedParams.id} session={session} />
-            </Suspense>
-        </main>
-    );
-}
-
-async function LidDataLoader({ id, session }: { id: string, session: any }) {
 
     const user = session.user as any;
     const memberships = user.committees || [];
@@ -82,7 +86,6 @@ async function LidDataLoader({ id, session }: { id: string, session: any }) {
         signups = await getSystemDirectus().request(
             dReadItems<any, any, any>('event_signups', {
                 filter: { participant_email: { _eq: member.email } },
-                // Limit fields to those known to work with system token (based on activities.actions.ts)
                 fields: ['id', 'payment_status', { event_id: ['id', 'name', 'event_date'] }],
                 limit: -1
             })
@@ -107,28 +110,15 @@ async function LidDataLoader({ id, session }: { id: string, session: any }) {
     }
 
     return (
-        <>
-            <AdminToolbar 
-                title={`${member.first_name} ${member.last_name}`}
-                subtitle="Beheer profiel, lidmaatschappen en historie"
-                backHref="/beheer/leden"
-                actions={
-                    <div className="p-3 bg-[var(--beheer-card-soft)] rounded-xl border border-[var(--beheer-border)]">
-                        <UserCircle className="h-5 w-5 text-[var(--beheer-accent)]" />
-                    </div>
-                }
+        <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <LedenDetailIsland 
+                member={member as any} 
+                initialMemberships={userCommittees as any} 
+                signups={signups as any}
+                allCommittees={allCommittees as any}
+                isAdmin={hasPriv}
             />
-
-            <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in slide-in-from-bottom-2 duration-500">
-                <LedenDetailIsland 
-                    member={member as any} 
-                    initialMemberships={userCommittees as any} 
-                    signups={signups as any}
-                    allCommittees={allCommittees as any}
-                    isAdmin={hasPriv}
-                />
-            </div>
-        </>
+        </div>
     );
 }
 

@@ -2,7 +2,6 @@ export const dynamic = 'force-dynamic';
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getWhatsAppGroups } from '@/server/actions/profiel.actions';
-import { WhatsAppGroupsSkeleton } from '@/components/ui/social/WhatsAppGroupsSkeleton';
 import { WhatsAppGroupsIsland } from '@/components/islands/social/WhatsAppGroupsIsland';
 
 export const metadata: Metadata = {
@@ -23,7 +22,13 @@ export default function WhatsAppGroepenPage() {
             </header>
 
             <main className="mx-auto max-w-app px-4 py-8 sm:py-10 md:py-12">
-                <Suspense fallback={<WhatsAppGroupsSkeleton />}>
+                <Suspense fallback={
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-pulse">
+                        {[...Array(2)].map((_, i) => (
+                            <div key={i} className="h-48 bg-[var(--bg-card)] rounded-3xl border border-[var(--border-color)] skeleton-active" />
+                        ))}
+                    </div>
+                }>
                     <WhatsAppGroupsFetcher />
                 </Suspense>
             </main>

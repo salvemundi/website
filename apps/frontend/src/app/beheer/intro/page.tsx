@@ -13,24 +13,32 @@ import {
 } from '@/server/actions/admin-intro.actions';
 import { getIntroSettings } from '@/server/actions/intro.actions';
 
+import { AdminGenericLoading } from '@/components/ui/admin/AdminLoadingFallbacks';
+import AdminPageShell from '@/components/ui/admin/AdminPageShell';
+
 export const metadata: Metadata = {
     title: 'Intro Beheer | SV Salve Mundi',
 };
 
 export default async function BeheerIntroPage() {
-    const session = await auth.api.getSession({ headers: await headers() });
-    if (!session?.user) redirect('/login');
-
     return (
-        <main className="min-h-screen bg-[var(--bg-main)]">
-            <Suspense fallback={<IntroPageLoader />}>
+        <AdminPageShell
+            title="Introductie Beheer"
+            subtitle="Beheer de introductieweek, inschrijvingen, blogs en draaiboeken."
+            backHref="/beheer"
+            fallback={<AdminGenericLoading />}
+        >
+            <Suspense fallback={<AdminGenericLoading />}>
                 <IntroDataLoader />
             </Suspense>
-        </main>
+        </AdminPageShell>
     );
 }
 
 async function IntroDataLoader() {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session?.user) redirect('/login');
+
     const [signups, parents, blogs, planning, settings] = await Promise.all([
         getIntroSignups().catch(() => []),
         getIntroParentSignups().catch(() => []),
@@ -40,21 +48,14 @@ async function IntroDataLoader() {
     ]);
 
     return (
-        <IntroManagementIsland
-            initialSignups={signups}
-            initialParents={parents}
-            initialBlogs={blogs}
-            initialPlanning={planning}
-            initialIntroVisible={settings.show ?? false}
-        />
-    );
-}
-
-function IntroPageLoader() {
-    return (
-        <div className="container mx-auto px-4 py-16 flex flex-col items-center justify-center">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-[var(--beheer-accent)]/20 border-t-[var(--beheer-accent)] mb-4" />
-            <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-[10px]">Intro laden...</p>
+        <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <IntroManagementIsland
+                initialSignups={signups}
+                initialParents={parents}
+                initialBlogs={blogs}
+                initialPlanning={planning}
+                initialIntroVisible={settings.show ?? false}
+            />
         </div>
     );
 }

@@ -20,8 +20,6 @@ interface ReisTableProps {
     isLoading?: boolean;
 }
 
-import { Skeleton } from '@/components/ui/Skeleton';
-
 export default function ReisTable({
     filteredSignups = [],
     expandedIds = [],
@@ -62,25 +60,25 @@ export default function ReisTable({
                                 [...Array(8)].map((_, i) => (
                                     <tr key={i} className="animate-pulse">
                                         <td className="px-3 sm:px-6 py-5">
-                                            <Skeleton className="h-4 w-32 mb-2" />
-                                            <Skeleton className="h-3 w-40 opacity-50" />
+                                            <div className="h-4 w-32 mb-2 bg-[var(--beheer-text-muted)]/10 rounded-sm skeleton-active" />
+                                            <div className="h-3 w-40 opacity-50 bg-[var(--beheer-text-muted)]/5 rounded-sm skeleton-active" />
                                         </td>
                                         <td className="px-3 sm:px-6 py-5 hidden sm:table-cell">
-                                            <Skeleton className="h-4 w-24 opacity-50" />
+                                            <div className="h-4 w-24 opacity-50 bg-[var(--beheer-text-muted)]/5 rounded-sm skeleton-active" />
                                         </td>
                                         <td className="px-3 sm:px-6 py-5 hidden md:table-cell">
-                                            <Skeleton className="h-6 w-20 rounded-full" />
+                                            <div className="h-6 w-20 rounded-full bg-[var(--beheer-text-muted)]/5 skeleton-active" />
                                         </td>
                                         <td className="px-3 sm:px-6 py-5">
-                                            <Skeleton className="h-7 w-28 rounded-full" />
+                                            <div className="h-7 w-28 rounded-full bg-[var(--beheer-text-muted)]/5 skeleton-active" />
                                         </td>
                                         <td className="px-3 sm:px-6 py-5 hidden sm:table-cell">
-                                            <Skeleton className="h-7 w-32 rounded-full opacity-50" />
+                                            <div className="h-7 w-32 rounded-full opacity-50 bg-[var(--beheer-text-muted)]/5 skeleton-active" />
                                         </td>
                                         <td className="px-2 sm:px-6 py-5 text-right">
                                             <div className="flex justify-end gap-3">
-                                                <Skeleton className="h-8 w-8 rounded-xl" />
-                                                <Skeleton className="h-8 w-8 rounded-xl" />
+                                                <div className="h-8 w-8 rounded-xl bg-[var(--beheer-text-muted)]/5 skeleton-active" />
+                                                <div className="h-8 w-8 rounded-xl bg-[var(--beheer-text-muted)]/5 skeleton-active" />
                                             </div>
                                         </td>
                                     </tr>

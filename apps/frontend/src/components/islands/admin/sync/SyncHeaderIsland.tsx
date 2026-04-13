@@ -3,7 +3,6 @@
 import React from 'react';
 import { RefreshCw } from 'lucide-react';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
-import { Skeleton } from '@/components/ui/Skeleton';
 import { useSync } from './SyncContext';
 
 export default function SyncHeaderIsland() {
@@ -11,14 +10,14 @@ export default function SyncHeaderIsland() {
 
     return (
         <AdminToolbar 
-            isLoading={false} // Title/Subtitle are always static
+            isLoading={false}
             title="Azure Sync"
             subtitle="Synchroniseer met Microsoft Azure AD"
             backHref="/beheer"
             actions={
                 isLoading ? (
                     <div className="flex gap-2">
-                        <Skeleton className="h-[44px] w-28 rounded-[var(--beheer-radius)]" />
+                        <div className="h-[44px] w-28 rounded-[var(--beheer-radius)] skeleton-active" />
                     </div>
                 ) : (
                     <div className="flex gap-2">

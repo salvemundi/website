@@ -11,7 +11,6 @@ import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminVisibilityToggle from '@/components/ui/admin/AdminVisibilityToggle';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
-import { Skeleton } from '@/components/ui/Skeleton';
 
 interface AdminReisSelectorIslandProps {
     trips?: Trip[];

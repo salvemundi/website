@@ -1,4 +1,3 @@
-import { Skeleton } from '@/components/ui/Skeleton';
 import { LucideIcon } from 'lucide-react';
 
 interface StatItem {

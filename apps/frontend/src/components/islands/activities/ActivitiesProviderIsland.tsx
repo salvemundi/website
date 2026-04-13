@@ -9,7 +9,6 @@ import FeaturedEvent from "./FeaturedEvent";
 import DayDetails from "./DayDetails";
 import EventList from "./EventList";
 import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
-import { Skeleton } from "@/components/ui/Skeleton";
 import ActiviteitCard from "./ActiviteitCard";
 
 interface ActivitiesProviderIslandProps {

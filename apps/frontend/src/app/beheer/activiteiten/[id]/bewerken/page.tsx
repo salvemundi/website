@@ -8,8 +8,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
+import { AdminGenericLoading } from '@/components/ui/admin/AdminLoadingFallbacks';
 import ActiviteitBewerkenIsland from '@/components/islands/admin/activities/ActiviteitBewerkenIsland';
-import ActiviteitBewerkenSkeleton from '@/components/ui/admin/activities/ActiviteitBewerkenSkeleton';
 
 export const metadata: Metadata = {
     title: 'Activiteit Bewerken | SV Salve Mundi',
@@ -26,7 +26,7 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
 
     return (
         <main className="min-h-screen bg-[var(--bg-main)]">
-            <Suspense fallback={<ActiviteitBewerkenSkeleton />}>
+            <Suspense fallback={<AdminGenericLoading />}>
                 <EditFormLoader id={resolvedParams.id} session={session} />
             </Suspense>
         </main>

@@ -3,7 +3,6 @@
 import React from 'react';
 import { Gamepad2, Edit2, Save, Loader2, X } from 'lucide-react';
 import { Tile, formatForBreak } from './ProfielUI';
-import { Skeleton } from '../../../ui/Skeleton';
 
 interface ProfielGamingProps {
     isLoading?: boolean;

@@ -17,8 +17,6 @@ import {
 import { toPng } from 'html-to-image';
 import { getSignupStatus, type PaymentStatus } from '@/server/actions/activiteit-actions';
 import QRDisplay from '@/shared/ui/QRDisplay';
-import { Skeleton } from '@/components/ui/Skeleton';
-
 interface ConfirmationIslandProps {
     initialId?: string;
     initialTransactionId?: string;
@@ -124,20 +122,20 @@ export default function ConfirmationIsland({
             return (
                 <div className="space-y-12 animate-in fade-in duration-500">
                     <div className="space-y-4 text-center">
-                        <Skeleton className="w-24 h-24 rounded-full mx-auto" />
-                        <Skeleton className="h-12 md:h-20 w-3/4 max-w-2xl mx-auto rounded-3xl" />
-                        <Skeleton className="h-6 w-1/2 max-w-sm mx-auto rounded-xl" />
+                        <div className="w-24 h-24 rounded-full mx-auto skeleton-active" />
+                        <div className="h-12 md:h-20 w-3/4 max-w-2xl mx-auto rounded-3xl skeleton-active" />
+                        <div className="h-6 w-1/2 max-w-sm mx-auto rounded-xl skeleton-active" />
                     </div>
 
                     <div className="flex flex-wrap justify-center gap-6 max-w-6xl mx-auto">
                         {[1, 2, 3].map((i) => (
                             <div key={i} className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] min-w-[300px] max-w-[380px] p-8 rounded-[3rem] bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xl space-y-6">
                                 <div className="flex flex-col items-center gap-4">
-                                    <Skeleton className="h-4 w-24 rounded-full" />
-                                    <Skeleton className="h-[180px] w-[180px] rounded-3xl" />
+                                    <div className="h-4 w-24 rounded-full skeleton-active" />
+                                    <div className="h-[180px] w-[180px] rounded-3xl skeleton-active" />
                                     <div className="space-y-2 text-center w-full">
-                                        <Skeleton className="h-6 w-3/4 mx-auto rounded-lg" />
-                                        <Skeleton className="h-3 w-1/2 mx-auto rounded-md" />
+                                        <div className="h-6 w-3/4 mx-auto rounded-lg skeleton-active" />
+                                        <div className="h-3 w-1/2 mx-auto rounded-md skeleton-active anchor" />
                                     </div>
                                 </div>
                             </div>

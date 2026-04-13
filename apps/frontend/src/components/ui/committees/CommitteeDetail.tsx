@@ -3,7 +3,6 @@ import Image from 'next/image';
 import { type Committee } from '@salvemundi/validations/schema/committees.zod';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { Mail, Shield, User, Users, Calendar, Instagram, Facebook, Globe, History, LayoutGrid, UserPlus } from 'lucide-react';
-import { Skeleton } from '../Skeleton';
 
 interface CommitteeDetailProps {
     isLoading?: boolean;
@@ -22,7 +21,7 @@ export const CommitteeDetail: React.FC<CommitteeDetailProps> = ({
     
     const members = isLoading 
         ? Array(6).fill({ user_id: { first_name: 'Loading', last_name: 'Member' }, is_leader: false, is_visible: true }) 
-        : (committee.members?.filter(m => m.is_visible) || []);
+        : (committee.members?.filter((m: any) => m.is_visible) || []);
 
     return (
         <div className={`space-y-12 animate-in fade-in duration-500 ${isLoading ? 'skeleton-active' : ''}`} aria-busy={isLoading}>
@@ -90,7 +89,7 @@ export const CommitteeDetail: React.FC<CommitteeDetailProps> = ({
                             {isLoading ? 'Leden Laden...' : 'Onze Leden'}
                         </h2>
                         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                            {members.map((member, idx) => (
+                            {members.map((member: any, idx: number) => (
                                 <div key={idx} className="group flex flex-col items-center p-6 rounded-2xl bg-[var(--bg-soft)]/50 border border-[var(--border-color)]/10 transition hover:bg-white dark:hover:bg-white/5 hover:border-[var(--color-purple-500)]/30">
                                     <div className="relative mb-4 h-20 w-20 overflow-hidden rounded-full ring-4 ring-[var(--color-purple-500)]/10 group-hover:ring-[var(--color-purple-500)]/30 transition bg-[var(--bg-soft)]">
                                         {!isLoading && member.user_id?.avatar && (

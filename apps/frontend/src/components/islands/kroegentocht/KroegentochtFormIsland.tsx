@@ -5,7 +5,6 @@ import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
-import { Skeleton } from '@/components/ui/Skeleton';
 import { initiateKroegentochtPayment } from '@/server/actions/kroegentocht.actions';
 import { 
     type PubCrawlEvent, 

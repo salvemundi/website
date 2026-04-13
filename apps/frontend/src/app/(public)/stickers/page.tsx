@@ -1,17 +1,15 @@
-export const dynamic = 'force-dynamic';
-import { Suspense } from 'react';
-import { Loader2, MapPin } from 'lucide-react';
+import React, { Suspense } from 'react';
 import { getPublicStickers } from '@/server/actions/stickers.actions';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import StickerMapIsland from '@/components/islands/stickers/StickerMapIsland';
-import { Skeleton } from '@/components/ui/Skeleton';
+import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 
 export const metadata = {
     title: 'Sticker Kaart | Salve Mundi',
 };
 
-export default async function StickersPage() {
+async function StickersDataLoader() {
     const stickersPromise = getPublicStickers();
     const sessionPromise = auth.api.getSession({
         headers: await headers(),
@@ -23,37 +21,41 @@ export default async function StickersPage() {
     ]);
 
     return (
-        <main className="min-h-screen bg-[var(--bg-main)]">
-            {/* Hero Section */}
-            <div className="relative overflow-hidden bg-[var(--bg-card)] border-b border-[var(--border-color)]/30">
-                <div className="absolute inset-0 bg-gradient-to-br from-[var(--theme-purple)]/5 to-orange-500/5 -z-10" />
-                <div className="container mx-auto px-4 py-20 max-w-7xl relative">
-                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-                        <div className="space-y-4">
-                            <h1 className="text-5xl md:text-7xl font-black text-[var(--text-main)] tracking-widest uppercase italic leading-none animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                Sticker<span className="text-[var(--theme-purple)]">Kaart</span>
-                            </h1>
-                        </div>
-                        
-                        <div className="flex flex-col items-center md:items-end gap-2 animate-in fade-in zoom-in-95 duration-1000">
-                            <div className="text-3xl font-black text-[var(--theme-purple)] tracking-tighter">
-                                {stickers.length}+
-                            </div>
-                            <div className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">
-                                Stikkers Geplakt
-                            </div>
-                        </div>
-                    </div>
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="flex justify-between items-center mb-8 bg-[var(--bg-card)] border border-[var(--beheer-border)] p-6 rounded-3xl shadow-sm">
+                <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Totaal Geplakt</p>
+                    <p className="text-3xl font-black text-[var(--theme-purple)] tracking-tighter">{stickers.length}+</p>
+                </div>
+                <div className="p-3 bg-[var(--theme-purple)]/10 rounded-2xl">
+                    <span className="text-2xl">📍</span>
                 </div>
             </div>
-
-            {/* Application Area */}
-            <div className="container mx-auto px-4 py-12 max-w-7xl">
-                <Suspense fallback={<StickerMapIsland isLoading isAuthenticated={!!session} initialStickers={[]} user={null} />}>
-                    <StickerMapIsland initialStickers={stickers} user={session?.user || null} />
-                </Suspense>
+            
+            <div className="rounded-3xl border border-[var(--beheer-border)] overflow-hidden shadow-2xl">
+                <StickerMapIsland initialStickers={stickers} user={session?.user || null} />
             </div>
-        </main>
+        </div>
+    );
+}
+
+export default async function StickersPage() {
+    return (
+        <PublicPageShell
+            title="STICKER KAART"
+            description="Bekijk waar Salve Mundi stikkers zijn geplakt over de hele wereld. Heb je er zelf een geplakt? Log in en voeg hem toe!"
+            backgroundImage="/img/backgrounds/stickers-banner.jpg" 
+            fallback={
+                <div className="space-y-8 animate-pulse">
+                    <div className="h-24 w-full bg-[var(--bg-card)] rounded-3xl skeleton-active" />
+                    <div className="h-[600px] w-full bg-[var(--bg-card)] rounded-3xl skeleton-active shadow-xl" />
+                </div>
+            }
+        >
+            <div className="container mx-auto px-4 py-12 max-w-7xl">
+                <StickersDataLoader />
+            </div>
+        </PublicPageShell>
     );
 }
 

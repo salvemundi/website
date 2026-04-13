@@ -18,8 +18,6 @@ import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import TripActivityCard from './reis/TripActivityCard';
 import TripActivityForm from './reis/TripActivityForm';
 import TripActivitySignupsModal from './reis/TripActivitySignupsModal';
-import { Skeleton } from '@/components/ui/Skeleton';
-
 interface Trip {
     id: number;
     name: string;
@@ -163,20 +161,20 @@ export default function ReisActiviteitenIsland({
                 {isLoading ? (
                     <div className="animate-pulse">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                            <Skeleton className="h-24 w-full rounded-3xl" />
-                            <Skeleton className="h-24 w-full rounded-3xl" />
+                            <div className="h-24 w-full rounded-3xl skeleton-active" />
+                            <div className="h-24 w-full rounded-3xl skeleton-active" />
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {[1, 2, 3, 4, 5, 6].map(i => (
                                 <div key={i} className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] overflow-hidden h-96">
-                                    <Skeleton className="h-48 w-full" />
+                                    <div className="h-48 w-full skeleton-active" />
                                     <div className="p-6 space-y-4">
-                                        <Skeleton className="h-4 w-32" />
-                                        <Skeleton className="h-3 w-full" />
-                                        <Skeleton className="h-3 w-2/3" />
+                                        <div className="h-4 w-32 skeleton-active" />
+                                        <div className="h-3 w-full skeleton-active" />
+                                        <div className="h-3 w-2/3 skeleton-active" />
                                         <div className="flex gap-2 pt-4">
-                                            <Skeleton className="h-10 flex-1 rounded-xl" />
-                                            <Skeleton className="h-10 w-10 rounded-xl" />
+                                            <div className="h-10 flex-1 rounded-xl skeleton-active" />
+                                            <div className="h-10 w-10 rounded-xl skeleton-active" />
                                         </div>
                                     </div>
                                 </div>

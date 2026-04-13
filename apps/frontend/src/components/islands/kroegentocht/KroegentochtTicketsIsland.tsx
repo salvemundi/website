@@ -7,8 +7,6 @@ import { generateQRCode } from '@/lib/utils/qr-service';
 import { Ticket, Download, CheckCircle2 } from 'lucide-react';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
-import { Skeleton } from '@/components/ui/Skeleton';
-
 interface KroegentochtTicketsIslandProps {
     isLoading?: boolean;
     initialTickets?: PubCrawlTicket[];

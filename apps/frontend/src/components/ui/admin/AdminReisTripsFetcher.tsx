@@ -6,7 +6,7 @@ import { Plane, Plus } from 'lucide-react';
 
 import AdminReisSelectorIsland from '@/components/islands/admin/AdminReisSelectorIsland';
 import AdminReisDataFetcher from '@/components/ui/admin/AdminReisDataFetcher';
-import AdminReisDashboardSkeleton from '@/components/ui/admin/AdminReisDashboardSkeleton';
+import { AdminGenericLoading } from '@/components/ui/admin/AdminLoadingFallbacks';
 
 import { getReisSiteSettings } from '@/server/actions/reis.actions';
 
@@ -74,7 +74,7 @@ export default async function AdminReisTripsFetcher({ searchParams }: AdminReisT
             />
 
             {/* 3. Granular Streaming: The heavy data fetch and table rendering is suspended */}
-            <Suspense fallback={<AdminReisDashboardSkeleton />} key={activeTrip.id}>
+            <Suspense fallback={<AdminGenericLoading />} key={activeTrip.id}>
                 <AdminReisDataFetcher tripId={activeTrip.id} trip={activeTrip} />
             </Suspense>
         </div>

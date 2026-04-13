@@ -23,8 +23,6 @@ import {
     toggleKroegentochtVisibility,
     getPubCrawlSignups
 } from '@/server/actions/admin-kroegentocht.actions';
-import { Skeleton } from '@/components/ui/Skeleton';
-
 import EventSelector from '@/components/admin/kroegentocht/EventSelector';
 import SignupList from '@/components/admin/kroegentocht/SignupList';
 import { type PubCrawlEvent, type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
@@ -128,7 +126,7 @@ export default function KroegentochtManagementIsland({
                 backHref="/beheer"
                 actions={
                     isLoading ? (
-                        <Skeleton className="h-[var(--beheer-btn-height)] w-24" />
+                        <div className="h-[var(--beheer-btn-height)] w-24 bg-[var(--beheer-accent)]/20 rounded-[var(--beheer-radius)]" />
                     ) : (
                         <>
                             <AdminVisibilityToggle 
@@ -149,7 +147,7 @@ export default function KroegentochtManagementIsland({
                 }
             />
 
-            <div className={`container mx-auto px-4 py-8 max-w-7xl ${isLoading ? 'animate-pulse' : 'animate-in fade-in slide-in-from-bottom-4 duration-700'}`}>
+            <div className={`container mx-auto px-4 py-8 max-w-7xl ${isLoading ? 'skeleton-active' : 'animate-in fade-in slide-in-from-bottom-4 duration-700'}`}>
                 <AdminStatsBar stats={adminStats} isLoading={isLoading} />
 
             {/* Event Selector Section */}
@@ -157,7 +155,7 @@ export default function KroegentochtManagementIsland({
                 {isLoading ? (
                     <div className="flex flex-wrap gap-3">
                         {[...Array(3)].map((_, i) => (
-                            <Skeleton key={i} className="h-24 w-40 rounded-2xl" />
+                            <div key={i} className="h-24 w-40 rounded-2xl bg-[var(--beheer-card-bg)]" />
                         ))}
                     </div>
                 ) : (
@@ -174,11 +172,11 @@ export default function KroegentochtManagementIsland({
             {isLoading ? (
                 <div className="space-y-8">
                     <div className="flex items-center gap-4">
-                        <Skeleton className="h-8 w-8 rounded-full" />
-                        <Skeleton className="h-8 w-48" />
+                        <div className="h-8 w-8 rounded-full bg-[var(--beheer-accent)]/10" />
+                        <div className="h-8 w-48 bg-[var(--beheer-accent)]/10 rounded-md" />
                     </div>
                     {[...Array(2)].map((_, i) => (
-                        <Skeleton key={i} className="h-32 w-full rounded-2xl" />
+                        <div key={i} className="h-32 w-full rounded-2xl bg-[var(--beheer-card-bg)]" />
                     ))}
                 </div>
             ) : selectedEvent ? (

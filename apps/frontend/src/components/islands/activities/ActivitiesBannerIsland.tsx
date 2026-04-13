@@ -3,8 +3,6 @@
 import React, { useMemo } from 'react';
 import FlipClock from './FlipClock';
 import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
-import { Skeleton } from '@/components/ui/Skeleton';
-
 interface ActivitiesBannerIslandProps {
     events: Activiteit[];
     isLoading?: boolean;
@@ -43,14 +41,14 @@ export default function ActivitiesBannerIsland({ events, isLoading = false }: Ac
                 animate-pulse">
                 <div className="flex flex-col items-center gap-6">
                     <div className="space-y-3 flex flex-col items-center">
-                        <Skeleton className="h-4 w-32 bg-[var(--color-purple-500)]/10" rounded="full" />
-                        <Skeleton className="h-8 w-64 bg-[var(--color-purple-500)]/5" rounded="lg" />
+                        <div className="h-4 w-32 rounded-full skeleton-active opacity-10" />
+                        <div className="h-8 w-64 rounded-lg skeleton-active opacity-5" />
                     </div>
                     <div className="flex gap-4 sm:gap-6">
                         {[1, 2, 3, 4].map((i) => (
                             <div key={i} className="flex flex-col items-center gap-3">
-                                <Skeleton className="h-16 w-14 sm:h-20 sm:w-20 bg-[var(--color-purple-500)]/5" rounded="2xl" />
-                                <Skeleton className="h-3 w-8 bg-[var(--color-purple-500)]/10" rounded="full" />
+                                <div className="h-16 w-14 sm:h-20 sm:w-20 rounded-2xl skeleton-active opacity-5" />
+                                <div className="h-3 w-8 rounded-full skeleton-active opacity-10" />
                             </div>
                         ))}
                     </div>

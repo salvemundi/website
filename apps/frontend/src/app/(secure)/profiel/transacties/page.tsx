@@ -1,6 +1,5 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { TransactionsSkeleton } from '@/components/ui/account/TransactionsSkeleton';
 import { TransactionsIsland } from '@/components/islands/account/TransactionsIsland';
 import { getUserTransactions } from '@/server/actions/profiel.actions';
 
@@ -23,7 +22,7 @@ export default function TransactiesPage() {
 
             <main className="mx-auto max-w-app px-4 py-8">
                 {/* Granular PPR: Wrapping the transaction fetching in a suspense boundary */}
-                <Suspense fallback={<TransactionsSkeleton />}>
+                <Suspense fallback={<TransactionsIsland isLoading />}>
                     <TransactionsFetcher />
                 </Suspense>
             </main>

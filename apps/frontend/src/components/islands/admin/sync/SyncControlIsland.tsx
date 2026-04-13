@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { RefreshCw, X, Info } from 'lucide-react';
-import { Skeleton } from '@/components/ui/Skeleton';
 
 interface SyncControlIslandProps {
     isLoading?: boolean;

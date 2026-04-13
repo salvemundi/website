@@ -1,4 +1,3 @@
-import { Skeleton } from '@/components/ui/Skeleton';
 import { Search, Loader2, UserCheck, UserMinus } from 'lucide-react';
 
 interface LedenFiltersProps {
@@ -26,7 +25,7 @@ export default function LedenFilters({
                     <div className="h-10 w-28 bg-transparent rounded-lg m-0.5" />
                 </div>
                 <div className="relative flex-1 lg:w-96">
-                    <Skeleton className="w-full h-12 rounded-[var(--beheer-radius)]" />
+                    <div className="w-full h-12 rounded-[var(--beheer-radius)] skeleton-active" />
                 </div>
             </div>
         );
