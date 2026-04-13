@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import SyncLogs from '@/components/admin/sync/SyncLogs';
-import { Skeleton } from '@/components/ui/Skeleton';
 import { Info, Activity, AlertCircle, CheckCircle2, AlertTriangle, XCircle } from 'lucide-react';
 import { useSync } from './SyncContext';
 

@@ -16,7 +16,6 @@ import {
     Loader2 
 } from 'lucide-react';
 import type { Committee, CommitteeMember } from '@/server/queries/admin-vereniging.queries';
-import { Skeleton } from '@/components/ui/Skeleton';
 import { Input } from '@/shared/ui/Input';
 
 interface Props {
@@ -205,10 +204,10 @@ export default function CommitteeDetail({
                             {[1, 2, 3, 4].map(i => (
                                 <div key={i} className="flex items-center justify-between p-5 bg-[var(--beheer-card-bg)] rounded-3xl border border-[var(--beheer-border)] relative overflow-hidden">
                                      <div className="flex items-center gap-4 min-w-0">
-                                        <Skeleton className="h-12 w-12 shrink-0 rounded-2xl" />
+                                        <div className="h-12 w-12 shrink-0 rounded-2xl skeleton-active" />
                                         <div className="space-y-2">
-                                            <Skeleton className="h-3 w-32" />
-                                            <Skeleton className="h-2 w-24 opacity-50" />
+                                            <div className="h-3 w-32 skeleton-active" />
+                                            <div className="h-2 w-24 opacity-50 skeleton-active" />
                                         </div>
                                      </div>
                                 </div>

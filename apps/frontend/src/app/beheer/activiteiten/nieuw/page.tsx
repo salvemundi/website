@@ -4,8 +4,8 @@ import { headers } from 'next/headers';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
+import { AdminGenericLoading } from '@/components/ui/admin/AdminLoadingFallbacks';
 import ActiviteitNieuwIsland from '@/components/islands/admin/activities/ActiviteitNieuwIsland';
-import ActiviteitNieuwSkeleton from '@/components/ui/admin/activities/ActiviteitNieuwSkeleton';
 
 
 
@@ -70,7 +70,7 @@ export default async function ActivityCreatePage() {
 
     return (
         <main className="min-h-screen bg-[var(--bg-main)] pb-20">
-            <Suspense fallback={<ActiviteitNieuwSkeleton />}>
+            <Suspense fallback={<AdminGenericLoading />}>
                 <ActiviteitNieuwIsland committees={committees as any} />
             </Suspense>
         </main>

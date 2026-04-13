@@ -4,8 +4,6 @@ import { useMemo } from 'react';
 import { format } from 'date-fns';
 import { CreditCard, Clock, Tag, CheckCircle } from 'lucide-react';
 import type { Transaction } from '@salvemundi/validations/schema/profiel.zod';
-import { Skeleton } from '../../ui/Skeleton';
-
 interface TransactionsIslandProps {
     isLoading?: boolean;
     transactions?: Transaction[];
@@ -72,22 +70,22 @@ export const TransactionsIsland: React.FC<TransactionsIslandProps> = ({ isLoadin
                                 [1, 2, 3, 4, 5].map((i) => (
                                     <tr key={i}>
                                         <td className="px-4 py-6">
-                                            <Skeleton className="h-4 w-28 bg-[var(--color-purple-500)]/10" rounded="sm" />
+                                            <div className="h-4 w-28 bg-[var(--color-purple-500)]/10 rounded-sm skeleton-active" />
                                         </td>
                                         <td className="px-4 py-6">
                                             <div className="space-y-2">
-                                                <Skeleton className="h-4 w-40 bg-[var(--color-purple-500)]/10" rounded="sm" />
-                                                <Skeleton className="h-3 w-20 bg-[var(--color-purple-500)]/5" rounded="full" />
+                                                <div className="h-4 w-40 bg-[var(--color-purple-500)]/10 rounded-sm skeleton-active" />
+                                                <div className="h-3 w-20 bg-[var(--color-purple-500)]/5 rounded-full skeleton-active" />
                                             </div>
                                         </td>
                                         <td className="px-4 py-6">
-                                            <Skeleton className="h-6 w-16 bg-[var(--color-purple-500)]/5" rounded="full" />
+                                            <div className="h-6 w-16 bg-[var(--color-purple-500)]/5 rounded-full skeleton-active" />
                                         </td>
                                         <td className="px-4 py-6 flex justify-center">
-                                            <Skeleton className="h-7 w-24 bg-green-500/10" rounded="full" />
+                                            <div className="h-7 w-24 bg-green-500/10 rounded-full skeleton-active" />
                                         </td>
                                         <td className="px-4 py-6 text-right">
-                                            <Skeleton className="h-4 w-16 ml-auto bg-[var(--color-purple-500)]/10" rounded="sm" />
+                                            <div className="h-4 w-16 ml-auto bg-[var(--color-purple-500)]/10 rounded-sm skeleton-active" />
                                         </td>
                                     </tr>
                                 ))

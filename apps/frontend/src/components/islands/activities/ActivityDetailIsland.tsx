@@ -6,8 +6,6 @@ import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 import { type Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { buildCommitteeEmail, formatDutchDate, formatTime } from '@/shared/lib/activity-utils';
 import { getImageUrl } from '@/lib/utils/image-utils';
-import { Skeleton } from '@/components/ui/Skeleton';
-
 interface ActivityDetailIslandProps {
     isLoading?: boolean;
     activity?: Activiteit;

@@ -1,7 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
-import { Skeleton } from '@/components/ui/Skeleton';
 
 interface AdminToolbarProps {
     isLoading?: boolean;
@@ -36,11 +35,11 @@ export default function AdminToolbar({
                                 <ChevronLeft className="h-5 w-5" />
                             </Link>
                         )}
-                        <div>
+                        <div className={isLoading ? 'skeleton-active min-w-[200px]' : ''}>
                             {isLoading ? (
                                 <div className="space-y-3">
-                                    <Skeleton className="h-8 w-64" />
-                                    <Skeleton className="h-3 w-48 opacity-50" />
+                                    <div className="h-8 w-64 bg-[var(--beheer-border)] rounded-lg" />
+                                    <div className="h-3 w-48 bg-[var(--beheer-border)] rounded opacity-50" />
                                 </div>
                             ) : (
                                 <>

@@ -3,7 +3,6 @@
 import React from 'react';
 import { ChevronRight, CreditCard, MessageCircle, Shield } from 'lucide-react';
 import { Tile, QuickLink } from './ProfielUI';
-import { Skeleton } from '../../../ui/Skeleton';
 
 interface ProfielQuickLinksProps {
     isLoading?: boolean;

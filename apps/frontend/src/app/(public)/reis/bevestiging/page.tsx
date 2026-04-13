@@ -13,46 +13,50 @@ interface PageProps {
     searchParams: Promise<{ id?: string; t?: string }>;
 }
 
+import PublicPageShell from '@/components/ui/layout/PublicPageShell';
+
 export default async function TripConfirmationPage({ searchParams }: PageProps) {
     const params = await searchParams;
     const token = params.t; 
 
     if (!token) {
         return (
-            <main className="min-h-screen bg-[var(--bg-main)] flex items-center justify-center p-6">
-                <div className="max-w-md w-full p-12 bg-white/5 border border-white/5 rounded-3xl text-center">
-                    <h1 className="text-2xl font-black text-white uppercase italic mb-4">Ongeldige Status</h1>
-                    <p className="text-gray-400 mb-8">We kunnen de status van je betaling niet verifiëren zonder een geldige transactie- of token-ID.</p>
-                    <a href="/reis" className="inline-block px-8 py-4 bg-white text-black font-bold rounded-2xl">
-                        Terug naar Reizen
-                    </a>
-                </div>
-            </main>
+            <PublicPageShell title="Bevestiging" hideHeader={true}>
+                <main className="min-h-[70vh] flex items-center justify-center p-6">
+                    <div className="max-w-md w-full p-12 bg-[var(--bg-card)] border border-[var(--beheer-border)] rounded-3xl text-center shadow-xl animate-in fade-in zoom-in duration-500">
+                        <XCircle className="w-16 h-16 text-red-500 mx-auto mb-6" />
+                        <h1 className="text-2xl font-black text-white uppercase italic mb-4 tracking-tighter">Ongeldige Status</h1>
+                        <p className="text-[var(--text-muted)] mb-8 leading-relaxed">We kunnen de status van je betaling niet verifiëren zonder een geldige transactie- of token-ID.</p>
+                        <a href="/reis" className="inline-block px-8 py-4 bg-white text-black font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-[var(--color-purple-theme)] hover:text-white transition-all">
+                            Terug naar Reizen
+                        </a>
+                    </div>
+                </main>
+            </PublicPageShell>
         );
     }
 
-    // Server-side check for immediate success
     const statusRes = await getPaymentStatusAction(token);
     const isPaid = statusRes.success && statusRes.payment_status === 'paid';
 
     return (
-        <main className="min-h-screen bg-[var(--bg-main)]">
-            <div className="container mx-auto px-4 py-32 max-w-2xl">
+        <PublicPageShell title="Betaling Status" hideHeader={true}>
+            <div className="container mx-auto px-4 py-32 max-w-2xl min-h-[80vh] flex items-center justify-center">
                 {isPaid ? (
-                    <div className="flex flex-col items-center justify-center text-center p-12 bg-white/5 border border-white/5 rounded-3xl backdrop-blur-xl animate-in fade-in zoom-in duration-500">
+                    <div className="flex flex-col items-center justify-center text-center p-12 bg-[var(--bg-card)] border border-[var(--beheer-border)] rounded-3xl backdrop-blur-xl animate-in fade-in zoom-in duration-700 shadow-2xl">
                         <div className="relative mb-8">
                             <div className="absolute inset-0 bg-green-500/20 blur-3xl rounded-full" />
                             <CheckCircle2 className="w-20 h-20 text-green-500 relative z-10 mx-auto" />
                         </div>
-                        <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter italic mb-4">
+                        <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter mb-4">
                             Betaling Geslaagd!
                         </h2>
-                        <p className="text-gray-400 max-w-sm mx-auto leading-relaxed mb-10">
+                        <p className="text-[var(--text-muted)] max-w-sm mx-auto leading-relaxed mb-10">
                             Je betaling is succesvol verwerkt. Je ontvangt binnen enkele minuten een bevestiging in je e-mail.
                         </p>
                         <a 
                             href="/reis"
-                            className="px-10 py-5 rounded-2xl bg-white text-black font-black uppercase tracking-widest text-sm hover:bg-green-500 hover:text-white transition-all shadow-2xl shadow-green-500/10 flex items-center gap-2 mx-auto"
+                            className="px-10 py-5 rounded-2xl bg-white text-black font-black uppercase tracking-widest text-xs hover:bg-green-500 hover:text-white transition-all shadow-2xl shadow-green-500/10 flex items-center gap-2 mx-auto"
                         >
                             Terug naar Reizen
                             <ChevronRight className="w-5 h-5" />
@@ -60,15 +64,15 @@ export default async function TripConfirmationPage({ searchParams }: PageProps) 
                     </div>
                 ) : (
                     <Suspense fallback={
-                        <div className="flex flex-col items-center justify-center py-20">
-                            <Loader2 className="w-12 h-12 text-orange-500 animate-spin mb-4" />
-                            <p className="text-xs font-black uppercase tracking-widest text-gray-500">Status voorbereiden...</p>
+                        <div className="flex flex-col items-center justify-center py-20 animate-in fade-in duration-1000">
+                            <Loader2 className="w-12 h-12 text-[var(--color-purple-theme)] animate-spin mb-6" />
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Status verifiëren...</p>
                         </div>
                     }>
                         <PaymentStatusIsland mollieId={token} />
                     </Suspense>
                 )}
             </div>
-        </main>
+        </PublicPageShell>
     );
 }

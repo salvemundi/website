@@ -5,7 +5,6 @@ import { Mail, Phone, Calendar, Edit2, Save, Loader2, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { Tile, formatForBreak } from './ProfielUI';
-import { Skeleton } from '../../../ui/Skeleton';
 
 interface ProfielDetailsProps {
     isLoading?: boolean;

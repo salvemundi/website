@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
-import { Skeleton } from '@/components/ui/Skeleton';
 import { getDocumenten } from '@/server/actions/website.actions';
 import DocumentenLijst from '@/components/ui/social/DocumentenLijst';
 import SafeHavenButton from '@/components/islands/social/SafeHavenButton';
@@ -9,13 +8,12 @@ import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 
 /**
  * Skeleton voor de documentenlijst om layout shift (CLS) te voorkomen.
- * Mimickt de uiteindelijke lijstweergave.
  */
 function DocumentenSkeleton() {
     return (
-        <div className="space-y-4 ml-14" aria-hidden="true">
+        <div className="space-y-4 ml-14 skeleton-active" aria-hidden="true">
             {[1, 2].map((i) => (
-                <Skeleton key={i} className="h-5 w-3/4 bg-slate-200 dark:bg-slate-800/40" rounded="md" />
+                <div key={i} className="h-5 w-3/4 bg-[var(--border-color)]/20 rounded-md" />
             ))}
         </div>
     );

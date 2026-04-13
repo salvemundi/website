@@ -16,8 +16,6 @@ interface Props {
     isLoading?: boolean;
 }
 
-import { Skeleton } from '@/components/ui/Skeleton';
-
 export default function ActivityFilters({
     searchQuery,
     onSearchChange,
@@ -33,10 +31,10 @@ export default function ActivityFilters({
     if (isLoading) {
         return (
             <div className="flex flex-col xl:flex-row gap-4 mb-10 items-stretch xl:items-center animate-pulse">
-                <Skeleton className="flex-1 h-14 rounded-[var(--beheer-radius)]" />
+                <div className="flex-1 h-14 rounded-[var(--beheer-radius)] skeleton-active" />
                 <div className="flex flex-wrap md:flex-nowrap items-center gap-4">
-                    <Skeleton className="h-12 w-48 rounded-[var(--beheer-radius)]" />
-                    <Skeleton className="h-12 w-40 rounded-[var(--beheer-radius)]" />
+                    <div className="h-12 w-48 rounded-[var(--beheer-radius)] skeleton-active" />
+                    <div className="h-12 w-40 rounded-[var(--beheer-radius)] skeleton-active" />
                     <div className="h-12 w-64 bg-[var(--beheer-card-soft)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)]" />
                 </div>
             </div>

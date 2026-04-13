@@ -1,7 +1,6 @@
 import React from 'react';
 import { type Activity } from '@salvemundi/validations/schema/activity.zod';
 import { Calendar, Clock, MapPin, Tag } from 'lucide-react';
-import { Skeleton } from '../Skeleton';
 import Link from 'next/link';
 import { formatDate } from '@/shared/lib/utils/date';
 
@@ -34,14 +33,14 @@ export const EventCard: React.FC<EventCardProps> = ({
     // Skeleton-state: render exact dezelfde afmetingen
     if (isLoading) {
         return (
-            <div className="flex flex-col gap-4 rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-6 shadow-lg backdrop-blur-sm border border-[var(--border-color)]/10 h-full min-h-[160px]" aria-busy="true">
-                <Skeleton className="h-3 w-16 bg-[var(--color-purple-500)]/20" rounded="full" />
+            <div className="flex flex-col gap-4 rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-6 shadow-lg backdrop-blur-sm border border-[var(--border-color)]/10 h-full min-h-[160px] skeleton-active" aria-busy="true">
+                <div className="h-3 w-16 bg-[var(--color-purple-500)]/20 rounded-full" />
                 <div className="space-y-2">
-                    <Skeleton className="h-5 w-full bg-[var(--color-purple-500)]/10" rounded="md" />
-                    <Skeleton className="h-5 w-2/3 bg-[var(--color-purple-500)]/10" rounded="md" />
+                    <div className="h-5 w-full bg-[var(--color-purple-500)]/10 rounded-md" />
+                    <div className="h-5 w-2/3 bg-[var(--color-purple-500)]/10 rounded-md" />
                 </div>
                 <div className="mt-auto pt-4 flex gap-3">
-                    <Skeleton className="h-3 w-20 bg-[var(--color-purple-500)]/10" rounded="full" />
+                    <div className="h-3 w-20 bg-[var(--color-purple-500)]/10 rounded-full" />
                 </div>
             </div>
         );

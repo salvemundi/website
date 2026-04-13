@@ -1,20 +1,20 @@
 import React, { Suspense } from 'react';
-import PageHeader from '@/components/ui/layout/PageHeader';
 import { getReisSiteSettings, getUpcomingTrips, getUserTripSignup, getTripParticipantsCount } from '@/server/actions/reis.actions';
 import { ReisFormIsland } from '@/components/islands/reis/ReisFormIsland';
 import { ReisInfoIsland } from '@/components/islands/reis/ReisInfoIsland';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import Link from 'next/link';
-import { getImageUrl } from '@/lib/utils/image-utils';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { getCurrentUserProfileAction } from '@/server/actions/reis.actions';
+import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 
-export const dynamic = 'force-dynamic';
+export const metadata = {
+    title: 'Reis | Salve Mundi',
+    description: 'Schrijf je in voor de jaarlijkse reis van Salve Mundi! Een onvergetelijke ervaring.',
+};
 
-export default async function ReisPage() {
-    // 1. Fetch data on the server
+async function ReisDataLoader() {
     const [trips, siteSettings] = await Promise.all([
         getUpcomingTrips(),
         getReisSiteSettings()
@@ -28,9 +28,7 @@ export default async function ReisPage() {
     let userSignup = null;
     let currentUserProfile = null;
 
-    // 2. Fetch User & Signup status
-    const sessionHeaders = await headers();
-    const session = await auth.api.getSession({ headers: sessionHeaders });
+    const session = await auth.api.getSession({ headers: await headers() });
     
     if (nextTrip) {
         const promises: [Promise<number>, Promise<any>, Promise<any>?] = [
@@ -49,15 +47,9 @@ export default async function ReisPage() {
         currentUserProfile = profileResult?.success ? profileResult.data : session?.user;
     }
 
-    // 2. Logic for registration availability (Calculated on Server)
     const registrationStartDate = nextTrip?.registration_start_date ? new Date(nextTrip.registration_start_date) : null;
     const now = new Date();
-    
-    // Default to true if no date is set, so the toggle works immediately
     const isRegistrationDateReached = registrationStartDate ? now >= registrationStartDate : true;
-    
-    // canSignUp is true ONLY if the global switch (isReisEnabled), the trip switch (registration_open), 
-    // AND the start date are ALL satisfied.
     const canSignUp = Boolean(isReisEnabled && nextTrip && nextTrip.registration_open && isRegistrationDateReached);
 
     const registrationStartText = !isReisEnabled 
@@ -69,62 +61,37 @@ export default async function ReisPage() {
                 : 'Inschrijving tijdelijk niet beschikbaar'));
 
     return (
-        <>
-            <ReisHeader tripImage={nextTrip?.image} />
-            <main className="relative overflow-hidden bg-background">
-                <div className="mx-auto max-w-app px-4 py-8 sm:py-10 md:py-12">
-                    <div className="flex flex-col lg:flex-row gap-8 items-start">
-                        <Suspense fallback={
-                            <ReisFormIsland 
-                                isLoading 
-                                isSignedUp={!!userSignup}
-                                isReisDisabled={!isReisEnabled}
-                                nextTrip={null} 
-                                userSignup={null} 
-                                canSignUp={false} 
-                                registrationStartText="" 
-                                participantsCount={0} 
-                            />
-                        }>
-                            <ReisFormIsland
-                                nextTrip={nextTrip}
-                                userSignup={userSignup}
-                                canSignUp={canSignUp}
-                                registrationStartText={registrationStartText}
-                                participantsCount={participantsCount}
-                                initialUser={currentUserProfile}
-                            />
-                        </Suspense>
-
-                        <Suspense fallback={<ReisInfoIsland isLoading nextTrip={null} />}>
-                            <ReisInfoIsland nextTrip={nextTrip} />
-                        </Suspense>
-                    </div>
-                </div>
-            </main>
-        </>
+        <div className="flex flex-col lg:flex-row gap-8 items-start animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <ReisFormIsland
+                nextTrip={nextTrip}
+                userSignup={userSignup}
+                canSignUp={canSignUp}
+                registrationStartText={registrationStartText}
+                participantsCount={participantsCount}
+                initialUser={currentUserProfile}
+            />
+            <ReisInfoIsland nextTrip={nextTrip} />
+        </div>
     );
 }
 
-function ReisHeader({ tripImage, isLoading = false }: { tripImage?: string | null; isLoading?: boolean }) {
+export default async function ReisPage() {
     return (
-        <div className="flex flex-col w-full">
-            <PageHeader
-                title="SALVE MUNDI REIS"
-                backgroundImage={getImageUrl(tripImage)}
-                contentPadding="py-20"
-                imageFilter="brightness(0.65)"
-                isLoading={isLoading}
-            >
-                {!isLoading && (
-                    <div className="flex flex-col items-center">
-                        <p className="max-w-3xl mt-4 text-lg font-medium text-[var(--theme-purple)] dark:text-white drop-shadow-sm sm:text-xl text-center">
-                            Schrijf je in voor de jaarlijkse reis van Salve Mundi! Een onvergetelijke ervaring vol gezelligheid en avontuur.
-                        </p>
-                    </div>
-                )}
-            </PageHeader>
-        </div>
+        <PublicPageShell
+            title="SALVE MUNDI REIS"
+            description="Schrijf je in voor de jaarlijkse reis van Salve Mundi! Een onvergetelijke ervaring vol gezelligheid en avontuur."
+            backgroundImage="/img/backgrounds/reis-banner.jpg" 
+            fallback={
+                <div className="flex flex-col lg:flex-row gap-8 items-start animate-pulse">
+                    <div className="w-full lg:w-3/5 h-[500px] bg-[var(--bg-card)] rounded-3xl skeleton-active" />
+                    <div className="w-full lg:w-2/5 h-[400px] bg-[var(--bg-card)] rounded-3xl skeleton-active" />
+                </div>
+            }
+        >
+            <main className="mx-auto max-w-app px-4 py-8 sm:py-10 md:py-12">
+                <ReisDataLoader />
+            </main>
+        </PublicPageShell>
     );
 }
 

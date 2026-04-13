@@ -7,9 +7,9 @@ import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ActiviteitAanmeldingenIsland from '@/components/islands/admin/activities/ActiviteitAanmeldingenIsland';
-import AanmeldingenListSkeleton from '@/components/ui/admin/activities/AanmeldingenListSkeleton';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItem } from '@directus/sdk';
+import { AdminGenericLoading } from '@/components/ui/admin/AdminLoadingFallbacks';
 import { 
     getActivitySignupsInternal 
 } from '@/server/queries/admin-event.queries';
@@ -29,7 +29,7 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
 
     return (
         <main className="min-h-screen bg-[var(--bg-main)]">
-            <Suspense fallback={<AanmeldingenListSkeleton />}>
+            <Suspense fallback={<AdminGenericLoading />}>
                 <SignupsDataLoader id={resolvedParams.id} session={session} />
             </Suspense>
         </main>

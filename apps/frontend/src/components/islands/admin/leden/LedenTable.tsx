@@ -8,8 +8,6 @@ import {
     ChevronRight
 } from 'lucide-react';
 
-import { Skeleton } from '@/components/ui/Skeleton';
-
 interface Member {
     id: string;
     first_name: string;
@@ -54,21 +52,21 @@ export default function LedenTable({
                                 <tr key={i}>
                                     <td className="px-8 py-5">
                                         <div className="flex items-center gap-4">
-                                            <Skeleton className="h-10 w-10 shrink-0 rounded-2xl" />
+                                            <div className="h-10 w-10 shrink-0 rounded-2xl skeleton-active" />
                                             <div className="space-y-2">
-                                                <Skeleton className="h-4 w-32" />
-                                                <Skeleton className="h-3 w-20 opacity-50" />
+                                                <div className="h-4 w-32 skeleton-active" />
+                                                <div className="h-3 w-20 opacity-50 skeleton-active" />
                                             </div>
                                         </div>
                                     </td>
                                     <td className="px-8 py-5">
-                                        <Skeleton className="h-4 w-40 opacity-50" />
+                                        <div className="h-4 w-40 opacity-50 skeleton-active" />
                                     </td>
                                     <td className="px-8 py-5">
-                                        <Skeleton className="h-6 w-24 rounded-full" />
+                                        <div className="h-6 w-24 rounded-full skeleton-active" />
                                     </td>
                                     <td className="px-8 py-5 text-right">
-                                        <Skeleton className="h-8 w-8 rounded-xl ml-auto" />
+                                        <div className="h-8 w-8 rounded-xl ml-auto skeleton-active" />
                                     </td>
                                 </tr>
                             ))

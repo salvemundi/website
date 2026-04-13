@@ -11,8 +11,6 @@ import { Input } from '@/shared/ui/Input';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { Loader2, CheckCircle2, AlertCircle, CreditCard, Send, Users, Ticket, Info } from 'lucide-react';
 import QRDisplay from '@/shared/ui/QRDisplay';
-import { Skeleton } from '@/components/ui/Skeleton';
-
 interface EventSignupIslandProps {
     isLoading?: boolean;
     isMember?: boolean;

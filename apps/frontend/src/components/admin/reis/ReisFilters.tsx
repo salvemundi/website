@@ -15,8 +15,6 @@ interface ReisFiltersProps {
     isLoading?: boolean;
 }
 
-import { Skeleton } from '@/components/ui/Skeleton';
-
 export default function ReisFilters({
     searchQuery,
     onSearchChange,
@@ -35,14 +33,14 @@ export default function ReisFilters({
             <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm p-4 sm:p-6 mb-6 border border-[var(--beheer-border)] animate-pulse">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4">
                     <div className="md:col-span-2">
-                        <Skeleton className="w-full h-10 rounded-[var(--beheer-radius)]" />
+                        <div className="w-full h-10 rounded-[var(--beheer-radius)] bg-[var(--beheer-text-muted)]/10 skeleton-active" />
                     </div>
-                    <Skeleton className="w-full h-10 rounded-[var(--beheer-radius)]" />
-                    <Skeleton className="w-full h-10 rounded-[var(--beheer-radius)]" />
+                    <div className="w-full h-10 rounded-[var(--beheer-radius)] bg-[var(--beheer-text-muted)]/10 skeleton-active" />
+                    <div className="w-full h-10 rounded-[var(--beheer-radius)] bg-[var(--beheer-text-muted)]/10 skeleton-active" />
                 </div>
                 <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mt-6">
-                    <Skeleton className="h-10 w-40 rounded-[var(--beheer-radius)]" />
-                    <Skeleton className="h-10 w-40 rounded-[var(--beheer-radius)]" />
+                    <div className="h-10 w-40 rounded-[var(--beheer-radius)] bg-[var(--beheer-text-muted)]/10 skeleton-active" />
+                    <div className="h-10 w-40 rounded-[var(--beheer-radius)] bg-[var(--beheer-text-muted)]/10 skeleton-active" />
                 </div>
             </div>
         );

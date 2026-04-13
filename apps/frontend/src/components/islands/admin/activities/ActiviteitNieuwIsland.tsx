@@ -15,8 +15,6 @@ import { createActivityAction } from '@/server/actions/activiteiten.actions';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
-import { Skeleton } from '@/components/ui/Skeleton';
-
 // Clean committee names (removed || SV Salve Mundi and other suffixes)
 function cleanCommitteeName(name: string): string {
     return name?.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim() || '';
@@ -110,23 +108,23 @@ export default function ActiviteitNieuwIsland({
             <div className="container mx-auto px-4 py-12 max-w-5xl">
                 {isLoading ? (
                     <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-2xl overflow-hidden border border-[var(--beheer-border)] animate-pulse">
-                        <Skeleton className="h-64 sm:h-80 w-full mb-8" />
+                        <div className="h-64 sm:h-80 w-full mb-8 skeleton-active" />
                         <div className="p-8 sm:p-12 space-y-12">
                             <div className="space-y-4">
-                                <Skeleton className="h-4 w-32" />
-                                <Skeleton className="h-14 w-full rounded-xl" />
+                                <div className="h-4 w-32 skeleton-active" />
+                                <div className="h-14 w-full rounded-xl skeleton-active" />
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <Skeleton className="h-40 w-full rounded-xl" />
-                                <Skeleton className="h-40 w-full rounded-xl" />
+                                <div className="h-40 w-full rounded-xl skeleton-active" />
+                                <div className="h-40 w-full rounded-xl skeleton-active" />
                             </div>
                             <div className="grid grid-cols-2 gap-6">
-                                <Skeleton className="h-14 w-full rounded-xl" />
-                                <Skeleton className="h-14 w-full rounded-xl" />
+                                <div className="h-14 w-full rounded-xl skeleton-active" />
+                                <div className="h-14 w-full rounded-xl skeleton-active" />
                             </div>
                             <div className="flex justify-end gap-4">
-                                <Skeleton className="h-14 w-32 rounded-xl" />
-                                <Skeleton className="h-14 w-48 rounded-xl" />
+                                <div className="h-14 w-32 rounded-xl skeleton-active" />
+                                <div className="h-14 w-48 rounded-xl skeleton-active" />
                             </div>
                         </div>
                     </div>

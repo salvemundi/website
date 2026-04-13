@@ -1,7 +1,6 @@
 import React from 'react';
 import { Info, Calendar, Clock, MapPin, Users, Mail, ShieldAlert } from 'lucide-react';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
-import { Skeleton } from '../Skeleton';
 
 interface KroegentochtInfoProps {
     isLoading?: boolean;
@@ -18,14 +17,14 @@ export function KroegentochtInfo({
 }: KroegentochtInfoProps) {
     if (isLoading) {
         return (
-            <div className="w-full flex flex-col gap-6" aria-busy="true">
+            <div className="w-full flex flex-col gap-6 skeleton-active" aria-busy="true">
                 {[1, 2, 3].map((i) => (
                     <div key={i} className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-lg">
-                        <Skeleton className="h-7 w-48 mb-6 bg-[var(--color-purple-theme)]/10" rounded="lg" />
+                        <div className="h-7 w-48 mb-6 bg-[var(--color-purple-theme)]/10 rounded-lg" />
                         <div className="space-y-3">
-                            <Skeleton className="h-4 w-full bg-[var(--color-purple-theme)]/5" rounded="md" />
-                            <Skeleton className="h-4 w-5/6 bg-[var(--color-purple-theme)]/5" rounded="md" />
-                            <Skeleton className="h-4 w-4/6 bg-[var(--color-purple-theme)]/5" rounded="md" />
+                            <div className="h-4 w-full bg-[var(--color-purple-theme)]/5 rounded-md" />
+                            <div className="h-4 w-5/6 bg-[var(--color-purple-theme)]/5 rounded-md" />
+                            <div className="h-4 w-4/6 bg-[var(--color-purple-theme)]/5 rounded-md" />
                         </div>
                     </div>
                 ))}

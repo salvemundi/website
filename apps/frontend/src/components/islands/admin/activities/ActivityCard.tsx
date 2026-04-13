@@ -49,8 +49,6 @@ interface Props {
     isLoading?: boolean;
 }
 
-import { Skeleton } from '@/components/ui/Skeleton';
-
 export default function ActivityCard({
     event,
     canEdit = false,
@@ -69,26 +67,26 @@ export default function ActivityCard({
                 <div className="flex flex-col lg:flex-row gap-8">
                     <div className="flex-1 min-w-0">
                         <div className="flex items-start gap-6 mb-6">
-                            <Skeleton className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 rounded-[var(--radius-2xl)] shrink-0" />
+                            <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 rounded-[var(--radius-2xl)] shrink-0 skeleton-active" />
                             <div className="flex-1 space-y-3 pt-1">
-                                <Skeleton className="h-8 w-1/2" />
+                                <div className="h-8 w-1/2 skeleton-active" />
                                 <div className="flex gap-4">
-                                    <Skeleton className="h-4 w-32 opacity-50" />
-                                    <Skeleton className="h-4 w-40 opacity-30" />
+                                    <div className="h-4 w-32 opacity-50 skeleton-active" />
+                                    <div className="h-4 w-40 opacity-30 skeleton-active" />
                                 </div>
                             </div>
                         </div>
-                        <Skeleton className="h-4 w-3/4 mb-8 opacity-40" />
+                        <div className="h-4 w-3/4 mb-8 opacity-40 skeleton-active" />
                         <div className="flex gap-4">
-                            <Skeleton className="h-10 w-40 rounded-2xl" />
-                            <Skeleton className="h-10 w-40 rounded-2xl" />
+                            <div className="h-10 w-40 rounded-2xl skeleton-active" />
+                            <div className="h-10 w-40 rounded-2xl skeleton-active" />
                         </div>
                     </div>
                     <div className="flex flex-row lg:flex-col gap-3 justify-end items-stretch lg:w-48 pt-6 lg:pt-0 border-t lg:border-t-0 border-[var(--beheer-border)]">
-                        <Skeleton className="h-12 w-full rounded-2xl" />
+                        <div className="h-12 w-full rounded-2xl skeleton-active" />
                         <div className="flex gap-3">
-                            <Skeleton className="h-12 flex-1 rounded-2xl" />
-                            <Skeleton className="h-12 flex-1 rounded-2xl" />
+                            <div className="h-12 flex-1 rounded-2xl skeleton-active" />
+                            <div className="h-12 flex-1 rounded-2xl skeleton-active" />
                         </div>
                     </div>
                 </div>
