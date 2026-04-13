@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import SyncLogs from '@/components/admin/sync/SyncLogs';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { Info, Activity } from 'lucide-react';
+import { Info, Activity, AlertCircle } from 'lucide-react';
 
 interface SyncMonitorIslandProps {
     isLoading?: boolean;
@@ -16,6 +16,7 @@ interface SyncMonitorIslandProps {
 
 export default function SyncMonitorIsland({ isLoading, status, progress, lastUpdated, resultFilter, setResultFilter }: SyncMonitorIslandProps) {
     const [mounted, setMounted] = useState(false);
+    const [showStack, setShowStack] = useState(false);
 
     useEffect(() => {
         setMounted(true);
@@ -60,6 +61,41 @@ export default function SyncMonitorIsland({ isLoading, status, progress, lastUpd
                     ))}
                 </div>
             </div>
+            
+            {status?.fatalError && (
+                <div className="mb-8 p-6 bg-red-50 border border-red-100 rounded-3xl animate-in slide-in-from-top duration-500">
+                    <div className="flex items-start gap-4">
+                        <div className="p-2 bg-red-100 rounded-xl text-red-600">
+                            <AlertCircle className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <h4 className="text-sm font-black text-red-900 uppercase tracking-tight">Kritieke Fout Gedetecteerd</h4>
+                            <p className="text-xs font-black text-red-700/80 uppercase tracking-widest mt-1">
+                                {status.fatalError.message}
+                            </p>
+                            
+                            {status.fatalError.stack && (
+                                <div className="mt-4">
+                                    <button 
+                                        onClick={() => setShowStack(!showStack)}
+                                        className="text-[9px] font-black uppercase tracking-widest text-red-600 hover:text-red-800 transition-colors flex items-center gap-1"
+                                    >
+                                        {showStack ? 'Verberg details' : 'Bekijk technische details (Stack Trace)'}
+                                    </button>
+                                    
+                                    {showStack && (
+                                        <div className="mt-3 p-4 bg-red-900/5 rounded-2xl border border-red-900/10 overflow-x-auto custom-scrollbar">
+                                            <pre className="text-[10px] text-red-900/70 font-mono leading-relaxed">
+                                                {status.fatalError.stack}
+                                            </pre>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="space-y-6">
                 <div>

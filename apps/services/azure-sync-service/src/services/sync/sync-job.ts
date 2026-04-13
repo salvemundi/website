@@ -137,7 +137,12 @@ export class SyncJob {
                             status.processed++;
                         } catch (err: any) {
                             status.errorCount++; status.processed++;
-                            status.errors.push({ email, message: err.message, timestamp: new Date().toISOString() });
+                            status.errors.push({ 
+                                email, 
+                                message: err.message, 
+                                timestamp: new Date().toISOString(),
+                                stack: err.stack
+                            });
                         }
                     }
                 }));
@@ -163,6 +168,7 @@ export class SyncJob {
             console.error(`[SYNC] [${jobId}] Fatal error:`, error);
             const currentStatus = await getSyncStatus(redis);
             currentStatus.active = false; currentStatus.status = 'failed'; currentStatus.endTime = new Date().toISOString();
+            currentStatus.fatalError = { message: error.message, stack: error.stack };
             await persistSyncStatus(redis, currentStatus);
         }
     }
@@ -243,7 +249,13 @@ export class SyncJob {
             await persistSyncStatus(redis, status, true);
         } catch (error: any) {
             status.active = false; status.status = 'failed'; status.endTime = new Date().toISOString(); status.errorCount = 1;
-            status.errors.push({ email: aUser.mail || aUser.userPrincipalName, message: error.message, timestamp: new Date().toISOString() });
+            status.errors.push({ 
+                email: aUser.mail || aUser.userPrincipalName, 
+                message: error.message, 
+                timestamp: new Date().toISOString(),
+                stack: error.stack 
+            });
+            status.fatalError = { message: error.message, stack: error.stack };
             await persistSyncStatus(redis, status, true);
             throw error;
         }

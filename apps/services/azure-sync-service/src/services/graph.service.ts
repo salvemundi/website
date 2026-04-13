@@ -102,10 +102,18 @@ export class GraphService {
     }
 
     static async getGroupOwners(groupId: string, token: string): Promise<string[]> {
-        const response = await this.getClient(token).api(`/groups/${groupId}/owners`)
-            .select('id')
-            .get();
-        return (response.value || []).map((o: any) => o.id);
+        try {
+            const response = await this.getClient(token).api(`/groups/${groupId}/owners`)
+                .select('id')
+                .get();
+            return (response.value || []).map((o: any) => o.id);
+        } catch (err: any) {
+            if (err.statusCode === 403 || err.message?.includes('Insufficient privileges')) {
+                console.warn(`[GraphService] Insufficient privileges to read owners of group ${groupId}. Returning empty list.`);
+                return [];
+            }
+            throw err;
+        }
     }
 
     /**
@@ -138,6 +146,13 @@ export class GraphService {
             for (const id of batchIds) {
                 const membersRes = batchResponse.responses.find((r: any) => r.id === `${id}-members`);
                 const ownersRes = batchResponse.responses.find((r: any) => r.id === `${id}-owners`);
+
+                if (membersRes?.status === 403) {
+                    console.warn(`[GraphService] Batch: Insufficient privileges to read members for group ${id}`);
+                }
+                if (ownersRes?.status === 403) {
+                    console.warn(`[GraphService] Batch: Insufficient privileges to read owners for group ${id}`);
+                }
 
                 result.set(id, {
                     members: (membersRes?.body?.value || []).map((m: any) => m.id),

@@ -14,7 +14,7 @@ export interface SyncStatus {
     createdCount: number;
     movedActiveCount: number;
     movedExpiredCount: number;
-    errors: { email: string; message: string; timestamp: string }[];
+    errors: { email: string; message: string; timestamp: string; stack?: string }[];
     warnings: { email: string; message: string }[];
     missingData: { email: string; reason: string }[];
     successfulUsers: { email: string }[];
@@ -24,6 +24,7 @@ export interface SyncStatus {
     endTime?: string;
     lastHeartbeat?: string;
     abortRequested?: boolean;
+    fatalError?: { message: string; stack?: string };
 }
 
 export interface SyncOptions {
