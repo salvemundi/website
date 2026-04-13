@@ -1,26 +1,33 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import LoadingSpinner from './LoadingSpinner';
+import LoadingSpinner from '@/components/ui/layout/LoadingSpinner';
 
 /**
- * RootLoadingState - The Single Source of Truth for loading in Salve Mundi V7.
- * V7.12 "Global Lockdown" SSR Architecture.
- * This component is used as a manual Suspense fallback in layout.tsx to ensure
- * that the entire UI (including Header/Footer) is replaced by the loader.
+ * Root Loading (SSOT) - Salve Mundi V7 Industrial Architecture.
+ * 
+ * Zone 1: 0ms - 200ms  -> Pure Silence (Feels instant)
+ * Zone 2: 200ms - 3s   -> Premium Spinner
+ * Zone 3: > 3s         -> Spinner + ICT Warning
  */
-export default function RootLoadingState() {
-    const [isLongLoad, setIsLongLoad] = useState(false);
+export default function GlobalLoading() {
+    const [status, setStatus] = useState<'instant' | 'loading' | 'slow'>('instant');
 
     useEffect(() => {
-        // Only use React state for the "Long Load" warning (Stage 3)
-        const timer = setTimeout(() => setIsLongLoad(true), 3000);
-        return () => clearTimeout(timer);
+        const loadingTimer = setTimeout(() => setStatus('loading'), 200);
+        const slowTimer = setTimeout(() => setStatus('slow'), 3000);
+
+        return () => {
+            clearTimeout(loadingTimer);
+            clearTimeout(slowTimer);
+        };
     }, []);
+
+    // Zone 1: Zero-Wait Reveal
+    if (status === 'instant') return null;
 
     return (
         <div className="fixed inset-0 z-[9999] flex min-h-[100dvh] w-screen flex-col items-center justify-center gap-6 bg-[var(--bg-main)]">
-            {/* Standard CSS @keyframes to ensure zero-dependency reveal */}
             <style dangerouslySetInnerHTML={{ __html: `
                 @keyframes deterministic-fade-in {
                     from { opacity: 0; transform: translateY(4px); }
@@ -33,7 +40,6 @@ export default function RootLoadingState() {
             `}} />
             
             <div className="loader-reveal flex flex-col items-center justify-center gap-6">
-                {/* Central Spinner & Branding */}
                 <div className="relative">
                     <LoadingSpinner size={48} />
                     <div className="absolute inset-0 blur-3xl bg-[var(--color-purple-500)]/10 -z-10 rounded-full scale-150" />
@@ -49,11 +55,11 @@ export default function RootLoadingState() {
                         </p>
                     </div>
 
-                    {isLongLoad && (
+                    {status === 'slow' && (
                         <div className="animate-in slide-in-from-bottom-2 duration-500">
                             <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest animate-pulse max-w-xs leading-relaxed">
                                 Dit duurt langer dan verwacht... <br/>
-                                Controleer je verbinding of neem contact op met de ICT-commissie.
+                                Controleer je internetverbinding of neem contact op met de ICT-commissie.
                             </p>
                         </div>
                     )}

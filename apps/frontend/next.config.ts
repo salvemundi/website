@@ -16,6 +16,14 @@ const nextConfig: NextConfig = {
     staticPageGenerationTimeout: 60,
     logging: false,
     images: {
+        localPatterns: [
+            {
+                pathname: '/api/assets/**',
+            },
+            {
+                pathname: '/img/**',
+            },
+        ],
         remotePatterns: [
             ...(process.env.NEXT_PUBLIC_DIRECTUS_URL 
                 ? [{

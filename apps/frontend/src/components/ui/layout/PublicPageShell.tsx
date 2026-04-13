@@ -22,19 +22,10 @@ interface PublicPageShellProps {
  */
 export default function PublicPageShell({
     children,
-    fallback
 }: PublicPageShellProps) {
     return (
         <div className="min-h-screen">
-            <Suspense fallback={
-                fallback || (
-                    <main className="w-full px-4 py-8 sm:py-10 md:py-12 animate-pulse">
-                        <div className="max-w-app mx-auto h-96 bg-[var(--bg-card)] rounded-[2rem] border border-[var(--border-color)]" />
-                    </main>
-                )
-            }>
-                {children}
-            </Suspense>
+            {children}
         </div>
     );
 }

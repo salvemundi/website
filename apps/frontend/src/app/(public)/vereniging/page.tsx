@@ -8,12 +8,12 @@ export const metadata: Metadata = {
     description: 'Ontdek onze commissies en het team dat SV Salve Mundi draaiende houdt.',
 };
 
-/**
- * VerenigingPage: Ultra-PPR Modernization.
- * Wrapped in PublicPageShell for instant header rendering.
- * Uses Zero-Drift masking for the committee grid.
- */
-export default function VerenigingPage() {
+import { getCommittees } from '@/server/actions/committees.actions';
+
+export default async function VerenigingPage() {
+    // NUCLEAR SSR: Fetch all data before flushing any part of the page content
+    const committees = await getCommittees();
+
     return (
         <PublicPageShell
             title="COMMISSIES"
@@ -23,13 +23,7 @@ export default function VerenigingPage() {
             description="Ontdek onze commissies en word deel van het team"
         >
             <main className="mx-auto max-w-app px-4 py-8 sm:py-12 lg:py-16">
-                {/* 
-                    Granular Streaming Grid:
-                    Masked loading ensures Zero Cumulative Layout Shift (CLS).
-                */}
-                <Suspense fallback={<CommitteesList isLoading />}>
-                    <CommitteesList />
-                </Suspense>
+                <CommitteesList initialCommittees={committees} />
             </main>
         </PublicPageShell>
     );

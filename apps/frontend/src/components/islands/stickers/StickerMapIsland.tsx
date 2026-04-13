@@ -155,52 +155,6 @@ export default function StickerMapIsland({
         });
     };
 
-    if (isLoading) {
-        return (
-            <div className="space-y-8 skeleton-active" aria-busy="true">
-                {/* Stats Header Area Skeleton */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {[1, 2, 3, 4].map((i) => (
-                        <StatCard key={i} isLoading={true} />
-                    ))}
-                </div>
-
-                {/* Map Container Skeleton */}
-                <div className="relative">
-                    <div className="h-[600px] w-full bg-[var(--bg-card)] rounded-3xl" />
-                    
-                    {/* Floating Controls Skeleton */}
-                    <div className="absolute top-4 left-4 right-4 md:right-auto md:w-80 space-y-3">
-                        {/* Filter box skeleton */}
-                        <div className="bg-[var(--bg-card)]/90 backdrop-blur-md rounded-2xl p-4 border border-white/10 space-y-4">
-                            <div className="h-4 w-24 bg-[var(--text-muted)]/10 rounded-full" />
-                            <div className="space-y-3">
-                                <div className="h-8 w-full bg-[var(--text-muted)]/5 rounded-lg" />
-                                <div className="h-8 w-full bg-[var(--text-muted)]/5 rounded-lg" />
-                            </div>
-                        </div>
-
-                        {/* Identity-aware CTA skeleton */}
-                        {isAuthenticated ? (
-                            <div className="bg-[var(--bg-card)]/90 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-                                <div className="h-12 w-full bg-[var(--beheer-accent)]/20 rounded-xl" />
-                                <div className="h-3 w-3/4 mx-auto mt-2 bg-[var(--text-muted)]/10 rounded-full" />
-                            </div>
-                        ) : (
-                            <div className="bg-orange-500/80 backdrop-blur-md rounded-2xl p-4 border border-white/20 flex gap-3">
-                                <div className="w-10 h-10 bg-white/20 shrink-0 rounded-lg" />
-                                <div className="space-y-2 flex-1">
-                                    <div className="h-4 w-2/3 bg-white/20 rounded-full" />
-                                    <div className="h-3 w-full bg-white/10 rounded-full" />
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
     return (
         <div className="space-y-8 animate-in fade-in duration-700">
             {/* Stats Header Area */}
@@ -211,8 +165,8 @@ export default function StickerMapIsland({
                 <StatCard label="Top Land" value="NL" icon={TrendingUp} color="text-orange-500" />
             </div>
 
-            {/* Map Container */}
-            <div className="relative group">
+            {/* Map Container - LOCKED GEOMETRY */}
+            <div className="relative group min-h-[600px]">
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-orange-500/10 blur-3xl -z-10 group-hover:from-purple-500/20 group-hover:to-orange-500/20 transition-all duration-1000" />
                 
                 <StickerMap 

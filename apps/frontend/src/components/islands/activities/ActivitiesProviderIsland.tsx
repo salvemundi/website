@@ -13,12 +13,12 @@ import ActiviteitCard from "./ActiviteitCard";
 
 interface ActivitiesProviderIslandProps {
     events?: (Activiteit & { is_signed_up?: boolean })[];
-    isLoading?: boolean;
+    serverTime?: string;
 }
 
 export default function ActivitiesProviderIsland({
     events: initialEvents = [],
-    isLoading = false
+    serverTime
 }: ActivitiesProviderIslandProps) {
     const router = useRouter();
     const [events] = useState<(Activiteit & { is_signed_up?: boolean })[]>(initialEvents);
@@ -27,12 +27,12 @@ export default function ActivitiesProviderIsland({
     const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('list');
     const [showPastActivities, setShowPastActivities] = useState(false);
     const [selectedDay, setSelectedDay] = useState<Date | null>(null);
-    const [currentDate, setCurrentDate] = useState(new Date());
+    const [currentDate, setCurrentDate] = useState(serverTime ? new Date(serverTime) : new Date());
 
     const filteredEvents = useMemo(() => {
         let filtered = events;
         if (!showPastActivities) {
-            const now = new Date();
+            const now = serverTime ? new Date(serverTime) : new Date();
             filtered = filtered.filter(event => {
                 const eventDate = event.datum_start;
                 // The server actions now send ISO strings (datum_start) or YYYY-MM-DD (event_date)
@@ -57,10 +57,10 @@ export default function ActivitiesProviderIsland({
                 : new Date(bDate).getTime();
             return aDateTime - bDateTime;
         });
-    }, [events, showPastActivities]);
+    }, [events, showPastActivities, serverTime]);
 
     const upcomingEvent = useMemo(() => {
-        const now = new Date();
+        const now = serverTime ? new Date(serverTime) : new Date();
         return events
             .filter(e => {
                 const eventDate = e.datum_start;
@@ -80,8 +80,7 @@ export default function ActivitiesProviderIsland({
                     : new Date(bDate).getTime();
                 return aDateTime - bDateTime;
             })[0];
-    }, [events]);
-
+    }, [events, serverTime]);
     const handleShowDetails = useCallback((activity: Activiteit) => {
         router.push(`/activiteiten/${activity.id}`);
     }, [router]);
@@ -97,29 +96,8 @@ export default function ActivitiesProviderIsland({
 
     return (
         <div className="relative w-full flex flex-col">
-            {isLoading ? (
-                <div className="animate-in fade-in duration-700">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-                        <div className="h-10 w-64 bg-[var(--theme-purple)]/10 rounded-lg skeleton-active" />
-                        <div className="flex flex-wrap items-center gap-3">
-                            <div className="h-10 w-32 bg-[var(--theme-purple)]/10 rounded-lg skeleton-active" />
-                            <div className="h-10 w-36 bg-[var(--theme-purple)]/10 rounded-lg skeleton-active" />
-                        </div>
-                    </div>
-
-                    <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
-                        <div className="flex-1 space-y-6">
-                            <div className="flex flex-col gap-4">
-                                {[1, 2, 3].map((i) => (
-                                    <ActiviteitCard key={i} isLoading={true} variant="list" />
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            ) : (
-                <>
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+            <>
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
                         <h2 className="text-3xl font-bold text-[var(--theme-purple)] dark:text-[var(--text-main)]">
                             {showPastActivities ? 'Alle Activiteiten' : 'Komende Activiteiten'}
                         </h2>
@@ -287,8 +265,7 @@ export default function ActivitiesProviderIsland({
                             )}
                         </div>
                     </div>
-                </>
-            )}
+            </>
         </div>
     );
 }

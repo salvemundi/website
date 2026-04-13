@@ -45,29 +45,7 @@ function BentoCard({
     );
 }
 
-/**
- * Server Component die de safe_havens data ophaalt en de kaarten rendert.
- */
-async function SafeHavensContent() {
-    const safeHavens = await getSafeHavens();
-
-    return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-4 sm:gap-5 mt-6">
-            {safeHavens.length > 0 ? (
-                safeHavens.map((safeHaven) => (
-                    <SafeHavenCard key={safeHaven.id} safeHaven={safeHaven} />
-                ))
-            ) : (
-                <div className="col-span-full rounded-2xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-700 p-10 text-center">
-                    <Shield className="h-8 w-8 text-[var(--color-purple-500)] mx-auto mb-4" />
-                    <p className="text-lg font-bold text-theme">Binnenkort beschikbaar</p>
-                </div>
-            )}
-        </div>
-    );
-}
-
-export default function SafeHavensPage() {
+export default async function SafeHavensPage() {
     const topics = [
         { Icon: AlertTriangle, text: 'Agressie & geweld', color: 'from-slate-600 to-slate-700' },
         { Icon: Shield, text: 'Seksuele intimidatie', color: 'from-slate-600 to-slate-700' },
@@ -75,6 +53,9 @@ export default function SafeHavensPage() {
         { Icon: Users, text: 'Discriminatie', color: 'from-slate-600 to-slate-700' },
         { Icon: MessageSquare, text: 'Persoonlijke situaties', color: 'from-slate-600 to-slate-700' },
     ];
+
+    // NUCLEAR SSR: Fetch all data before flushing any part of the page content
+    const safeHavens = await getSafeHavens();
 
     return (
         <PublicPageShell
@@ -129,20 +110,23 @@ export default function SafeHavensPage() {
                             </ul>
                         </BentoCard>
 
-                        {/* Safe Havens list (PPR Boundary) */}
+                        {/* Safe Havens list (Consolidated) */}
                         <BentoCard className="lg:col-span-8 lg:row-span-4">
                             <h2 className="text-2xl sm:text-3xl font-bold text-theme">Onze Safe Havens</h2>
                             <p className="mt-2 text-sm text-theme-muted mb-6">Kies een persoon waarbij jij je comfortabel voelt.</p>
 
-                            <Suspense fallback={
-                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-4 sm:gap-5">
-                                    {[1, 2, 3, 4].map((i) => (
-                                        <SafeHavenCard key={i} isLoading />
-                                    ))}
-                                </div>
-                            }>
-                                <SafeHavensContent />
-                            </Suspense>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-4 sm:gap-5 mt-6">
+                                {safeHavens.length > 0 ? (
+                                    safeHavens.map((safeHaven) => (
+                                        <SafeHavenCard key={safeHaven.id} safeHaven={safeHaven} />
+                                    ))
+                                ) : (
+                                    <div className="col-span-full rounded-2xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-700 p-10 text-center">
+                                        <Shield className="h-8 w-8 text-[var(--color-purple-500)] mx-auto mb-4" />
+                                        <p className="text-lg font-bold text-theme">Binnenkort beschikbaar</p>
+                                    </div>
+                                )}
+                            </div>
                         </BentoCard>
 
                         {/* External help */}

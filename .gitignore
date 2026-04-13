@@ -72,3 +72,5 @@ apps/frontend/public/sw.js.map
 .pnpm-store
 initial_response.html
 test_head.html
+test-results/
+playwright-report/

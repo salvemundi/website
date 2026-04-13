@@ -8,43 +8,28 @@ function cleanCommitteeName(name: string): string {
 }
 
 interface CommitteesListProps {
-    isLoading?: boolean;
+    initialCommittees?: any[]; // Using any for simplicity as it matches original logic
 }
 
 /**
  * CommitteesList: Zero-Drift Modernization.
- * Supports a masked loading state without needing a separate Skeleton component.
  */
-export default async function CommitteesList({ isLoading = false }: CommitteesListProps) {
-    // If loading, render dummy cards to preserve layout while masked
-    if (isLoading) {
-        return (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-                {[...Array(8)].map((_, i) => (
-                    <CommitteeCard key={i} isLoading={true} />
-                ))}
-            </div>
-        );
-    }
-
-    const committeesData = await getCommittees();
-
-    if (!committeesData || committeesData.length === 0) {
-        return (
-            <div className="rounded-3xl bg-[var(--bg-card)]/80 dark:border dark:border-white/10 p-12 text-center shadow-lg">
-                <p className="text-lg text-[var(--text-muted)] italic">Geen commissies gevonden.</p>
-            </div>
-        );
-    }
-
-    // Sorteren: Bestuur altijd eerst
-    const sortedCommittees = [...committeesData].sort((a, b) => {
+export default function CommitteesList({ initialCommittees = [] }: CommitteesListProps) {
+    const sortedCommittees = [...initialCommittees].sort((a, b) => {
         const aIsBestuur = cleanCommitteeName(a.name).toLowerCase().includes('bestuur');
         const bIsBestuur = cleanCommitteeName(b.name).toLowerCase().includes('bestuur');
         if (aIsBestuur && !bIsBestuur) return -1;
         if (!aIsBestuur && bIsBestuur) return 1;
         return 0;
     });
+
+    if (sortedCommittees.length === 0) {
+        return (
+            <div className="rounded-3xl bg-[var(--bg-card)]/80 dark:border dark:border-white/10 p-12 text-center shadow-lg">
+                <p className="text-lg text-[var(--text-muted)] italic">Geen commissies gevonden.</p>
+            </div>
+        );
+    }
 
     return (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
