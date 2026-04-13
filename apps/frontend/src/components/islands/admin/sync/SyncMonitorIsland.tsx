@@ -3,18 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import SyncLogs from '@/components/admin/sync/SyncLogs';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { Info, Activity, AlertCircle } from 'lucide-react';
+import { Info, Activity, AlertCircle, CheckCircle2, AlertTriangle, XCircle } from 'lucide-react';
+import { useSync } from './SyncContext';
 
-interface SyncMonitorIslandProps {
-    isLoading?: boolean;
-    status?: any | null;
-    progress?: number;
-    lastUpdated?: Date | null;
-    resultFilter?: 'all' | 'success' | 'created' | 'warnings' | 'missing' | 'errors' | 'excluded';
-    setResultFilter?: (val: any) => void;
-}
-
-export default function SyncMonitorIsland({ isLoading, status, progress, lastUpdated, resultFilter, setResultFilter }: SyncMonitorIslandProps) {
+export default function SyncMonitorIsland() {
+    const { 
+        isLoading, status, resultFilter, setResultFilter, lastUpdated 
+    } = useSync();
+    
     const [mounted, setMounted] = useState(false);
     const [showStack, setShowStack] = useState(false);
 
@@ -22,39 +18,32 @@ export default function SyncMonitorIsland({ isLoading, status, progress, lastUpd
         setMounted(true);
     }, []);
 
-    if (isLoading && !status) {
-
-        return (
-            <div className="bg-[var(--beheer-card-bg)] p-8 rounded-[2rem] border border-[var(--beheer-border)] shadow-sm skeleton-active min-h-[400px]">
-                <div className="h-4 w-32 mb-4" />
-                <div className="h-8 w-full" />
-            </div>
-        );
-    }
+    const isRunning = status?.active || status?.status === 'running' || status?.status === 'starting';
+    const progress = status?.progress || 0;
 
     return (
-        <div className="bg-[var(--beheer-card-bg)] p-8 rounded-[2rem] border border-[var(--beheer-border)] shadow-sm">
+        <div className={`bg-[var(--beheer-card-bg)] p-8 rounded-[2rem] border border-[var(--beheer-border)] shadow-sm ${!isLoading ? 'animate-in fade-in duration-1000' : ''}`}>
+            {/* Header: Static Shell */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
                 <div className="flex items-center gap-4">
-                    <div className="p-3 bg-blue-100 rounded-2xl text-blue-600">
-                        <Activity className="h-6 w-6" />
+                    <div className="p-3 bg-[var(--theme-info)]/10 rounded-2xl text-[var(--theme-info)]">
+                        <Activity className={`h-6 w-6 ${isRunning ? 'animate-pulse' : ''}`} />
                     </div>
                     <div>
                         <h3 className="text-xl font-black text-[var(--beheer-text)] uppercase tracking-tight">Sync Monitor</h3>
-                        {lastUpdated && (
-                            <p className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mt-1">
-                                Laatste update: {mounted ? lastUpdated.toLocaleTimeString() : '--:--:--'}
-                            </p>
-                        )}
+                        <p className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mt-1">
+                            {lastUpdated && mounted ? `Laatste update: ${lastUpdated.toLocaleTimeString()}` : 'Real-time status & logs'}
+                        </p>
                     </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
+                {/* Filter Tabs: Granular Mask */}
+                <div className={`flex flex-wrap gap-2 ${isLoading ? 'skeleton-active' : ''}`}>
                     {(['all', 'success', 'created', 'warnings', 'missing', 'errors', 'excluded'] as const).map(filter => (
                         <button
                             key={filter}
                             onClick={() => setResultFilter?.(filter)}
-                            className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${resultFilter === filter ? 'bg-[var(--beheer-accent)] text-white shadow-lg shadow-[var(--beheer-accent)]/20' : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] hover:bg-[var(--beheer-border)]'}`}
+                            className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${!isLoading && resultFilter === filter ? 'bg-[var(--beheer-accent)] text-white shadow-lg shadow-[var(--beheer-accent)]/20' : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] hover:bg-[var(--beheer-border)]/50 hover:text-[var(--beheer-text)]'}`}
                         >
                             {filter}
                         </button>
@@ -62,15 +51,16 @@ export default function SyncMonitorIsland({ isLoading, status, progress, lastUpd
                 </div>
             </div>
             
-            {status?.fatalError && (
-                <div className="mb-8 p-6 bg-red-50 border border-red-100 rounded-3xl animate-in slide-in-from-top duration-500">
+            {/* Error Message: Dynamic */}
+            {!isLoading && status?.fatalError && (
+                <div className="mb-8 p-6 bg-[var(--theme-error)]/5 border border-[var(--theme-error)]/10 rounded-3xl animate-in slide-in-from-top duration-500">
                     <div className="flex items-start gap-4">
-                        <div className="p-2 bg-red-100 rounded-xl text-red-600">
+                        <div className="p-2 bg-[var(--theme-error)]/10 rounded-xl text-[var(--theme-error)]">
                             <AlertCircle className="h-5 w-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-black text-red-900 uppercase tracking-tight">Kritieke Fout Gedetecteerd</h4>
-                            <p className="text-xs font-black text-red-700/80 uppercase tracking-widest mt-1">
+                            <h4 className="text-sm font-black text-[var(--theme-error)] uppercase tracking-tight">Kritieke Fout Gedetecteerd</h4>
+                            <p className="text-xs font-black text-[var(--beheer-text)]/80 uppercase tracking-widest mt-1">
                                 {status.fatalError.message}
                             </p>
                             
@@ -78,14 +68,14 @@ export default function SyncMonitorIsland({ isLoading, status, progress, lastUpd
                                 <div className="mt-4">
                                     <button 
                                         onClick={() => setShowStack(!showStack)}
-                                        className="text-[9px] font-black uppercase tracking-widest text-red-600 hover:text-red-800 transition-colors flex items-center gap-1"
+                                        className="text-[9px] font-black uppercase tracking-widest text-[var(--theme-error)] hover:underline transition-colors flex items-center gap-1"
                                     >
                                         {showStack ? 'Verberg details' : 'Bekijk technische details (Stack Trace)'}
                                     </button>
                                     
                                     {showStack && (
-                                        <div className="mt-3 p-4 bg-red-900/5 rounded-2xl border border-red-900/10 overflow-x-auto custom-scrollbar">
-                                            <pre className="text-[10px] text-red-900/70 font-mono leading-relaxed">
+                                        <div className="mt-3 p-4 bg-black/5 dark:bg-white/5 rounded-2xl border border-[var(--beheer-border)] overflow-x-auto custom-scrollbar">
+                                            <pre className="text-[10px] text-[var(--beheer-text-muted)] font-mono leading-relaxed">
                                                 {status.fatalError.stack}
                                             </pre>
                                         </div>
@@ -98,29 +88,34 @@ export default function SyncMonitorIsland({ isLoading, status, progress, lastUpd
             )}
 
             <div className="space-y-6">
-                <div>
+                {/* Progress Bar: Granular Mask */}
+                <div className={isLoading ? 'skeleton-active' : ''}>
                     <div className="flex justify-between items-end mb-2">
                         <span className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">Voortgang ({status?.processed || 0} / {status?.total || 0})</span>
                         <span className="text-xs font-black text-[var(--beheer-accent)]">{Math.round(progress || 0)}%</span>
                     </div>
                     <div className="h-3 w-full bg-[var(--beheer-card-soft)] rounded-full overflow-hidden border border-[var(--beheer-border)]/20">
                         <div 
-                            className="h-full bg-gradient-to-r from-[var(--beheer-accent)] to-blue-500 transition-all duration-500 relative"
+                            className="h-full bg-gradient-to-r from-[var(--beheer-accent)] to-[var(--theme-info)] transition-all duration-500 relative"
                             style={{ width: `${progress}%` }}
                         >
-                            <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                            {!isLoading && isRunning && <div className="absolute inset-0 bg-white/20 animate-pulse" />}
                         </div>
                     </div>
                 </div>
 
-                <div className="mt-8">
-                    {status && setResultFilter && (
-                        <SyncLogs 
-                            status={status} 
-                            resultFilter={resultFilter || 'all'} 
-                            setResultFilter={setResultFilter} 
-                        />
-                    )}
+                {/* Logs Area: Granular Mask */}
+                <div className={`mt-8 min-h-[200px] ${isLoading ? 'skeleton-active' : ''}`}>
+                    <SyncLogs 
+                        status={status || { 
+                            successfulUsers: [], createdUsers: [], warnings: [], 
+                            missingData: [], errors: [], excludedUsers: [], 
+                            processed: 0, total: 0, successCount: 0, errorCount: 0, 
+                            warningCount: 0, missingDataCount: 0, excludedCount: 0 
+                        }} 
+                        resultFilter={resultFilter || 'all'} 
+                        setResultFilter={setResultFilter} 
+                    />
                 </div>
             </div>
         </div>

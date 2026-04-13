@@ -1,15 +1,13 @@
-export const dynamic = 'force-dynamic';
 import { Suspense } from 'react';
-import PageHeader from '@/components/ui/layout/PageHeader';
 import { getKroegentochtEvent, getKroegentochtTickets } from '@/server/actions/kroegentocht.actions';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import KroegentochtFormIsland from '@/components/islands/kroegentocht/KroegentochtFormIsland';
 import KroegentochtTicketsIsland from '@/components/islands/kroegentocht/KroegentochtTicketsIsland';
-import KroegentochtSkeleton, { KroegentochtFormSkeleton, KroegentochtTicketsSkeleton, KroegentochtInfoSkeleton } from '@/components/ui/kroegentocht/KroegentochtSkeleton';
-import { Info, MapPin, Calendar, Clock, Beer, AlertCircle, Users, Mail, ShieldAlert } from 'lucide-react';
+import { Info, MapPin, Calendar, Clock, AlertCircle, Users, Mail, ShieldAlert } from 'lucide-react';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 import { formatDate } from '@/shared/lib/utils/date';
+import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 
 export const metadata = {
     title: 'Kroegentocht | SV Salve Mundi',
@@ -32,7 +30,7 @@ async function RegistrationSection() {
 
     if (!event) {
         return (
-            <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30 p-8 rounded-3xl text-center">
+            <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30 p-8 rounded-3xl text-center animate-in fade-in duration-700">
                 <AlertCircle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
                 <h2 className="text-xl font-black text-amber-900 dark:text-amber-200">Geen actieve Kroegentocht</h2>
                 <p className="text-amber-800/80 dark:text-amber-400/80 mt-2">
@@ -44,7 +42,7 @@ async function RegistrationSection() {
 
     if (!event.show) {
         return (
-            <div className="bg-slate-100 dark:bg-white/5 p-8 rounded-3xl text-center border border-slate-200 dark:border-white/10">
+            <div className="bg-slate-100 dark:bg-white/5 p-8 rounded-3xl text-center border border-slate-200 dark:border-white/10 animate-in fade-in duration-700">
                 <h2 className="text-xl font-black">{event.name}</h2>
                 <p className="text-slate-500 mt-2 italic">{event.disabled_message || 'De inschrijvingen voor de kroegentocht zijn momenteel gesloten.'}</p>
             </div>
@@ -54,7 +52,7 @@ async function RegistrationSection() {
     const formattedDate = formatDate(event.date);
 
     return (
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
+        <div className="flex flex-col lg:flex-row gap-8 items-start animate-in slide-in-from-bottom-4 duration-700">
             <div className="w-full lg:w-1/2">
                 <KroegentochtFormIsland event={event} initialUser={session?.user} />
             </div>
@@ -155,33 +153,33 @@ export default async function KroegentochtPage() {
     const isAuthenticated = !!session;
 
     return (
-        <div>
-            <PageHeader
-                title="KROEGENTOCHT"
-                backgroundImage="/img/backgrounds/Kroto2025.jpg"
-                contentPadding="py-20"
-                imageFilter="brightness(0.55)"
-                variant="centered"
-                description="Dé activiteit van het jaar! Verken de beste kroegen van Eindhoven met je medestudenten."
-            />
-
+        <PublicPageShell
+            title="KROEGENTOCHT"
+            backgroundImage="/img/backgrounds/Kroto2025.jpg"
+            imageFilter="brightness(0.55)"
+            description="Dé activiteit van het jaar! Verken de beste kroegen van Eindhoven met je medestudenten."
+            fallback={
+                <div className="mx-auto max-w-7xl px-4 py-8 sm:py-10 md:py-12 animate-pulse">
+                    <div className="flex flex-col lg:flex-row gap-8">
+                        <div className="w-full lg:w-1/2 h-96 bg-[var(--bg-card)] rounded-3xl skeleton-active" />
+                        <div className="w-full lg:w-1/2 flex flex-col gap-6">
+                            <div className="h-48 bg-[var(--bg-card)] rounded-3xl skeleton-active" />
+                            <div className="h-48 bg-[var(--bg-card)] rounded-3xl skeleton-active" />
+                        </div>
+                    </div>
+                </div>
+            }
+        >
             <main className="mx-auto max-w-7xl px-4 py-8 sm:py-10 md:py-12">
                 {isAuthenticated && (
-                    <Suspense fallback={<KroegentochtTicketsSkeleton />}>
+                    <Suspense fallback={<div className="h-40 w-full bg-[var(--bg-card)] rounded-3xl mb-8 skeleton-active" />}>
                         <TicketsSection userEmail={session.user.email!} />
                     </Suspense>
                 )}
 
-                <Suspense fallback={
-                    <div className="flex flex-col lg:flex-row gap-8">
-                        <KroegentochtFormSkeleton />
-                        <KroegentochtInfoSkeleton />
-                    </div>
-                }>
-                    <RegistrationSection />
-                </Suspense>
+                <RegistrationSection />
             </main>
-        </div>
+        </PublicPageShell>
     );
 }
 

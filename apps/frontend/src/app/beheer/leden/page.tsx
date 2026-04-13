@@ -1,78 +1,33 @@
-import { Suspense } from 'react';
-import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
+import React, { Suspense } from 'react';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
-import { AlertCircle, ShieldAlert, ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { redirect } from 'next/navigation';
+import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
+import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import LedenOverzichtIsland from '@/components/islands/admin/leden/LedenOverzichtIsland';
-import MemberListSkeleton from '@/components/ui/admin/leden/MemberListSkeleton';
 import { getSystemDirectus } from '@/lib/directus';
-import { getImageUrl } from '@/lib/utils/image-utils';
-import { readUsers, readRoles } from '@directus/sdk';
-import { isSuperAdmin, isMemberAdmin } from '@/lib/auth';
+import { readUsers } from '@directus/sdk';
+import { isMemberAdmin } from '@/lib/auth';
 
 const EXCLUDED_EMAILS = [
-    'youtube@salvemundi.nl',
-    'github@salvemundi.nl',
-    'intern@salvemundi.nl',
-    'ik.ben.de.website@salvemundi.nl',
-    'voorzitter@salvemundi.nl',
-    'twitch@salvemundi.nl',
-    'secretaris@salvemundi.nl',
-    'penningmeester@salvemundi.nl',
-    'noreply@salvemundi.nl',
-    'extern@salvemundi.nl',
-    'commissaris.administratie@salvemundi.nl',
-    'apibot@salvemundi.nl'
+    'youtube@salvemundi.nl', 'github@salvemundi.nl', 'intern@salvemundi.nl',
+    'ik.ben.de.website@salvemundi.nl', 'voorzitter@salvemundi.nl', 'twitch@salvemundi.nl',
+    'secretaris@salvemundi.nl', 'penningmeester@salvemundi.nl', 'noreply@salvemundi.nl',
+    'extern@salvemundi.nl', 'commissaris.administratie@salvemundi.nl', 'apibot@salvemundi.nl'
 ];
 
-export default async function LedenPage({ 
-    searchParams 
-}: { 
-    searchParams: Promise<{ tab?: string }> 
-}) {
-    const params = await searchParams;
-    const tab = (params.tab as 'active' | 'inactive') || 'active';
+export const metadata = {
+    title: 'Leden Beheer | SV Salve Mundi',
+};
 
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
-    
-    if (!session || !session.user) return <AdminUnauthorized />;
-
-    const user = session.user as any;
-    const hasPriv = isMemberAdmin(user.committees);
-
-    if (!hasPriv) {
-        return (
-            <AdminUnauthorized 
-                title="Leden Beheer"
-                description="Je hebt geen rechten om (persoons)gegevens van leden te bekijken. Dit is een beperkte sectie voor het Bestuur en ICT."
-            />
-        );
-    }
-
-    return (
-        <div className="min-h-screen bg-[var(--bg-main)]">
-            <Suspense key={tab} fallback={<LedenOverzichtIsland isLoading={true} />}>
-                <LedenDataLoader 
-                    tab={tab} 
-                />
-            </Suspense>
-        </div>
-    );
-}
-
-async function LedenDataLoader({ tab }: { tab: 'active' | 'inactive' }) {
+async function LedenDataLoader() {
     let members: any[] = [];
     let totalCount = 0;
 
     try {
-        // Simple filter first to avoid operator issues on directus_users
         const query: any = {
             fields: ['id', 'first_name', 'last_name', 'email', 'membership_expiry', 'status'],
-            limit: -1, // Fetch all members for counting and filtering
+            limit: -1,
             sort: ['last_name', 'first_name'],
             filter: {
                 _and: [
@@ -83,33 +38,48 @@ async function LedenDataLoader({ tab }: { tab: 'active' | 'inactive' }) {
         };
 
         const res = await getSystemDirectus().request(readUsers(query));
-        
         if (Array.isArray(res)) {
             members = res;
             totalCount = res.length;
         }
     } catch (e: any) {
-        
-        return (
-            <div className="container mx-auto px-4 py-8">
-                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-6 text-amber-700 dark:text-amber-400 flex items-center gap-4">
-                    <AlertCircle className="h-6 w-6 shrink-0" />
-                    <div>
-                        <h2 className="font-bold">Ledenlijst kon niet volledig worden geladen</h2>
-                        <p className="text-sm opacity-90">Controleer de Directus permissies of probeer het later opnieuw.</p>
-                    </div>
-                </div>
-            </div>
-        );
+        // Error handled by island hydration
     }
 
     return (
         <LedenOverzichtIsland 
-            members={members as any} 
-            totalCount={totalCount} 
-            searchQuery=""
+            initialMembers={members as any} 
+            initialTotalCount={totalCount} 
         />
     );
 }
 
+export default async function LedenPage() {
+    const session = await auth.api.getSession({
+        headers: await headers()
+    });
+    
+    if (!session || !session.user) return <AdminUnauthorized />;
 
+    const user = session.user as any;
+    if (!isMemberAdmin(user.committees)) {
+        return (
+            <AdminUnauthorized 
+                title="Leden Beheer"
+                description="Je hebt geen rechten om (persoons)gegevens van leden te bekijken."
+            />
+        );
+    }
+
+    return (
+        <AdminPageShell
+            title="Leden Overzicht"
+            subtitle="Beheer alle Salve Mundi leden en lidmaatschappen"
+            backHref="/beheer"
+        >
+            <Suspense fallback={<LedenOverzichtIsland isLoading={true} />}>
+                <LedenDataLoader />
+            </Suspense>
+        </AdminPageShell>
+    );
+}

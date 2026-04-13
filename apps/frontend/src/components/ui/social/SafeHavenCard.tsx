@@ -1,9 +1,8 @@
 import Image from 'next/image';
 import type { SafeHaven } from '@salvemundi/validations/schema/safe-havens.zod';
-import { Mail, Phone } from 'lucide-react';
+import { Phone } from 'lucide-react';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
-import { Skeleton } from '../Skeleton';
 
 interface SafeHavenCardProps {
     isLoading?: boolean;
@@ -11,9 +10,8 @@ interface SafeHavenCardProps {
 }
 
 /**
- * UI Component voor een Safe Haven kaart.
- * Zorgt voor een consistente visuele presentatie die aansluit bij de vastgestelde ontwerprichtlijnen.
- * Ondersteunt nu een geïntegreerde loading-state.
+ * SafeHavenCard: Zero-Drift Modernization.
+ * Removed manual skeleton branches. Uses .skeleton-active for premium masking.
  */
 export default function SafeHavenCard({ isLoading = false, safeHaven }: SafeHavenCardProps) {
     const imageUrl = safeHaven?.afbeelding_id 
@@ -22,79 +20,48 @@ export default function SafeHavenCard({ isLoading = false, safeHaven }: SafeHave
 
     return (
         <div 
-            className={`flex flex-col rounded-2xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-700/30 p-5 sm:p-6 transition-all duration-300 ${!isLoading ? 'hover:border-slate-300 dark:hover:border-slate-600/50' : 'animate-pulse'}`}
+            className={`flex flex-col rounded-2xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-700/30 p-5 sm:p-6 transition-all duration-300 
+                ${!isLoading ? 'hover:border-slate-300 dark:hover:border-slate-600/50 shadow-sm hover:shadow-md' : 'skeleton-active pointer-events-none'}`}
             aria-busy={isLoading}
         >
             <div className="flex items-center gap-4">
-                <div className="relative h-16 w-16 sm:h-20 sm:w-20 overflow-hidden rounded-2xl shadow-md shrink-0">
-                    {isLoading ? (
-                        <Skeleton className="h-full w-full bg-slate-200 dark:bg-slate-800" rounded="none" />
-                    ) : (
-                        safeHaven && (
-                            <Image
-                                src={imageUrl}
-                                alt={safeHaven.naam}
-                                fill
-                                unoptimized
-                                className="object-cover"
-                            />
-                        )
-                    )}
+                <div className="relative h-16 w-16 sm:h-20 sm:w-20 overflow-hidden rounded-2xl shadow-md shrink-0 bg-slate-200 dark:bg-slate-800">
+                    <Image
+                        src={imageUrl}
+                        alt={safeHaven?.naam || 'Safe Haven'}
+                        fill
+                        unoptimized
+                        className="object-cover"
+                    />
                 </div>
                 <div className="min-w-0 flex-1">
-                    {isLoading ? (
-                        <div className="space-y-2">
-                            <Skeleton className="h-5 w-3/4 bg-slate-200 dark:bg-slate-800" rounded="md" />
-                            <Skeleton className="h-4 w-1/2 bg-slate-200 dark:bg-slate-800 opacity-50" rounded="full" />
-                        </div>
-                    ) : (
-                        <>
-                            <h3 className="text-lg sm:text-xl font-bold text-theme truncate">
-                                {safeHaven?.naam}
-                            </h3>
-                            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                                Safe Haven
-                            </p>
-                        </>
-                    )}
+                    <h3 className="text-lg sm:text-xl font-bold text-theme truncate">
+                        {safeHaven?.naam || 'Loading Name...'}
+                    </h3>
+                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                        Safe Haven
+                    </p>
                 </div>
             </div>
 
             <div className="mt-4 space-y-2">
-                {isLoading ? (
-                    <div className="space-y-2">
-                        <Skeleton className="h-4 w-full bg-slate-200 dark:bg-slate-800 opacity-40" rounded="full" />
-                        <Skeleton className="h-4 w-5/6 bg-slate-200 dark:bg-slate-800 opacity-40" rounded="full" />
-                    </div>
-                ) : safeHaven?.beschrijving && (
-                    <p className="text-sm text-theme-muted leading-relaxed line-clamp-3">
-                        {safeHaven.beschrijving}
-                    </p>
-                )}
+                <p className="text-sm text-theme-muted leading-relaxed line-clamp-3">
+                    {safeHaven?.beschrijving || 'Loading description content for the safe haven...'}
+                </p>
             </div>
 
             <div className="mt-5 space-y-2">
-                {isLoading ? (
-                    <div className="space-y-3">
-                        <Skeleton className="h-11 w-full bg-slate-200 dark:bg-slate-800" rounded="xl" />
-                        <Skeleton className="h-11 w-full bg-slate-200 dark:bg-slate-800" rounded="xl" />
-                    </div>
-                ) : safeHaven?.email || safeHaven?.telefoon ? (
+                {safeHaven?.email || safeHaven?.telefoon || isLoading ? (
                     <>
-                        {safeHaven.email && (
-                            <ObfuscatedEmail 
-                                email={safeHaven.email} 
-                                className="flex items-center gap-3 rounded-xl bg-white dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 p-3 text-sm font-medium text-theme hover:border-slate-300 dark:hover:border-slate-600 transition-colors w-full" 
-                            />
-                        )}
-                        {safeHaven.telefoon && (
-                            <a
-                                href={`tel:${safeHaven.telefoon}`}
-                                className="flex items-center gap-3 rounded-xl bg-white dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 p-3 text-sm font-medium text-theme hover:border-slate-300 dark:hover:border-slate-600 transition-colors"
-                            >
+                        <ObfuscatedEmail 
+                            email={safeHaven?.email || 'loading@salvemundi.nl'} 
+                            className="flex items-center gap-3 rounded-xl bg-white dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 p-3 text-sm font-medium text-theme hover:border-slate-300 dark:hover:border-slate-600 transition-colors w-full" 
+                        />
+                        {(safeHaven?.telefoon || isLoading) && (
+                            <div className="flex items-center gap-3 rounded-xl bg-white dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 p-3 text-sm font-medium text-theme">
                                 <Phone className="h-4 w-4 text-slate-400" />
-                                <span>{safeHaven.telefoon}</span>
-                            </a>
+                                <span>{safeHaven?.telefoon || '06 12345678'}</span>
+                            </div>
                         )}
                     </>
                 ) : (

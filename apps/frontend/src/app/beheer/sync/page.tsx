@@ -10,7 +10,8 @@ import SyncHeaderIsland from '@/components/islands/admin/sync/SyncHeaderIsland';
 import SyncStatsIsland from '@/components/islands/admin/sync/SyncStatsIsland';
 import SyncControlIsland from '@/components/islands/admin/sync/SyncControlIsland';
 import SyncMonitorIsland from '@/components/islands/admin/sync/SyncMonitorIsland';
-import AzureSyncClientWrapper from '@/components/islands/admin/sync/AzureSyncClientWrapper';
+import { SyncProvider } from '@/components/islands/admin/sync/SyncContext';
+import SyncHydrator from '@/components/islands/admin/sync/SyncHydrator';
 
 export const metadata: Metadata = {
     title: 'Beheer Sync | SV Salve Mundi',
@@ -31,14 +32,11 @@ async function checkSyncAccess() {
 }
 
 /**
- * Data loader component to fetch initial sync status on the server.
+ * Client component-driven hydrator that passes server data into the shared context.
  */
-async function SyncStatusData() {
-    const status = await getSyncStatusAction().catch(() => null);
-    
-    return (
-        <AzureSyncClientWrapper initialStatus={status} />
-    );
+async function SyncDataLayer({ statusPromise }: { statusPromise: Promise<any> }) {
+    const status = await statusPromise;
+    return <SyncHydrator initialStatus={status} />;
 }
 
 export default async function AzureSyncPage() {
@@ -48,24 +46,26 @@ export default async function AzureSyncPage() {
         redirect('/beheer');
     }
 
+    // We fetch the status here to pass it as initialStatus for hydration
+    const statusPromise = getSyncStatusAction().catch(() => null);
+
     return (
         <div className="min-h-screen bg-[var(--bg-main)]">
-            <div className="container mx-auto px-4 py-8 max-w-7xl relative z-10">
+            <SyncProvider initialStatus={null}>
+                <SyncHeaderIsland />
+                
                 <Suspense fallback={
-                    <div className="space-y-8">
-                        <SyncHeaderIsland isLoading />
-                        <SyncStatsIsland isLoading />
-                        <SyncControlIsland 
-                            isLoading 
-                        />
-                        <SyncMonitorIsland 
-                            isLoading 
-                        />
+                    <div className="container mx-auto px-4 py-8 max-w-7xl relative z-10">
+                        <div className="space-y-8">
+                            <SyncStatsIsland />
+                            <SyncControlIsland />
+                            <SyncMonitorIsland />
+                        </div>
                     </div>
                 }>
-                    <SyncStatusData />
+                    <SyncDataLayer statusPromise={statusPromise} />
                 </Suspense>
-            </div>
+            </SyncProvider>
         </div>
     );
 }

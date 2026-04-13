@@ -10,7 +10,7 @@ import DayDetails from "./DayDetails";
 import EventList from "./EventList";
 import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { Skeleton } from "@/components/ui/Skeleton";
-import ActivityCardSkeleton from "@/components/ui/activities/ActivityCardSkeleton";
+import ActiviteitCard from "./ActiviteitCard";
 
 interface ActivitiesProviderIslandProps {
     events?: (Activiteit & { is_signed_up?: boolean })[];
@@ -99,29 +99,20 @@ export default function ActivitiesProviderIsland({
     return (
         <div className="relative w-full flex flex-col">
             {isLoading ? (
-                <div className="animate-pulse">
+                <div className="animate-in fade-in duration-700">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-                        <Skeleton className="h-10 w-64 bg-[var(--color-purple-500)]/10" />
+                        <div className="h-10 w-64 bg-[var(--theme-purple)]/10 rounded-lg skeleton-active" />
                         <div className="flex flex-wrap items-center gap-3">
-                            <Skeleton className="h-10 w-32" rounded="lg" />
-                            <Skeleton className="h-10 w-36" rounded="lg" />
+                            <div className="h-10 w-32 bg-[var(--theme-purple)]/10 rounded-lg skeleton-active" />
+                            <div className="h-10 w-36 bg-[var(--theme-purple)]/10 rounded-lg skeleton-active" />
                         </div>
                     </div>
 
                     <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
                         <div className="flex-1 space-y-6">
-                            <div className="hidden md:flex rounded-xl bg-[var(--bg-card)] overflow-hidden shadow-sm border border-[var(--border-color)]">
-                                {[1, 2, 3].map(i => (
-                                    <div key={i} className="px-6 py-3 flex items-center gap-3">
-                                        <Skeleton className="w-5 h-5 bg-[var(--color-purple-500)]/10" rounded="sm" />
-                                        <Skeleton className="h-4 w-20 bg-[var(--color-purple-500)]/5" />
-                                    </div>
-                                ))}
-                            </div>
-
                             <div className="flex flex-col gap-4">
-                                {[1, 2, 3, 4].map((i) => (
-                                    <ActivityCardSkeleton key={i} variant="list" />
+                                {[1, 2, 3].map((i) => (
+                                    <ActiviteitCard key={i} isLoading={true} variant="list" />
                                 ))}
                             </div>
                         </div>

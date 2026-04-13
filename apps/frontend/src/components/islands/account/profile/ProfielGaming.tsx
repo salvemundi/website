@@ -31,7 +31,7 @@ export default function ProfielGaming({
     isPending = false
 }: ProfielGamingProps) {
     return (
-        <Tile title="Social Gaming" icon={<Gamepad2 className="h-5 w-5" />} className="h-fit" aria-busy={isLoading}>
+        <Tile title="Social Gaming" icon={<Gamepad2 className="h-5 w-5" />} className={`h-fit ${isLoading ? 'skeleton-active' : ''}`} aria-busy={isLoading}>
             <div className="rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm relative group">
                 <div className="flex items-center justify-between gap-2 mb-3">
                     <p className="text-[11px] font-bold uppercase text-[var(--color-purple-400)] tracking-wide text-left">
@@ -45,9 +45,7 @@ export default function ProfielGaming({
                 </div>
                 <div className="flex items-center gap-3 min-w-0">
                     <Gamepad2 className="h-5 w-5 text-[var(--color-purple-300)]" />
-                    {isLoading ? (
-                        <Skeleton className="h-6 w-32 bg-[var(--color-purple-500)]/10" rounded="md" />
-                    ) : isEditingMinecraft ? (
+                    {isEditingMinecraft ? (
                         <form onSubmit={handleSubmitMinecraft(onSaveMinecraft)} className="flex flex-col w-full gap-2" autoComplete="off">
                             <div className="flex w-full items-center gap-2">
                                 <input 
@@ -60,24 +58,11 @@ export default function ProfielGaming({
                                 <button type="submit" disabled={isPending} className="p-1.5 bg-[var(--color-purple-500)] text-white rounded-lg hover:bg-[var(--color-purple-600)] transition-colors">
                                     {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                                 </button>
-                                <button 
-                                    type="button" 
-                                    onClick={() => { 
-                                        setIsEditingMinecraft(false); 
-                                        resetMinecraft({ minecraft_username: user?.minecraft_username || "" }); 
-                                    }} 
-                                    className="p-1.5 bg-slate-200 dark:bg-white/10 text-[var(--text-main)] rounded-lg hover:bg-slate-300 dark:hover:bg-white/20 transition-colors"
-                                >
-                                    <X className="h-4 w-4" />
-                                </button>
                             </div>
-                            {minecraftErrors.minecraft_username && (
-                                <p className="text-[10px] font-bold text-red-500">{minecraftErrors.minecraft_username.message}</p>
-                            )}
                         </form>
                     ) : (
                         <p className="break-words font-bold text-[var(--color-purple-700)] dark:text-white text-base min-w-0 flex-1">
-                            {formatForBreak(user.minecraft_username) || "Niet ingesteld"}
+                            {isLoading ? 'LOADING_USERNAME' : (formatForBreak(user.minecraft_username) || "Niet ingesteld")}
                         </p>
                     )}
                 </div>

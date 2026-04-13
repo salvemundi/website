@@ -9,13 +9,12 @@ import {
     MessageSquare,
     MapPin,
     ExternalLink,
-    Heart,
     Phone
 } from 'lucide-react';
 
 import { getSafeHavens } from '@/server/actions/safe-haven.actions';
 import SafeHavenCard from '@/components/ui/social/SafeHavenCard';
-import PageHeader from '@/components/ui/layout/PageHeader';
+import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 
 export const metadata: Metadata = {
@@ -60,16 +59,8 @@ async function SafeHavensContent() {
                 ))
             ) : (
                 <div className="col-span-full rounded-2xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-700 p-10 text-center">
-                    <div className="mx-auto h-16 w-16 rounded-2xl bg-slate-600 dark:bg-slate-700 flex items-center justify-center shadow-lg">
-                        <Shield className="h-8 w-8 text-white" />
-                    </div>
-                    <p className="mt-5 text-lg sm:text-xl font-bold text-theme">
-                        Safe Havens worden binnenkort toegevoegd
-                    </p>
-                    <p className="mt-2 text-sm sm:text-base text-theme-muted max-w-md mx-auto">
-                        We zijn bezig met het samenstellen van ons Safe Haven team.
-                        Check deze pagina binnenkort opnieuw of contacteer het bestuur voor vragen.
-                    </p>
+                    <Shield className="h-8 w-8 text-[var(--color-purple-500)] mx-auto mb-4" />
+                    <p className="text-lg font-bold text-theme">Binnenkort beschikbaar</p>
                 </div>
             )}
         </div>
@@ -79,220 +70,105 @@ async function SafeHavensContent() {
 export default function SafeHavensPage() {
     const topics = [
         { Icon: AlertTriangle, text: 'Agressie & geweld', color: 'from-slate-600 to-slate-700' },
-        { Icon: Heart, text: 'Seksuele intimidatie', color: 'from-slate-600 to-slate-700' },
+        { Icon: Shield, text: 'Seksuele intimidatie', color: 'from-slate-600 to-slate-700' },
         { Icon: UserX, text: 'Pesten & uitsluiting', color: 'from-slate-600 to-slate-700' },
         { Icon: Users, text: 'Discriminatie', color: 'from-slate-600 to-slate-700' },
-        { Icon: Shield, text: 'Grensoverschrijdend gedrag', color: 'from-slate-600 to-slate-700' },
         { Icon: MessageSquare, text: 'Persoonlijke situaties', color: 'from-slate-600 to-slate-700' },
     ];
 
     return (
-        <div className="min-h-screen">
-            <PageHeader
-                title="Safe Havens"
-                backgroundImage=""
-                contentPadding="py-20"
-                imageFilter="brightness(0.65)"
-            >
-                <div className="flex flex-col items-center">
-                    <p className="mx-auto mt-4 max-w-3xl text-lg sm:text-xl text-[var(--theme-purple)] dark:text-white leading-relaxed text-center font-medium">
-                        Een veilig aanspreekpunt waar je terechtkunt met zorgen, vragen of problemen.
-                        Wij luisteren zonder te oordelen.
-                    </p>
-                </div>
-            </PageHeader>
-
+        <PublicPageShell
+            title="Safe Havens"
+            description="Een veilig aanspreekpunt waar je terechtkunt met zorgen, vragen of problemen. Wij luisteren zonder te oordelen."
+        >
             <div className="mx-auto max-w-app px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
                 <div className="mx-auto max-w-7xl">
-                    {/* Bento grid */}
                     <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-12 lg:auto-rows-[minmax(160px,auto)]">
 
-                        {/* Intro section - spanning more space */}
+                        {/* Intro section */}
                         <BentoCard className="lg:col-span-8 lg:row-span-2">
-                            <div className="flex flex-col gap-6">
+                             <div className="flex flex-col gap-6">
                                 <div className="flex items-start gap-4 sm:gap-6">
                                     <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-slate-600 dark:bg-slate-700 flex items-center justify-center shrink-0 shadow-lg">
                                         <Shield className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
                                     </div>
 
                                     <div className="min-w-0 flex-1">
-                                        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-theme">
-                                            Wat zijn Safe Havens?
-                                        </h2>
+                                        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-theme">Wat zijn Safe Havens?</h2>
                                         <p className="mt-3 text-base sm:text-lg text-theme-muted leading-relaxed">
-                                            Binnen Salve Mundi College vinden wij een veilige en respectvolle omgeving essentieel.
-                                            Safe Havens zijn zorgvuldig geselecteerde personen die voor jou klaarstaan:
-                                            ze luisteren zonder te oordelen, denken met je mee, en helpen je een passende vervolgstap te vinden.
+                                            Binnen Salve Mundi vinden wij een veilige omgeving essentieel. Safe Havens zijn zorgvuldig geselecteerde personen die voor jou klaarstaan om te luisteren zonder te oordelen.
                                         </p>
                                     </div>
                                 </div>
 
                                 <div className="grid sm:grid-cols-2 gap-4">
                                     <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-700/30 p-5">
-                                        <div className="flex items-start gap-3">
-                                            <Lock className="mt-0.5 h-5 w-5 text-slate-600 dark:text-slate-400 shrink-0" />
-                                            <div>
-                                                <p className="text-base font-bold text-theme">
-                                                    Volledige vertrouwelijkheid
-                                                </p>
-                                                <p className="mt-1.5 text-sm text-theme-muted leading-relaxed">
-                                                    Safe Havens hebben geheimhoudingsplicht. Wat je deelt blijft tussen jullie,
-                                                    tenzij jij expliciet toestemming geeft om informatie te delen.
-                                                </p>
-                                            </div>
-                                        </div>
+                                        <Lock className="h-5 w-5 text-slate-500 mb-2" />
+                                        <p className="text-sm font-bold text-theme">Volledige vertrouwelijkheid</p>
                                     </div>
-
                                     <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-700/30 p-5">
-                                        <div className="flex items-start gap-3">
-                                            <Users className="mt-0.5 h-5 w-5 text-slate-600 dark:text-slate-400 shrink-0" />
-                                            <div>
-                                                <p className="text-base font-bold text-theme">
-                                                    Diverse achtergronden
-                                                </p>
-                                                <p className="mt-1.5 text-sm text-theme-muted leading-relaxed">
-                                                    We streven naar Safe Havens met verschillende geslachten en achtergronden,
-                                                    zodat er sneller iemand is waarbij jij je comfortabel voelt.
-                                                </p>
-                                            </div>
-                                        </div>
+                                        <Users className="h-5 w-5 text-slate-500 mb-2" />
+                                        <p className="text-sm font-bold text-theme">Diverse achtergronden</p>
                                     </div>
                                 </div>
                             </div>
                         </BentoCard>
 
-                        {/* Topics section - more compact */}
+                        {/* Topics */}
                         <BentoCard className="lg:col-span-4 lg:row-span-2">
-                            <div className="h-full flex flex-col">
-                                <div>
-                                    <h2 className="text-xl sm:text-2xl font-bold text-theme">
-                                        Waar kun je terecht?
-                                    </h2>
-                                    <p className="mt-2 text-sm text-theme-muted">
-                                        Onder andere bij de volgende onderwerpen:
-                                    </p>
-                                </div>
-
-                                <ul className="mt-5 flex-1 space-y-2.5">
-                                    {topics.map((topic, index) => (
-                                        <li
-                                            key={index}
-                                            className="group flex items-center gap-3 rounded-xl bg-slate-50 dark:bg-slate-900/20 border border-slate-200 dark:border-slate-700/30 p-3 hover:bg-slate-100 dark:hover:bg-slate-800/40 hover:border-slate-300 dark:hover:border-slate-600/50 transition-all duration-200"
-                                        >
-                                            <div className={`h-9 w-9 rounded-lg bg-gradient-to-br ${topic.color} flex items-center justify-center shrink-0 shadow-sm group-hover:shadow-md transition-shadow`}>
-                                                <topic.Icon className="h-4 w-4 text-white" />
-                                            </div>
-                                            <span className="text-sm font-medium text-theme">
-                                                {topic.text}
-                                            </span>
-                                        </li>
-                                    ))}
-                                </ul>
-
-                                <div className="mt-4 rounded-xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-800/30 p-3.5">
-                                    <p className="text-xs text-theme-muted leading-relaxed">
-                                        <strong className="text-theme">Let op:</strong> Deze lijst is niet uitputtend.
-                                        Heb je een zorg die hier niet staat? Neem gerust contact op.
-                                    </p>
-                                </div>
-                            </div>
+                            <h2 className="text-xl font-bold text-theme mb-5">Waar kun je terecht?</h2>
+                            <ul className="space-y-2.5">
+                                {topics.map((topic, index) => (
+                                    <li key={index} className="flex items-center gap-3 rounded-xl bg-slate-50 dark:bg-slate-900/20 p-3 border border-transparent hover:border-slate-200 transition-all">
+                                        <div className="h-8 w-8 rounded-lg bg-slate-600 flex items-center justify-center text-white text-xs">
+                                            <topic.Icon className="h-4 w-4" />
+                                        </div>
+                                        <span className="text-sm font-medium text-theme">{topic.text}</span>
+                                    </li>
+                                ))}
+                            </ul>
                         </BentoCard>
 
                         {/* Safe Havens list (PPR Boundary) */}
                         <BentoCard className="lg:col-span-8 lg:row-span-4">
-                            <div>
-                                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-                                    <div>
-                                        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-theme">
-                                            Onze Safe Havens
-                                        </h2>
-                                        <p className="mt-2 text-sm sm:text-base text-theme-muted">
-                                            Kies een persoon waarbij jij je het meest comfortabel voelt om mee te praten.
-                                        </p>
-                                    </div>
-                                </div>
+                            <h2 className="text-2xl sm:text-3xl font-bold text-theme">Onze Safe Havens</h2>
+                            <p className="mt-2 text-sm text-theme-muted mb-6">Kies een persoon waarbij jij je comfortabel voelt.</p>
 
-                                <Suspense fallback={
-                                    <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-4 sm:gap-5">
-                                        {[1, 2, 3, 4].map((i) => (
-                                            <SafeHavenCard key={i} isLoading />
-                                        ))}
-                                    </div>
-                                }>
-                                    <SafeHavensContent />
-                                </Suspense>
-                            </div>
+                            <Suspense fallback={
+                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-4 sm:gap-5">
+                                    {[1, 2, 3, 4].map((i) => (
+                                        <SafeHavenCard key={i} isLoading />
+                                    ))}
+                                </div>
+                            }>
+                                <SafeHavensContent />
+                            </Suspense>
                         </BentoCard>
 
-                        {/* External help section */}
+                        {/* External help */}
                         <BentoCard className="lg:col-span-4 lg:row-span-4">
-                            <div className="h-full flex flex-col">
-                                <div className="text-center">
-                                    <div className="mx-auto mb-5 h-16 w-16 rounded-2xl bg-slate-600 dark:bg-slate-700 flex items-center justify-center shadow-lg">
-                                        <MapPin className="h-8 w-8 text-white" />
-                                    </div>
-
-                                    <h2 className="text-xl sm:text-2xl font-bold text-theme">
-                                        Hulp buiten Salve Mundi
-                                    </h2>
-
-                                    <p className="mt-3 text-sm sm:text-base text-theme-muted leading-relaxed">
-                                        Wil je liever met iemand buiten onze vereniging praten?
-                                        Er zijn professionele instanties die je kunnen helpen.
-                                    </p>
-                                </div>
-
-                                <div className="mt-6 space-y-3">
-                                    <a
-                                        href="https://www.fontys.nl/fontyshelpt.htm"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="group flex items-center justify-between gap-3 rounded-xl bg-slate-600 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 px-5 py-4 text-white shadow-lg transition-all hover:shadow-xl hover:scale-[1.02]"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <Shield className="h-5 w-5" />
-                                            <span className="font-semibold text-sm sm:text-base">
-                                                Fontys Safe Haven
-                                            </span>
-                                        </div>
-                                        <ExternalLink className="h-4 w-4 opacity-80 group-hover:opacity-100" />
-                                    </a>
-
-                                    <div className="group flex items-center justify-center gap-2 rounded-xl bg-slate-600 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 px-5 py-4 text-white shadow-lg transition-all hover:shadow-xl">
-                                        <ObfuscatedEmail
-                                            email="bestuur@salvemundi.nl"
-                                            className="text-white hover:text-white"
-                                            showIcon={false}
-                                        />
-                                    </div>
-
-                                </div>
-
-                                <div className="mt-6 rounded-xl bg-red-50 dark:bg-red-950/30 border-2 border-red-300 dark:border-red-700 p-4">
-                                    <div className="flex items-center justify-center gap-2 mb-2">
-                                        <Phone className="h-5 w-5 text-red-600 dark:text-red-400" />
-                                        <p className="font-bold text-red-900 dark:text-red-200">
-                                            Noodgeval
-                                        </p>
-                                    </div>
-                                    <p className="text-center text-sm text-red-800 dark:text-red-300">
-                                        Bij direct gevaar of spoedeisende situaties, bel onmiddellijk <strong>112</strong>
-                                    </p>
-                                </div>
-
-                                <div className="mt-auto pt-6">
-                                    <div className="rounded-xl bg-slate-50 dark:bg-slate-900/20 border border-slate-200 dark:border-slate-700/30 p-4">
-                                        <p className="text-xs text-center text-theme-muted leading-relaxed">
-                                            Alle gesprekken zijn vertrouwelijk en worden met respect behandeld.
-                                            Jouw welzijn staat voorop.
-                                        </p>
-                                    </div>
+                            <div className="text-center mb-8">
+                                <MapPin className="h-10 w-10 text-[var(--color-purple-500)] mx-auto mb-4" />
+                                <h2 className="text-xl font-bold text-theme">Externe hulp</h2>
+                            </div>
+                            
+                            <div className="space-y-4">
+                                <a href="https://www.fontys.nl/fontyshelpt.htm" target="_blank" className="flex items-center justify-between p-4 bg-slate-600 text-white rounded-xl shadow-lg hover:scale-[1.02] transition-transform">
+                                    <span className="font-bold text-sm">Fontys Safe Haven</span>
+                                    <ExternalLink className="h-4 w-4 opacity-50" />
+                                </a>
+                                <ObfuscatedEmail email="bestuur@salvemundi.nl" className="flex justify-center p-4 bg-slate-700 text-white rounded-xl shadow-lg" />
+                                
+                                <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/30 border-2 border-red-200 text-center">
+                                    <Phone className="h-5 w-5 text-red-600 mx-auto mb-2" />
+                                    <p className="font-bold text-red-900 dark:text-red-200 text-sm">Noodgeval? Bel 112</p>
                                 </div>
                             </div>
                         </BentoCard>
+
                     </div>
                 </div>
             </div>
-        </div>
+        </PublicPageShell>
     );
 }

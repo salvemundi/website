@@ -39,56 +39,49 @@ export default function LogsTab({ isLoading, logs, onRefresh, title = "Activitei
                             <th className="p-4 text-center">Status</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-[var(--beheer-border)]/10">
-                        {isLoading ? (
-                            [...Array(5)].map((_, i) => (
-                                <tr key={i} className="animate-pulse">
-                                    <td colSpan={5} className="p-8"><div className="h-4 bg-slate-100 dark:bg-slate-700 rounded w-full" /></td>
-                                </tr>
-                            ))
-                        ) : logs.length === 0 ? (
-                            <tr>
-                                <td colSpan={5} className="p-20 text-center text-slate-400 italic">Geen logboekvermeldingen gevonden.</td>
+                    <tbody className={`divide-y divide-[var(--beheer-border)]/10 ${isLoading ? 'skeleton-active' : ''}`}>
+                        {(isLoading ? [...Array(10)] : logs).map((log, i) => (
+                            <tr key={isLoading ? i : log.id} className="hover:bg-[var(--beheer-accent)]/[0.02] transition-colors group">
+                                <td className="p-4 text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest whitespace-nowrap">
+                                    {isLoading ? '01-01-2024 12:00' : formatDate(log.created_at, true)}
+                                </td>
+                                <td className="p-4">
+                                    <span className="font-black text-[var(--beheer-text)] uppercase tracking-tight text-xs">
+                                        {isLoading ? 'LOADING_TYPE' : log.type}
+                                    </span>
+                                </td>
+                                <td className="p-4 text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">
+                                    {isLoading ? 'User Name' : (log.payload?.admin_name || 'Systeem')}
+                                </td>
+                                <td className="p-4">
+                                    <div className="text-[10px] font-bold text-[var(--beheer-text-muted)] uppercase tracking-widest max-w-md break-all">
+                                        {isLoading ? 'Loading payload details for the logged event...' : (log.payload && typeof log.payload === 'object' ? (
+                                            <div className="space-y-1">
+                                                {Object.entries(log.payload)
+                                                    .filter(([key]) => !['admin_id', 'admin_name', 'timestamp'].includes(key))
+                                                    .map(([key, val]) => (
+                                                        <div key={key} className="flex gap-2">
+                                                            <span className="opacity-50">{key}:</span>
+                                                            <span className="text-[var(--beheer-text)]">{typeof val === 'object' ? JSON.stringify(val) : String(val)}</span>
+                                                        </div>
+                                                    ))}
+                                            </div>
+                                        ) : (
+                                            <span>{String(log.payload || '-')}</span>
+                                        ))}
+                                    </div>
+                                </td>
+                                <td className="p-4 text-center">
+                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${log?.status === 'SUCCESS' ? 'bg-[var(--beheer-active)]/10 text-[var(--beheer-active)] border-[var(--beheer-active)]/20' : 'bg-[var(--beheer-inactive)]/10 text-[var(--beheer-inactive)] border-[var(--beheer-inactive)]/20'}`}>
+                                        {isLoading ? 'STATUS' : log.status}
+                                    </span>
+                                </td>
                             </tr>
-                        ) : (
-                            logs.map(log => (
-                                <tr key={log.id} className="hover:bg-[var(--beheer-accent)]/[0.02] transition-colors group">
-                                    <td className="p-4 text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest whitespace-nowrap">
-                                        {formatDate(log.created_at, true)}
-                                    </td>
-                                    <td className="p-4">
-                                        <span className="font-black text-[var(--beheer-text)] uppercase tracking-tight text-xs">
-                                            {log.type}
-                                        </span>
-                                    </td>
-                                    <td className="p-4 text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">
-                                        {log.payload?.admin_name || 'Systeem'}
-                                    </td>
-                                    <td className="p-4">
-                                        <div className="text-[10px] font-bold text-[var(--beheer-text-muted)] uppercase tracking-widest max-w-md break-all">
-                                            {log.payload && typeof log.payload === 'object' ? (
-                                                <div className="space-y-1">
-                                                    {Object.entries(log.payload)
-                                                        .filter(([key]) => !['admin_id', 'admin_name', 'timestamp'].includes(key))
-                                                        .map(([key, val]) => (
-                                                            <div key={key} className="flex gap-2">
-                                                                <span className="opacity-50">{key}:</span>
-                                                                <span className="text-[var(--beheer-text)]">{typeof val === 'object' ? JSON.stringify(val) : String(val)}</span>
-                                                            </div>
-                                                        ))}
-                                                </div>
-                                            ) : (
-                                                <span>{String(log.payload || '-')}</span>
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td className="p-4 text-center">
-                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${log.status === 'SUCCESS' ? 'bg-[var(--beheer-active)]/10 text-[var(--beheer-active)] border-[var(--beheer-active)]/20' : 'bg-[var(--beheer-inactive)]/10 text-[var(--beheer-inactive)] border-[var(--beheer-inactive)]/20'}`}>
-                                            {log.status}
-                                        </span>
-                                    </td>
-                                </tr>
-                            ))
+                        ))}
+                        {!isLoading && logs.length === 0 && (
+                            <tr>
+                                <td colSpan={5} className="p-20 text-center text-slate-400 italic font-black uppercase tracking-widest text-[10px]">Geen logboekvermeldingen gevonden.</td>
+                            </tr>
                         )}
                     </tbody>
                 </table>

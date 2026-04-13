@@ -200,6 +200,7 @@
     /* ── Skeleton Mask (Vercel/Meta Best Practice) ────────────────────────── */
     .skeleton-active {
         @apply pointer-events-none select-none relative overflow-hidden;
+        border-radius: var(--radius-xl, 0.75rem);
     }
 
     .skeleton-active * {
@@ -208,7 +209,8 @@
 
     .skeleton-active::before {
         content: "";
-        @apply absolute inset-0 animate-pulse bg-[var(--beheer-card-soft)] rounded-[inherit] z-10;
+        @apply absolute inset-0 animate-pulse bg-[var(--beheer-card-soft)] z-10;
+        border-radius: inherit;
         background-image: linear-gradient(
             90deg,
             transparent,

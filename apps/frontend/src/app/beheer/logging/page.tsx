@@ -1,10 +1,9 @@
 import React, { Suspense } from 'react';
 import { redirect } from 'next/navigation';
-import PageHeader from '@/components/ui/layout/PageHeader';
 import AuditLogIsland from '@/components/islands/admin/AuditLogIsland';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
-import { Loader2 } from 'lucide-react';
+import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 
 async function checkAuditAccess() {
     const session = await auth.api.getSession({
@@ -20,6 +19,11 @@ async function checkAuditAccess() {
     });
 }
 
+/**
+ * AuditLoggingPage: Ultra-PPR Modernization.
+ * Wrapped in AdminPageShell for instant header rendering.
+ * Uses Zero-Drift masking via AuditLogIsland.
+ */
 export default async function AuditLoggingPage() {
     const hasAccess = await checkAuditAccess();
 
@@ -28,17 +32,14 @@ export default async function AuditLoggingPage() {
     }
 
     return (
-        <main className="min-h-screen bg-[var(--bg-main)]">
-            <Suspense fallback={
-                <div className="container mx-auto px-4 py-32">
-                    <div className="flex flex-col items-center justify-center py-24 bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] animate-pulse">
-                        <Loader2 className="h-12 w-12 text-[var(--beheer-text-muted)] animate-spin mb-4" />
-                        <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-xs">Audit interface laden...</p>
-                    </div>
-                </div>
-            }>
+        <AdminPageShell
+            title="Audit & Logboek"
+            subtitle="Monitor systeemwijzigingen en beheerdersacties in real-time."
+            backHref="/beheer"
+        >
+            <Suspense fallback={<AuditLogIsland />}>
                 <AuditLogIsland />
             </Suspense>
-        </main>
+        </AdminPageShell>
     );
 }

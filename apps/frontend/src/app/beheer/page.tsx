@@ -1,5 +1,6 @@
-import { Suspense } from 'react';
-import AdminToolbar from '@/components/ui/admin/AdminToolbar';
+import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
+import { DashboardLoading } from '@/components/ui/admin/AdminLoadingFallbacks';
+import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import { 
     DashboardHub, 
     BirthdaysList, 
@@ -7,12 +8,16 @@ import {
     ActivitySignupsList
 } from '@/components/ui/admin/dashboard/DashboardSections';
 import { checkAdminAccess, getDashboardPermissions } from '@/server/actions/admin.actions';
+import { Suspense } from 'react';
 
-export default async function BeheerPage() {
-    const { user } = await checkAdminAccess();
+export const metadata = {
+    title: 'Beheer Dashboard | SV Salve Mundi',
+};
+
+async function DashboardDataLoader() {
     const permissions = await getDashboardPermissions();
     
-    // Detecteer beperkte rechten voor layout optimalisatie
+    // Permission-aware dashboard layout
     const allPermissions = [
         permissions.canAccessIntro,
         permissions.canAccessReis,
@@ -24,63 +29,55 @@ export default async function BeheerPage() {
         permissions.isIct
     ];
     const visibleCount = allPermissions.filter(Boolean).length;
-    const isLimitedAccess = visibleCount <= 2; // Bijv. alleen Intro of alleen Activiteiten
+    const isLimitedAccess = visibleCount <= 2;
 
     return (
-        <main className="min-h-screen bg-[var(--bg-main)] pb-24">
-            <AdminToolbar 
-                title="Beheer Dashboard" 
-                subtitle={`Welkom terug, ${user?.first_name || 'Admin'}. Beheer de vereniging en activiteiten vanaf één plek.`}
-            />
+        <div className="container mx-auto px-4 py-8 md:py-12 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className={`grid grid-cols-1 ${isLimitedAccess ? 'lg:grid-cols-1 max-w-5xl mx-auto' : 'lg:grid-cols-12'} gap-8 md:gap-12 items-start`}>
+                
+                {/* Main Hub: Navigation & Key Stats */}
+                <div className={isLimitedAccess ? 'w-full space-y-12' : 'lg:col-span-8 space-y-12'}>
+                    <DashboardHub permissions={permissions} />
 
-            <div className="container mx-auto px-4 py-8 md:py-12 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <div className={`grid grid-cols-1 ${isLimitedAccess ? 'lg:grid-cols-1 max-w-5xl mx-auto' : 'lg:grid-cols-12'} gap-8 md:gap-12 items-start`}>
+                    {!isLimitedAccess && (
+                        <div className="pt-12 border-t border-[var(--beheer-border)] opacity-60 hover:opacity-100 transition-opacity hidden md:block">
+                            <TopStickersList />
+                        </div>
+                    )}
+                </div>
+
+                {/* Side Sidebar: Real-time activities & birthdays */}
+                <div className={isLimitedAccess ? 'w-full grid grid-cols-1 md:grid-cols-2 gap-6 pt-12 border-t border-[var(--beheer-border)]' : 'lg:col-span-4 space-y-8'}>
+                    <div className="space-y-6">
+                        <ActivitySignupsList />
+                    </div>
                     
-                    {/* Main Hub: Navigation & Key Stats */}
-                    <div className={isLimitedAccess ? 'w-full space-y-12' : 'lg:col-span-8 space-y-12'}>
-                        <Suspense fallback={<DashboardHub isLoading permissions={permissions} />}>
-                            <DashboardHub permissions={permissions} />
-                        </Suspense>
-
-                        {!isLimitedAccess && (
-                            <div className="pt-12 border-t border-[var(--beheer-border)] opacity-60 hover:opacity-100 transition-opacity hidden md:block">
-                                <Suspense fallback={<TopStickersList isLoading />}>
-                                    <TopStickersList />
-                                </Suspense>
+                    <div className="space-y-6">
+                        <BirthdaysList />
+                        {isLimitedAccess && (
+                            <div className="md:hidden opacity-60">
+                                <TopStickersList />
                             </div>
                         )}
                     </div>
-{/* ... remainder of layout unchanged */}
-
-                    {/* Side Sidebar: Real-time activities & birthdays */}
-                    <div className={isLimitedAccess ? 'w-full grid grid-cols-1 md:grid-cols-2 gap-6 pt-12 border-t border-[var(--beheer-border)]' : 'lg:col-span-4 space-y-8'}>
-                        <div className="space-y-6">
-                            <Suspense fallback={<ActivitySignupsList isLoading />}>
-                                <ActivitySignupsList />
-                            </Suspense>
-                        </div>
-                        
-                        <div className="space-y-6">
-                            <Suspense fallback={<BirthdaysList isLoading />}>
-                                <BirthdaysList />
-                            </Suspense>
-
-                            {isLimitedAccess && (
-                                <div className="md:hidden opacity-60">
-                                    <Suspense fallback={<TopStickersList isLoading />}>
-                                        <TopStickersList />
-                                    </Suspense>
-                                </div>
-                            )}
-                        </div>
-                    </div>
                 </div>
             </div>
-        </main>
+        </div>
     );
 }
 
+export default async function BeheerPage() {
+    const access = await checkAdminAccess().catch(() => null);
+    if (!access || !access.user) return <AdminUnauthorized />;
 
-// Note: All separate skeleton components were removed in favor of integrated isLoading props on Dashboard sections.
-
-
+    return (
+        <AdminPageShell
+            title="Beheer Dashboard"
+            subtitle={`Welkom terug, ${access.user?.first_name || 'Admin'}. Beheer de vereniging vanaf één plek.`}
+            backHref="/beheer"
+            fallback={<DashboardLoading />}
+        >
+            <DashboardDataLoader />
+        </AdminPageShell>
+    );
+}

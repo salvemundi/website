@@ -1,29 +1,38 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { triggerFullSyncAction, triggerUserSyncAction } from '@/server/actions/azure-sync/sync-tasks.actions';
 import { getSyncStatusAction, stopSyncAction } from '@/server/actions/azure-sync/sync-monitoring.actions';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import AdminToast from '@/components/ui/admin/AdminToast';
 
-// Modular Segments
-import SyncHeaderIsland from './SyncHeaderIsland';
-import SyncStatsIsland from './SyncStatsIsland';
-import SyncControlIsland from './SyncControlIsland';
-import SyncMonitorIsland from './SyncMonitorIsland';
-
-interface AzureSyncClientWrapperProps {
-    initialStatus: any | null;
+interface SyncContextType {
+    status: any | null;
+    isLoading: boolean;
+    isStartingSync: boolean;
+    isStopping: boolean;
+    isUserSyncLoading: boolean;
+    userId: string;
+    setUserId: (id: string) => void;
+    lastUpdated: Date | null;
+    selectedSyncFields: string[];
+    toggleField: (id: string) => void;
+    forceLink: boolean;
+    setForceLink: (val: boolean) => void;
+    activeOnly: boolean;
+    setActiveOnly: (val: boolean) => void;
+    resultFilter: string;
+    setResultFilter: (filter: any) => void;
+    syncFieldOptions: { id: string; label: string }[];
+    fetchStatus: () => Promise<void>;
+    handleFullSync: () => Promise<void>;
+    handleStopSync: () => Promise<void>;
+    handleUserSync: (e: React.FormEvent) => Promise<void>;
 }
 
-const syncFieldOptions = [
-    { id: 'membership_expiry', label: 'Lidmaatschap vervaldatum' },
-    { id: 'geboortedatum', label: 'Geboortedatum' },
-    { id: 'phone_number', label: 'Mobiel nummer' },
-    { id: 'committees', label: 'Commissies' },
-];
+const SyncContext = createContext<SyncContextType | undefined>(undefined);
 
-export default function AzureSyncClientWrapper({ initialStatus }: AzureSyncClientWrapperProps) {
+export function SyncProvider({ children, initialStatus }: { children: ReactNode, initialStatus: any | null }) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [status, setStatus] = useState<any | null>(initialStatus);
     const [isStartingSync, setIsStartingSync] = useState(false);
@@ -36,7 +45,14 @@ export default function AzureSyncClientWrapper({ initialStatus }: AzureSyncClien
     const [selectedSyncFields, setSelectedSyncFields] = useState<string[]>(['membership_expiry', 'geboortedatum', 'phone_number', 'committees']);
     const [forceLink, setForceLink] = useState(false);
     const [activeOnly, setActiveOnly] = useState(false);
-    const [resultFilter, setResultFilter] = useState<'all' | 'success' | 'created' | 'warnings' | 'missing' | 'errors' | 'excluded'>('all');
+    const [resultFilter, setResultFilter] = useState<string>('all');
+
+    const syncFieldOptions = [
+        { id: 'membership_expiry', label: 'Lidmaatschap Expiry' },
+        { id: 'geboortedatum', label: 'Geboortedatum' },
+        { id: 'phone_number', label: 'Telefoonnummer' },
+        { id: 'committees', label: 'Commissies' },
+    ];
 
     const fetchStatus = useCallback(async () => {
         try {
@@ -46,14 +62,14 @@ export default function AzureSyncClientWrapper({ initialStatus }: AzureSyncClien
                 setLastUpdated(new Date());
             }
         } catch (err) {
-            // Error handled by UI states
+            // Silently fail, handled by UI
         } finally {
             setIsLoading(false);
         }
     }, []);
 
     useEffect(() => {
-        let timeout: NodeJS.Timeout;
+        let timeout: ReturnType<typeof setTimeout>;
         const shouldPoll = status?.active || status?.status === 'running' || isStartingSync;
         
         const poll = async () => {
@@ -68,6 +84,11 @@ export default function AzureSyncClientWrapper({ initialStatus }: AzureSyncClien
 
         return () => clearTimeout(timeout);
     }, [status?.active, status?.status, isStartingSync, fetchStatus]);
+
+    // Ensure we fetch at least once on mount to clear initial loading state
+    useEffect(() => {
+        fetchStatus();
+    }, [fetchStatus]);
 
     const handleFullSync = async () => {
         setIsStartingSync(true);
@@ -133,55 +154,24 @@ export default function AzureSyncClientWrapper({ initialStatus }: AzureSyncClien
         );
     };
 
-    const progress = status ? (status.total > 0 ? (status.processed / status.total) * 100 : 0) : 0;
-
     return (
-        <>
-            <div className="animate-in fade-in duration-700">
-                <SyncHeaderIsland 
-                    isLoading={isLoading} 
-                    onRefresh={fetchStatus} 
-                    isActive={status?.active} 
-                />
-
-                <div className="space-y-8 mt-8">
-                    <SyncStatsIsland 
-                        isLoading={isLoading} 
-                        status={status} 
-                    />
-
-                    <SyncControlIsland 
-                        isLoading={isLoading}
-                        isStartingSync={isStartingSync}
-                        isStopping={isStopping}
-                        isUserSyncLoading={isUserSyncLoading}
-                        selectedSyncFields={selectedSyncFields}
-                        toggleField={toggleField}
-                        forceLink={forceLink}
-                        setForceLink={setForceLink}
-                        activeOnly={activeOnly}
-                        setActiveOnly={setActiveOnly}
-                        handleFullSync={handleFullSync}
-                        handleStopSync={handleStopSync}
-                        userId={userId}
-                        setUserId={setUserId}
-                        handleUserSync={handleUserSync}
-                        syncFieldOptions={syncFieldOptions}
-                        status={status}
-                    />
-
-                    <SyncMonitorIsland 
-                        isLoading={isLoading}
-                        status={status}
-                        progress={progress}
-                        lastUpdated={lastUpdated}
-                        resultFilter={resultFilter}
-                        setResultFilter={setResultFilter}
-                    />
-                </div>
-            </div>
-
+        <SyncContext.Provider value={{
+            status, isLoading, isStartingSync, isStopping, isUserSyncLoading,
+            userId, setUserId, lastUpdated, selectedSyncFields, toggleField,
+            forceLink, setForceLink, activeOnly, setActiveOnly,
+            resultFilter, setResultFilter, syncFieldOptions, fetchStatus,
+            handleFullSync, handleStopSync, handleUserSync
+        }}>
+            {children}
             <AdminToast toast={toast} onClose={hideToast} />
-        </>
+        </SyncContext.Provider>
     );
+}
+
+export function useSync() {
+    const context = useContext(SyncContext);
+    if (context === undefined) {
+        throw new Error('useSync must be used within a SyncProvider');
+    }
+    return context;
 }

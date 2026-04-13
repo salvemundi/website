@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import type { Trip, TripSignup, TripSignupActivity } from '@salvemundi/validations/schema/admin-reis.zod';
 import { updateSignupStatus, deleteTripSignup, sendPaymentEmail } from '@/server/actions/reis-admin-signups.actions';
@@ -228,16 +228,25 @@ export default function AdminReisTableIsland({
         return statusMap[status] || { label: status, color: 'bg-[var(--beheer-text-muted)]/10 text-[var(--beheer-text-muted)]' };
     };
 
-    const displayStats = isLoading ? [] : [
-        { label: 'Aanmeldingen', value: stats?.total || 0, icon: Users },
-        { label: 'Wachtlijst', value: stats?.waitlist || 0, icon: UserX },
-        { label: 'Bevestigd', value: stats?.confirmed || 0, icon: UserCheck },
-        { label: 'Aanbetaling', value: stats?.depositPaid || 0, icon: Plane },
-        { label: 'Volledig', value: stats?.fullPaid || 0, icon: Plane }
-    ];
+    const displayStats = useMemo(() => {
+        if (isLoading) return [
+            { label: 'Aanmeldingen', value: 0, icon: Users },
+            { label: 'Wachtlijst', value: 0, icon: UserX },
+            { label: 'Bevestigd', value: 0, icon: UserCheck },
+            { label: 'Aanbetaling', value: 0, icon: Plane },
+            { label: 'Volledig', value: 0, icon: Plane }
+        ];
+        return [
+            { label: 'Aanmeldingen', value: stats?.total || 0, icon: Users },
+            { label: 'Wachtlijst', value: stats?.waitlist || 0, icon: UserX },
+            { label: 'Bevestigd', value: stats?.confirmed || 0, icon: UserCheck },
+            { label: 'Aanbetaling', value: stats?.depositPaid || 0, icon: Plane },
+            { label: 'Volledig', value: stats?.fullPaid || 0, icon: Plane }
+        ];
+    }, [stats, isLoading]);
 
     return (
-        <>
+        <div className={`space-y-8 ${isLoading ? 'skeleton-active' : ''}`} aria-busy={isLoading}>
             <AdminStatsBar stats={displayStats} isLoading={isLoading} />
 
             <ReisFilters 
@@ -268,6 +277,6 @@ export default function AdminReisTableIsland({
                 allowFinalPayments={!!trip?.allow_final_payments}
             />
             <AdminToast toast={toast} onClose={hideToast} />
-        </>
+        </div>
     );
 }

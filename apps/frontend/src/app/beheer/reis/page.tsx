@@ -2,7 +2,6 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 
 // V7 Specifics
-import AdminReisDashboardSkeleton from '@/components/ui/admin/AdminReisDashboardSkeleton';
 import AdminReisSelectorIsland from '@/components/islands/admin/AdminReisSelectorIsland';
 import AdminReisTableIsland from '@/components/islands/admin/AdminReisTableIsland';
 import { Plane, Plus } from 'lucide-react';
@@ -11,6 +10,7 @@ import { notFound } from 'next/navigation';
 import { getReisSiteSettings } from '@/server/actions/reis.actions';
 import { checkAdminAccess } from '@/server/actions/admin.actions';
 import { getAdminTrips, getAdminTripById } from '@/server/actions/reis-admin-core.actions';
+import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,20 +38,32 @@ export async function generateMetadata({ searchParams }: AdminReisPageProps): Pr
     return { title };
 }
 
+/**
+ * AdminReisPage: Zero-Drift Modernization.
+ * Migrated to AdminPageShell for consistent sidebar/toolbar rendering.
+ * Uses nested Suspense with AdminReisSelectorIsland and AdminReisTableIsland 
+ * to ensure immediate layout rendering while data streams in from the database.
+ */
 export default async function AdminReisPage({ searchParams }: AdminReisPageProps) {
     const { user } = await checkAdminAccess();
 
-    // We pass searchParams down to the content component which handles the actual fetching
     return (
-        <main className="min-h-screen bg-[var(--bg-main)]">
+        <AdminPageShell
+            title="Reis Beheer"
+            subtitle="Beheer aanmeldingen, betalingen en activiteiten voor de studiereis"
+            backHref="/beheer"
+        >
             <Suspense fallback={
-                <div className="container mx-auto px-4 py-8 max-w-7xl">
-                    <AdminReisDashboardSkeleton />
+                <div className="space-y-0">
+                    <AdminReisSelectorIsland isLoading={true} />
+                    <div className="container mx-auto px-4 py-8 max-w-7xl">
+                        <AdminReisTableIsland isLoading={true} initialSignups={[]} initialSignupActivities={{}} trip={{} as any} />
+                    </div>
                 </div>
             }>
                 <AdminReisDashboardContent searchParams={searchParams} />
             </Suspense>
-        </main>
+        </AdminPageShell>
     );
 }
 
@@ -78,12 +90,7 @@ async function AdminReisDashboardContent({ searchParams }: AdminReisPageProps) {
     }
 
     if (!trips || trips.length === 0) {
-        return (
-            <>
-                {/* Toolbar is now part of the island or dashboard skeleton should handle it */}
-                <NoTripsView />
-            </>
-        );
+        return <NoTripsView />;
     }
 
     const activeTripId = tripIdParam ? Number(tripIdParam) : trips[0].id;
@@ -95,7 +102,6 @@ async function AdminReisDashboardContent({ searchParams }: AdminReisPageProps) {
 
     return (
         <div className="min-h-screen pb-20">
-
             <AdminReisSelectorIsland 
                 trips={trips} 
                 initialSettings={reisSettings}
@@ -103,7 +109,7 @@ async function AdminReisDashboardContent({ searchParams }: AdminReisPageProps) {
 
             <div className="container mx-auto px-4 py-8 max-w-7xl">
                 {/* Nested suspense for the signups table to allow the selector to render early */}
-                <Suspense fallback={<AdminReisDashboardSkeleton />} key={activeTrip.id}>
+                <Suspense fallback={<AdminReisTableIsland isLoading={true} initialSignups={[]} initialSignupActivities={{}} trip={activeTrip} />} key={activeTrip.id}>
                     <AdminReisSignupsTable tripId={activeTrip.id} trip={activeTrip} />
                 </Suspense>
             </div>
@@ -115,7 +121,7 @@ async function AdminReisDashboardContent({ searchParams }: AdminReisPageProps) {
 import { getTripSignups, getTripSignupActivitiesAction } from '@/server/actions/reis-admin-signups.actions';
 
 async function AdminReisSignupsTable({ tripId, trip }: { tripId: number, trip: any }) {
-    // Fetch signups and their activities in parallel using the new direct-database actions
+    // Fetch signups and their activities in parallel
     let signups: any[] = [];
     let allSignupActivities: any[] = [];
     

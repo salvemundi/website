@@ -45,19 +45,56 @@ export default function ProfielSignups({
                 </div>
             }
         >
-            {isLoading ? (
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {[1, 2, 3].map((i) => (
-                        <div key={i} className="h-28 rounded-3xl bg-[var(--bg-card)] dark:bg-black/20 border border-[var(--border-color)]/10 flex items-center p-5 gap-4">
-                            <Skeleton className="h-16 w-16 bg-[var(--color-purple-500)]/10 shrink-0" rounded="2xl" />
-                            <div className="flex-1 space-y-3 min-w-0">
-                                <Skeleton className="h-5 w-full bg-[var(--color-purple-500)]/10" rounded="md" />
-                                <Skeleton className="h-3 w-1/2 bg-[var(--color-purple-500)]/5" rounded="full" />
-                            </div>
-                        </div>
-                    ))}
+            {(isLoading || filteredSignups.length > 0) ? (
+                <div className={`grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 ${isLoading ? 'skeleton-active' : ''}`}>
+                    {(isLoading ? [1, 2, 3] : filteredSignups).map((signup: any, idx: number) => {
+                        const isEvent = isLoading ? true : signup._type === 'event';
+                        const eventData = isLoading ? { name: 'Loading Activity Name', id: 'loading' } : (isEvent ? signup.event_id : signup.pub_crawl_event_id);
+                        const eventDateStr = isLoading ? '2024-01-01' : (isEvent ? eventData?.event_date : eventData?.date);
+                        const detailHref = isLoading ? '#' : (isEvent ? `/activiteiten/${eventData.id}` : `/kroegentocht`);
+                        const icon = isLoading ? <Calendar className="h-7 w-7" /> : (isEvent ? <Calendar className="h-7 w-7" /> : <CreditCard className="h-7 w-7" />);
+
+                        if (!eventData) return null;
+
+                        const isPast = (() => {
+                            try {
+                                if (isLoading || !eventDateStr) return false;
+                                return isBefore(startOfDay(new Date(eventDateStr)), startOfDay(new Date()));
+                            } catch { return false; }
+                        })();
+
+                        return (
+                            <Link
+                                key={isLoading ? idx : `${signup._type}-${signup.id}`}
+                                href={detailHref}
+                                className={`group h-full flex items-center justify-between gap-4 rounded-3xl p-5 text-left transition-all border shadow-sm ${
+                                    isPast 
+                                    ? "bg-slate-50 dark:bg-black/10 opacity-60 grayscale border-slate-200 dark:border-white/5" 
+                                    : "bg-slate-50 dark:bg-black/20 border-slate-200 dark:border-white/10 hover:shadow-lg hover:-translate-y-0.5"
+                                }`}
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="shrink-0 h-16 w-16 flex items-center justify-center rounded-2xl bg-[var(--color-purple-100)] text-[var(--color-purple-500)] shadow-sm">
+                                         {icon}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <div className="flex items-center gap-2">
+                                            <h3 className="text-lg font-bold text-[var(--color-purple-700)] dark:text-white line-clamp-1">
+                                                {eventData.name}
+                                            </h3>
+                                        </div>
+                                        <p className="mt-1 flex items-center gap-2 text-xs font-bold text-[var(--text-muted)]">
+                                            <Calendar className="h-3.5 w-3.5" />
+                                            {isLoading ? '01 JAN 2024' : (eventDateStr && format(new Date(eventDateStr), "d MMM yyyy", { locale: nl }))}
+                                        </p>
+                                    </div>
+                                </div>
+                                <ChevronRight className="h-6 w-6 shrink-0 text-[var(--color-purple-200)] transition-transform group-hover:translate-x-1" />
+                            </Link>
+                        );
+                    })}
                 </div>
-            ) : filteredSignups.length === 0 ? (
+            ) : (
                 <div className="rounded-3xl border-2 border-dashed border-slate-300 dark:border-white/20 bg-slate-50 dark:bg-black/10 p-12 text-center shadow-inner">
                     <p className="text-[var(--color-purple-700)] dark:text-white font-bold text-lg mb-2">
                         Je hebt je nog niet ingeschreven voor activiteiten.
@@ -71,60 +108,6 @@ export default function ProfielSignups({
                     >
                         Ontdek activiteiten
                     </Link>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-                    {filteredSignups.map((signup: any) => {
-                        const isEvent = signup._type === 'event';
-                        const eventData = isEvent ? signup.event_id : signup.pub_crawl_event_id;
-                        const eventDateStr = isEvent ? eventData?.event_date : eventData?.date;
-                        const detailHref = isEvent ? `/activiteiten/${eventData.id}` : `/kroegentocht`;
-                        const icon = isEvent ? <Calendar className="h-7 w-7" /> : <CreditCard className="h-7 w-7" />;
-
-                        if (!eventData) return null;
-
-                        const isPast = (() => {
-                            try {
-                                if (!eventDateStr) return false;
-                                return isBefore(startOfDay(new Date(eventDateStr)), startOfDay(new Date()));
-                            } catch { return false; }
-                        })();
-
-                        return (
-                            <Link
-                                key={`${signup._type}-${signup.id}`}
-                                href={detailHref}
-                                className={`group h-full flex items-center justify-between gap-4 rounded-3xl p-5 text-left transition-all border shadow-sm ${
-                                    isPast 
-                                    ? "bg-slate-50 dark:bg-black/10 opacity-60 grayscale border-slate-200 dark:border-white/5" 
-                                    : "bg-slate-50 dark:bg-black/20 border-slate-200 dark:border-white/10 hover:shadow-lg hover:-translate-y-0.5"
-                                }`}
-                            >
-                                <div className="flex items-center gap-4">
-                                    <div className="shrink-0 h-16 w-16 flex items-center justify-center rounded-2xl bg-[var(--color-purple-100)] text-[var(--color-purple-500)] shadow-sm">
-                                         {icon}
-                                    </div>
-                                    <div>
-                                        <div className="flex items-center gap-2">
-                                            <h3 className="text-lg font-bold text-[var(--color-purple-700)] dark:text-white line-clamp-1">
-                                                {eventData.name}
-                                            </h3>
-                                            {!isEvent && (
-                                                <span className="px-2 py-0.5 rounded-full bg-[var(--color-purple-100)] text-[10px] font-black uppercase text-[var(--color-purple-600)]">
-                                                    Tickets: {signup.amount_tickets}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <p className="mt-1 flex items-center gap-2 text-xs font-bold text-[var(--text-muted)]">
-                                            <Calendar className="h-3.5 w-3.5" />
-                                            {eventDateStr && format(new Date(eventDateStr), "d MMM yyyy", { locale: nl })}
-                                        </p>
-                                    </div>
-                                </div>
-                                <ChevronRight className="h-6 w-6 shrink-0 text-[var(--color-purple-200)] transition-transform group-hover:translate-x-1" />
-                            </Link>
-                        );
-                    })}
                 </div>
             )}
         </Tile>

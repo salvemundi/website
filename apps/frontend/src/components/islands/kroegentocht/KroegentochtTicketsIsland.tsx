@@ -90,45 +90,36 @@ export default function KroegentochtTicketsIsland({ isLoading = false, initialTi
         }
     };
 
-    if (isLoading) {
-        return (
-            <section className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-lg p-5 sm:p-6 md:p-8 mb-8" aria-busy="true">
-                <Skeleton className="h-8 w-64 mb-4 bg-[var(--color-purple-theme)]/10" rounded="lg" />
-                <Skeleton className="h-4 w-full max-w-2xl mb-8 bg-[var(--color-purple-theme)]/5" rounded="md" />
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {[1, 2, 3].map((i) => (
-                        <Skeleton key={i} className="h-96 w-full bg-slate-100 dark:bg-white/5" rounded="2xl" />
-                    ))}
-                </div>
-            </section>
-        );
-    }
+    const displayedTickets = isLoading 
+        ? Array(1).fill({ id: 0, name: 'Loading', initial: 'T', qr_token: 'loading', checked_in: false }) 
+        : tickets;
 
     if (!isLoading && tickets.length === 0) return null;
 
     return (
-        <section className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-6 md:p-8 mb-8 overflow-hidden">
+        <section className={`bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-6 md:p-8 mb-8 overflow-hidden animate-in fade-in duration-500 ${isLoading ? 'skeleton-active' : ''}`} aria-busy={isLoading}>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div>
                     <h2 className="text-2xl font-black text-[var(--color-purple-theme)] flex items-center gap-2">
                         <CheckCircle2 className="w-6 h-6 text-green-500" />
-                        Jouw Tickets
+                        {isLoading ? 'LADEN...' : 'Jouw Tickets'}
                     </h2>
                     <p className="text-slate-500 text-sm mt-1">
-                        Hieronder vind je de tickets voor {userEmail || 'jouw account'}.
+                        {isLoading ? 'Bezig met het ophalen van jouw gereserveerde kroegentocht tickets...' : `Hieronder vind je de tickets voor ${userEmail || 'jouw account'}.`}
                     </p>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {tickets.map((ticket, i) => (
+                {displayedTickets.map((ticket, i) => (
                     <div 
-                        key={ticket.id} 
+                        key={isLoading ? `loading-${i}` : ticket.id} 
                         className="group relative bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/10 p-6 transition-all hover:shadow-md hover:border-[var(--color-purple-theme)]/30"
                     >
                         <div className="flex flex-col items-center">
-                            <QRDisplay qrToken={ticket.qr_token} size={180} />
+                            <div className="bg-white p-2 rounded-xl shadow-sm">
+                                <QRDisplay qrToken={ticket.qr_token} size={180} />
+                            </div>
                             
                             <div className="mt-6 w-full space-y-2">
                                 <div className="flex justify-between items-end border-b border-slate-200 dark:border-white/10 pb-2">
@@ -147,7 +138,8 @@ export default function KroegentochtTicketsIsland({ isLoading = false, initialTi
 
                             <button
                                 onClick={() => downloadTicketAsImage(ticket, i)}
-                                className="mt-6 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-black text-[var(--color-purple-theme)] hover:bg-slate-50 dark:hover:bg-white/10 transition-all shadow-sm active:scale-[0.98]"
+                                disabled={isLoading}
+                                className="mt-6 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-black text-[var(--color-purple-theme)] hover:bg-slate-50 dark:hover:bg-white/10 transition-all shadow-sm active:scale-[0.98] disabled:opacity-50"
                             >
                                 <Download className="w-4 h-4" />
                                 Download Ticket

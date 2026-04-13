@@ -129,15 +129,21 @@ export default function KroegentochtFormIsland({
 
 
     return (
-        <section className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-6 md:p-8">
+        <section className={`bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-6 md:p-8 animate-in fade-in duration-500 ${isLoading ? 'skeleton-active' : ''}`} aria-busy={isLoading}>
             <h2 className="text-2xl sm:text-3xl font-black text-[var(--theme-purple)] mb-4 flex items-center gap-3">
                 <Ticket className="w-8 h-8" />
-                Inschrijven
+                {isLoading ? 'LADEN...' : 'Inschrijven'}
             </h2>
-            <p className="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
-                Vul hieronder je gegevens in en reserveer je plek voor de kroegentocht. 
-                Tickets kosten slechts <strong>€1,00</strong> per stuk!
-            </p>
+            <div className="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
+                {isLoading ? (
+                    <p>Bezig met het laden van het inschrijfformulier en de beschikbare tickets voor deze kroegentocht...</p>
+                ) : (
+                    <>
+                        Vul hieronder je gegevens in en reserveer je plek voor de kroegentocht. 
+                        Tickets kosten slechts <strong>€1,00</strong> per stuk!
+                    </>
+                )}
+            </div>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" autoComplete="off">
                 <FormField id="field-email" label="E-mailadres" required error={errors.email?.message}>
                     <div className="relative">

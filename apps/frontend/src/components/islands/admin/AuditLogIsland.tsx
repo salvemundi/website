@@ -211,102 +211,84 @@ export default function AuditLogIsland() {
     ];
 
     return (
-        <>
-            <AdminToolbar 
-                title="Audit & Logboek"
-                subtitle="Beheer inschrijvingen en systeemlogs"
-                backHref="/beheer"
-                actions={
-                    <button
-                        onClick={loadData}
-                        disabled={isLoading}
-                        className="flex items-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-xs font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50"
-                    >
-                        <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-                        Verversen
-                    </button>
-                }
+        <div className={`container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700 ${isLoading ? 'skeleton-active' : ''}`} aria-busy={isLoading}>
+            <AuditHeader 
+                stats={adminStats}
+                manualApproval={manualApproval}
+                onToggleManualApproval={toggleManualApproval}
             />
 
-            <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700">
-                <AuditHeader 
-                    stats={adminStats}
-                    manualApproval={manualApproval}
-                    onToggleManualApproval={toggleManualApproval}
-                />
-
-                <div className="space-y-6 mt-6">
-                    {/* Tabs Navigation */}
-                    <div className="flex gap-1 bg-[var(--beheer-card-soft)] p-1 rounded-2xl w-fit border border-[var(--beheer-border)]">
-                        {[
-                            { id: 'pending', label: 'Wachtrij', icon: Clock },
-                            { id: 'admin_logs', label: 'Beheerder', icon: Shield },
-                            { id: 'system_logs', label: 'Systeem', icon: Server },
-                            { id: 'queues', label: 'Wachtrijen', icon: RefreshCw },
-                        ].map(tab => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id as any)}
-                                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] transition-all ${activeTab === tab.id ? 'bg-[var(--beheer-card-bg)] shadow-md text-[var(--beheer-accent)]' : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)]'}`}
-                            >
-                                <tab.icon className="h-3.5 w-3.5" /> {tab.label}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Main Content Area */}
-                    {activeTab === 'pending' && (
-                        <PendingTab 
-                            isLoading={isLoading}
-                            isProcessing={isProcessing}
-                            isBulkProcessing={isBulkProcessing}
-                            filteredSignups={filteredSignups}
-                            selectedIds={selectedIds}
-                            onToggleSelectAll={toggleSelectAll}
-                            onToggleSelectOne={toggleSelectOne}
-                            onApprove={handleApprove}
-                            onReject={handleReject}
-                            onBulkApprove={handleBulkApprove}
-                            onBulkReject={handleBulkReject}
-                            onRefresh={loadData}
-                        />
-                    )}
-
-                    {activeTab === 'admin_logs' && (
-                        <LogsTab 
-                            isLoading={isLoading}
-                            logs={adminLogs}
-                            onRefresh={loadData}
-                            title="Beheerder Acties"
-                        />
-                    )}
-
-                    {activeTab === 'system_logs' && (
-                        <LogsTab 
-                            isLoading={isLoading}
-                            logs={systemLogs}
-                            onRefresh={loadData}
-                            title="Systeem Events"
-                            actions={
-                                <a
-                                    href="/beheer/sync"
-                                    className="flex items-center gap-2 px-3 py-1.5 bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-[var(--beheer-accent)]/20 transition-all active:scale-95"
-                                >
-                                    Sync Beheren
-                                </a>
-                            }
-                        />
-                    )}
-
-                    {activeTab === 'queues' && (
-                        <QueuesTab 
-                            isLoading={isLoading}
-                            queueData={queueData}
-                        />
-                    )}
+            <div className="space-y-6 mt-6">
+                {/* Tabs Navigation */}
+                <div className="flex gap-1 bg-[var(--beheer-card-soft)] p-1 rounded-2xl w-fit border border-[var(--beheer-border)]">
+                    {[
+                        { id: 'pending', label: 'Wachtrij', icon: Clock },
+                        { id: 'admin_logs', label: 'Beheerder', icon: Shield },
+                        { id: 'system_logs', label: 'Systeem', icon: Server },
+                        { id: 'queues', label: 'Wachtrijen', icon: RefreshCw },
+                    ].map(tab => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id as any)}
+                            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] transition-all ${activeTab === tab.id ? 'bg-[var(--beheer-card-bg)] shadow-md text-[var(--beheer-accent)]' : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)]'}`}
+                        >
+                            <tab.icon className="h-3.5 w-3.5" /> {tab.label}
+                        </button>
+                    ))}
                 </div>
+
+                {/* Main Content Area */}
+                {activeTab === 'pending' && (
+                    <PendingTab 
+                        isLoading={isLoading}
+                        isProcessing={isProcessing}
+                        isBulkProcessing={isBulkProcessing}
+                        filteredSignups={filteredSignups}
+                        selectedIds={selectedIds}
+                        onToggleSelectAll={toggleSelectAll}
+                        onToggleSelectOne={toggleSelectOne}
+                        onApprove={handleApprove}
+                        onReject={handleReject}
+                        onBulkApprove={handleBulkApprove}
+                        onBulkReject={handleBulkReject}
+                        onRefresh={loadData}
+                    />
+                )}
+
+                {activeTab === 'admin_logs' && (
+                    <LogsTab 
+                        isLoading={isLoading}
+                        logs={adminLogs}
+                        onRefresh={loadData}
+                        title="Beheerder Acties"
+                    />
+                )}
+
+                {activeTab === 'system_logs' && (
+                    <LogsTab 
+                        isLoading={isLoading}
+                        logs={systemLogs}
+                        onRefresh={loadData}
+                        title="Systeem Events"
+                        actions={
+                            <a
+                                href="/beheer/sync"
+                                className="flex items-center gap-2 px-3 py-1.5 bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-[var(--beheer-accent)]/20 transition-all active:scale-95"
+                            >
+                                Sync Beheren
+                            </a>
+                        }
+                    />
+                )}
+
+                {activeTab === 'queues' && (
+                    <QueuesTab 
+                        isLoading={isLoading}
+                        queueData={queueData}
+                    />
+                )}
             </div>
             <AdminToast toast={toast} onClose={hideToast} />
-        </>
+        </div>
     );
 }

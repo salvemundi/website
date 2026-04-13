@@ -33,7 +33,7 @@ export default function ProfielDetails({
     isPending = false
 }: ProfielDetailsProps) {
     return (
-        <Tile title="Mijn gegevens" icon={<Mail className="h-5 w-5" />} className="h-fit" aria-busy={isLoading}>
+        <Tile title="Mijn gegevens" icon={<Mail className="h-5 w-5" />} className={`h-fit ${isLoading ? 'skeleton-active' : ''}`} aria-busy={isLoading}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Email Box */}
                 <div className="flex items-center gap-4 rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm">
@@ -44,13 +44,9 @@ export default function ProfielDetails({
                         <p className="text-[11px] text-[var(--color-purple-400)] font-bold uppercase tracking-wide mb-1">
                             E-mailadres
                         </p>
-                        {isLoading ? (
-                            <Skeleton className="h-5 w-full bg-[var(--color-purple-500)]/10" rounded="md" />
-                        ) : (
-                            <p className="font-bold text-[var(--color-purple-700)] dark:text-white break-words text-xs sm:text-sm leading-tight" title={user.email ?? undefined}>
-                                {formatForBreak(user.email) || 'Geen email'}
-                            </p>
-                        )}
+                        <p className="font-bold text-[var(--color-purple-700)] dark:text-white break-words text-xs sm:text-sm leading-tight">
+                            {isLoading ? 'loading.email.address@salvemundi.nl' : (formatForBreak(user.email) || 'Geen email')}
+                        </p>
                     </div>
                 </div>
 
@@ -64,13 +60,9 @@ export default function ProfielDetails({
                             <p className="text-[11px] text-[var(--color-purple-400)] font-bold uppercase tracking-wide mb-1">
                                 Fontys e-mail
                             </p>
-                            {isLoading ? (
-                                <Skeleton className="h-5 w-full bg-[var(--color-purple-500)]/10" rounded="md" />
-                            ) : (
-                                <p className="font-bold text-[var(--color-purple-700)] dark:text-white break-words text-xs sm:text-sm leading-tight" title={user.fontys_email ?? undefined}>
-                                    {formatForBreak(user.fontys_email)}
-                                </p>
-                            )}
+                            <p className="font-bold text-[var(--color-purple-700)] dark:text-white break-words text-xs sm:text-sm leading-tight">
+                                {isLoading ? 'f.lastname@student.fontys.nl' : formatForBreak(user.fontys_email)}
+                            </p>
                         </div>
                     </div>
                 )}
@@ -91,9 +83,7 @@ export default function ProfielDetails({
                         <div className="shrink-0 rounded-xl bg-[var(--color-purple-100)] p-3 text-[var(--color-purple-600)] shadow-sm">
                             <Phone className="h-5 w-5" />
                         </div>
-                        {isLoading ? (
-                            <Skeleton className="h-5 w-32 bg-[var(--color-purple-500)]/10" rounded="md" />
-                        ) : isEditingPhoneNumber ? (
+                        {isEditingPhoneNumber ? (
                             <form onSubmit={handleSubmitPhone(onSavePhone)} className="flex flex-col w-full gap-2" autoComplete="off">
                                 <div className="flex w-full items-center gap-2">
                                     <input 
@@ -101,29 +91,15 @@ export default function ProfielDetails({
                                         type="tel" 
                                         className={`flex-1 min-w-0 bg-white dark:bg-black/40 border ${phoneErrors.phone_number ? 'border-red-500 ring-1 ring-red-500' : 'border-slate-300 dark:border-white/20'} rounded-lg px-3 py-1.5 text-sm font-medium focus:ring-2 focus:ring-[var(--color-purple-500)] focus:border-transparent outline-none`}
                                         placeholder="0612345678"
-                                        autoComplete="one-time-code"
                                     />
                                     <button type="submit" disabled={isPending} className="shrink-0 p-1.5 bg-[var(--color-purple-500)] text-white rounded-lg hover:bg-[var(--color-purple-600)] transition-colors">
                                         {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                                     </button>
-                                    <button 
-                                        type="button" 
-                                        onClick={() => { 
-                                            setIsEditingPhoneNumber(false); 
-                                            resetPhone({ phone_number: user?.phone_number || "" }); 
-                                        }} 
-                                        className="shrink-0 p-1.5 bg-slate-200 dark:bg-white/10 text-[var(--text-main)] rounded-lg hover:bg-slate-300 dark:hover:bg-white/20 transition-colors"
-                                    >
-                                        <X className="h-4 w-4" />
-                                    </button>
                                 </div>
-                                {phoneErrors.phone_number && (
-                                    <p className="text-[10px] font-bold text-red-500">{phoneErrors.phone_number.message}</p>
-                                )}
                             </form>
                         ) : (
                             <p className="font-bold text-[var(--color-purple-700)] dark:text-white text-sm">
-                                {user.phone_number || "Niet ingesteld"}
+                                {isLoading ? '06 1234 5678' : (user.phone_number || "Niet ingesteld")}
                             </p>
                         )}
                     </div>
@@ -140,13 +116,9 @@ export default function ProfielDetails({
                         <div className="shrink-0 rounded-xl bg-[var(--color-purple-100)] p-3 text-[var(--color-purple-600)] shadow-sm">
                             <Calendar className="h-5 w-5" />
                         </div>
-                        {isLoading ? (
-                            <Skeleton className="h-5 w-32 bg-[var(--color-purple-500)]/10" rounded="md" />
-                        ) : (
-                            <p className="font-bold text-[var(--color-purple-700)] dark:text-white text-sm">
-                                {user.date_of_birth ? format(new Date(user.date_of_birth), "d MMMM yyyy", { locale: nl }) : "Niet ingesteld"}
-                            </p>
-                        )}
+                        <p className="font-bold text-[var(--color-purple-700)] dark:text-white text-sm">
+                            {isLoading ? '01 JANUARI 2000' : (user.date_of_birth ? format(new Date(user.date_of_birth), "d MMMM yyyy", { locale: nl }) : "Niet ingesteld")}
+                        </p>
                     </div>
                 </div>
             </div>

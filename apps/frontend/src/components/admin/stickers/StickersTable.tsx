@@ -16,13 +16,14 @@ import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 
 interface StickersTableProps {
+    isLoading?: boolean;
     stickers: any[];
     onDelete: (id: number) => void;
 }
 
 const ASSET_URL = '/api/assets';
 
-export default function StickersTable({ stickers, onDelete }: StickersTableProps) {
+export default function StickersTable({ isLoading = false, stickers, onDelete }: StickersTableProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
@@ -66,88 +67,64 @@ export default function StickersTable({ stickers, onDelete }: StickersTableProps
                                 <th className="px-6 py-4 text-right text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">Acties</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-[var(--beheer-border)]/10">
-                            {filteredStickers.length === 0 ? (
+                        <tbody className={`divide-y divide-[var(--beheer-border)]/10 ${isLoading ? 'skeleton-active' : ''}`}>
+                            {(isLoading ? [...Array(10)] : filteredStickers).map((sticker, i) => (
+                                <tr key={isLoading ? i : sticker.id} className="hover:bg-[var(--bg-main)]/30 transition-colors group">
+                                    <td className="px-6 py-4">
+                                        <div className="flex flex-col gap-1">
+                                            <span className="font-black text-[var(--beheer-text)] group-hover:text-[var(--beheer-accent)] transition-colors uppercase tracking-tight">
+                                                {isLoading ? 'LOADING_LOCATION' : (sticker.location_name === 'Imported' ? (sticker.city || sticker.address || 'Imported') : (sticker.location_name || 'Naamloze locatie'))}
+                                            </span>
+                                            <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">
+                                                <User className="h-3 w-3" />
+                                                {isLoading ? 'User Name' : `${sticker.user_created?.first_name} ${sticker.user_created?.last_name}`}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-black text-[var(--beheer-text)] flex items-center gap-1.5 uppercase tracking-widest leading-none">
+                                                <MapPin className="h-3 w-3 text-red-500" />
+                                                {isLoading ? 'City Name' : (sticker.city || '')}
+                                            </span>
+                                            <span className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest flex items-center gap-1.5 mt-1.5 leading-none">
+                                                <Globe className="h-3 w-3 text-blue-500" />
+                                                {isLoading ? 'Country Name' : (sticker.country || '')}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest" suppressHydrationWarning>
+                                            {isLoading ? '01 JAN 2024' : (sticker.date_created ? format(new Date(sticker.date_created), 'dd MMM yyyy', { locale: nl }) : '-')}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 text-center">
+                                        <div className="w-12 h-12 mx-auto rounded-[var(--beheer-radius)] bg-[var(--bg-main)] border border-dashed border-[var(--beheer-border)] flex items-center justify-center text-[var(--beheer-text-muted)]">
+                                            {isLoading || !sticker.image ? (
+                                                <ImageIcon className="h-4 w-4 opacity-30" />
+                                            ) : (
+                                                <img 
+                                                    src={`${ASSET_URL}/${sticker.image}?width=100&height=100&fit=cover`} 
+                                                    alt="Sticker"
+                                                    className="w-full h-full object-cover rounded-[var(--beheer-radius)]"
+                                                />
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <div className="flex justify-end gap-2">
+                                            <div className="h-8 w-8 bg-[var(--beheer-card-soft)] rounded-lg" />
+                                            <div className="h-8 w-8 bg-[var(--beheer-card-soft)] rounded-lg" />
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                            {!isLoading && filteredStickers.length === 0 && (
                                 <tr>
-                                        <td colSpan={5} className="px-6 py-16 text-center text-[var(--beheer-text-muted)] italic font-bold uppercase tracking-widest text-[10px]">
+                                    <td colSpan={5} className="px-6 py-16 text-center text-[var(--beheer-text-muted)] italic font-bold uppercase tracking-widest text-[10px]">
                                         Geen stickers gevonden voor dit filter.
                                     </td>
                                 </tr>
-                            ) : (
-                                filteredStickers.map((sticker) => (
-                                    <tr key={sticker.id} className="hover:bg-[var(--bg-main)]/30 transition-colors group">
-                                        <td className="px-6 py-4">
-                                            <div className="flex flex-col gap-1">
-                                                <span className="font-black text-[var(--beheer-text)] group-hover:text-[var(--beheer-accent)] transition-colors uppercase tracking-tight">
-                                                    {sticker.location_name === 'Imported' ? (sticker.city || sticker.address || 'Imported') : (sticker.location_name || 'Naamloze locatie')}
-                                                </span>
-                                                <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">
-                                                    <User className="h-3 w-3" />
-                                                    {sticker.user_created?.first_name} {sticker.user_created?.last_name}
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex flex-col">
-                                                <span className="text-[10px] font-black text-[var(--beheer-text)] flex items-center gap-1.5 uppercase tracking-widest leading-none">
-                                                    <MapPin className="h-3 w-3 text-red-500" />
-                                                    {sticker.city || ''}
-                                                </span>
-                                                <span className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest flex items-center gap-1.5 mt-1.5 leading-none">
-                                                    <Globe className="h-3 w-3 text-blue-500" />
-                                                    {sticker.country || ''}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest" suppressHydrationWarning>
-                                                {format(new Date(sticker.date_created), 'dd MMM yyyy', { locale: nl })}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            {sticker.image ? (
-                                                <button 
-                                                    onClick={() => setSelectedImage(`${ASSET_URL}/${sticker.image}`)}
-                                                    className="relative w-12 h-12 rounded-[var(--beheer-radius)] overflow-hidden border border-[var(--beheer-border)] hover:border-[var(--beheer-accent)] transition-all group/img"
-                                                >
-                                                    <img 
-                                                        src={`${ASSET_URL}/${sticker.image}?width=100&height=100&fit=cover`} 
-                                                        alt="Sticker"
-                                                        className="w-full h-full object-cover group-hover/img:scale-110 transition-transform"
-                                                    />
-                                                </button>
-                                            ) : (
-                                                <div className="w-12 h-12 mx-auto rounded-[var(--beheer-radius)] bg-[var(--bg-main)] border border-dashed border-[var(--beheer-border)] flex items-center justify-center text-[var(--beheer-text-muted)]">
-                                                    <ImageIcon className="h-4 w-4 opacity-30" />
-                                                </div>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex justify-end gap-2">
-                                                <a 
-                                                    href={`https://www.google.com/maps?q=${sticker.latitude},${sticker.longitude}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="p-2 rounded-lg bg-blue-500/5 text-blue-400 hover:bg-blue-500 hover:text-white transition-all active:scale-90 border border-blue-500/10"
-                                                    title="Kaart openen"
-                                                >
-                                                    <ExternalLink className="h-4 w-4" />
-                                                </a>
-                                                <button 
-                                                    onClick={() => {
-                                                        if (confirm('Weet je zeker dat je deze sticker wilt verwijderen?')) {
-                                                            onDelete(sticker.id);
-                                                        }
-                                                    }}
-                                                    className="p-2 rounded-lg bg-red-500/5 text-red-400 hover:bg-red-500 hover:text-white transition-all active:scale-90 border border-red-500/10"
-                                                    title="Verwijderen"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
                             )}
                         </tbody>
                     </table>

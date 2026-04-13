@@ -6,7 +6,6 @@ import { Calendar } from 'lucide-react';
 import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
-import ActivityCardSkeleton from '@/components/ui/activities/ActivityCardSkeleton';
 import { formatDate as coreFormatDate } from '@/shared/lib/utils/date';
 
 interface ActiviteitCardProps {
@@ -33,7 +32,6 @@ interface ActiviteitCardProps {
     contact?: string;
     onlyMembers?: boolean;
 }
-
 const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     isLoading = false,
     description = '',
@@ -59,10 +57,6 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     const { toast, showToast, hideToast } = useAdminToast();
     const { isAuthenticated, user } = useAuth();
     const { login: loginWithMicrosoft } = useAuthActions();
-
-    if (isLoading) {
-        return <ActivityCardSkeleton variant={variant} />;
-    }
 
     const alreadySignedUp = Boolean(isSignedUp);
     const isListVariant = variant === 'list';
@@ -131,8 +125,8 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
         return (
             <div
                 onClick={onShowDetails}
-                className={`group relative z-0 overflow-hidden w-full rounded-2xl bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-5 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 ${isPast ? 'opacity-60 filter grayscale' : ''}`}
-                aria-busy="false"
+                className={`group relative z-0 overflow-hidden w-full rounded-2xl bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-5 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 ${isPast ? 'opacity-60 filter grayscale' : ''} ${isLoading ? 'skeleton-active' : ''}`}
+                aria-busy={isLoading}
             >
                 <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
                     <div className="flex-1 min-w-[200px]">
@@ -205,8 +199,8 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     return (
         <div
             onClick={onShowDetails}
-            className={`group relative z-0 overflow-hidden w-full rounded-[1.75rem] bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-5 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 ${isPast ? 'opacity-60 filter grayscale' : ''}`}
-            aria-busy="false"
+            className={`group relative z-0 overflow-hidden w-full rounded-[1.75rem] bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-5 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 ${isPast ? 'opacity-60 filter grayscale' : ''} ${isLoading ? 'skeleton-active' : ''}`}
+            aria-busy={isLoading}
         >
             <div className="relative z-10 h-44 sm:h-48 mb-5 rounded-2xl overflow-hidden shadow-inner bg-[var(--bg-soft)]">
                 {image ? (
