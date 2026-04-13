@@ -15,6 +15,7 @@
         "@hookform/resolvers": "^5.2.2",
         "@salvemundi/validations": "workspace:*",
         "better-auth": "1.6.2",
+        "clsx": "^2.1.1",
         "date-fns": "^4.1.0",
         "framer-motion": "^12.34.5",
         "html-to-image": "^1.11.13",
@@ -34,6 +35,7 @@
         "react-map-gl": "^8.1.0",
         "server-only": "^0.0.1",
         "swiper": "^12.1.2",
+        "tailwind-merge": "^3.5.0",
         "zod": "^3.23.8"
     },
     "devDependencies": {

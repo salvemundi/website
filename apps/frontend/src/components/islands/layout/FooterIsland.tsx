@@ -16,6 +16,7 @@ interface FooterIslandProps {
     documents: Document[];
     disabledRoutes?: string[];
     committees: Committee[];
+    initialSession?: any;
 }
 
 // Zorgt voor een eenduidige presentatie van commissienamen door redundante achtervoegsels te verwijderen.
@@ -59,7 +60,7 @@ const LINK_CLS =
 const MUTED_CLS = 'text-[var(--color-purple-800)] dark:text-[var(--text-light)]';
 
 // ─── Component ────────────────────────────────────────────────────────────────
-const FooterIsland: React.FC<FooterIslandProps> = ({ documents, disabledRoutes = [], committees }) => {
+const FooterIsland: React.FC<FooterIslandProps> = ({ documents, disabledRoutes = [], committees, initialSession }) => {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -67,7 +68,8 @@ const FooterIsland: React.FC<FooterIslandProps> = ({ documents, disabledRoutes =
     }, []);
 
     // Better Auth sessie — uitsluitend via authClient.useSession() conform V7-advies
-    const { data: session } = authClient.useSession();
+    const { data: sessionData } = authClient.useSession();
+    const session = sessionData || initialSession;
     const isAuthenticated = !!session?.user;
 
     // Asset-links conform V7 (server-side proxy)
@@ -106,7 +108,7 @@ const FooterIsland: React.FC<FooterIslandProps> = ({ documents, disabledRoutes =
             <div className="absolute -right-10 bottom-10 h-64 w-64 rounded-full bg-[var(--color-purple-100)]/10 blur-3xl" />
 
             <div className="relative mx-auto max-w-screen-xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-                <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+                <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-5">
 
                     {/* ── Kolom 1: Informatie ── */}
                     <div>
@@ -146,29 +148,29 @@ const FooterIsland: React.FC<FooterIslandProps> = ({ documents, disabledRoutes =
                     </div>
 
                     {/* ── Kolom 3: Commissies ── */}
-                    <div>
+                    <div className="lg:col-span-2">
                         <h3 className={HEADING_CLS}>Commissies</h3>
-                        <ul className="space-y-2 text-sm">
+                        <div className="footer-list-container h-[200px] sm:h-[280px] md:h-[var(--footer-col-height)] flex flex-col flex-wrap gap-x-8 gap-y-2 text-sm overflow-hidden">
                             {sortedCommittees.length === 0 && (
-                                <li className={MUTED_CLS}>Geen commissies gevonden</li>
+                                <p className={MUTED_CLS}>Geen commissies gevonden</p>
                             )}
                             {sortedCommittees.map((committee) => {
                                 const cleaned = cleanCommitteeName(committee.name);
                                 const slug = slugify(cleaned);
                                 return (
-                                    <li key={committee.id}>
+                                    <div key={committee.id}>
                                         <Link href={`${ROUTES.COMMITTEES}/commissies/${slug}`} className={LINK_CLS}>
                                             {cleaned}
                                         </Link>
-                                    </li>
+                                    </div>
                                 );
                             })}
-                            <li>
-                                <Link href={ROUTES.COMMITTEES} className={LINK_CLS}>
+                            <div>
+                                <Link href={ROUTES.COMMITTEES} className={`${LINK_CLS} font-bold text-[var(--color-purple-500)]`}>
                                     Alle commissies bekijken
                                 </Link>
-                            </li>
-                        </ul>
+                            </div>
+                        </div>
                     </div>
 
                     {/* ── Kolom 4: Contact & Social ── */}
@@ -189,7 +191,7 @@ const FooterIsland: React.FC<FooterIslandProps> = ({ documents, disabledRoutes =
                             </li>
 
                             {/* WhatsApp-link: uitsluitend zichtbaar voor ingelogde leden */}
-                            {mounted && isAuthenticated && (
+                            {isAuthenticated && (
                                 <li>
                                     <a
                                         href="https://wa.me/31624827777"

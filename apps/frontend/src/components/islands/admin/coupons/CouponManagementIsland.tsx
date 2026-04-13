@@ -16,6 +16,7 @@ import CouponRow from './CouponRow';
 import CouponForm from './CouponForm';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
+import { cn } from '@/lib/utils/cn';
 interface Props {
     initialCoupons?: Coupon[];
     isLoading?: boolean;
@@ -108,7 +109,7 @@ export default function CouponManagementIsland({
                 backHref="/beheer"
                 actions={
                     isLoading ? (
-                        <div className="h-[var(--beheer-btn-height)] w-24 skeleton-active" />
+                        <div className="h-10 w-32 ghost-active rounded-[var(--beheer-radius)]" />
                     ) : (
                         <button
                             onClick={() => { setShowForm(!showForm); setFormError(null); }}
@@ -125,7 +126,7 @@ export default function CouponManagementIsland({
                 }
             />
 
-            <div className={`container mx-auto px-4 py-8 max-w-7xl ${isLoading ? 'animate-pulse' : 'animate-in fade-in slide-in-from-bottom-4 duration-700'}`}>
+            <div className={`container mx-auto px-4 py-8 max-w-7xl`}>
                 <AdminStatsBar stats={adminStats} isLoading={isLoading} />
 
                 {showForm && (
@@ -141,7 +142,7 @@ export default function CouponManagementIsland({
                 <div className="space-y-4">
                     <div className="flex items-center justify-between border-l-4 border-[var(--beheer-active)] pl-4 py-1">
                         {isLoading ? (
-                            <div className="h-4 w-32 skeleton-active" />
+                            <div className="h-4 w-32 ghost-active" />
                         ) : (
                             <h2 className="text-[10px] font-black text-[var(--beheer-text)] flex items-center gap-3 uppercase tracking-widest">
                                 Geldige Coupons
@@ -152,14 +153,14 @@ export default function CouponManagementIsland({
                         )}
                     </div>
 
-                    <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] overflow-hidden shadow-xl transition-all">
-                        {isLoading ? (
-                            <div className="space-y-4 p-8">
-                                {[...Array(3)].map((_, i) => (
-                                    <div key={i} className="h-16 w-full rounded-2xl skeleton-active" />
-                                ))}
-                            </div>
-                        ) : validCoupons.length === 0 ? (
+                    <div 
+                        aria-busy={isLoading}
+                        className={cn(
+                            "bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] overflow-hidden shadow-xl transition-all",
+                            isLoading && "ghost-active"
+                        )}
+                    >
+                        {validCoupons.length === 0 && !isLoading ? (
                             <div className="py-24 text-center">
                                 <Ticket className="h-12 w-12 text-[var(--beheer-text-muted)] mx-auto mb-4 opacity-10" />
                                 <p className="font-black uppercase tracking-widest text-[10px] text-[var(--beheer-text-muted)]">Geen geldige coupons gevonden</p>

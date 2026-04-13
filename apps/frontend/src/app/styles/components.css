@@ -197,27 +197,70 @@
         backdrop-filter: blur(4px);
     }
 
-    /* ── Skeleton Mask (Vercel/Meta Best Practice) ────────────────────────── */
-    .skeleton-active {
-        @apply pointer-events-none select-none relative overflow-hidden;
-        border-radius: var(--radius-xl, 0.75rem);
+    /* ── Sponsors Stabilization ────────────────────────────────────────── */
+    .sponsors-scroll-track {
+        height: 128px !important;
+    }
+}
+/* ── Ghost UI Maskers (Tailwind 4 Native) ────────────────────────── */
+@utility ghost-active {
+    @apply pointer-events-none! select-none! relative overflow-hidden;
+    border-radius: var(--radius-xl, 0.75rem);
+    
+    /* Child-masking: Alles binnen een ghost-active container maskeren */
+    & :is(h1, h2, h3, h4, h5, h6, p, span, label, small, b, strong) {
+        @apply text-transparent! select-none! pointer-events-none!;
+        background-color: var(--ghost-bg-inline, rgba(164, 83, 155, 0.1));
+        border-radius: 4px;
+        display: inline-block;
+        min-width: 4ch;
+        min-height: 1em;
+        vertical-align: middle;
     }
 
-    .skeleton-active * {
-        visibility: hidden !important; /* Preserves geometry, hides content */
+    & :is(img, svg, .ghost-media, .ghost-media-square, .ghost-media-video) {
+        @apply opacity-0! pointer-events-none!;
+        background-color: var(--ghost-bg-block, rgba(164, 83, 155, 0.05)) !important;
     }
+}
 
-    .skeleton-active::before {
+/* De 'item' utility (voor individuele elementen zoals in AdminStatsBar) */
+@utility ghost-item {
+    @apply relative overflow-hidden pointer-events-none select-none;
+    background-color: var(--beheer-card-soft, rgba(164, 83, 155, 0.05)) !important;
+    color: transparent !important;
+    border-color: transparent !important;
+    border-radius: var(--radius-lg, 0.5rem);
+
+    &::after {
         content: "";
-        @apply absolute inset-0 animate-pulse bg-[var(--beheer-card-soft)] z-10;
-        border-radius: inherit;
-        background-image: linear-gradient(
+        @apply absolute inset-0;
+        background: linear-gradient(
             90deg,
             transparent,
-            rgba(255, 255, 255, 0.05),
+            rgba(255, 255, 255, 0.1),
             transparent
         );
+        animation: ghost-shimmer 1.5s infinite;
     }
+}
+
+/* ── Legacy Aliases (Safety) ───────────────────────────────────────── */
+.skeleton-item, .skeleton-active {
+    @apply ghost-active;
+}
+
+/* Deterministic Media Shells: Mathematical space reservation */
+.ghost-media-square {
+    aspect-ratio: 1 / 1;
+    width: 100%;
+    @apply overflow-hidden rounded-[inherit];
+}
+
+.ghost-media-video {
+    aspect-ratio: 16 / 9;
+    width: 100%;
+    @apply overflow-hidden rounded-[inherit];
 }
 /* ── Beheer Dropdowns & Selects ────────────────────────────────────────── */
 .beheer-select {

@@ -10,10 +10,10 @@ const nextConfig: NextConfig = {
     experimental: {
         ppr: false,
         serverSourceMaps: true,
-        webpackBuildWorker: false,
-        workerThreads: false,
+        webpackBuildWorker: true,
+        workerThreads: true,
     },
-    staticPageGenerationTimeout: 1000,
+    staticPageGenerationTimeout: 60,
     logging: false,
     images: {
         remotePatterns: [

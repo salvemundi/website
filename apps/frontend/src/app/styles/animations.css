@@ -98,4 +98,42 @@
         background-clip: text;
         animation: gradientShift 3s ease infinite;
     }
+
+    /* ── Ghost UI (V7.12 Industrial Standard) ─────────────────────────── */
+    :root {
+        --ghost-bg-inline: color-mix(in srgb, var(--color-purple-500) 10%, transparent);
+        --ghost-bg-block: color-mix(in srgb, var(--color-purple-500) 5%, transparent);
+    }
+
+    .dark {
+        --ghost-bg-inline: rgba(255, 255, 255, 0.05);
+        --ghost-bg-block: rgba(255, 255, 255, 0.03);
+    }
+}
+
+/* ── Ghost UI (V7.12 Industrial Standard) ─────────────────────────── */
+@keyframes ghost-shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* De utility MOET buiten @layer utilities staan in Tailwind 4 */
+@utility ghost-item {
+    @apply relative overflow-hidden pointer-events-none select-none;
+    background-color: var(--beheer-card-soft, rgba(164, 83, 155, 0.05)) !important;
+    color: transparent !important;
+    border-color: transparent !important;
+    border-radius: var(--radius-lg, 0.5rem);
+
+    &::after {
+        content: "";
+        @apply absolute inset-0;
+        background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.1),
+            transparent
+        );
+        animation: ghost-shimmer 1.5s infinite;
+    }
 }

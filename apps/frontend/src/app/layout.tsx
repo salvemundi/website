@@ -10,6 +10,9 @@ import { auth } from '@/server/auth/auth';
 import { checkAdminAccess } from '@/server/actions/admin.actions';
 import { headers } from 'next/headers';
 import { connection } from 'next/server';
+import RootLoadingState from '@/components/ui/layout/RootLoadingState';
+import { getHeroBanners, getUpcomingActiviteiten } from '@/server/actions/home.actions';
+import { getImageUrl } from '@/lib/utils/image-utils';
 
 export const viewport: Viewport = {
     themeColor: [
@@ -64,27 +67,49 @@ export default async function RootLayout({
                     type="font/ttf"
                     crossOrigin="anonymous"
                 />
+                <link rel="preload" as="image" href="/img/newlogo.png" />
+                <Suspense fallback={null}>
+                    <HeadPreloads />
+                </Suspense>
             </head>
             <body className="antialiased flex flex-col min-h-screen">
                 <Suspense fallback={null}>
                     <ImpersonationWrapper />
                 </Suspense>
-                
-                <Suspense fallback={<div className="h-[var(--header-total-height,var(--header-height,72px))] w-full bg-[var(--bg-card)] border-b border-[var(--border-color)] skeleton-active" />}>
+
+                <Suspense fallback={<RootLoadingState />}>
                     <HeaderWrapper />
-                </Suspense>
-
-                <main className="flex-grow pt-[var(--header-total-height,var(--header-height,72px))]">
-                    <Suspense fallback={null}>
+                    <main className="flex-grow pt-[var(--header-total-height,var(--header-height,72px))]">
                         {children}
-                    </Suspense>
-                </main>
-
-                <Suspense fallback={<div className="h-64 w-full bg-[var(--bg-card)] border-t border-[var(--border-color)] skeleton-active" />}>
+                    </main>
                     <FooterWrapper />
                 </Suspense>
             </body>
         </html>
+    );
+}
+
+/**
+ * ASSET HINTING: Fetch critical above-the-fold content paths early.
+ * This runs in parallel with the Page fetch.
+ */
+async function HeadPreloads() {
+    const [banners, activities] = await Promise.all([
+        getHeroBanners().catch(() => []),
+        getUpcomingActiviteiten(4).catch(() => [])
+    ]);
+
+    const criticalImages = [
+        ...(banners[0]?.afbeelding_id ? [getImageUrl(banners[0].afbeelding_id, { width: 1200, height: 800, fit: 'cover' })] : []),
+        ...activities.slice(0, 2).map((a: any) => a.afbeelding_id ? getImageUrl(a.afbeelding_id, { width: 400, height: 300, fit: 'cover' }) : null).filter(Boolean)
+    ];
+
+    return (
+        <>
+            {criticalImages.map((src, idx) => (
+                <link key={`preload-img-${idx}`} rel="preload" as="image" href={src!} />
+            ))}
+        </>
     );
 }
 
@@ -107,10 +132,11 @@ async function HeaderWrapper() {
 
 async function FooterWrapper() {
     await connection();
-    const [documents, disabledRoutes, committees] = await Promise.all([
+    const [documents, disabledRoutes, committees, session] = await Promise.all([
         getDocumenten(),
         getDisabledRoutes(),
         getCommittees(),
+        auth.api.getSession({ headers: await headers() }),
     ]);
 
     return (
@@ -118,6 +144,7 @@ async function FooterWrapper() {
             documents={documents}
             disabledRoutes={disabledRoutes}
             committees={committees}
+            initialSession={session}
         />
     );
 }
