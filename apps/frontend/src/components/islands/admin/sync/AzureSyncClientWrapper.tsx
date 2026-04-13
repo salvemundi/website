@@ -118,6 +118,7 @@ export default function AzureSyncClientWrapper({ initialStatus }: AzureSyncClien
             } else {
                 showToast(`Gebruiker ${userId} succesvol gesynchroniseerd`, 'success');
                 setUserId('');
+                fetchStatus();
             }
         } catch (err) {
             showToast('Netwerkfout bij het synchroniseren van de gebruiker.', 'error');
