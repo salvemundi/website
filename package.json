@@ -10,7 +10,7 @@
     "dev": "pnpm --filter @salvemundi/frontend dev",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
-    "type-check": "pnpm -r --parallel exec tsc --noEmit",
+    "type-check": "pnpm -r exec tsc --noEmit",
     "validate": "pnpm type-check && pnpm lint && pnpm build"
   },
   "pnpm": {

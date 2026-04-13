@@ -16,9 +16,10 @@ import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import LedenFilters from './LedenFilters';
-import LedenTable from './LedenTable';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
+import { cn } from '@/lib/utils/cn';
+import LedenTable from './LedenTable';
 
 interface Member {
     id: string;
@@ -56,14 +57,7 @@ export default function LedenOverzichtIsland({
     const totalCount = initialTotalCount;
 
     const filteredMembers = useMemo(() => {
-        if (isLoading) return Array(10).fill({ 
-            id: 'loading', 
-            first_name: 'Loading', 
-            last_name: 'Member', 
-            email: 'loading.member@salvemundi.nl', 
-            membership_expiry: '2024-01-01', 
-            status: 'active' 
-        });
+        if (isLoading) return [];
         
         return members.filter(m => {
             const active = isMembershipActive(m);
@@ -121,13 +115,16 @@ export default function LedenOverzichtIsland({
     ];
 
     return (
-        <div className={`container mx-auto px-4 py-8 max-w-7xl ${isLoading ? 'skeleton-active' : ''}`} aria-busy={isLoading}>
+        <div className="container mx-auto px-4 py-8 max-w-7xl" aria-busy={isLoading}>
             {/* Global Actions */}
             <div className="flex justify-end gap-3 mb-8">
                 <button
                     onClick={exportToCSV}
                     disabled={isLoading}
-                    className="flex items-center gap-2 px-6 py-2 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-[10px] font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 shadow-sm disabled:opacity-50"
+                    className={cn(
+                        "flex items-center gap-2 px-6 py-2 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-[10px] font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 shadow-sm disabled:opacity-50",
+                        isLoading && "ghost-active"
+                    )}
                 >
                     <Download className="h-3.5 w-3.5" />
                     Export
@@ -135,7 +132,10 @@ export default function LedenOverzichtIsland({
                 <button
                     onClick={handleSendReminder}
                     disabled={isSendingReminder || isLoading}
-                    className="flex items-center gap-2 px-6 py-2 bg-[var(--beheer-accent)] text-white font-black text-[10px] uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 disabled:opacity-50"
+                    className={cn(
+                        "flex items-center gap-2 px-6 py-2 bg-[var(--beheer-accent)] text-white font-black text-[10px] uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 disabled:opacity-50",
+                        isLoading && "ghost-active"
+                    )}
                 >
                     {isSendingReminder ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Bell className="h-3.5 w-3.5" />}
                     Reminder
@@ -153,13 +153,15 @@ export default function LedenOverzichtIsland({
                 isPending={isPending}
             />
 
-            <LedenTable 
-                isLoading={isLoading}
-                members={filteredMembers}
-                isPending={isPending}
-                formatDate={formatDate}
-                isMembershipActive={isMembershipActive}
-            />
+            <div className={cn("w-full", isLoading && "ghost-active")}>
+                <LedenTable 
+                    isLoading={isLoading}
+                    members={filteredMembers}
+                    isPending={isPending}
+                    formatDate={formatDate}
+                    isMembershipActive={isMembershipActive}
+                />
+            </div>
             
             <AdminToast toast={toast} onClose={hideToast} />
         </div>

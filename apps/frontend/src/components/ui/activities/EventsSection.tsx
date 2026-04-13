@@ -5,24 +5,24 @@ import type { Activity } from '@salvemundi/validations/schema/activity.zod';
 import { EventCard } from './EventCard';
 
 interface EventsSectionProps {
-    isLoading?: boolean;
     activities?: Activity[];
+    count?: number;
 }
 
 /**
  * UI Component voor de activiteiten-sectie op de homepagina.
- * Modernized: No manual skeleton branch. Uses .skeleton-active for Zero-Drift masking.
+ * V7.12 Industrial SSR: Clean architecture, no loading logic.
  */
-export function EventsSection({ isLoading = false, activities = [] }: EventsSectionProps) {
-    const hasActivities = activities.length > 0;
+export function EventsSection({ activities = [], count = 4 }: EventsSectionProps) {
+    const displayActivities = activities.slice(0, count);
+    const hasActivities = displayActivities.length > 0;
 
     return (
-        <section id="kalender" 
-            className={`py-8 sm:py-10 md:py-12 bg-[var(--bg-main)] ${isLoading ? 'skeleton-active' : ''}`}
-            aria-busy={isLoading}
-        >
+        <section id="kalender" className="py-8 sm:py-10 md:py-12 bg-[var(--bg-main)]">
             <div className="mx-auto max-w-app px-4 sm:px-6 lg:px-8">
-                <div className="flex flex-col gap-6 rounded-xl bg-gradient-theme px-6 sm:px-10 pt-8 sm:pt-10 md:pt-12 pb-8 sm:pb-10 md:pt-12 shadow-xl">
+                <div 
+                    className="flex flex-col gap-6 rounded-xl bg-gradient-theme px-6 sm:px-10 pt-8 sm:pt-10 md:pt-12 pb-8 sm:pb-10 md:pt-12 shadow-xl"
+                >
                     <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
                         <div className="space-y-4">
                             <h2 className="text-3xl font-black tracking-tight text-[var(--text-main)] sm:text-4xl md:text-5xl lg:text-6xl gradient-text">
@@ -33,7 +33,7 @@ export function EventsSection({ isLoading = false, activities = [] }: EventsSect
                             </p>
                         </div>
 
-                        {(hasActivities || isLoading) && (
+                        {hasActivities && (
                             <Link 
                                 href="/activiteiten"
                                 className="group relative inline-flex items-center gap-4 px-8 py-4 bg-[var(--color-purple-600)] text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg transition-all hover:scale-105 active:scale-95 overflow-hidden"
@@ -47,20 +47,8 @@ export function EventsSection({ isLoading = false, activities = [] }: EventsSect
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                        {isLoading ? (
-                            [1, 2, 3, 4].map((i) => (
-                                <EventCard key={i} isLoading={true} />
-                            ))
-                        ) : hasActivities ? (
-                            activities.slice(0, 4).map((activity) => (
-                                <EventCard 
-                                    key={activity.id} 
-                                    activity={activity as any} 
-                                    href={`/activiteiten/${activity.id}`} 
-                                />
-                            ))
-                        ) : (
-                            <div className="col-span-full flex flex-col items-center justify-center p-12 text-center bg-white/50 dark:bg-black/20 rounded-[2.5rem] border border-dashed border-[var(--color-purple-500)]/20">
+                        {!hasActivities ? (
+                            <div className="col-span-full flex flex-col items-center justify-center min-h-[320px] p-12 text-center bg-white/50 dark:bg-black/20 rounded-[2.5rem] border border-dashed border-[var(--color-purple-500)]/20 animate-in fade-in duration-500">
                                 <div className="h-16 w-16 mb-4 rounded-full bg-[var(--color-purple-100)] dark:bg-[var(--color-purple-900)]/30 flex items-center justify-center text-[var(--color-purple-600)] dark:text-[var(--color-purple-300)]">
                                     <Calendar className="h-8 w-8" />
                                 </div>
@@ -68,6 +56,14 @@ export function EventsSection({ isLoading = false, activities = [] }: EventsSect
                                     Geen activiteiten gevonden.
                                 </p>
                             </div>
+                        ) : (
+                            displayActivities.map((activity) => (
+                                <EventCard 
+                                    key={activity.id}
+                                    activity={activity as any} 
+                                    href={`/activiteiten/${activity.id}`} 
+                                />
+                            ))
                         )}
                     </div>
                 </div>

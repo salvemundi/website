@@ -9,6 +9,7 @@ interface AdminPageShellProps {
     actions?: React.ReactNode;
     children: React.ReactNode;
     fallback?: React.ReactNode;
+    hideToolbar?: boolean;
 }
 
 /**
@@ -21,19 +22,22 @@ export default function AdminPageShell({
     backHref,
     actions,
     children,
-    fallback
+    fallback,
+    hideToolbar = false
 }: AdminPageShellProps) {
     return (
         <div className="min-h-screen bg-[var(--bg-main)]">
-            <AdminToolbar 
-                isLoading={false}
-                title={title}
-                subtitle={subtitle}
-                backHref={backHref}
-                actions={actions}
-            />
+            {!hideToolbar && (
+                <AdminToolbar 
+                    isLoading={false}
+                    title={title}
+                    subtitle={subtitle}
+                    backHref={backHref}
+                    actions={actions}
+                />
+            )}
             
-            <Suspense fallback={fallback || <AdminGenericLoading />}>
+            <Suspense fallback={fallback || null}>
                 {children}
             </Suspense>
         </div>

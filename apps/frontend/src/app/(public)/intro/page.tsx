@@ -70,66 +70,47 @@ const IntroInfoParent = () => (
     </div>
 );
 
-/**
- * Server component that retrieves dynamic auth data asynchronously.
- */
-async function DynamicIntroContent() {
+export default async function IntroPage() {
+    // NUCLEAR SSR: Fetch all data before flushing any part of the page content
     const session = await auth.api.getSession({ headers: await headers() });
     const isAlreadyParent = session ? await hasParentSignup() : false;
     const isAuthenticated = !!session;
 
     return (
-        <section className="px-4 sm:px-6 lg:px-10 py-8 lg:py-10">
-            <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 max-w-7xl mx-auto w-full">
-                <div className="flex-1">
-                    {isAuthenticated ? <IntroInfoParent /> : <IntroInfoStudent />}
-                    {!isAuthenticated && <IntroLightboxIsland />}
-                </div>
-
-                <div className="flex-1 w-full flex flex-col justify-start">
-                    {isAuthenticated ? (
-                        isAlreadyParent ? (
-                            <div className="bg-gradient-theme rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg text-center animate-in zoom-in duration-500">
-                                <h3 className="text-xl lg:text-2xl font-bold text-white mb-4">Je hebt je al aangemeld als Intro Ouder</h3>
-                                <p className="text-white/70">
-                                    Bedankt! Je inschrijving is ontvangen. Als je iets wilt aanpassen, neem contact op met de intro commissie.
-                                </p>
-                            </div>
-                        ) : (
-                            <IntroParentIsland
-                                userName={session.user.name}
-                                userEmail={session.user.email}
-                                initialPhone={''}
-                            />
-                        )
-                    ) : (
-                        <IntroStudentIsland />
-                    )}
-                </div>
-            </div>
-        </section>
-    );
-}
-
-export default async function IntroPage() {
-    return (
         <PublicPageShell
             title="INTRO - AANMELDEN"
             backgroundImage="/img/backgrounds/intro-banner.jpg"
             imageFilter="brightness(0.65)"
-            fallback={
-                <div className="mx-auto max-w-7xl w-full px-4 py-12 md:py-20 animate-pulse">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                        <div className="space-y-6">
-                            <div className="h-10 w-3/4 bg-[var(--bg-card)] rounded-2xl skeleton-active" />
-                            <div className="h-40 w-full bg-[var(--bg-card)] rounded-3xl skeleton-active" />
-                        </div>
-                        <div className="h-96 w-full bg-[var(--bg-card)] rounded-3xl skeleton-active" />
+        >
+            <section className="px-4 sm:px-6 lg:px-10 py-8 lg:py-10">
+                <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 max-w-7xl mx-auto w-full">
+                    <div className="flex-1">
+                        {isAuthenticated ? <IntroInfoParent /> : <IntroInfoStudent />}
+                        {!isAuthenticated && <IntroLightboxIsland />}
+                    </div>
+
+                    <div className="flex-1 w-full flex flex-col justify-start">
+                        {isAuthenticated ? (
+                            isAlreadyParent ? (
+                                <div className="bg-gradient-theme rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg text-center animate-in zoom-in duration-500">
+                                    <h3 className="text-xl lg:text-2xl font-bold text-white mb-4">Je hebt je al aangemeld als Intro Ouder</h3>
+                                    <p className="text-white/70">
+                                        Bedankt! Je inschrijving is ontvangen. Als je iets wilt aanpassen, neem contact op met de intro commissie.
+                                    </p>
+                                </div>
+                            ) : (
+                                <IntroParentIsland
+                                    userName={session.user.name}
+                                    userEmail={session.user.email}
+                                    initialPhone={''}
+                                />
+                            )
+                        ) : (
+                            <IntroStudentIsland />
+                        )}
                     </div>
                 </div>
-            }
-        >
-            <DynamicIntroContent />
+            </section>
         </PublicPageShell>
     );
 }

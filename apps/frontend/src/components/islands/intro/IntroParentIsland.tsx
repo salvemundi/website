@@ -102,6 +102,7 @@ export const IntroParentIsland = ({ userName, userEmail, initialPhone }: IntroPa
                     rows={4}
                     className="form-input w-full"
                     autoComplete="off"
+                    suppressHydrationWarning
                 />
             </FormField>
 

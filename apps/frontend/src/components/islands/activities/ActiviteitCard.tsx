@@ -202,7 +202,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
             className={`group relative z-0 overflow-hidden w-full rounded-[1.75rem] bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-5 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 ${isPast ? 'opacity-60 filter grayscale' : ''} ${isLoading ? 'skeleton-active' : ''}`}
             aria-busy={isLoading}
         >
-            <div className="relative z-10 h-44 sm:h-48 mb-5 rounded-2xl overflow-hidden shadow-inner bg-[var(--bg-soft)]">
+            <div className="relative z-10 aspect-video mb-5 rounded-2xl overflow-hidden shadow-inner bg-[var(--bg-soft)]">
                 {image ? (
                     <Image
                         src={image}

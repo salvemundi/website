@@ -12,6 +12,7 @@ import { authClient } from '@/lib/auth';
 import { ThemeToggle } from '@/components/islands/layout/ThemeToggle';
 import { ROUTES } from '@/lib/config/routes';
 import { getImageUrl } from '@/lib/utils/image-utils';
+import { cn } from '@/lib/utils/cn';
 
 import MobileMenu from './navigation/MobileMenu';
 
@@ -151,22 +152,17 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
     return (
         <header
             ref={headerRef}
-            className="fixed top-0 z-50 w-full backdrop-blur-md shadow-sm transition-all duration-300 bg-[color-mix(in_srgb,var(--bg-main)_80%,transparent)]"
+            className={cn(
+                "fixed top-0 z-[100] w-full h-20 transition-all duration-300",
+                isScrolled ? "bg-white/95 dark:bg-black/95 backdrop-blur-md shadow-md" : "bg-transparent"
+            )}
         >
-            <div
-                className={`pointer-events-none absolute inset-0 transition-all duration-300 ${isScrolled
-                    ? 'shadow-xl shadow-black/10 opacity-100 border-b border-[var(--color-purple-500)]/10'
-                    : 'opacity-0'
-                    }`}
-            />
 
-            <div className="mx-auto h-16 items-center px-6 sm:px-10 lg:px-12 z-10 relative flex justify-between gap-4 lg:gap-5">
+            <div className="mx-auto max-w-app h-full px-4 sm:px-6 lg:px-8 z-10 relative">
+                <div className="grid h-full grid-cols-[auto_1fr_auto] items-center gap-4 lg:gap-8">
                     {/* Logo Section */}
-                    <Link
-                        href="/"
-                        className="flex items-center gap-3 rounded-full px-4 py-2 shadow-sm hover:shadow-md transition shrink-0 bg-[color-mix(in_srgb,var(--bg-card)_80%,transparent)]"
-                    >
-                        <Image src="/img/newlogo.png" alt="Salve Mundi" width={36} height={36} className="h-9 w-9 shrink-0" priority />
+                    <Link href="/" className="flex items-center gap-3 shrink-0">
+                        <Image src="/img/newlogo.png" alt="Logo" width={48} height={48} className="w-12 h-12" priority />
                         <div className="hidden text-left sm:block whitespace-nowrap shrink-0">
                             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-purple-500)]">Salve Mundi</p>
                             <p className="text-sm font-semibold text-[var(--text-main)]">Fontys ICT</p>
@@ -191,7 +187,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                     </nav>
 
                     {/* Right Actions */}
-                    <div className="flex items-center justify-end gap-3 shrink-0">
+                    <div className="flex items-center justify-end gap-3 shrink-0 min-w-[200px] flex-nowrap">
                         {isCommitteeMember && (
                             <Link
                                 href={ROUTES.ADMIN}
@@ -202,26 +198,26 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                             </Link>
                         )}
 
-                        {isAuthenticated ? (
-                            mounted ? (
-                                <Link
-                                    href={ROUTES.ACCOUNT}
-                                    className="flex items-center gap-2 rounded-full px-3 py-1.5 h-8 text-sm font-medium text-[var(--text-main)] shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg min-w-[136px] justify-center"
-                                >
-                                    <div className="relative h-6 w-6 rounded-full overflow-hidden shrink-0 bg-[var(--color-purple-50)] dark:bg-white/10 flex items-center justify-center">
-                                        {user.avatar ? (
-                                            <Image src={getImageUrl(user.avatar)} alt={user.name || 'Profiel'} fill className="object-cover" priority unoptimized />
-                                        ) : (
-                                            <User className="h-3.5 w-3.5 text-[var(--color-purple-600)]" />
-                                        )}
-                                    </div>
-                                    <span className="hidden sm:inline">Mijn profiel</span>
-                                </Link>
-                            ) : <div className="h-8 w-[136px] rounded-full bg-[var(--color-purple-100)]/10 animate-pulse" />
-                        ) : (
+                        {isAuthenticated && (
+                            <Link
+                                href={ROUTES.ACCOUNT}
+                                className="flex items-center gap-2 rounded-full px-3 py-1.5 h-8 text-sm font-medium text-[var(--text-main)] shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg shrink-0"
+                            >
+                                <div className="relative h-6 w-6 rounded-full overflow-hidden shrink-0 bg-[var(--color-purple-50)] dark:bg-white/10 flex items-center justify-center">
+                                    {user.avatar ? (
+                                        <Image src={getImageUrl(user.avatar)} alt={user.name || 'Profiel'} fill className="object-cover" priority unoptimized />
+                                    ) : (
+                                        <User className="h-3.5 w-3.5 text-[var(--color-purple-600)]" />
+                                    )}
+                                </div>
+                                <span className="hidden sm:inline">Mijn profiel</span>
+                            </Link>
+                        )}
+
+                        {!isAuthenticated && (
                             <button
                                 onClick={() => authClient.signIn.social({ provider: 'microsoft', callbackURL: '/profiel' })}
-                                className="flex cursor-pointer items-center justify-center gap-2 rounded-full font-semibold px-3 py-1.5 h-8 w-[88px] text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg bg-[var(--color-purple-50)] text-[var(--color-purple-700)]"
+                                className="flex cursor-pointer items-center justify-center gap-2 rounded-full font-semibold px-3 py-1.5 h-8 text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg bg-[var(--color-purple-50)] text-[var(--color-purple-700)] shrink-0"
                             >
                                 Inloggen
                             </button>
@@ -237,6 +233,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                         >
                             {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
                         </button>
+                    </div>
                 </div>
             </div>
 
