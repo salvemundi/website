@@ -20,7 +20,24 @@ export const metadata = {
     title: 'Leden Beheer | SV Salve Mundi',
 };
 
-async function LedenDataLoader() {
+export default async function LedenPage() {
+    const session = await auth.api.getSession({
+        headers: await headers()
+    });
+    
+    if (!session || !session.user) return <AdminUnauthorized />;
+
+    const user = session.user as any;
+    if (!isMemberAdmin(user.committees)) {
+        return (
+            <AdminUnauthorized 
+                title="Leden Beheer"
+                description="Je hebt geen rechten om (persoons)gegevens van leden te bekijken."
+            />
+        );
+    }
+
+    // NUCLEAR SSR: Fetch all members at the top level
     let members: any[] = [];
     let totalCount = 0;
 
@@ -42,34 +59,7 @@ async function LedenDataLoader() {
             members = res;
             totalCount = res.length;
         }
-    } catch (e: any) {
-        // Error handled by island hydration
-    }
-
-    return (
-        <LedenOverzichtIsland 
-            initialMembers={members as any} 
-            initialTotalCount={totalCount} 
-        />
-    );
-}
-
-export default async function LedenPage() {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
-    
-    if (!session || !session.user) return <AdminUnauthorized />;
-
-    const user = session.user as any;
-    if (!isMemberAdmin(user.committees)) {
-        return (
-            <AdminUnauthorized 
-                title="Leden Beheer"
-                description="Je hebt geen rechten om (persoons)gegevens van leden te bekijken."
-            />
-        );
-    }
+    } catch (e: any) {}
 
     return (
         <AdminPageShell
@@ -77,9 +67,10 @@ export default async function LedenPage() {
             subtitle="Beheer alle Salve Mundi leden en lidmaatschappen"
             backHref="/beheer"
         >
-            <Suspense fallback={<LedenOverzichtIsland isLoading={true} />}>
-                <LedenDataLoader />
-            </Suspense>
+            <LedenOverzichtIsland 
+                initialMembers={members as any} 
+                initialTotalCount={totalCount} 
+            />
         </AdminPageShell>
     );
 }

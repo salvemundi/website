@@ -5,14 +5,13 @@ import { RefreshCw } from 'lucide-react';
 import { formatDate } from '@/shared/lib/utils/date';
 
 interface LogsTabProps {
-    isLoading: boolean;
     logs: any[];
     onRefresh: () => void;
     title?: string;
     actions?: React.ReactNode;
 }
 
-export default function LogsTab({ isLoading, logs, onRefresh, title = "Activiteitslogboek", actions }: LogsTabProps) {
+export default function LogsTab({ logs, onRefresh, title = "Activiteitslogboek", actions }: LogsTabProps) {
     return (
         <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] shadow-xl overflow-hidden">
             <div className="p-6 border-b border-[var(--beheer-border)]/50 flex justify-between items-center">
@@ -21,10 +20,9 @@ export default function LogsTab({ isLoading, logs, onRefresh, title = "Activitei
                     {actions}
                     <button 
                         onClick={onRefresh}
-                        disabled={isLoading}
                         className="p-2 text-slate-400 hover:text-purple-600 transition-colors"
                     >
-                        <RefreshCw className={`h-5 w-5 ${isLoading ? 'animate-spin' : ''}`} />
+                        <RefreshCw className="h-5 w-5" />
                     </button>
                 </div>
             </div>
@@ -39,23 +37,23 @@ export default function LogsTab({ isLoading, logs, onRefresh, title = "Activitei
                             <th className="p-4 text-center">Status</th>
                         </tr>
                     </thead>
-                    <tbody className={`divide-y divide-[var(--beheer-border)]/10 ${isLoading ? 'skeleton-active' : ''}`}>
-                        {(isLoading ? [...Array(10)] : logs).map((log, i) => (
-                            <tr key={isLoading ? i : log.id} className="hover:bg-[var(--beheer-accent)]/[0.02] transition-colors group">
+                    <tbody className="divide-y divide-[var(--beheer-border)]/10">
+                        {logs.map((log) => (
+                            <tr key={log.id} className="hover:bg-[var(--beheer-accent)]/[0.02] transition-colors group">
                                 <td className="p-4 text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest whitespace-nowrap">
-                                    {isLoading ? '01-01-2024 12:00' : formatDate(log.created_at, true)}
+                                    {formatDate(log.created_at, true)}
                                 </td>
                                 <td className="p-4">
                                     <span className="font-black text-[var(--beheer-text)] uppercase tracking-tight text-xs">
-                                        {isLoading ? 'LOADING_TYPE' : log.type}
+                                        {log.type}
                                     </span>
                                 </td>
                                 <td className="p-4 text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">
-                                    {isLoading ? 'User Name' : (log.payload?.admin_name || 'Systeem')}
+                                    {log.payload?.admin_name || 'Systeem'}
                                 </td>
                                 <td className="p-4">
                                     <div className="text-[10px] font-bold text-[var(--beheer-text-muted)] uppercase tracking-widest max-w-md break-all">
-                                        {isLoading ? 'Loading payload details for the logged event...' : (log.payload && typeof log.payload === 'object' ? (
+                                        {log.payload && typeof log.payload === 'object' ? (
                                             <div className="space-y-1">
                                                 {Object.entries(log.payload)
                                                     .filter(([key]) => !['admin_id', 'admin_name', 'timestamp'].includes(key))
@@ -68,17 +66,17 @@ export default function LogsTab({ isLoading, logs, onRefresh, title = "Activitei
                                             </div>
                                         ) : (
                                             <span>{String(log.payload || '-')}</span>
-                                        ))}
+                                        )}
                                     </div>
                                 </td>
                                 <td className="p-4 text-center">
                                     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${log?.status === 'SUCCESS' ? 'bg-[var(--beheer-active)]/10 text-[var(--beheer-active)] border-[var(--beheer-active)]/20' : 'bg-[var(--beheer-inactive)]/10 text-[var(--beheer-inactive)] border-[var(--beheer-inactive)]/20'}`}>
-                                        {isLoading ? 'STATUS' : log.status}
+                                        {log.status}
                                     </span>
                                 </td>
                             </tr>
                         ))}
-                        {!isLoading && logs.length === 0 && (
+                        {logs.length === 0 && (
                             <tr>
                                 <td colSpan={5} className="p-20 text-center text-slate-400 italic font-black uppercase tracking-widest text-[10px]">Geen logboekvermeldingen gevonden.</td>
                             </tr>

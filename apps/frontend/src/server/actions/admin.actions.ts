@@ -120,6 +120,8 @@ export async function getDashboardPermissions() {
         canAccessStickers: permissions.canAccessStickers || false,
         canAccessPermissions: permissions.canAccessPermissions || false,
         canAccessKroegentocht: permissions.canAccessKroegentocht || false,
+        canAccessMembers: permissions.canAccessMembers || false,
+        canAccessCommittees: permissions.canAccessCommittees || false,
         canAccessMail: isAuthorized,
         isIct
     };
