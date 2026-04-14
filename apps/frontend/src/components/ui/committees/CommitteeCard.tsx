@@ -37,7 +37,8 @@ export const CommitteeCard: React.FC<CommitteeCardProps> = ({ isLoading = false,
 
     return (
         <div className={`${isBestuur ? 'md:col-span-2' : ''}`}>
-            <div 
+            <NextLink
+                href={isLoading ? '#' : `/vereniging/commissies/${slug}`}
                 className={`group flex h-full flex-col overflow-hidden rounded-[2rem] bg-[var(--bg-card)] dark:border dark:border-white/10 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl 
                     ${isBestuur ? 'ring-4 ring-[var(--color-purple-500)]/20 shadow-purple-500/10' : ''}
                     ${isLoading ? 'skeleton-active pointer-events-none' : ''}`} 
@@ -85,12 +86,9 @@ export const CommitteeCard: React.FC<CommitteeCardProps> = ({ isLoading = false,
                         </div>
 
                         {!isLoading && (
-                            <NextLink 
-                                href={`/vereniging/commissies/${slug}`}
-                                className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--bg-soft)] text-[var(--color-purple-500)] transition group-hover:bg-[var(--color-purple-500)] group-hover:text-white"
-                            >
+                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--bg-soft)] text-[var(--color-purple-500)] transition group-hover:bg-[var(--color-purple-500)] group-hover:text-white">
                                 <ChevronRight className="h-6 w-6" />
-                            </NextLink>
+                            </div>
                         )}
                     </div>
 
@@ -100,12 +98,9 @@ export const CommitteeCard: React.FC<CommitteeCardProps> = ({ isLoading = false,
 
                     {/* Footer Actions */}
                     <div className="mt-auto flex items-center justify-between pt-6 border-t border-[var(--border-color)]/20">
-                        <NextLink 
-                            href={`/vereniging/commissies/${slug}`}
-                            className="text-sm font-black uppercase tracking-widest text-[var(--color-purple-500)] hover:underline decoration-2 underline-offset-4"
-                        >
+                        <span className="text-sm font-black uppercase tracking-widest text-[var(--color-purple-500)] decoration-2 underline-offset-4 group-hover:underline">
                             Meer informatie
-                        </NextLink>
+                        </span>
 
                         {(hasHistory || isLoading) && !isBestuur && (
                             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--bg-soft)] text-[var(--text-muted)] transition" title="Historie">
@@ -114,7 +109,7 @@ export const CommitteeCard: React.FC<CommitteeCardProps> = ({ isLoading = false,
                         )}
                     </div>
                 </div>
-            </div>
+            </NextLink>
         </div>
     );
 };
