@@ -61,12 +61,9 @@ export default async function ReisPage() {
                 : 'Inschrijving tijdelijk niet beschikbaar'));
 
     return (
-        <PublicPageShell
-            title="SALVE MUNDI REIS"
-            description="Schrijf je in voor de jaarlijkse reis van Salve Mundi! Een onvergetelijke ervaring vol gezelligheid en avontuur."
-            backgroundImage="/img/backgrounds/reis-banner.jpg"
-        >
-            <main className="mx-auto max-w-app px-4 py-8 sm:py-10 md:py-12">
+        <PublicPageShell>
+            <h1 className="sr-only">Reis</h1>
+            <main className="mx-auto max-w-app px-4 pt-8 pb-8 sm:py-10 md:py-12">
                 <div className="flex flex-col lg:flex-row gap-8 items-start animate-in fade-in slide-in-from-bottom-4 duration-700">
                     <ReisFormIsland
                         nextTrip={nextTrip}

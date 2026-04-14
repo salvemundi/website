@@ -1,8 +1,9 @@
 export const dynamic = 'force-dynamic';
 import type { Metadata } from 'next';
 import ContactInfoCard from '@/components/ui/social/ContactInfoCard';
-import PageHeader from '@/components/ui/layout/PageHeader';
 import { getDocumenten } from '@/server/actions/website.actions';
+import { auth } from '@/server/auth/auth';
+import { headers } from 'next/headers';
 
 // SEO metadata conform de V7 standaard
 export const metadata: Metadata = {
@@ -22,24 +23,24 @@ export const metadata: Metadata = {
  * NUCLEAR SSR: Alle data (documenten) wordt op de server opgehaald voordat de pagina geflushd wordt.
  */
 export default async function ContactPage() {
-    // Haal alle benodigde data op voor de hele pagina
-    const documenten = await getDocumenten();
+    // Haal alle benodigde data op voor de hele pagina (Nuclear SSR)
+    const [documenten, session] = await Promise.all([
+        getDocumenten(),
+        auth.api.getSession({ headers: await headers() })
+    ]);
 
     return (
         <div>
-            <PageHeader
-                title="CONTACT"
-                backgroundImage=""
-                contentPadding="py-20"
-                imageFilter="brightness(0.65)"
-                description="Neem contact met ons op voor vragen, suggesties of informatie"
-            />
+            <h1 className="sr-only">Contact</h1>
 
-            <main className="mx-auto max-w-7xl px-4 py-8 sm:py-10 md:py-12">
+            <main className="mx-auto max-w-7xl px-4 pt-8 pb-8 sm:py-10 md:py-12">
                 <div className="max-w-6xl mx-auto flex w-full flex-col gap-8">
 
                     {/* 2-koloms grid — Informatie | Contact */}
-                    <ContactInfoCard documenten={documenten} />
+                    <ContactInfoCard 
+                        documenten={documenten} 
+                        isLoggedIn={!!session?.user}
+                    />
 
                     {/* Social Media sectie - Wordt direct statisch geserveerd */}
                     <section

@@ -81,7 +81,7 @@ function InformatieKaart({ documenten }: { documenten: any[] }) {
  * Kaart met contactgegevens (e-mail, telefoon, WhatsApp, Safe Havens).
  * WhatsApp en Safe Havens zijn client islands voor interactiviteit.
  */
-function ContactKaart() {
+function ContactKaart({ isLoggedIn }: { isLoggedIn: boolean }) {
     return (
         <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl shadow-lg p-8">
             <h2 className="text-3xl font-bold text-[var(--text-main)] mb-6">
@@ -117,7 +117,7 @@ function ContactKaart() {
                 </div>
 
                 {/* WhatsApp — alleen zichtbaar voor ingelogde leden (client island) */}
-                <WhatsAppLink />
+                <WhatsAppLink isLoggedIn={isLoggedIn} />
 
                 {/* Safe Havens knop (client island — useRouter) */}
                 <SafeHavenButton />
@@ -130,11 +130,11 @@ function ContactKaart() {
  * Hoofdcomponent: 2-koloms grid van Informatie- en Contactkaart.
  * Geëxporteerd voor gebruik in de contactpagina.
  */
-export default function ContactInfoCard({ documenten }: { documenten: any[] }) {
+export default function ContactInfoCard({ documenten, isLoggedIn }: { documenten: any[], isLoggedIn: boolean }) {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <InformatieKaart documenten={documenten} />
-            <ContactKaart />
+            <ContactKaart isLoggedIn={isLoggedIn} />
         </div>
     );
 }

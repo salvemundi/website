@@ -17,6 +17,7 @@ async function fetchSafeHavensFromDirectus(isAuthenticated: boolean): Promise<Sa
         const mappedData = (rows || []).map((item) => ({
             id: item.id,
             naam: item.contact_name,
+            beschrijving: null,
             email: item.email || null,
             telefoon: item.phone_number || null,
             afbeelding_id: item.image,

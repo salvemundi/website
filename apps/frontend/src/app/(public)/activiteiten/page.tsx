@@ -27,16 +27,44 @@ export default async function ActivitiesPage() {
     const serverTime = new Date().toISOString();
 
     return (
-        <PublicPageShell
-            title="ACTIVITEITEN"
-            subtitle="Bekijk alle activiteiten, trainingen en feesten van Salve Mundi."
-            backgroundImage="/img/backgrounds/Kroto2025.jpg"
-        >
-            <div className="flex flex-col gap-12">
-                <ActivitiesBannerIsland events={events as any} serverTime={serverTime} />
-                <main className="w-full px-4 py-8 sm:py-10 md:py-12">
-                    <ActivitiesProviderIsland events={events as any} serverTime={serverTime} />
-                </main>
+        <PublicPageShell>
+            <div className="mx-auto max-w-app px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
+                <div className="mx-auto max-w-7xl">
+                    {/* Industrial Columnar Bento Grid */}
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                        
+                        {/* MAIN COLUMN (LEFT) - List & Calendar */}
+                        <div className="lg:col-span-8 space-y-6">
+                            <section className="rounded-2xl sm:rounded-3xl bg-[var(--bg-card)] border border-[var(--border-color)] dark:border-white/10 shadow-lg p-6 sm:p-8">
+                                <ActivitiesProviderIsland events={events as any} serverTime={serverTime} />
+                            </section>
+                        </div>
+
+                        {/* SIDE COLUMN (RIGHT) - Banner/Stats & Quick Info */}
+                        <div className="lg:col-span-4 space-y-6">
+                            <section className="rounded-2xl sm:rounded-3xl bg-[var(--bg-card)] border border-[var(--border-color)] dark:border-white/10 shadow-lg p-6 sm:p-8">
+                                <ActivitiesBannerIsland events={events as any} serverTime={serverTime} />
+                            </section>
+
+                            {/* Additional Industrial Info Card */}
+                            <section className="rounded-2xl sm:rounded-3xl bg-[var(--color-purple-600)] text-white shadow-xl p-6 sm:p-8 transition-transform hover:scale-[1.02] duration-300">
+                                <h3 className="text-xl font-bold mb-3 flex items-center gap-2">
+                                    <span className="text-2xl">✨</span> Lid Worden?
+                                </h3>
+                                <p className="text-white/90 text-sm leading-relaxed mb-6">
+                                    Wil je korting op onze activiteiten en toegang tot exclusieve evenementen? 
+                                    Word nu lid voor slechts €5 per jaar!
+                                </p>
+                                <a 
+                                    href="/lidmaatschap" 
+                                    className="inline-block w-full bg-white text-[var(--color-purple-600)] font-bold text-center py-3 rounded-xl hover:bg-white/90 transition-colors"
+                                >
+                                    Meld je aan
+                                </a>
+                            </section>
+                        </div>
+                    </div>
+                </div>
             </div>
         </PublicPageShell>
     );

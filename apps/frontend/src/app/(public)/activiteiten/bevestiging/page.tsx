@@ -1,6 +1,5 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
-import PageHeader from '@/components/ui/layout/PageHeader';
 import ConfirmationIsland from '@/components/islands/activities/ConfirmationIsland';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
@@ -19,13 +18,8 @@ export default async function ActiviteitenConfirmationPage({ searchParams }: Pag
     });
 
     return (
-        <main className="min-h-screen bg-[var(--bg-main)]">
-            <PageHeader 
-                title="BEVESTIGING"
-                backgroundImage="/img/backgrounds/Kroto2025.jpg"
-                variant="centered"
-                contentPadding="py-16"
-            />
+        <main className="min-h-screen bg-[var(--bg-main)] pt-8">
+            <h1 className="sr-only">Bevestiging</h1>
             <div className="container mx-auto px-4 max-w-7xl">
                 <Suspense fallback={<ConfirmationIsland isLoading={true} />}>
                     <ConfirmationIsland 
