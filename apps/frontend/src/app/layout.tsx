@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { Poppins } from 'next/font/google';
 import { Suspense } from 'react';
 import './globals.css';
 import NavigationHeader from '@/components/islands/layout/NavigationHeader';
@@ -31,6 +32,12 @@ export const metadata: Metadata = {
     },
 };
 
+const poppins = Poppins({
+    subsets: ['latin'],
+    weight: ['400', '600', '700', '900'],
+    variable: '--font-poppins',
+});
+
 export default async function RootLayout({
     children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -52,31 +59,17 @@ export default async function RootLayout({
                         `,
                     }}
                 />
-                <link
-                    rel="preload"
-                    href="/fonts/poppins/Poppins-Regular.ttf"
-                    as="font"
-                    type="font/ttf"
-                    crossOrigin="anonymous"
-                />
-                <link
-                    rel="preload"
-                    href="/fonts/poppins/Poppins-Bold.ttf"
-                    as="font"
-                    type="font/ttf"
-                    crossOrigin="anonymous"
-                />
                 <link rel="preload" as="image" href="/img/newlogo.png" />
                 <Suspense fallback={null}>
                     <HeadPreloads />
                 </Suspense>
             </head>
-            <body className="antialiased flex flex-col min-h-screen">
+            <body className={`${poppins.variable} antialiased flex flex-col min-h-screen`}>
                 <Suspense fallback={null}>
                     <ImpersonationWrapper />
                 </Suspense>
 
-                <Suspense fallback={null}>
+                <Suspense fallback={<div className="h-[80px] w-full bg-[var(--bg-main)]" />}>
                     <HeaderWrapper />
                     <main className="flex-grow pt-[var(--header-total-height,var(--header-height,72px))]">
                         {children}

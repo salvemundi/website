@@ -12,40 +12,44 @@ export function getSystemDirectus() {
     return createDirectus<DirectusSchema>(directusUrl, {
         globals: {
             fetch: (url, options) => {
-                const urlObj = new URL(url.toString());
-                // Add a highly unique version query param to bypass any internal/proxy cache
-                const cacheBuster = `${Date.now()}_${Math.random().toString(36).substring(7)}`;
-                urlObj.searchParams.set('v', cacheBuster);
-                const urlStr = urlObj.toString();
+                const urlStr = url.toString();
                 
-
-                // Add next tags for sticker-related items to enable granular revalidation
                 const nextOptions = (options as any)?.next || {};
                 const tags: string[] = nextOptions.tags || [];
 
-                if (urlStr.includes('/items/Stickers') && !tags.includes('stickers')) {
-                    tags.push('stickers');
+                // ─── TIERED REVALIDATION STRATEGY ────────────────────────────────
+                // If revalidate is not explicitly set, determine it based on URL
+                let revalidate = nextOptions.revalidate;
+
+                if (revalidate === undefined) {
+                    if (urlStr.includes('/items/Stickers') || urlStr.includes('/items/feature_flags')) {
+                        revalidate = 1; // Tier 1: Critical
+                    } else if (urlStr.includes('/items/events') || urlStr.includes('/items/news')) {
+                        revalidate = 60; // Tier 2: Fast
+                    } else if (
+                        urlStr.includes('/items/hero_banners') || 
+                        urlStr.includes('/items/sponsors') || 
+                        urlStr.includes('/items/committees')
+                    ) {
+                        revalidate = 3600; // Tier 3: Stable (Banners per user request)
+                    } else {
+                        revalidate = 300; // Default: 5 minutes
+                    }
                 }
-                if (urlStr.includes('/items/feature_flags') && !tags.includes('feature_flags')) {
-                    tags.push('feature_flags');
-                }
-                if ((urlStr.includes('/items/trip_signups') || urlStr.includes('/items/trips')) && !tags.includes('reis-status')) {
-                    tags.push('reis-status');
-                }
+
+                // Add next tags for granular revalidation support
+                if (urlStr.includes('/items/Stickers') && !tags.includes('stickers')) tags.push('stickers');
+                if (urlStr.includes('/items/feature_flags') && !tags.includes('feature_flags')) tags.push('feature_flags');
+                if ((urlStr.includes('/items/trip_signups') || urlStr.includes('/items/trips')) && !tags.includes('reis-status')) tags.push('reis-status');
 
                 const requestInit: RequestInit = {
                     ...options,
-                    headers: {
-                        ...(options?.headers as Record<string, string>),
-                        'Cache-Control': 'no-cache, no-store, must-revalidate',
-                        'Pragma': 'no-cache',
-                        'Expires': '0',
-                    },
-                    cache: 'no-store',
+                    // Remove aggressive cache-busting headers
+                    cache: revalidate === 0 ? 'no-store' : 'force-cache',
                     next: {
                         ...nextOptions,
                         tags,
-                        revalidate: 0
+                        revalidate: revalidate,
                     },
                     signal: AbortSignal.timeout(15000),
                 };

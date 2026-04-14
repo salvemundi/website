@@ -1,18 +1,11 @@
-'use client';
-
-import { useEffect, useMemo, useState } from 'react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay } from 'swiper/modules';
-import 'swiper/css';
-import Image from 'next/image';
+import React from 'react';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
-import { authClient } from '@/lib/auth';
 import type { HeroBanner } from '@salvemundi/validations/schema/home.zod';
 import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { formatDate } from '@/shared/lib/utils/date';
-import { cn } from '@/lib/utils/cn';
+import { HeroCarousel } from './HeroCarousel';
 
 interface HeroIslandProps {
     banners?: HeroBanner[];
@@ -21,35 +14,19 @@ interface HeroIslandProps {
 }
 
 /**
- * Client Island — Belangrijkste visuele sectie van de homepage.
- * V7.12 SSR: Stripped of loading logic. Uses direct data rendering.
+ * Server Component — Belangrijkste visuele sectie van de homepage.
+ * V7.12 RSC: Now fully server-side for faster initial paint and lower JS bundle.
  */
-export function HeroIsland({ banners = [], activiteiten = [], initialSession }: HeroIslandProps) {
-    const { data: sessionData, isPending: authLoading } = authClient.useSession();
-    
-    // HYDRATION STABILITY: Use initial session if provided, otherwise client data
-    const session = sessionData || initialSession;
-    const isAuthenticated = !!session?.user;
+export async function HeroIsland({ banners = [], activiteiten = [], initialSession }: HeroIslandProps) {
+    const isAuthenticated = !!initialSession?.user;
 
-    const [mounted, setMounted] = useState(false);
-    const [isMobile, setIsMobile] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-        const checkMobile = () => setIsMobile(window.innerWidth < 640);
-        checkMobile();
-        window.addEventListener('resize', checkMobile);
-        return () => window.removeEventListener('resize', checkMobile);
-    }, []);
-
-    const slideUrls = useMemo(() => {
-        if (!banners.length) return ['/images/placeholder-hero.jpg'];
-        return banners
+    const slideUrls = banners.length 
+        ? banners
             .sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))
-            .map((b) => getImageUrl(b.afbeelding_id, { width: 1200, height: 800, fit: 'cover' }) || '/images/placeholder-hero.jpg');
-    }, [banners]);
+            .map((b) => getImageUrl(b.afbeelding_id, { width: 1200, height: 800, fit: 'cover' }) || '/images/placeholder-hero.jpg')
+        : ['/images/placeholder-hero.jpg'];
 
-    const nextEvent = useMemo(() => {
+    const nextEvent = (() => {
         if (!activiteiten.length) return null;
         const now = new Date();
         const upcoming = activiteiten
@@ -62,10 +39,9 @@ export function HeroIsland({ banners = [], activiteiten = [], initialSession }: 
             })
             .sort((a, b) => new Date(a.datum_start).valueOf() - new Date(b.datum_start).valueOf());
         return upcoming[0] ?? null;
-    }, [activiteiten]);
+    })();
 
     const showMembershipLink = !isAuthenticated;
-    const isReady = mounted && !authLoading;
 
     return (
         <section
@@ -131,41 +107,7 @@ export function HeroIsland({ banners = [], activiteiten = [], initialSession }: 
                         {/* ── Rechts: Swiper afbeeldingsgalerij ───────────────────── */}
                         <div className="flex flex-wrap gap-3 sm:gap-4 min-w-0">
                             <div className="relative w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)]/80 shadow-2xl backdrop-blur-xl overflow-hidden aspect-video md:aspect-auto md:h-[350px] lg:h-[480px] xl:h-[540px]">
-                                <div className="w-full h-full">
-                                    {/* Server-side Fallback & Hydration-Safe Image */}
-                                    {!mounted ? (
-                                        <div className="w-full h-full relative">
-                                            <Image 
-                                                src={slideUrls[0]} 
-                                                alt="Salve Mundi" 
-                                                fill 
-                                                priority 
-                                                unoptimized 
-                                                className="object-cover object-center" 
-                                            />
-                                        </div>
-                                    ) : (
-                                        <>
-                                            {isMobile ? (
-                                                <div className="sm:hidden w-full h-full relative">
-                                                    <Image src={slideUrls[0]} alt="Salve Mundi" fill priority unoptimized className="object-cover object-center" />
-                                                </div>
-                                            ) : (
-                                                <div className="hidden sm:block h-full w-full">
-                                                    <Swiper modules={[Autoplay]} autoplay={{ delay: 5000, disableOnInteraction: false }} loop={slideUrls.length > 1} className="h-full w-full">
-                                                        {slideUrls.map((src, index) => (
-                                                            <SwiperSlide key={index}>
-                                                                <div className="w-full h-full relative">
-                                                                    <Image src={src} alt="Sfeerimpressie" fill priority={index === 0} unoptimized className="object-cover object-center" />
-                                                                </div>
-                                                            </SwiperSlide>
-                                                        ))}
-                                                    </Swiper>
-                                                </div>
-                                            )}
-                                        </>
-                                    )}
-                                </div>
+                                <HeroCarousel slideUrls={slideUrls} />
                             </div>
                         </div>
 
