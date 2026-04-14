@@ -5,7 +5,6 @@ export const tripSchema = z.object({
     name: z.string(),
     description: z.preprocess((v) => v === null ? null : String(v), z.string().nullable().optional()),
     image: z.preprocess((v) => v === null ? null : String(v), z.string().nullable().optional()),
-    event_date: z.preprocess((v) => v === null ? null : String(v), z.string().nullable().optional()),
     start_date: z.preprocess((v) => v === null ? null : String(v), z.string().nullable().optional()),
     end_date: z.preprocess((v) => v === null ? null : String(v), z.string().nullable().optional()),
     registration_start_date: z.preprocess((v) => v === null ? null : String(v), z.string().nullable().optional()),

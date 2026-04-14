@@ -63,7 +63,7 @@ export default function AdminReisSelectorIsland({
                         className="beheer-select"
                     >
                         {trips.map(trip => {
-                            const displayStartDate = trip.start_date || trip.event_date;
+                            const displayStartDate = trip.start_date;
                             if (!displayStartDate) return <option key={trip.id} value={trip.id} className="bg-[var(--beheer-card-bg)]">{trip.name}</option>;
 
                             const dateDisplay = trip.end_date

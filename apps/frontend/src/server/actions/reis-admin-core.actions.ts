@@ -87,7 +87,6 @@ export async function createTrip(prevState: any, formData: FormData) {
             registration_start_date: rawData.registration_start_date || null,
             image: newImageId || (rawData.image as string) || null,
             end_date: (rawData.end_date as string) || null,
-            event_date: (rawData.start_date as string) || null,
             status: 'published'
         };
 
@@ -138,7 +137,6 @@ export async function updateTrip(prevState: any, formData: FormData) {
             registration_start_date: rawData.registration_start_date || null,
             image: newImageId || (rawData.image as string) || null,
             end_date: (rawData.end_date as string) || null,
-            event_date: (rawData.start_date as string) || null,
         };
 
         const validated = tripSchema.omit({ id: true }).partial().safeParse(data);
