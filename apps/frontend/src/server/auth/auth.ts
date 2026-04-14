@@ -51,7 +51,11 @@ export const auth = betterAuth({
         modelName: "auth_sessions"
     },
     account: {
-        modelName: "auth_accounts"
+        modelName: "auth_accounts",
+        accountLinking: {
+            enabled: true,
+            trustedProviders: ["microsoft"],
+        }
     },
     plugins: [
         nextCookies(),
