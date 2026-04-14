@@ -1,9 +1,6 @@
-'use client';
-
-import { useState, useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { Instagram, Facebook, Linkedin } from 'lucide-react';
-import { authClient } from '@/lib/auth';
 import { ROUTES } from '@/lib/config/routes';
 import type { Committee } from '@salvemundi/validations/schema/committees.zod';
 import type { Document } from '@salvemundi/validations/schema/website.zod';
@@ -11,7 +8,7 @@ import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 // Alle data wordt server-side opgehaald en als props doorgegeven.
-// Dit island is 'use client' uitsluitend vanwege de auth-gated WhatsApp-link.
+// V7.12 RSC: Now fully server-side.
 interface FooterIslandProps {
     documents: Document[];
     disabledRoutes?: string[];
@@ -34,19 +31,6 @@ function slugify(text: string): string {
         .replace(/--+/g, '-');
 }
 
-// ─── CSS Token Strategie ──────────────────────────────────────────────────────
-// De footer heeft altijd bg-gradient-theme als achtergrond.
-//   Light mode: gradient-start=#fdfbff (bijna wit) → tekst moet donker zijn
-//   Dark mode:  gradient-start=#805480 (donker paars) → tekst moet licht zijn
-//
-// Kleurkeuzes:
-//   Koppen:      light → var(--color-purple-700) | dark → var(--color-white)
-//   Body-tekst:  light → var(--color-purple-800) | dark → rgba(255,255,255,0.80)  [= var(--text-light)]
-//   Link-tekst:  erft body-tekst
-//   Link-hover (achtergrond): light → var(--color-purple-500)/10 | dark → white/10
-//   Link-hover (tekst):       light → var(--color-purple-700)  | dark → var(--color-white)
-//   Social-icons bg:          altijd white/10 → white/20 (zichtbaar op beide)
-
 const HEADING_CLS =
     'text-sm font-bold uppercase tracking-[0.3em] mb-4 ' +
     'text-[var(--color-purple-700)] dark:text-[var(--color-white)]';
@@ -60,17 +44,8 @@ const LINK_CLS =
 const MUTED_CLS = 'text-[var(--color-purple-800)] dark:text-[var(--text-light)]';
 
 // ─── Component ────────────────────────────────────────────────────────────────
-const FooterIsland: React.FC<FooterIslandProps> = ({ documents, disabledRoutes = [], committees, initialSession }) => {
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    // Better Auth sessie — uitsluitend via authClient.useSession() conform V7-advies
-    const { data: sessionData } = authClient.useSession();
-    const session = sessionData || initialSession;
-    const isAuthenticated = !!session?.user;
+const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRoutes = [], committees, initialSession }) => {
+    const isAuthenticated = !!initialSession?.user;
 
     // Asset-links conform V7 (server-side proxy)
     const assetUrl = '/api/assets';
