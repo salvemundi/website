@@ -1,32 +1,49 @@
+import { format, isSameDay, parseISO } from 'date-fns';
+import { nl } from 'date-fns/locale';
+
 /**
- * Formats a date to the standard Salve Mundi format: dd-mm-yyyy.
- * @param date - The date to format (string, Date, or timestamp).
- * @param includeTime - Whether to include the time (HH:mm).
- * @returns A formatted date string or 'Datum volgt' if invalid.
+ * Formats a date string, object or timestamp into a readable format.
+ * Defaults to 'dd-MM-yyyy' in Dutch.
+ * Supports legacy 'includeTime' boolean for backward compatibility.
  */
-export function formatDate(date: string | Date | number | undefined | null, includeTime: boolean = false): string {
+export function formatDate(
+    date: string | Date | number | undefined | null,
+    formatOrIncludeTime: string | boolean = 'dd-MM-yyyy'
+): string {
     if (!date) return 'Datum volgt';
 
     try {
-        const d = new Date(date);
+        const d = typeof date === 'string' ? parseISO(date) : new Date(date);
         if (isNaN(d.getTime())) return 'Datum volgt';
 
-        const day = String(d.getDate()).padStart(2, '0');
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const year = d.getFullYear();
-
-        let result = `${day}-${month}-${year}`;
-
-        if (includeTime) {
-            const hours = String(d.getHours()).padStart(2, '0');
-            const minutes = String(d.getMinutes()).padStart(2, '0');
-            result += ` ${hours}:${minutes}`;
+        // Legacy support: if boolean true, use a format with time
+        if (typeof formatOrIncludeTime === 'boolean') {
+            const formatStr = formatOrIncludeTime ? 'dd-MM-yyyy HH:mm' : 'dd-MM-yyyy';
+            return format(d, formatStr, { locale: nl });
         }
 
-        return result;
+        return format(d, formatOrIncludeTime, { locale: nl });
     } catch {
         return 'Datum volgt';
     }
+}
+
+/**
+ * Modern Salve Mundi Event Formatter: "vrijdag 25 april"
+ */
+export function formatEventDate(date: string | Date | number | undefined | null): string {
+    return formatDate(date, 'EEEE d MMMM');
+}
+
+/**
+ * Standard Salve Mundi Event Date Range: "25 april t/m 27 april"
+ */
+export function formatEventDateRange(startDate?: string, endDate?: string): string {
+    if (!startDate) return 'Datum volgt';
+    const start = formatEventDate(startDate);
+    if (!endDate || startDate === endDate) return start;
+    
+    return `${start} t/m ${formatEventDate(endDate)}`;
 }
 
 /**
@@ -34,6 +51,20 @@ export function formatDate(date: string | Date | number | undefined | null, incl
  */
 export function isEventPast(dateStr?: string): boolean {
     if (!dateStr) return false;
-    const date = new Date(dateStr);
-    return date < new Date();
+    try {
+        const date = parseISO(dateStr);
+        return date < new Date();
+    } catch {
+        return false;
+    }
+}
+
+/**
+ * Formats a time string (HH:mm:ss) to HH:mm.
+ */
+export function formatTime(time?: string | null): string | null {
+    if (!time) return null;
+    const parts = time.split(':');
+    if (parts.length >= 2) return `${parts[0]}:${parts[1]}`;
+    return time;
 }

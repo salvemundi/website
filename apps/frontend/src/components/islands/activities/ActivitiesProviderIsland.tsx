@@ -5,11 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { addMonths, subMonths } from 'date-fns';
 
 import CalendarView from "./CalendarView";
-import FeaturedEvent from "./FeaturedEvent";
 import DayDetails from "./DayDetails";
 import EventList from "./EventList";
 import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
-import ActiviteitCard from "./ActiviteitCard";
 
 interface ActivitiesProviderIslandProps {
     events?: (Activiteit & { is_signed_up?: boolean })[];
@@ -28,36 +26,6 @@ export default function ActivitiesProviderIsland({
     const [showPastActivities, setShowPastActivities] = useState(false);
     const [selectedDay, setSelectedDay] = useState<Date | null>(null);
     const [currentDate, setCurrentDate] = useState(serverTime ? new Date(serverTime) : new Date());
-
-    const filteredEvents = useMemo(() => {
-        let filtered = events;
-        if (!showPastActivities) {
-            const now = serverTime ? new Date(serverTime) : new Date();
-            filtered = filtered.filter(event => {
-                const eventDate = event.datum_start;
-                // The server actions now send ISO strings (datum_start) or YYYY-MM-DD (event_date)
-                let eventDateTime;
-                if (event.event_time && eventDate.length <= 10) {
-                    eventDateTime = new Date(`${eventDate}T${event.event_time}`);
-                } else {
-                    eventDateTime = new Date(eventDate);
-                }
-                return eventDateTime >= now;
-            });
-        }
-        return filtered.sort((a, b) => {
-            const aDate = a.datum_start;
-            const bDate = b.datum_start;
-            
-            const aDateTime = (a.event_time && aDate.length <= 10)
-                ? new Date(`${aDate}T${a.event_time}`).getTime()
-                : new Date(aDate).getTime();
-            const bDateTime = (b.event_time && bDate.length <= 10)
-                ? new Date(`${bDate}T${b.event_time}`).getTime()
-                : new Date(bDate).getTime();
-            return aDateTime - bDateTime;
-        });
-    }, [events, showPastActivities, serverTime]);
 
     const upcomingEvent = useMemo(() => {
         const now = serverTime ? new Date(serverTime) : new Date();
@@ -81,6 +49,43 @@ export default function ActivitiesProviderIsland({
                 return aDateTime - bDateTime;
             })[0];
     }, [events, serverTime]);
+
+    const filteredEvents = useMemo(() => {
+        let filtered = events;
+        if (!showPastActivities) {
+            const now = serverTime ? new Date(serverTime) : new Date();
+            filtered = filtered.filter(event => {
+                const eventDate = event.datum_start;
+                let eventDateTime;
+                if (event.event_time && eventDate.length <= 10) {
+                    eventDateTime = new Date(`${eventDate}T${event.event_time}`);
+                } else {
+                    eventDateTime = new Date(eventDate);
+                }
+                return eventDateTime >= now;
+            });
+        }
+
+        // Deduplicate: remove the featured upcoming event from the list (Legacy logic)
+        // We disable this if it's the only event to avoid the "Geen activiteiten gevonden" confusion.
+        if (upcomingEvent && !showPastActivities && filtered.length > 1) {
+            filtered = filtered.filter(e => e.id !== upcomingEvent.id);
+        }
+
+        return filtered.sort((a, b) => {
+            const aDate = a.datum_start;
+            const bDate = b.datum_start;
+            
+            const aDateTime = (a.event_time && aDate.length <= 10)
+                ? new Date(`${aDate}T${a.event_time}`).getTime()
+                : new Date(aDate).getTime();
+            const bDateTime = (b.event_time && bDate.length <= 10)
+                ? new Date(`${bDate}T${b.event_time}`).getTime()
+                : new Date(bDate).getTime();
+            return aDateTime - bDateTime;
+        });
+    }, [events, showPastActivities, serverTime, upcomingEvent]);
+
     const handleShowDetails = useCallback((activity: Activiteit) => {
         router.push(`/activiteiten/${activity.id}`);
     }, [router]);
@@ -96,15 +101,13 @@ export default function ActivitiesProviderIsland({
 
     return (
         <div className="relative w-full flex flex-col">
-            <>
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
                         <h2 className="text-3xl font-bold text-[var(--theme-purple)] dark:text-[var(--text-main)]">
                             {showPastActivities ? 'Alle Activiteiten' : 'Komende Activiteiten'}
                         </h2>
 
                         <div className="flex flex-wrap items-center gap-3">
-                            {/* View Mode Switcher moved here to prevent shift */}
-                            <div className="hidden md:flex rounded-lg bg-[var(--bg-card)] overflow-hidden shadow-sm border border-[var(--border-color)] mr-2">
+                            <div className="flex rounded-lg bg-[var(--bg-card)] overflow-hidden shadow-sm border border-[var(--border-color)]">
                                 <button
                                     onClick={() => setViewMode('list')}
                                     className={`px-4 py-2 text-sm font-semibold transition-all ${viewMode === 'list'
@@ -112,17 +115,7 @@ export default function ActivitiesProviderIsland({
                                         : 'text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/5'
                                         }`}
                                 >
-                                    <span className="flex items-center gap-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <line x1="8" y1="6" x2="21" y2="6" />
-                                            <line x1="8" y1="12" x2="21" y2="12" />
-                                            <line x1="8" y1="18" x2="21" y2="18" />
-                                            <line x1="3" y1="6" x2="3.01" y2="6" />
-                                            <line x1="3" y1="12" x2="3.01" y2="12" />
-                                            <line x1="3" y1="18" x2="3.01" y2="18" />
-                                        </svg>
-                                        Lijst
-                                    </span>
+                                    Lijst
                                 </button>
                                 <button
                                     onClick={() => setViewMode('grid')}
@@ -131,15 +124,7 @@ export default function ActivitiesProviderIsland({
                                         : 'text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/5'
                                         }`}
                                 >
-                                    <span className="flex items-center gap-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <rect x="3" y="3" width="8" height="8" rx="1" ry="1" />
-                                            <rect x="13" y="3" width="8" height="8" rx="1" ry="1" />
-                                            <rect x="3" y="13" width="8" height="8" rx="1" ry="1" />
-                                            <rect x="13" y="13" width="8" height="8" rx="1" ry="1" />
-                                        </svg>
-                                        Kaarten
-                                    </span>
+                                    Kaarten
                                 </button>
                                 <button
                                     onClick={() => setViewMode('calendar')}
@@ -148,47 +133,9 @@ export default function ActivitiesProviderIsland({
                                         : 'text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/5'
                                         }`}
                                 >
-                                    <span className="flex items-center gap-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                                            <line x1="16" y1="2" x2="16" y2="6" />
-                                            <line x1="8" y1="2" x2="8" y2="6" />
-                                            <line x1="3" y1="10" x2="21" y2="10" />
-                                        </svg>
-                                        Kalender
-                                    </span>
+                                    Kalender
                                 </button>
                             </div>
-
-                            <button
-                                onClick={async () => {
-                                    const calendarUrl = 'https://api.salvemundi.nl/calendar';
-                                    try {
-                                        const resp = await fetch(calendarUrl, { cache: 'no-store' });
-                                        if (!resp.ok) throw new Error(`Fetch failed: ${resp.status}`);
-                                        const blob = await resp.blob();
-                                        const url = window.URL.createObjectURL(blob);
-                                        const a = document.createElement('a');
-                                        a.href = url;
-                                        a.download = 'salve-mundi.ics';
-                                        document.body.appendChild(a);
-                                        a.click();
-                                        a.remove();
-                                        window.URL.revokeObjectURL(url);
-                                    } catch (err) {
-                                        
-                                        try {
-                                            const webcalUrl = calendarUrl.replace(/^https?:/, 'webcal:');
-                                            window.location.href = webcalUrl;
-                                        } catch {
-                                            window.open(calendarUrl, '_blank');
-                                        }
-                                    }
-                                }}
-                                className="px-4 py-2 text-sm font-semibold bg-[var(--bg-card)] text-[var(--theme-purple)] dark:text-[var(--text-main)] rounded-lg hover:bg-[var(--theme-purple)]/5 transition-colors shadow-sm flex items-center gap-2 border border-[var(--border-color)]"
-                            >
-                                📅 Sync Agenda
-                            </button>
 
                             <button
                                 onClick={() => setShowPastActivities(!showPastActivities)}
@@ -203,29 +150,18 @@ export default function ActivitiesProviderIsland({
                     </div>
 
                     <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
-                        {(selectedDay || (upcomingEvent && viewMode === 'list')) && (
+                        {selectedDay && (
                             <aside className="lg:w-96 xl:w-[28rem] space-y-6">
-                                {upcomingEvent && viewMode === 'list' && (
-                                    <FeaturedEvent
-                                        event={upcomingEvent}
-                                        onEventClick={handleShowDetails}
-                                    />
-                                )}
-
-                                {selectedDay && (
-                                    <DayDetails
-                                        selectedDay={selectedDay}
-                                        activities={events}
-                                        onClose={() => setSelectedDay(null)}
-                                        onEventClick={handleShowDetails}
-                                    />
-                                )}
+                                <DayDetails
+                                    selectedDay={selectedDay}
+                                    activities={events}
+                                    onClose={() => setSelectedDay(null)}
+                                    onEventClick={handleShowDetails}
+                                />
                             </aside>
                         )}
 
                         <div className="flex-1 space-y-6">
-
-
                             {viewMode === 'calendar' && (
                                 <>
                                     <div className="hidden lg:block">
@@ -265,7 +201,6 @@ export default function ActivitiesProviderIsland({
                             )}
                         </div>
                     </div>
-            </>
         </div>
     );
 }
