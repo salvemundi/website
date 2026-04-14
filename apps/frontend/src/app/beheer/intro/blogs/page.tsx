@@ -6,14 +6,14 @@ import { PenTool, Construction } from 'lucide-react';
 
 export default function BlogsPage() {
     return (
-        <main className="min-h-screen bg-[var(--bg-main)]">
+        <div className="w-full">
             <AdminToolbar 
                 title="Intro Blogs"
                 subtitle="Beheer de blogposts voor de Introductieweek"
                 backHref="/beheer/intro"
             />
             
-            <div className="container mx-auto px-4 py-32 text-center animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="container mx-auto px-4 py-32 text-center">
                 <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] p-16 max-w-2xl mx-auto shadow-xl flex flex-col items-center">
                     <div className="h-24 w-24 rounded-full bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] flex items-center justify-center mb-8 shadow-inner ring-4 ring-[var(--beheer-accent)]/5">
                         <PenTool className="h-12 w-12" />
@@ -37,6 +37,6 @@ export default function BlogsPage() {
                     </div>
                 </div>
             </div>
-        </main>
+        </div>
     );
 }

@@ -82,17 +82,15 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
             : cleanedCommittees.filter((c: any) => memberships.some((m: any) => String(m.id) === String(c.id)));
 
         return (
-            <main className="min-h-screen bg-[var(--bg-main)]">
-                <div className="pb-20">
-                    <ActiviteitBewerkenIsland event={eventData as any} committees={allowedCommitteesForDropdown as any} />
-                </div>
-            </main>
+            <div className="pb-20">
+                <ActiviteitBewerkenIsland event={eventData as any} committees={allowedCommitteesForDropdown as any} />
+            </div>
         );
     } catch (e) {
         return (
-            <main className="min-h-screen bg-[var(--bg-main)]">
+            <div className="min-h-[50vh] flex items-center justify-center">
                 <div className="p-8 text-center text-red-500 font-bold">Er is een fout opgetreden bij het laden van de gegevens. Probeer het later opnieuw.</div>
-            </main>
+            </div>
         );
     }
 }

@@ -15,11 +15,11 @@ export default async function KroegentochtPage() {
     noStore();
 
     return (
-        <main className="min-h-screen bg-[var(--bg-main)]">
+        <div className="w-full">
             <Suspense fallback={<KroegentochtManagementIsland isLoading={true} />}>
                 <KroegentochtDataLoader />
             </Suspense>
-        </main>
+        </div>
     );
 }
 

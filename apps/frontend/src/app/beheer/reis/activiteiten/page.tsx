@@ -36,7 +36,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
 
 export default async function ReisActiviteitenPage({ searchParams }: PageProps) {
     return (
-        <main className="min-h-screen bg-[var(--bg-main)]">
+        <div className="w-full">
             <Suspense fallback={
                 <div className="flex flex-col items-center justify-center py-32">
                     <Loader2 className="animate-spin h-12 w-12 text-[var(--beheer-accent)] mb-4" />
@@ -45,7 +45,7 @@ export default async function ReisActiviteitenPage({ searchParams }: PageProps) 
             }>
                 <ReisActiviteitenLoader searchParams={searchParams} />
             </Suspense>
-        </main>
+        </div>
     );
 }
 

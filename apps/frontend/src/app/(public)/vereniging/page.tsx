@@ -22,9 +22,9 @@ export default async function VerenigingPage() {
             imageFilter="brightness(0.65)"
             description="Ontdek onze commissies en word deel van het team"
         >
-            <main className="mx-auto max-w-app px-4 py-8 sm:py-12 lg:py-16">
+            <div className="mx-auto max-w-app px-4 py-8 sm:py-12 lg:py-16">
                 <CommitteesList initialCommittees={committees} />
-            </main>
+            </div>
         </PublicPageShell>
     );
 }

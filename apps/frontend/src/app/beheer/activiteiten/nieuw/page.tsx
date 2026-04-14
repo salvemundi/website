@@ -71,9 +71,9 @@ export default async function ActivityCreatePage() {
             subtitle="Publiceer een nieuwe activiteit op de website."
             backHref="/beheer/activiteiten"
         >
-            <main className="min-h-screen bg-[var(--bg-main)] pb-20">
+            <div className="pb-20">
                 <ActiviteitNieuwIsland committees={committees as any} />
-            </main>
+            </div>
         </AdminPageShell>
     );
 }

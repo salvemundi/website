@@ -10,16 +10,16 @@ export const metadata: Metadata = {
 
 export default async function ReisInstellingenPage() {
     return (
-        <main className="min-h-screen bg-[var(--bg-main)]">
+        <div className="w-full">
             <Suspense fallback={
                 <div className="flex flex-col items-center justify-center py-32">
                     <Loader2 className="animate-spin h-12 w-12 text-[var(--beheer-accent)] mb-4" />
-                    <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-xs">Instellingen laden...</p>
+                    <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-sm">Instellingen laden...</p>
                 </div>
             }>
                 <SettingsDataWrapper />
             </Suspense>
-        </main>
+        </div>
     );
 }
 

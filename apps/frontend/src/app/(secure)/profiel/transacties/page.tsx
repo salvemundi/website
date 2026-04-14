@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function TransactiesPage() {
     return (
-        <div className="min-h-screen bg-[var(--bg-main)]">
+        <div className="bg-[var(--bg-main)]">
             <header className="bg-[var(--bg-soft)] py-12">
                 <div className="mx-auto max-w-app px-4">
                     <h1 className="text-4xl font-extrabold text-[var(--text-main)]">Transacties</h1>
@@ -20,12 +20,12 @@ export default function TransactiesPage() {
                 </div>
             </header>
 
-            <main className="mx-auto max-w-app px-4 py-8">
+            <div className="mx-auto max-w-app px-4 py-8">
                 {/* Granular PPR: Wrapping the transaction fetching in a suspense boundary */}
                 <Suspense fallback={<TransactionsIsland isLoading />}>
                     <TransactionsFetcher />
                 </Suspense>
-            </main>
+            </div>
         </div>
     );
 }

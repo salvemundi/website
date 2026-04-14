@@ -18,7 +18,7 @@ export default async function EditKroegentochtPage({ params }: EditKroegentochtP
     if (!event) notFound();
 
     return (
-        <main className="min-h-screen bg-[var(--bg-main)]">
+        <div className="w-full">
             <div className="bg-[var(--bg-card)] border-b border-[var(--border-color)] mb-12">
                 <div className="container mx-auto px-4 py-12 max-w-7xl flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -35,6 +35,6 @@ export default async function EditKroegentochtPage({ params }: EditKroegentochtP
             <div className="container mx-auto px-4 pb-20">
                 <EventForm event={event} />
             </div>
-        </main>
+        </div>
     );
 }

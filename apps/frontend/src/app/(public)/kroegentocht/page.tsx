@@ -30,7 +30,7 @@ async function RegistrationSection() {
 
     if (!event) {
         return (
-            <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30 p-8 rounded-3xl text-center animate-in fade-in duration-700">
+            <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30 p-8 rounded-3xl text-center">
                 <AlertCircle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
                 <h2 className="text-xl font-black text-amber-900 dark:text-amber-200">Geen actieve Kroegentocht</h2>
                 <p className="text-amber-800/80 dark:text-amber-400/80 mt-2">
@@ -42,7 +42,7 @@ async function RegistrationSection() {
 
     if (!event.show) {
         return (
-            <div className="bg-slate-100 dark:bg-white/5 p-8 rounded-3xl text-center border border-slate-200 dark:border-white/10 animate-in fade-in duration-700">
+            <div className="bg-slate-100 dark:bg-white/5 p-8 rounded-3xl text-center border border-slate-200 dark:border-white/10">
                 <h2 className="text-xl font-black">{event.name}</h2>
                 <p className="text-slate-500 mt-2 italic">{event.disabled_message || 'De inschrijvingen voor de kroegentocht zijn momenteel gesloten.'}</p>
             </div>
@@ -52,7 +52,7 @@ async function RegistrationSection() {
     const formattedDate = formatDate(event.date);
 
     return (
-        <div className="flex flex-col lg:flex-row gap-8 items-start animate-in slide-in-from-bottom-4 duration-700">
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
             <div className="w-full lg:w-1/2">
                 <KroegentochtFormIsland event={event} initialUser={session?.user} />
             </div>
@@ -170,7 +170,7 @@ export default async function KroegentochtPage() {
                 </div>
             }
         >
-            <main className="mx-auto max-w-7xl px-4 py-8 sm:py-10 md:py-12">
+            <div className="mx-auto max-w-7xl px-4 py-8 sm:py-10 md:py-12">
                 {isAuthenticated && (
                     <Suspense fallback={<div className="h-40 w-full bg-[var(--bg-card)] rounded-3xl mb-8 skeleton-active" />}>
                         <TicketsSection userEmail={session.user.email!} />
@@ -178,7 +178,7 @@ export default async function KroegentochtPage() {
                 )}
 
                 <RegistrationSection />
-            </main>
+            </div>
         </PublicPageShell>
     );
 }
