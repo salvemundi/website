@@ -63,9 +63,6 @@ export default async function SafeHavensPage() {
             description="Een veilig aanspreekpunt waar je terechtkunt met zorgen, vragen of problemen. Wij luisteren zonder te oordelen."
         >
             <div className="mx-auto max-w-app px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
-                <div className="mx-auto max-w-7xl">
-                    <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-12 lg:auto-rows-[minmax(160px,auto)]">
-
                         {/* Intro section */}
                         <BentoCard className="lg:col-span-8 lg:row-span-2">
                              <div className="flex flex-col gap-6">
@@ -86,10 +83,16 @@ export default async function SafeHavensPage() {
                                     <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-700/30 p-5">
                                         <Lock className="h-5 w-5 text-slate-500 mb-2" />
                                         <p className="text-sm font-bold text-theme">Volledige vertrouwelijkheid</p>
+                                        <p className="mt-2 text-xs text-theme-muted leading-relaxed">
+                                            Alles wat je deelt blijft vertrouwelijk tussen jou en de contactpersoon. Niets wordt gedeeld zonder jouw expliciete toestemming.
+                                        </p>
                                     </div>
                                     <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-700/30 p-5">
                                         <Users className="h-5 w-5 text-slate-500 mb-2" />
                                         <p className="text-sm font-bold text-theme">Diverse achtergronden</p>
+                                        <p className="mt-2 text-xs text-theme-muted leading-relaxed">
+                                            Onze Safe Havens hebben verschillende achtergronden en zijn er voor iedereen, ongeacht de aard van je vraag.
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -134,6 +137,9 @@ export default async function SafeHavensPage() {
                             <div className="text-center mb-8">
                                 <MapPin className="h-10 w-10 text-[var(--color-purple-500)] mx-auto mb-4" />
                                 <h2 className="text-xl font-bold text-theme">Externe hulp</h2>
+                                <p className="mt-2 text-xs text-theme-muted px-4">
+                                    Zoek je professionele hulp buiten de vereniging? Hier vind je belangrijke contactgegevens voor externe ondersteuning.
+                                </p>
                             </div>
                             
                             <div className="space-y-4">
@@ -151,8 +157,6 @@ export default async function SafeHavensPage() {
                         </BentoCard>
 
                     </div>
-                </div>
-            </div>
         </PublicPageShell>
     );
 }

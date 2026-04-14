@@ -6,34 +6,13 @@ import SafeHavenButton from '@/components/islands/social/SafeHavenButton';
 import WhatsAppLink from '@/components/islands/social/WhatsAppLink';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 
-/**
- * Skeleton voor de documentenlijst om layout shift (CLS) te voorkomen.
- */
-function DocumentenSkeleton() {
-    return (
-        <div className="space-y-4 ml-14 skeleton-active" aria-hidden="true">
-            {[1, 2].map((i) => (
-                <div key={i} className="h-5 w-3/4 bg-[var(--border-color)]/20 rounded-md" />
-            ))}
-        </div>
-    );
-}
 
-/**
- * Server Component die specifiek de documenten ophaalt.
- * Wordt asynchroon ingeladen via Suspense.
- */
-async function ContactDocumenten() {
-    const documenten = await getDocumenten();
-
-    return <DocumentenLijst documenten={documenten} />;
-}
 
 /**
  * Statische kaart met verenigingsinformatie, adres, KvK en documenten.
  * De documentenlijst is asynchroon (Suspense) voor optimale Performance.
  */
-function InformatieKaart() {
+function InformatieKaart({ documenten }: { documenten: any[] }) {
     return (
         <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl shadow-lg p-8">
             <h2 className="text-3xl font-bold text-[var(--text-main)] mb-6">
@@ -86,15 +65,12 @@ function InformatieKaart() {
                     </div>
                 </div>
 
-                {/* Documenten (statuten, avg, etc.) - Suspendable Boundary */}
                 <div className="pt-6">
                     <h3 className="font-semibold text-[var(--text-main)] mb-4 flex items-center gap-2">
                         <span className="text-2xl" aria-hidden="true">📄</span>
                         Documenten
                     </h3>
-                    <Suspense fallback={<DocumentenSkeleton />}>
-                        <ContactDocumenten />
-                    </Suspense>
+                    <DocumentenLijst documenten={documenten} />
                 </div>
             </div>
         </div>
@@ -154,10 +130,10 @@ function ContactKaart() {
  * Hoofdcomponent: 2-koloms grid van Informatie- en Contactkaart.
  * Geëxporteerd voor gebruik in de contactpagina.
  */
-export default function ContactInfoCard() {
+export default function ContactInfoCard({ documenten }: { documenten: any[] }) {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <InformatieKaart />
+            <InformatieKaart documenten={documenten} />
             <ContactKaart />
         </div>
     );

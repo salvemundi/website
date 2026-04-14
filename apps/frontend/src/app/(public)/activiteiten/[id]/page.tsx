@@ -1,25 +1,24 @@
-import { Suspense } from 'react';
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+import { auth } from '@/server/auth/auth';
+import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { getActivityById } from '@/server/actions/activiteit-actions';
 import ActivityDetailIsland from '@/components/islands/activities/ActivityDetailIsland';
 import EventSignupIsland from '@/components/islands/activities/EventSignupIsland';
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 interface PageProps {
     params: Promise<{ id: string }>;
     searchParams: Promise<{ status?: string; token?: string }>;
 }
 
-/**
- * Activity Data Loader: Zero-Drift Modernization.
- * Fetches activity details and user session in parallel.
- * Renders the masked ActivityDetailIsland if data is still streaming.
- */
-async function ActivityData({ id, searchParams }: { id: string, searchParams: { status?: string; token?: string } }) {
+export default async function PageActivityId({ params, searchParams }: PageProps) {
+    const { id } = await params;
+    const sParams = await searchParams;
+
+    // NUCLEAR SSR: Fetch activity, session and headers in parallel before flushing
     const [activity, session] = await Promise.all([
         getActivityById(id),
         auth.api.getSession({
@@ -40,47 +39,26 @@ async function ActivityData({ id, searchParams }: { id: string, searchParams: { 
     let verifiedPaymentStatus: 'paid' | null = null;
     let qrToken: string | undefined = undefined;
 
-    if (searchParams.status === 'paid' && searchParams.token) {
+    if (sParams.status === 'paid' && sParams.token) {
         verifiedPaymentStatus = 'paid';
-        qrToken = searchParams.token;
+        qrToken = sParams.token;
     }
 
     return (
-        <ActivityDetailIsland activity={activity}>
-            <EventSignupIsland 
-                eventId={Number(activity.id)}
-                price={price}
-                eventDate={activity.datum_start}
-                description={activity.beschrijving || ''}
-                isPast={isPast}
-                eventName={activity.titel}
-                initialUser={session?.user || null}
-                verifiedPaymentStatus={verifiedPaymentStatus}
-                initialQrToken={qrToken}
-            />
-        </ActivityDetailIsland>
-    );
-}
-
-export default async function PageActivityId({ params, searchParams }: PageProps) {
-    const { id } = await params;
-    const sParams = await searchParams;
-
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
-
-    const isMember = (session?.user as any)?.membership_status === 'active';
-
-    return (
         <PublicPageShell>
-            <Suspense fallback={
-                <ActivityDetailIsland isLoading={true}>
-                    <EventSignupIsland isLoading={true} isMember={isMember} />
-                </ActivityDetailIsland>
-            }>
-                <ActivityData id={id} searchParams={sParams} />
-            </Suspense>
+            <ActivityDetailIsland activity={activity}>
+                <EventSignupIsland 
+                    eventId={Number(activity.id)}
+                    price={price}
+                    eventDate={activity.datum_start}
+                    description={activity.beschrijving || ''}
+                    isPast={isPast}
+                    eventName={activity.titel}
+                    initialUser={session?.user || null}
+                    verifiedPaymentStatus={verifiedPaymentStatus}
+                    initialQrToken={qrToken}
+                />
+            </ActivityDetailIsland>
         </PublicPageShell>
     );
 }

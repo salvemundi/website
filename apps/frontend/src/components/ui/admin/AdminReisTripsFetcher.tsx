@@ -1,14 +1,12 @@
-import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { getTrips } from '@/server/queries/admin-reis.queries';
 import Link from 'next/link';
 import { Plane, Plus } from 'lucide-react';
 
 import AdminReisSelectorIsland from '@/components/islands/admin/AdminReisSelectorIsland';
-import AdminReisDataFetcher from '@/components/ui/admin/AdminReisDataFetcher';
-import { AdminGenericLoading } from '@/components/ui/admin/AdminLoadingFallbacks';
-
+import AdminReisTableIsland from '@/components/islands/admin/AdminReisTableIsland';
 import { getReisSiteSettings } from '@/server/actions/reis.actions';
+import { getTripSignups, getSignupActivities } from '@/server/actions/reis-admin-signups.actions';
 
 import type { Trip } from '@salvemundi/validations/schema/admin-reis.zod';
 
@@ -65,6 +63,23 @@ export default async function AdminReisTripsFetcher({ searchParams }: AdminReisT
         notFound();
     }
 
+    // NUCLEAR SSR: Fetch all signups and activities for the active trip before flushing
+    const signups = await getTripSignups(activeTrip.id);
+    
+    // Fetch activities for all signups to satisfy AdminReisTableIslandProps
+    const signupActivitiesMap: Record<number, any[]> = {};
+    await Promise.all(signups.map(async (s) => {
+        signupActivitiesMap[s.id] = await getSignupActivities(s.id);
+    }));
+
+    const stats = {
+        total: signups.length,
+        confirmed: signups.filter(s => s.status === 'confirmed' || s.status === 'registered').length,
+        waitlist: signups.filter(s => s.status === 'waitlist').length,
+        depositPaid: signups.filter(s => s.deposit_paid).length,
+        fullPaid: signups.filter(s => s.full_payment_paid).length,
+    };
+
     return (
         <div className="container mx-auto px-4 py-8 max-w-6xl">
             {/* 2. Dropdown and controls */}
@@ -73,10 +88,13 @@ export default async function AdminReisTripsFetcher({ searchParams }: AdminReisT
                 initialSettings={reisSettings}
             />
 
-            {/* 3. Granular Streaming: The heavy data fetch and table rendering is suspended */}
-            <Suspense fallback={<AdminGenericLoading />} key={activeTrip.id}>
-                <AdminReisDataFetcher tripId={activeTrip.id} trip={activeTrip} />
-            </Suspense>
+            {/* 3. Fully Server-Side Rendered Table */}
+            <AdminReisTableIsland
+                initialSignups={signups}
+                initialSignupActivities={signupActivitiesMap}
+                trip={activeTrip}
+                stats={stats}
+            />
         </div>
     );
 }

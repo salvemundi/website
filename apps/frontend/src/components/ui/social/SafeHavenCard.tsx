@@ -13,16 +13,14 @@ interface SafeHavenCardProps {
  * SafeHavenCard: Zero-Drift Modernization.
  * Removed manual skeleton branches. Uses .skeleton-active for premium masking.
  */
-export default function SafeHavenCard({ isLoading = false, safeHaven }: SafeHavenCardProps) {
+export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
     const imageUrl = safeHaven?.afbeelding_id 
         ? getImageUrl(safeHaven.afbeelding_id, { width: 200, height: 200, fit: 'cover' }) 
         : '/img/newlogo.png';
 
     return (
         <div 
-            className={`flex flex-col rounded-2xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-700/30 p-5 sm:p-6 transition-all duration-300 
-                ${!isLoading ? 'hover:border-slate-300 dark:hover:border-slate-600/50 shadow-sm hover:shadow-md' : 'skeleton-active pointer-events-none'}`}
-            aria-busy={isLoading}
+            className="flex flex-col rounded-2xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-700/30 p-5 sm:p-6 transition-all duration-300 hover:border-slate-300 dark:hover:border-slate-600/50 shadow-sm hover:shadow-md"
         >
             <div className="flex items-center gap-4">
                 <div className="relative h-16 w-16 sm:h-20 sm:w-20 overflow-hidden rounded-2xl shadow-md shrink-0 bg-slate-200 dark:bg-slate-800">
@@ -36,7 +34,7 @@ export default function SafeHavenCard({ isLoading = false, safeHaven }: SafeHave
                 </div>
                 <div className="min-w-0 flex-1">
                     <h3 className="text-lg sm:text-xl font-bold text-theme truncate">
-                        {safeHaven?.naam || 'Loading Name...'}
+                        {safeHaven?.naam || ''}
                     </h3>
                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                         Safe Haven
@@ -46,21 +44,21 @@ export default function SafeHavenCard({ isLoading = false, safeHaven }: SafeHave
 
             <div className="mt-4 space-y-2">
                 <p className="text-sm text-theme-muted leading-relaxed line-clamp-3">
-                    {safeHaven?.beschrijving || 'Loading description content for the safe haven...'}
+                    {safeHaven?.beschrijving || ''}
                 </p>
             </div>
 
             <div className="mt-5 space-y-2">
-                {safeHaven?.email || safeHaven?.telefoon || isLoading ? (
+                {safeHaven?.email || safeHaven?.telefoon ? (
                     <>
                         <ObfuscatedEmail 
-                            email={safeHaven?.email || 'loading@salvemundi.nl'} 
+                            email={safeHaven?.email || ''} 
                             className="flex items-center gap-3 rounded-xl bg-white dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 p-3 text-sm font-medium text-theme hover:border-slate-300 dark:hover:border-slate-600 transition-colors w-full" 
                         />
-                        {(safeHaven?.telefoon || isLoading) && (
+                        {safeHaven?.telefoon && (
                             <div className="flex items-center gap-3 rounded-xl bg-white dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 p-3 text-sm font-medium text-theme">
                                 <Phone className="h-4 w-4 text-slate-400" />
-                                <span>{safeHaven?.telefoon || '06 12345678'}</span>
+                                <span>{safeHaven.telefoon}</span>
                             </div>
                         )}
                     </>
