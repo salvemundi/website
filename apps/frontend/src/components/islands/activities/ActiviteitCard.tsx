@@ -33,7 +33,6 @@ interface ActiviteitCardProps {
     onlyMembers?: boolean;
 }
 const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
-    isLoading = false,
     description = '',
     image,
     title = 'Activiteit',
@@ -96,37 +95,19 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
 
     const committeeLabel = cleanCommitteeName(committeeName);
 
-    const formatDate = (value?: string, endValue?: string) => {
-        if (!value) return 'Datum volgt';
-        const startFormatted = coreFormatDate(value);
+    const displayDate = variant === 'list' 
+        ? coreFormatDate(date, 'EEEE d MMMM')
+        : coreFormatDate(date, 'd MMMM yyyy');
 
-        if (endValue && endValue !== value) {
-            const endFormatted = coreFormatDate(endValue);
-            if (endFormatted !== 'Datum volgt') {
-                return `${startFormatted} t/m ${endFormatted}`;
-            }
-        }
-
-        return startFormatted;
-    };
-
-    const formatTime = (time?: string | null) => {
-        if (!time) return null;
-        const parts = time.split(':');
-        if (parts.length >= 2) return `${parts[0]}:${parts[1]}`;
-        return time;
-    };
-
-    const start = formatTime(startTime);
-    const end = formatTime(endTime);
+    const start = startTime ? startTime.split(':').slice(0, 2).join(':') : null;
+    const end = endTime ? endTime.split(':').slice(0, 2).join(':') : null;
     const timeRange = start ? (end ? `${start} - ${end}` : start) : null;
 
     if (isListVariant) {
         return (
             <div
                 onClick={onShowDetails}
-                className={`group relative z-0 overflow-hidden w-full rounded-2xl bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-5 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 ${isPast ? 'opacity-60 filter grayscale' : ''} ${isLoading ? 'skeleton-active' : ''}`}
-                aria-busy={isLoading}
+                className={`group relative z-0 overflow-hidden w-full rounded-2xl bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-5 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 ${isPast ? 'opacity-60 filter grayscale' : ''}`}
             >
                 <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
                     <div className="flex-1 min-w-[200px]">
@@ -151,15 +132,17 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                         )}
                     </div>
 
-                    <div className="flex items-center gap-6 md:gap-10">
-                        <div className="text-right">
-                            <p className="text-[10px] font-black text-[var(--theme-purple)]/40 uppercase tracking-widest mb-1">Datum & Tijd</p>
-                            <p className="text-sm font-bold text-[var(--theme-purple)]/80">
-                                {formatDate(date, endDate)}
-                            </p>
-                            <p className="text-xs font-medium text-[var(--text-muted)]">
-                                {timeRange || location || 'Geen tijd/locatie'}
-                            </p>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center lg:items-center gap-6 md:gap-10">
+                        <div className="text-left sm:text-right min-w-[160px] flex-shrink-0">
+                            <p className="text-[10px] font-black text-[var(--theme-purple)]/40 uppercase tracking-widest mb-1 leading-none">Datum & Tijd</p>
+                            <div className="space-y-0.5">
+                                <p className="text-sm font-bold text-[var(--theme-purple)]/80 whitespace-nowrap">
+                                    {displayDate}
+                                </p>
+                                <p className="text-xs font-medium text-[var(--text-muted)] whitespace-nowrap overflow-hidden text-ellipsis max-w-[180px]">
+                                    {timeRange || 'Tijd volgt'} • {location || 'Locatie volgt'}
+                                </p>
+                            </div>
                         </div>
 
                         <div className="bg-[var(--bg-soft)] px-4 py-2 rounded-xl border border-[var(--border-color)] text-center min-w-[80px]">
@@ -199,8 +182,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     return (
         <div
             onClick={onShowDetails}
-            className={`group relative z-0 overflow-hidden w-full rounded-[1.75rem] bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-5 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 ${isPast ? 'opacity-60 filter grayscale' : ''} ${isLoading ? 'skeleton-active' : ''}`}
-            aria-busy={isLoading}
+            className={`group relative z-0 overflow-hidden w-full rounded-[1.75rem] bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-5 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 ${isPast ? 'opacity-60 filter grayscale' : ''}`}
         >
             <div className="relative z-10 aspect-video mb-5 rounded-2xl overflow-hidden shadow-inner bg-[var(--bg-soft)]">
                 {image ? (
@@ -209,7 +191,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                         alt={title}
                         fill
                         sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="object-contain transition-all duration-500"
                         loading="lazy"
                         unoptimized
                         onError={(e) => {
@@ -242,12 +224,12 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                 </h3>
 
                 <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2 text-sm text-[var(--theme-purple)]/80 font-semibold">
+                    <div className="flex items-center gap-2 text-sm text-[var(--theme-purple)]/80 font-bold">
                         <Calendar className="h-4 w-4" />
-                        <span>{formatDate(date, endDate)}</span>
+                        <span>{displayDate}</span>
                     </div>
                     {timeRange && (
-                        <p className="text-sm text-[var(--text-muted)] ml-6">
+                        <p className="text-sm text-[var(--text-muted)] ml-6 font-medium">
                             {timeRange}
                         </p>
                     )}
