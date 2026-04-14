@@ -6,7 +6,6 @@ interface LedenFiltersProps {
     activeTab: 'active' | 'inactive';
     onTabChange: (tab: 'active' | 'inactive') => void;
     isPending: boolean;
-    isLoading?: boolean;
 }
 
 export default function LedenFilters({
@@ -14,22 +13,8 @@ export default function LedenFilters({
     onSearchChange,
     activeTab,
     onTabChange,
-    isPending,
-    isLoading = false
+    isPending
 }: LedenFiltersProps) {
-    if (isLoading) {
-        return (
-            <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm ring-1 ring-[var(--beheer-border)] p-4 mb-8 flex flex-col lg:flex-row gap-4 items-center justify-between animate-pulse">
-                <div className="flex p-1 bg-[var(--beheer-card-soft)] rounded-xl w-full lg:w-auto border border-[var(--beheer-border)]">
-                    <div className="h-10 w-28 bg-[var(--beheer-card-bg)] rounded-lg m-0.5" />
-                    <div className="h-10 w-28 bg-transparent rounded-lg m-0.5" />
-                </div>
-                <div className="relative flex-1 lg:w-96">
-                    <div className="w-full h-12 rounded-[var(--beheer-radius)] skeleton-active" />
-                </div>
-            </div>
-        );
-    }
     return (
         <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm ring-1 ring-[var(--beheer-border)] p-4 mb-8 flex flex-col lg:flex-row gap-4 items-center justify-between">
             <div className="flex p-1 bg-[var(--beheer-card-soft)] rounded-xl w-full lg:w-auto border border-[var(--beheer-border)]">

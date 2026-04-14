@@ -19,10 +19,17 @@ async function checkAuditAccess() {
     });
 }
 
+import { 
+    getPendingSignupsAction, 
+    getAuditSettingsAction, 
+    getSystemLogsAction, 
+    getQueueStatusAction 
+} from '@/server/actions/audit.actions';
+
 /**
- * AuditLoggingPage: Ultra-PPR Modernization.
+ * AuditLoggingPage: Nuclear SSR Modernization.
  * Wrapped in AdminPageShell for instant header rendering.
- * Uses Zero-Drift masking via AuditLogIsland.
+ * All data is fetched concurrently at the top-level to ensure Zero-Drift.
  */
 export default async function AuditLoggingPage() {
     const hasAccess = await checkAuditAccess();
@@ -31,15 +38,38 @@ export default async function AuditLoggingPage() {
         redirect('/beheer');
     }
 
+    // Fetch all audit data concurrently
+    const [
+        signupsRes, 
+        settingsRes, 
+        adminLogsRes, 
+        systemLogsRes, 
+        queueRes
+    ] = await Promise.all([
+        getPendingSignupsAction(),
+        getAuditSettingsAction(),
+        getSystemLogsAction(50, 'admin'),
+        getSystemLogsAction(50, 'system'),
+        getQueueStatusAction()
+    ]);
+
+    const initialData = {
+        signups: signupsRes.success ? (signupsRes.data || []) : [],
+        manualApproval: settingsRes.success ? (settingsRes.data?.manual_approval ?? false) : false,
+        adminLogs: adminLogsRes.success ? (adminLogsRes.data || []) : [],
+        adminLogsTotal: adminLogsRes.success ? (adminLogsRes.totalCount || 0) : 0,
+        systemLogs: systemLogsRes.success ? (systemLogsRes.data || []) : [],
+        systemLogsTotal: systemLogsRes.success ? (systemLogsRes.totalCount || 0) : 0,
+        queueData: queueRes.success ? (queueRes.data?.queues || null) : null
+    };
+
     return (
         <AdminPageShell
             title="Audit & Logboek"
             subtitle="Monitor systeemwijzigingen en beheerdersacties in real-time."
             backHref="/beheer"
         >
-            <Suspense fallback={<AuditLogIsland />}>
-                <AuditLogIsland />
-            </Suspense>
+            <AuditLogIsland initialData={initialData} />
         </AdminPageShell>
     );
 }

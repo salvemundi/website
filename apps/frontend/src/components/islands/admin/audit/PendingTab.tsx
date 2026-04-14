@@ -8,7 +8,6 @@ import { type PendingSignup } from '@salvemundi/validations/schema/audit.zod';
 import { formatDate } from '@/shared/lib/utils/date';
 
 interface PendingTabProps {
-    isLoading: boolean;
     isProcessing: string | null;
     isBulkProcessing: 'approve' | 'reject' | null;
     filteredSignups: PendingSignup[];
@@ -23,7 +22,6 @@ interface PendingTabProps {
 }
 
 export default function PendingTab({
-    isLoading,
     isProcessing,
     isBulkProcessing,
     filteredSignups,
@@ -46,7 +44,7 @@ export default function PendingTab({
                 <div className="flex items-center gap-3">
                     <button
                         onClick={onBulkApprove}
-                        disabled={selectedIds.size === 0 || !!isBulkProcessing || isLoading}
+                        disabled={selectedIds.size === 0 || !!isBulkProcessing}
                         className={`p-2 rounded-xl transition-all border ${
                             selectedIds.size > 0 
                                 ? 'bg-[var(--beheer-active)]/10 text-[var(--beheer-active)] border-[var(--beheer-active)]/20 hover:bg-[var(--beheer-active)] hover:text-white' 
@@ -58,7 +56,7 @@ export default function PendingTab({
                     </button>
                     <button
                         onClick={onBulkReject}
-                        disabled={selectedIds.size === 0 || !!isBulkProcessing || isLoading}
+                        disabled={selectedIds.size === 0 || !!isBulkProcessing}
                         className={`p-2 rounded-xl transition-all border ${
                             selectedIds.size > 0 
                                 ? 'bg-[var(--beheer-inactive)]/10 text-[var(--beheer-inactive)] border-[var(--beheer-inactive)]/20 hover:bg-[var(--beheer-inactive)] hover:text-white' 
@@ -71,10 +69,9 @@ export default function PendingTab({
                     
                     <button 
                         onClick={onRefresh}
-                        disabled={isLoading || !!isBulkProcessing}
-                        className="p-2 text-slate-400 hover:text-purple-600 transition-colors disabled:opacity-30"
+                        className="p-2 text-slate-400 hover:text-purple-600 transition-colors"
                     >
-                        <RefreshCw className={`h-5 w-5 ${isLoading ? 'animate-spin' : ''}`} />
+                        <RefreshCw className="h-5 w-5" />
                     </button>
                 </div>
             </div>
@@ -96,15 +93,7 @@ export default function PendingTab({
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-[var(--beheer-border)]/10">
-                        {isLoading ? (
-                            [...Array(5)].map((_, i) => (
-                                <tr key={i} className="animate-pulse">
-                                    <td colSpan={6} className="p-8">
-                                        <div className="h-4 bg-slate-100 dark:bg-slate-700 rounded w-full" />
-                                    </td>
-                                </tr>
-                            ))
-                        ) : filteredSignups.length === 0 ? (
+                        {filteredSignups.length === 0 ? (
                             <tr>
                                 <td colSpan={6} className="p-20 text-center">
                                     <div className="flex flex-col items-center">

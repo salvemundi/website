@@ -18,19 +18,15 @@ interface Member {
 }
 
 interface LedenTableProps {
-    members?: Member[];
-    isPending: boolean;
-    formatDate: (dateString: string | null) => string;
-    isMembershipActive: (m: Member) => boolean;
-    isLoading?: boolean;
+    members: Member[];
+    formatDate: (date: string | null) => string;
+    isMembershipActive: (member: Member) => boolean;
 }
 
 export default function LedenTable({
     members = [],
-    isPending,
     formatDate,
-    isMembershipActive,
-    isLoading = false
+    isMembershipActive
 }: LedenTableProps) {
     const router = useRouter();
 
@@ -47,30 +43,7 @@ export default function LedenTable({
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
-                        {isLoading ? (
-                            [...Array(8)].map((_, i) => (
-                                <tr key={i}>
-                                    <td className="px-8 py-5">
-                                        <div className="flex items-center gap-4">
-                                            <div className="h-10 w-10 shrink-0 rounded-2xl skeleton-active" />
-                                            <div className="space-y-2">
-                                                <div className="h-4 w-32 skeleton-active" />
-                                                <div className="h-3 w-20 opacity-50 skeleton-active" />
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-8 py-5">
-                                        <div className="h-4 w-40 opacity-50 skeleton-active" />
-                                    </td>
-                                    <td className="px-8 py-5">
-                                        <div className="h-6 w-24 rounded-full skeleton-active" />
-                                    </td>
-                                    <td className="px-8 py-5 text-right">
-                                        <div className="h-8 w-8 rounded-xl ml-auto skeleton-active" />
-                                    </td>
-                                </tr>
-                            ))
-                        ) : members.map((member) => (
+                        {members.map((member) => (
                             <tr key={member.id} className="group hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition-colors">
                                 <td className="px-8 py-5">
                                     <div className="flex items-center gap-4">

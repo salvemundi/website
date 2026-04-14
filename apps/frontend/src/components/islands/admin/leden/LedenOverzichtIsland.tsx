@@ -31,13 +31,11 @@ interface Member {
 }
 
 interface LedenOverzichtIslandProps {
-    isLoading?: boolean;
     initialMembers?: Member[];
     initialTotalCount?: number;
 }
 
 export default function LedenOverzichtIsland({ 
-    isLoading = false,
     initialMembers = [], 
     initialTotalCount = 0
 }: LedenOverzichtIslandProps) {
@@ -57,8 +55,6 @@ export default function LedenOverzichtIsland({
     const totalCount = initialTotalCount;
 
     const filteredMembers = useMemo(() => {
-        if (isLoading) return [];
-        
         return members.filter(m => {
             const active = isMembershipActive(m);
             const matchesTab = activeTab === 'active' ? active : !active;
@@ -71,7 +67,7 @@ export default function LedenOverzichtIsland({
             
             return matchesTab && (fullName.includes(searchLower) || email.includes(searchLower));
         });
-    }, [members, activeTab, searchQuery, isLoading]);
+    }, [members, activeTab, searchQuery]);
 
     const formatDate = (dateString: string | null) => {
         if (!dateString) return 'Onbekend';
@@ -115,27 +111,20 @@ export default function LedenOverzichtIsland({
     ];
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-7xl" aria-busy={isLoading}>
+        <div className="container mx-auto px-4 py-8 max-w-7xl">
             {/* Global Actions */}
             <div className="flex justify-end gap-3 mb-8">
                 <button
                     onClick={exportToCSV}
-                    disabled={isLoading}
-                    className={cn(
-                        "flex items-center gap-2 px-6 py-2 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-[10px] font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 shadow-sm disabled:opacity-50",
-                        isLoading && "ghost-active"
-                    )}
+                    className="flex items-center gap-2 px-6 py-2 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-[10px] font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 shadow-sm disabled:opacity-50"
                 >
                     <Download className="h-3.5 w-3.5" />
                     Export
                 </button>
                 <button
                     onClick={handleSendReminder}
-                    disabled={isSendingReminder || isLoading}
-                    className={cn(
-                        "flex items-center gap-2 px-6 py-2 bg-[var(--beheer-accent)] text-white font-black text-[10px] uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 disabled:opacity-50",
-                        isLoading && "ghost-active"
-                    )}
+                    disabled={isSendingReminder}
+                    className="flex items-center gap-2 px-6 py-2 bg-[var(--beheer-accent)] text-white font-black text-[10px] uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 disabled:opacity-50"
                 >
                     {isSendingReminder ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Bell className="h-3.5 w-3.5" />}
                     Reminder
@@ -145,7 +134,6 @@ export default function LedenOverzichtIsland({
             <AdminStatsBar stats={adminStats} />
 
             <LedenFilters 
-                isLoading={isLoading}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
                 activeTab={activeTab}
@@ -153,11 +141,9 @@ export default function LedenOverzichtIsland({
                 isPending={isPending}
             />
 
-            <div className={cn("w-full", isLoading && "ghost-active")}>
+            <div className="w-full">
                 <LedenTable 
-                    isLoading={isLoading}
                     members={filteredMembers}
-                    isPending={isPending}
                     formatDate={formatDate}
                     isMembershipActive={isMembershipActive}
                 />

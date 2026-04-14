@@ -26,54 +26,50 @@ import PendingTab from './audit/PendingTab';
 import LogsTab from './audit/LogsTab';
 import QueuesTab from './audit/QueuesTab';
 
-export default function AuditLogIsland() {
+interface AuditLogIslandProps {
+    initialData: {
+        signups: PendingSignup[];
+        manualApproval: boolean;
+        adminLogs: any[];
+        adminLogsTotal: number;
+        systemLogs: any[];
+        systemLogsTotal: number;
+        queueData: any;
+    };
+}
+
+export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [activeTab, setActiveTab] = useState<'pending' | 'admin_logs' | 'system_logs' | 'queues'>('pending');
-    const [signups, setSignups] = useState<PendingSignup[]>([]);
-    const [adminLogs, setAdminLogs] = useState<any[]>([]);
-    const [systemLogs, setSystemLogs] = useState<any[]>([]);
-    const [adminLogsTotalCount, setAdminLogsTotalCount] = useState(0);
-    const [systemLogsTotalCount, setSystemLogsTotalCount] = useState(0);
-    const [queueData, setQueueData] = useState<any>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    
+    const [signups, setSignups] = useState<PendingSignup[]>(initialData.signups);
+    const [adminLogs, setAdminLogs] = useState<any[]>(initialData.adminLogs);
+    const [systemLogs, setSystemLogs] = useState<any[]>(initialData.systemLogs);
+    const [adminLogsTotalCount, setAdminLogsTotalCount] = useState(initialData.adminLogsTotal);
+    const [systemLogsTotalCount, setSystemLogsTotalCount] = useState(initialData.systemLogsTotal);
+    const [queueData, setQueueData] = useState<any>(initialData.queueData);
+    
     const [isProcessing, setIsProcessing] = useState<string | null>(null);
     const [isBulkProcessing, setIsBulkProcessing] = useState<'approve' | 'reject' | null>(null);
-    const [manualApproval, setManualApproval] = useState(false);
+    const [manualApproval, setManualApproval] = useState(initialData.manualApproval);
     
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-
-    const loadData = async () => {
-        setIsLoading(true);
-        try {
-            const [signupsRes, settingsRes, adminLogsRes, systemLogsRes, queueRes] = await Promise.all([
-                getPendingSignupsAction(),
-                getAuditSettingsAction(),
-                getSystemLogsAction(50, 'admin'),
-                getSystemLogsAction(50, 'system'),
-                getQueueStatusAction()
-            ]);
-
-            if (signupsRes.success && signupsRes.data) setSignups(signupsRes.data);
-            if (settingsRes.success && settingsRes.data) setManualApproval(settingsRes.data.manual_approval);
-            if (adminLogsRes.success) {
-                setAdminLogs(adminLogsRes.data);
-                setAdminLogsTotalCount(adminLogsRes.totalCount);
-            }
-            if (systemLogsRes.success) {
-                setSystemLogs(systemLogsRes.data);
-                setSystemLogsTotalCount(systemLogsRes.totalCount);
-            }
-            if (queueRes.success && queueRes.data) setQueueData(queueRes.data.queues);
-        } catch (err) {
-            showToast('Fout bij laden audit data', 'error');
-        } finally {
-            setIsLoading(false);
+    
+    const refreshLogs = async () => {
+        const [adminLogsRes, systemLogsRes] = await Promise.all([
+            getSystemLogsAction(50, 'admin'),
+            getSystemLogsAction(50, 'system')
+        ]);
+        
+        if (adminLogsRes.success) {
+            setAdminLogs(adminLogsRes.data);
+            setAdminLogsTotalCount(adminLogsRes.totalCount);
+        }
+        if (systemLogsRes.success) {
+            setSystemLogs(systemLogsRes.data);
+            setSystemLogsTotalCount(systemLogsRes.totalCount);
         }
     };
-
-    useEffect(() => {
-        loadData();
-    }, []);
 
     // Only membership types remain in the queue
     const filteredSignups = signups;
@@ -136,7 +132,7 @@ export default function AuditLogIsland() {
                 setSignups(prev => prev.filter(s => !selectedIds.has(s.id)));
                 setSelectedIds(new Set());
                 showToast(`${itemsToProcess.length} inschrijvingen goedgekeurd`, 'success');
-                loadData();
+                refreshLogs();
             } else {
                 showToast(res.error || 'Bulk goedkeuren mislukt', 'error');
             }
@@ -161,7 +157,7 @@ export default function AuditLogIsland() {
                 setSignups(prev => prev.filter(s => !selectedIds.has(s.id)));
                 setSelectedIds(new Set());
                 showToast(`${itemsToProcess.length} inschrijvingen afgewezen`, 'info');
-                loadData();
+                refreshLogs();
             } else {
                 showToast(res.error || 'Bulk afwijzen mislukt', 'error');
             }
@@ -178,11 +174,7 @@ export default function AuditLogIsland() {
         const res = await updateAuditSettingsAction(newValue);
         if (res.success) {
             showToast(`Automatische goedkeuring ${newValue ? 'uitgeschakeld' : 'ingeschakeld'}`, 'success');
-            const adminLogsRes = await getSystemLogsAction(50, 'admin');
-            if (adminLogsRes.success) {
-                setAdminLogs(adminLogsRes.data);
-                setAdminLogsTotalCount(adminLogsRes.totalCount);
-            }
+            refreshLogs();
         } else {
             showToast('Fout bij bijwerken instellingen', 'error');
             setManualApproval(!newValue);
@@ -211,7 +203,7 @@ export default function AuditLogIsland() {
     ];
 
     return (
-        <div className={`container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700 ${isLoading ? 'skeleton-active' : ''}`} aria-busy={isLoading}>
+        <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700">
             <AuditHeader 
                 stats={adminStats}
                 manualApproval={manualApproval}
@@ -240,7 +232,6 @@ export default function AuditLogIsland() {
                 {/* Main Content Area */}
                 {activeTab === 'pending' && (
                     <PendingTab 
-                        isLoading={isLoading}
                         isProcessing={isProcessing}
                         isBulkProcessing={isBulkProcessing}
                         filteredSignups={filteredSignups}
@@ -251,24 +242,22 @@ export default function AuditLogIsland() {
                         onReject={handleReject}
                         onBulkApprove={handleBulkApprove}
                         onBulkReject={handleBulkReject}
-                        onRefresh={loadData}
+                        onRefresh={refreshLogs}
                     />
                 )}
 
                 {activeTab === 'admin_logs' && (
                     <LogsTab 
-                        isLoading={isLoading}
                         logs={adminLogs}
-                        onRefresh={loadData}
+                        onRefresh={refreshLogs}
                         title="Beheerder Acties"
                     />
                 )}
 
                 {activeTab === 'system_logs' && (
                     <LogsTab 
-                        isLoading={isLoading}
                         logs={systemLogs}
-                        onRefresh={loadData}
+                        onRefresh={refreshLogs}
                         title="Systeem Events"
                         actions={
                             <a
@@ -283,7 +272,6 @@ export default function AuditLogIsland() {
 
                 {activeTab === 'queues' && (
                     <QueuesTab 
-                        isLoading={isLoading}
                         queueData={queueData}
                     />
                 )}

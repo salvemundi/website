@@ -4,11 +4,10 @@ import React from 'react';
 import { Loader2, CheckCircle } from 'lucide-react';
 
 interface QueuesTabProps {
-    isLoading: boolean;
     queueData: any;
 }
 
-export default function QueuesTab({ isLoading, queueData }: QueuesTabProps) {
+export default function QueuesTab({ queueData }: QueuesTabProps) {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {['new_users', 'sync_existing'].map(qKey => (
@@ -29,9 +28,7 @@ export default function QueuesTab({ isLoading, queueData }: QueuesTabProps) {
                         </div>
                     </div>
                     <div className="p-0">
-                        {isLoading ? (
-                            <div className="p-12 flex justify-center"><Loader2 className="h-8 w-8 animate-spin text-[var(--beheer-accent)]" /></div>
-                        ) : !queueData?.[qKey]?.samples || queueData[qKey].samples.length === 0 ? (
+                        {!queueData?.[qKey]?.samples || queueData[qKey].samples.length === 0 ? (
                             <div className="p-12 text-center">
                                 <CheckCircle className="h-10 w-10 text-[var(--beheer-active)] mx-auto mb-4 opacity-20" />
                                 <p className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Geen actieve taken</p>
