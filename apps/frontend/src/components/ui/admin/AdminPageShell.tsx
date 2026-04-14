@@ -1,6 +1,5 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
-import { AdminGenericLoading } from '@/components/ui/admin/AdminLoadingFallbacks';
 
 interface AdminPageShellProps {
     title: string;
@@ -8,13 +7,12 @@ interface AdminPageShellProps {
     backHref?: string;
     actions?: React.ReactNode;
     children: React.ReactNode;
-    fallback?: React.ReactNode;
     hideToolbar?: boolean;
 }
 
 /**
  * Standardized Shell for all Beheer (Admin) pages.
- * Implements Ultra-PPR by rendering the toolbar in the static HTML shell.
+ * NUCLEAR SSR: No internal suspense. Toolbar and content flush together.
  */
 export default function AdminPageShell({
     title,
@@ -22,7 +20,6 @@ export default function AdminPageShell({
     backHref,
     actions,
     children,
-    fallback,
     hideToolbar = false
 }: AdminPageShellProps) {
     return (
@@ -37,9 +34,7 @@ export default function AdminPageShell({
                 />
             )}
             
-            <Suspense fallback={fallback || null}>
-                {children}
-            </Suspense>
+            {children}
         </div>
     );
 }

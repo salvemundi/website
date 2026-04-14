@@ -39,36 +39,6 @@ export function ReisInfoIsland({ nextTrip, isLoading = false }: ReisInfoIslandPr
         return () => window.removeEventListener('keydown', onKey);
     }, [lightboxOpen]);
 
-    if (isLoading) {
-        return (
-            <div className="w-full lg:w-1/2 flex flex-col gap-8 skeleton-active" aria-busy="true">
-                {/* Image + Date Card Skeleton */}
-                <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-lg">
-                    <div className="w-full h-48 sm:h-64 md:h-80 bg-[var(--text-muted)]/5 rounded-2xl" />
-                    <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-slate-100 dark:bg-slate-900/40 rounded-xl border border-slate-200 dark:border-slate-800/30">
-                        <div className="flex items-center gap-3 sm:gap-4 w-full">
-                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-theme-purple/10 rounded-full" />
-                            <div className="space-y-2 flex-1">
-                                <div className="h-3 w-24 bg-[var(--text-muted)]/10 rounded-full" />
-                                <div className="h-5 w-full max-w-[200px] bg-theme-purple/10 rounded-md" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Description Card Skeleton */}
-                <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-lg">
-                    <div className="h-8 w-1/3 bg-theme-purple/10 mb-6 rounded-lg" />
-                    <div className="space-y-4">
-                        <div className="h-4 w-full bg-[var(--text-muted)]/5 rounded-full" />
-                        <div className="h-4 w-11/12 bg-[var(--text-muted)]/5 rounded-full" />
-                        <div className="h-4 w-4/5 bg-[var(--text-muted)]/5 rounded-full" />
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
     const nextTripStartDate = nextTrip?.start_date
         ? new Date(nextTrip.start_date)
         : nextTrip?.event_date
@@ -92,7 +62,7 @@ export function ReisInfoIsland({ nextTrip, isLoading = false }: ReisInfoIslandPr
             : null;
 
     return (
-        <div className="w-full lg:w-1/2 flex flex-col gap-8">
+        <div className={`w-full lg:w-1/2 flex flex-col gap-8 ${isLoading ? 'skeleton-active' : ''}`} aria-busy={isLoading}>
             {/* Image + Date Card */}
             {nextTrip && (
                 <div className="bg-surface dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-card">

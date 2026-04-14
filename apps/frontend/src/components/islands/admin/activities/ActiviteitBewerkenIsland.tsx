@@ -125,43 +125,13 @@ export default function ActiviteitBewerkenIsland({
     const formErrors = state.fieldErrors || {};
 
     return (
-        <>
+        <div className={isLoading ? 'skeleton-active' : ''} aria-busy={isLoading}>
             <AdminToolbar 
                 title="Bewerk Activiteit"
                 subtitle={`Wijzig de gegevens van "${event.name}"`}
                 backHref="/beheer/activiteiten"
             />
-            <div className="container mx-auto px-4 py-12 max-w-4xl overflow-x-hidden">
-                {isLoading ? (
-                    <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl p-8 sm:p-10 space-y-8 border border-[var(--beheer-border)] animate-pulse">
-                        {/* Basic Info Skeleton */}
-                        <div>
-                            <div className="h-3 w-20 mb-3 skeleton-active" />
-                            <div className="h-14 w-full rounded-xl skeleton-active" />
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div>
-                                <div className="h-3 w-24 mb-3 skeleton-active" />
-                                <div className="h-14 w-full rounded-xl skeleton-active" />
-                            </div>
-                            <div>
-                                <div className="h-3 w-20 mb-3 skeleton-active" />
-                                <div className="h-14 w-full rounded-xl skeleton-active" />
-                            </div>
-                        </div>
-
-                        <div>
-                            <div className="h-3 w-24 mb-3 skeleton-active" />
-                            <div className="h-40 w-full rounded-xl skeleton-active" />
-                        </div>
-
-                        <div className="flex flex-col sm:flex-row gap-5 pt-6">
-                            <div className="flex-1 h-14 rounded-full skeleton-active" />
-                            <div className="sm:w-40 h-14 rounded-full skeleton-active" />
-                        </div>
-                    </div>
-                ) : (
+            <div className={`container mx-auto px-4 py-12 max-w-4xl overflow-x-hidden`}>
                     <form action={formAction} className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-2xl p-6 sm:p-10 space-y-8 text-[var(--beheer-text)] border border-[var(--beheer-border)] relative overflow-hidden">
                     {/* Glow effect */}
                     <div className="absolute -top-24 -right-24 h-48 w-48 bg-[var(--beheer-accent)]/5 blur-3xl rounded-full" />
@@ -348,10 +318,8 @@ export default function ActiviteitBewerkenIsland({
                         </button>
                     </div>
                 </form>
-                )}
-
-                <AdminToast toast={toast} onClose={hideToast} />
             </div>
-        </>
+            <AdminToast toast={toast} onClose={hideToast} />
+        </div>
     );
 }

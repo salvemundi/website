@@ -1,13 +1,10 @@
-import { Suspense } from 'react';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
-import { AdminGenericLoading } from '@/components/ui/admin/AdminLoadingFallbacks';
 import ActiviteitNieuwIsland from '@/components/islands/admin/activities/ActiviteitNieuwIsland';
-
-
+import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 
 async function getCommittees(user: any) {
     const memberships = user.committees || [];
@@ -47,7 +44,6 @@ async function getCommittees(user: any) {
             );
         }
     } catch (error) {
-        
         return [];
     }
 }
@@ -66,13 +62,18 @@ export default async function ActivityCreatePage() {
         );
     }
 
+    // NUCLEAR SSR: Fetch all data before flushing any part of the page content
     const committees = await getCommittees(session.user);
 
     return (
-        <main className="min-h-screen bg-[var(--bg-main)] pb-20">
-            <Suspense fallback={<AdminGenericLoading />}>
+        <AdminPageShell
+            title="Activiteit Aanmaken"
+            subtitle="Publiceer een nieuwe activiteit op de website."
+            backHref="/beheer/activiteiten"
+        >
+            <main className="min-h-screen bg-[var(--bg-main)] pb-20">
                 <ActiviteitNieuwIsland committees={committees as any} />
-            </Suspense>
-        </main>
+            </main>
+        </AdminPageShell>
     );
 }

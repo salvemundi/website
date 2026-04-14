@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 import type { Metadata } from 'next';
 import ContactInfoCard from '@/components/ui/social/ContactInfoCard';
 import PageHeader from '@/components/ui/layout/PageHeader';
+import { getDocumenten } from '@/server/actions/website.actions';
 
 // SEO metadata conform de V7 standaard
 export const metadata: Metadata = {
@@ -18,9 +19,12 @@ export const metadata: Metadata = {
 /**
  * Contactpagina — pure Server Component.
  * Islands (WhatsApp, Safe Havens) worden client-side gehydrateerd.
- * Documenten worden asynchroon geladen binnen de ContactInfoCard (PPR).
+ * NUCLEAR SSR: Alle data (documenten) wordt op de server opgehaald voordat de pagina geflushd wordt.
  */
-export default function ContactPage() {
+export default async function ContactPage() {
+    // Haal alle benodigde data op voor de hele pagina
+    const documenten = await getDocumenten();
+
     return (
         <div>
             <PageHeader
@@ -35,8 +39,7 @@ export default function ContactPage() {
                 <div className="max-w-6xl mx-auto flex w-full flex-col gap-8">
 
                     {/* 2-koloms grid — Informatie | Contact */}
-                    {/* Bevat interne Suspense voor alleen de documentenlijst */}
-                    <ContactInfoCard />
+                    <ContactInfoCard documenten={documenten} />
 
                     {/* Social Media sectie - Wordt direct statisch geserveerd */}
                     <section
