@@ -148,7 +148,7 @@ export default function KroegentochtManagementIsland({
             />
 
             <div className={`container mx-auto px-4 py-8 max-w-7xl ${isLoading ? 'skeleton-active' : 'animate-in fade-in slide-in-from-bottom-4 duration-700'}`}>
-                <AdminStatsBar stats={adminStats} isLoading={isLoading} />
+                <AdminStatsBar stats={adminStats} />
 
             {/* Event Selector Section */}
             <div className="mb-10">

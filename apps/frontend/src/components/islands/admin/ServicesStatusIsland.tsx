@@ -107,7 +107,7 @@ export default function ServicesStatusIsland({ isLoading: parentIsLoading = fals
                 </button>
             </div>
 
-            <AdminStatsBar stats={adminStats} isLoading={isLoading} />
+            <AdminStatsBar stats={adminStats} />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
                 {displayedServices.map((service, idx) => (

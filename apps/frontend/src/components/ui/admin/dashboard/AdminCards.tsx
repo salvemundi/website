@@ -2,7 +2,6 @@ import React from 'react';
 import Link from 'next/link';
 
 interface CardProps {
-    isLoading?: boolean;
     title?: string;
     href?: string;
     disabled?: boolean;
@@ -25,10 +24,9 @@ const getColorClasses = (colorClass: string = 'purple') => {
 /**
  * Universal Dashboard Button (ActionCard style).
  * Horizontal layout: [Icon] [Name/Label] [Value]
- * Modernized: No manual branching. Uses .skeleton-active for Zero-Drift masking.
+ * Modernized: Pure data rendering.
  */
 export function ActionCard({
-    isLoading = false,
     title = '',
     subtitle,
     value,
@@ -41,7 +39,7 @@ export function ActionCard({
     value?: string | number;
     icon?: React.ReactNode;
 }) {
-    const isLink = !disabled && href && !isLoading;
+    const isLink = !disabled && href;
     const Component = (isLink ? Link : 'div') as any;
     const colorStyle = getColorClasses(colorClass);
     
@@ -50,9 +48,7 @@ export function ActionCard({
             {...((isLink && href) ? { href } : {})}
             className={`w-full flex items-center gap-4 p-4 rounded-[var(--beheer-radius)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] shadow-sm 
                 ${disabled ? 'opacity-50 cursor-not-allowed shadow-none' : ''} 
-                ${!disabled && !isLoading && href ? 'hover:border-[var(--beheer-accent)]/30 hover:shadow-md transition-all cursor-pointer active:scale-[0.98] group' : ''} 
-                ${isLoading ? 'skeleton-active cursor-default pointer-events-none' : ''}`}
-            aria-busy={isLoading}
+                ${!disabled && href ? 'hover:border-[var(--beheer-accent)]/30 hover:shadow-md transition-all cursor-pointer active:scale-[0.98] group' : ''}`}
         >
             {/* Left: Icon */}
             <div className={`p-3 rounded-xl transition-colors ${colorStyle} group-hover:bg-opacity-20 shrink-0`}>
@@ -62,7 +58,7 @@ export function ActionCard({
             {/* Middle: Text hierarchy */}
             <div className="text-left flex-1 min-w-0 pr-2">
                 <p className="text-sm font-black tracking-tight text-[var(--beheer-text)] group-hover:text-[var(--beheer-accent)] transition-colors leading-tight mb-1 truncate">
-                    {title || 'Loading content...'}
+                    {title}
                 </p>
                 {subtitle && (
                     <p className="font-bold text-[10px] text-[var(--beheer-text-muted)] tracking-widest truncate leading-tight opacity-60">
@@ -92,24 +88,19 @@ export function ActionCard({
 
 /**
  * Vertical List Card for Dashboard sections.
- * Modernized: No manual branching. Uses .skeleton-active for Zero-Drift masking.
  */
 export function ListCard({
-    isLoading = false,
     title = '',
     icon,
     children
 }: {
-    isLoading?: boolean;
     title?: string;
     icon?: React.ReactNode;
     children: React.ReactNode;
 }) {
     return (
         <div 
-            className={`bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] shadow-sm p-6 overflow-hidden h-full flex flex-col 
-                ${isLoading ? 'skeleton-active' : ''}`} 
-            aria-busy={isLoading}
+            className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] shadow-sm p-6 overflow-hidden h-full flex flex-col"
         >
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
@@ -129,10 +120,9 @@ export function ListCard({
 }
 
 /**
- * StatCard (Legacy variant, updated to support masks).
+ * StatCard (Legacy variant).
  */
 export function StatCard({
-    isLoading = false,
     title = '',
     value,
     subtitle,
@@ -145,7 +135,7 @@ export function StatCard({
     subtitle?: string;
     icon?: React.ReactNode;
 }) {
-    const isLink = !disabled && href && !isLoading;
+    const isLink = !disabled && href;
     const Component = (isLink ? Link : 'div') as any;
     const colorStyle = getColorClasses(colorClass);
 
@@ -153,10 +143,8 @@ export function StatCard({
         <Component
             {...((isLink && href) ? { href } : {})}
             className={`block w-full bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] p-5 relative overflow-hidden transition-all 
-                ${!disabled && href && !isLoading ? 'hover:shadow-lg hover:border-[var(--beheer-accent)]/30 hover:-translate-y-1 group cursor-pointer' : ''} 
-                ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
-                ${isLoading ? 'skeleton-active' : ''}`}
-            aria-busy={isLoading}
+                ${!disabled && href ? 'hover:shadow-lg hover:border-[var(--beheer-accent)]/30 hover:-translate-y-1 group cursor-pointer' : ''} 
+                ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
             <div className="relative z-10 flex flex-col gap-4">
                 <div className={`p-2.5 w-fit rounded-xl ${colorStyle} transition-colors group-hover:bg-opacity-20`}>

@@ -6,7 +6,14 @@ import {
     TopStickersList, 
     ActivitySignupsList
 } from '@/components/ui/admin/dashboard/DashboardSections';
-import { checkAdminAccess, getDashboardPermissions } from '@/server/actions/admin.actions';
+import { 
+    checkAdminAccess, 
+    getDashboardPermissions,
+    getDashboardStats,
+    getUpcomingBirthdays,
+    getRecentActivities,
+    getTopStickers
+} from '@/server/actions/admin.actions';
 
 export const metadata = {
     title: 'Beheer Dashboard | SV Salve Mundi',
@@ -17,7 +24,20 @@ export default async function BeheerPage() {
     const access = await checkAdminAccess().catch(() => null);
     if (!access || !access.user) return <AdminUnauthorized />;
 
-    const permissions = await getDashboardPermissions();
+    // Fetch all dashboard data concurrently
+    const [
+        permissions,
+        stats,
+        birthdays,
+        activities,
+        stickers
+    ] = await Promise.all([
+        getDashboardPermissions(),
+        getDashboardStats(),
+        getUpcomingBirthdays(),
+        getRecentActivities(),
+        getTopStickers()
+    ]);
     
     // Permission-aware dashboard layout
     const allPermissions = [
@@ -44,11 +64,11 @@ export default async function BeheerPage() {
                     
                     {/* Main Hub: Navigation & Key Stats */}
                     <div className={isLimitedAccess ? 'w-full space-y-12' : 'lg:col-span-8 space-y-12'}>
-                        <DashboardHub permissions={permissions} />
+                        <DashboardHub permissions={permissions} stats={stats} />
 
                         {!isLimitedAccess && (
                             <div className="pt-12 border-t border-[var(--beheer-border)] opacity-60 hover:opacity-100 transition-opacity hidden md:block">
-                                <TopStickersList />
+                                <TopStickersList data={stickers} />
                             </div>
                         )}
                     </div>
@@ -56,14 +76,14 @@ export default async function BeheerPage() {
                     {/* Side Sidebar: Real-time activities & birthdays */}
                     <div className={isLimitedAccess ? 'w-full grid grid-cols-1 md:grid-cols-2 gap-6 pt-12 border-t border-[var(--beheer-border)]' : 'lg:col-span-4 space-y-8'}>
                         <div className="space-y-6">
-                            <ActivitySignupsList />
+                            <ActivitySignupsList data={activities} />
                         </div>
                         
                         <div className="space-y-6">
-                            <BirthdaysList />
+                            <BirthdaysList data={birthdays} />
                             {isLimitedAccess && (
                                 <div className="md:hidden opacity-60">
-                                    <TopStickersList />
+                                    <TopStickersList data={stickers} />
                                 </div>
                             )}
                         </div>

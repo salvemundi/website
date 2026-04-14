@@ -22,27 +22,24 @@ import {
 } from './AdminCards';
 import { formatDate } from '@/shared/lib/utils/date';
 import { 
-    getDashboardStats, 
-    getUpcomingBirthdays, 
-    getRecentActivities, 
-    getTopStickers, 
-    getDashboardPermissions 
-} from '@/server/actions/admin.actions';
+    type DashboardStats,
+    type Birthday,
+    type RecentActivity,
+    type TopSticker
+} from "@salvemundi/validations/schema/admin-dashboard.zod";
 
 /**
  * Universal Dashboard Hub.
- * Modernized: No manual skeleton sections. Uses .skeleton-active on real cards.
+ * Modernized: No manual skeleton sections. 100% Data-driven.
  */
-export async function DashboardHub({ 
-    isLoading = false,
-    permissions: serverPermissions = null
+export function DashboardHub({ 
+    permissions,
+    stats
 }: { 
-    isLoading?: boolean;
-    permissions?: any;
+    permissions: any;
+    stats: DashboardStats;
 }) {
-    const permissions = serverPermissions || (isLoading ? {} : await getDashboardPermissions());
-    
-    const getGroups = (stats: any | null) => [
+    const getGroups = (stats: DashboardStats) => [
         {
             title: "Content",
             icon: <Layout />,
@@ -75,7 +72,6 @@ export async function DashboardHub({
         }
     ];
 
-    const stats = isLoading ? null : await getDashboardStats();
     const groups = getGroups(stats);
 
     const renderSection = (title: string, items: any[], icon: React.ReactNode) => {
@@ -93,7 +89,6 @@ export async function DashboardHub({
                     {items.map((item, i) => (
                         <ActionCard 
                             key={i} 
-                            isLoading={isLoading}
                             title={item.title}
                             subtitle={item.subtitle}
                             value={item.value !== "Beheer" && item.value !== "Bekijken" && item.value !== "Start" ? item.value : undefined}
@@ -120,33 +115,31 @@ export async function DashboardHub({
 
 /**
  * Vertical list showing upcoming birthdays.
- * Modernized: Integrated .skeleton-active standard.
+ * Modernized: Pure data rendering, no manual loading states.
  */
-export async function BirthdaysList({ isLoading = false }: { isLoading?: boolean }) {
-    const upcomingBirthdays = isLoading ? [] : await getUpcomingBirthdays();
-
+export function BirthdaysList({ data }: { data: Birthday[] }) {
     return (
-        <ListCard title="Aankomende Jarigen" icon={<Cake className="h-5 w-5" />} isLoading={isLoading}>
-            {(isLoading ? [...Array(5)] : upcomingBirthdays).map((person, i) => (
-                <div key={isLoading ? i : person.id} 
+        <ListCard title="Aankomende Jarigen" icon={<Cake className="h-5 w-5" />}>
+            {data.map((person) => (
+                <div key={person.id} 
                     className={`flex items-center justify-between p-3.5 rounded-xl transition-all hover:bg-[var(--beheer-accent)]/5 group ${person?.isToday ? 'bg-amber-500/5 border border-amber-500/20' : ''}`}
                 >
                     <div className="flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-black shadow-sm ${person?.isToday ? 'bg-amber-500 text-white shadow-amber-500/20' : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)]'}`}>
-                            {isLoading ? '' : person.first_name?.[0]}
+                            {person.first_name?.[0]}
                         </div>
                         <div>
                             <p className={`text-xs font-black tracking-tight ${person?.isToday ? 'text-amber-600' : 'text-[var(--beheer-text)]'}`}>
-                                {isLoading ? 'Loading Name...' : `${person.first_name} ${person.last_name}`}
+                                {`${person.first_name} ${person.last_name}`}
                             </p>
                             <p className="text-[9px] font-bold tracking-widest text-[var(--beheer-text-muted)] opacity-60">
-                                {isLoading ? 'Loading Date...' : (person.isToday ? '🎉 Vandaag!' : formatDate(person.birthday))}
+                                {person.isToday ? '🎉 Vandaag!' : formatDate(person.birthday)}
                             </p>
                         </div>
                     </div>
                 </div>
             ))}
-            {!isLoading && upcomingBirthdays.length === 0 && (
+            {data.length === 0 && (
                 <p className="text-[var(--beheer-text-muted)] text-[10px] font-black tracking-widest text-center py-8 italic opacity-40">Geen jarigen</p>
             )}
         </ListCard>
@@ -156,29 +149,28 @@ export async function BirthdaysList({ isLoading = false }: { isLoading?: boolean
 /**
  * Top sticker collectors rankings.
  */
-export async function TopStickersList({ isLoading = false }: { isLoading?: boolean }) {
-    const topStickers = isLoading ? [] : await getTopStickers();
-
+export function TopStickersList({ data }: { data: TopSticker[] }) {
     return (
-        <ListCard title="Top Sticker Verzamelaars" icon={<Award className="h-5 w-5" />} isLoading={isLoading}>
-            {(isLoading ? [...Array(3)] : topStickers).map((person, i) => (
-                <div key={isLoading ? i : person.id} className="flex items-center justify-between p-3.5 hover:bg-[var(--beheer-accent)]/5 rounded-xl transition-all group">
+        <ListCard title="Top Sticker Verzamelaars" icon={<Award className="h-5 w-5" />}>
+            {data.map((person, i) => (
+                <div key={person.id} className="flex items-center justify-between p-3.5 hover:bg-[var(--beheer-accent)]/5 rounded-xl transition-all group">
                     <div className="flex items-center gap-3">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black ${i === 0 ? 'bg-amber-500 text-white shadow-lg' : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)]'}`}>
                             {i + 1}
                         </div>
                         <p className="text-xs font-black text-[var(--beheer-text)] tracking-tight truncate">
-                            {isLoading ? 'Loading Participant...' : `${person.first_name} ${person.last_name}`}
+                            {`${person.first_name} ${person.last_name}`}
                         </p>
                     </div>
-                    {!isLoading && (
-                        <div className="flex items-center gap-1.5 grayscale group-hover:grayscale-0 transition-all">
-                            <span className="text-lg font-black text-[var(--beheer-text)] tracking-tighter">{person.count}</span>
-                            <MapPin className="h-3 w-3 text-[var(--beheer-accent)]" />
-                        </div>
-                    )}
+                    <div className="flex items-center gap-1.5 grayscale group-hover:grayscale-0 transition-all">
+                        <span className="text-lg font-black text-[var(--beheer-text)] tracking-tighter">{person.count}</span>
+                        <MapPin className="h-3 w-3 text-[var(--beheer-accent)]" />
+                    </div>
                 </div>
             ))}
+            {data.length === 0 && (
+                <p className="text-[var(--beheer-text-muted)] text-[10px] font-black tracking-widest text-center py-8 italic opacity-40">Geen data</p>
+            )}
         </ListCard>
     );
 }
@@ -186,29 +178,28 @@ export async function TopStickersList({ isLoading = false }: { isLoading?: boole
 /**
  * Activity signups overview.
  */
-export async function ActivitySignupsList({ isLoading = false }: { isLoading?: boolean }) {
-    const latestEventsWithSignups = isLoading ? [] : await getRecentActivities();
-
+export function ActivitySignupsList({ data }: { data: RecentActivity[] }) {
     return (
-        <ListCard title="Activiteiten aanmeldingen" icon={<Activity className="h-5 w-5" />} isLoading={isLoading}>
-            {(isLoading ? [...Array(4)] : latestEventsWithSignups).map((ev, i) => (
-                <div key={isLoading ? i : ev.id} className="w-full flex items-center justify-between p-3.5 rounded-xl transition-all group">
+        <ListCard title="Activiteiten aanmeldingen" icon={<Activity className="h-5 w-5" />}>
+            {data.map((ev) => (
+                <div key={ev.id} className="w-full flex items-center justify-between p-3.5 rounded-xl transition-all group">
                     <div className="flex-1 min-w-0 pr-2">
                         <p className="text-xs font-black text-[var(--beheer-text)] tracking-tight truncate">
-                            {isLoading ? 'Loading Activity...' : ev.name}
+                            {ev.name}
                         </p>
                         <p className="text-[9px] font-bold text-[var(--beheer-text-muted)] tracking-widest opacity-60">
-                            {isLoading ? 'Loading Date...' : (ev.event_date ? formatDate(ev.event_date) : '')}
+                            {ev.event_date ? formatDate(ev.event_date) : ''}
                         </p>
                     </div>
-                    {!isLoading && (
-                        <div className="flex items-center gap-1">
-                            <span className="text-lg font-black tracking-tighter">{ev.signups}</span>
-                            <Users className="h-3 w-3 text-[var(--beheer-text-muted)] opacity-40" />
-                        </div>
-                    )}
+                    <div className="flex items-center gap-1">
+                        <span className="text-lg font-black tracking-tighter">{ev.signups}</span>
+                        <Users className="h-3 w-3 text-[var(--beheer-text-muted)] opacity-40" />
+                    </div>
                 </div>
             ))}
+            {data.length === 0 && (
+                <p className="text-[var(--beheer-text-muted)] text-[10px] font-black tracking-widest text-center py-8 italic opacity-40">Geen aanmeldingen</p>
+            )}
         </ListCard>
     );
 }

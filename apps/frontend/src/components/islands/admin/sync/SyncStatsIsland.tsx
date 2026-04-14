@@ -19,7 +19,7 @@ export default function SyncStatsIsland() {
 
     return (
         <div className={isLoading ? '' : 'animate-in fade-in duration-500'}>
-            <AdminStatsBar stats={adminStats} isLoading={isLoading} />
+            <AdminStatsBar stats={adminStats} />
         </div>
     );
 }
