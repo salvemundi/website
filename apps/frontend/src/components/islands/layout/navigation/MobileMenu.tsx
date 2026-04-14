@@ -9,13 +9,14 @@ import {
 import { ROUTES } from '@/lib/config/routes';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { authClient } from '@/lib/auth';
+import { IconMap, type IconName } from '@/lib/utils/icons';
 
 interface MobileMenuProps {
     isOpen: boolean;
     onClose: () => void;
     user: any;
     isAuthenticated: boolean;
-    navItems: any[];
+    navItems: { name: string; href: string; icon: IconName }[];
     isCommitteeMember: boolean;
     onLogout: () => void;
     mounted: boolean;
@@ -104,7 +105,7 @@ export default function MobileMenu({
                     )}
 
                     {navItems.map((link) => {
-                        const Icon = link.icon;
+                        const Icon = IconMap[link.icon];
                         return (
                             <Link
                                 key={link.href}
@@ -113,7 +114,7 @@ export default function MobileMenu({
                                 className="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold text-[var(--text-main)] shadow-sm bg-[color-mix(in_srgb,var(--bg-card)_70%,transparent)]"
                             >
                                 <span className="flex items-center gap-3 whitespace-nowrap">
-                                    <Icon className="h-5 w-5 text-[var(--text-main)]" aria-hidden />
+                                    {Icon && <Icon className="h-5 w-5 text-[var(--text-main)]" aria-hidden />}
                                     <span>{link.name}</span>
                                 </span>
                                 <span aria-hidden className="text-[var(--text-muted)]">›</span>

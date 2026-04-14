@@ -4,12 +4,13 @@ import React, { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth';
+import type { IconName } from '@/lib/utils/icons';
 import MobileMenu from './MobileMenu';
 
 interface MobileNavProps {
     user: any;
     isAuthenticated: boolean;
-    navItems: any[];
+    navItems: { name: string; href: string; icon: IconName }[];
     isCommitteeMember: boolean;
     onLogout: () => void;
 }

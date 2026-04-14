@@ -1,11 +1,9 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import {
-    Home, CalendarDays, Users, Beer, Map, Mail, MapPin, Sparkles, Shield, User
-} from 'lucide-react';
 import { ThemeToggle } from '@/components/islands/layout/ThemeToggle';
 import { ROUTES } from '@/lib/config/routes';
+import type { IconName } from '@/lib/utils/icons';
 import { HeaderShell } from './navigation/HeaderShell';
 import { NavUserSection } from './navigation/NavUserSection';
 import { MobileNav } from './navigation/MobileNav';
@@ -27,18 +25,18 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
     
     const isCommitteeMember = Array.isArray(user?.committees) && user.committees.length > 0;
 
-    const navItems = [
-        { name: 'Home', href: ROUTES.HOME, icon: Home },
-        { name: 'Intro', href: ROUTES.INTRO, icon: Sparkles },
-        { name: 'Lidmaatschap', href: ROUTES.MEMBERSHIP, icon: User },
-        { name: 'Activiteiten', href: ROUTES.ACTIVITIES, icon: CalendarDays },
-        { name: 'De Vereniging', href: ROUTES.COMMITTEES, icon: Users },
-        { name: 'Kroegentocht', href: ROUTES.PUB_CRAWL, icon: Beer },
-        { name: 'Reis', href: ROUTES.TRIP, icon: Map },
-        { name: 'Safe Havens', href: ROUTES.SAFE_HAVENS, icon: Shield },
-        { name: 'Stickers', href: ROUTES.STICKERS, icon: MapPin },
-        { name: 'Contact', href: ROUTES.CONTACT, icon: Mail },
-    ].filter(item => !disabledRoutes.includes(item.href));
+    const navItems = ([
+        { name: 'Home', href: ROUTES.HOME, icon: 'Home' },
+        { name: 'Intro', href: ROUTES.INTRO, icon: 'Sparkles' },
+        { name: 'Lidmaatschap', href: ROUTES.MEMBERSHIP, icon: 'User' },
+        { name: 'Activiteiten', href: ROUTES.ACTIVITIES, icon: 'CalendarDays' },
+        { name: 'De Vereniging', href: ROUTES.COMMITTEES, icon: 'Users' },
+        { name: 'Kroegentocht', href: ROUTES.PUB_CRAWL, icon: 'Beer' },
+        { name: 'Reis', href: ROUTES.TRIP, icon: 'Map' },
+        { name: 'Safe Havens', href: ROUTES.SAFE_HAVENS, icon: 'Shield' },
+        { name: 'Stickers', href: ROUTES.STICKERS, icon: 'MapPin' },
+        { name: 'Contact', href: ROUTES.CONTACT, icon: 'Mail' },
+    ] as const).filter(item => !disabledRoutes.includes(item.href as string)) as { name: string; href: string; icon: IconName }[];
 
     return (
         <HeaderShell 
