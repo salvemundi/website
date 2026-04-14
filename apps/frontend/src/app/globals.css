@@ -115,6 +115,8 @@
 
    /* Layout */
    --header-height: 80px;
+   --impersonation-banner-height: 0px;
+   --header-total-height: calc(var(--impersonation-banner-height) + var(--header-height));
 
    /* Typography Scale & Family */
    --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
