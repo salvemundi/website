@@ -20,6 +20,7 @@ out/
 build/
 dist/
 .unlighthouse/
+scratch/
 
 # Environment Variables
 .env

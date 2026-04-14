@@ -35,7 +35,7 @@ async function MailDataWrapper({ searchParams }: PageProps) {
 
     const trips = await getSystemDirectus().request(readItems('trips', {
         fields: ['id', 'name'] as any,
-        sort: ['-event_date']
+        sort: ['-start_date']
     }));
 
     if (!trips || trips.length === 0) {

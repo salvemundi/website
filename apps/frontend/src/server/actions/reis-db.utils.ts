@@ -192,7 +192,7 @@ export async function fetchSignupsByActivityIdDb(activityId: number): Promise<an
 export async function fetchFullTripsDb(): Promise<any[]> {
     try {
         const res = await query(
-            `SELECT * FROM trips ORDER BY event_date DESC`,
+            `SELECT * FROM trips ORDER BY start_date DESC`,
             []
         );
         return (res.rows || []).map(t => ({
@@ -205,10 +205,9 @@ export async function fetchFullTripsDb(): Promise<any[]> {
             registration_open: !!t.registration_open,
             is_bus_trip: !!t.is_bus_trip,
             allow_final_payments: !!t.allow_final_payments,
-            // Convert Date objects to ISO strings for HTML inputs
             start_date: t.start_date instanceof Date ? t.start_date.toISOString() : t.start_date,
             end_date: t.end_date instanceof Date ? t.end_date.toISOString() : t.end_date,
-            event_date: t.event_date instanceof Date ? t.event_date.toISOString() : t.event_date,
+            event_date: t.event_date instanceof Date ? t.event_date.toISOString() : t.event_date || t.start_date,
             registration_start_date: t.registration_start_date instanceof Date ? t.registration_start_date.toISOString() : t.registration_start_date
         }));
     } catch (error) {
@@ -245,9 +244,9 @@ export async function fetchTripActivitiesByTripIdDb(tripId: number): Promise<any
 export async function fetchAllTripsDb(): Promise<any[]> {
     try {
         const res = await query(
-            `SELECT id, name, event_date, start_date, end_date, allow_final_payments 
+            `SELECT id, name, start_date, end_date, allow_final_payments 
              FROM trips 
-             ORDER BY event_date DESC`,
+             ORDER BY start_date DESC`,
             []
         );
         return res.rows || [];
