@@ -106,7 +106,7 @@ export async function getUpcomingTrips(): Promise<ReisTrip[]> {
                 return endDate >= today;
             }
 
-            const dateStr = trip.event_date || trip.start_date;
+            const dateStr = trip.start_date;
             if (!dateStr) return false;
             const eventDate = new Date(dateStr);
             eventDate.setHours(23, 59, 59, 999);

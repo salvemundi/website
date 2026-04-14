@@ -41,15 +41,11 @@ export function ReisInfoIsland({ nextTrip, isLoading = false }: ReisInfoIslandPr
 
     const nextTripStartDate = nextTrip?.start_date
         ? new Date(nextTrip.start_date)
-        : nextTrip?.event_date
-            ? new Date(nextTrip.event_date)
-            : null;
+        : null;
 
     const nextTripEndDate = nextTrip?.end_date
         ? new Date(nextTrip.end_date)
-        : nextTrip?.event_date
-            ? new Date(nextTrip.event_date)
-            : null;
+        : null;
 
     const formattedFromDate =
         nextTripStartDate && !isNaN(nextTripStartDate.getTime())

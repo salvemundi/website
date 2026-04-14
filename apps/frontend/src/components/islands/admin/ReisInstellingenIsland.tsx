@@ -257,7 +257,7 @@ export default function ReisInstellingenIsland({ initialTrips }: ReisInstellinge
 }
 
 function TripCard({ trip, onEdit, onDelete, isDeleting }: any) {
-    const sd = trip.start_date || trip.event_date;
+    const sd = trip.start_date;
     const ed = trip.end_date;
     
     let dateRange = 'Onbekend';

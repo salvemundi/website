@@ -10,7 +10,6 @@ export const reisSiteSettingsSchema = z.object({
 export const reisTripSchema = z.object({
     id: z.number().int(),
     name: z.string(),
-    event_date: z.string().nullable().optional(),
     start_date: z.string().nullable().optional(),
     end_date: z.string().nullable().optional(),
     image: z.string().nullable().optional(),
