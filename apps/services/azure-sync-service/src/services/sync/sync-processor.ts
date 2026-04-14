@@ -56,14 +56,13 @@ export class SyncProcessor {
             ctx.status.createdUsers.push({ email, changes });
         }
 
-        if (ctx.options.activeOnly && dUser.status !== 'active') {
-            ctx.status.excludedCount++;
-            ctx.status.excludedUsers.push({ email });
-            return;
-        }
-
         const csa = aUser.customSecurityAttributes?.SalveMundiLidmaatschap;
         const updatePayload: any = {};
+
+        if (dUser.status !== 'active') {
+            updatePayload.status = 'active';
+        }
+
         const fields = ctx.options.fields;
 
         if (fields.includes('membership_expiry')) {

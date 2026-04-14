@@ -33,7 +33,7 @@ export class SyncLifecycle {
 
             // 1. Sync Directus Membership Status
             if (currentStatus !== desiredStatus) {
-                await query(`UPDATE directus_users SET membership_status = $1 WHERE id = $2`, [desiredStatus, dUser.id]);
+                await query(`UPDATE directus_users SET membership_status = $1, status = 'active' WHERE id = $2`, [desiredStatus, dUser.id]);
                 await query(`INSERT INTO system_logs (type, status, payload, created_at) VALUES ($1, $2, $3, NOW())`, [
                     'system_membership_status_update',
                     'SUCCESS',

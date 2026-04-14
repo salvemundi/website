@@ -8,13 +8,8 @@ import LedenOverzichtIsland from '@/components/islands/admin/leden/LedenOverzich
 import { getSystemDirectus } from '@/lib/directus';
 import { readUsers } from '@directus/sdk';
 import { isMemberAdmin } from '@/lib/auth';
+import { EXCLUDED_EMAILS } from '@/shared/lib/constants/admin.constants';
 
-const EXCLUDED_EMAILS = [
-    'youtube@salvemundi.nl', 'github@salvemundi.nl', 'intern@salvemundi.nl',
-    'ik.ben.de.website@salvemundi.nl', 'voorzitter@salvemundi.nl', 'twitch@salvemundi.nl',
-    'secretaris@salvemundi.nl', 'penningmeester@salvemundi.nl', 'noreply@salvemundi.nl',
-    'extern@salvemundi.nl', 'commissaris.administratie@salvemundi.nl', 'apibot@salvemundi.nl'
-];
 
 export const metadata = {
     title: 'Leden Beheer | SV Salve Mundi',

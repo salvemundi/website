@@ -1,6 +1,7 @@
 import { query } from '@/lib/database';
 import { DashboardStatsSchema, type DashboardStats, type RecentActivity, RecentActivitySchema } from '@salvemundi/validations/schema/admin-dashboard.zod';
 import { z } from 'zod';
+import { EXCLUDED_EMAILS } from '@/shared/lib/constants/admin.constants';
 
 /**
  * High-performance dashboard statistics using direct SQL.
@@ -15,9 +16,10 @@ export async function getDashboardStatsInternal(): Promise<DashboardStats> {
 
         // 1. Basic counts in a single multi-query
         // Filter signups by successful/open payment status
+        const excludedEmailsStr = EXCLUDED_EMAILS.map(e => `'${e}'`).join(',');
         const basicSql = `
             SELECT 
-                (SELECT COUNT(*) FROM directus_users WHERE status = 'active' AND (membership_expiry IS NULL OR membership_expiry >= $1)) as members,
+                (SELECT COUNT(*) FROM directus_users WHERE membership_status = 'active' AND membership_expiry >= $1 AND email NOT IN (${excludedEmailsStr})) as members,
                 (SELECT COUNT(*) FROM events WHERE event_date >= $1) as events,
                 (SELECT COUNT(*) FROM event_signups es JOIN events e ON es.event_id = e.id WHERE e.event_date >= $1 AND es.payment_status = 'paid') as signups,
                 (SELECT COUNT(*) FROM intro_signups) as intro,
