@@ -9,7 +9,7 @@ export const metadata = {
 
 export default async function TicketsPage() {
     return (
-        <main className="min-h-screen bg-[var(--bg-main)] pt-8">
+        <div className="pt-8">
             <h1 className="sr-only">Mijn Tickets</h1>
             
             <div className="container mx-auto px-4 py-12 max-w-7xl">
@@ -23,7 +23,7 @@ export default async function TicketsPage() {
                     <TicketsDataLoader />
                 </Suspense>
             </div>
-        </main>
+        </div>
     );
 }
 

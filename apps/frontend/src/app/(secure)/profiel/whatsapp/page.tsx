@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function WhatsAppGroepenPage() {
     return (
-        <div className="min-h-screen bg-[var(--bg-main)]">
+        <div className="bg-[var(--bg-main)]">
             <header className="bg-[var(--bg-soft)] py-12">
                 <div className="mx-auto max-w-app px-4">
                     <h1 className="text-4xl font-extrabold text-[var(--text-main)]">WhatsApp Groepen</h1>
@@ -21,7 +21,7 @@ export default function WhatsAppGroepenPage() {
                 </div>
             </header>
 
-            <main className="mx-auto max-w-app px-4 py-8 sm:py-10 md:py-12">
+            <div className="mx-auto max-w-app px-4 py-8 sm:py-10 md:py-12">
                 <Suspense fallback={
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-pulse">
                         {[...Array(2)].map((_, i) => (
@@ -31,7 +31,7 @@ export default function WhatsAppGroepenPage() {
                 }>
                     <WhatsAppGroupsFetcher />
                 </Suspense>
-            </main>
+            </div>
         </div>
     );
 }

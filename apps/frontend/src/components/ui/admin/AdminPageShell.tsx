@@ -23,7 +23,7 @@ export default function AdminPageShell({
     hideToolbar = false
 }: AdminPageShellProps) {
     return (
-        <div className="min-h-screen bg-[var(--bg-main)]">
+        <div className="w-full">
             {!hideToolbar && (
                 <AdminToolbar 
                     isLoading={false}

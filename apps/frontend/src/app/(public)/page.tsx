@@ -29,20 +29,17 @@ export default async function HomePage() {
 
     return (
         <PublicPageShell>
-            <main>
-                {/* No Suspense: Component renders only when data is ready */}
-                <HeroIsland banners={banners} activiteiten={heroActivities} initialSession={session} />
-                
-                <EventsSection activities={activities as any} />
+            <HeroIsland banners={banners} activiteiten={heroActivities} initialSession={session} />
+            
+            <EventsSection activities={activities as any} />
 
-                <WhySalveMundiSection />
+            <WhySalveMundiSection />
 
-                <JoinSectionIsland serverUser={user} />
+            <JoinSectionIsland serverUser={user} />
 
-                <SponsorsSection sponsors={sponsors} />
+            <SponsorsSection sponsors={sponsors} />
 
-                <PwaInstallToast />
-            </main>
+            <PwaInstallToast />
         </PublicPageShell>
     );
 }

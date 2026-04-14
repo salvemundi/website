@@ -21,7 +21,7 @@ export default async function RestbetalingPage({ searchParams }: PageProps) {
     if (!signupId) return notFound();
 
     return (
-        <main className="min-h-screen bg-[var(--bg-main)]">
+        <div className="w-full">
             <Suspense fallback={
                 <div className="flex flex-col items-center justify-center py-32">
                     <Loader2 className="animate-spin h-12 w-12 text-orange-500 mb-4" />
@@ -30,7 +30,7 @@ export default async function RestbetalingPage({ searchParams }: PageProps) {
             }>
                 <PaymentDataWrapper signupId={signupId} token={token} paymentType="final" />
             </Suspense>
-        </main>
+        </div>
     );
 }
 

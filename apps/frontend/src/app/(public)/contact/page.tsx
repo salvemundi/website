@@ -33,7 +33,7 @@ export default async function ContactPage() {
         <div>
             <h1 className="sr-only">Contact</h1>
 
-            <main className="mx-auto max-w-7xl px-4 pt-8 pb-8 sm:py-10 md:py-12">
+            <div className="mx-auto max-w-7xl px-4 pt-8 pb-8 sm:py-10 md:py-12">
                 <div className="max-w-6xl mx-auto flex w-full flex-col gap-8">
 
                     {/* 2-koloms grid — Informatie | Contact */}
@@ -104,7 +104,7 @@ export default async function ContactPage() {
                         </div>
                     </section>
                 </div>
-            </main>
+            </div>
         </div>
     );
 }

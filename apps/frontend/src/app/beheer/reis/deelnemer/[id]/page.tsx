@@ -37,11 +37,11 @@ export default async function DeelnemerDetailPage({ params }: PageProps) {
     const signupId = parseInt(id);
 
     return (
-        <main className="min-h-screen bg-[var(--bg-main)]">
+        <div className="w-full">
             <Suspense fallback={<DeelnemerDetailLoader />}>
                 <DeelnemerDataWrapper signupId={signupId} />
             </Suspense>
-        </main>
+        </div>
     );
 }
 

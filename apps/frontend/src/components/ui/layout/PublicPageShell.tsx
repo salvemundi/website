@@ -24,7 +24,7 @@ export default function PublicPageShell({
     children,
 }: PublicPageShellProps) {
     return (
-        <div className="min-h-screen">
+        <div className="w-full">
             {children}
         </div>
     );

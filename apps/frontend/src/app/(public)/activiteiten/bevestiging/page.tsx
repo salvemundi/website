@@ -18,7 +18,7 @@ export default async function ActiviteitenConfirmationPage({ searchParams }: Pag
     });
 
     return (
-        <main className="min-h-screen bg-[var(--bg-main)] pt-8">
+        <div className="pt-8 w-full">
             <h1 className="sr-only">Bevestiging</h1>
             <div className="container mx-auto px-4 max-w-7xl">
                 <Suspense fallback={<ConfirmationIsland isLoading={true} />}>
@@ -29,6 +29,6 @@ export default async function ActiviteitenConfirmationPage({ searchParams }: Pag
                     />
                 </Suspense>
             </div>
-        </main>
+        </div>
     );
 }

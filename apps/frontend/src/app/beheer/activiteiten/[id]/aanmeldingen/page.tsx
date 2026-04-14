@@ -67,11 +67,9 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
                 subtitle={`Lijst van deelnemers voor "${event.name}"`}
                 backHref={`/beheer/activiteiten`}
             >
-                <main className="min-h-screen bg-[var(--bg-main)]">
-                    <div className="pb-20">
-                        <ActiviteitAanmeldingenIsland event={event} initialSignups={signups} />
-                    </div>
-                </main>
+                <div className="pb-20">
+                    <ActiviteitAanmeldingenIsland event={event} initialSignups={signups} />
+                </div>
             </AdminPageShell>
         );
     } catch (e) {

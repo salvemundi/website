@@ -22,12 +22,12 @@ export default async function ImpersonatePage() {
     const activeToken = cookieStore.get('directus_test_token')?.value || null;
 
     return (
-        <main className="min-h-screen bg-[var(--bg-main)]">
+        <div className="w-full">
             <ImpersonateIsland 
                 activeToken={activeToken} 
                 impersonatedName={impersonation?.name || null}
                 impersonatedCommittees={impersonation?.committees || []}
             />
-        </main>
+        </div>
     );
 }
