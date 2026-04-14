@@ -71,7 +71,7 @@ export default async function RootLayout({
 
                 <Suspense fallback={<div className="h-[80px] w-full bg-[var(--bg-main)]" />}>
                     <HeaderWrapper />
-                    <main className="flex-grow pt-[var(--header-total-height,var(--header-height,72px))]">
+                    <main className="flex-grow min-h-[70vh] pt-[var(--header-total-height,var(--header-height,80px))]">
                         {children}
                     </main>
                     <FooterWrapper />

@@ -43,7 +43,7 @@ export function HeaderShell({ children, mobileMenu }: HeaderShellProps) {
         const applyHeight = (h: number) => {
             document.documentElement.style.setProperty('--header-height', `${h}px`);
         };
-        applyHeight(el.offsetHeight || 72);
+        applyHeight(el.offsetHeight || 80);
         
         const ro = new ResizeObserver((entries) => {
             for (const entry of entries) {
@@ -63,9 +63,10 @@ export function HeaderShell({ children, mobileMenu }: HeaderShellProps) {
         <header
             ref={headerRef}
             className={cn(
-                "fixed top-0 z-[100] w-full h-20 transition-all duration-300",
+                "fixed z-[100] w-full h-20 transition-all duration-300",
                 isScrolled ? "bg-white/95 dark:bg-black/95 backdrop-blur-md shadow-md" : "bg-transparent"
             )}
+            style={{ top: 'var(--impersonation-banner-height, 0px)' }}
         >
             {children}
             {mobileMenu}

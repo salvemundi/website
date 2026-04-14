@@ -20,7 +20,7 @@ export default function ImpersonationBanner({ name, committees, isNormallyAdmin 
     };
 
     return (
-        <div className="fixed top-0 left-0 right-0 z-[100] animate-in slide-in-from-top duration-500">
+        <div className="relative z-[110] animate-in slide-in-from-top duration-500">
             <div className="bg-gradient-to-r from-orange-600 to-amber-600 text-white px-4 py-2 shadow-lg border-b border-white/10">
                 <div className="max-w-[1440px] mx-auto flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3 overflow-hidden">
@@ -60,18 +60,11 @@ export default function ImpersonationBanner({ name, committees, isNormallyAdmin 
                     </button>
                 </div>
             </div>
-            {/* Spacer to push content down if banner is fixed? 
-                Actually, we can handle the spacer in the RootLayout or just push the header down.
-            */}
+            
+            {/* Standardize the height variable for other components like Header and AdminToolbar */}
             <style jsx global>{`
                 :root {
                     --impersonation-banner-height: 40px;
-                }
-                body {
-                    padding-top: var(--impersonation-banner-height);
-                }
-                header {
-                    margin-top: var(--impersonation-banner-height);
                 }
             `}</style>
         </div>
