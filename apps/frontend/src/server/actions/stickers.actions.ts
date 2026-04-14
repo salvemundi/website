@@ -4,29 +4,33 @@ import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
 
-import { query } from "@/lib/database";
+import { getSystemDirectus } from "@/lib/directus";
+import { readItems } from "@directus/sdk";
+import { STICKER_FIELDS } from "@salvemundi/validations";
 
 export async function getPublicStickers() {
     try {
-        const { rows } = await query(
-            `SELECT s.*, u.id as user_id, u.first_name, u.last_name, u.avatar
-             FROM Stickers s
-             LEFT JOIN directus_users u ON s.user_created = u.id
-             ORDER BY s.date_created DESC`,
-            []
-        );
+        const stickers = await getSystemDirectus().request(readItems('Stickers', {
+            fields: [
+                ...STICKER_FIELDS,
+                { user_created: ['id', 'first_name', 'last_name', 'avatar'] }
+            ] as any,
+            sort: ['-date_created'],
+            limit: -1
+        }));
 
-        return (rows || []).map(row => ({
+        return (stickers || []).map((row: any) => ({
             ...row,
-            user_created: row.user_id ? {
-                id: row.user_id,
-                first_name: row.first_name,
-                last_name: row.last_name,
-                avatar: row.avatar
+            id: Number(row.id),
+            user_created: row.user_created ? {
+                id: row.user_created.id,
+                first_name: row.user_created.first_name,
+                last_name: row.user_created.last_name,
+                avatar: row.user_created.avatar
             } : null
         }));
     } catch (error) {
-        
+        console.error('[Stickers-Action] Fetch failed:', error);
         return [];
     }
 }

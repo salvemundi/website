@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 
-import PageHeader from '@/components/ui/layout/PageHeader';
 import VerenigingManagementIsland from '@/components/islands/admin/vereniging/VerenigingManagementIsland';
 import { auth } from '@/server/auth/auth';
 import { getCommitteesInternal, getUniqueCommitteeMembersCountInternal } from '@/server/queries/admin-vereniging.queries';

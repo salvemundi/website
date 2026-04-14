@@ -16,6 +16,11 @@ interface PageHeaderProps {
     isLoading?: boolean;
     backLink?: string;
 }
+/**
+ * @deprecated PageHeader is legacy from V6/V7.1. 
+ * Per V7.12 "Industrial" standards, we prefer clean, content-first layouts without large hero banners.
+ * Use PublicPageShell or a simple semantic header instead.
+ */
 export default function PageHeader({
     title,
     backgroundImage = "",

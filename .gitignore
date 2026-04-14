@@ -74,3 +74,4 @@ initial_response.html
 test_head.html
 test-results/
 playwright-report/
+scripts/

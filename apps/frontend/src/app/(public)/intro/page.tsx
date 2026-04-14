@@ -77,12 +77,9 @@ export default async function IntroPage() {
     const isAuthenticated = !!session;
 
     return (
-        <PublicPageShell
-            title="INTRO - AANMELDEN"
-            backgroundImage="/img/backgrounds/intro-banner.jpg"
-            imageFilter="brightness(0.65)"
-        >
-            <section className="px-4 sm:px-6 lg:px-10 py-8 lg:py-10">
+        <PublicPageShell>
+            <h1 className="sr-only">Introductie</h1>
+            <section className="px-4 sm:px-6 lg:px-10 pt-8 pb-8 lg:py-10">
                 <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 max-w-7xl mx-auto w-full">
                     <div className="flex-1">
                         {isAuthenticated ? <IntroInfoParent /> : <IntroInfoStudent />}

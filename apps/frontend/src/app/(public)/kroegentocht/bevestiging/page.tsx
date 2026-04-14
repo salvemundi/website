@@ -1,6 +1,5 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
-import PageHeader from '@/components/ui/layout/PageHeader';
 import PaymentStatusIsland from '@/components/islands/activities/PaymentStatusIsland';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
@@ -19,13 +18,8 @@ export default async function KroegentochtConfirmationPage({ searchParams }: Pag
     const token = transaction_id || t;
     if (!token) {
         return (
-            <main className="min-h-screen bg-[var(--bg-main)]">
-                <PageHeader 
-                    title="BEVESTIGING"
-                    backgroundImage="/img/backgrounds/Kroto2025.jpg"
-                    variant="centered"
-                    contentPadding="py-16"
-                />
+            <main className="min-h-screen bg-[var(--bg-main)] pt-8">
+                <h1 className="sr-only">Bevestiging</h1>
                 <div className="container mx-auto px-4 py-32 max-w-2xl text-center">
                     <h1 className="text-2xl font-black text-white uppercase italic mb-4">Ongeldige Status</h1>
                     <p className="text-gray-400 mb-8">We kunnen de status van je betaling niet verifiëren zonder een geldige transactie.</p>
@@ -41,13 +35,8 @@ export default async function KroegentochtConfirmationPage({ searchParams }: Pag
     const isPaid = statusRes.success && statusRes.payment_status === 'paid';
 
     return (
-        <main className="min-h-screen bg-[var(--bg-main)]">
-            <PageHeader 
-                title="BEVESTIGING"
-                backgroundImage="/img/backgrounds/Kroto2025.jpg"
-                variant="centered"
-                contentPadding="py-16"
-            />
+        <main className="min-h-screen bg-[var(--bg-main)] pt-8">
+            <h1 className="sr-only">Bevestiging</h1>
             <div className="container mx-auto px-4 max-w-2xl mt-12 pb-24">
                 {isPaid ? (
                     <div className="flex flex-col items-center justify-center text-center p-12 bg-white/5 border border-white/5 rounded-3xl backdrop-blur-xl animate-in fade-in zoom-in duration-500">
