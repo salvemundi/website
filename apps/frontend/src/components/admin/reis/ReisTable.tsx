@@ -32,12 +32,11 @@ export default function ReisTable({
     onDelete = () => {},
     onResendEmail = () => {},
     signupActivitiesMap = {},
-    allowFinalPayments = false,
-    isLoading = false
+    allowFinalPayments = false
 }: ReisTableProps) {
     return (
         <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] overflow-hidden">
-            {!isLoading && filteredSignups.length === 0 ? (
+            {filteredSignups.length === 0 ? (
                 <div className="text-center py-20 px-4">
                     <AlertCircle className="h-12 w-12 text-[var(--beheer-text-muted)] mx-auto mb-4 opacity-20" />
                     <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-[10px]">Geen aanmeldingen gevonden</p>
@@ -56,34 +55,7 @@ export default function ReisTable({
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[var(--beheer-border)]/10">
-                            {isLoading ? (
-                                [...Array(8)].map((_, i) => (
-                                    <tr key={i} className="animate-pulse">
-                                        <td className="px-3 sm:px-6 py-5">
-                                            <div className="h-4 w-32 mb-2 bg-[var(--beheer-text-muted)]/10 rounded-sm skeleton-active" />
-                                            <div className="h-3 w-40 opacity-50 bg-[var(--beheer-text-muted)]/5 rounded-sm skeleton-active" />
-                                        </td>
-                                        <td className="px-3 sm:px-6 py-5 hidden sm:table-cell">
-                                            <div className="h-4 w-24 opacity-50 bg-[var(--beheer-text-muted)]/5 rounded-sm skeleton-active" />
-                                        </td>
-                                        <td className="px-3 sm:px-6 py-5 hidden md:table-cell">
-                                            <div className="h-6 w-20 rounded-full bg-[var(--beheer-text-muted)]/5 skeleton-active" />
-                                        </td>
-                                        <td className="px-3 sm:px-6 py-5">
-                                            <div className="h-7 w-28 rounded-full bg-[var(--beheer-text-muted)]/5 skeleton-active" />
-                                        </td>
-                                        <td className="px-3 sm:px-6 py-5 hidden sm:table-cell">
-                                            <div className="h-7 w-32 rounded-full opacity-50 bg-[var(--beheer-text-muted)]/5 skeleton-active" />
-                                        </td>
-                                        <td className="px-2 sm:px-6 py-5 text-right">
-                                            <div className="flex justify-end gap-3">
-                                                <div className="h-8 w-8 rounded-xl bg-[var(--beheer-text-muted)]/5 skeleton-active" />
-                                                <div className="h-8 w-8 rounded-xl bg-[var(--beheer-text-muted)]/5 skeleton-active" />
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : filteredSignups.map(signup => (
+                            {filteredSignups.map(signup => (
                                 <ReisTableRow 
                                     key={signup.id}
                                     signup={signup}

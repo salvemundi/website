@@ -46,34 +46,10 @@ export async function generateMetadata({ searchParams }: AdminReisPageProps): Pr
  */
 export default async function AdminReisPage({ searchParams }: AdminReisPageProps) {
     const { user } = await checkAdminAccess();
-
-    return (
-        <AdminPageShell
-            title="Reis Beheer"
-            subtitle="Beheer aanmeldingen, betalingen en activiteiten voor de studiereis"
-            backHref="/beheer"
-        >
-            <Suspense fallback={
-                <div className="space-y-0">
-                    <AdminReisSelectorIsland isLoading={true} />
-                    <div className="container mx-auto px-4 py-8 max-w-7xl">
-                        <AdminReisTableIsland isLoading={true} initialSignups={[]} initialSignupActivities={{}} trip={{} as any} />
-                    </div>
-                </div>
-            }>
-                <AdminReisDashboardContent searchParams={searchParams} />
-            </Suspense>
-        </AdminPageShell>
-    );
-}
-
-/**
- * Internal Server Component to handle the sequential data fetching.
- */
-async function AdminReisDashboardContent({ searchParams }: AdminReisPageProps) {
     const resolvedSearchParams = await searchParams;
     const tripIdParam = typeof resolvedSearchParams.tripId === 'string' ? resolvedSearchParams.tripId : undefined;
 
+    // Fetch initial trips and settings concurrently
     let trips: any[] = [];
     let reisSettings = { show: true };
     
@@ -86,11 +62,19 @@ async function AdminReisDashboardContent({ searchParams }: AdminReisPageProps) {
         trips = tripsRes || [];
         reisSettings = settingsRes || { show: true };
     } catch (e) {
-        
+        // Silently fail, NoTripsView will handle empty array
     }
 
     if (!trips || trips.length === 0) {
-        return <NoTripsView />;
+        return (
+            <AdminPageShell
+                title="Reis Beheer"
+                subtitle="Beheer aanmeldingen, betalingen en activiteiten voor de studiereis"
+                backHref="/beheer"
+            >
+                <NoTripsView />
+            </AdminPageShell>
+        );
     }
 
     const activeTripId = tripIdParam ? Number(tripIdParam) : trips[0].id;
@@ -100,47 +84,25 @@ async function AdminReisDashboardContent({ searchParams }: AdminReisPageProps) {
         notFound();
     }
 
-    return (
-        <div className="min-h-screen pb-20">
-            <AdminReisSelectorIsland 
-                trips={trips} 
-                initialSettings={reisSettings}
-            />
-
-            <div className="container mx-auto px-4 py-8 max-w-7xl">
-                {/* Nested suspense for the signups table to allow the selector to render early */}
-                <Suspense fallback={<AdminReisTableIsland isLoading={true} initialSignups={[]} initialSignupActivities={{}} trip={activeTrip} />} key={activeTrip.id}>
-                    <AdminReisSignupsTable tripId={activeTrip.id} trip={activeTrip} />
-                </Suspense>
-            </div>
-        </div>
-    );
-}
-
-
-import { getTripSignups, getTripSignupActivitiesAction } from '@/server/actions/reis-admin-signups.actions';
-
-async function AdminReisSignupsTable({ tripId, trip }: { tripId: number, trip: any }) {
-    // Fetch signups and their activities in parallel
+    // Now fetch signups and activities for the active trip concurrently
     let signups: any[] = [];
     let allSignupActivities: any[] = [];
     
     try {
         [signups, allSignupActivities] = await Promise.all([
-            getTripSignups(tripId),
-            getTripSignupActivitiesAction(tripId)
+            getTripSignups(activeTrip.id),
+            getTripSignupActivitiesAction(activeTrip.id)
         ]);
     } catch (e: any) {
-        
+        // Log or handle error
     }
 
-    // Initialize map for all signups to avoid "Loading..." state in UI
+    // Group activities by signupId
     const activitiesMap: Record<number, any[]> = {};
     (signups || []).forEach(s => {
         activitiesMap[s.id] = [];
     });
 
-    // Group activities by signupId
     (allSignupActivities || []).forEach((sa: any) => {
         const signupId = (sa.trip_signup_id && typeof sa.trip_signup_id === 'object') ? (sa.trip_signup_id as any).id : sa.trip_signup_id;
         if (activitiesMap[signupId]) {
@@ -157,14 +119,31 @@ async function AdminReisSignupsTable({ tripId, trip }: { tripId: number, trip: a
     };
 
     return (
-        <AdminReisTableIsland
-            initialSignups={(signups || []).map(s => ({ ...s, date_created: s.created_at })) as any}
-            initialSignupActivities={activitiesMap}
-            trip={trip}
-            stats={stats}
-        />
+        <AdminPageShell
+            title="Reis Beheer"
+            subtitle="Beheer aanmeldingen, betalingen en activiteiten voor de studiereis"
+            backHref="/beheer"
+        >
+            <div className="min-h-screen pb-20">
+                <AdminReisSelectorIsland 
+                    trips={trips} 
+                    initialSettings={reisSettings}
+                />
+
+                <div className="container mx-auto px-4 py-8 max-w-7xl">
+                    <AdminReisTableIsland
+                        initialSignups={(signups || []).map(s => ({ ...s, date_created: s.created_at })) as any}
+                        initialSignupActivities={activitiesMap}
+                        trip={activeTrip}
+                        stats={stats}
+                    />
+                </div>
+            </div>
+        </AdminPageShell>
     );
 }
+
+import { getTripSignups, getTripSignupActivitiesAction } from '@/server/actions/reis-admin-signups.actions';
 
 function NoTripsView() {
     return (

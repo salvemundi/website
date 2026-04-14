@@ -142,7 +142,7 @@ export default function LedenOverzichtIsland({
                 </button>
             </div>
 
-            <AdminStatsBar stats={adminStats} isLoading={isLoading} />
+            <AdminStatsBar stats={adminStats} />
 
             <LedenFilters 
                 isLoading={isLoading}

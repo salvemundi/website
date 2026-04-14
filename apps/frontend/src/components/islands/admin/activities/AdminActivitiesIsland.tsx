@@ -47,7 +47,6 @@ interface AdminActivity {
 }
 
 interface Props {
-    isLoading?: boolean;
     initialEvents?: AdminActivity[];
     committees?: any[];
     userId?: string;
@@ -55,7 +54,6 @@ interface Props {
 }
 
 export default function AdminActivitiesIsland({
-    isLoading = false,
     initialEvents = [],
     committees = [],
     userCommittees = [],
@@ -115,7 +113,6 @@ export default function AdminActivitiesIsland({
     }, [committees]);
 
     const filteredEvents = useMemo(() => {
-        if (isLoading) return Array(4).fill({ id: 0, name: 'Loading Activity...', event_date: new Date().toISOString() });
         let result = events;
         const now = new Date();
         if (filter === 'upcoming') result = result.filter(e => new Date(e.event_date) >= now);
@@ -126,17 +123,12 @@ export default function AdminActivitiesIsland({
         }
         if (selectedCommittee !== 'all') result = result.filter(e => String(e.committee_id) === selectedCommittee);
         return result;
-    }, [events, filter, searchQuery, selectedCommittee, isLoading]);
+    }, [events, filter, searchQuery, selectedCommittee]);
 
     const displayedEvents = pageSize === -1 ? filteredEvents : filteredEvents.slice(0, pageSize);
     const superAdmin = useMemo(() => isSuperAdmin(userCommittees), [userCommittees]);
 
     const stats = useMemo(() => {
-        if (isLoading) return [
-            { label: 'Upcoming', value: 0, icon: Clock, trend: 'Activities' },
-            { label: 'Total', value: 0, icon: Calendar, trend: 'Events' },
-            { label: 'Sign-ups', value: 0, icon: Users, trend: 'Registrations' },
-        ];
         const upcomingCount = filteredEvents.filter(e => new Date(e.event_date) >= new Date()).length;
         const totalSignups = filteredEvents.reduce((acc, curr) => acc + (curr.signup_count || 0), 0);
         return [
@@ -144,14 +136,13 @@ export default function AdminActivitiesIsland({
             { label: 'Total', value: filteredEvents.length, icon: Calendar, trend: 'Events' },
             { label: 'Sign-ups', value: totalSignups, icon: Users, trend: 'Registrations' },
         ];
-    }, [filteredEvents, isLoading]);
+    }, [filteredEvents]);
 
     return (
-        <div className={`container mx-auto px-4 py-8 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700 ${isLoading ? 'skeleton-active' : ''}`} aria-busy={isLoading}>
+        <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="flex justify-end mb-8">
                 <button
                     onClick={() => router.push('/beheer/activiteiten/nieuw')}
-                    disabled={isLoading}
                     className="bg-[var(--beheer-accent)] text-white px-8 py-2 rounded-[var(--beheer-radius)] font-black uppercase tracking-widest text-[10px] shadow-[var(--shadow-glow)] transition-all hover:opacity-90 active:scale-95 flex items-center gap-2 group disabled:opacity-50"
                 >
                     <Plus className="h-4 w-4" />
@@ -159,10 +150,9 @@ export default function AdminActivitiesIsland({
                 </button>
             </div>
 
-            <AdminStatsBar stats={stats} isLoading={isLoading} />
+            <AdminStatsBar stats={stats} />
 
             <ActivityFilters 
-                isLoading={isLoading}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
                 filter={filter}
@@ -175,12 +165,11 @@ export default function AdminActivitiesIsland({
             />
 
             <div className="grid grid-cols-1 gap-8 mt-10">
-                {displayedEvents.map((event, idx) => (
+                {displayedEvents.map((event) => (
                     <ActivityCard 
-                        key={isLoading ? `loading-${idx}` : event.id}
+                        key={event.id}
                         event={event}
-                        isLoading={isLoading}
-                        canEdit={!isLoading && (superAdmin || (event.committee_id !== null && userCommittees.some(c => String(c.id) === String(event.committee_id))))}
+                        canEdit={superAdmin || (event.committee_id !== null && userCommittees.some(c => String(c.id) === String(event.committee_id)))}
                         isSuperAdmin={superAdmin}
                         isPending={isPending}
                         isSending={isSending}

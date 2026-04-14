@@ -31,8 +31,7 @@ export default function AdminReisTableIsland({
     initialSignups = [], 
     initialSignupActivities = {}, 
     trip, 
-    stats,
-    isLoading = false 
+    stats
 }: AdminReisTableIslandProps) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [signups, setSignups] = useState<TripSignup[]>(initialSignups);
@@ -70,7 +69,6 @@ export default function AdminReisTableIsland({
 
     const handleStatusChange = async (id: number, newStatus: string) => {
         setActionStates(prev => ({ ...prev, status: new Set(prev.status).add(id) }));
-        const signup = signups.find(s => s.id === id);
 
         try {
             const res = await updateSignupStatus(id, newStatus);
@@ -81,7 +79,6 @@ export default function AdminReisTableIsland({
                 showToast(res.error || 'Fout bij bijwerken status.', 'error');
             }
         } catch (error) {
-            
             showToast('Fout bij bijwerken status.', 'error');
         } finally {
             setActionStates(prev => {
@@ -105,7 +102,6 @@ export default function AdminReisTableIsland({
                 showToast(res.error || 'Fout bij verwijderen aanmelding.', 'error');
             }
         } catch (error) {
-            
             showToast('Fout bij verwijderen aanmelding.', 'error');
         } finally {
             setActionStates(prev => {
@@ -150,7 +146,6 @@ export default function AdminReisTableIsland({
             }
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Onbekende fout';
-            
             showToast(`Fout bij verzenden email: ${message}`, 'error');
         } finally {
             setSendingEmailTo(null);
@@ -228,29 +223,19 @@ export default function AdminReisTableIsland({
         return statusMap[status] || { label: status, color: 'bg-[var(--beheer-text-muted)]/10 text-[var(--beheer-text-muted)]' };
     };
 
-    const displayStats = useMemo(() => {
-        if (isLoading) return [
-            { label: 'Aanmeldingen', value: 0, icon: Users },
-            { label: 'Wachtlijst', value: 0, icon: UserX },
-            { label: 'Bevestigd', value: 0, icon: UserCheck },
-            { label: 'Aanbetaling', value: 0, icon: Plane },
-            { label: 'Volledig', value: 0, icon: Plane }
-        ];
-        return [
-            { label: 'Aanmeldingen', value: stats?.total || 0, icon: Users },
-            { label: 'Wachtlijst', value: stats?.waitlist || 0, icon: UserX },
-            { label: 'Bevestigd', value: stats?.confirmed || 0, icon: UserCheck },
-            { label: 'Aanbetaling', value: stats?.depositPaid || 0, icon: Plane },
-            { label: 'Volledig', value: stats?.fullPaid || 0, icon: Plane }
-        ];
-    }, [stats, isLoading]);
+    const displayStats = [
+        { label: 'Aanmeldingen', value: stats?.total || 0, icon: Users },
+        { label: 'Wachtlijst', value: stats?.waitlist || 0, icon: UserX },
+        { label: 'Bevestigd', value: stats?.confirmed || 0, icon: UserCheck },
+        { label: 'Aanbetaling', value: stats?.depositPaid || 0, icon: Plane },
+        { label: 'Volledig', value: stats?.fullPaid || 0, icon: Plane }
+    ];
 
     return (
-        <div className={`space-y-8 ${isLoading ? 'skeleton-active' : ''}`} aria-busy={isLoading}>
-            <AdminStatsBar stats={displayStats} isLoading={isLoading} />
+        <div className="space-y-8">
+            <AdminStatsBar stats={displayStats} />
 
             <ReisFilters 
-                isLoading={isLoading}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
                 statusFilter={statusFilter}
@@ -262,7 +247,6 @@ export default function AdminReisTableIsland({
             />
 
             <ReisTable 
-                isLoading={isLoading}
                 filteredSignups={filteredSignups}
                 expandedIds={expandedIds}
                 onToggleExpand={toggleExpand}

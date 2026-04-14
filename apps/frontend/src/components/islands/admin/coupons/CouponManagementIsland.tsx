@@ -127,7 +127,7 @@ export default function CouponManagementIsland({
             />
 
             <div className={`container mx-auto px-4 py-8 max-w-7xl`}>
-                <AdminStatsBar stats={adminStats} isLoading={isLoading} />
+                <AdminStatsBar stats={adminStats} />
 
                 {showForm && (
                     <CouponForm 

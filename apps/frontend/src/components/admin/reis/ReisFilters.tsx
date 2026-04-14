@@ -23,28 +23,9 @@ export default function ReisFilters({
     roleFilter,
     onRoleChange,
     onDownloadExcel,
-    hasResults,
-    isLoading = false
+    hasResults
 }: ReisFiltersProps) {
     const router = useRouter();
-
-    if (isLoading) {
-        return (
-            <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm p-4 sm:p-6 mb-6 border border-[var(--beheer-border)] animate-pulse">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4">
-                    <div className="md:col-span-2">
-                        <div className="w-full h-10 rounded-[var(--beheer-radius)] bg-[var(--beheer-text-muted)]/10 skeleton-active" />
-                    </div>
-                    <div className="w-full h-10 rounded-[var(--beheer-radius)] bg-[var(--beheer-text-muted)]/10 skeleton-active" />
-                    <div className="w-full h-10 rounded-[var(--beheer-radius)] bg-[var(--beheer-text-muted)]/10 skeleton-active" />
-                </div>
-                <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mt-6">
-                    <div className="h-10 w-40 rounded-[var(--beheer-radius)] bg-[var(--beheer-text-muted)]/10 skeleton-active" />
-                    <div className="h-10 w-40 rounded-[var(--beheer-radius)] bg-[var(--beheer-text-muted)]/10 skeleton-active" />
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm p-4 sm:p-6 mb-6 border border-[var(--beheer-border)]">

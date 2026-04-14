@@ -228,7 +228,7 @@ export default function ActiviteitAanmeldingenIsland({
             />
 
             <div className={`container mx-auto px-4 py-8 max-w-7xl ${isLoading ? 'animate-pulse' : 'animate-in fade-in slide-in-from-bottom-4 duration-700'}`}>
-                <AdminStatsBar stats={adminStats} isLoading={isLoading} />
+                <AdminStatsBar stats={adminStats} />
 
                 {/* Search Bar */}
                 <div className="mb-10 relative group max-w-xl">

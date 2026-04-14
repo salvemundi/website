@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import type { Metadata } from 'next';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
@@ -11,26 +11,15 @@ export const metadata: Metadata = {
     title: 'Beheer Activiteiten | SV Salve Mundi',
 };
 
-async function ActivitiesDataLoader({ session }: { session: any }) {
-    const [initialEvents, committees] = await Promise.all([
-        getAdminActivities(undefined, 'all').catch(() => []),
-        getCommittees().catch(() => [])
-    ]);
-    
-    return (
-        <AdminActivitiesIsland 
-            initialEvents={initialEvents as any} 
-            committees={committees as any}
-            userId={session?.user?.id}
-            userCommittees={(session?.user as any)?.committees || []}
-        />
-    );
-}
-
 export default async function AdminActiviteitenPage() {
     const session = await auth.api.getSession({
         headers: await headers()
     });
+
+    const [initialEvents, committees] = await Promise.all([
+        getAdminActivities(undefined, 'all').catch(() => []),
+        getCommittees().catch(() => [])
+    ]);
 
     return (
         <AdminPageShell
@@ -38,9 +27,12 @@ export default async function AdminActiviteitenPage() {
             subtitle="Organiseer en beheer alle activiteiten van Salve Mundi"
             backHref="/beheer"
         >
-            <Suspense fallback={<AdminActivitiesIsland isLoading={true} />}>
-                <ActivitiesDataLoader session={session} />
-            </Suspense>
+            <AdminActivitiesIsland 
+                initialEvents={initialEvents as any} 
+                committees={committees as any}
+                userId={session?.user?.id}
+                userCommittees={(session?.user as any)?.committees || []}
+            />
         </AdminPageShell>
     );
 }

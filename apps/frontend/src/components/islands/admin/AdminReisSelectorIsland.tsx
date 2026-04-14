@@ -20,8 +20,7 @@ interface AdminReisSelectorIslandProps {
 
 export default function AdminReisSelectorIsland({ 
     trips = [], 
-    initialSettings = { show: false },
-    isLoading = false 
+    initialSettings = { show: false }
 }: AdminReisSelectorIslandProps) {
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
@@ -38,7 +37,6 @@ export default function AdminReisSelectorIsland({
     };
 
     const handleToggleVisibility = () => {
-        if (isLoading) return;
         startTransition(async () => {
             try {
                 const result = await toggleReisVisibility();
@@ -50,30 +48,21 @@ export default function AdminReisSelectorIsland({
                     showToast(result.error || 'Fout bij bijwerken zichtbaarheid', 'error');
                 }
             } catch (err) {
-                
                 showToast('Er is een onverwachte fout opgetreden', 'error');
             }
         });
     };
 
-    const activeTrip = trips.find(t => t.id === selectedId) || trips[0];
-
-    const displayedTrips = isLoading 
-        ? Array(1).fill({ id: 0, name: 'Loading Trip...' }) 
-        : trips;
-
     return (
-        <div className={`container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700 ${isLoading ? 'skeleton-active' : ''}`} aria-busy={isLoading}>
+        <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700">
             <div className="flex flex-wrap items-center gap-4">
                 <div className="relative group min-w-[200px]">
                     <select
-                        value={isLoading ? 0 : selectedId}
+                        value={selectedId}
                         onChange={handleChange}
                         className="beheer-select"
-                        disabled={isLoading}
                     >
-                        {displayedTrips.map(trip => {
-                            if (isLoading) return <option key={0} value={0}>{trip.name}</option>;
+                        {trips.map(trip => {
                             const displayStartDate = trip.start_date || trip.event_date;
                             if (!displayStartDate) return <option key={trip.id} value={trip.id} className="bg-[var(--beheer-card-bg)]">{trip.name}</option>;
 
@@ -97,13 +86,11 @@ export default function AdminReisSelectorIsland({
                     isVisible={settings.show}
                     onToggle={handleToggleVisibility}
                     isPending={isPending}
-                    disabled={isLoading}
                 />
 
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => router.push('/beheer/reis/mail')}
-                        disabled={isLoading}
                         className="flex items-center justify-center gap-2 px-8 py-2 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-[10px] font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50"
                     >
                         <Plane className="h-4 w-4 rotate-45 text-[var(--beheer-accent)]" />
@@ -112,7 +99,6 @@ export default function AdminReisSelectorIsland({
 
                     <button
                         onClick={() => router.push('/beheer/reis/activiteiten')}
-                        disabled={isLoading}
                         className="flex items-center justify-center gap-2 px-8 py-2 bg-[var(--beheer-accent)] text-white font-black text-[10px] uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 disabled:opacity-50"
                     >
                         <Plane className="h-4 w-4" />
@@ -121,7 +107,6 @@ export default function AdminReisSelectorIsland({
                     
                     <button
                         onClick={() => router.push('/beheer/reis/instellingen')}
-                        disabled={isLoading}
                         className="flex items-center justify-center gap-2 px-8 py-2 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-[10px] font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50"
                     >
                         <Edit2 className="h-4 w-4" />
