@@ -25,8 +25,8 @@ export default async function ImpersonatePage() {
         <div className="w-full">
             <ImpersonateIsland 
                 activeToken={activeToken} 
-                impersonatedName={impersonation?.name || null}
-                impersonatedCommittees={impersonation?.committees || []}
+                impersonatedName={impersonation?.targetName || null}
+                impersonatedCommittees={impersonation?.targetCommittees || []}
             />
         </div>
     );

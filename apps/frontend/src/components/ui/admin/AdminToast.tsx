@@ -29,24 +29,24 @@ export default function AdminToast({ toast, onClose }: AdminToastProps) {
                 >
                     <div className={`
                         px-8 py-5 rounded-[2rem] shadow-2xl flex items-center gap-5 backdrop-blur-xl border border-white/10 relative overflow-hidden group
-                        ${toast.type === 'success' ? 'bg-[var(--beheer-card-bg)]/90 border-l-[12px] border-l-emerald-500' : 
-                          toast.type === 'error' ? 'bg-[var(--beheer-card-bg)]/90 border-l-[12px] border-l-red-500' :
-                          toast.type === 'loading' ? 'bg-[var(--beheer-card-bg)]/90 border-l-[12px] border-l-amber-500' :
+                        ${toast.type === 'success' ? 'bg-[var(--beheer-card-bg)]/90 border-l-[12px] border-l-[var(--theme-success)]' : 
+                          toast.type === 'error' ? 'bg-[var(--beheer-card-bg)]/90 border-l-[12px] border-l-[var(--theme-error)]' :
+                          toast.type === 'loading' ? 'bg-[var(--beheer-card-bg)]/90 border-l-[12px] border-l-[var(--theme-warning)]' :
                           'bg-[var(--beheer-card-bg)]/90 border-l-[12px] border-l-[var(--beheer-accent)]'}
                     `}>
                         {/* Background Glow */}
                         <div className={`absolute -right-10 -top-10 h-32 w-32 blur-[60px] opacity-20 rounded-full transition-colors duration-500 pointer-events-none ${
-                            toast.type === 'success' ? 'bg-emerald-500' : 
-                            toast.type === 'error' ? 'bg-red-500' : 
-                            toast.type === 'loading' ? 'bg-amber-500' :
+                            toast.type === 'success' ? 'bg-[var(--theme-success)]' : 
+                            toast.type === 'error' ? 'bg-[var(--theme-error)]' : 
+                            toast.type === 'loading' ? 'bg-[var(--theme-warning)]' :
                             'bg-[var(--beheer-accent)]'
                         }`} />
 
                         <div className={`
                             h-14 w-14 shrink-0 rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110 duration-500
-                            ${toast.type === 'success' ? 'bg-emerald-500/10 text-emerald-500' : 
-                              toast.type === 'error' ? 'bg-red-500/10 text-red-500' : 
-                              toast.type === 'loading' ? 'bg-amber-500/10 text-amber-500' :
+                            ${toast.type === 'success' ? 'bg-[var(--theme-success)]/10 text-[var(--theme-success)]' : 
+                              toast.type === 'error' ? 'bg-[var(--theme-error)]/10 text-[var(--theme-error)]' : 
+                              toast.type === 'loading' ? 'bg-[var(--theme-warning)]/10 text-[var(--theme-warning)]' :
                               'bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)]'}
                         `}>
                             {toast.type === 'success' && <CheckCircle2 className="h-6 w-6" />}

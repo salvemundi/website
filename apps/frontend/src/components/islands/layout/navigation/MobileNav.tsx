@@ -11,11 +11,11 @@ interface MobileNavProps {
     user: any;
     isAuthenticated: boolean;
     navItems: { name: string; href: string; icon: IconName }[];
-    isCommitteeMember: boolean;
+    canAccessAdmin: boolean;
     onLogout: () => void;
 }
 
-export function MobileNav({ user, isAuthenticated, navItems, isCommitteeMember }: Omit<MobileNavProps, 'onLogout'>) {
+export function MobileNav({ user, isAuthenticated, navItems, canAccessAdmin }: Omit<MobileNavProps, 'onLogout'>) {
     const [menuOpen, setMenuOpen] = useState(false);
     const pathname = usePathname();
     const router = useRouter();
@@ -60,7 +60,7 @@ export function MobileNav({ user, isAuthenticated, navItems, isCommitteeMember }
                 user={user}
                 isAuthenticated={isAuthenticated}
                 navItems={navItems}
-                isCommitteeMember={isCommitteeMember}
+                canAccessAdmin={canAccessAdmin}
                 onLogout={onLogout}
                 mounted={true}
             />

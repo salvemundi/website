@@ -43,7 +43,7 @@ export default function AdminUnauthorized({
                         Geen Toegang
                     </h2>
                     
-                    <p className="text-lg text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-[10px] leading-relaxed mb-12">
+                    <p className="text-sm md:text-base text-[var(--beheer-text-muted)] leading-relaxed mb-12 max-w-md mx-auto">
                         {description}
                     </p>
                     

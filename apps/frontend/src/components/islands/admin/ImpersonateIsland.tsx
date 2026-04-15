@@ -126,7 +126,7 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                                     value={token}
                                     onChange={(e) => setToken(e.target.value)}
                                     placeholder="Plak hier de token..."
-                                    className={`w-full bg-[var(--beheer-card-bg)] border rounded-2xl px-6 py-4 text-[var(--beheer-text)] font-semibold placeholder:text-[var(--beheer-text-muted)] focus:outline-none focus:ring-2 transition-all ${status === 'error' ? 'border-[var(--beheer-inactive)]/50 focus:ring-[var(--beheer-inactive)]/20' : 'border-[var(--beheer-border)] focus:ring-[var(--beheer-accent)]/20 focus:border-[var(--beheer-accent)]'}`}
+                                    className={`w-full bg-[var(--beheer-card-bg)] border rounded-[var(--beheer-radius)] px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] text-[var(--beheer-text)] font-semibold placeholder:text-[var(--beheer-text-muted)] focus:outline-none focus:ring-2 transition-all ${status === 'error' ? 'border-[var(--beheer-inactive)]/50 focus:ring-[var(--beheer-inactive)]/20' : 'border-[var(--beheer-border)] focus:ring-[var(--beheer-accent)]/20 focus:border-[var(--beheer-accent)]'}`}
                                     disabled={isPending}
                                     autoComplete="off"
                                     suppressHydrationWarning
@@ -137,7 +137,7 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                         <button
                             onClick={handleSave}
                             disabled={!token || isPending}
-                            className="w-full py-4 rounded-2xl bg-[var(--beheer-accent)] text-white font-black uppercase tracking-widest text-sm shadow-[var(--shadow-glow)] hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                            className="w-full py-[var(--beheer-btn-py)] rounded-[var(--beheer-radius)] bg-[var(--beheer-accent)] text-white font-black uppercase tracking-widest text-sm shadow-[var(--shadow-glow)] hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-3"
                         >
                             {isPending ? (
                                 <><Loader2 className="h-5 w-5 animate-spin" /> Controleren...</>

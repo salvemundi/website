@@ -10,10 +10,10 @@ import { ROUTES } from '@/lib/config/routes';
 
 interface NavUserSectionProps {
     initialSession: any;
-    isCommitteeMember: boolean;
+    canAccessAdmin: boolean;
 }
 
-export function NavUserSection({ initialSession, isCommitteeMember }: NavUserSectionProps) {
+export function NavUserSection({ initialSession, canAccessAdmin }: NavUserSectionProps) {
     const { data: sessionData } = authClient.useSession();
     const session = sessionData || initialSession;
     const user = session?.user;
@@ -21,7 +21,7 @@ export function NavUserSection({ initialSession, isCommitteeMember }: NavUserSec
 
     return (
         <div className="flex items-center justify-end gap-3 shrink-0 min-w-[200px] flex-nowrap">
-            {isCommitteeMember && (
+            {canAccessAdmin && (
                 <Link
                     href={ROUTES.ADMIN}
                     className="flex items-center gap-2 rounded-full bg-[var(--color-purple-500)] text-[var(--color-white)] px-3 py-1.5 h-8 text-sm font-medium shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg shrink-0"

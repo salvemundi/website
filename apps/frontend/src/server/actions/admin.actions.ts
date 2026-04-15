@@ -87,7 +87,7 @@ export async function checkAdminAccess() {
     if (!user.name && (user.first_name || user.last_name)) {
         user.name = `${user.first_name || ''} ${user.last_name || ''}`.trim();
     }
-    const impersonation = (session as any).impersonatedBy || null;
+    const impersonatedBy = (session as any).impersonatedBy || null;
 
     const isIct = user.isICT || false;
     const isBestuur = user.isAdmin || false;
@@ -97,9 +97,14 @@ export async function checkAdminAccess() {
         isAuthorized,
         user,
         isIct,
-        impersonation: impersonation ? {
-            ...impersonation,
-            committees: user.committees?.map((c: any) => c.name) || []
+        impersonation: impersonatedBy ? {
+            id: impersonatedBy.id,
+            name: impersonatedBy.name,
+            email: impersonatedBy.email,
+            isNormallyAdmin: impersonatedBy.isNormallyAdmin,
+            // For the UI, we might want to know who we are impersonating
+            targetName: user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim(),
+            targetCommittees: user.committees?.map((c: any) => c.name) || []
         } : null
     };
 }
@@ -219,7 +224,10 @@ export async function setImpersonateToken(token: string) {
     const { isAuthorized } = await checkAdminAccess();
     if (!isAuthorized) throw new Error("Geen toegang");
     try {
-        const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL || "https://cms.salvemundi.nl";
+        const directusUrl = process.env.DIRECTUS_SERVICE_URL;
+        if (!directusUrl) {
+            return { success: false, error: "Directus service URL is niet geconfigureerd." };
+        }
         const testClient = createDirectus(directusUrl)
             .with(staticToken(token))
             .with(rest());
@@ -297,10 +305,20 @@ export async function setImpersonateToken(token: string) {
 }
 
 export async function clearImpersonateToken() {
-    const { isAuthorized } = await checkAdminAccess();
-    if (!isAuthorized) throw new Error("Unauthorized");
-
     const cookieStore = await cookies();
+    const testToken = cookieStore.get(TEST_TOKEN_COOKIE)?.value;
+
+    if (!testToken) {
+        return { success: false, error: "Geen actieve testsessie gevonden." };
+    }
+
+    // We verify that the current session is indeed being impersonated.
+    // This ensures a 'random' user without an active impersonation can't trigger this logic.
+    const { impersonation } = await checkAdminAccess();
+    if (!impersonation) {
+        return { success: false, error: "Je bent niet in test modus." };
+    }
+
     cookieStore.delete(TEST_TOKEN_COOKIE);
     cookieStore.delete(IMPERSONATION_INFO_COOKIE);
 
@@ -311,7 +329,6 @@ export async function clearImpersonateToken() {
         await redis.del(`session:${sessionToken}`);
     }
 
-    const testToken = cookieStore.get(TEST_TOKEN_COOKIE)?.value;
     if (testToken) {
         await redis.del(`impersonation:${testToken}`);
     }

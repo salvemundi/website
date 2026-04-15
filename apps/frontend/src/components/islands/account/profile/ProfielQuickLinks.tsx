@@ -6,10 +6,10 @@ import { Tile, QuickLink } from './ProfielUI';
 
 interface ProfielQuickLinksProps {
     user?: any;
-    isCommitteeMember?: boolean;
+    canAccessAdmin?: boolean;
 }
 
-export default function ProfielQuickLinks({ user = {}, isCommitteeMember = false }: ProfielQuickLinksProps) {
+export default function ProfielQuickLinks({ user = {}, canAccessAdmin = false }: ProfielQuickLinksProps) {
     return (
         <Tile title="Snelle links" icon={<ChevronRight className="h-5 w-5" />} className="h-fit">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -29,7 +29,7 @@ export default function ProfielQuickLinks({ user = {}, isCommitteeMember = false
                     href="/profiel/whatsapp"
                     locked={user.membership_status !== "active"}
                 />
-                {isCommitteeMember && (
+                {canAccessAdmin && (
                     <QuickLink
                         label="Admin panel"
                         icon={<Shield className="h-6 w-6" />}

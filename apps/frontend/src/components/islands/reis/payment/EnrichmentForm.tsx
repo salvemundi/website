@@ -12,6 +12,7 @@ import {
 import { DateInput } from '@/shared/ui/DateInput';
 import { type ReisPaymentEnrichment } from '@salvemundi/validations/schema/reis.zod';
 import { type Trip } from '@salvemundi/validations/schema/admin-reis.zod';
+import { formatPhoneNumber } from '@/lib/utils/phone-utils';
 
 interface EnrichmentFormProps {
     trip: Trip;
@@ -125,7 +126,7 @@ export function EnrichmentForm({ trip, enrichment, setEnrichment }: EnrichmentFo
                             <input 
                                 type="tel"
                                 placeholder="+31 6 12345678"
-                                value={enrichment.phone_number}
+                                value={formatPhoneNumber(enrichment.phone_number)}
                                 onChange={(e) => setEnrichment({...enrichment, phone_number: e.target.value})}
                                 className="w-full bg-[var(--bg-main)] border border-[var(--border-color)]/40 rounded-xl px-4 py-3 text-[var(--text-main)] focus:outline-none focus:border-theme-purple/50 transition-all font-medium"
                             />

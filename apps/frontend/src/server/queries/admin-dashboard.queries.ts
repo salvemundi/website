@@ -52,7 +52,7 @@ export async function getDashboardStatsInternal(): Promise<DashboardStats> {
             FROM trip_signups 
             WHERE status != 'cancelled' AND trip_id = (
                 SELECT id FROM trips 
-                WHERE (end_date >= $1 OR event_date >= $1 OR start_date >= $1)
+                WHERE (end_date >= $1 OR start_date >= $1)
                 ORDER BY start_date ASC 
                 LIMIT 1
             )
