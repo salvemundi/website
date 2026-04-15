@@ -7,7 +7,7 @@ import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 
 export const metadata = {
     title: 'Mijn Profiel | SV Salve Mundi',
-    description: 'Beheer je lidmaatschap, bekijk je inschrijvingen en pas je gegevens aan.',
+    description: 'Beheer je lidmaatschap, bekijk je aanmeldingen en pas je gegevens aan.',
 };
 
 /**
