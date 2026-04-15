@@ -26,7 +26,6 @@ export default function AdminPageShell({
         <div className="w-full">
             {!hideToolbar && (
                 <AdminToolbar 
-                    isLoading={false}
                     title={title}
                     subtitle={subtitle}
                     backHref={backHref}

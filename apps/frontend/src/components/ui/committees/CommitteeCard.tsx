@@ -7,7 +7,6 @@ import type { Committee } from '@salvemundi/validations/schema/committees.zod';
 import Image from 'next/image';
 
 interface CommitteeCardProps {
-    isLoading?: boolean;
     committee?: Committee;
 }
 
@@ -17,10 +16,9 @@ function cleanCommitteeName(name: string): string {
 }
 
 /**
- * CommitteeCard: Zero-Drift modernization.
- * Removed manual skeleton branches. Uses .skeleton-active for premium masking.
+ * CommitteeCard: Zero-Skeleton SSR standard.
  */
-export const CommitteeCard: React.FC<CommitteeCardProps> = ({ isLoading = false, committee = {} as Committee }) => {
+export const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee = {} as Committee }) => {
     const cleanedName = cleanCommitteeName(committee.name || '');
     const isBestuur = cleanedName.toLowerCase().includes('bestuur');
     const slug = slugify(cleanedName);
@@ -38,11 +36,9 @@ export const CommitteeCard: React.FC<CommitteeCardProps> = ({ isLoading = false,
     return (
         <div className={`${isBestuur ? 'md:col-span-2' : ''}`}>
             <NextLink
-                href={isLoading ? '#' : `/vereniging/commissies/${slug}`}
+                href={`/vereniging/commissies/${slug}`}
                 className={`group flex h-full flex-col overflow-hidden rounded-[2rem] bg-[var(--bg-card)] dark:border dark:border-white/10 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl 
-                    ${isBestuur ? 'ring-4 ring-[var(--color-purple-500)]/20 shadow-purple-500/10' : ''}
-                    ${isLoading ? 'skeleton-active pointer-events-none' : ''}`} 
-                aria-busy={isLoading}
+                    ${isBestuur ? 'ring-4 ring-[var(--color-purple-500)]/20 shadow-purple-500/10' : ''}`}
             >
                 {/* Image Header */}
                 <div className="relative h-56 w-full overflow-hidden bg-gradient-to-br from-[var(--color-purple-500)]/10 to-[var(--color-purple-900)]/10">
@@ -55,7 +51,7 @@ export const CommitteeCard: React.FC<CommitteeCardProps> = ({ isLoading = false,
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
                     
-                    {isBestuur && !isLoading && (
+                    {isBestuur && (
                         <div className="absolute right-4 top-4 rounded-full bg-[var(--color-purple-100)] px-3 py-1 text-xs font-bold text-[var(--color-purple-700)] shadow-lg uppercase tracking-wider">
                             Huidig Bestuur
                         </div>
@@ -67,33 +63,31 @@ export const CommitteeCard: React.FC<CommitteeCardProps> = ({ isLoading = false,
                     <div className="flex items-start justify-between gap-4 mb-4">
                         <div className="flex-1 min-w-0">
                             <h3 className="text-2xl font-black tracking-tight text-[var(--text-main)] group-hover:text-[var(--color-purple-500)] transition-colors truncate">
-                                {cleanedName || 'Loading Committee...'}
+                                {cleanedName || 'Commissie'}
                             </h3>
                             
                             <div className="flex items-center gap-2 mt-1">
                                 <div className="flex -space-x-2">
-                                    {(isLoading ? [1, 2, 3] : members.slice(0, 3)).map((_, i) => (
+                                    {members.slice(0, 3).map((member, i) => (
                                         <div key={i} className="relative h-6 w-6 rounded-full border-2 border-[var(--bg-card)] overflow-hidden bg-slate-200 dark:bg-slate-800">
-                                            {!isLoading && <Image src={members[i]?.avatar} alt="Member" fill className="object-cover" unoptimized />}
+                                            <Image src={member.avatar} alt="Member" fill className="object-cover" unoptimized />
                                         </div>
                                     ))}
                                 </div>
                                 <span className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest flex items-center gap-1.5 ml-1">
                                     <Users className="h-3 w-3" />
-                                    {isLoading ? '...' : (committee.members?.length || 0)} Leden
+                                    {(committee.members?.length || 0)} Leden
                                 </span>
                             </div>
                         </div>
 
-                        {!isLoading && (
-                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--bg-soft)] text-[var(--color-purple-500)] transition group-hover:bg-[var(--color-purple-500)] group-hover:text-white">
-                                <ChevronRight className="h-6 w-6" />
-                            </div>
-                        )}
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--bg-soft)] text-[var(--color-purple-500)] transition group-hover:bg-[var(--color-purple-500)] group-hover:text-white">
+                            <ChevronRight className="h-6 w-6" />
+                        </div>
                     </div>
 
                     <p className="mb-8 line-clamp-3 text-sm leading-relaxed text-[var(--text-muted)]">
-                        {isLoading ? 'Loading description content for the committee...' : (committee.short_description || `Maak kennis met de ${cleanedName} van SV Salve Mundi.`)}
+                        {committee.short_description || `Maak kennis met de ${cleanedName} van SV Salve Mundi.`}
                     </p>
 
                     {/* Footer Actions */}
@@ -102,7 +96,7 @@ export const CommitteeCard: React.FC<CommitteeCardProps> = ({ isLoading = false,
                             Meer informatie
                         </span>
 
-                        {(hasHistory || isLoading) && !isBestuur && (
+                        {hasHistory && !isBestuur && (
                             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--bg-soft)] text-[var(--text-muted)] transition" title="Historie">
                                 <History className="h-5 w-5" />
                             </div>

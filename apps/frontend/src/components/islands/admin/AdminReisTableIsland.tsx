@@ -24,7 +24,6 @@ interface AdminReisTableIslandProps {
         depositPaid: number;
         fullPaid: number;
     }
-    isLoading?: boolean;
 }
 
 export default function AdminReisTableIsland({ 

@@ -69,7 +69,9 @@
         color: var(--text-main);
         font-weight: 500;
         font-size: var(--font-size-base);
-        /* Stabiliteit boven animatie: alleen focus-gerelateerde transities */
+        /**
+ * SafeHavenCard: Zero-Skeleton SSR standard.
+ */
         transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
         appearance: none;
     }
@@ -203,52 +205,9 @@
     }
 }
 /* ── Ghost UI Maskers (Tailwind 4 Native) ────────────────────────── */
-@utility ghost-active {
-    @apply pointer-events-none! select-none! relative overflow-hidden;
-    border-radius: var(--radius-xl, 0.75rem);
-    
-    /* Child-masking: Alles binnen een ghost-active container maskeren */
-    & :is(h1, h2, h3, h4, h5, h6, p, span, label, small, b, strong) {
-        @apply text-transparent! select-none! pointer-events-none!;
-        background-color: var(--ghost-bg-inline, rgba(164, 83, 155, 0.1));
-        border-radius: 4px;
-        display: inline-block;
-        min-width: 4ch;
-        min-height: 1em;
-        vertical-align: middle;
-    }
-
-    & :is(img, svg, .ghost-media, .ghost-media-square, .ghost-media-video) {
-        @apply opacity-0! pointer-events-none!;
-        background-color: var(--ghost-bg-block, rgba(164, 83, 155, 0.05)) !important;
-    }
-}
-
-/* De 'item' utility (voor individuele elementen zoals in AdminStatsBar) */
-@utility ghost-item {
-    @apply relative overflow-hidden pointer-events-none select-none;
-    background-color: var(--beheer-card-soft, rgba(164, 83, 155, 0.05)) !important;
-    color: transparent !important;
-    border-color: transparent !important;
-    border-radius: var(--radius-lg, 0.5rem);
-
-    &::after {
-        content: "";
-        @apply absolute inset-0;
-        background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(255, 255, 255, 0.1),
-            transparent
-        );
-        animation: ghost-shimmer 1.5s infinite;
-    }
-}
-
-/* ── Legacy Aliases (Safety) ───────────────────────────────────────── */
-.skeleton-item, .skeleton-active {
-    @apply ghost-active;
-}
+/**
+ * CommitteeDetail: Zero-Skeleton SSR standard.
+ */
 
 /* Deterministic Media Shells: Mathematical space reservation */
 .ghost-media-square {
@@ -261,6 +220,14 @@
     aspect-ratio: 16 / 9;
     width: 100%;
     @apply overflow-hidden rounded-[inherit];
+}
+/* ── Ghost UI Maskers (Tailwind 4 Native) ────────────────────────── */
+/* DEPRECATED: Standard is now Zero-Skeleton SSR. 
+   These utilities remain here purely for backward-compatibility with non-modernized islands (if any).
+*/
+@utility ghost-active {
+    @apply pointer-events-none! select-none! relative overflow-hidden;
+    border-radius: var(--radius-xl, 0.75rem);
 }
 /* ── Beheer Dropdowns & Selects ────────────────────────────────────────── */
 .beheer-select {

@@ -36,11 +36,9 @@ interface Signup {
 export default function ActiviteitAanmeldingenIsland({ 
     event = {}, 
     initialSignups = [], 
-    isLoading = false 
 }: { 
     event?: any, 
     initialSignups?: Signup[], 
-    isLoading?: boolean 
 }) {
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
@@ -195,18 +193,11 @@ export default function ActiviteitAanmeldingenIsland({
     return (
         <>
             <AdminToolbar 
-                isLoading={isLoading}
-                title={isLoading ? "" : (event.name || 'Aanmeldingen')}
-                subtitle={isLoading ? "" : "Deelnemerslijst en inchecken"}
+                title={event.name || 'Aanmeldingen'}
+                subtitle="Deelnemerslijst en inchecken"
                 backHref="/beheer/activiteiten"
                 actions={
-                    isLoading ? (
-                        <div className="flex gap-3">
-                            <div className="h-[var(--beheer-btn-height)] w-28 skeleton-active" />
-                            <div className="h-[var(--beheer-btn-height)] w-32 skeleton-active" />
-                        </div>
-                    ) : (
-                        <>
+                    <>
                             <button
                                 onClick={exportToCSV}
                                 disabled={filteredSignups.length === 0}
@@ -223,11 +214,10 @@ export default function ActiviteitAanmeldingenIsland({
                                 Handmatig
                             </button>
                         </>
-                    )
                 }
             />
 
-            <div className={`container mx-auto px-4 py-8 max-w-7xl ${isLoading ? 'animate-pulse' : 'animate-in fade-in slide-in-from-bottom-4 duration-700'}`}>
+            <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700">
                 <AdminStatsBar stats={adminStats} />
 
                 {/* Search Bar */}
@@ -235,19 +225,15 @@ export default function ActiviteitAanmeldingenIsland({
                     <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none z-20">
                         <Search className="h-4 w-4 text-[var(--beheer-text-muted)] group-focus-within:text-[var(--beheer-accent)] transition-colors" />
                     </div>
-                    {isLoading ? (
-                        <div className="w-full h-12 rounded-[var(--beheer-radius)] skeleton-active" />
-                    ) : (
-                        <input
-                            type="text"
-                            placeholder="Zoek op naam, email of telefoon..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            autoComplete="off"
-                            suppressHydrationWarning
-                            className="w-full pl-11 pr-5 py-3 rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] placeholder:text-[var(--beheer-text-muted)] focus:ring-2 focus:ring-[var(--beheer-accent)]/20 focus:border-[var(--beheer-accent)] outline-none transition-all shadow-sm font-bold uppercase tracking-widest text-[10px]"
-                        />
-                    )}
+                    <input
+                        type="text"
+                        placeholder="Zoek op naam, email of telefoon..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        autoComplete="off"
+                        suppressHydrationWarning
+                        className="w-full pl-11 pr-5 py-3 rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] placeholder:text-[var(--beheer-text-muted)] focus:ring-2 focus:ring-[var(--beheer-accent)]/20 focus:border-[var(--beheer-accent)] outline-none transition-all shadow-sm font-bold uppercase tracking-widest text-[10px]"
+                    />
                 </div>
 
             <ManualSignupModal
@@ -260,38 +246,7 @@ export default function ActiviteitAanmeldingenIsland({
 
             {/* Table */}
                 <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm ring-1 ring-[var(--beheer-border)] overflow-hidden">
-                    {isLoading ? (
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse min-w-[800px]">
-                                <thead>
-                                    <tr className="border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[10px] uppercase font-black tracking-widest text-[var(--beheer-text-muted)]">
-                                        <th className="px-6 py-4">Status</th>
-                                        <th className="px-6 py-4">Deelnemer</th>
-                                        <th className="px-6 py-4">Contact</th>
-                                        <th className="px-6 py-4">Lidmaatschap & Datum</th>
-                                        <th className="px-6 py-4 text-right">Acties</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-[var(--beheer-border)]">
-                                    {[...Array(6)].map((_, i) => (
-                                        <tr key={i}>
-                                            <td className="px-6 py-6"><div className="h-6 w-6 rounded-full skeleton-active" /></td>
-                                            <td className="px-6 py-6"><div className="h-4 w-32 skeleton-active" /></td>
-                                            <td className="px-6 py-6 space-y-2">
-                                                <div className="h-3 w-40 opacity-50 skeleton-active" />
-                                                <div className="h-3 w-32 opacity-30 skeleton-active" />
-                                            </td>
-                                            <td className="px-6 py-6 space-y-2">
-                                                <div className="h-5 w-16 skeleton-active" />
-                                                <div className="h-2 w-24 opacity-40 skeleton-active" />
-                                            </td>
-                                            <td className="px-6 py-6 text-right"><div className="h-8 w-8 rounded-xl ml-auto skeleton-active" /></td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    ) : filteredSignups.length === 0 ? (
+                    {filteredSignups.length === 0 ? (
                         <div className="p-20 text-center">
                             <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[var(--beheer-card-soft)] mb-6">
                                 <Search className="h-10 w-10 text-[var(--beheer-text-muted)] opacity-20" />

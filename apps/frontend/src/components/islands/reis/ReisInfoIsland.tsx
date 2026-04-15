@@ -12,11 +12,10 @@ import { SafeHtml } from '@/components/ui/security/SafeHtml';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 
 interface ReisInfoIslandProps {
-    isLoading?: boolean;
     nextTrip: ReisTrip | null;
 }
 
-export function ReisInfoIsland({ nextTrip, isLoading = false }: ReisInfoIslandProps) {
+export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
     const [imageError, setImageError] = useState(false);
@@ -58,7 +57,7 @@ export function ReisInfoIsland({ nextTrip, isLoading = false }: ReisInfoIslandPr
             : null;
 
     return (
-        <div className={`w-full lg:w-1/2 flex flex-col gap-8 ${isLoading ? 'skeleton-active' : ''}`} aria-busy={isLoading}>
+        <div className={`w-full lg:w-1/2 flex flex-col gap-8`}>
             {/* Image + Date Card */}
             {nextTrip && (
                 <div className="bg-surface dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-card">

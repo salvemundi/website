@@ -79,6 +79,3 @@ export default async function ReisPage() {
         </PublicPageShell>
     );
 }
-
-// In the main component, update ReisHeader usage
-// (This is a simplified version, as PageHeader already handles its own internal skeleton if isLoading is passed)

@@ -13,7 +13,6 @@ interface PageHeaderProps {
     variant?: 'centered' | 'split';
     description?: React.ReactNode;
     contentPadding?: string;
-    isLoading?: boolean;
     backLink?: string;
 }
 /**
@@ -33,7 +32,6 @@ export default function PageHeader({
     description,
     contentPadding = 'py-20',
     backLink,
-    isLoading = false
 }: PageHeaderProps) {
     const effectiveImageFilter = (() => {
         const base = imageFilter || 'brightness(0.7)';
@@ -42,17 +40,6 @@ export default function PageHeader({
 
     const hasImage = backgroundImage && typeof backgroundImage === 'string' && backgroundImage.length > 0 && !backgroundImage.includes('undefined');
 
-    if (isLoading) {
-        return (
-            <header className={`relative flex items-center justify-center mb-5 animate-pulse ${className}`} style={{ minHeight: 'var(--pageheader-height, 300px)' }}>
-                <div className="absolute inset-0 bg-slate-200 dark:bg-slate-800/10 z-0" />
-                <div className="relative z-20 w-full max-w-app px-4 text-center">
-                    <div className="h-12 w-64 bg-[var(--theme-purple)]/20 rounded-2xl mx-auto mb-6" />
-                    <div className="h-4 w-96 bg-[var(--theme-purple)]/10 rounded-full mx-auto" />
-                </div>
-            </header>
-        );
-    }
 
     return (
         <header className={`relative flex items-center justify-center mb-5 ${className}`} style={{ minHeight: 'var(--pageheader-height, 300px)' }}>

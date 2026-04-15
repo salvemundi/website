@@ -15,7 +15,6 @@ import { useAdminToast } from '@/hooks/use-admin-toast';
 interface AdminReisSelectorIslandProps {
     trips?: Trip[];
     initialSettings?: { show: boolean };
-    isLoading?: boolean;
 }
 
 export default function AdminReisSelectorIsland({ 

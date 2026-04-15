@@ -17,7 +17,6 @@ interface ReisTableProps {
     onResendEmail: (id: number, type: 'deposit' | 'final') => void;
     signupActivitiesMap: Record<number, TripSignupActivity[]>;
     allowFinalPayments: boolean;
-    isLoading?: boolean;
 }
 
 export default function ReisTable({

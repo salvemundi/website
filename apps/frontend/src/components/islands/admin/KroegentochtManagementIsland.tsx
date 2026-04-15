@@ -34,13 +34,13 @@ interface ExtendedSignup extends PubCrawlSignup {
 interface KroegentochtManagementIslandProps {
     initialEvents?: PubCrawlEvent[];
     initialSettings?: { show: boolean };
-    isLoading?: boolean;
+    initialSignups?: ExtendedSignup[];
 }
 
 export default function KroegentochtManagementIsland({
     initialEvents = [],
     initialSettings = { show: false },
-    isLoading = false
+    initialSignups = [],
 }: KroegentochtManagementIslandProps) {
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
@@ -48,8 +48,7 @@ export default function KroegentochtManagementIsland({
     const [selectedEvent, setSelectedEvent] = useState<PubCrawlEvent | null>(
         initialEvents.find(e => e.date && new Date(e.date) >= new Date()) || initialEvents[0] || null
     );
-    const [signups, setSignups] = useState<ExtendedSignup[]>([]);
-    const [isLoadingSignups, setIsLoadingSignups] = useState(false);
+    const [signups, setSignups] = useState<ExtendedSignup[]>(initialSignups);
     const [showPastEvents, setShowPastEvents] = useState(false);
     const [settings, setSettings] = useState(initialSettings);
     const [error, setError] = useState<string | null>(null);
@@ -57,22 +56,23 @@ export default function KroegentochtManagementIsland({
 
     // Load signups when event changes
     const loadSignups = async (eventId: number | string) => {
-        setIsLoadingSignups(true);
         setError(null);
-        try {
-            const data = await getPubCrawlSignups(Number(eventId));
-            setSignups(data);
-        } catch (err) {
-            
-            showToast('Kon aanmeldingen niet laden. Controleer je verbinding.', 'error');
-        } finally {
-            setIsLoadingSignups(false);
-        }
+        startTransition(async () => {
+            try {
+                const data = await getPubCrawlSignups(Number(eventId));
+                setSignups(data);
+            } catch (err) {
+                showToast('Kon aanmeldingen niet laden. Controleer je verbinding.', 'error');
+            }
+        });
     };
 
-    // Trigger initial load or on change
+    // NUCLEAR SSR: Effect only triggers on manual event change, not mount if initialSignups matches
     useEffect(() => {
-        if (selectedEvent) loadSignups(selectedEvent.id);
+        if (selectedEvent && signups.length === 0 && initialSignups.length === 0) {
+            // This is just a fallback for edge cases where server might return empty but we want to be sure
+            loadSignups(selectedEvent.id);
+        }
     }, [selectedEvent?.id]);
 
     const handleEventSelect = (event: PubCrawlEvent) => {
@@ -120,66 +120,43 @@ export default function KroegentochtManagementIsland({
     return (
         <>
             <AdminToolbar 
-                isLoading={isLoading}
-                title={isLoading ? "" : "Kroegentocht"}
-                subtitle={isLoading ? "" : "Aanmeldingen, tickets & event instellingen"}
+                title="Kroegentocht"
+                subtitle="Aanmeldingen, tickets & event instellingen"
                 backHref="/beheer"
                 actions={
-                    isLoading ? (
-                        <div className="h-[var(--beheer-btn-height)] w-24 bg-[var(--beheer-accent)]/20 rounded-[var(--beheer-radius)]" />
-                    ) : (
-                        <>
-                            <AdminVisibilityToggle 
-                                isVisible={settings.show}
-                                onToggle={handleToggleVisibility}
-                                isPending={isPending}
-                            />
+                    <>
+                        <AdminVisibilityToggle 
+                            isVisible={settings.show}
+                            onToggle={handleToggleVisibility}
+                            isPending={isPending}
+                        />
 
-                            <Link 
-                                href="/beheer/kroegentocht/nieuw"
-                                className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
-                            >
-                                <Plus className="h-4 w-4" />
-                                Nieuw Event
-                            </Link>
-                        </>
-                    )
+                        <Link 
+                            href="/beheer/kroegentocht/nieuw"
+                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
+                        >
+                            <Plus className="h-4 w-4" />
+                            Nieuw Event
+                        </Link>
+                    </>
                 }
             />
 
-            <div className={`container mx-auto px-4 py-8 max-w-7xl ${isLoading ? 'skeleton-active' : 'animate-in fade-in slide-in-from-bottom-4 duration-700'}`}>
+            <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700">
                 <AdminStatsBar stats={adminStats} />
 
             {/* Event Selector Section */}
             <div className="mb-10">
-                {isLoading ? (
-                    <div className="flex flex-wrap gap-3">
-                        {[...Array(3)].map((_, i) => (
-                            <div key={i} className="h-24 w-40 rounded-2xl bg-[var(--beheer-card-bg)]" />
-                        ))}
-                    </div>
-                ) : (
-                    <EventSelector 
-                        events={events}
-                        selectedEventId={selectedEvent?.id || null}
-                        onSelect={handleEventSelect}
-                        showPastEvents={showPastEvents}
-                        setShowPastEvents={setShowPastEvents}
-                    />
-                )}
+                <EventSelector 
+                    events={events}
+                    selectedEventId={selectedEvent?.id || null}
+                    onSelect={handleEventSelect}
+                    showPastEvents={showPastEvents}
+                    setShowPastEvents={setShowPastEvents}
+                />
             </div>
 
-            {isLoading ? (
-                <div className="space-y-8">
-                    <div className="flex items-center gap-4">
-                        <div className="h-8 w-8 rounded-full bg-[var(--beheer-accent)]/10" />
-                        <div className="h-8 w-48 bg-[var(--beheer-accent)]/10 rounded-md" />
-                    </div>
-                    {[...Array(2)].map((_, i) => (
-                        <div key={i} className="h-32 w-full rounded-2xl bg-[var(--beheer-card-bg)]" />
-                    ))}
-                </div>
-            ) : selectedEvent ? (
+            {selectedEvent ? (
                 <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -199,12 +176,7 @@ export default function KroegentochtManagementIsland({
 
                     <AdminStatsBar stats={adminStats} />
 
-                    {isLoadingSignups ? (
-                        <div className="flex flex-col items-center justify-center py-32 bg-[var(--bg-card)]/40 rounded-[var(--radius-2xl)] border-2 border-dashed border-[var(--border-color)]/30">
-                            <Loader2 className="h-10 w-10 animate-spin text-[var(--theme-purple)] mb-4" />
-                            <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Aanmeldingen laden...</p>
-                        </div>
-                    ) : (
+                    <div className={`transition-opacity duration-300 ${isPending ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
                         <SignupList 
                             signups={signups}
                             eventId={selectedEvent.id}
@@ -212,7 +184,7 @@ export default function KroegentochtManagementIsland({
                             onDelete={handleDeleteSignup}
                             onEdit={(id) => router.push(`/beheer/kroegentocht/deelnemer/${id}`)}
                         />
-                    )}
+                    </div>
                 </div>
             ) : (
                 <div className="text-center py-20 bg-[var(--bg-card)]/40 rounded-[var(--radius-2xl)] border-2 border-dashed border-[var(--border-color)]/30">

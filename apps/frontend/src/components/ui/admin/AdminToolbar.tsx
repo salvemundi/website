@@ -4,7 +4,6 @@ import { ChevronLeft } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 
 interface AdminToolbarProps {
-    isLoading?: boolean;
     title?: string;
     subtitle?: string;
     backHref?: string;
@@ -16,7 +15,6 @@ interface AdminToolbarProps {
  * Replaces the old "Hero Banners" with a compact horizontal layout.
  */
 export default function AdminToolbar({
-    isLoading = false,
     title,
     subtitle,
     backHref,
@@ -24,7 +22,6 @@ export default function AdminToolbar({
 }: AdminToolbarProps) {
     return (
         <header 
-            aria-busy={isLoading}
             className="bg-[var(--beheer-card-bg)] border-b border-[var(--beheer-border)] sticky top-[var(--header-total-height,80px)] z-30 w-full transition-all"
         >
             <div className="container mx-auto px-4 py-6 max-w-7xl">
@@ -40,18 +37,12 @@ export default function AdminToolbar({
                             </Link>
                         )}
                         <div className="flex flex-col">
-                            <h1 className={cn(
-                                "text-2xl md:text-3xl font-black text-[var(--beheer-text)] tracking-tighter leading-tight",
-                                isLoading && "ghost-item"
-                            )}>
-                                {isLoading ? "Loading Page Title..." : title}
+                            <h1 className="text-2xl md:text-3xl font-black text-[var(--beheer-text)] tracking-tighter leading-tight">
+                                {title}
                             </h1>
                             {subtitle && (
-                                <p className={cn(
-                                    "text-xs font-bold text-[var(--beheer-text-muted)] tracking-wide mt-1 opacity-60",
-                                    isLoading && "ghost-item"
-                                )}>
-                                    {isLoading ? "Loading subtitle information..." : subtitle}
+                                <p className="text-xs font-bold text-[var(--beheer-text-muted)] tracking-wide mt-1 opacity-60">
+                                    {subtitle}
                                 </p>
                             )}
                         </div>

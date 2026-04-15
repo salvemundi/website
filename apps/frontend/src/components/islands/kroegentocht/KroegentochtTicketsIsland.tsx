@@ -8,17 +8,16 @@ import { Ticket, Download, CheckCircle2 } from 'lucide-react';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 interface KroegentochtTicketsIslandProps {
-    isLoading?: boolean;
     initialTickets?: PubCrawlTicket[];
     userEmail?: string;
 }
 
-export default function KroegentochtTicketsIsland({ isLoading = false, initialTickets = [], userEmail }: KroegentochtTicketsIslandProps) {
+export default function KroegentochtTicketsIsland({ initialTickets = [], userEmail }: KroegentochtTicketsIslandProps) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [tickets] = useState<PubCrawlTicket[]>(initialTickets);
 
     const downloadTicketAsImage = async (ticket: PubCrawlTicket, index: number) => {
-        // ... (same implementation)
+        // ... (remaining download logic same as before)
         try {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
@@ -29,26 +28,21 @@ export default function KroegentochtTicketsIsland({ isLoading = false, initialTi
             canvas.width = width;
             canvas.height = height;
 
-            // Background
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, width, height);
 
-            // Header
             ctx.fillStyle = '#7B2CBF';
             ctx.fillRect(0, 0, width, 120);
 
-            // Header Text
             ctx.fillStyle = '#ffffff';
             ctx.font = 'bold 36px Arial';
             ctx.textAlign = 'center';
             ctx.fillText(`KROEGENTOCHT TICKET ${index + 1}`, width / 2, 75);
 
-            // Participant Name
             ctx.fillStyle = '#1e1e1e';
             ctx.font = 'bold 48px Arial';
             ctx.fillText(`${ticket.name} ${ticket.initial}.`, width / 2, 220);
 
-            // Divider
             ctx.strokeStyle = '#eeeeee';
             ctx.lineWidth = 2;
             ctx.beginPath();
@@ -56,7 +50,6 @@ export default function KroegentochtTicketsIsland({ isLoading = false, initialTi
             ctx.lineTo(500, 280);
             ctx.stroke();
 
-            // QR Code
             const qrDataUrl = await generateQRCode(ticket.qr_token);
             const qrImg = new Image();
             qrImg.crossOrigin = "anonymous";
@@ -71,47 +64,40 @@ export default function KroegentochtTicketsIsland({ isLoading = false, initialTi
                 qrImg.src = qrDataUrl;
             });
 
-            // Footer
             ctx.fillStyle = '#666666';
             ctx.font = '20px Arial';
             ctx.fillText('Laat deze code scannen bij de ingang', width / 2, 750);
 
-            // Download
             const link = document.createElement('a');
             link.download = `Kroegentocht-Ticket-${ticket.name.replace(/\s+/g, '-')}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
             showToast('Ticket succesvol gegenereerd', 'success');
         } catch (e) {
-            
             showToast('Er is een fout opgetreden bij het genereren van je ticket.', 'error');
         }
     };
 
-    const displayedTickets = isLoading 
-        ? Array(1).fill({ id: 0, name: 'Loading', initial: 'T', qr_token: 'loading', checked_in: false }) 
-        : tickets;
-
-    if (!isLoading && tickets.length === 0) return null;
+    if (tickets.length === 0) return null;
 
     return (
-        <section className={`bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-6 md:p-8 mb-8 overflow-hidden animate-in fade-in duration-500 ${isLoading ? 'skeleton-active' : ''}`} aria-busy={isLoading}>
+        <section className={`bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-6 md:p-8 mb-8 overflow-hidden animate-in fade-in duration-500`} >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div>
                     <h2 className="text-2xl font-black text-[var(--color-purple-theme)] flex items-center gap-2">
                         <CheckCircle2 className="w-6 h-6 text-green-500" />
-                        {isLoading ? 'LADEN...' : 'Jouw Tickets'}
+                        Jouw Tickets
                     </h2>
                     <p className="text-slate-500 text-sm mt-1">
-                        {isLoading ? 'Bezig met het ophalen van jouw gereserveerde kroegentocht tickets...' : `Hieronder vind je de tickets voor ${userEmail || 'jouw account'}.`}
+                        {`Hieronder vind je de tickets voor ${userEmail || 'jouw account'}.`}
                     </p>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {displayedTickets.map((ticket, i) => (
+                {tickets.map((ticket, i) => (
                     <div 
-                        key={isLoading ? `loading-${i}` : ticket.id} 
+                        key={ticket.id} 
                         className="group relative bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/10 p-6 transition-all hover:shadow-md hover:border-[var(--color-purple-theme)]/30"
                     >
                         <div className="flex flex-col items-center">
@@ -136,8 +122,7 @@ export default function KroegentochtTicketsIsland({ isLoading = false, initialTi
 
                             <button
                                 onClick={() => downloadTicketAsImage(ticket, i)}
-                                disabled={isLoading}
-                                className="mt-6 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-black text-[var(--color-purple-theme)] hover:bg-slate-50 dark:hover:bg-white/10 transition-all shadow-sm active:scale-[0.98] disabled:opacity-50"
+                                className="mt-6 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-black text-[var(--color-purple-theme)] hover:bg-slate-50 dark:hover:bg-white/10 transition-all shadow-sm active:scale-[0.98]"
                             >
                                 <Download className="w-4 h-4" />
                                 Download Ticket

@@ -36,7 +36,6 @@ const ASSOCIATIONS = [
 ];
 
 interface KroegentochtFormIslandProps {
-    isLoading?: boolean;
     event?: PubCrawlEvent;
     initialUser?: any;
 }
@@ -44,7 +43,6 @@ interface KroegentochtFormIslandProps {
 // Type removed since it's now defined in @salvemundi/validations as PubCrawlSignupForm
 
 export default function KroegentochtFormIsland({ 
-    isLoading = false, 
     event = {} as PubCrawlEvent, 
     initialUser 
 }: KroegentochtFormIslandProps) {
@@ -128,20 +126,14 @@ export default function KroegentochtFormIsland({
 
 
     return (
-        <section className={`bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-6 md:p-8 animate-in fade-in duration-500 ${isLoading ? 'skeleton-active' : ''}`} aria-busy={isLoading}>
+        <section className={`bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-6 md:p-8 animate-in fade-in duration-500`}>
             <h2 className="text-2xl sm:text-3xl font-black text-[var(--theme-purple)] mb-4 flex items-center gap-3">
                 <Ticket className="w-8 h-8" />
-                {isLoading ? 'LADEN...' : 'Inschrijven'}
+                Inschrijven
             </h2>
             <div className="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
-                {isLoading ? (
-                    <p>Bezig met het laden van het inschrijfformulier en de beschikbare tickets voor deze kroegentocht...</p>
-                ) : (
-                    <>
-                        Vul hieronder je gegevens in en reserveer je plek voor de kroegentocht. 
-                        Tickets kosten slechts <strong>€1,00</strong> per stuk!
-                    </>
-                )}
+                Vul hieronder je gegevens in en reserveer je plek voor de kroegentocht. 
+                Tickets kosten slechts <strong>€1,00</strong> per stuk!
             </div>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" autoComplete="off">
                 <FormField id="field-email" label="E-mailadres" required error={errors.email?.message}>

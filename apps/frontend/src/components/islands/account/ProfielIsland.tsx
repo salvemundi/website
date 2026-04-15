@@ -45,7 +45,6 @@ type SessionUser = {
 };
 
 interface ProfielIslandProps {
-    isLoading?: boolean;
     initialSignups?: EventSignup[];
     pubCrawlSignups?: any[];
     user?: SessionUser;
@@ -58,19 +57,18 @@ interface ProfielIslandProps {
 }
 
 export const ProfielIsland: React.FC<ProfielIslandProps> = ({ 
-    isLoading = false,
     initialSignups = [], 
     pubCrawlSignups = [], 
     user: initialUser = {} as SessionUser 
 }) => {
     const { toast, showToast, hideToast } = useAdminToast();
-    const [mounted, setMounted] = useState(false);
     const { data: session, refetch } = authClient.useSession();
 
     const user = useMemo<SessionUser>(() => {
         const sUser = session?.user as SessionUser;
         
-        if (!mounted || !sUser) return initialUser;
+        // NUCLEAR SSR: Prefer SSR data initially, then enrich with client session
+        if (!sUser) return initialUser;
 
         // Enrich name if missing on client
         if (!sUser.name && (sUser.first_name || sUser.last_name)) {
@@ -83,14 +81,9 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
         }
         
         return sUser;
-    }, [mounted, session?.user, initialUser]);
+    }, [session?.user, initialUser]);
     
     const router = useRouter();
-
-    // Hydratatie fix
-    useEffect(() => {
-        setMounted(true);
-    }, []);
 
     const [eventSignups] = useState<EventSignup[]>(initialSignups || []);
     const [showPastEvents, setShowPastEvents] = useState(false);
@@ -255,16 +248,14 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
     }, [optimisticUser, isCommitteeMember]);
 
     return (
-        <div className={`grid grid-cols-1 md:grid-cols-12 gap-6 items-start ${isLoading ? 'skeleton-active' : ''}`} aria-busy={isLoading}>
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
             {/* Left Column */}
             <div className="md:col-span-12 lg:col-span-4 flex flex-col gap-6">
                 <ProfielHeader 
-                    isLoading={isLoading}
                     user={optimisticUser} 
                     membershipStatus={membershipStatus} 
                 />
                 <ProfielGaming 
-                    isLoading={isLoading}
                     user={optimisticUser}
                     isEditingMinecraft={isEditingMinecraft}
                     setIsEditingMinecraft={setIsEditingMinecraft}
@@ -280,7 +271,6 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
             {/* Right Column */}
             <div className="md:col-span-12 lg:col-span-8 flex flex-col gap-6">
                 <ProfielDetails 
-                    isLoading={isLoading}
                     user={optimisticUser}
                     isEditingPhoneNumber={isEditingPhoneNumber}
                     setIsEditingPhoneNumber={setIsEditingPhoneNumber}
@@ -292,7 +282,6 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
                     isPending={isPending}
                 />
                 <ProfielQuickLinks 
-                    isLoading={isLoading}
                     user={optimisticUser}
                     isCommitteeMember={isCommitteeMember}
                 />
@@ -301,13 +290,12 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
             {/* Bottom Column: Signups */}
             <div className="md:col-span-12">
                 <ProfielSignups 
-                    isLoading={isLoading}
                     filteredSignups={filteredSignups}
                     showPastEvents={showPastEvents}
                     setShowPastEvents={setShowPastEvents}
                 />
             </div>
-            {!isLoading && <AdminToast toast={toast} onClose={hideToast} />}
+            <AdminToast toast={toast} onClose={hideToast} />
         </div>
     );
 };

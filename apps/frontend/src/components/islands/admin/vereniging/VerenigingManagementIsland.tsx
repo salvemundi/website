@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useTransition } from 'react';
 import {
     Users, 
     RefreshCw, 
@@ -34,19 +34,21 @@ const normalizeName = (name: string) =>
 interface Props {
     initialCommittees: Committee[];
     totalUniqueMembers: number;
+    initialMembers?: CommitteeMember[];
 }
 
-export default function VerenigingManagementIsland({ initialCommittees, totalUniqueMembers }: Props) {
+export default function VerenigingManagementIsland({ initialCommittees, totalUniqueMembers, initialMembers = [] }: Props) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [committees, setCommittees] = useState<Committee[]>(initialCommittees);
-    const [selected, setSelected] = useState<Committee | null>(null);
-    const [members, setMembers] = useState<CommitteeMember[]>([]);
+    
+    // NUCLEAR SSR: Default to the first committee to avoid empty mount states
+    const [selected, setSelected] = useState<Committee | null>(initialCommittees[0] || null);
+    const [members, setMembers] = useState<CommitteeMember[]>(initialMembers);
 
     const [searchQuery, setSearchQuery] = useState('');
     const [showAll, setShowAll] = useState(false);
 
-    const [membersLoading, setMembersLoading] = useState(false);
-    const [isInitialMemberLoading, setIsInitialMemberLoading] = useState(false);
+    const [isPending, startTransition] = useTransition();
     const [refreshing, setRefreshing] = useState(false);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
 
@@ -83,18 +85,21 @@ export default function VerenigingManagementIsland({ initialCommittees, totalUni
     };
 
     const handleSelectCommittee = useCallback(async (c: Committee) => {
-        setSelected(c);
-        setEditingDetail(false);
-        setEditShortDesc(c.short_description || '');
-        setEditDesc(c.description || '');
-        setAddError(null);
-        setNewMemberEmail('');
-        setMembersLoading(true);
-        setIsInitialMemberLoading(true);
-        const m = await getCommitteeMembers(c.id.toString()).catch(() => []);
-        setMembers(m);
-        setMembersLoading(false);
-        setIsInitialMemberLoading(false);
+        startTransition(async () => {
+            setSelected(c);
+            setEditingDetail(false);
+            setEditShortDesc(c.short_description || '');
+            setEditDesc(c.description || '');
+            setAddError(null);
+            setNewMemberEmail('');
+            
+            try {
+                const m = await getCommitteeMembers(c.id.toString()).catch(() => []);
+                setMembers(m);
+            } catch (err) {
+                showToast('Fout bij ophalen leden', 'error');
+            }
+        });
     }, []);
 
     const handleAddMember = async (e: React.FormEvent) => {
@@ -223,7 +228,7 @@ export default function VerenigingManagementIsland({ initialCommittees, totalUni
                             <CommitteeDetail 
                                 selected={selected}
                                 members={members}
-                                isInitialMemberLoading={isInitialMemberLoading}
+                                isUpdating={isPending}
                                 actionLoading={actionLoading}
                                 editingDetail={editingDetail}
                                 onToggleEditing={() => setEditingDetail(!editingDetail)}

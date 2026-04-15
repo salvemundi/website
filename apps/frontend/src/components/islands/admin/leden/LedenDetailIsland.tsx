@@ -62,7 +62,6 @@ interface Props {
     signups?: Signup[];
     allCommittees?: any[];
     isAdmin?: boolean;
-    isLoading?: boolean;
 }
 
 export default function LedenDetailIsland({ 
@@ -70,15 +69,13 @@ export default function LedenDetailIsland({
     initialMemberships = [], 
     signups = [],
     allCommittees = [],
-    isAdmin = false,
-    isLoading = false
+    isAdmin = false
 }: Props) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [activeTab, setActiveTab] = useState<'profiel' | 'activiteiten' | 'beheer'>('profiel');
     const [isPending, startTransition] = useTransition();
     const [isActionInProgress, setIsActionInProgress] = useState<string | null>(null);
     const [localMember, setLocalMember] = useState(member);
-
     // Optimistic memberships
     const [optimisticMemberships, setOptimisticMemberships] = useOptimistic(
         initialMemberships,
@@ -169,59 +166,6 @@ export default function LedenDetailIsland({
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-7xl overflow-x-hidden">
-            {isLoading ? (
-                <div className="animate-pulse">
-                    <div className="flex flex-col md:flex-row md:items-end gap-6 mb-12">
-                        <div className="h-28 w-28 rounded-[2rem] skeleton-active" />
-                        <div className="space-y-3 flex-1">
-                            <div className="h-10 w-64 bg-[var(--beheer-border)]/50 skeleton-active" />
-                            <div className="flex gap-4">
-                                <div className="h-4 w-48 bg-[var(--beheer-border)]/30 skeleton-active" />
-                                <div className="h-6 w-32 bg-[var(--beheer-border)]/30 rounded-full skeleton-active" />
-                            </div>
-                        </div>
-                    </div>
-                    <div className="flex gap-4 mb-8 border-b border-[var(--beheer-border)] pb-0.5">
-                        <div className="h-10 w-24 rounded-t-xl skeleton-active" />
-                        <div className="h-10 w-32 rounded-t-xl skeleton-active" />
-                        <div className="h-10 w-28 rounded-t-xl skeleton-active" />
-                    </div>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div className="lg:col-span-1 space-y-6">
-                            <div className="h-64 bg-[var(--beheer-card-bg)] rounded-3xl p-8 border border-[var(--beheer-border)]">
-                                <div className="h-4 w-20 mb-6 skeleton-active" />
-                                <div className="space-y-6">
-                                    {[1, 2, 3].map(i => (
-                                        <div key={i} className="flex gap-4 items-center">
-                                            <div className="h-10 w-10 rounded-xl skeleton-active" />
-                                            <div className="space-y-2">
-                                                <div className="h-2 w-16 skeleton-active" />
-                                                <div className="h-3 w-24 skeleton-active" />
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                        <div className="lg:col-span-2 space-y-6">
-                            <div className="h-[400px] bg-[var(--beheer-card-bg)] rounded-3xl p-8 border border-[var(--beheer-border)]">
-                                <div className="flex items-center gap-4 mb-8">
-                                    <div className="h-12 w-12 rounded-2xl skeleton-active" />
-                                    <div className="space-y-2">
-                                        <div className="h-5 w-40 skeleton-active" />
-                                        <div className="h-3 w-60 skeleton-active" />
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    {[1, 2, 3, 4].map(i => (
-                                        <div key={i} className="h-24 rounded-2xl skeleton-active" />
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            ) : (
                 <>
                     {/* Header info */}
                     <div className="flex flex-col md:flex-row md:items-center gap-8 mb-12">
@@ -306,7 +250,6 @@ export default function LedenDetailIsland({
                         )}
                     </div>
                 </>
-            )}
             <AdminToast toast={toast} onClose={hideToast} />
         </div>
     );

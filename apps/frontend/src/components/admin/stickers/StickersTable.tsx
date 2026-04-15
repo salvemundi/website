@@ -16,14 +16,13 @@ import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 
 interface StickersTableProps {
-    isLoading?: boolean;
     stickers: any[];
     onDelete: (id: number) => void;
 }
 
 const ASSET_URL = '/api/assets';
 
-export default function StickersTable({ isLoading = false, stickers, onDelete }: StickersTableProps) {
+export default function StickersTable({ stickers, onDelete }: StickersTableProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
@@ -67,17 +66,17 @@ export default function StickersTable({ isLoading = false, stickers, onDelete }:
                                 <th className="px-6 py-4 text-right text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">Acties</th>
                             </tr>
                         </thead>
-                        <tbody className={`divide-y divide-[var(--beheer-border)]/10 ${isLoading ? 'skeleton-active' : ''}`}>
-                            {(isLoading ? [...Array(10)] : filteredStickers).map((sticker, i) => (
-                                <tr key={isLoading ? i : sticker.id} className="hover:bg-[var(--bg-main)]/30 transition-colors group">
+                        <tbody className="divide-y divide-[var(--beheer-border)]/10">
+                            {filteredStickers.map((sticker) => (
+                                <tr key={sticker.id} className="hover:bg-[var(--bg-main)]/30 transition-colors group">
                                     <td className="px-6 py-4">
                                         <div className="flex flex-col gap-1">
                                             <span className="font-black text-[var(--beheer-text)] group-hover:text-[var(--beheer-accent)] transition-colors uppercase tracking-tight">
-                                                {isLoading ? 'LOADING_LOCATION' : (sticker.location_name === 'Imported' ? (sticker.city || sticker.address || 'Imported') : (sticker.location_name || 'Naamloze locatie'))}
+                                                {sticker.location_name === 'Imported' ? (sticker.city || sticker.address || 'Imported') : (sticker.location_name || 'Naamloze locatie')}
                                             </span>
                                             <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">
                                                 <User className="h-3 w-3" />
-                                                {isLoading ? 'User Name' : `${sticker.user_created?.first_name} ${sticker.user_created?.last_name}`}
+                                                {`${sticker.user_created?.first_name} ${sticker.user_created?.last_name}`}
                                             </div>
                                         </div>
                                     </td>
@@ -85,22 +84,25 @@ export default function StickersTable({ isLoading = false, stickers, onDelete }:
                                         <div className="flex flex-col">
                                             <span className="text-[10px] font-black text-[var(--beheer-text)] flex items-center gap-1.5 uppercase tracking-widest leading-none">
                                                 <MapPin className="h-3 w-3 text-red-500" />
-                                                {isLoading ? 'City Name' : (sticker.city || '')}
+                                                {sticker.city || ''}
                                             </span>
                                             <span className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest flex items-center gap-1.5 mt-1.5 leading-none">
                                                 <Globe className="h-3 w-3 text-blue-500" />
-                                                {isLoading ? 'Country Name' : (sticker.country || '')}
+                                                {sticker.country || ''}
                                             </span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest" suppressHydrationWarning>
-                                            {isLoading ? '01 JAN 2024' : (sticker.date_created ? format(new Date(sticker.date_created), 'dd MMM yyyy', { locale: nl }) : '-')}
+                                            {sticker.date_created ? format(new Date(sticker.date_created), 'dd MMM yyyy', { locale: nl }) : '-'}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-center">
-                                        <div className="w-12 h-12 mx-auto rounded-[var(--beheer-radius)] bg-[var(--bg-main)] border border-dashed border-[var(--beheer-border)] flex items-center justify-center text-[var(--beheer-text-muted)]">
-                                            {isLoading || !sticker.image ? (
+                                        <div 
+                                            className="w-12 h-12 mx-auto rounded-[var(--beheer-radius)] bg-[var(--bg-main)] border border-dashed border-[var(--beheer-border)] flex items-center justify-center text-[var(--beheer-text-muted)] cursor-pointer hover:border-[var(--beheer-accent)] transition-colors overflow-hidden"
+                                            onClick={() => sticker.image && setSelectedImage(`${ASSET_URL}/${sticker.image}`)}
+                                        >
+                                            {!sticker.image ? (
                                                 <ImageIcon className="h-4 w-4 opacity-30" />
                                             ) : (
                                                 <img 
@@ -113,13 +115,18 @@ export default function StickersTable({ isLoading = false, stickers, onDelete }:
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex justify-end gap-2">
-                                            <div className="h-8 w-8 bg-[var(--beheer-card-soft)] rounded-lg" />
-                                            <div className="h-8 w-8 bg-[var(--beheer-card-soft)] rounded-lg" />
+                                            <button 
+                                                onClick={() => onDelete(sticker.id)}
+                                                className="p-2 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all shadow-sm"
+                                                title="Verwijderen"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
                             ))}
-                            {!isLoading && filteredStickers.length === 0 && (
+                            {filteredStickers.length === 0 && (
                                 <tr>
                                     <td colSpan={5} className="px-6 py-16 text-center text-[var(--beheer-text-muted)] italic font-bold uppercase tracking-widest text-[10px]">
                                         Geen stickers gevonden voor dit filter.
@@ -156,3 +163,4 @@ export default function StickersTable({ isLoading = false, stickers, onDelete }:
         </div>
     );
 }
+

@@ -21,18 +21,24 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
     const [isPending, startTransition] = useTransition();
 
     const handleSave = () => {
-        if (!token) return;
+        if (!token || isPending) return;
+        setStatus('idle');
+        
         startTransition(async () => {
-            const result = await setImpersonateToken(token);
-            if (result && result.success) {
-                setStatus('success');
-                setToken('');
-                showToast('Test modus succesvol geactiveerd', 'success');
-                setTimeout(() => setStatus('idle'), 3000);
-            } else {
+            try {
+                const result = await setImpersonateToken(token);
+                if (result && result.success) {
+                    setStatus('success');
+                    setToken('');
+                    showToast('Test modus succesvol geactiveerd', 'success');
+                    setTimeout(() => setStatus('idle'), 3000);
+                } else {
+                    setStatus('error');
+                    showToast(result?.error || 'Ongeldige token of fout bij valideren.', 'error');
+                }
+            } catch (err) {
                 setStatus('error');
-                showToast(result?.error || 'Ongeldige token of fout bij valideren.', 'error');
-                setTimeout(() => setStatus('idle'), 4000);
+                showToast('Er is een onverwachte fout opgetreden.', 'error');
             }
         });
     };

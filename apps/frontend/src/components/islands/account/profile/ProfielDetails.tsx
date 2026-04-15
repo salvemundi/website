@@ -7,7 +7,6 @@ import { nl } from 'date-fns/locale';
 import { Tile, formatForBreak } from './ProfielUI';
 
 interface ProfielDetailsProps {
-    isLoading?: boolean;
     user?: any;
     isEditingPhoneNumber?: boolean;
     setIsEditingPhoneNumber?: (val: boolean) => void;
@@ -20,7 +19,6 @@ interface ProfielDetailsProps {
 }
 
 export default function ProfielDetails({
-    isLoading = false,
     user = {},
     isEditingPhoneNumber = false,
     setIsEditingPhoneNumber = () => {},
@@ -32,7 +30,7 @@ export default function ProfielDetails({
     isPending = false
 }: ProfielDetailsProps) {
     return (
-        <Tile title="Mijn gegevens" icon={<Mail className="h-5 w-5" />} className={`h-fit ${isLoading ? 'skeleton-active' : ''}`} aria-busy={isLoading}>
+        <Tile title="Mijn gegevens" icon={<Mail className="h-5 w-5" />} className="h-fit">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Email Box */}
                 <div className="flex items-center gap-4 rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm">
@@ -44,13 +42,13 @@ export default function ProfielDetails({
                             E-mailadres
                         </p>
                         <p className="font-bold text-[var(--color-purple-700)] dark:text-white break-words text-xs sm:text-sm leading-tight">
-                            {isLoading ? 'loading.email.address@salvemundi.nl' : (formatForBreak(user.email) || 'Geen email')}
+                            {formatForBreak(user.email) || 'Geen email'}
                         </p>
                     </div>
                 </div>
 
                 {/* Fontys Email Box */}
-                {(isLoading || user.fontys_email) && (
+                {user.fontys_email && (
                     <div className="flex items-center gap-4 rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm">
                         <div className="shrink-0 rounded-xl bg-[var(--color-purple-100)] p-3 text-[var(--color-purple-600)] shadow-sm">
                             <Mail className="h-5 w-5" />
@@ -60,7 +58,7 @@ export default function ProfielDetails({
                                 Fontys e-mail
                             </p>
                             <p className="font-bold text-[var(--color-purple-700)] dark:text-white break-words text-xs sm:text-sm leading-tight">
-                                {isLoading ? 'f.lastname@student.fontys.nl' : formatForBreak(user.fontys_email)}
+                                {formatForBreak(user.fontys_email)}
                             </p>
                         </div>
                     </div>
@@ -72,7 +70,7 @@ export default function ProfielDetails({
                         <p className="text-[11px] font-bold uppercase text-[var(--color-purple-400)] tracking-wide text-left">
                             Telefoonnummer
                         </p>
-                        {!isEditingPhoneNumber && !isLoading && (
+                        {!isEditingPhoneNumber && (
                             <button onClick={() => setIsEditingPhoneNumber(true)} className="text-[var(--text-muted)] hover:text-[var(--color-purple-500)] p-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
                                 <Edit2 className="h-3.5 w-3.5" />
                             </button>
@@ -98,7 +96,7 @@ export default function ProfielDetails({
                             </form>
                         ) : (
                             <p className="font-bold text-[var(--color-purple-700)] dark:text-white text-sm">
-                                {isLoading ? '06 1234 5678' : (user.phone_number || "Niet ingesteld")}
+                                {user.phone_number || "Niet ingesteld"}
                             </p>
                         )}
                     </div>
@@ -116,7 +114,7 @@ export default function ProfielDetails({
                             <Calendar className="h-5 w-5" />
                         </div>
                         <p className="font-bold text-[var(--color-purple-700)] dark:text-white text-sm">
-                            {isLoading ? '01 JANUARI 2000' : (user.date_of_birth ? format(new Date(user.date_of_birth), "d MMMM yyyy", { locale: nl }) : "Niet ingesteld")}
+                            {user.date_of_birth ? format(new Date(user.date_of_birth), "d MMMM yyyy", { locale: nl }) : "Niet ingesteld"}
                         </p>
                     </div>
                 </div>

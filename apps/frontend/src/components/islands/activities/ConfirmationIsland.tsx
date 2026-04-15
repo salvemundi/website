@@ -22,7 +22,6 @@ interface ConfirmationIslandProps {
     initialId?: string;
     initialTransactionId?: string;
     isLoggedIn?: boolean;
-    isLoading?: boolean;
 }
 
 interface SignupData {
@@ -38,7 +37,6 @@ export default function ConfirmationIsland({
     initialId, 
     initialTransactionId,
     isLoggedIn = false,
-    isLoading = false,
     initialStatus = 'loading',
     initialData = null
 }: ConfirmationIslandProps & { initialStatus?: 'loading' | PaymentStatus | 'timeout', initialData?: SignupData | null }) {
@@ -50,9 +48,7 @@ export default function ConfirmationIsland({
 
     // NUCLEAR SSR: If we already have a definitive status, we don't need to poll immediately
     useEffect(() => {
-        if (isLoading) return;
         if (status === 'paid' || status === 'failed') return;
-
         
         const checkStatus = async () => {
             try {
@@ -86,13 +82,11 @@ export default function ConfirmationIsland({
                     // Increment retry counter to trigger next poll after 1s
                     setTimeout(() => setRetryCount(prev => prev + 1), 1000);
                 } else {
-                    
                     setStatus('timeout');
                     setSignupData({ errorType: 'timeout' });
                 }
             } catch (err) {
-                
-                setStatus('error');
+                setStatus('error' as any);
             }
         };
 
@@ -104,47 +98,33 @@ export default function ConfirmationIsland({
         if (!element) return;
         
         try {
-            // Wait a tiny bit to ensure QR is fully rendered if needed
             const dataUrl = await toPng(element, { 
                 quality: 0.95,
-                backgroundColor: '#121212', // Match dark theme bg
-                style: {
-                    borderRadius: '0', // Keep as captured
-                }
+                backgroundColor: '#121212',
+                style: { borderRadius: '0' }
             });
             
             const link = document.createElement('a');
             link.download = `Ticket-${ticketName.replace(/\s+/g, '-')}-${Date.now()}.png`;
             link.href = dataUrl;
             link.click();
-        } catch (err) {
-            
-        }
+        } catch (err) {}
     };
 
     const renderContent = () => {
-        if (isLoading || status === 'loading') {
+        if (status === 'loading') {
             return (
-                <div className="space-y-12 animate-in fade-in duration-500">
-                    <div className="space-y-4 text-center">
-                        <div className="w-24 h-24 rounded-full mx-auto skeleton-active" />
-                        <div className="h-12 md:h-20 w-3/4 max-w-2xl mx-auto rounded-3xl skeleton-active" />
-                        <div className="h-6 w-1/2 max-w-sm mx-auto rounded-xl skeleton-active" />
+                <div className="py-20 text-center space-y-8 animate-in fade-in duration-500">
+                    <div className="w-24 h-24 bg-[var(--theme-purple)]/10 rounded-full flex items-center justify-center mx-auto ring-1 ring-[var(--theme-purple)]/20">
+                        <Loader2 className="h-12 w-12 text-[var(--theme-purple)] animate-spin" />
                     </div>
-
-                    <div className="flex flex-wrap justify-center gap-6 max-w-6xl mx-auto">
-                        {[1, 2, 3].map((i) => (
-                            <div key={i} className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] min-w-[300px] max-w-[380px] p-8 rounded-[3rem] bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xl space-y-6">
-                                <div className="flex flex-col items-center gap-4">
-                                    <div className="h-4 w-24 rounded-full skeleton-active" />
-                                    <div className="h-[180px] w-[180px] rounded-3xl skeleton-active" />
-                                    <div className="space-y-2 text-center w-full">
-                                        <div className="h-6 w-3/4 mx-auto rounded-lg skeleton-active" />
-                                        <div className="h-3 w-1/2 mx-auto rounded-md skeleton-active anchor" />
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+                    <div className="space-y-2">
+                        <h2 className="text-4xl font-black text-[var(--text-main)] uppercase tracking-tighter italic">
+                            Betaling <span className="text-[var(--theme-purple)]">Verifiëren</span>
+                        </h2>
+                        <p className="text-[var(--text-muted)] text-lg font-medium max-w-sm mx-auto">
+                            Eén moment geduld, we controleren de status van je transactie bij de bank...
+                        </p>
                     </div>
                 </div>
             );

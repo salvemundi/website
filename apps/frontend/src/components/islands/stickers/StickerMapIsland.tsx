@@ -18,7 +18,6 @@ import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 
 interface StickerMapIslandProps {
-    isLoading?: boolean;
     initialStickers: any[];
     user: any | null;
 }
@@ -28,7 +27,6 @@ interface StickerMapIslandProps {
 export default function StickerMapIsland({
     initialStickers,
     user,
-    isLoading = false,
     isAuthenticated: serverAuth = undefined
 }: StickerMapIslandProps & { isAuthenticated?: boolean }) {
     const { toast, showToast, hideToast } = useAdminToast();
@@ -143,7 +141,7 @@ export default function StickerMapIsland({
                     image: imageId
                 });
 
-                setStickers(prev => [newSticker, ...prev]);
+                setStickers((prev: any[]) => [newSticker, ...prev]);
                 setShowAddModal(false);
                 setSelectedLocation(null);
                 setFormData({ location_name: '', description: '', city: '', country: '', image: null });
@@ -160,8 +158,8 @@ export default function StickerMapIsland({
             {/* Stats Header Area */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <StatCard label="Totaal" value={stickers.length} icon={MapIcon} color="text-purple-500" />
-                <StatCard label="Landen" value={new Set(stickers.map(s => s.country?.toLowerCase()).filter(Boolean)).size} icon={Globe} color="text-blue-500" />
-                <StatCard label="Steden" value={new Set(stickers.map(s => s.city?.toLowerCase()).filter(Boolean)).size} icon={Award} color="text-green-500" />
+                <StatCard label="Landen" value={new Set(stickers.map((s: any) => s.country?.toLowerCase()).filter(Boolean)).size} icon={Globe} color="text-blue-500" />
+                <StatCard label="Steden" value={new Set(stickers.map((s: any) => s.city?.toLowerCase()).filter(Boolean)).size} icon={Award} color="text-green-500" />
                 <StatCard label="Top Land" value="NL" icon={TrendingUp} color="text-orange-500" />
             </div>
 
@@ -342,18 +340,7 @@ export default function StickerMapIsland({
     );
 }
 
-function StatCard({ label, value, icon: Icon, color, isLoading = false }: any) {
-    if (isLoading) {
-        return (
-            <div className="bg-[var(--bg-card)] rounded-2xl p-4 shadow-xl border border-white/5 flex items-center justify-between">
-                <div className="space-y-2 flex-1">
-                    <div className="h-3 w-12 bg-[var(--text-muted)]/10 rounded-full" />
-                    <div className="h-7 w-16 bg-[var(--text-muted)]/5 rounded-md" />
-                </div>
-                <div className="h-9 w-9 bg-slate-500/10 rounded-xl" />
-            </div>
-        );
-    }
+function StatCard({ label, value, icon: Icon, color }: any) {
     return (
         <div className="bg-[var(--bg-card)] rounded-2xl p-4 shadow-xl border border-white/5 flex items-center justify-between">
             <div>

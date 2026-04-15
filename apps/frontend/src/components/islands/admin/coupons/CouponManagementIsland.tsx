@@ -19,12 +19,10 @@ import { useAdminToast } from '@/hooks/use-admin-toast';
 import { cn } from '@/lib/utils/cn';
 interface Props {
     initialCoupons?: Coupon[];
-    isLoading?: boolean;
 }
 
 export default function CouponManagementIsland({ 
     initialCoupons = [], 
-    isLoading = false 
 }: Props) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [coupons, setCoupons] = useState<Coupon[]>(initialCoupons);
@@ -103,15 +101,11 @@ export default function CouponManagementIsland({
     return (
         <>
             <AdminToolbar 
-                isLoading={isLoading}
-                title={isLoading ? "" : "Coupons Beheer"}
-                subtitle={isLoading ? "" : "Beheer kortingscodes en acties voor het lidmaatschap"}
+                title="Coupons Beheer"
+                subtitle="Beheer kortingscodes en acties voor het lidmaatschap"
                 backHref="/beheer"
                 actions={
-                    isLoading ? (
-                        <div className="h-10 w-32 ghost-active rounded-[var(--beheer-radius)]" />
-                    ) : (
-                        <button
+                    <button
                             onClick={() => { setShowForm(!showForm); setFormError(null); }}
                             className={`flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] rounded-[var(--beheer-radius)] font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 cursor-pointer ${
                                 showForm 
@@ -122,9 +116,8 @@ export default function CouponManagementIsland({
                             {showForm ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                             {showForm ? 'Annuleren' : 'Nieuwe Coupon'}
                         </button>
-                    )
-                }
-            />
+                    }
+                />
 
             <div className={`container mx-auto px-4 py-8 max-w-7xl`}>
                 <AdminStatsBar stats={adminStats} />
@@ -141,26 +134,18 @@ export default function CouponManagementIsland({
                 {/* Main Table */}
                 <div className="space-y-4">
                     <div className="flex items-center justify-between border-l-4 border-[var(--beheer-active)] pl-4 py-1">
-                        {isLoading ? (
-                            <div className="h-4 w-32 ghost-active" />
-                        ) : (
-                            <h2 className="text-[10px] font-black text-[var(--beheer-text)] flex items-center gap-3 uppercase tracking-widest">
-                                Geldige Coupons
-                                <span className="px-3 py-1 rounded-full bg-[var(--beheer-active)]/20 text-[var(--beheer-active)] text-[9px] shadow-sm border border-[var(--beheer-active)]/20">
-                                    {validCoupons.length}
-                                </span>
-                            </h2>
-                        )}
+                        <h2 className="text-[10px] font-black text-[var(--beheer-text)] flex items-center gap-3 uppercase tracking-widest">
+                            Geldige Coupons
+                            <span className="px-3 py-1 rounded-full bg-[var(--beheer-active)]/20 text-[var(--beheer-active)] text-[9px] shadow-sm border border-[var(--beheer-active)]/20">
+                                {validCoupons.length}
+                            </span>
+                        </h2>
                     </div>
 
                     <div 
-                        aria-busy={isLoading}
-                        className={cn(
-                            "bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] overflow-hidden shadow-xl transition-all",
-                            isLoading && "ghost-active"
-                        )}
+                        className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] overflow-hidden shadow-xl transition-all"
                     >
-                        {validCoupons.length === 0 && !isLoading ? (
+                        {validCoupons.length === 0 ? (
                             <div className="py-24 text-center">
                                 <Ticket className="h-12 w-12 text-[var(--beheer-text-muted)] mx-auto mb-4 opacity-10" />
                                 <p className="font-black uppercase tracking-widest text-[10px] text-[var(--beheer-text-muted)]">Geen geldige coupons gevonden</p>

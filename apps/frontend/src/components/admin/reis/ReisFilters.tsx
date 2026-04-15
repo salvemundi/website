@@ -12,7 +12,6 @@ interface ReisFiltersProps {
     onRoleChange: (value: string) => void;
     onDownloadExcel: () => void;
     hasResults: boolean;
-    isLoading?: boolean;
 }
 
 export default function ReisFilters({

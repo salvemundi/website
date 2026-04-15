@@ -10,7 +10,6 @@ import { useRouter } from 'next/navigation';
 import { revalidateReisAction } from '@/server/actions/reis.actions';
 
 interface ReisFormIslandProps {
-    isLoading?: boolean;
     isSignedUp?: boolean;
     isReisDisabled?: boolean;
     nextTrip: ReisTrip | null;
@@ -22,7 +21,6 @@ interface ReisFormIslandProps {
 }
 
 export function ReisFormIsland({ 
-    isLoading = false,
     isSignedUp = false,
     isReisDisabled = false,
     nextTrip, 

@@ -34,12 +34,10 @@ interface ActionState {
 
 interface ActiviteitNieuwIslandProps {
     committees?: Committee[];
-    isLoading?: boolean;
 }
 
 export default function ActiviteitNieuwIsland({ 
     committees = [], 
-    isLoading = false 
 }: ActiviteitNieuwIslandProps) {
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
@@ -106,29 +104,6 @@ export default function ActiviteitNieuwIsland({
                 backHref="/beheer/activiteiten"
             />
             <div className="container mx-auto px-4 py-12 max-w-5xl">
-                {isLoading ? (
-                    <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-2xl overflow-hidden border border-[var(--beheer-border)] animate-pulse">
-                        <div className="h-64 sm:h-80 w-full mb-8 skeleton-active" />
-                        <div className="p-8 sm:p-12 space-y-12">
-                            <div className="space-y-4">
-                                <div className="h-4 w-32 skeleton-active" />
-                                <div className="h-14 w-full rounded-xl skeleton-active" />
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="h-40 w-full rounded-xl skeleton-active" />
-                                <div className="h-40 w-full rounded-xl skeleton-active" />
-                            </div>
-                            <div className="grid grid-cols-2 gap-6">
-                                <div className="h-14 w-full rounded-xl skeleton-active" />
-                                <div className="h-14 w-full rounded-xl skeleton-active" />
-                            </div>
-                            <div className="flex justify-end gap-4">
-                                <div className="h-14 w-32 rounded-xl skeleton-active" />
-                                <div className="h-14 w-48 rounded-xl skeleton-active" />
-                            </div>
-                        </div>
-                    </div>
-                ) : (
                     <form action={formAction} className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-2xl overflow-hidden border border-[var(--beheer-border)] relative">
                     {/* Visual Section */}
                     <div className="relative h-64 sm:h-80 bg-slate-950 border-b border-[var(--beheer-border)]">
@@ -362,7 +337,6 @@ export default function ActiviteitNieuwIsland({
                         </div>
                     </div>
                 </form>
-                )}
 
                 <AdminToast toast={toast} onClose={hideToast} />
             </div>

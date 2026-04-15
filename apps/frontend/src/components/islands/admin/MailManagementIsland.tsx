@@ -16,17 +16,15 @@ interface MailSetting {
 }
 
 interface MailManagementIslandProps {
-    isLoading?: boolean;
     initialSettings?: MailSetting[];
 }
 
-export default function MailManagementIsland({ isLoading = false, initialSettings = [] }: MailManagementIslandProps) {
+export default function MailManagementIsland({ initialSettings = [] }: MailManagementIslandProps) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [settings, setSettings] = useState(initialSettings);
     const [togglingId, setTogglingId] = useState<string | null>(null);
 
     const handleToggle = async (key: string) => {
-        if (isLoading) return;
         setTogglingId(key);
         try {
             const res = await toggleMailSetting(key);
@@ -40,23 +38,18 @@ export default function MailManagementIsland({ isLoading = false, initialSetting
                 showToast(res.error || 'Bijwerken mislukt', 'error');
             }
         } catch (err) {
-            
             showToast('Er is een onverwachte fout opgetreden', 'error');
         } finally {
             setTogglingId(null);
         }
     };
 
-    const displayedSettings = isLoading 
-        ? Array(2).fill({ id: 'loading', name: 'Loading Setting...', isActive: false, description: 'Loading description of and details for this Salve Mundi email automation flow...' }) 
-        : settings;
-
     return (
-        <div className={`container mx-auto px-4 py-8 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700 ${isLoading ? 'skeleton-active' : ''}`} aria-busy={isLoading}>
+        <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {displayedSettings.map((setting, idx) => (
+                {settings.map((setting) => (
                     <div 
-                        key={isLoading ? `loading-${idx}` : setting.id}
+                        key={setting.id}
                         className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between"
                     >
                         <div>
@@ -75,14 +68,13 @@ export default function MailManagementIsland({ isLoading = false, initialSetting
                         
                         <div className="flex items-center justify-between pt-4 border-t border-[var(--beheer-border)]/50">
                             <span className={`text-[10px] font-bold uppercase tracking-tighter ${setting.isActive ? 'text-[var(--beheer-active)]' : 'text-[var(--beheer-inactive)]'}`}>
-                                Status: {isLoading ? 'Laden...' : (setting.isActive ? 'Actief' : 'Gepauzeerd')}
+                                Status: {setting.isActive ? 'Actief' : 'Gepauzeerd'}
                             </span>
                             <AdminVisibilityToggle 
                                 label="Automatisering"
                                 isVisible={setting.isActive}
                                 onToggle={() => handleToggle(setting.id)}
                                 isPending={togglingId === setting.id}
-                                disabled={isLoading}
                             />
                         </div>
                     </div>
