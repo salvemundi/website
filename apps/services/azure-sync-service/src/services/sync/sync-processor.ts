@@ -130,10 +130,12 @@ export class SyncProcessor {
             }
         }
 
-        ctx.status.successCount++;
-        ctx.status.successfulUsers.push({ 
-            email, 
-            changes: changes.length > 0 ? changes : undefined 
-        });
+        if (changes.length > 0) {
+            ctx.status.successCount++;
+            ctx.status.successfulUsers.push({ 
+                email, 
+                changes
+            });
+        }
     }
 }

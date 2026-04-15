@@ -34,13 +34,16 @@ const SyncContext = createContext<SyncContextType | undefined>(undefined);
 
 export function SyncProvider({ children, initialStatus }: { children: ReactNode, initialStatus: any | null }) {
     const { toast, showToast, hideToast } = useAdminToast();
+    
+    // Nuclear SSR: Initialize status directly. If null, we'll handle the empty state in the UI.
     const [status, setStatus] = useState<any | null>(initialStatus);
     const [isStartingSync, setIsStartingSync] = useState(false);
     const [isStopping, setIsStopping] = useState(false);
     const [isUserSyncLoading, setIsUserSyncLoading] = useState(false);
     const [userId, setUserId] = useState('');
-    const [lastUpdated, setLastUpdated] = useState<Date | null>(initialStatus ? new Date() : null);
-    const [isLoading, setIsLoading] = useState(!initialStatus);
+    const [lastUpdated, setLastUpdated] = useState<Date | null>(
+        initialStatus && !initialStatus.error ? new Date() : null
+    );
 
     const [selectedSyncFields, setSelectedSyncFields] = useState<string[]>(['membership_expiry', 'geboortedatum', 'phone_number', 'committees']);
     const [forceLink, setForceLink] = useState(false);
@@ -57,20 +60,23 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
     const fetchStatus = useCallback(async () => {
         try {
             const data = await getSyncStatusAction();
-            if (data && 'status' in data) {
+            if (data && ('status' in data || ('success' in data && data.success === false))) {
                 setStatus(data);
-                setLastUpdated(new Date());
+                if ('status' in data) {
+                    setLastUpdated(new Date());
+                }
             }
         } catch (err) {
-            // Silently fail, handled by UI
-        } finally {
-            setIsLoading(false);
+            // Background errors remain silent to avoid interrupting the user, 
+            // but the status object will contain error details if the action fails.
         }
     }, []);
 
     useEffect(() => {
         let timeout: ReturnType<typeof setTimeout>;
-        const shouldPoll = status?.active || status?.status === 'running' || isStartingSync;
+        // Poll only if actually running or starting
+        const isRunning = status?.active || status?.status === 'running' || status?.status === 'starting';
+        const shouldPoll = isRunning || isStartingSync;
         
         const poll = async () => {
             if (!shouldPoll) return;
@@ -84,11 +90,6 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
 
         return () => clearTimeout(timeout);
     }, [status?.active, status?.status, isStartingSync, fetchStatus]);
-
-    // Ensure we fetch at least once on mount to clear initial loading state
-    useEffect(() => {
-        fetchStatus();
-    }, [fetchStatus]);
 
     const handleFullSync = async () => {
         setIsStartingSync(true);
@@ -156,7 +157,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
 
     return (
         <SyncContext.Provider value={{
-            status, isLoading, isStartingSync, isStopping, isUserSyncLoading,
+            status, isLoading: false, isStartingSync, isStopping, isUserSyncLoading,
             userId, setUserId, lastUpdated, selectedSyncFields, toggleField,
             forceLink, setForceLink, activeOnly, setActiveOnly,
             resultFilter, setResultFilter, syncFieldOptions, fetchStatus,

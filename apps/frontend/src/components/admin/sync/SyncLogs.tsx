@@ -134,56 +134,88 @@ interface SyncLogsProps {
 }
 
 export default function SyncLogs({ resultFilter, setResultFilter, status }: SyncLogsProps) {
-    const items: React.ReactNode[] = [];
+    const itemMap = new Map<string, React.ReactNode>();
+
+    // Helper to add/merge items into the map for deduplication
+    const addItem = (email: string, node: React.ReactNode, type: string) => {
+        const key = `${email}-${type}`; // Unique within type
+        const globalKey = email; // Global for deduplication across types in 'all' view
+
+        if (resultFilter !== 'all') {
+            itemMap.set(key, node);
+        } else {
+            // Priority for 'all' view: Errors > Created > Success > Warnings > Info > Excluded
+            itemMap.set(globalKey, node);
+        }
+    };
+
+    if (resultFilter === 'all' || resultFilter === 'errors') {
+        (status.errors || []).forEach((e: any, i: number) => {
+            addItem(e.email, (
+                <ResultRow 
+                    key={`e-${i}`} 
+                    email={e.email} 
+                    message={e.message} 
+                    type="error" 
+                    timestamp={e.timestamp}
+                    stack={e.stack}
+                />
+            ), 'errors');
+        });
+    }
+
+    if (resultFilter === 'all' || resultFilter === 'created') {
+        (status.createdUsers || []).forEach((u: any, i: number) => {
+            addItem(u.email, (
+                <ResultRow 
+                    key={`c-${i}`} 
+                    email={u.email} 
+                    type="success" 
+                    message="Nieuw lid aangemaakt" 
+                    changes={u.changes}
+                />
+            ), 'created');
+        });
+    }
 
     if (resultFilter === 'all' || resultFilter === 'success') {
-        items.push(...status.successfulUsers.map((u: any, i: number) => (
-            <ResultRow 
-                key={`s-${i}`} 
-                email={u.email} 
-                type="success" 
-                changes={u.changes}
-            />
-        )));
+        (status.successfulUsers || []).forEach((u: any, i: number) => {
+            // In 'all' view, don't overwrite 'created' status with generic 'success'
+            if (resultFilter === 'all' && itemMap.has(u.email)) return;
+
+            addItem(u.email, (
+                <ResultRow 
+                    key={`s-${i}`} 
+                    email={u.email} 
+                    type="success" 
+                    changes={u.changes}
+                />
+            ), 'success');
+        });
     }
-    if (resultFilter === 'all' || resultFilter === 'created') {
-        items.push(...(status.createdUsers || []).map((u: any, i: number) => (
-            <ResultRow 
-                key={`c-${i}`} 
-                email={u.email} 
-                type="success" 
-                message="Nieuw lid aangemaakt" 
-                changes={u.changes}
-            />
-        )));
-    }
+
     if (resultFilter === 'all' || resultFilter === 'warnings') {
-        items.push(...status.warnings.map((w: any, i: number) => (
-            <ResultRow key={`w-${i}`} email={w.email} message={w.message} type="warning" />
-        )));
+        (status.warnings || []).forEach((w: any, i: number) => {
+            if (resultFilter === 'all' && itemMap.has(w.email)) return;
+            addItem(w.email, <ResultRow key={`w-${i}`} email={w.email} message={w.message} type="warning" />, 'warnings');
+        });
     }
+
     if (resultFilter === 'all' || resultFilter === 'missing') {
-        items.push(...status.missingData.map((m: any, i: number) => (
-            <ResultRow key={`m-${i}`} email={m.email} message={m.reason} type="info" />
-        )));
+        (status.missingData || []).forEach((m: any, i: number) => {
+            if (resultFilter === 'all' && itemMap.has(m.email)) return;
+            addItem(m.email, <ResultRow key={`m-${i}`} email={m.email} message={m.reason} type="info" />, 'missing');
+        });
     }
-    if (resultFilter === 'all' || resultFilter === 'errors') {
-        items.push(...status.errors.map((e: any, i: number) => (
-            <ResultRow 
-                key={`e-${i}`} 
-                email={e.email} 
-                message={e.message} 
-                type="error" 
-                timestamp={e.timestamp}
-                stack={e.stack}
-            />
-        )));
-    }
+
     if (resultFilter === 'all' || resultFilter === 'excluded') {
-        items.push(...status.excludedUsers.map((u: any, i: number) => (
-            <ResultRow key={`ex-${i}`} email={u.email} type="excluded" />
-        )));
+        (status.excludedUsers || []).forEach((u: any, i: number) => {
+            if (resultFilter === 'all' && itemMap.has(u.email)) return;
+            addItem(u.email, <ResultRow key={`ex-${i}`} email={u.email} type="excluded" />, 'excluded');
+        });
     }
+
+    const items = Array.from(itemMap.values());
 
     return (
         <div className="space-y-6">

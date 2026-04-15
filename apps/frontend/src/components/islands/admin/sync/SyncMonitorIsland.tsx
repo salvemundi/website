@@ -7,7 +7,7 @@ import { useSync } from './SyncContext';
 
 export default function SyncMonitorIsland() {
     const { 
-        isLoading, status, resultFilter, setResultFilter, lastUpdated 
+        status, resultFilter, setResultFilter, lastUpdated 
     } = useSync();
     
     const [mounted, setMounted] = useState(false);
@@ -18,10 +18,14 @@ export default function SyncMonitorIsland() {
     }, []);
 
     const isRunning = status?.active || status?.status === 'running' || status?.status === 'starting';
-    const progress = status?.progress || 0;
+    
+    // Nuclear SSR: Calculate progress in frontend since backend doesn't send it correctly
+    const processed = status?.processed || 0;
+    const total = status?.total || 0;
+    const progress = total > 0 ? (processed / total) * 100 : 0;
 
     return (
-        <div className={`bg-[var(--beheer-card-bg)] p-8 rounded-[2rem] border border-[var(--beheer-border)] shadow-sm ${!isLoading ? 'animate-in fade-in duration-1000' : ''}`}>
+        <div className="bg-[var(--beheer-card-bg)] p-8 rounded-[2rem] border border-[var(--beheer-border)] shadow-sm animate-in fade-in duration-1000">
             {/* Header: Static Shell */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
                 <div className="flex items-center gap-4">
@@ -36,13 +40,13 @@ export default function SyncMonitorIsland() {
                     </div>
                 </div>
 
-                {/* Filter Tabs: Granular Mask */}
-                <div className={`flex flex-wrap gap-2 ${isLoading ? 'skeleton-active' : ''}`}>
+                {/* Filter Tabs */}
+                <div className="flex flex-wrap gap-2">
                     {(['all', 'success', 'created', 'warnings', 'missing', 'errors', 'excluded'] as const).map(filter => (
                         <button
                             key={filter}
                             onClick={() => setResultFilter?.(filter)}
-                            className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${!isLoading && resultFilter === filter ? 'bg-[var(--beheer-accent)] text-white shadow-lg shadow-[var(--beheer-accent)]/20' : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] hover:bg-[var(--beheer-border)]/50 hover:text-[var(--beheer-text)]'}`}
+                            className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${resultFilter === filter ? 'bg-[var(--beheer-accent)] text-white shadow-lg shadow-[var(--beheer-accent)]/20' : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] hover:bg-[var(--beheer-border)]/50 hover:text-[var(--beheer-text)]'}`}
                         >
                             {filter}
                         </button>
@@ -51,7 +55,7 @@ export default function SyncMonitorIsland() {
             </div>
             
             {/* Error Message: Dynamic */}
-            {!isLoading && status?.fatalError && (
+            {status?.fatalError && (
                 <div className="mb-8 p-6 bg-[var(--theme-error)]/5 border border-[var(--theme-error)]/10 rounded-3xl animate-in slide-in-from-top duration-500">
                     <div className="flex items-start gap-4">
                         <div className="p-2 bg-[var(--theme-error)]/10 rounded-xl text-[var(--theme-error)]">
@@ -87,10 +91,10 @@ export default function SyncMonitorIsland() {
             )}
 
             <div className="space-y-6">
-                {/* Progress Bar: Granular Mask */}
-                <div className={isLoading ? 'skeleton-active' : ''}>
+                {/* Progress Bar */}
+                <div>
                     <div className="flex justify-between items-end mb-2">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">Voortgang ({status?.processed || 0} / {status?.total || 0})</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">Voortgang ({processed} / {total})</span>
                         <span className="text-xs font-black text-[var(--beheer-accent)]">{Math.round(progress || 0)}%</span>
                     </div>
                     <div className="h-3 w-full bg-[var(--beheer-card-soft)] rounded-full overflow-hidden border border-[var(--beheer-border)]/20">
@@ -98,13 +102,13 @@ export default function SyncMonitorIsland() {
                             className="h-full bg-gradient-to-r from-[var(--beheer-accent)] to-[var(--theme-info)] transition-all duration-500 relative"
                             style={{ width: `${progress}%` }}
                         >
-                            {!isLoading && isRunning && <div className="absolute inset-0 bg-white/20 animate-pulse" />}
+                            {isRunning && <div className="absolute inset-0 bg-white/20 animate-pulse" />}
                         </div>
                     </div>
                 </div>
 
-                {/* Logs Area: Granular Mask */}
-                <div className={`mt-8 min-h-[200px] ${isLoading ? 'skeleton-active' : ''}`}>
+                {/* Logs Area */}
+                <div className="mt-8 min-h-[200px]">
                     <SyncLogs 
                         status={status || { 
                             successfulUsers: [], createdUsers: [], warnings: [], 
