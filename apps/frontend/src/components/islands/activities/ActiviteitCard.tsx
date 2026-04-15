@@ -169,7 +169,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                             className={`${cannotSignUp ? 'bg-[var(--color-purple-100)] text-[var(--text-muted)] cursor-not-allowed' : 'bg-[var(--theme-purple)] text-[var(--color-white)] shadow-lg shadow-[var(--theme-purple)]/30 hover:-translate-y-0.5 hover:shadow-xl'} px-4 py-2 text-sm font-semibold rounded-full transition-transform`}
                             disabled={cannotSignUp}
                         >
-                            {alreadySignedUp ? 'AL AANGEMELD' : isDeadlinePassed ? 'INSCHRIJVEN GESLOTEN' : 'AANMELDEN'}
+                            {alreadySignedUp ? 'AL AANGEMELD' : isDeadlinePassed ? 'AANMELDING GESLOTEN' : 'AANMELDEN'}
                         </button>
                     )}
                 </div>
