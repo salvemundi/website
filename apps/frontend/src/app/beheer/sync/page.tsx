@@ -10,7 +10,6 @@ import SyncStatsIsland from '@/components/islands/admin/sync/SyncStatsIsland';
 import SyncControlIsland from '@/components/islands/admin/sync/SyncControlIsland';
 import SyncMonitorIsland from '@/components/islands/admin/sync/SyncMonitorIsland';
 import { SyncProvider } from '@/components/islands/admin/sync/SyncContext';
-import SyncHydrator from '@/components/islands/admin/sync/SyncHydrator';
 
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 
@@ -37,7 +36,10 @@ export default async function AzureSyncPage() {
     const hasAccess = await checkSyncAccess();
     if (!hasAccess) redirect('/beheer');
 
-    const status = await getSyncStatusAction().catch(() => null);
+    const status = await getSyncStatusAction().catch((err) => ({ 
+        success: false, 
+        error: "Kon sync status niet laden van de server." 
+    }));
 
     return (
         <AdminPageShell
@@ -46,12 +48,12 @@ export default async function AzureSyncPage() {
             backHref="/beheer"
         >
             <SyncProvider initialStatus={status}>
-                <SyncHydrator initialStatus={status} />
-                <div className="container mx-auto px-4 py-8 max-w-7xl relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                    <div className="grid grid-cols-1 gap-8">
+                <div className="container mx-auto px-4 py-8 max-w-7xl relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                    <div className="flex flex-col gap-10">
                         <SyncStatsIsland />
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                            <div className="lg:col-span-4 h-full">
+                        
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+                            <div className="lg:col-span-4 lg:sticky lg:top-8">
                                 <SyncControlIsland />
                             </div>
                             <div className="lg:col-span-8">
