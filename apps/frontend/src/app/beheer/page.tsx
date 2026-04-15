@@ -1,4 +1,5 @@
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
+import GlobalError from '@/components/ui/layout/GlobalError';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import { 
     DashboardHub, 
@@ -22,7 +23,17 @@ export const metadata = {
 export default async function BeheerPage() {
     // NUCLEAR SSR: All access and permission checks must happen before flushing the shell
     const access = await checkAdminAccess().catch(() => null);
-    if (!access || !access.user) return <AdminUnauthorized />;
+    if (!access || !access.user || !access.isAuthorized) {
+        return (
+            <div className="p-4 sm:p-6 lg:p-8">
+                <GlobalError 
+                    error={{ message: "Geen toegang" } as any} 
+                    reset={() => {}} 
+                    title="Beheerderspaneel Fout" 
+                />
+            </div>
+        );
+    }
 
     // Fetch all dashboard data concurrently
     const [

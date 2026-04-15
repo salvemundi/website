@@ -5,12 +5,13 @@ import { Shield, X, User, AlertCircle } from 'lucide-react';
 import { clearImpersonateToken } from '@/server/actions/admin.actions';
 
 interface Props {
-    name: string;
+    targetName: string;
+    adminName: string;
     committees: string[];
     isNormallyAdmin: boolean;
 }
 
-export default function ImpersonationBanner({ name, committees, isNormallyAdmin }: Props) {
+export default function ImpersonationBanner({ targetName, adminName, committees, isNormallyAdmin }: Props) {
     const [isPending, startTransition] = useTransition();
 
     const handleStop = () => {
@@ -20,8 +21,8 @@ export default function ImpersonationBanner({ name, committees, isNormallyAdmin 
     };
 
     return (
-        <div className="relative z-[110] animate-in slide-in-from-top duration-500">
-            <div className="bg-gradient-to-r from-orange-600 to-amber-600 text-white px-4 py-2 shadow-lg border-b border-white/10">
+        <div className="fixed top-0 left-0 right-0 z-[9999] animate-in slide-in-from-top duration-500">
+            <div className="bg-gradient-to-r from-orange-600 to-amber-600 text-white px-4 py-2 shadow-xl border-b border-white/20">
                 <div className="max-w-[1440px] mx-auto flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3 overflow-hidden">
                         <div className="flex-shrink-0 bg-white/20 p-1.5 rounded-lg">
@@ -29,21 +30,17 @@ export default function ImpersonationBanner({ name, committees, isNormallyAdmin 
                         </div>
                         <div className="flex items-center gap-2 text-sm font-medium truncate">
                             <span className="opacity-80 hidden sm:inline">Test Modus Actief:</span>
-                            <span className="font-bold flex items-center gap-1.5 bg-black/20 px-2 py-0.5 rounded-md">
+                            <span className="font-bold flex items-center gap-1.5 bg-black/30 px-2 py-0.5 rounded-md">
                                 <User className="w-3 h-3" />
-                                {name}
+                                {targetName}
+                            </span>
+                            <span className="hidden lg:inline opacity-60 text-xs italic">
+                                (Geïmiteerd door {adminName})
                             </span>
                             {committees.length > 0 && (
                                 <span className="opacity-60 hidden md:inline">— ({committees.join(', ')})</span>
                             )}
                         </div>
-                        
-                        {!isNormallyAdmin && (
-                            <div className="hidden lg:flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider bg-red-500/30 px-2 py-1 rounded-full border border-red-500/20">
-                                <AlertCircle className="w-3 h-3 text-red-200" />
-                                Geen Beheer Rechten
-                            </div>
-                        )}
                     </div>
 
                     <button

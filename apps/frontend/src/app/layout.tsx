@@ -145,12 +145,13 @@ async function ImpersonationWrapper() {
     await connection();
     const { impersonation } = await checkAdminAccess();
     
-    if (!impersonation || impersonation.error) return null;
+    if (!impersonation) return null;
 
     return (
         <ImpersonationBanner 
-            name={impersonation.name}
-            committees={impersonation.committees}
+            targetName={impersonation.targetName}
+            adminName={impersonation.name}
+            committees={impersonation.targetCommittees}
             isNormallyAdmin={impersonation.isNormallyAdmin}
         />
     );

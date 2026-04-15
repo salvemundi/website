@@ -23,7 +23,8 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
     const user = initialSession?.user ?? null;
     const isAuthenticated = !!user;
     
-    const isCommitteeMember = Array.isArray(user?.committees) && user.committees.length > 0;
+    const isAdmin = !!(user?.isAdmin || user?.isICT);
+    const canAccessAdmin = isAdmin; // Only show if they actually have dashboard access
 
     const navItems = ([
         { name: 'Home', href: ROUTES.HOME, icon: 'Home' },
@@ -45,7 +46,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                     user={user}
                     isAuthenticated={isAuthenticated}
                     navItems={navItems}
-                    isCommitteeMember={isCommitteeMember}
+                    canAccessAdmin={canAccessAdmin}
                 />
             }
         >
@@ -78,7 +79,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = []
                     <div className="flex items-center justify-end gap-3 shrink-0 flex-nowrap">
                         <NavUserSection 
                             initialSession={initialSession}
-                            isCommitteeMember={isCommitteeMember}
+                            canAccessAdmin={canAccessAdmin}
                         />
                         
                         <ThemeToggle />

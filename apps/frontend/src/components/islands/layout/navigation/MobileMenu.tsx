@@ -17,7 +17,7 @@ interface MobileMenuProps {
     user: any;
     isAuthenticated: boolean;
     navItems: { name: string; href: string; icon: IconName }[];
-    isCommitteeMember: boolean;
+    canAccessAdmin: boolean;
     onLogout: () => void;
     mounted: boolean;
 }
@@ -28,7 +28,7 @@ export default function MobileMenu({
     user,
     isAuthenticated,
     navItems,
-    isCommitteeMember,
+    canAccessAdmin,
     onLogout,
     mounted
 }: MobileMenuProps) {
@@ -93,7 +93,7 @@ export default function MobileMenu({
 
                 {/* Navigatielinks */}
                 <div className="space-y-4">
-                    {isCommitteeMember && (
+                    {canAccessAdmin && (
                         <Link
                             href={ROUTES.ADMIN}
                             onClick={onClose}

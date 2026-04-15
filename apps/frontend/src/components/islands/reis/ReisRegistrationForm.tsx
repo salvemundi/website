@@ -11,6 +11,7 @@ import { DateInput } from '@/shared/ui/DateInput';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import AdminToast from '@/components/ui/admin/AdminToast';
+import { formatPhoneNumber } from '@/lib/utils/phone-utils';
 
 // Sub-components
 import { RegistrationSuccess } from './registration/RegistrationSuccess';
@@ -58,7 +59,7 @@ export function ReisRegistrationForm({
             first_name: currentUser?.first_name || '',
             last_name: currentUser?.last_name || '',
             email: currentUser?.email || '',
-            phone_number: currentUser?.phone_number || '',
+            phone_number: formatPhoneNumber(currentUser?.phone_number),
             date_of_birth: formatDateForInput(currentUser?.date_of_birth),
             terms_accepted: false,
         }

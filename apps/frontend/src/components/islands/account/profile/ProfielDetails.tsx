@@ -5,6 +5,7 @@ import { Mail, Phone, Calendar, Edit2, Save, Loader2, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { Tile, formatForBreak } from './ProfielUI';
+import { formatPhoneNumber } from '@/lib/utils/phone-utils';
 
 interface ProfielDetailsProps {
     user?: any;
@@ -96,7 +97,7 @@ export default function ProfielDetails({
                             </form>
                         ) : (
                             <p className="font-bold text-[var(--color-purple-700)] dark:text-white text-sm">
-                                {user.phone_number || "Niet ingesteld"}
+                                {formatPhoneNumber(user.phone_number) || "Niet ingesteld"}
                             </p>
                         )}
                     </div>
