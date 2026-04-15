@@ -20,29 +20,22 @@ export default async function ProfielPage() {
         headers: await headers()
     });
 
-    return (
-        <PublicPageShell title="Mijn Profiel">
-            <div className="container mx-auto px-4 py-12 max-w-7xl">
-                <Suspense fallback={<ProfielIsland isLoading={true} user={session?.user as any} />}>
-                    <ProfielDataLoader session={session} />
-                </Suspense>
-            </div>
-        </PublicPageShell>
-    );
-}
-
-async function ProfielDataLoader({ session }: { session: any }) {
-    // Parallel data fetching for premium performance
+    // NUCLEAR SSR: Fetch all data before flushing any part of the page content
     const [eventSignups, pubCrawlSignups] = await Promise.all([
         getUserEventSignups().catch(() => []),
         getUserPubCrawlSignups().catch(() => [])
     ]);
 
     return (
-        <ProfielIsland 
-            user={session?.user as any} 
-            initialSignups={eventSignups}
-            pubCrawlSignups={pubCrawlSignups}
-        />
+        <PublicPageShell title="Mijn Profiel">
+            <div className="container mx-auto px-4 py-12 max-w-7xl">
+                <ProfielIsland 
+                    user={session?.user as any} 
+                    initialSignups={eventSignups}
+                    pubCrawlSignups={pubCrawlSignups}
+                />
+            </div>
+        </PublicPageShell>
     );
 }
+

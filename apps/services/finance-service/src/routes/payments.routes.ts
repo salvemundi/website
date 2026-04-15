@@ -18,6 +18,7 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
             phoneNumber,
             dateOfBirth,
             isContribution,
+            isNewMember,
             userId,
             redirectUrl
         } = request.body;
@@ -59,20 +60,28 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                     lastName,
                     phoneNumber,
                     dateOfBirth,
-                    isContribution
+                    isContribution,
+                    isNewMember
                 }
             });
 
             // 2. Store transaction in PostgreSQL
-            // Map registrationType to the product_type enum value used in Directus
+            // Map registrationType to literal Dutch names for the UI as requested
             const productTypeMap: Record<string, string> = {
-                'pub_crawl_signup': 'pub_crawl',
-                'trip_signup': 'trip',
-                'event_signup': 'event'
+                'pub_crawl_signup': 'Kroegentocht',
+                'trip_signup': 'Reis',
+                'event_signup': 'Activiteit'
             };
-            const productType = registrationType
-                ? (productTypeMap[registrationType] || registrationType)
-                : (isContribution ? 'membership' : 'other');
+
+            let productType = 'Overig';
+            if (registrationType && productTypeMap[registrationType]) {
+                productType = productTypeMap[registrationType];
+            } else if (isContribution) {
+                productType = isNewMember ? 'Inschrijving' : 'Lidmaatschap Verlenging';
+            } else if (registrationType) {
+                // Pre-mapped or fallback to registrationType itself
+                productType = registrationType;
+            }
 
             // 2. Build SQL dynamically to avoid parameter count mismatches
             const columns = [

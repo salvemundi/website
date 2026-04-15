@@ -38,17 +38,21 @@ export default function ConfirmationIsland({
     initialId, 
     initialTransactionId,
     isLoggedIn = false,
-    isLoading = false
-}: ConfirmationIslandProps) {
-    const [status, setStatus] = useState<'loading' | PaymentStatus | 'timeout'>('loading');
-    const [signupData, setSignupData] = useState<SignupData | null>(null);
+    isLoading = false,
+    initialStatus = 'loading',
+    initialData = null
+}: ConfirmationIslandProps & { initialStatus?: 'loading' | PaymentStatus | 'timeout', initialData?: SignupData | null }) {
+    const [status, setStatus] = useState<'loading' | PaymentStatus | 'timeout'>(initialStatus);
+    const [signupData, setSignupData] = useState<SignupData | null>(initialData);
     const [isMembership, setIsMembership] = useState(false);
     const [isTrip, setIsTrip] = useState(false);
     const [retryCount, setRetryCount] = useState(0);
 
-    // Skip effect if we are just a server-side skeleton
+    // NUCLEAR SSR: If we already have a definitive status, we don't need to poll immediately
     useEffect(() => {
         if (isLoading) return;
+        if (status === 'paid' || status === 'failed') return;
+
         
         const checkStatus = async () => {
             try {

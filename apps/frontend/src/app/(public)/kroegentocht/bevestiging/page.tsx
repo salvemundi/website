@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import PaymentStatusIsland from '@/components/islands/activities/PaymentStatusIsland';
 import { auth } from '@/server/auth/auth';
@@ -31,8 +30,10 @@ export default async function KroegentochtConfirmationPage({ searchParams }: Pag
         );
     }
 
+    // NUCLEAR SSR: Fetch initial status server-side
     const statusRes = await getPaymentStatusAction(token);
-    const isPaid = statusRes.success && statusRes.payment_status === 'paid';
+    const initialStatus = statusRes.success ? (statusRes.payment_status as any) : 'loading';
+    const isPaid = initialStatus === 'paid';
 
     return (
         <div className="pt-8 w-full">
@@ -58,21 +59,16 @@ export default async function KroegentochtConfirmationPage({ searchParams }: Pag
                         </a>
                     </div>
                 ) : (
-                    <Suspense fallback={
-                        <div className="flex flex-col items-center justify-center py-40">
-                            <div className="w-16 h-16 bg-[var(--theme-purple)]/10 rounded-full mb-4" />
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Status controleren...</p>
-                        </div>
-                    }>
-                        <PaymentStatusIsland 
-                            mollieId={token}
-                            returnUrl="/kroegentocht"
-                            returnText="Terug naar Kroegentocht"
-                            successText="Je betaling voor de kroegentocht is succesvol verwerkt. Je ontvangt binnen enkele minuten een bevestiging en je tickets in je e-mail."
-                        />
-                    </Suspense>
+                    <PaymentStatusIsland 
+                        mollieId={token}
+                        returnUrl="/kroegentocht"
+                        returnText="Terug naar Kroegentocht"
+                        successText="Je betaling voor de kroegentocht is succesvol verwerkt. Je ontvangt binnen enkele minuten een bevestiging en je tickets in je e-mail."
+                        initialStatus={initialStatus}
+                    />
                 )}
             </div>
         </div>
     );
 }
+

@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { Suspense } from 'react';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import CommitteesList from '@/components/islands/committees/CommitteesList';
 

@@ -1,5 +1,3 @@
-import { Suspense } from 'react';
-import { Beer, Loader2 } from 'lucide-react';
 import { checkAdminAccess } from '@/server/actions/admin.actions';
 import { unstable_noStore as noStore } from 'next/cache';
 import { getPubCrawlEvents, getKroegentochtSettings } from '@/server/actions/admin-kroegentocht.actions';
@@ -14,25 +12,19 @@ export default async function KroegentochtPage() {
     const { user } = await checkAdminAccess(); // Ensure authorized
     noStore();
 
-    return (
-        <div className="w-full">
-            <Suspense fallback={<KroegentochtManagementIsland isLoading={true} />}>
-                <KroegentochtDataLoader />
-            </Suspense>
-        </div>
-    );
-}
-
-async function KroegentochtDataLoader() {
+    // NUCLEAR SSR: Fetch events and settings at the top level
     const [events, settings] = await Promise.all([
         getPubCrawlEvents().catch(() => []),
         getKroegentochtSettings().catch(() => ({ show: true }))
     ]);
 
     return (
-        <KroegentochtManagementIsland 
-            initialEvents={events} 
-            initialSettings={settings} 
-        />
+        <div className="w-full">
+            <KroegentochtManagementIsland 
+                initialEvents={events} 
+                initialSettings={settings} 
+            />
+        </div>
     );
 }
+

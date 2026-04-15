@@ -1,9 +1,8 @@
-import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { getTripSignupByToken } from '@/server/actions/reis-payment.actions';
 import TripPaymentFlowIsland from '@/components/islands/reis/TripPaymentFlowIsland';
-import { Loader2, Search, Home } from 'lucide-react';
+import { Search, Home } from 'lucide-react';
 
 export const metadata: Metadata = {
     title: 'Aanbetaling Reis | SV Salve Mundi',
@@ -20,19 +19,64 @@ export default async function AanbetalingPage({ searchParams }: PageProps) {
 
     if (!signupId) return notFound();
 
+    // NUCLEAR SSR: Fetch all payment and trip data before flushing
+    const res = await getTripSignupByToken(signupId, token);
+
+    if (!res.success || !res.data) {
+        return (
+            <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
+                <div className="relative mb-8 pt-10">
+                    <div className="absolute inset-x-0 top-0 h-40 w-40 mx-auto blur-3xl bg-[var(--color-purple-500)]/10 rounded-full pointer-events-none" />
+                    <div className="relative rounded-3xl bg-[var(--bg-card)] p-6 shadow-2xl border border-[var(--border-color)]/20 text-[var(--color-purple-500)] inline-block">
+                        <Search className="h-16 w-16" />
+                    </div>
+                </div>
+
+                <h2 className="text-4xl font-black text-[var(--text-main)] mb-3 tracking-tight italic uppercase">
+                    Toegang Geweigerd
+                </h2>
+                
+                <p className="text-[var(--text-muted)] max-w-md mx-auto mb-10 font-medium">
+                    {res.error || 'Deze link is ongeldig of verlopen. Gebruik de link uit de e-mail of log in op je account.'}
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+                    <a
+                        href="/reis"
+                        className="flex items-center gap-2 rounded-full bg-[var(--color-purple-500)] text-white px-8 py-3.5 font-bold shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:-translate-y-0.5 transition-all text-sm uppercase tracking-widest"
+                    >
+                        <Home className="h-4 w-4" />
+                        Terug naar Reizen
+                    </a>
+                </div>
+            </div>
+        );
+    }
+
+    const { signup, trip, allActivities, selectedActivities } = res.data;
+
+    if (!signup || !trip) return notFound();
+
+    // Redirection logic from legacy requirements:
+    // "Als de aanbetaling al is voldaan, moet de gebruiker automatisch worden doorgestuurd naar de restbetalingspagina."
+    if (signup.deposit_paid) {
+        redirect(`/reis/betalen/restbetaling?id=${signupId}${token ? `&t=${token}` : ''}`);
+    }
+
     return (
         <div className="w-full">
-            <Suspense fallback={
-                <div className="flex flex-col items-center justify-center py-32">
-                    <Loader2 className="animate-spin h-12 w-12 text-orange-500 mb-4" />
-                    <p className="text-gray-500 font-black uppercase tracking-widest text-xs tracking-tighter">Betalingsgegevens laden...</p>
-                </div>
-            }>
-                <PaymentDataWrapper signupId={signupId} token={token} paymentType="deposit" />
-            </Suspense>
+            <TripPaymentFlowIsland 
+                signup={signup}
+                trip={trip}
+                allActivities={allActivities}
+                selectedActivities={selectedActivities}
+                paymentType="deposit"
+                token={token}
+            />
         </div>
     );
 }
+
 
 async function PaymentDataWrapper({ signupId, token, paymentType }: { signupId: number; token?: string; paymentType: 'deposit' | 'final' }) {
     const res = await getTripSignupByToken(signupId, token);

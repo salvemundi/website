@@ -152,29 +152,22 @@ export default async function KroegentochtPage() {
     });
     const isAuthenticated = !!session;
 
+    // NUCLEAR SSR: Fetch tickets if authenticated
+    let tickets: any[] = [];
+    if (isAuthenticated) {
+        tickets = await getKroegentochtTickets(session.user.email!).catch(() => []);
+    }
+
     return (
         <PublicPageShell
             title="KROEGENTOCHT"
             backgroundImage="/img/backgrounds/Kroto2025.jpg"
             imageFilter="brightness(0.55)"
             description="Dé activiteit van het jaar! Verken de beste kroegen van Eindhoven met je medestudenten."
-            fallback={
-                <div className="mx-auto max-w-7xl px-4 py-8 sm:py-10 md:py-12 animate-pulse">
-                    <div className="flex flex-col lg:flex-row gap-8">
-                        <div className="w-full lg:w-1/2 h-96 bg-[var(--bg-card)] rounded-3xl skeleton-active" />
-                        <div className="w-full lg:w-1/2 flex flex-col gap-6">
-                            <div className="h-48 bg-[var(--bg-card)] rounded-3xl skeleton-active" />
-                            <div className="h-48 bg-[var(--bg-card)] rounded-3xl skeleton-active" />
-                        </div>
-                    </div>
-                </div>
-            }
         >
             <div className="mx-auto max-w-7xl px-4 py-8 sm:py-10 md:py-12">
-                {isAuthenticated && (
-                    <Suspense fallback={<div className="h-40 w-full bg-[var(--bg-card)] rounded-3xl mb-8 skeleton-active" />}>
-                        <TicketsSection userEmail={session.user.email!} />
-                    </Suspense>
+                {isAuthenticated && tickets.length > 0 && (
+                    <KroegentochtTicketsIsland initialTickets={tickets} userEmail={session.user.email!} />
                 )}
 
                 <RegistrationSection />
@@ -182,4 +175,5 @@ export default async function KroegentochtPage() {
         </PublicPageShell>
     );
 }
+
 

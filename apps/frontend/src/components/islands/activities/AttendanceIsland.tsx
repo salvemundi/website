@@ -9,11 +9,12 @@ import { Search, UserCheck, UserX, QrCode, Loader2, RefreshCw } from 'lucide-rea
 interface AttendanceIslandProps {
     eventId: string;
     eventName: string;
+    initialSignups?: any[];
 }
 
-export default function AttendanceIsland({ eventId, eventName }: AttendanceIslandProps) {
-    const [signups, setSignups] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+export default function AttendanceIsland({ eventId, eventName, initialSignups = [] }: AttendanceIslandProps) {
+    const [signups, setSignups] = useState<any[]>(initialSignups);
+    const [loading, setLoading] = useState(initialSignups.length === 0);
     const [search, setSearch] = useState('');
     const [scanning, setScanning] = useState(false);
     const [scanResult, setScanResult] = useState<{ success: boolean; message: string } | null>(null);
@@ -26,8 +27,11 @@ export default function AttendanceIsland({ eventId, eventName }: AttendanceIslan
     };
 
     useEffect(() => {
-        fetchData();
+        if (initialSignups.length === 0) {
+            fetchData();
+        }
     }, [eventId]);
+
 
     const handleToggleCheckIn = async (signupId: number, currentStatus: boolean) => {
         const result = await toggleCheckInAction(signupId, Number(eventId), !currentStatus);

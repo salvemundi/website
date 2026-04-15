@@ -1,9 +1,8 @@
-import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import AnimatedBeheerHeader from '@/components/ui/admin/AnimatedBeheerHeader';
 import ReisDeelnemerDetailIsland from '@/components/islands/admin/ReisDeelnemerDetailIsland';
-import { Loader2, User } from 'lucide-react';
+import { User } from 'lucide-react';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 
@@ -36,19 +35,7 @@ export default async function DeelnemerDetailPage({ params }: PageProps) {
     const { id } = await params;
     const signupId = parseInt(id);
 
-    return (
-        <div className="w-full">
-            <Suspense fallback={<DeelnemerDetailLoader />}>
-                <DeelnemerDataWrapper signupId={signupId} />
-            </Suspense>
-        </div>
-    );
-}
-
-import { getTripSignup, getTripSignupActivitiesAction } from '@/server/actions/reis-admin-signups.actions';
-
-async function DeelnemerDataWrapper({ signupId }: { signupId: number }) {
-    // 1. Fetch signup details using the direct-database action
+    // NUCLEAR SSR: Fetch participant and trip data before flushing ANY part of the page
     const signup = await getTripSignup(signupId);
     
     if (!signup || !signup.trip_id) {
@@ -57,9 +44,7 @@ async function DeelnemerDataWrapper({ signupId }: { signupId: number }) {
 
     const tripId = signup.trip_id;
 
-    // 2. Fetch related data (trips for dropdown, activities for trip, and selected activities)
-    // We can still use Directus for static metadata like trips and activity definitions, 
-    // but we use the new action for the real-time signup activities.
+    // Fetch related data (trips for dropdown, activities for trip, and selected activities)
     const [trips, activities, signupActivities] = await Promise.all([
         getSystemDirectus().request(readItems('trips', {
             fields: ['id', 'name'] as any,
@@ -82,20 +67,18 @@ async function DeelnemerDataWrapper({ signupId }: { signupId: number }) {
         .map((a: any) => typeof a.trip_activity_id === 'object' ? a.trip_activity_id.id : a.trip_activity_id);
 
     return (
-        <ReisDeelnemerDetailIsland 
-            initialSignup={signup}
-            trips={trips as any}
-            allActivities={activities as any}
-            initialSelectedActivities={participantActivities}
-        />
-    );
-}
-
-function DeelnemerDetailLoader() {
-    return (
-        <div className="container mx-auto px-4 py-32 flex flex-col items-center justify-center">
-            <Loader2 className="h-12 w-12 animate-spin text-[var(--beheer-accent)] mb-4" />
-            <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-xs">Deelnemer laden...</p>
+        <div className="w-full">
+            <ReisDeelnemerDetailIsland 
+                initialSignup={signup}
+                trips={trips as any}
+                allActivities={activities as any}
+                initialSelectedActivities={participantActivities}
+            />
         </div>
     );
 }
+
+
+import { getTripSignup, getTripSignupActivitiesAction } from '@/server/actions/reis-admin-signups.actions';
+
+

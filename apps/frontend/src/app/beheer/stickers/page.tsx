@@ -1,6 +1,6 @@
-import { Suspense } from 'react';
 import { getStickers } from '@/server/actions/admin-stickers.actions';
 import StickerManagementIsland from '@/components/islands/admin/StickerManagementIsland';
+import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import { checkAdminAccess } from '@/server/actions/admin.actions';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 
@@ -17,20 +17,17 @@ export const metadata = {
 export default async function StickersAdminPage() {
     const { user } = await checkAdminAccess();
 
+    // NUCLEAR SSR: Fetch stickers at the top level
+    const stickers = await getStickers().catch(() => []);
+
     return (
         <AdminPageShell
             title="Sticker Beheer"
             subtitle="Beheer en modereer stickerlocaties wereldwijd."
             backHref="/beheer"
         >
-            <Suspense fallback={<StickerManagementIsland isLoading={true} initialStickers={[]} />}>
-                <StickersDataLoader />
-            </Suspense>
+            <StickerManagementIsland initialStickers={stickers} />
         </AdminPageShell>
     );
 }
 
-async function StickersDataLoader() {
-    const stickers = await getStickers().catch(() => []);
-    return <StickerManagementIsland initialStickers={stickers} />;
-}

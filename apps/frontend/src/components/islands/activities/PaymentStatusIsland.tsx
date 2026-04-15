@@ -20,10 +20,12 @@ export default function PaymentStatusIsland({
     onExpire,
     returnUrl = '/reis',
     returnText = 'Terug naar Reizen',
-    successText = 'Je aanbetaling is succesvol verwerkt. Je ontvangt binnen enkele minuten een bevestiging in je e-mail.'
-}: PaymentStatusProps) {
-    const [status, setStatus] = useState<'loading' | 'open' | 'paid' | 'expired' | 'failed'>('loading');
+    successText = 'Je aanbetaling is succesvol verwerken. Je ontvangt binnen enkele minuten een bevestiging in je e-mail.',
+    initialStatus = 'loading'
+}: PaymentStatusProps & { initialStatus?: 'loading' | 'open' | 'paid' | 'expired' | 'failed' }) {
+    const [status, setStatus] = useState<'loading' | 'open' | 'paid' | 'expired' | 'failed'>(initialStatus);
     const [attempts, setAttempts] = useState(0);
+
     const maxAttempts = 20;
 
     const checkStatus = async () => {

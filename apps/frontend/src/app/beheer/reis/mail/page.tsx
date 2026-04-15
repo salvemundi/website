@@ -1,7 +1,5 @@
-import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import ReisMailIsland from '@/components/islands/admin/ReisMailIsland';
-import { Loader2 } from 'lucide-react';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 import { notFound } from 'next/navigation';
@@ -15,24 +13,10 @@ export const metadata: Metadata = {
 };
 
 export default async function ReisMailPage({ searchParams }: PageProps) {
-    return (
-        <div className="w-full">
-            <Suspense fallback={
-                <div className="flex flex-col items-center justify-center py-32">
-                    <Loader2 className="animate-spin h-12 w-12 text-[var(--beheer-accent)] mb-4" />
-                    <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-xs">Mailsysteem laden...</p>
-                </div>
-            }>
-                <MailDataWrapper searchParams={searchParams} />
-            </Suspense>
-        </div>
-    );
-}
-
-async function MailDataWrapper({ searchParams }: PageProps) {
     const resolvedSearchParams = await searchParams;
     const tripIdParam = typeof resolvedSearchParams.tripId === 'string' ? resolvedSearchParams.tripId : undefined;
 
+    // NUCLEAR SSR: Fetch all trips and signups before flushing any part of the page
     const trips = await getSystemDirectus().request(readItems('trips', {
         fields: ['id', 'name'] as any,
         sort: ['-start_date']
@@ -61,10 +45,14 @@ async function MailDataWrapper({ searchParams }: PageProps) {
     }));
 
     return (
-        <ReisMailIsland 
-            trips={trips as any} 
-            initialSignups={signups as any}
-            initialSelectedTripId={activeTripId}
-        />
+        <div className="w-full">
+            <ReisMailIsland 
+                trips={trips as any} 
+                initialSignups={signups as any}
+                initialSelectedTripId={activeTripId}
+            />
+        </div>
     );
 }
+
+

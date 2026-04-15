@@ -1,8 +1,7 @@
-import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import AnimatedBeheerHeader from '@/components/ui/admin/AnimatedBeheerHeader';
 import ReisActiviteitenIsland from '@/components/islands/admin/ReisActiviteitenIsland';
-import { Loader2, Layers } from 'lucide-react';
+import { Layers } from 'lucide-react';
 import { getTrips, getTripActivities } from '@/server/queries/admin-reis.queries';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
@@ -35,26 +34,10 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
 }
 
 export default async function ReisActiviteitenPage({ searchParams }: PageProps) {
-    return (
-        <div className="w-full">
-            <Suspense fallback={
-                <div className="flex flex-col items-center justify-center py-32">
-                    <Loader2 className="animate-spin h-12 w-12 text-[var(--beheer-accent)] mb-4" />
-                    <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-xs">Activiteiten laden...</p>
-                </div>
-            }>
-                <ReisActiviteitenLoader searchParams={searchParams} />
-            </Suspense>
-        </div>
-    );
-}
-
-import { getTripSignupActivitiesAction } from '@/server/actions/reis-admin-signups.actions';
-
-async function ReisActiviteitenLoader({ searchParams }: PageProps) {
     const resolvedSearchParams = await searchParams;
     const tripIdParam = typeof resolvedSearchParams.tripId === 'string' ? resolvedSearchParams.tripId : undefined;
 
+    // NUCLEAR SSR: Fetch all data before flushing ANY part of the page
     const trips = await getTrips();
 
     if (!trips || trips.length === 0) {
@@ -87,11 +70,18 @@ async function ReisActiviteitenLoader({ searchParams }: PageProps) {
     });
 
     return (
-        <ReisActiviteitenIsland 
-            initialTrips={trips as any} 
-            initialActivities={activities as any}
-            initialSelectedTripId={activeTripId}
-            initialSignupsByActivity={signupsByActivity}
-        />
+        <div className="w-full">
+            <ReisActiviteitenIsland 
+                initialTrips={trips as any} 
+                initialActivities={activities as any}
+                initialSelectedTripId={activeTripId}
+                initialSignupsByActivity={signupsByActivity}
+            />
+        </div>
     );
 }
+
+
+import { getTripSignupActivitiesAction } from '@/server/actions/reis-admin-signups.actions';
+
+

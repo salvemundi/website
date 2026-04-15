@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import CommitteeDetailDisplay from '@/components/islands/committees/CommitteeDetailDisplay';
 import { getCommitteeBySlug } from '@/server/actions/committees.actions';
