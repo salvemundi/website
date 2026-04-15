@@ -22,7 +22,7 @@ export default function ProfielSignups({
 }: ProfielSignupsProps) {
     return (
         <Tile
-            title="Mijn inschrijvingen"
+            title="Mijn aanmeldingen"
             icon={<Calendar className="h-5 w-5" />}
             className="h-fit"
             aria-busy={isLoading}
@@ -96,7 +96,7 @@ export default function ProfielSignups({
             ) : (
                 <div className="rounded-3xl border-2 border-dashed border-slate-300 dark:border-white/20 bg-slate-50 dark:bg-black/10 p-12 text-center shadow-inner">
                     <p className="text-[var(--color-purple-700)] dark:text-white font-bold text-lg mb-2">
-                        Je hebt je nog niet ingeschreven voor activiteiten.
+                        Je bent nog niet aangemeld voor activiteiten.
                     </p>
                     <p className="text-[var(--text-muted)] text-sm mb-6">
                         Bekijk de kalender om aankomende activiteiten te ontdekken

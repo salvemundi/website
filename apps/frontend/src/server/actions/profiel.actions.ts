@@ -29,7 +29,7 @@ export async function getUserEventSignups(overrideUserId?: string): Promise<Even
     if (!targetUserId) return [];
 
     try {
-        const registrations = await fetchUserEventSignupsDb(targetUserId);
+        const registrations = await fetchUserEventSignupsDb(targetUserId, user?.email || undefined);
         const parsed = eventSignupSchema.array().safeParse(registrations);
 
         if (!parsed.success) {
@@ -53,7 +53,7 @@ export async function getUserPubCrawlSignups(overrideUserId?: string): Promise<a
     if (!targetUserId) return [];
 
     try {
-        return await fetchUserPubCrawlSignupsDb(targetUserId);
+        return await fetchUserPubCrawlSignupsDb(targetUserId, user?.email || undefined);
     } catch (err: any) {
         
         return [];
