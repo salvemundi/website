@@ -5,13 +5,11 @@ import { getImageUrl } from '@/lib/utils/image-utils';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 
 interface SafeHavenCardProps {
-    isLoading?: boolean;
     safeHaven?: SafeHaven;
 }
 
 /**
- * SafeHavenCard: Zero-Drift Modernization.
- * Removed manual skeleton branches. Uses .skeleton-active for premium masking.
+ * SafeHavenCard: Zero-Skeleton SSR standard.
  */
 export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
     const imageUrl = safeHaven?.afbeelding_id 

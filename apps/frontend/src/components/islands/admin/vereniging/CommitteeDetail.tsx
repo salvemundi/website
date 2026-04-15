@@ -21,7 +21,7 @@ import { Input } from '@/shared/ui/Input';
 interface Props {
     selected: Committee;
     members: CommitteeMember[];
-    isInitialMemberLoading: boolean;
+    isUpdating: boolean;
     actionLoading: string | null;
     editingDetail: boolean;
     onToggleEditing: () => void;
@@ -46,7 +46,7 @@ const slugify = (name: string) =>
 export default function CommitteeDetail({
     selected,
     members,
-    isInitialMemberLoading,
+    isUpdating,
     actionLoading,
     editingDetail,
     onToggleEditing,
@@ -198,22 +198,8 @@ export default function CommitteeDetail({
                     )}
                 </div>
 
-                <div className="p-8 md:p-10">
-                    {isInitialMemberLoading ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            {[1, 2, 3, 4].map(i => (
-                                <div key={i} className="flex items-center justify-between p-5 bg-[var(--beheer-card-bg)] rounded-3xl border border-[var(--beheer-border)] relative overflow-hidden">
-                                     <div className="flex items-center gap-4 min-w-0">
-                                        <div className="h-12 w-12 shrink-0 rounded-2xl skeleton-active" />
-                                        <div className="space-y-2">
-                                            <div className="h-3 w-32 skeleton-active" />
-                                            <div className="h-2 w-24 opacity-50 skeleton-active" />
-                                        </div>
-                                     </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : members.length === 0 ? (
+                <div className={`p-8 md:p-10 transition-opacity duration-300 ${isUpdating ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+                    {members.length === 0 ? (
                         <div className="py-24 text-center bg-[var(--beheer-card-soft)]/20 rounded-[var(--beheer-radius)] border-2 border-dashed border-[var(--beheer-border)]">
                             <Users className="h-12 w-12 text-[var(--beheer-text-muted)] opacity-10 mx-auto mb-4" />
                             <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-[10px] opacity-40 italic">Nog geen leden in deze groep</p>

@@ -12,8 +12,7 @@ import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { Loader2, CheckCircle2, AlertCircle, CreditCard, Send, Users, Ticket, Info } from 'lucide-react';
 import QRDisplay from '@/shared/ui/QRDisplay';
 interface EventSignupIslandProps {
-    isLoading?: boolean;
-    isMember?: boolean;
+    id?: number | string;
     isPast?: boolean;
     eventId?: number;
     price?: number;
@@ -26,7 +25,6 @@ interface EventSignupIslandProps {
 }
 
 export default function EventSignupIsland({
-    isLoading = false,
     eventId = 0,
     price = 0,
     isPast: serverIsPast = false,
@@ -77,7 +75,6 @@ export default function EventSignupIsland({
 
 
     const onSubmit = async (data: EventSignupForm) => {
-        if (isLoading) return;
         setServerError(null);
 
         startTransition(async () => {
@@ -135,7 +132,7 @@ export default function EventSignupIsland({
     }
 
     return (
-        <div className={`h-full flex flex-col p-8 rounded-[2rem] bg-[var(--bg-card)] border border-[var(--border-color)] shadow-2xl group transition-all duration-500 hover:shadow-[var(--theme-purple)]/10 ${isLoading ? 'skeleton-active' : ''}`} aria-busy={isLoading}>
+        <div className={`h-full flex flex-col p-8 rounded-[2rem] bg-[var(--bg-card)] border border-[var(--border-color)] shadow-2xl group transition-all duration-500 hover:shadow-[var(--theme-purple)]/10`}>
             <div className="flex justify-between items-start mb-8">
                 <div>
                     <h3 className="text-2xl font-black text-[var(--theme-purple)] flex items-center gap-3">
@@ -145,7 +142,7 @@ export default function EventSignupIsland({
                 </div>
                 <div className="text-right">
                     <span className="block text-[10px] uppercase font-black text-[var(--text-muted)] tracking-[0.2em] mb-1">Prijs</span>
-                    <span className="text-2xl font-black text-[var(--theme-purple)]">€{isLoading ? '0,00' : price.toFixed(2)}</span>
+                    <span className="text-2xl font-black text-[var(--theme-purple)]">€{price.toFixed(2)}</span>
                 </div>
             </div>
 
@@ -214,11 +211,11 @@ export default function EventSignupIsland({
                 <div className="pt-4 space-y-4">
                     <button
                         type="submit"
-                        disabled={isPending || isLoading}
+                        disabled={isPending}
                         className="w-full relative group h-16 bg-gradient-to-br from-[var(--theme-purple)] via-[var(--color-purple-600)] to-[var(--theme-purple)] bg-[length:200%_auto] hover:bg-[position:right_center] text-white font-black rounded-2xl shadow-xl shadow-[var(--theme-purple)]/20 hover:shadow-2xl hover:shadow-[var(--theme-purple)]/40 hover:-translate-y-1 active:scale-95 transition-all duration-500 disabled:opacity-70"
                     >
                         <div className="flex items-center justify-center gap-3">
-                            {(isPending || isLoading) ? (
+                            {isPending ? (
                                 <><Loader2 className="h-6 w-6 animate-spin" /><span className="tracking-widest">VERWERKEN...</span></>
                             ) : (
                                 <>{isPaid ? <CreditCard className="h-6 w-6" /> : <Send className="h-6 w-6" />}

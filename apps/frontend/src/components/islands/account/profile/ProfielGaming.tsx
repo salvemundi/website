@@ -5,7 +5,6 @@ import { Gamepad2, Edit2, Save, Loader2, X } from 'lucide-react';
 import { Tile, formatForBreak } from './ProfielUI';
 
 interface ProfielGamingProps {
-    isLoading?: boolean;
     user?: any;
     isEditingMinecraft?: boolean;
     setIsEditingMinecraft?: (val: boolean) => void;
@@ -18,7 +17,6 @@ interface ProfielGamingProps {
 }
 
 export default function ProfielGaming({
-    isLoading = false,
     user = {},
     isEditingMinecraft = false,
     setIsEditingMinecraft = () => {},
@@ -30,13 +28,13 @@ export default function ProfielGaming({
     isPending = false
 }: ProfielGamingProps) {
     return (
-        <Tile title="Social Gaming" icon={<Gamepad2 className="h-5 w-5" />} className={`h-fit ${isLoading ? 'skeleton-active' : ''}`} aria-busy={isLoading}>
+        <Tile title="Social Gaming" icon={<Gamepad2 className="h-5 w-5" />} className="h-fit">
             <div className="rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm relative group">
                 <div className="flex items-center justify-between gap-2 mb-3">
                     <p className="text-[11px] font-bold uppercase text-[var(--color-purple-400)] tracking-wide text-left">
                         Minecraft Username
                     </p>
-                    {!isEditingMinecraft && !isLoading && (
+                    {!isEditingMinecraft && (
                         <button onClick={() => setIsEditingMinecraft(true)} className="text-[var(--text-muted)] hover:text-[var(--color-purple-500)] p-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
                             <Edit2 className="h-3.5 w-3.5" />
                         </button>
@@ -61,7 +59,7 @@ export default function ProfielGaming({
                         </form>
                     ) : (
                         <p className="break-words font-bold text-[var(--color-purple-700)] dark:text-white text-base min-w-0 flex-1">
-                            {isLoading ? 'LOADING_USERNAME' : (formatForBreak(user.minecraft_username) || "Niet ingesteld")}
+                            {formatForBreak(user.minecraft_username) || "Niet ingesteld"}
                         </p>
                     )}
                 </div>

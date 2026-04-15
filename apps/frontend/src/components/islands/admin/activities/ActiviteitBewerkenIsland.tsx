@@ -45,13 +45,11 @@ interface EventProps {
 interface ActiviteitBewerkenIslandProps {
     event?: EventProps;
     committees?: Committee[];
-    isLoading?: boolean;
 }
 
 export default function ActiviteitBewerkenIsland({ 
     event = {} as EventProps, 
     committees = [], 
-    isLoading = false 
 }: ActiviteitBewerkenIslandProps) {
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
@@ -125,13 +123,13 @@ export default function ActiviteitBewerkenIsland({
     const formErrors = state.fieldErrors || {};
 
     return (
-        <div className={isLoading ? 'skeleton-active' : ''} aria-busy={isLoading}>
+        <div>
             <AdminToolbar 
                 title="Bewerk Activiteit"
                 subtitle={`Wijzig de gegevens van "${event.name}"`}
                 backHref="/beheer/activiteiten"
             />
-            <div className={`container mx-auto px-4 py-12 max-w-4xl overflow-x-hidden`}>
+            <div className="container mx-auto px-4 py-12 max-w-4xl overflow-x-hidden">
                     <form action={formAction} className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-2xl p-6 sm:p-10 space-y-8 text-[var(--beheer-text)] border border-[var(--beheer-border)] relative overflow-hidden">
                     {/* Glow effect */}
                     <div className="absolute -top-24 -right-24 h-48 w-48 bg-[var(--beheer-accent)]/5 blur-3xl rounded-full" />

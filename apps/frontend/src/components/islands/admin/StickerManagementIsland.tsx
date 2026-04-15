@@ -20,12 +20,10 @@ import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import StickersTable from '@/components/admin/stickers/StickersTable';
 
 interface StickerManagementIslandProps {
-    isLoading?: boolean;
     initialStickers: any[];
 }
 
 export default function StickerManagementIsland({
-    isLoading = false,
     initialStickers
 }: StickerManagementIslandProps) {
     const { toast, showToast, hideToast } = useAdminToast();
@@ -54,7 +52,7 @@ export default function StickerManagementIsland({
     ];
 
     return (
-        <div className={`container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700 ${isLoading ? 'skeleton-active' : ''}`} aria-busy={isLoading}>
+        <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700">
             <AdminStatsBar stats={adminStats} />
 
             <div className="animate-in fade-in zoom-in-95 duration-500">
@@ -65,9 +63,8 @@ export default function StickerManagementIsland({
                     </h2>
                 </div>
 
-                {stickers.length > 0 || isLoading ? (
+                {stickers.length > 0 ? (
                     <StickersTable 
-                        isLoading={isLoading}
                         stickers={stickers} 
                         onDelete={handleDelete} 
                     />

@@ -2,30 +2,13 @@
 
 import React from 'react';
 import { RefreshCw, X, Info } from 'lucide-react';
-
-interface SyncControlIslandProps {
-    isLoading?: boolean;
-    isStartingSync?: boolean;
-    isStopping?: boolean;
-    isUserSyncLoading?: boolean;
-    selectedSyncFields?: string[];
-    toggleField?: (id: string) => void;
-    forceLink?: boolean;
-    setForceLink?: (val: boolean) => void;
-    activeOnly?: boolean;
-    setActiveOnly?: (val: boolean) => void;
-    handleFullSync?: () => void;
-    handleStopSync?: () => void;
-    userId?: string;
-    setUserId?: (val: string) => void;
-    handleUserSync?: (e: React.FormEvent) => void;
-    syncFieldOptions?: { id: string, label: string }[];
-    status?: any | null;
-}
-
 import { useSync } from './SyncContext';
 
-export default function SyncControlIsland() {
+interface Props {
+    tasks?: any[];
+}
+
+export default function SyncControlIsland({ tasks = [] }: Props) {
     const { 
         isStartingSync, isStopping, isUserSyncLoading,
         selectedSyncFields, toggleField, forceLink, setForceLink,

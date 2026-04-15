@@ -8,14 +8,12 @@ import { nl } from 'date-fns/locale';
 import { Tile } from './ProfielUI';
 
 interface ProfielSignupsProps {
-    isLoading?: boolean;
     filteredSignups?: any[];
     showPastEvents?: boolean;
     setShowPastEvents?: (val: boolean | ((v: boolean) => boolean)) => void;
 }
 
 export default function ProfielSignups({
-    isLoading = false,
     filteredSignups = [],
     showPastEvents = false,
     setShowPastEvents = () => {}
@@ -25,12 +23,10 @@ export default function ProfielSignups({
             title="Mijn aanmeldingen"
             icon={<Calendar className="h-5 w-5" />}
             className="h-fit"
-            aria-busy={isLoading}
             actions={
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => setShowPastEvents((v) => !v)}
-                        disabled={isLoading}
                         className="inline-flex items-center justify-center rounded-xl bg-[var(--color-purple-50)] px-4 py-2 text-[10px] font-black uppercase text-[var(--color-purple-700)] hover:bg-[var(--color-purple-100)] transition border border-[var(--color-purple-100)] disabled:opacity-50"
                     >
                         {showPastEvents ? "Verberg oude" : "Toon oude"}
@@ -44,27 +40,27 @@ export default function ProfielSignups({
                 </div>
             }
         >
-            {(isLoading || filteredSignups.length > 0) ? (
-                <div className={`grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 ${isLoading ? 'skeleton-active' : ''}`}>
-                    {(isLoading ? [1, 2, 3] : filteredSignups).map((signup: any, idx: number) => {
-                        const isEvent = isLoading ? true : signup._type === 'event';
-                        const eventData = isLoading ? { name: 'Loading Activity Name', id: 'loading' } : (isEvent ? signup.event_id : signup.pub_crawl_event_id);
-                        const eventDateStr = isLoading ? '2024-01-01' : (isEvent ? eventData?.event_date : eventData?.date);
-                        const detailHref = isLoading ? '#' : (isEvent ? `/activiteiten/${eventData.id}` : `/kroegentocht`);
-                        const icon = isLoading ? <Calendar className="h-7 w-7" /> : (isEvent ? <Calendar className="h-7 w-7" /> : <CreditCard className="h-7 w-7" />);
+            {filteredSignups.length > 0 ? (
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+                    {filteredSignups.map((signup: any) => {
+                        const isEvent = signup._type === 'event';
+                        const eventData = isEvent ? signup.event_id : signup.pub_crawl_event_id;
+                        const eventDateStr = isEvent ? eventData?.event_date : eventData?.date;
+                        const detailHref = isEvent ? `/activiteiten/${eventData.id}` : `/kroegentocht`;
+                        const icon = isEvent ? <Calendar className="h-7 w-7" /> : <CreditCard className="h-7 w-7" />;
 
                         if (!eventData) return null;
 
                         const isPast = (() => {
                             try {
-                                if (isLoading || !eventDateStr) return false;
+                                if (!eventDateStr) return false;
                                 return isBefore(startOfDay(new Date(eventDateStr)), startOfDay(new Date()));
                             } catch { return false; }
                         })();
 
                         return (
                             <Link
-                                key={isLoading ? idx : `${signup._type}-${signup.id}`}
+                                key={`${signup._type}-${signup.id}`}
                                 href={detailHref}
                                 className={`group h-full flex items-center justify-between gap-4 rounded-3xl p-5 text-left transition-all border shadow-sm ${
                                     isPast 
@@ -84,7 +80,7 @@ export default function ProfielSignups({
                                         </div>
                                         <p className="mt-1 flex items-center gap-2 text-xs font-bold text-[var(--text-muted)]">
                                             <Calendar className="h-3.5 w-3.5" />
-                                            {isLoading ? '01 JAN 2024' : (eventDateStr && format(new Date(eventDateStr), "d MMM yyyy", { locale: nl }))}
+                                            {eventDateStr && format(new Date(eventDateStr), "d MMM yyyy", { locale: nl })}
                                         </p>
                                     </div>
                                 </div>

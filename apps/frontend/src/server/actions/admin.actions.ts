@@ -219,13 +219,14 @@ export async function setImpersonateToken(token: string) {
     const { isAuthorized } = await checkAdminAccess();
     if (!isAuthorized) throw new Error("Geen toegang");
     try {
-        const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL || process.env.DIRECTUS_URL || "https://cms.salvemundi.nl";
+        const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL || "https://cms.salvemundi.nl";
         const testClient = createDirectus(directusUrl)
             .with(staticToken(token))
             .with(rest());
 
+        // We fetch only basic fields first to ensure the token is valid.
         const user = await testClient.request(readMe({
-            fields: [...USER_ID_FIELDS, 'first_name', 'last_name', 'email', 'avatar', { role: ['name'] }]
+            fields: ['id', 'first_name', 'last_name', 'email', 'avatar']
         } as any)) as unknown as DirectusUser;
 
         if (!user) {

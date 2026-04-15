@@ -9,7 +9,6 @@ import { useAdminToast } from '@/hooks/use-admin-toast';
 import { formatDate as coreFormatDate } from '@/shared/lib/utils/date';
 
 interface ActiviteitCardProps {
-    isLoading?: boolean;
     id?: number | string;
     description?: string;
     description_logged_in?: string;

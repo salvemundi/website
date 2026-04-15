@@ -18,21 +18,15 @@ import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import { formatDate } from '@/shared/lib/utils/date';
 
 interface Props {
-    isLoading?: boolean;
     initialStatuses?: ServiceStatus[];
 }
 
 export default function ServicesStatusIsland({ 
-    isLoading: parentIsLoading = false,
     initialStatuses = []
 }: Props) {
     const [statuses, setStatuses] = useState<ServiceStatus[]>(initialStatuses);
-    const [internalIsLoading, setInternalIsLoading] = useState(initialStatuses.length === 0);
     const [lastUpdated, setLastUpdated] = useState<Date | null>(initialStatuses.length > 0 ? new Date() : null);
     const [isRefreshing, setIsRefreshing] = useState(false);
-
-    const isLoading = parentIsLoading || (internalIsLoading && statuses.length === 0);
-
 
     const fetchStatus = useCallback(async () => {
         setIsRefreshing(true);
@@ -41,20 +35,16 @@ export default function ServicesStatusIsland({
             setStatuses(data);
             setLastUpdated(new Date());
         } catch (err) {
-            
+            // Background update errors are handled by data absence
         } finally {
-            setInternalIsLoading(false);
             setIsRefreshing(false);
         }
     }, []);
 
     useEffect(() => {
-        if (!parentIsLoading) {
-            fetchStatus();
-            const interval = setInterval(fetchStatus, 30000); // Auto refresh every 30s
-            return () => clearInterval(interval);
-        }
-    }, [fetchStatus, parentIsLoading]);
+        const interval = setInterval(fetchStatus, 30000); // Auto refresh every 30s
+        return () => clearInterval(interval);
+    }, [fetchStatus]);
 
     const getStatusColor = (status: string) => {
         if (status === 'online') return 'text-green-500 bg-green-500/10 border-green-500/20';
@@ -71,19 +61,19 @@ export default function ServicesStatusIsland({
     const adminStats = useMemo(() => [
         { 
             label: 'Systemen', 
-            value: isLoading ? 4 : statuses.length, 
+            value: statuses.length, 
             icon: Server, 
             trend: 'Totaal' 
         },
         { 
             label: 'Gezond', 
-            value: isLoading ? 4 : statuses.filter(s => s.status === 'online').length, 
+            value: statuses.filter(s => s.status === 'online').length, 
             icon: ShieldCheck, 
             trend: 'Healthy' 
         },
         { 
             label: 'Issue', 
-            value: isLoading ? 0 : statuses.filter(s => s.status !== 'online').length, 
+            value: statuses.filter(s => s.status !== 'online').length, 
             icon: AlertCircle, 
             trend: 'Errors' 
         },
@@ -93,18 +83,14 @@ export default function ServicesStatusIsland({
             icon: Activity, 
             trend: 'Rolling' 
         },
-    ], [statuses, isLoading]);
-
-    const displayedServices = isLoading 
-        ? Array(4).fill({ name: 'Loading Service', status: 'online', latency: 20 }) 
-        : statuses;
+    ], [statuses]);
 
     return (
-        <div className={`container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700 ${isLoading ? 'skeleton-active' : ''}`} aria-busy={isLoading}>
+        <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700">
             <div className="flex justify-end gap-3 mb-8">
                 <button
                     onClick={fetchStatus}
-                    disabled={isRefreshing || isLoading}
+                    disabled={isRefreshing}
                     className="flex items-center justify-center gap-2 px-8 py-2 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-[10px] font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
                 >
                     <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -114,57 +100,64 @@ export default function ServicesStatusIsland({
 
             <AdminStatsBar stats={adminStats} />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-                {displayedServices.map((service, idx) => (
-                    <div 
-                        key={isLoading ? `loading-${idx}` : service.name}
-                        className="bg-[var(--beheer-card-bg)] rounded-[2.5rem] p-8 border border-[var(--beheer-border)] shadow-sm hover:shadow-md transition-all relative overflow-hidden group"
-                    >
-                        <div className="flex justify-between items-start mb-6">
-                            <div className="p-4 bg-[var(--beheer-card-soft)] rounded-2xl text-[var(--beheer-accent)] group-hover:scale-110 transition-transform">
-                                <Zap className="h-6 w-6" />
-                            </div>
-                            <div className={`flex items-center gap-2 px-4 py-2 rounded-full border text-[10px] font-black uppercase tracking-widest ${getStatusColor(service.status)}`}>
-                                {getStatusIcon(service.status)}
-                                {service.status}
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div>
-                                <h3 className="text-lg font-black text-[var(--beheer-text)] uppercase tracking-widest">{service.name}</h3>
-                                <div className="flex items-center gap-4 mt-2">
-                                    <div className="flex items-center gap-1.5 text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">
-                                        <Clock className="h-3.5 w-3.5" />
-                                        {service.latency ? `${service.latency}ms` : 'N/A'}
-                                    </div>
-                                    <div className="h-3 w-[1px] bg-[var(--beheer-border)]"></div>
-                                    <div className="flex items-center gap-1.5 text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">
-                                        <Activity className="h-3.5 w-3.5" />
-                                        SSL beveiligd
-                                    </div>
+            {statuses.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 bg-[var(--beheer-card-bg)] rounded-[2.5rem] border border-[var(--beheer-border)] border-dashed">
+                    <AlertCircle className="h-12 w-12 text-[var(--beheer-text-muted)] opacity-20 mb-4" />
+                    <p className="text-sm font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Geen status data beschikbaar</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+                    {statuses.map((service) => (
+                        <div 
+                            key={service.name}
+                            className="bg-[var(--beheer-card-bg)] rounded-[2.5rem] p-8 border border-[var(--beheer-border)] shadow-sm hover:shadow-md transition-all relative overflow-hidden group"
+                        >
+                            <div className="flex justify-between items-start mb-6">
+                                <div className="p-4 bg-[var(--beheer-card-soft)] rounded-2xl text-[var(--beheer-accent)] group-hover:scale-110 transition-transform">
+                                    <Zap className="h-6 w-6" />
+                                </div>
+                                <div className={`flex items-center gap-2 px-4 py-2 rounded-full border text-[10px] font-black uppercase tracking-widest ${getStatusColor(service.status)}`}>
+                                    {getStatusIcon(service.status)}
+                                    {service.status}
                                 </div>
                             </div>
 
-                            {!isLoading && service.error && (
-                                <div className="p-4 bg-red-500/5 border border-red-500/10 rounded-2xl">
-                                    <p className="text-[10px] font-black text-red-500 uppercase tracking-widest">Error Detail</p>
-                                    <p className="text-xs font-bold text-red-400/80 mt-1">{service.error}</p>
+                            <div className="space-y-4">
+                                <div>
+                                    <h3 className="text-lg font-black text-[var(--beheer-text)] uppercase tracking-widest">{service.name}</h3>
+                                    <div className="flex items-center gap-4 mt-2">
+                                        <div className="flex items-center gap-1.5 text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">
+                                            <Clock className="h-3.5 w-3.5" />
+                                            {service.latency ? `${service.latency}ms` : 'N/A'}
+                                        </div>
+                                        <div className="h-3 w-[1px] bg-[var(--beheer-border)]"></div>
+                                        <div className="flex items-center gap-1.5 text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">
+                                            <Activity className="h-3.5 w-3.5" />
+                                            SSL beveiligd
+                                        </div>
+                                    </div>
                                 </div>
-                            )}
-                        </div>
 
-                        {/* Background Pattern */}
-                        <div className="absolute -right-10 -bottom-10 opacity-5 group-hover:opacity-10 transition-opacity">
-                            <Activity className="h-40 w-40" />
-                        </div>
-                    </div>
-                ))}
-            </div>
+                                {service.error && (
+                                    <div className="p-4 bg-red-500/5 border border-red-500/10 rounded-2xl">
+                                        <p className="text-[10px] font-black text-red-500 uppercase tracking-widest">Error Detail</p>
+                                        <p className="text-xs font-bold text-red-400/80 mt-1">{service.error}</p>
+                                    </div>
+                                )}
+                            </div>
 
-            {(isLoading || lastUpdated) && (
+                            {/* Background Pattern */}
+                            <div className="absolute -right-10 -bottom-10 opacity-5 group-hover:opacity-10 transition-opacity">
+                                <Activity className="h-40 w-40" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {lastUpdated && (
                 <p className="mt-8 text-center text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">
-                    {isLoading ? 'Systemen worden gecontroleerd...' : `Laatst gecontroleerd: ${formatDate(lastUpdated!, true)} · Volgende auto-refresh in 30s`}
+                    {`Laatst gecontroleerd: ${formatDate(lastUpdated!, true)} · Volgende auto-refresh in 30s`}
                 </p>
             )}
         </div>

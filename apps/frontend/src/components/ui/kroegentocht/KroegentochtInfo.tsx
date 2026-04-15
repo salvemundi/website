@@ -3,34 +3,16 @@ import { Info, Calendar, Clock, MapPin, Users, Mail, ShieldAlert } from 'lucide-
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 
 interface KroegentochtInfoProps {
-    isLoading?: boolean;
     description?: string | null;
     formattedDate?: string;
     email?: string | null;
 }
 
 export function KroegentochtInfo({ 
-    isLoading = false, 
     description, 
     formattedDate = 'TBA', 
     email = 'ict@salvemundi.nl' 
 }: KroegentochtInfoProps) {
-    if (isLoading) {
-        return (
-            <div className="w-full flex flex-col gap-6 skeleton-active" aria-busy="true">
-                {[1, 2, 3].map((i) => (
-                    <div key={i} className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-lg">
-                        <div className="h-7 w-48 mb-6 bg-[var(--color-purple-theme)]/10 rounded-lg" />
-                        <div className="space-y-3">
-                            <div className="h-4 w-full bg-[var(--color-purple-theme)]/5 rounded-md" />
-                            <div className="h-4 w-5/6 bg-[var(--color-purple-theme)]/5 rounded-md" />
-                            <div className="h-4 w-4/6 bg-[var(--color-purple-theme)]/5 rounded-md" />
-                        </div>
-                    </div>
-                ))}
-            </div>
-        );
-    }
 
     return (
         <div className="w-full flex flex-col gap-6">
