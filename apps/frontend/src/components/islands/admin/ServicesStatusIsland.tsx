@@ -19,15 +19,20 @@ import { formatDate } from '@/shared/lib/utils/date';
 
 interface Props {
     isLoading?: boolean;
+    initialStatuses?: ServiceStatus[];
 }
 
-export default function ServicesStatusIsland({ isLoading: parentIsLoading = false }: Props) {
-    const [statuses, setStatuses] = useState<ServiceStatus[]>([]);
-    const [internalIsLoading, setInternalIsLoading] = useState(true);
-    const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+export default function ServicesStatusIsland({ 
+    isLoading: parentIsLoading = false,
+    initialStatuses = []
+}: Props) {
+    const [statuses, setStatuses] = useState<ServiceStatus[]>(initialStatuses);
+    const [internalIsLoading, setInternalIsLoading] = useState(initialStatuses.length === 0);
+    const [lastUpdated, setLastUpdated] = useState<Date | null>(initialStatuses.length > 0 ? new Date() : null);
     const [isRefreshing, setIsRefreshing] = useState(false);
 
     const isLoading = parentIsLoading || (internalIsLoading && statuses.length === 0);
+
 
     const fetchStatus = useCallback(async () => {
         setIsRefreshing(true);

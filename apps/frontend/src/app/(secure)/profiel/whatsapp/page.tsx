@@ -1,5 +1,4 @@
 export const dynamic = 'force-dynamic';
-import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getWhatsAppGroups } from '@/server/actions/profiel.actions';
 import { WhatsAppGroupsIsland } from '@/components/islands/social/WhatsAppGroupsIsland';
@@ -9,7 +8,12 @@ export const metadata: Metadata = {
     description: 'Word lid van onze exclusieve WhatsApp groepen voor leden.',
 };
 
-export default function WhatsAppGroepenPage() {
+export default async function WhatsAppGroepenPage() {
+    // NUCLEAR SSR: Fetch groups and settings at the top level
+    const groups = await getWhatsAppGroups();
+    const DIRECTUS_URL = process.env.PUBLIC_URL || 'https://salvemundi.nl';
+    const gedragscodeUrl = `${DIRECTUS_URL}/gedragscode`;
+
     return (
         <div className="bg-[var(--bg-main)]">
             <header className="bg-[var(--bg-soft)] py-12">
@@ -22,25 +26,10 @@ export default function WhatsAppGroepenPage() {
             </header>
 
             <div className="mx-auto max-w-app px-4 py-8 sm:py-10 md:py-12">
-                <Suspense fallback={
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-pulse">
-                        {[...Array(2)].map((_, i) => (
-                            <div key={i} className="h-48 bg-[var(--bg-card)] rounded-3xl border border-[var(--border-color)] skeleton-active" />
-                        ))}
-                    </div>
-                }>
-                    <WhatsAppGroupsFetcher />
-                </Suspense>
+                <WhatsAppGroupsIsland groups={groups} gedragscodeUrl={gedragscodeUrl} />
             </div>
         </div>
     );
 }
 
-async function WhatsAppGroupsFetcher() {
-    const groups = await getWhatsAppGroups();
-    const DIRECTUS_URL = process.env.PUBLIC_URL || 'https://salvemundi.nl';
-    const gedragscodeUrl = `${DIRECTUS_URL}/gedragscode`;
-
-    return <WhatsAppGroupsIsland groups={groups} gedragscodeUrl={gedragscodeUrl} />;
-}
 

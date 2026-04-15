@@ -160,7 +160,7 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                     created_at, updated_at
                 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW())`,
                 [
-                    payment.id, amount, 'open', description, 'trip_signup',
+                    payment.id, amount, 'open', description, 'Reis',
                     signup.directus_relations || null, signup.email, signup.first_name || '', signup.last_name || '',
                     accessToken, signupId
                 ]

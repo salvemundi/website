@@ -1,31 +1,24 @@
-'use client';
-
-import React, { Suspense } from 'react';
+import React from 'react';
 import { redirect } from 'next/navigation';
-import { authClient } from '@/lib/auth';
+import { auth } from '@/server/auth/auth';
+import { headers } from 'next/headers';
 import { COMMITTEES } from '@/shared/lib/permissions-config';
 import ServicesStatusIsland from '@/components/islands/admin/ServicesStatusIsland';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
+import { getServicesStatusAction } from '@/server/actions/services-status.actions';
+
+export const metadata = {
+    title: 'System Status | SV Salve Mundi',
+};
 
 /**
- * ServicesStatusPage: Zero-Drift Modernization.
- * Migrated to AdminPageShell for consistent sidebar/toolbar rendering.
- * Uses ServicesStatusIsland with masked fallback to prevent layout shift during status checks.
+ * ServicesStatusPage: Zero-Skeleton Nuclear SSR.
+ * All initial data is fetched on the server to prevent layout shift and skeletons.
  */
-export default function ServicesStatusPage() {
-    const { data: session, isPending } = authClient.useSession();
-
-    if (isPending) {
-        return (
-            <AdminPageShell 
-                title="System Status"
-                subtitle="Real-time status van alle Salve Mundi backend services"
-                backHref="/beheer"
-            >
-                <ServicesStatusIsland isLoading={true} />
-            </AdminPageShell>
-        );
-    }
+export default async function ServicesStatusPage() {
+    const session = await auth.api.getSession({
+        headers: await headers()
+    });
     
     if (!session || !session.user) {
         redirect('/beheer');
@@ -42,15 +35,17 @@ export default function ServicesStatusPage() {
         redirect('/beheer');
     }
 
+    // NUCLEAR SSR: Fetch initial status at the top level
+    const initialStatuses = await getServicesStatusAction().catch(() => []);
+
     return (
         <AdminPageShell 
             title="System Status"
             subtitle="Real-time status van alle Salve Mundi backend services"
             backHref="/beheer"
         >
-            <Suspense fallback={<ServicesStatusIsland isLoading={true} />}>
-                <ServicesStatusIsland />
-            </Suspense>
+            <ServicesStatusIsland initialStatuses={initialStatuses} />
         </AdminPageShell>
     );
 }
+

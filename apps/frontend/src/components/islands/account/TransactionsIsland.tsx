@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import { CreditCard, Clock, Tag, CheckCircle } from 'lucide-react';
+import { CreditCard, Clock, Tag } from 'lucide-react';
 import type { Transaction } from '@salvemundi/validations/schema/profiel.zod';
 import { Tile } from './profile/ProfielUI';
 
@@ -20,12 +20,7 @@ export const TransactionsIsland: React.FC<TransactionsIslandProps> = ({ transact
     }, [transactions]);
 
     const getInferredTransactionType = (t: Transaction) => {
-        if (t.transaction_type) return t.transaction_type;
-        const desc = (t.product_name || t.description || '').toLowerCase();
-        if (t.registration || t.pub_crawl_signup || desc.includes('event') || desc.includes('activiteit') || desc.includes('aanmelding')) return 'event';
-        if (t.trip_signup || desc.includes('reis')) return 'event';
-        if (desc.includes('lidmaatschap') || desc.includes('contributie') || desc.includes('membership')) return 'membership';
-        return 'payment';
+        return t.product_type || t.transaction_type || 'Overig';
     };
 
     const formatAmount = (amount: number | string | null | undefined): string => {
@@ -54,7 +49,6 @@ export const TransactionsIsland: React.FC<TransactionsIslandProps> = ({ transact
                                 <th className="px-6 py-4 text-left text-[10px] font-black uppercase tracking-widest text-[var(--color-purple-500)] opacity-60">Datum</th>
                                 <th className="px-6 py-4 text-left text-[10px] font-black uppercase tracking-widest text-[var(--color-purple-500)] opacity-60">Product</th>
                                 <th className="px-6 py-4 text-left text-[10px] font-black uppercase tracking-widest text-[var(--color-purple-500)] opacity-60">Type</th>
-                                <th className="px-6 py-4 text-center text-[10px] font-black uppercase tracking-widest text-[var(--color-purple-500)] opacity-60">Status</th>
                                 <th className="px-6 py-4 text-right text-[10px] font-black uppercase tracking-widest text-[var(--color-purple-500)] opacity-60">Bedrag</th>
                             </tr>
                         </thead>
@@ -83,12 +77,6 @@ export const TransactionsIsland: React.FC<TransactionsIslandProps> = ({ transact
                                             {getInferredTransactionType(transaction)}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-6 text-center whitespace-nowrap">
-                                        <span className="inline-flex items-center gap-1.5 rounded-full bg-green-500/10 px-4 py-1.5 text-[9px] font-black uppercase tracking-widest text-green-600 dark:text-green-400 border border-green-500/20 shadow-inner">
-                                            <CheckCircle className="h-3 w-3" />
-                                            Betaald
-                                        </span>
-                                    </td>
                                     <td className="px-6 py-6 whitespace-nowrap text-right text-sm font-black text-[var(--text-main)]">
                                         {formatAmount(transaction.amount)}
                                     </td>
@@ -99,5 +87,6 @@ export const TransactionsIsland: React.FC<TransactionsIslandProps> = ({ transact
                 </div>
             )}
         </Tile>
+
     );
 };

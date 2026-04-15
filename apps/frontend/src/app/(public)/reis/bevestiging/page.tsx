@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import PaymentStatusIsland from '@/components/islands/activities/PaymentStatusIsland';
 import { getPaymentStatusAction } from '@/server/actions/reis-payment.actions';
-import { Loader2, CheckCircle2, ChevronRight, XCircle } from 'lucide-react';
+import { CheckCircle2, ChevronRight, XCircle } from 'lucide-react';
 
 export const metadata: Metadata = {
     title: 'Bevestiging Betaling | SV Salve Mundi',
@@ -36,8 +36,10 @@ export default async function TripConfirmationPage({ searchParams }: PageProps) 
         );
     }
 
+    // NUCLEAR SSR: Fetch initial status server-side
     const statusRes = await getPaymentStatusAction(token);
-    const isPaid = statusRes.success && statusRes.payment_status === 'paid';
+    const initialStatus = statusRes.success ? (statusRes.payment_status as any) : 'loading';
+    const isPaid = initialStatus === 'paid';
 
     return (
         <PublicPageShell title="Betaling Status" hideHeader={true}>
@@ -63,16 +65,10 @@ export default async function TripConfirmationPage({ searchParams }: PageProps) 
                         </a>
                     </div>
                 ) : (
-                    <Suspense fallback={
-                        <div className="flex flex-col items-center justify-center py-20">
-                            <Loader2 className="w-12 h-12 text-[var(--color-purple-theme)] animate-spin mb-6" />
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Status verifiëren...</p>
-                        </div>
-                    }>
-                        <PaymentStatusIsland mollieId={token} />
-                    </Suspense>
+                    <PaymentStatusIsland mollieId={token} initialStatus={initialStatus} />
                 )}
             </div>
         </PublicPageShell>
     );
 }
+

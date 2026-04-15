@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import { getMyTickets } from '@/server/actions/activiteit-actions';
 import TicketListIsland from '@/components/islands/activities/TicketListIsland';
 
@@ -8,26 +7,17 @@ export const metadata = {
 };
 
 export default async function TicketsPage() {
+    // NUCLEAR SSR: Fetch tickets at the top level
+    const tickets = await getMyTickets();
+
     return (
         <div className="pt-8">
             <h1 className="sr-only">Mijn Tickets</h1>
             
             <div className="container mx-auto px-4 py-12 max-w-7xl">
-                <Suspense fallback={
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
-                        {[...Array(3)].map((_, i) => (
-                            <div key={i} className="h-48 bg-[var(--bg-card)] rounded-[2.5rem] border border-[var(--border-color)] skeleton-active" />
-                        ))}
-                    </div>
-                }>
-                    <TicketsDataLoader />
-                </Suspense>
+                <TicketListIsland tickets={tickets} />
             </div>
         </div>
     );
 }
 
-async function TicketsDataLoader() {
-    const tickets = await getMyTickets();
-    return <TicketListIsland tickets={tickets} />;
-}

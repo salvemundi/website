@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { checkAdminAccess } from '@/server/actions/admin.actions';
@@ -19,21 +18,18 @@ export default async function BeheerMailPage() {
     const { isAuthorized } = await checkAdminAccess();
     if (!isAuthorized) redirect('/login');
 
+    // NUCLEAR SSR: Fetch settings at the top level
+    const settingsRes = await getMailSettings();
+    const initialSettings = settingsRes.success ? settingsRes.settings || [] : [];
+
     return (
         <AdminPageShell
             title="E-mail Beheer"
             subtitle="Beheer alle automatische e-mail flows en notificaties"
             backHref="/beheer"
         >
-            <Suspense fallback={<MailManagementIsland isLoading={true} />}>
-                <MailDataLoader />
-            </Suspense>
+            <MailManagementIsland initialSettings={initialSettings} />
         </AdminPageShell>
     );
 }
 
-async function MailDataLoader() {
-    const settingsRes = await getMailSettings();
-    const initialSettings = settingsRes.success ? settingsRes.settings || [] : [];
-    return <MailManagementIsland initialSettings={initialSettings} />;
-}
