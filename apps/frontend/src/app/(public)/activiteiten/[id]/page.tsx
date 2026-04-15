@@ -5,6 +5,8 @@ import { getActivityById } from '@/server/actions/activiteit-actions';
 import ActivityDetailIsland from '@/components/islands/activities/ActivityDetailIsland';
 import EventSignupIsland from '@/components/islands/activities/EventSignupIsland';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
+import Link from 'next/link';
+import { ChevronLeft } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -15,8 +17,11 @@ interface PageProps {
 }
 
 export default async function PageActivityId({ params, searchParams }: PageProps) {
-    const { id } = await params;
+    const { id: rawId } = await params;
     const sParams = await searchParams;
+
+    // Extract real ID from slug (e.g., "841-website-launch" -> "841")
+    const id = rawId.split('-')[0];
 
     // NUCLEAR SSR: Fetch activity, session and headers in parallel before flushing
     const [activity, session] = await Promise.all([
@@ -46,6 +51,17 @@ export default async function PageActivityId({ params, searchParams }: PageProps
 
     return (
         <PublicPageShell>
+            <div className="container mx-auto px-4 max-w-7xl pt-8 pb-4">
+                <Link 
+                    href="/activiteiten" 
+                    className="inline-flex items-center gap-2 p-3 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--theme-purple)] transition-all active:scale-95 shadow-sm"
+                    title="Terug naar activiteiten"
+                >
+                    <ChevronLeft className="h-5 w-5" />
+                    <span className="text-sm font-bold pr-1">Terug</span>
+                </Link>
+            </div>
+
             <ActivityDetailIsland activity={activity}>
                 <EventSignupIsland 
                     eventId={Number(activity.id)}

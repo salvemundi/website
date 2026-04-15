@@ -1,8 +1,7 @@
 import React, { useMemo } from 'react';
 import FlipClock from './FlipClock';
 import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
-import { getImageUrl } from '@/lib/utils/image-utils';
-import Image from 'next/image';
+import { slugify } from '@/shared/lib/utils/slug';
 
 interface ActivitiesBannerIslandProps {
     events: Activiteit[];
@@ -44,7 +43,7 @@ export default function ActivitiesBannerIsland({ events, serverTime }: Activitie
                     : upcomingEvent.datum_start
                 }
                 title={upcomingEvent.titel}
-                href={`/activiteiten/${upcomingEvent.id}`}
+                href={`/activiteiten/${upcomingEvent.id}-${slugify(upcomingEvent.titel || '')}`}
                 serverTime={serverTime}
             />
         </div>

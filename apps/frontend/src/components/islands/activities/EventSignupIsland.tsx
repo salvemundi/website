@@ -40,7 +40,7 @@ export default function EventSignupIsland({
 
     const [isPending, startTransition] = useTransition();
     const [serverError, setServerError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<string | null>(verifiedPaymentStatus === 'paid' ? 'Betaling geslaagd! Je bent nu ingeschreven.' : null);
+    const [success, setSuccess] = useState<string | null>(verifiedPaymentStatus === 'paid' ? 'Betaling geslaagd! Je bent nu aangemeld.' : null);
     
     const [signupStatus, setSignupStatus] = useState<{
         isSignedUp: boolean;
@@ -87,7 +87,7 @@ export default function EventSignupIsland({
                 if (result.checkoutUrl) {
                     window.location.href = result.checkoutUrl;
                 } else {
-                    setSuccess(result.message || 'Inschrijving geslaagd!');
+                    setSuccess(result.message || 'Aanmelding geslaagd!');
                     setSignupStatus({ isSignedUp: true, paymentStatus: isPaid ? 'open' : 'paid' });
                 }
             } else {
@@ -107,9 +107,9 @@ export default function EventSignupIsland({
                     <div className="w-20 h-20 bg-[var(--color-success)]/10 rounded-full flex items-center justify-center mx-auto shadow-inner">
                         <CheckCircle2 className="h-10 w-10 text-[var(--color-success)]" />
                     </div>
-                    <h3 className="text-3xl font-black text-[var(--text-main)] leading-tight">🎉 Inschrijving Definitief!</h3>
+                    <h3 className="text-3xl font-black text-[var(--text-main)] leading-tight">🎉 Aanmelding Definitief!</h3>
                     <p className="text-[var(--text-muted)] font-medium">
-                        Je bent succesvol ingeschreven voor <span className="text-[var(--theme-purple)] font-bold">{eventName}</span>.
+                        Je bent succesvol aangemeld voor <span className="text-[var(--theme-purple)] font-bold">{eventName}</span>.
                     </p>
                 </div>
                 <div className="relative group p-6 bg-white rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center">
@@ -139,7 +139,7 @@ export default function EventSignupIsland({
             <div className="flex justify-between items-start mb-8">
                 <div>
                     <h3 className="text-2xl font-black text-[var(--theme-purple)] flex items-center gap-3">
-                        <Users className="h-6 w-6" /> Inschrijven
+                        <Users className="h-6 w-6" /> Aanmelden
                     </h3>
                     <p className="text-[10px] uppercase font-black text-[var(--text-muted)] tracking-[0.2em] mt-1 ml-9">Activiteit Tickets</p>
                 </div>

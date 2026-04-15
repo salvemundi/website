@@ -17,6 +17,7 @@ import {
 import { toPng } from 'html-to-image';
 import { getSignupStatus, type PaymentStatus } from '@/server/actions/activiteit-actions';
 import QRDisplay from '@/shared/ui/QRDisplay';
+import { slugify } from '@/shared/lib/utils/slug';
 interface ConfirmationIslandProps {
     initialId?: string;
     initialTransactionId?: string;
@@ -184,7 +185,7 @@ export default function ConfirmationIsland({
                             <CheckCircle2 className="h-12 w-12 text-green-500" />
                         </div>
                         <h1 className="text-4xl md:text-6xl font-black text-[var(--text-main)] uppercase tracking-tighter italic leading-none">
-                            Inschrijving <span className="text-green-500">Geslaagd!</span>
+                            Aanmelding <span className="text-green-500">Geslaagd!</span>
                         </h1>
                         <p className="text-[var(--text-muted)] text-lg font-medium max-w-md mx-auto">
                             Bedankt! Je ticket{amount > 1 ? 's' : ''} {amount > 1 ? 'zijn' : 'is'} nu beschikbaar.
@@ -253,7 +254,7 @@ export default function ConfirmationIsland({
                             {isCanceled 
                                 ? 'Je hebt de betaling afgebroken. Geen zorgen, je gegevens zijn nog niet verwerkt.' 
                                 : isExpired
-                                ? 'De betaalsessie is verlopen. Probeer het opnieuw om je inschrijving te voltooien.'
+                                ? 'De betaalsessie is verlopen. Probeer het opnieuw om je aanmelding te voltooien.'
                                 : 'Helaas is je betaling niet gelukt. Probeer het opnieuw of neem contact op als dit probleem blijft optreden.'}
                         </p>
                     </div>
@@ -262,7 +263,7 @@ export default function ConfirmationIsland({
                             href={
                                 isMembership ? '/lidmaatschap' : 
                                 isTrip ? '/reis' : 
-                                (signupData?.event_id?.id ? `/activiteiten/${signupData.event_id.id}` : '/activiteiten')
+                                (signupData?.event_id?.id ? `/activiteiten/${signupData.event_id.id}-${slugify(signupData.event_id.name || '')}` : '/activiteiten')
                             }
                             className="inline-flex h-14 px-10 rounded-2xl bg-[var(--theme-purple)] text-white font-black items-center justify-center gap-2 hover:scale-105 transition-all shadow-xl shadow-[var(--theme-purple)]/20 uppercase tracking-widest"
                         >

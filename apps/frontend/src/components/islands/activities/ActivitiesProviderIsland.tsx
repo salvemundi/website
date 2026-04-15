@@ -8,6 +8,7 @@ import CalendarView from "./CalendarView";
 import DayDetails from "./DayDetails";
 import EventList from "./EventList";
 import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
+import { slugify } from "@/shared/lib/utils/slug";
 
 interface ActivitiesProviderIslandProps {
     events?: (Activiteit & { is_signed_up?: boolean })[];
@@ -87,7 +88,7 @@ export default function ActivitiesProviderIsland({
     }, [events, showPastActivities, serverTime, upcomingEvent]);
 
     const handleShowDetails = useCallback((activity: Activiteit) => {
-        router.push(`/activiteiten/${activity.id}`);
+        router.push(`/activiteiten/${activity.id}-${slugify(activity.titel || '')}`);
     }, [router]);
 
     useEffect(() => {
@@ -95,9 +96,11 @@ export default function ActivitiesProviderIsland({
         const eventId = searchParams.get('event_id');
 
         if (status === 'success' && eventId) {
-            router.replace(`/activiteiten/${eventId}`);
+            const event = events.find(e => e.id.toString() === eventId.toString());
+            const slugPart = event ? `-${slugify(event.titel || '')}` : '';
+            router.replace(`/activiteiten/${eventId}${slugPart}`);
         }
-    }, [searchParams, router]);
+    }, [searchParams, router, events]);
 
     return (
         <div className="relative w-full flex flex-col">
