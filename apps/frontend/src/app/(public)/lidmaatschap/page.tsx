@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import MembershipFormIsland from '@/components/islands/membership/MembershipFormIsland';
 import MembershipStatusIsland, { type MembershipUserData } from '@/components/islands/account/MembershipStatusIsland';

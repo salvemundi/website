@@ -317,11 +317,15 @@ export function PwaInstallToast() {
     useEffect(() => {
         if (isStandalone()) return;
         if (isDismissed()) return;
-        // Alleen op touch-apparaten (telefoon/tablet) — niet op desktop/laptop
-        if (!window.matchMedia('(pointer: coarse)').matches) return;
+        
+        // Alleen op touch-apparaten (telefoon/tablet) of mobile emulation
+        const isTouch = window.matchMedia('(pointer: coarse)').matches || 
+                        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        if (!isTouch) return;
 
-        if (detectIosSafari()) {
-            // iOS Safari: toon altijd de instructie-flow (geen native prompt beschikbaar)
+        if (detectIos()) {
+            // Alle iOS browsers: toon altijd de instructie-flow (native prompt niet beschikbaar)
             setMode('ios');
             setTimeout(() => setShow(true), 2500);
             return;

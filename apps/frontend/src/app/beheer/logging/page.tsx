@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import { redirect } from 'next/navigation';
 import AuditLogIsland from '@/components/islands/admin/AuditLogIsland';
 import { auth } from '@/server/auth/auth';

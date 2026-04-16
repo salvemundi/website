@@ -15,10 +15,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
         hooks: {
             before: [
                 {
-                    matcher: (ctx) => {
-                        const match = ctx?.path?.includes("get-session");
-                        return match;
-                    },
+                    matcher: (ctx) => ctx?.path?.includes("get-session"),
                     handler: async (ctx) => {
                         try {
                             const headersSource = ctx?.headers || (ctx as any)?.request?.headers || {};
@@ -30,10 +27,13 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                 const redis = await getRedis();
                                 const cached = await redis.get(`session:${token}`);
                                 if (cached) {
+                                    return {
+                                        response: JSON.parse(cached)
+                                    };
                                 }
                             }
                         } catch (e) {
-                            // Silent fail
+                            // Silent fail, continue to database
                         }
                     }
                 }
@@ -55,7 +55,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                 
                                 if (!sessionWithUser.user?.id) return {};
 
-                                // 1. Haal de echte commissies op
+                                // 1. Refresh real committees and permissions from DB
                                 const { rows: realCommittees } = await pool.query(
                                     `SELECT c.id, c.name, c.azure_group_id, m.is_leader 
                                      FROM committee_members m 
@@ -71,7 +71,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                     sessionWithUser.user.name = `${sessionWithUser.user.first_name || ''} ${sessionWithUser.user.last_name || ''}`.trim();
                                 }
 
-                                // 2. Check voor IMPERSONATIE
+                                // 2. Handle IMPERSONATION
                                 const cookies = requestHeaders.get("cookie");
                                 const testToken = cookies?.split("directus_test_token=")?.[1]?.split(";")?.[0];
                                 const isAdmin = sessionWithUser.user.isAdmin || sessionWithUser.user.isICT;
@@ -80,91 +80,99 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                     try {
                                         const redis = await getRedis();
                                         const directusUrl = process.env.DIRECTUS_SERVICE_URL;
-
                                         const cacheKey = `impersonation:${testToken}`;
-                                        let impData = await redis.get(cacheKey);
-                                        let targetUser = impData ? JSON.parse(impData) : null;
                                         
-                                        if (!targetUser || !targetUser.id || !targetUser.name) {
+                                        let targetUser = null;
+                                        const cachedImp = await redis.get(cacheKey);
+                                        
+                                        if (cachedImp) {
+                                            targetUser = JSON.parse(cachedImp);
+                                        } else {
                                             const { createDirectus, rest, staticToken, readMe } = await import("@directus/sdk");
                                             
                                             const testClient = createDirectus(directusUrl!)
                                                 .with(staticToken(testToken))
                                                 .with(rest());
 
-                                            // Stap 1: Token verifiëren
+                                            // Determine target user identity via token
                                             const rawImpUser = await testClient.request(readMe({ fields: ['id'] } as any)) as any;
-                                            if (!rawImpUser?.id) return {};
-
-                                            // Stap 2: Profiel ophalen uit DB (omzeilt API restricties)
-                                            const { rows: dbUsers } = await pool.query(
-                                                `SELECT id, first_name, last_name, email, avatar, 
-                                                        membership_status, membership_expiry, phone_number, 
-                                                        date_of_birth, minecraft_username, admin_access, role
-                                                 FROM directus_users 
-                                                 WHERE id = $1 LIMIT 1`,
-                                                [rawImpUser.id]
-                                            );
-
-                                            if (dbUsers.length === 0) return {};
-                                            const dbUser = dbUsers[0];
-
-                                            // Stap 3: Commissies ophalen
-                                            const { rows: impCommittees } = await pool.query(
-                                                `SELECT c.id, c.name, c.azure_group_id FROM committee_members m 
-                                                 JOIN committees c ON m.committee_id = c.id 
-                                                 WHERE m.user_id = $1`,
-                                                [dbUser.id]
-                                            );
                                             
-                                            targetUser = {
-                                                id: dbUser.id,
-                                                first_name: dbUser.first_name,
-                                                last_name: dbUser.last_name,
-                                                name: `${dbUser.first_name || ''} ${dbUser.last_name || ''}`.trim(),
-                                                email: dbUser.email,
-                                                avatar: dbUser.avatar,
-                                                membership_status: dbUser.membership_status,
-                                                membership_expiry: dbUser.membership_expiry,
-                                                phone_number: dbUser.phone_number,
-                                                date_of_birth: dbUser.date_of_birth,
-                                                minecraft_username: dbUser.minecraft_username,
-                                                isAdmin: !!dbUser.admin_access,
-                                                isICT: !!dbUser.is_ict, // ICT is vaak een aparte vlag of rol
-                                                role: dbUser.role,
-                                                committees: impCommittees
-                                            };
-                                            
-                                            await redis.set(cacheKey, JSON.stringify(targetUser), 'EX', 3600);
+                                            if (rawImpUser?.id) {
+                                                const { rows: dbUsers } = await pool.query(
+                                                    `SELECT id, first_name, last_name, email, avatar, 
+                                                            membership_status, membership_expiry, phone_number, 
+                                                            date_of_birth, minecraft_username, admin_access, role, is_ict
+                                                     FROM directus_users 
+                                                     WHERE id = $1 LIMIT 1`,
+                                                    [rawImpUser.id]
+                                                );
+
+                                                if (dbUsers.length > 0) {
+                                                    const dbUser = dbUsers[0];
+                                                    const { rows: impCommittees } = await pool.query(
+                                                        `SELECT c.id, c.name, c.azure_group_id FROM committee_members m 
+                                                         JOIN committees c ON m.committee_id = c.id 
+                                                         WHERE m.user_id = $1`,
+                                                        [dbUser.id]
+                                                    );
+                                                    
+                                                    targetUser = {
+                                                        id: dbUser.id,
+                                                        first_name: dbUser.first_name,
+                                                        last_name: dbUser.last_name,
+                                                        name: `${dbUser.first_name || ''} ${dbUser.last_name || ''}`.trim(),
+                                                        email: dbUser.email,
+                                                        avatar: dbUser.avatar,
+                                                        membership_status: dbUser.membership_status,
+                                                        membership_expiry: dbUser.membership_expiry,
+                                                        phone_number: dbUser.phone_number,
+                                                        date_of_birth: dbUser.date_of_birth,
+                                                        minecraft_username: dbUser.minecraft_username,
+                                                        isAdmin: !!dbUser.admin_access,
+                                                        isICT: !!dbUser.is_ict,
+                                                        role: dbUser.role,
+                                                        committees: impCommittees
+                                                    };
+                                                    
+                                                    await redis.set(cacheKey, JSON.stringify(targetUser), 'EX', 3600);
+                                                }
+                                            }
                                         }
 
-                                        // Bewaar originele admin info
-                                        sessionWithUser.impersonatedBy = {
-                                            id: sessionWithUser.user.id,
-                                            name: sessionWithUser.user.name || sessionWithUser.user.email,
-                                            email: sessionWithUser.user.email,
-                                            isNormallyAdmin: true
-                                        };
+                                        if (targetUser) {
+                                            // Store original admin context
+                                            sessionWithUser.impersonatedBy = {
+                                                id: sessionWithUser.user.id,
+                                                name: sessionWithUser.user.name || sessionWithUser.user.email,
+                                                email: sessionWithUser.user.email,
+                                                isNormallyAdmin: true
+                                            };
 
-                                        // Wissel naar doelgebruiker
-                                        sessionWithUser.user = {
-                                            ...targetUser,
-                                            emailVerified: true,
-                                            createdAt: new Date(),
-                                            updatedAt: new Date(),
-                                        };
+                                            // Swap current session user to target
+                                            sessionWithUser.user = {
+                                                ...targetUser,
+                                                emailVerified: true,
+                                                createdAt: new Date(),
+                                                updatedAt: new Date(),
+                                            };
 
-                                        // Update permissies
-                                        const perms = getPermissions(targetUser.committees);
-                                        Object.assign(sessionWithUser.user, perms);
+                                            // Re-calculate permissions for target user
+                                            const perms = getPermissions(targetUser.committees);
+                                            Object.assign(sessionWithUser.user, perms);
+                                        }
                                     } catch (e) {
-                                        // Silent fail
+                                        // Failed to impersonate, standard admin session continues
                                     }
                                 }
 
+                                // 3. Cache the final enriched session
                                 if (token) {
-                                    const redis = await getRedis();
-                                    await redis.set(`session:${token}`, JSON.stringify(session), 'EX', 300);
+                                    try {
+                                        const redis = await getRedis();
+                                        await redis.set(`session:${token}`, JSON.stringify(session), 'EX', 300);
+                                    } catch (redisError) {
+                                        // Redis down? Continue without caching
+                                    }
                                 }
                                 return { response: session };
                             }

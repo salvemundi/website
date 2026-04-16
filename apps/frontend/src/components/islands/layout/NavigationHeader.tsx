@@ -12,6 +12,7 @@ interface NavigationHeaderProps {
     disabledRoutes?: string[];
     initialSession?: any;
     impersonation?: any;
+    isAdmin?: boolean;
 }
 
 /**
@@ -19,12 +20,17 @@ interface NavigationHeaderProps {
  * V7.12 RSC: Now fully server-side for maximum performance.
  * Interactive parts are extracted to client islands.
  */
-const NavigationHeader: React.FC<NavigationHeaderProps> = ({ disabledRoutes = [], initialSession, impersonation }) => {
+const NavigationHeader: React.FC<NavigationHeaderProps> = ({ 
+    disabledRoutes = [], 
+    initialSession, 
+    impersonation,
+    isAdmin: initialIsAdmin
+}) => {
     const user = initialSession?.user ?? null;
     const isAuthenticated = !!user;
     
-    const isAdmin = !!(user?.isAdmin || user?.isICT);
-    const canAccessAdmin = isAdmin; // Only show if they actually have dashboard access
+    // Prioritize the passed isAdmin flag from checkAdminAccess (database source of truth)
+    const canAccessAdmin = !!(initialIsAdmin || user?.isAdmin || user?.isICT);
 
     const navItems = ([
         { name: 'Home', href: ROUTES.HOME, icon: 'Home' },

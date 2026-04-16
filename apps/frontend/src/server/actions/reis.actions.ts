@@ -49,20 +49,16 @@ const getServiceHeaders = (): HeadersInit => {
 };
 
 export async function getReisSiteSettings(): Promise<ReisSiteSettings | null> {
-    try {
-        const { rows } = await query('SELECT is_active, message FROM feature_flags WHERE name = $1 LIMIT 1', ['trip_registration']);
-        const flag = rows?.[0];
+    const { rows } = await query('SELECT is_active, message FROM feature_flags WHERE name = $1 LIMIT 1', ['trip_registration']);
+    const flag = rows?.[0];
 
-        if (!flag) return null;
+    if (!flag) return null;
 
-        return {
-            id: 'reis',
-            show: !!flag.is_active,
-            disabled_message: flag.message
-        };
-    } catch (err: any) {
-        return null;
-    }
+    return {
+        id: 'reis',
+        show: !!flag.is_active,
+        disabled_message: flag.message
+    };
 }
 
 export async function getCurrentUserProfileAction(): Promise<{ success: boolean; data?: any; error?: string }> {
@@ -87,36 +83,33 @@ export async function getCurrentUserProfileAction(): Promise<{ success: boolean;
 }
 
 export async function getUpcomingTrips(): Promise<ReisTrip[]> {
-    try {
-        // 1. Direct SQL for speed and bypass cache
-        const data = await fetchPublicTripsDb();
+    // 1. Direct SQL for speed and bypass cache
+    const data = await fetchPublicTripsDb();
 
-        const parsed = reisTripSchema.array().safeParse(data ?? []);
-        if (!parsed.success) {
-            return [];
+    const parsed = reisTripSchema.array().safeParse(data ?? []);
+    if (!parsed.success) {
+        console.error('[Validation Error] getUpcomingTrips:', parsed.error);
+        return (data ?? []) as any;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const validTrips = parsed.data.filter((trip: ReisTrip) => {
+        if (trip.end_date) {
+            const endDate = new Date(trip.end_date);
+            endDate.setHours(23, 59, 59, 999);
+            return endDate >= today;
         }
 
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const dateStr = trip.start_date;
+        if (!dateStr) return false;
+        const eventDate = new Date(dateStr);
+        eventDate.setHours(23, 59, 59, 999);
+        return eventDate >= today;
+    });
 
-        const validTrips = parsed.data.filter((trip: ReisTrip) => {
-            if (trip.end_date) {
-                const endDate = new Date(trip.end_date);
-                endDate.setHours(23, 59, 59, 999);
-                return endDate >= today;
-            }
-
-            const dateStr = trip.start_date;
-            if (!dateStr) return false;
-            const eventDate = new Date(dateStr);
-            eventDate.setHours(23, 59, 59, 999);
-            return eventDate >= today;
-        });
-
-        return validTrips;
-    } catch (err) {
-        return [];
-    }
+    return validTrips;
 }
 
 export async function getTripParticipantsCount(tripId: number): Promise<number> {

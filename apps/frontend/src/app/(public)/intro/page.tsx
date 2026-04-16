@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import { hasParentSignup } from '@/server/actions/intro.actions';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';

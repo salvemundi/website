@@ -22,13 +22,46 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-    metadataBase: new URL(process.env.PUBLIC_URL!),
-    title: 'Salve Mundi V7',
-    description: 'SV Salve Mundi — Digitaal platform voor Fontys ICT.',
+    metadataBase: new URL(process.env.PUBLIC_URL || 'https://salvemundi.nl'),
+    title: {
+        default: 'SV Salve Mundi | Studievereniging Fontys ICT',
+        template: '%s | SV Salve Mundi'
+    },
+    description: 'SV Salve Mundi is de studievereniging voor Fontys ICT in Eindhoven. Ontdek onze activiteiten, commissies en word lid!',
+    keywords: ['Fontys ICT', 'Studievereniging', 'Eindhoven', 'Salve Mundi', 'Studenten'],
+    authors: [{ name: 'Salve Mundi ICT Commissie' }],
+    creator: 'Salve Mundi',
+    publisher: 'SV Salve Mundi',
     appleWebApp: {
         capable: true,
         statusBarStyle: 'default',
         title: 'Salve Mundi',
+    },
+    openGraph: {
+        type: 'website',
+        locale: 'nl_NL',
+        url: 'https://salvemundi.nl',
+        siteName: 'SV Salve Mundi',
+        title: 'SV Salve Mundi | Studievereniging Fontys ICT',
+        description: 'SV Salve Mundi is de studievereniging voor Fontys ICT in Eindhoven. Ontdek onze activiteiten, commissies en word lid!',
+        images: [
+            {
+                url: '/img/newlogo.png',
+                width: 1200,
+                height: 630,
+                alt: 'SV Salve Mundi Logo',
+            },
+        ],
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: 'SV Salve Mundi | Studievereniging Fontys ICT',
+        description: 'De officiële studievereniging van Fontys ICT Eindhoven.',
+        images: ['/img/newlogo.png'],
+    },
+    icons: {
+        icon: '/img/newlogo.png',
+        apple: '/img/newlogo.png',
     },
 };
 
@@ -107,7 +140,7 @@ async function HeadPreloads() {
 
 async function HeaderWrapper() {
     await connection();
-    const [disabledRoutes, session, { impersonation }] = await Promise.all([
+    const [disabledRoutes, session, { impersonation, isAuthorized }] = await Promise.all([
         getDisabledRoutes(),
         auth.api.getSession({ headers: await headers() }),
         checkAdminAccess(),
@@ -118,6 +151,7 @@ async function HeaderWrapper() {
             disabledRoutes={disabledRoutes} 
             initialSession={session} 
             impersonation={impersonation}
+            isAdmin={isAuthorized}
         />
     );
 }

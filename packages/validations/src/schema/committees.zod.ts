@@ -23,6 +23,7 @@ export const committeeSchema = z.object({
     short_description: z.string().nullable().optional(),
     description: z.string().nullable().optional(),
     email: z.string().email().nullable().optional(),
+    azure_group_id: z.string().uuid().nullable().optional(),
     members: z.array(committeeMemberSchema).optional(),
 });
 

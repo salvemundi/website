@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import { ProfielIsland } from '@/components/islands/account/ProfielIsland';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';

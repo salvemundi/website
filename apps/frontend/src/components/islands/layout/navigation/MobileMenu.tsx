@@ -39,16 +39,20 @@ export default function MobileMenu({
         >
             {/* Backdrop */}
             <div
-                className="fixed inset-0 z-40 bg-[var(--color-purple-900)]/40 backdrop-blur-sm"
+                className="fixed inset-0 z-[190] bg-black/40 backdrop-blur-sm transition-all duration-300"
                 onClick={onClose}
                 aria-hidden={!isOpen}
+                role="presentation"
             />
 
             {/* Slide-out paneel */}
             <nav
-                className={`fixed right-0 z-50 flex w-full max-w-xs flex-col gap-6 bg-[var(--bg-main)] px-6 py-8 shadow-xl transition-transform duration-300 overflow-y-auto ${isOpen ? 'translate-x-0' : 'translate-x-full'
+                className={`fixed right-0 z-[200] flex w-full max-w-xs flex-col gap-6 bg-[var(--bg-main)] px-6 py-8 shadow-2xl transition-transform duration-300 overflow-y-auto ${isOpen ? 'translate-x-0' : 'translate-x-full'
                     }`}
                 style={{ top: 0, height: '100dvh' }}
+                aria-label="Mobiele navigatie"
+                role="dialog"
+                aria-modal="true"
             >
                 {/* Koptekst van het paneel */}
                 <div className="flex items-center justify-between">
@@ -97,10 +101,24 @@ export default function MobileMenu({
                         <Link
                             href={ROUTES.ADMIN}
                             onClick={onClose}
-                            className="flex items-center gap-2 rounded-2xl bg-[var(--color-purple-500)] text-[var(--color-white)] px-4 py-3 text-sm font-semibold shadow-lg"
+                            className="flex items-center gap-2 rounded-2xl bg-[var(--color-purple-500)] text-white px-4 py-3 text-sm font-semibold shadow-lg shadow-purple-500/20 active:scale-95 transition-all"
                         >
                             <Shield className="h-5 w-5" />
-                            <span>Admin Panel</span>
+                            <span>Beheer</span>
+                        </Link>
+                    )}
+
+                    {isAuthenticated && (
+                        <Link
+                            href={ROUTES.ACCOUNT}
+                            onClick={onClose}
+                            className="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold text-[var(--text-main)] shadow-sm bg-[var(--bg-card)] border border-[var(--border-color)]/10 active:scale-95 transition-all"
+                        >
+                            <span className="flex items-center gap-3">
+                                <IconMap.User className="h-5 w-5 text-[var(--color-purple-500)]" />
+                                <span>Mijn Profiel</span>
+                            </span>
+                            <span aria-hidden className="text-[var(--text-muted)]">›</span>
                         </Link>
                     )}
 
@@ -111,13 +129,13 @@ export default function MobileMenu({
                                 key={link.href}
                                 href={link.href}
                                 onClick={onClose}
-                                className="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold text-[var(--text-main)] shadow-sm bg-[color-mix(in_srgb,var(--bg-card)_70%,transparent)]"
+                                className="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold text-[var(--text-main)] shadow-sm bg-[color-mix(in_srgb,var(--bg-card)_70%,transparent)] active:scale-[0.98] transition-all"
                             >
                                 <span className="flex items-center gap-3 whitespace-nowrap">
-                                    {Icon && <Icon className="h-5 w-5 text-[var(--text-main)]" aria-hidden />}
+                                    {Icon && <Icon className="h-5 w-5 text-[var(--color-purple-500)]" aria-hidden="true" />}
                                     <span>{link.name}</span>
                                 </span>
-                                <span aria-hidden className="text-[var(--text-muted)]">›</span>
+                                <span aria-hidden="true" className="text-[var(--text-muted)]">›</span>
                             </Link>
                         );
                     })}
@@ -128,10 +146,10 @@ export default function MobileMenu({
                     <Link
                         href={ROUTES.MEMBERSHIP}
                         onClick={onClose}
-                        className="inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow-lg"
+                        className="inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow-lg shadow-purple-500/10 active:scale-95 transition-all"
                         style={{
-                            background: 'linear-gradient(to right, var(--color-purple-100), var(--color-purple-200))',
-                            color: 'var(--color-purple-700)',
+                            background: 'linear-gradient(135deg, var(--color-purple-500), var(--color-purple-700))',
+                            color: 'white',
                         }}
                     >
                         <Sparkles className="h-4 w-4" />
@@ -139,52 +157,38 @@ export default function MobileMenu({
                     </Link>
                 )}
 
-                {/* Onderste acties: stickers-link + uitlogknop */}
-                <div className="mt-auto w-full">
-                    <div className="flex items-center justify-between px-2">
-                        <Link
-                            href={ROUTES.SAFE_HAVENS}
-                            onClick={onClose}
-                            className="inline-flex items-center justify-center h-12 w-12 rounded-full text-[var(--text-main)] shadow-sm"
-                            style={{ backgroundColor: 'color-mix(in srgb, var(--bg-card) 70%, transparent)' }}
-                            aria-label="Safe Havens"
-                        >
-                            <Shield className="h-5 w-5" aria-hidden />
-                            <span className="sr-only">Safe Havens</span>
-                        </Link>
-
-                        {mounted && (
-                            isAuthenticated ? (
-                                <button
-                                    type="button"
-                                    onClick={onLogout}
-                                    className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-red-600 text-white shadow-sm"
-                                    aria-label="Uitloggen"
-                                >
-                                    <LogOut className="h-5 w-5" aria-hidden />
-                                    <span className="sr-only">Uitloggen</span>
-                                </button>
-                            ) : (
-                                <button
-                                    type="button"
-                                    onClick={async () => {
-                                        try {
-                                            await authClient.signIn.social({ provider: 'microsoft', callbackURL: '/profiel' });
-                                        } catch (error) {
-                                            // Handle error
-                                        }
-                                    }}
-                                    className="flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow-sm transition cursor-pointer"
-                                    style={{
-                                        backgroundColor: 'var(--color-purple-50)',
-                                        color: 'var(--color-purple-700)',
-                                    }}
-                                >
-                                    Inloggen
-                                </button>
-                            )
-                        )}
-                    </div>
+                {/* Onderste acties: uitlogknop / inlogknop */}
+                <div className="mt-auto pt-6 border-t border-[var(--border-color)]/10">
+                    {mounted && (
+                        isAuthenticated ? (
+                            <button
+                                type="button"
+                                onClick={onLogout}
+                                className="flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold text-red-500 bg-red-500/5 hover:bg-red-500/10 active:scale-95 transition-all"
+                            >
+                                <LogOut className="h-5 w-5" />
+                                <span>Uitloggen</span>
+                            </button>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={async () => {
+                                    try {
+                                        await authClient.signIn.social({ provider: 'microsoft', callbackURL: '/profiel' });
+                                    } catch (error) {
+                                        // Handle error
+                                    }
+                                }}
+                                className="flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow-lg shadow-purple-500/10 active:scale-95 transition-all"
+                                style={{
+                                    backgroundColor: 'var(--color-purple-500)',
+                                    color: 'white',
+                                }}
+                            >
+                                Inloggen
+                            </button>
+                        )
+                    )}
                 </div>
             </nav>
         </div>

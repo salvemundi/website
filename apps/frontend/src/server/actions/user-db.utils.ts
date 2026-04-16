@@ -58,7 +58,7 @@ export async function fetchUserProfileByEmailDb(email: string): Promise<UserProf
  */
 export async function fetchUserCommitteesDb(userId: string): Promise<any[]> {
     const { rows } = await query(
-        `SELECT c.id, c.name
+        `SELECT c.id, c.name, c.azure_group_id
          FROM committees c
          JOIN committee_members cm ON c.id = cm.committee_id
          WHERE cm.user_id = $1`,

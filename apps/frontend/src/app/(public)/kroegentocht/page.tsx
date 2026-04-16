@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import { getKroegentochtEvent, getKroegentochtTickets } from '@/server/actions/kroegentocht.actions';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';

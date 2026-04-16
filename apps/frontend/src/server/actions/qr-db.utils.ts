@@ -32,7 +32,7 @@ export type PubCrawlTicket = z.infer<typeof pubCrawlTicketSchema>;
  */
 export async function fetchUserCommittees(userId: string): Promise<Committee[]> {
     const { rows } = await query(
-        `SELECT c.id, c.name, c.image, c.is_visible, c.short_description, c.description, c.email
+        `SELECT c.id, c.name, c.image, c.is_visible, c.short_description, c.description, c.email, c.azure_group_id
          FROM committees c
          JOIN committee_members cm ON cm.committee_id = c.id
          WHERE cm.user_id = $1`,
