@@ -73,11 +73,11 @@ export default function MobileMenu({
                                 />
                             ) : (
                                 <Image
-                                    src="/img/newlogo.png"
-                                    alt=""
-                                    width={28}
-                                    height={28}
-                                    className="h-7 w-7"
+                                    src="/img/newlogo.svg"
+                                    alt="Logo"
+                                    width={32}
+                                    height={32}
+                                    className="h-8 w-8 object-contain"
                                 />
                             )}
                         </span>

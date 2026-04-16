@@ -22,6 +22,9 @@
     --gradient-start: #805480;
     --gradient-end: #905e8e;
 
+    --bg-gradient-start: #312131; /* Deep Brand Purple */
+    --bg-gradient-end: #1a141b;   /* Soft Ink Black */
+
     --theme-success: #4ade80;
     --theme-warning: #fbbf24;
     --theme-error: #f87171;

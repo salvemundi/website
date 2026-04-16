@@ -60,8 +60,12 @@ export const metadata: Metadata = {
         images: ['/img/newlogo.png'],
     },
     icons: {
-        icon: '/img/newlogo.png',
-        apple: '/img/newlogo.png',
+        icon: [
+            { url: '/img/newlogo.svg', type: 'image/svg+xml' },
+        ],
+        apple: [
+            { url: '/img/newlogo.svg', type: 'image/svg+xml' },
+        ],
     },
 };
 

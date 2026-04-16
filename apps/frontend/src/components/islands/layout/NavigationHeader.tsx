@@ -59,8 +59,16 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
             <div className="mx-auto max-w-app h-full px-4 sm:px-6 lg:px-8 z-10 relative">
                 <div className="grid h-full grid-cols-[auto_1fr_auto] items-center gap-4 lg:gap-8">
                     {/* Logo Section */}
-                    <Link href="/" className="flex items-center gap-3 shrink-0">
-                        <Image src="/img/newlogo.png" alt="Logo" width={48} height={48} className="w-12 h-12" priority />
+                    <Link href="/" className="group flex items-center gap-3 shrink-0 transition-transform duration-300 hover:scale-[1.03] active:scale-95">
+                        <div className="relative w-12 h-12 shrink-0">
+                            <Image 
+                                src="/img/newlogo.svg" 
+                                alt="Salve Mundi Logo" 
+                                fill 
+                                className="object-contain" 
+                                priority 
+                            />
+                        </div>
                         <div className="hidden text-left sm:block whitespace-nowrap shrink-0">
                             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-purple-500)]">Salve Mundi</p>
                             <p className="text-sm font-semibold text-[var(--text-main)]">Fontys ICT</p>
