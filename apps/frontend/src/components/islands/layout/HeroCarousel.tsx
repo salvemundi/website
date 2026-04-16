@@ -1,82 +1,66 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Image from 'next/image';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay } from 'swiper/modules';
 import 'swiper/css';
-import { cn } from '@/lib/utils/cn';
 
 interface HeroCarouselProps {
     slideUrls: string[];
 }
 
 export function HeroCarousel({ slideUrls }: HeroCarouselProps) {
-    const [mounted, setMounted] = useState(false);
-    const [isMobile, setIsMobile] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-        const checkMobile = () => setIsMobile(window.innerWidth < 640);
-        checkMobile();
-        window.addEventListener('resize', checkMobile);
-        return () => window.removeEventListener('resize', checkMobile);
-    }, []);
+    if (!slideUrls || slideUrls.length === 0) return null;
 
     return (
-        <div className="w-full h-full relative group">
-            {/* 
-                STABILITY: Always render the first slide's image as a base layer.
-                This ensures that before and during hydration, there is zero shift.
-                Once Swiper (JS) initializes, it sits on top.
+        <div className="w-full h-full relative group bg-[var(--bg-main)]">
+
+            {/* MOBILE VIEW: Static Image 
+                Visible by default, hidden on screens 'sm' and larger.
+                Rendered immediately by the server.
+                - h-full is vervangen door aspect-[4/3] zodat de foto op mobiel 
+                  beter in verhouding blijft en minder wordt afgesneden.
             */}
-            <div className={cn(
-                "absolute inset-0 z-0 transition-opacity duration-500",
-                mounted && !isMobile ? "opacity-0" : "opacity-100"
-            )}>
-                <Image 
-                    src={slideUrls[0]} 
-                    alt="Salve Mundi" 
-                    fill 
-                    priority 
-                    unoptimized 
-                    className="object-cover object-center" 
+            <div className="block sm:hidden w-full aspect-[4/3] relative">
+                <Image
+                    src={slideUrls[0]}
+                    alt="Salve Mundi"
+                    fill
+                    priority
+                    sizes="100vw"
+                    className="object-cover object-center"
                 />
             </div>
 
-            {mounted && (
-                <div className="absolute inset-0 z-10">
-                    {isMobile ? (
-                        <div className="sm:hidden w-full h-full relative">
-                            <Image src={slideUrls[0]} alt="Salve Mundi" fill priority unoptimized className="object-cover object-center" />
-                        </div>
-                    ) : (
-                        <div className="hidden sm:block h-full w-full">
-                            <Swiper 
-                                modules={[Autoplay]} 
-                                autoplay={{ delay: 5000, disableOnInteraction: false }} 
-                                loop={slideUrls.length > 1} 
-                                className="h-full w-full"
-                            >
-                                {slideUrls.map((src, index) => (
-                                    <SwiperSlide key={index}>
-                                        <div className="w-full h-full relative">
-                                            <Image 
-                                                src={src} 
-                                                alt="Sfeerimpressie" 
-                                                fill 
-                                                priority={index === 0} 
-                                                unoptimized 
-                                                className="object-cover object-center" 
-                                            />
-                                        </div>
-                                    </SwiperSlide>
-                                ))}
-                            </Swiper>
-                        </div>
-                    )}
-                </div>
-            )}
+            {/* DESKTOP VIEW: Swiper Carousel 
+                Hidden by default, visible on screens 'sm' and larger.
+                Rendered immediately by the server.
+            */}
+            <div className="hidden sm:block h-full w-full relative">
+                <Swiper
+                    modules={[Autoplay]}
+                    autoplay={{ delay: 5000, disableOnInteraction: false }}
+                    loop={slideUrls.length > 1}
+                    className="h-full w-full"
+                >
+                    {slideUrls.map((src, index) => (
+                        <SwiperSlide key={index}>
+                            <div className="w-full h-full relative">
+                                <Image
+                                    src={src}
+                                    alt={`Sfeerimpressie ${index + 1}`}
+                                    fill
+                                    priority={index === 0} // Only preload the FIRST slide
+                                    sizes="100vw"
+                                    className="object-cover object-center"
+                                />
+                            </div>
+                        </SwiperSlide>
+                    ))}
+                </Swiper>
+            </div>
+
         </div>
     );
 }
