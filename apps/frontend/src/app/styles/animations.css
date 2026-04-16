@@ -27,17 +27,14 @@
     }
 }
 
-@keyframes gradientShift {
+/* Nieuwe hardware-versnelde animatie voor de tekst-gradient */
+@keyframes hueShift {
     0% {
-        background-position: 0% 50%;
-    }
-
-    50% {
-        background-position: 100% 50%;
+        filter: hue-rotate(0deg);
     }
 
     100% {
-        background-position: 0% 50%;
+        filter: hue-rotate(30deg);
     }
 }
 
@@ -91,12 +88,12 @@
     }
 
     .dark .text-gradient-animated {
-        background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end), var(--gradient-start));
-        background-size: 200% 200%;
+        background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        animation: gradientShift 3s ease infinite;
+        animation: hueShift 4s infinite alternate ease-in-out;
+        will-change: filter;
     }
 
     /* ── Ghost UI (V7.12 Industrial Standard) ─────────────────────────── */
@@ -113,8 +110,13 @@
 
 /* ── Ghost UI (V7.12 Industrial Standard) ─────────────────────────── */
 @keyframes ghost-shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
 }
 
 /* De utility MOET buiten @layer utilities staan in Tailwind 4 */
@@ -128,12 +130,10 @@
     &::after {
         content: "";
         @apply absolute inset-0;
-        background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(255, 255, 255, 0.1),
-            transparent
-        );
+        background: linear-gradient(90deg,
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent);
         animation: ghost-shimmer 1.5s infinite;
     }
 }

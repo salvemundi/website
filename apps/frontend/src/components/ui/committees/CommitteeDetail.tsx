@@ -8,141 +8,100 @@ interface CommitteeDetailProps {
     committee?: Committee;
 }
 
-/**
- * CommitteeDetail: Zero-Skeleton SSR standard.
- */
-export const CommitteeDetail: React.FC<CommitteeDetailProps> = ({ 
-    committee = {} as Committee 
+export const CommitteeDetail: React.FC<CommitteeDetailProps> = ({
+    committee = {} as Committee
 }) => {
     const cleanedName = committee.name?.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim() || 'Commissie';
-    
+
     const members = (committee.members?.filter((m: any) => m.is_visible) || []);
 
     return (
-        <div className="space-y-12 animate-in fade-in duration-500">
-            {/* Hero Section */}
-            <section className="relative overflow-hidden rounded-[2.5rem] bg-[var(--bg-card)] dark:border dark:border-white/10 shadow-2xl">
-                <div className="flex flex-col lg:flex-row">
-                    <div className="relative h-64 w-full lg:h-auto lg:w-1/2 bg-[var(--bg-soft)]">
-                        {committee.image && (
-                            <Image
-                                src={getImageUrl(committee.image) ?? '/img/placeholder.svg'}
-                                alt={cleanedName}
-                                fill
-                                className="object-cover"
-                                unoptimized
-                            />
+        <div className="space-y-20 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+            {/* Immersive Hero Section */}
+            <header className="relative w-full -mt-4 lg:-mt-8">
+                {/* Hero Image - High Impact */}
+                <div className="relative aspect-[16/6] md:aspect-[21/7] w-full bg-[var(--bg-soft)] overflow-hidden rounded-[2.5rem] shadow-2xl ring-1 ring-[var(--border-color)]/20">
+                    <Image
+                        src={committee.image ? (getImageUrl(committee.image) ?? '/img/newlogo.svg') : '/img/newlogo.svg'}
+                        alt={cleanedName}
+                        fill
+                        className="object-cover"
+                        unoptimized
+                        priority
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-main)] via-transparent to-transparent opacity-40" />
+                </div>
+
+                {/* Content Overlay / Underlay */}
+                <div className="relative mt-12 flex flex-col items-center text-center max-w-5xl mx-auto px-4">
+                    <div className="mb-4 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.4em] text-[var(--color-purple-500)]">
+                        <Shield className="h-4 w-4" />
+                        Officiële Commissie
+                    </div>
+                    
+                    <h1 className="mb-8 text-5xl font-black tracking-tight text-[var(--text-main)] sm:text-6xl lg:text-8xl break-words leading-[1.1]">
+                        {cleanedName}
+                    </h1>
+
+                    <div className="mb-12 text-xl leading-relaxed text-[var(--text-muted)] lg:text-2xl max-w-4xl font-medium">
+                        {committee.description || `De ${cleanedName} van Salve Mundi zet zich dagelijks in om de vereniging naar een hoger niveau te tillen en memorabele momenten te creëren voor al onze leden.`}
+                    </div>
+
+                    {/* Primary CTA - Focus on Interest */}
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-6 w-full pt-4">
+                        {committee.email && (
+                            <a 
+                                href={`mailto:${committee.email}`}
+                                className="inline-flex items-center gap-4 rounded-full bg-[var(--color-purple-600)] px-10 py-5 text-lg font-black text-white shadow-2xl shadow-purple-600/30 transition-all hover:scale-105 hover:bg-[var(--color-purple-500)] active:scale-95 group"
+                            >
+                                <Mail className="h-6 w-6 transition-transform group-hover:-rotate-12" />
+                                Interesse? Mail ons!
+                            </a>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-r from-[var(--bg-card)]/50 to-transparent lg:block hidden" />
+                        
+                        <a 
+                            href="/contact"
+                            className="text-[var(--text-muted)] font-bold hover:text-[var(--text-main)] transition-colors flex items-center gap-2"
+                        >
+                            <LayoutGrid className="h-5 w-5" />
+                            Andere vragen?
+                        </a>
                     </div>
-                    <div className="flex w-full flex-col p-8 sm:p-12 lg:w-1/2">
-                        <div className="mb-4 flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-[var(--color-purple-500)]">
-                            <Shield className="h-4 w-4" />
-                            Commissie
+                </div>
+            </header>
+
+            {/* Leden Sectie - Open Layout */}
+            <section className="pt-20 border-t border-[var(--border-color)]/10">
+                <div className="flex flex-col items-center mb-16">
+                    <h2 className="flex items-center gap-4 text-4xl font-black text-[var(--text-main)]">
+                        <Users className="h-10 w-10 text-[var(--color-purple-500)]" />
+                        Ons Team
+                    </h2>
+                    <div className="h-2 w-24 bg-gradient-to-r from-transparent via-[var(--color-purple-500)] to-transparent rounded-full mt-6" />
+                </div>
+                
+                <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-4">
+                    {members.map((member: any, idx: number) => (
+                        <div key={idx} className="group flex flex-col items-center">
+                            <div className="relative mb-8 h-32 w-32 overflow-hidden rounded-full ring-8 ring-[var(--bg-soft)] group-hover:ring-[var(--color-purple-500)]/20 transition-all duration-500 shadow-lg">
+                                <Image
+                                    src={member.user_id?.avatar ? (getImageUrl(member.user_id.avatar) ?? '/img/newlogo.svg') : '/img/newlogo.svg'}
+                                    alt={member.user_id?.first_name || 'Lid'}
+                                    fill
+                                    className="object-cover transition-all duration-500 scale-105 group-hover:scale-110"
+                                    unoptimized
+                                />
+                            </div>
+                            <h4 className="text-center font-black text-[var(--text-main)] text-xl mb-2 group-hover:text-[var(--color-purple-500)] transition-colors">
+                                {`${member.user_id?.first_name} ${member.user_id?.last_name}`}
+                            </h4>
+                            <span className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em] bg-[var(--bg-soft)] px-4 py-1.5 rounded-full border border-[var(--border-color)]/10">
+                                {member.is_leader ? 'Commissieleider' : 'Commissielid'}
+                            </span>
                         </div>
-                        <h1 className="mb-6 text-4xl font-black tracking-tight text-[var(--text-main)] sm:text-5xl lg:text-6xl">
-                            {cleanedName}
-                        </h1>
-                        <div className="mb-8 text-lg leading-relaxed text-[var(--text-muted)] lg:text-xl">
-                            {committee.description || `De ${cleanedName} van Salve Mundi zet zich in voor de vereniging en haar leden.`}
-                        </div>
-                        <div className="flex flex-wrap gap-4 pt-4 border-t border-[var(--border-color)]/20">
-                            {committee.email && (
-                                <a 
-                                    href={`mailto:${committee.email}`}
-                                    className="inline-flex items-center gap-2 rounded-xl bg-[var(--color-purple-500)] px-6 py-3.5 text-sm font-bold text-white shadow-lg transition hover:scale-105 active:scale-95"
-                                >
-                                    <Mail className="h-4 w-4" />
-                                    Mail Ons
-                                </a>
-                            )}
-                            <button className="inline-flex items-center gap-2 rounded-xl bg-[var(--bg-soft)] px-6 py-3.5 text-sm font-bold text-[var(--text-main)] transition hover:bg-[var(--border-color)]/10 active:scale-95">
-                                <UserPlus className="h-4 w-4" />
-                                Lid Worden
-                            </button>
-                        </div>
-                    </div>
+                    ))}
                 </div>
             </section>
-
-            {/* Content Grid */}
-            <div className="grid gap-12 lg:grid-cols-3">
-                {/* Leden Lijst */}
-                <div className="lg:col-span-2 space-y-12">
-                    <section className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-[2rem] p-8 sm:p-10 shadow-lg">
-                        <h2 className="mb-8 flex items-center gap-3 text-2xl font-black text-[var(--text-main)]">
-                            <Users className="h-6 w-6 text-[var(--color-purple-500)]" />
-                            Onze Leden
-                        </h2>
-                        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                            {members.map((member: any, idx: number) => (
-                                <div key={idx} className="group flex flex-col items-center p-6 rounded-2xl bg-[var(--bg-soft)]/50 border border-[var(--border-color)]/10 transition hover:bg-white dark:hover:bg-white/5 hover:border-[var(--color-purple-500)]/30">
-                                    <div className="relative mb-4 h-20 w-20 overflow-hidden rounded-full ring-4 ring-[var(--color-purple-500)]/10 group-hover:ring-[var(--color-purple-500)]/30 transition bg-[var(--bg-soft)]">
-                                        {member.user_id?.avatar && (
-                                            <Image
-                                                src={getImageUrl(member.user_id?.avatar) ?? '/img/placeholder.svg'}
-                                                alt={member.user_id?.first_name || 'Lid'}
-                                                fill
-                                                className="object-cover"
-                                                unoptimized
-                                            />
-                                        )}
-                                    </div>
-                                    <h4 className="text-center font-bold text-[var(--text-main)]">
-                                        {`${member.user_id?.first_name} ${member.user_id?.last_name}`}
-                                    </h4>
-                                    <span className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider">
-                                        {member.is_leader ? 'Commissieleider' : 'Commissielid'}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-                </div>
-
-                {/* Sidebar Details */}
-                <aside className="space-y-8">
-                    <section className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-[2rem] p-8 shadow-lg">
-                        <h3 className="mb-6 text-xl font-black text-[var(--text-main)]">Details</h3>
-                        <div className="space-y-6">
-                            <div className="flex items-center gap-4">
-                                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--color-purple-500)]/10 text-[var(--color-purple-500)]">
-                                    <Calendar className="h-6 w-6" />
-                                </div>
-                                <div className="min-w-0">
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Opgericht</p>
-                                    <p className="font-bold">Sinds {new Date().getFullYear() - 5}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--color-purple-500)]/10 text-[var(--color-purple-500)]">
-                                    <History className="h-6 w-6" />
-                                </div>
-                                <div className="min-w-0">
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Historie</p>
-                                    <p className="font-bold">Inzichtelijk voor leden</p>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* Socials / External Links */}
-                    <section className="bg-gradient-theme rounded-[2rem] p-8 text-white shadow-xl">
-                        <h3 className="mb-6 text-xl font-black">Social Media</h3>
-                        <div className="flex gap-4">
-                            <button className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 transition hover:bg-white/30 text-white">
-                                <Instagram className="h-6 w-6" />
-                            </button>
-                            <button className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 transition hover:bg-white/30 text-white">
-                                <Facebook className="h-6 w-6" />
-                            </button>
-                            <button className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 transition hover:bg-white/30 text-white">
-                                <Globe className="h-6 w-6" />
-                            </button>
-                        </div>
-                    </section>
-                </aside>
-            </div>
         </div>
     );
 };

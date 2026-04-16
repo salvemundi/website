@@ -32,14 +32,9 @@ async function checkSyncAccess() {
 }
 
 export default async function AzureSyncPage() {
-    // NUCLEAR SSR: All access and permission checks must happen before flushing the shell
+    // SECURITY: Still check access server-side to prevent unauthorized shell rendering
     const hasAccess = await checkSyncAccess();
     if (!hasAccess) redirect('/beheer');
-
-    const status = await getSyncStatusAction().catch((err) => ({ 
-        success: false, 
-        error: "Kon sync status niet laden van de server." 
-    }));
 
     return (
         <AdminPageShell
@@ -47,7 +42,7 @@ export default async function AzureSyncPage() {
             subtitle="Beheer de synchronisatie tussen Salve Mundi en Azure AD / Microsoft 365."
             backHref="/beheer"
         >
-            <SyncProvider initialStatus={status}>
+            <SyncProvider initialStatus={null}>
                 <div className="container mx-auto px-4 py-8 max-w-7xl relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
                     <div className="flex flex-col gap-10">
                         <SyncStatsIsland />
