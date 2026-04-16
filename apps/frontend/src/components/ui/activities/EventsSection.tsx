@@ -23,12 +23,12 @@ export function EventsSection({ activities = [], count = 4 }: EventsSectionProps
                 <div 
                     className="flex flex-col gap-6 rounded-xl bg-gradient-theme px-6 sm:px-10 pt-8 sm:pt-10 md:pt-12 pb-8 sm:pb-10 md:pt-12 shadow-xl"
                 >
-                    <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-                        <div className="space-y-4">
-                            <h2 className="text-3xl font-black tracking-tight text-[var(--text-main)] sm:text-4xl md:text-5xl lg:text-6xl gradient-text">
-                                Onze Activiteiten
+                    <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                        <div className="space-y-2">
+                            <h2 className="text-3xl font-black tracking-tight text-gradient-animated sm:text-4xl md:text-5xl lg:text-5xl">
+                                Komende activiteiten
                             </h2>
-                            <p className="max-w-xl text-xs sm:text-sm font-medium text-[var(--text-muted)] leading-relaxed">
+                            <p className="max-w-xl text-xs sm:text-sm font-medium text-[var(--text-muted)] dark:text-white/60 leading-relaxed">
                                 Van legendarische borrels tot verrijkende workshops en onvergetelijke studiereizen. Er is altijd een plek voor jou!
                             </p>
                         </div>
@@ -36,10 +36,10 @@ export function EventsSection({ activities = [], count = 4 }: EventsSectionProps
                         {hasActivities && (
                             <Link 
                                 href="/activiteiten"
-                                className="group relative inline-flex items-center gap-4 px-8 py-4 bg-[var(--color-purple-600)] text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg transition-all hover:scale-105 active:scale-95 overflow-hidden"
+                                className="group relative inline-flex items-center gap-4 px-8 py-4 bg-white/10 hover:bg-white/20 dark:bg-black/20 dark:hover:bg-black/40 text-[var(--text-main)] dark:text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-full border border-[var(--border-color)]/20 shadow-lg transition-all hover:scale-105 active:scale-95 backdrop-blur-sm overflow-hidden"
                             >
                                 <div className="relative z-10">Alle activiteiten</div>
-                                <div className="relative z-10 h-6 w-6 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                                <div className="relative z-10 h-6 w-6 rounded-full bg-[var(--color-purple-500)] flex items-center justify-center text-white group-hover:bg-[var(--color-purple-600)] transition-colors">
                                     <ChevronRight className="h-4 w-4" />
                                 </div>
                             </Link>
@@ -61,7 +61,7 @@ export function EventsSection({ activities = [], count = 4 }: EventsSectionProps
                                 <EventCard 
                                     key={activity.id}
                                     activity={activity as any} 
-                                    href={`/activiteiten/${activity.id}`} 
+                                    href={activity.custom_url || `/activiteiten/${activity.id}`} 
                                 />
                             ))
                         )}

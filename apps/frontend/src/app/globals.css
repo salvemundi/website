@@ -103,6 +103,9 @@
    --gradient-start: #fdfbff;
    --gradient-end: #f4eef5;
 
+   --bg-gradient-start: #fdfbff;
+   --bg-gradient-end: #f4eef5;
+
    /* Status */
    --theme-success: #16a34a;
    --theme-warning: #d97706;

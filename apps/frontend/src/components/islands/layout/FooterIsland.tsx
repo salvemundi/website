@@ -123,28 +123,46 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                     </div>
 
                     {/* ── Kolom 3: Commissies ── */}
-                    <div className="lg:col-span-2">
-                        <h3 className={HEADING_CLS}>Commissies</h3>
-                        <div className="footer-list-container h-[200px] sm:h-[280px] md:h-[var(--footer-col-height)] flex flex-col flex-wrap gap-x-8 gap-y-2 text-sm overflow-hidden">
-                            {sortedCommittees.length === 0 && (
-                                <p className={MUTED_CLS}>Geen commissies gevonden</p>
-                            )}
-                            {sortedCommittees.map((committee) => {
-                                const cleaned = cleanCommitteeName(committee.name);
-                                const slug = slugify(cleaned);
-                                return (
-                                    <div key={committee.id}>
-                                        <Link href={`${ROUTES.COMMITTEES}/commissies/${slug}`} className={LINK_CLS}>
-                                            {cleaned}
-                                        </Link>
-                                    </div>
-                                );
-                            })}
-                            <div>
-                                <Link href={ROUTES.COMMITTEES} className={`${LINK_CLS} font-bold text-[var(--color-purple-500)]`}>
-                                    Alle commissies bekijken
-                                </Link>
+                    <div className="lg:col-span-2 flex flex-col items-center">
+                        <h3 className={`${HEADING_CLS} text-center w-full`}>Commissies</h3>
+                        
+                        <div className="grid grid-cols-2 gap-x-12 gap-y-2 text-sm w-full max-w-fit mx-auto">
+                            {/* Linkerkolom (eerste 6) */}
+                            <div className="flex flex-col gap-y-2 text-left">
+                                {sortedCommittees.slice(0, 6).map((committee) => {
+                                    const cleaned = cleanCommitteeName(committee.name);
+                                    const slug = slugify(cleaned);
+                                    return (
+                                        <div key={committee.id}>
+                                            <Link href={`${ROUTES.COMMITTEES}/commissies/${slug}`} className={LINK_CLS}>
+                                                {cleaned}
+                                            </Link>
+                                        </div>
+                                    );
+                                })}
                             </div>
+
+                            {/* Rechterkolom (volgende 6) */}
+                            <div className="flex flex-col gap-y-2 text-left">
+                                {sortedCommittees.slice(6, 12).map((committee) => {
+                                    const cleaned = cleanCommitteeName(committee.name);
+                                    const slug = slugify(cleaned);
+                                    return (
+                                        <div key={committee.id}>
+                                            <Link href={`${ROUTES.COMMITTEES}/commissies/${slug}`} className={LINK_CLS}>
+                                                {cleaned}
+                                            </Link>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Alle bekijken link gecentreerd eronder */}
+                        <div className="mt-6 text-center lg:text-center">
+                            <Link href={ROUTES.COMMITTEES} className={`${LINK_CLS} font-bold text-[var(--color-purple-500)]`}>
+                                Alle commissies bekijken
+                            </Link>
                         </div>
                     </div>
 

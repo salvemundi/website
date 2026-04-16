@@ -26,7 +26,7 @@
 
     /* ── Gradient Backgrounds ──────────────────────────────────────────────── */
     .bg-gradient-theme {
-        background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+        background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
     }
 
     .bg-gradient-theme :is(h1, h2, h3, h4, p, span, a, li, label, strong) {

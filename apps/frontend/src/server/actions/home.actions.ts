@@ -47,21 +47,22 @@ export async function getHeroBanners(): Promise<HeroBanner[]> {
 }
 
 
+import { 
+    getActivitiesInternal 
+} from "@/server/queries/admin-event.queries";
+import { 
+    getUpcomingTrips 
+} from "@/server/actions/reis.actions";
+import { unstable_noStore as noStore } from "next/cache";
+
 export async function getUpcomingActiviteiten(limit = 4): Promise<Activiteit[]> {
+    noStore();
     const client = getSystemDirectus();
     const now = new Date();
     const today = now.toISOString().split('T')[0];
     
-    const [regularEvents, pubCrawlEvents] = await Promise.all([
-        client.request(readItems('events', {
-            fields: [...EVENT_FIELDS],
-            filter: {
-                status: { _eq: 'published' },
-                event_date: { _gte: today }
-            },
-            sort: ['event_date'],
-            limit: limit
-        })),
+    const [regularEvents, pubCrawlEvents, tripEvents] = await Promise.all([
+        getActivitiesInternal(true),
         client.request(readItems('pub_crawl_events', {
             fields: [...PUB_CRAWL_EVENT_FIELDS],
             filter: {
@@ -69,33 +70,14 @@ export async function getUpcomingActiviteiten(limit = 4): Promise<Activiteit[]> 
             },
             sort: ['date'],
             limit: limit
-        }))
+        })),
+        getUpcomingTrips()
     ]);
 
     const mappedRegular = (regularEvents as any[]).map((item) => {
-        let datum_start = now.toISOString();
-        if (item.event_date) {
-            const fullStr = item.event_time ? `${item.event_date}T${item.event_time}` : item.event_date;
-            const parsed = new Date(fullStr);
-            datum_start = isNaN(parsed.getTime()) ? new Date(item.event_date).toISOString() : parsed.toISOString();
-        }
-
         return {
-            id: String(item.id ?? ''),
-            titel: item.name ?? '',
-            beschrijving: item.description ?? null,
-            locatie: item.location ?? null,
-            datum_start,
-            datum_eind: item.event_date_end ? new Date(item.event_date_end).toISOString() : null,
-            afbeelding_id: item.image ?? null,
-            status: item.status ?? undefined,
-            price_members: item.price_members != null ? Number(item.price_members) : 0,
-            price_non_members: item.price_non_members != null ? Number(item.price_non_members) : 0,
-            only_members: item.only_members ?? false,
-            registration_deadline: item.registration_deadline ?? null,
-            contact: item.contact ?? null,
-            event_time: item.event_time ?? null,
-            event_time_end: item.event_time_end ?? null,
+            ...item,
+            category: item.committee_name, // Let component fallback if this is null
         };
     });
 
@@ -116,10 +98,38 @@ export async function getUpcomingActiviteiten(limit = 4): Promise<Activiteit[]> 
         event_time: null,
         event_time_end: null,
         custom_url: '/kroegentocht',
+        category: 'Feestcommissie',
+        committee_name: 'Feestcommissie',
     }));
 
-    const allEvents = [...mappedRegular, ...mappedPubCrawl]
+    const mappedTrips = (tripEvents as any[]).map((item) => ({
+        id: `trip-${item.id}`,
+        titel: item.name ?? '',
+        beschrijving: item.description ?? null,
+        locatie: 'Studiereis',
+        datum_start: item.start_date ? new Date(item.start_date).toISOString() : now.toISOString(),
+        datum_eind: item.end_date ? new Date(item.end_date).toISOString() : null,
+        afbeelding_id: item.image ?? null,
+        status: 'published',
+        price_members: item.base_price ?? 0,
+        price_non_members: item.base_price ?? 0,
+        only_members: true,
+        registration_deadline: item.registration_start_date ?? null,
+        contact: 'Reiscommissie',
+        event_time: null,
+        event_time_end: null,
+        custom_url: '/reis',
+        category: 'Reiscommissie',
+        committee_name: 'Reiscommissie',
+    }));
+
+    const allEvents = [...mappedRegular, ...mappedPubCrawl, ...mappedTrips]
         .sort((a, b) => new Date(a.datum_start).getTime() - new Date(b.datum_start).getTime())
+        .filter(event => {
+            const date = new Date(event.datum_start);
+            // Include today's events and future ones
+            return date >= new Date(new Date().setHours(0, 0, 0, 0));
+        })
         .slice(0, limit);
 
     const parsed = activitiesSchema.safeParse(allEvents);

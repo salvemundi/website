@@ -146,7 +146,7 @@ export interface DbEvent {
     max_sign_ups?: number | null;
     only_members?: boolean | null;
     one_sign_up_max?: boolean | null;
-    committee_id?: number | null;
+    committee_id?: number | DbCommittee | null;
     created_at?: string | null;
     updated_at?: string | null;
     image?: string | null;

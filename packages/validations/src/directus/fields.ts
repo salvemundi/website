@@ -7,7 +7,8 @@ export const EVENT_FIELDS = [
     'id', 'name', 'event_date', 'event_date_end', 'description', 
     'image', 'location', 'event_time', 'event_time_end', 
     'price_members', 'price_non_members', 'only_members', 
-    'registration_deadline', 'contact', 'status', 'publish_date'
+    'registration_deadline', 'contact', 'status', 'publish_date',
+    'committee_id.name'
 ] as const;
 
 export const EVENT_SIGNUP_FIELDS = [
