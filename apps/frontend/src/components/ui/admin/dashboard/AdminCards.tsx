@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import { ChevronRight } from 'lucide-react';
 
 interface CardProps {
     title?: string;
@@ -78,8 +79,8 @@ export function ActionCard({
             
             {/* Indicator arrow if link and NO value */}
             {isLink && (value === undefined || value === null) && (
-                <div className="text-[var(--beheer-accent)] opacity-20 group-hover:opacity-100 transition-opacity pr-2">
-                    <span className="text-xs font-black italic">→</span>
+                <div className="text-[var(--beheer-accent)] opacity-30 group-hover:opacity-100 group-hover:translate-x-1 transition-all pr-2">
+                    <ChevronRight className="h-5 w-5" />
                 </div>
             )}
         </Component>

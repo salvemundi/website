@@ -80,8 +80,11 @@ export async function checkAdminAccess() {
         if (committees) {
             user.committees = committees;
             const perms = getPermissions(committees);
-            user.isAdmin = perms.isAdmin;
+            // user.isAdmin = perms.isAdmin;
             user.isICT = perms.isICT;
+
+            // Store granular permissions in the user object for convenience
+            Object.assign(user, perms);
         }
     } catch (e: any) {
         
@@ -93,7 +96,7 @@ export async function checkAdminAccess() {
     const impersonatedBy = (session as any).impersonatedBy || null;
 
     const isIct = user.isICT || false;
-    const isBestuur = user.isAdmin || false;
+    const isBestuur = user.canAccessIntro || false;
     const isAuthorized = isIct || isBestuur;
 
     return {

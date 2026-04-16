@@ -1,6 +1,6 @@
 import React from 'react';
 import NextLink from 'next/link';
-import { Users, ChevronRight, History } from 'lucide-react';
+import { Users, History } from 'lucide-react';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { slugify } from '@/shared/lib/utils/slug';
 import type { Committee } from '@salvemundi/validations/schema/committees.zod';
@@ -36,7 +36,7 @@ export const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee = {} as 
     return (
         <div className={`${isBestuur ? 'md:col-span-2' : ''}`}>
             <NextLink
-                href={`/vereniging/commissies/${slug}`}
+                href={`/commissies/${slug}`}
                 className={`group flex h-full flex-col overflow-hidden rounded-[2rem] bg-[var(--bg-card)] dark:border dark:border-white/10 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl 
                     ${isBestuur ? 'ring-4 ring-[var(--color-purple-500)]/20 shadow-purple-500/10' : ''}`}
             >
@@ -62,7 +62,7 @@ export const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee = {} as 
                 <div className="flex flex-1 flex-col p-6 sm:p-8">
                     <div className="flex items-start justify-between gap-4 mb-4">
                         <div className="flex-1 min-w-0">
-                            <h3 className="text-2xl font-black tracking-tight text-[var(--text-main)] group-hover:text-[var(--color-purple-500)] transition-colors truncate">
+                            <h3 className="text-xl md:text-2xl lg:text-xl xl:text-2xl font-black tracking-tight text-[var(--text-main)] group-hover:text-[var(--color-purple-500)] transition-colors break-words hyphens-auto">
                                 {cleanedName || 'Commissie'}
                             </h3>
                             
@@ -79,10 +79,6 @@ export const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee = {} as 
                                     {(committee.members?.length || 0)} Leden
                                 </span>
                             </div>
-                        </div>
-
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--bg-soft)] text-[var(--color-purple-500)] transition group-hover:bg-[var(--color-purple-500)] group-hover:text-white">
-                            <ChevronRight className="h-6 w-6" />
                         </div>
                     </div>
 

@@ -8,7 +8,7 @@ export interface Committee {
 }
 
 export interface UserPermissions {
-    isAdmin: boolean;
+    // isAdmin: boolean;
     isLeader: boolean;
     isICT: boolean;
     // Granular permissions
@@ -36,7 +36,7 @@ export function hasPermission(committees: Committee[] = [], resource: AdminResou
         // administrative roles are linked to Entra ID groups, and numeric IDs 
         // are non-stable across environments.
         const hasPermissionForGroup = !!(c.azure_group_id && requirement.allowedCommitteeIds.includes(c.azure_group_id));
-        
+
         // Certain restricted resources require the user to be a leader 
         // to prevent unauthorized actions by regular members.
         if (requirement.leaderOnly) {
@@ -55,12 +55,12 @@ export function hasPermission(committees: Committee[] = [], resource: AdminResou
  */
 export function getPermissions(committees: Committee[] = []): UserPermissions {
     // Basic flags for backward compatibility or general navigation
-    const isAdmin = hasPermission(committees, AdminResource.Intro); 
+    // const isAdmin = hasPermission(committees, AdminResource.Intro); 
     const isICT = hasPermission(committees, AdminResource.Sync); // Using Sync access as proxy for ICT-level access
     const isLeader = committees.some(c => c.is_leader);
 
     return {
-        isAdmin,
+        // isAdmin,
         isLeader,
         isICT,
         canAccessIntro: hasPermission(committees, AdminResource.Intro),

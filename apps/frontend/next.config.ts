@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
         serverSourceMaps: true,
         webpackBuildWorker: true,
         workerThreads: true,
+        optimizePackageImports: ['lucide-react', 'date-fns', 'framer-motion']
     },
     staticPageGenerationTimeout: 60,
     logging: false,
@@ -25,12 +26,12 @@ const nextConfig: NextConfig = {
             },
         ],
         remotePatterns: [
-            ...(process.env.NEXT_PUBLIC_DIRECTUS_URL 
+            ...(process.env.NEXT_PUBLIC_DIRECTUS_URL
                 ? [{
                     protocol: new URL(process.env.NEXT_PUBLIC_DIRECTUS_URL).protocol.replace(':', '') as 'http' | 'https',
                     hostname: new URL(process.env.NEXT_PUBLIC_DIRECTUS_URL).hostname,
                     pathname: '/assets/**',
-                  }]
+                }]
                 : []
             ),
             {
@@ -69,6 +70,11 @@ const nextConfig: NextConfig = {
     async redirects() {
         return [
             {
+                source: '/vereniging/commissies/:path*',
+                destination: '/commissies/:path*',
+                permanent: true,
+            },
+            {
                 source: '/vereniging/:path*',
                 destination: '/commissies/:path*',
                 permanent: true,
@@ -92,11 +98,11 @@ const nextConfig: NextConfig = {
     },
     transpilePackages: ['better-auth'],
     webpack: (config) => {
-        config.resolve.fallback = { 
+        config.resolve.fallback = {
             ...config.resolve.fallback,
-            fs: false, 
-            net: false, 
-            tls: false 
+            fs: false,
+            net: false,
+            tls: false
         };
         return config;
     },

@@ -317,27 +317,36 @@ export function PwaInstallToast() {
     useEffect(() => {
         if (isStandalone()) return;
         if (isDismissed()) return;
-        
+
         // Alleen op touch-apparaten (telefoon/tablet) of mobile emulation
-        const isTouch = window.matchMedia('(pointer: coarse)').matches || 
-                        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        
+        const isTouch = window.matchMedia('(pointer: coarse)').matches ||
+            /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
         if (!isTouch) return;
 
-        if (detectIos()) {
-            // Alle iOS browsers: toon altijd de instructie-flow (native prompt niet beschikbaar)
+        // 1. Check specifiek voor iOS Safari
+        if (detectIosSafari()) {
             setMode('ios');
             setTimeout(() => setShow(true), 2500);
             return;
         }
 
-        // Chrome/Edge/Android: wacht op beforeinstallprompt
+        // 2. Check voor andere iOS browsers (Chrome/Firefox op iOS)
+        if (detectIos()) {
+            // Doe niets. iOS Chrome/Firefox ondersteunen PWA installatie niet op 
+            // dezelfde manier en hebben geen "Deel" knop onderaan.
+            // Beter geen melding tonen dan een incorrecte melding.
+            return;
+        }
+
+        // 3. Chrome/Edge/Android: wacht op beforeinstallprompt
         const handler = (e: Event) => {
             e.preventDefault();
             setDeferredPrompt(e as BeforeInstallPromptEvent);
             setMode('native');
             setTimeout(() => setShow(true), 2500);
         };
+
         window.addEventListener('beforeinstallprompt', handler);
         return () => window.removeEventListener('beforeinstallprompt', handler);
     }, []);

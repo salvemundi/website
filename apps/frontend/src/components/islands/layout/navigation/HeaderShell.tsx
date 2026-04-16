@@ -7,7 +7,7 @@ import { authClient } from '@/lib/auth';
 
 interface HeaderShellProps {
     children: React.ReactNode;
-    mobileMenu: React.ReactNode;
+    mobileMenu?: React.ReactNode;
 }
 
 export function HeaderShell({ children, mobileMenu }: HeaderShellProps) {

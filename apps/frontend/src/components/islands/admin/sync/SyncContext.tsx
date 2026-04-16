@@ -70,7 +70,14 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
             // Background errors remain silent to avoid interrupting the user, 
             // but the status object will contain error details if the action fails.
         }
-    }, []);
+    }, [getSyncStatusAction]);
+
+    useEffect(() => {
+        // Instant UI: If no initial status from server, fetch it immediately on mount
+        if (!initialStatus) {
+            fetchStatus();
+        }
+    }, [initialStatus, fetchStatus]);
 
     useEffect(() => {
         let timeout: ReturnType<typeof setTimeout>;
