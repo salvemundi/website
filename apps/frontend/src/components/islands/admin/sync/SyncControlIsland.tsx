@@ -18,7 +18,6 @@ export default function SyncControlIsland({ tasks = [] }: Props) {
     
     return (
         <div className="flex flex-col gap-8 mb-8 animate-in fade-in slide-in-from-left-4 duration-700">
-            {/* Full Sync Card */}
             <div className="bg-[var(--beheer-card-bg)] p-8 rounded-[2rem] border border-[var(--beheer-border)] shadow-sm">
                 <div className="flex items-center gap-4 mb-8">
                     <div className="p-3 bg-[var(--beheer-accent)]/10 rounded-2xl text-[var(--beheer-accent)]">
@@ -89,7 +88,6 @@ export default function SyncControlIsland({ tasks = [] }: Props) {
                 </div>
             </div>
 
-            {/* Single User Sync Card */}
             <div className="bg-[var(--beheer-card-bg)] p-8 rounded-[2rem] border border-[var(--beheer-border)] shadow-sm">
                 <div className="flex items-center gap-4 mb-8">
                     <div className="p-3 bg-[var(--beheer-accent)]/10 rounded-2xl text-[var(--beheer-accent)]">
