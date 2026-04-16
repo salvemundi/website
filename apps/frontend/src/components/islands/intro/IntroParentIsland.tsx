@@ -8,6 +8,7 @@ import { FormField } from '@/shared/ui/FormField';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { Heart } from 'lucide-react';
 import { introParentSignupFormSchema, type IntroParentSignupForm } from '@salvemundi/validations/schema/intro.zod';
+import { formatPhoneNumber } from '@/lib/utils/phone-utils';
 
 interface IntroParentIslandProps {
     userName: string;
@@ -28,7 +29,7 @@ export const IntroParentIsland = ({ userName, userEmail, initialPhone }: IntroPa
     } = useForm<IntroParentSignupForm>({
         resolver: zodResolver(introParentSignupFormSchema),
         defaultValues: {
-            telefoonnummer: initialPhone,
+            telefoonnummer: formatPhoneNumber(initialPhone),
             motivation: '',
         }
     });

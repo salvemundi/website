@@ -69,14 +69,24 @@ const nextConfig: NextConfig = {
     async redirects() {
         return [
             {
+                source: '/vereniging/:path*',
+                destination: '/commissies/:path*',
+                permanent: true,
+            },
+            {
+                source: '/beheer/vereniging/:path*',
+                destination: '/beheer/commissies/:path*',
+                permanent: true,
+            },
+            {
                 source: '/reis/aanbetaling/:id',
                 destination: '/reis/betalen/aanbetaling?id=:id',
-                permanent: true,
+                permanent: false,
             },
             {
                 source: '/reis/restbetaling/:id',
                 destination: '/reis/betalen/restbetaling?id=:id',
-                permanent: true,
+                permanent: false,
             },
         ];
     },

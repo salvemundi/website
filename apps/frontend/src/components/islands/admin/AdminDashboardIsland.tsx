@@ -154,8 +154,8 @@ const AdminDashboardIsland: React.FC<AdminDashboardIslandProps> = ({ stats, birt
                     <div className="bg-gradient-to-br from-[var(--beheer-accent)] to-[var(--beheer-accent)]/80 rounded-[2.5rem] p-10 text-white overflow-hidden relative group shadow-lg">
                         <div className="relative z-10">
                             <h3 className="font-black text-xl uppercase tracking-tighter mb-2">Reglementen</h3>
-                            <p className="text-white/80 text-[10px] font-bold uppercase tracking-widest mb-6 leading-relaxed">Statuten, HR en andere belangrijke verenigingsstukken.</p>
-                            <Link href="/beheer/vereniging" className="inline-flex items-center gap-2 bg-white text-[var(--beheer-accent)] px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/90 transition-all active:scale-95 shadow-lg">
+                            <p className="text-white/80 text-[10px] font-bold uppercase tracking-widest mb-6 leading-relaxed">Statuten, HR en andere belangrijke stukken.</p>
+                            <Link href="/beheer/commissies" className="inline-flex items-center gap-2 bg-white text-[var(--beheer-accent)] px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/90 transition-all active:scale-95 shadow-lg">
                                 <FileText className="w-4 h-4" />
                                 Doorlezen
                             </Link>

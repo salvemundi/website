@@ -28,7 +28,7 @@ export type CommitteeMember = {
     isLeader: boolean;
 };
 
-export async function getCommitteesInternal(): Promise<Committee[]> {
+export async function getCommittees(): Promise<Committee[]> {
     try {
         const items = await getSystemDirectus().request(readItems('committees', {
             limit: -1,
@@ -46,7 +46,7 @@ export async function getCommitteesInternal(): Promise<Committee[]> {
     }
 }
 
-export async function getCommitteeMembersInternal(committeeId: string): Promise<CommitteeMember[]> {
+export async function getCommitteeMembers(committeeId: string): Promise<CommitteeMember[]> {
     try {
         const items = await getSystemDirectus().request(readItems('committee_members' as any, {
             filter: { committee_id: { _eq: committeeId } },
@@ -72,7 +72,7 @@ export async function getCommitteeMembersInternal(committeeId: string): Promise<
     }
 }
 
-export async function getUniqueCommitteeMembersCountInternal(): Promise<number> {
+export async function countUniqueCommitteeMembers(): Promise<number> {
     try {
         const memberships = await getSystemDirectus().request(readItems('committee_members' as any, {
             fields: ['user_id'] as any,

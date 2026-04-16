@@ -4,7 +4,7 @@ export const ROUTES = {
     INTRO: '/intro',
     MEMBERSHIP: '/lidmaatschap',
     ACTIVITIES: '/activiteiten',
-    COMMITTEES: '/vereniging',
+    COMMITTEES: '/commissies',
     PUB_CRAWL: '/kroegentocht',
     TRIP: '/reis',
     CONTACT: '/contact',
@@ -26,7 +26,7 @@ export const PUBLIC_ROUTES: string[] = [
     ROUTES.PUB_CRAWL,
     ROUTES.INTRO,
     ROUTES.TRIP,
-    '/vereniging/oud-besturen', // Sub-routes ook hier of via prefix-check in proxy
+    '/commissies/oud-besturen', // Sub-routes ook hier of via prefix-check in proxy
     '/404'
 ];
 

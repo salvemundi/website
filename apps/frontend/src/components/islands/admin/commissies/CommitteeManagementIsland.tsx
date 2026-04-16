@@ -5,7 +5,7 @@ import {
     Users, 
     RefreshCw, 
 } from 'lucide-react';
-import type { Committee, CommitteeMember } from '@/server/queries/admin-vereniging.queries';
+import type { Committee, CommitteeMember } from '@/server/queries/admin-commissies.queries';
 import {
     getCommittees,
     getCommitteeMembers,
@@ -37,7 +37,7 @@ interface Props {
     initialMembers?: CommitteeMember[];
 }
 
-export default function VerenigingManagementIsland({ initialCommittees, totalUniqueMembers, initialMembers = [] }: Props) {
+export default function CommitteeManagementIsland({ initialCommittees, totalUniqueMembers, initialMembers = [] }: Props) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [committees, setCommittees] = useState<Committee[]>(initialCommittees);
     
@@ -184,7 +184,7 @@ export default function VerenigingManagementIsland({ initialCommittees, totalUni
     return (
         <div className="min-h-screen bg-[var(--bg-main)]">
             <AdminToolbar 
-                title="Vereniging"
+                title="Commissies"
                 subtitle="Beheer commissies, leden en Azure-groepen"
                 backHref="/beheer"
                 actions={

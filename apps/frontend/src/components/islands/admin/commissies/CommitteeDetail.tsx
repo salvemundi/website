@@ -15,7 +15,7 @@ import {
     ExternalLink, 
     Loader2 
 } from 'lucide-react';
-import type { Committee, CommitteeMember } from '@/server/queries/admin-vereniging.queries';
+import type { Committee, CommitteeMember } from '@/server/queries/admin-commissies.queries';
 import { Input } from '@/shared/ui/Input';
 
 interface Props {
@@ -98,7 +98,7 @@ export default function CommitteeDetail({
 
                     <div className="flex gap-3 flex-shrink-0">
                         <a
-                            href={`/vereniging/commissies/${slugify(selected.name)}`}
+                            href={`/commissies/${slugify(selected.name)}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 px-6 py-3 bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] rounded-xl font-black text-[10px] uppercase tracking-widest border border-[var(--beheer-border)] hover:bg-[var(--beheer-accent)] hover:text-white hover:border-[var(--beheer-accent)] transition-all shadow-sm active:scale-95"

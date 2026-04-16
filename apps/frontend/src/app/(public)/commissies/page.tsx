@@ -3,13 +3,13 @@ import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import CommitteesList from '@/components/islands/committees/CommitteesList';
 
 export const metadata: Metadata = {
-    title: 'De Vereniging | SV Salve Mundi',
+    title: 'Commissies | SV Salve Mundi',
     description: 'Ontdek onze commissies en het team dat SV Salve Mundi draaiende houdt.',
 };
 
 import { getCommittees } from '@/server/actions/committees.actions';
 
-export default async function VerenigingPage() {
+export default async function CommissiesPage() {
     // NUCLEAR SSR: Fetch all data before flushing any part of the page content
     const committees = await getCommittees();
 
