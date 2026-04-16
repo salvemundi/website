@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 
 // V7 Specifics
 import AdminReisSelectorIsland from '@/components/islands/admin/AdminReisSelectorIsland';
@@ -40,8 +41,8 @@ export async function generateMetadata({ searchParams }: AdminReisPageProps): Pr
 /**
  * AdminReisPage: Zero-Drift Modernization.
  * Migrated to AdminPageShell for consistent sidebar/toolbar rendering.
- * Uses nested Suspense with AdminReisSelectorIsland and AdminReisTableIsland 
- * to ensure immediate layout rendering while data streams in from the database.
+ * All data is pre-fetched on the server-side before flushing content to the client 
+ * to ensure maximum stability and zero layout shift.
  */
 export default async function AdminReisPage({ searchParams }: AdminReisPageProps) {
     const { user } = await checkAdminAccess();
@@ -51,6 +52,7 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
     // Fetch initial trips and settings concurrently
     let trips: any[] = [];
     let reisSettings = { show: true };
+    let errorMsg: string | null = null;
     
     try {
         const [tripsRes, settingsRes] = await Promise.all([
@@ -60,8 +62,17 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
         
         trips = tripsRes || [];
         reisSettings = settingsRes || { show: true };
-    } catch (e) {
-        // Silently fail, NoTripsView will handle empty array
+    } catch (e: any) {
+        errorMsg = e.message || 'Interne serverfout';
+    }
+
+    if (errorMsg === 'Forbidden: Reis Admin rechten vereist voor reisbeheer' || errorMsg === 'Niet geautoriseerd') {
+        return (
+            <AdminUnauthorized 
+                title="Geen Toegang"
+                description={errorMsg}
+            />
+        );
     }
 
     if (!trips || trips.length === 0) {

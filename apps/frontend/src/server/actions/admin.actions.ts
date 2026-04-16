@@ -79,6 +79,9 @@ export async function checkAdminAccess() {
         }
         if (committees) {
             user.committees = committees;
+            const perms = getPermissions(committees);
+            user.isAdmin = perms.isAdmin;
+            user.isICT = perms.isICT;
         }
     } catch (e: any) {
         

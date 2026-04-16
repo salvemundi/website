@@ -53,11 +53,11 @@ import { query } from '@/lib/database';
  * Enriches each activity with 'is_signed_up' status if userId is provided.
  */
 export const getActivities = cache(async (userId?: string): Promise<(Activiteit & { is_signed_up?: boolean })[]> => {
-    try {
-        const activities = await getActivitiesInternal(true);
-        
-        if (!userId) return activities;
+    const activities = await getActivitiesInternal(true);
+    
+    if (!userId) return activities;
 
+    try {
         // Fetch user signups for these activities
         const userSignups = await fetchUserEventSignupsDb(userId);
         const signedUpEventIds = new Set(userSignups.map(s => s.event_id.id));
@@ -71,8 +71,9 @@ export const getActivities = cache(async (userId?: string): Promise<(Activiteit 
             is_signed_up: signedUpEventIds.has(activity.id) || (activity as any).type === 'pub_crawl' && signedUpPubCrawlIds.has(activity.id)
         }));
     } catch (error) {
-        
-        return [];
+        // User signup fetch failure is non-critical for the list view, log and return activities without signup status
+        console.error('[Error] Failed to fetch user signups for activities:', error);
+        return activities;
     }
 });
 
@@ -80,12 +81,7 @@ export const getActivities = cache(async (userId?: string): Promise<(Activiteit 
  * Fetches a single activity by ID directly from the database (SQL-first).
  */
 export const getActivityById = cache(async (id: string): Promise<Activiteit | null> => {
-    try {
-        return await getActivityByIdInternal(id);
-    } catch (error) {
-        
-        return null;
-    }
+    return await getActivityByIdInternal(id);
 });
 
 /**

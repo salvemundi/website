@@ -3,7 +3,6 @@
 import { z } from 'zod';
 import { auth } from '@/server/auth/auth';
 import { revalidateTag, revalidatePath, unstable_noStore as noStore } from "next/cache";
-import { isSuperAdmin } from "@/lib/auth";
 import { headers } from 'next/headers';
 import { 
     INTRO_BLOG_FIELDS, 
@@ -43,19 +42,12 @@ const introNotificationSchema = z.object({
 import { AdminResource } from '@/shared/lib/permissions-config';
 import { getRedis } from '@/server/auth/redis-client';
 import { FLAGS_CACHE_KEY } from '@/lib/config/feature-flags';
-import { hasPermission } from '@/shared/lib/permissions';
 import { query } from '@/lib/database';
 
-async function checkIntroAdminAccess() {
-    const session = await auth.api.getSession({ headers: await headers() });
-    if (!session?.user) throw new Error('Niet ingelogd');
+import { requireAdminResource } from '@/server/auth/auth-utils';
 
-    const user = session.user as any;
-    if (!hasPermission(user.committees, AdminResource.Intro)) {
-        throw new Error('Geen toegang: onvoldoende rechten voor intro beheer');
-    }
-    
-    return session;
+async function checkIntroAdminAccess() {
+    return requireAdminResource(AdminResource.Intro);
 }
 
 

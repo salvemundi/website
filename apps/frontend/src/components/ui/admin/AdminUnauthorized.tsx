@@ -3,7 +3,6 @@
 import React from 'react';
 import { ShieldAlert, ArrowLeft, Home } from 'lucide-react';
 import Link from 'next/link';
-import AdminToolbar from './AdminToolbar';
 
 interface AdminUnauthorizedProps {
     title?: string;
@@ -12,59 +11,56 @@ interface AdminUnauthorizedProps {
 }
 
 /**
- * A standardized "Unauthorized Access" view for admin pages.
- * Maintains the beheer layout consistency (toolbar) while showing an error.
+ * AdminUnauthorized: Standard Salve Mundi Error Layout.
+ * 100% Alignment with NotFound and GlobalError design patterns.
  */
 export default function AdminUnauthorized({
-    title = 'Toegang Geweigerd',
+    title = 'Geen toegang',
     description = 'Je hebt geen rechten om deze sectie te bekijken. Neem contact op met de ICT-commissie als je denkt dat dit een fout is.',
     backHref = '/beheer'
 }: AdminUnauthorizedProps) {
     return (
-        <div className="min-h-screen bg-[var(--bg-main)]">
-            <AdminToolbar 
-                title={title}
-                subtitle="Systeemmelding"
-                backHref={backHref}
-            />
-            
-            <div className="container mx-auto px-4 py-20 max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-2xl p-12 text-center border border-[var(--beheer-border)] relative overflow-hidden group">
-                    {/* Decorative glow */}
-                    <div className="absolute -top-24 -right-24 h-48 w-48 bg-red-500/5 blur-3xl rounded-full group-hover:bg-red-500/10 transition-colors duration-700 pointer-events-none" />
-                    
-                    <div className="mb-10 flex justify-center relative">
-                        <div className="rounded-full bg-red-500/10 p-10 ring-8 ring-red-500/5 shadow-[0_0_50px_rgba(239,68,68,0.2)] animate-pulse">
-                            <ShieldAlert className="h-24 w-24 text-red-500" />
-                        </div>
-                    </div>
-                    
-                    <h2 className="text-4xl font-black text-[var(--beheer-text)] uppercase tracking-tighter mb-6">
-                        Geen Toegang
-                    </h2>
-                    
-                    <p className="text-sm md:text-base text-[var(--beheer-text-muted)] leading-relaxed mb-12 max-w-md mx-auto">
-                        {description}
-                    </p>
-                    
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                        <Link 
-                            href={backHref} 
-                            className="flex items-center gap-2 rounded-full bg-[var(--color-purple-500)] text-white px-8 py-3.5 font-bold shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:-translate-y-0.5 transition-all text-sm uppercase tracking-widest active:scale-95 group"
-                        >
-                            <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" /> 
-                            <span>Ga Terug</span>
-                        </Link>
-
-                        <Link
-                            href="/"
-                            className="flex items-center gap-2 rounded-full px-8 py-3.5 font-bold text-[var(--beheer-text)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] hover:bg-[var(--beheer-border)]/5 transition-all text-sm uppercase tracking-widest active:scale-95 group"
-                        >
-                            <Home className="h-4 w-4" />
-                            Naar Website
-                        </Link>
-                    </div>
+        <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center select-none pt-20">
+            {/* Header with Icon Box matching GlobalError */}
+            <div className="relative mb-8">
+                {/* Decorative background glow */}
+                <div className="absolute inset-x-0 top-0 h-40 w-40 mx-auto blur-3xl bg-[var(--color-purple-500)]/10 rounded-full pointer-events-none" />
+                
+                {/* Icon Container */}
+                <div className="relative rounded-3xl bg-[var(--bg-card)] p-6 shadow-2xl border border-[var(--border-color)]/20 text-[var(--color-purple-500)] inline-block">
+                    <ShieldAlert className="h-16 w-16" />
                 </div>
+                
+                {/* Faded 403 text behind the icon */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 select-none">
+                    <span className="text-9xl font-black tracking-tighter text-[var(--color-purple-500)]/5">403</span>
+                </div>
+            </div>
+
+            <h2 className="text-4xl font-black text-[var(--text-main)] mb-3 tracking-tight">
+                {title}
+            </h2>
+            
+            <p className="text-[var(--text-muted)] max-w-md mx-auto mb-10 font-medium leading-relaxed font-sans">
+                {description}
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+                <Link
+                    href="/"
+                    className="flex items-center gap-2 rounded-full bg-[var(--color-purple-500)] text-white px-8 py-3.5 font-bold shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:-translate-y-0.5 transition-all text-sm uppercase tracking-widest"
+                >
+                    <Home className="h-4 w-4" />
+                    Terug naar Home
+                </Link>
+
+                <button
+                    onClick={() => window.history.back()}
+                    className="flex items-center gap-2 rounded-full px-8 py-3.5 font-bold text-[var(--text-main)] bg-[var(--bg-card)] border border-[var(--border-color)]/20 hover:bg-[var(--border-color)]/5 transition-all text-sm uppercase tracking-widest"
+                >
+                    <ArrowLeft className="h-4 w-4" />
+                    Vorige Pagina
+                </button>
             </div>
         </div>
     );

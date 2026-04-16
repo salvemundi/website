@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import PaymentStatusIsland from '@/components/islands/activities/PaymentStatusIsland';
