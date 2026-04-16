@@ -26,7 +26,6 @@ export default function SyncMonitorIsland() {
 
     return (
         <div className="bg-[var(--beheer-card-bg)] p-8 rounded-[2rem] border border-[var(--beheer-border)] shadow-sm animate-in fade-in duration-1000">
-            {/* Header: Static Shell */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
                 <div className="flex items-center gap-4">
                     <div className="p-3 bg-[var(--theme-info)]/10 rounded-2xl text-[var(--theme-info)]">
@@ -40,7 +39,6 @@ export default function SyncMonitorIsland() {
                     </div>
                 </div>
 
-                {/* Filter Tabs */}
                 <div className="flex flex-wrap gap-2">
                     {(['all', 'success', 'created', 'warnings', 'missing', 'errors', 'excluded'] as const).map(filter => (
                         <button
@@ -54,7 +52,6 @@ export default function SyncMonitorIsland() {
                 </div>
             </div>
             
-            {/* Error Message: Dynamic */}
             {status?.fatalError && (
                 <div className="mb-8 p-6 bg-[var(--theme-error)]/5 border border-[var(--theme-error)]/10 rounded-3xl animate-in slide-in-from-top duration-500">
                     <div className="flex items-start gap-4">
@@ -91,7 +88,6 @@ export default function SyncMonitorIsland() {
             )}
 
             <div className="space-y-6">
-                {/* Progress Bar */}
                 <div>
                     <div className="flex justify-between items-end mb-2">
                         <span className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">Voortgang ({processed} / {total})</span>
@@ -107,7 +103,6 @@ export default function SyncMonitorIsland() {
                     </div>
                 </div>
 
-                {/* Logs Area */}
                 <div className="mt-8 min-h-[200px]">
                     <SyncLogs 
                         status={status || { 

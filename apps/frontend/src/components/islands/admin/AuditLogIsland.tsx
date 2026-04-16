@@ -20,7 +20,6 @@ import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 
-// Sub-components
 import AuditHeader from './audit/AuditHeader';
 import PendingTab from './audit/PendingTab';
 import LogsTab from './audit/LogsTab';
@@ -211,7 +210,6 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
             />
 
             <div className="space-y-6 mt-6">
-                {/* Tabs Navigation */}
                 <div className="flex gap-1 bg-[var(--beheer-card-soft)] p-1 rounded-2xl w-fit border border-[var(--beheer-border)]">
                     {[
                         { id: 'pending', label: 'Wachtrij', icon: Clock },
@@ -229,7 +227,6 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                     ))}
                 </div>
 
-                {/* Main Content Area */}
                 {activeTab === 'pending' && (
                     <PendingTab 
                         isProcessing={isProcessing}
