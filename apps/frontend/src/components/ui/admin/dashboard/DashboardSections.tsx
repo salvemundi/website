@@ -55,7 +55,7 @@ export function DashboardHub({
             icon: <Users />,
             items: [
                 { title: "Leden", value: stats?.totalMembers ?? '0', icon: <Users />, subtitle: "Leden", href: "/beheer/leden", colorClass: "green" as const, disabled: !permissions.canAccessMembers },
-                { title: "Commissies", value: "Beheer", icon: <Shield />, subtitle: "Vereniging", href: "/beheer/vereniging", colorClass: "orange" as const, disabled: !permissions.canAccessCommittees },
+                { title: "Commissies", value: "Beheer", icon: <Shield />, subtitle: "Commissies", href: "/beheer/commissies", colorClass: "orange" as const, disabled: !permissions.canAccessCommittees },
                 { title: "Stickers", value: "Beheer", icon: <MapPin />, subtitle: "Verzameling", href: "/beheer/stickers", colorClass: "purple" as const, disabled: !permissions.canAccessStickers },
                 { title: "Coupons", value: stats?.totalCoupons ?? '0', icon: <Ticket />, subtitle: "Codes", href: "/beheer/coupons", colorClass: "amber" as const, disabled: !permissions.canAccessCoupons },
             ].filter(i => !i.disabled)

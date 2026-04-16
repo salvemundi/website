@@ -8,7 +8,7 @@ import {
     ChevronRight 
 } from 'lucide-react';
 import { Input } from '@/shared/ui/Input';
-import type { Committee } from '@/server/queries/admin-vereniging.queries';
+import type { Committee } from '@/server/queries/admin-commissies.queries';
 
 interface Props {
     committees: Committee[];

@@ -11,12 +11,12 @@ import { USER_ID_FIELDS } from '@salvemundi/validations/directus/fields';
 import type { 
     Committee, 
     CommitteeMember 
-} from '@/server/queries/admin-vereniging.queries';
+} from '@/server/queries/admin-commissies.queries';
 import { 
-    getCommitteesInternal, 
-    getCommitteeMembersInternal, 
-    getUniqueCommitteeMembersCountInternal,
-} from '@/server/queries/admin-vereniging.queries';
+    getCommittees as getCommitteesQuery, 
+    getCommitteeMembers as getCommitteeMembersQuery, 
+    countUniqueCommitteeMembers as getUniqueCommitteeMembersCountQuery,
+} from '@/server/queries/admin-commissies.queries';
 import { triggerUserSyncAction } from './azure-sync/sync-tasks.actions';
 
 const getAzureManagementUrl = () => process.env.AZURE_MANAGEMENT_SERVICE_URL;
@@ -47,17 +47,17 @@ async function checkAccess() {
 
 export async function getCommittees(): Promise<Committee[]> {
     await checkAccess();
-    return getCommitteesInternal();
+    return getCommitteesQuery();
 }
 
 export async function getCommitteeMembers(committeeId: string): Promise<CommitteeMember[]> {
     await checkAccess();
-    return getCommitteeMembersInternal(committeeId);
+    return getCommitteeMembersQuery(committeeId);
 }
 
 export async function getUniqueCommitteeMembersCount(): Promise<number> {
     await checkAccess();
-    return getUniqueCommitteeMembersCountInternal();
+    return getUniqueCommitteeMembersCountQuery();
 }
 
 export async function updateCommitteeDetails(
@@ -68,8 +68,8 @@ export async function updateCommitteeDetails(
     
     try {
         await getSystemDirectus().request(updateItem('committees', committeeId, payload));
-        revalidatePath(`/beheer/committees/${committeeId}`);
-        revalidatePath('/beheer/committees');
+        revalidatePath(`/beheer/commissies/${committeeId}`);
+        revalidatePath('/beheer/commissies');
         return { success: true };
     } catch (e) {
         
@@ -140,7 +140,7 @@ export async function toggleCommitteeLeader(
 
     try {
         await getSystemDirectus().request(updateItem('committee_members' as any, membershipId, { is_leader: !currentIsLeader }));
-        revalidatePath('/beheer/vereniging');
+        revalidatePath('/beheer/commissies');
     } catch (e) {
         
         return { success: false, error: 'Bijwerken mislukt' };

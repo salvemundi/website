@@ -134,7 +134,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                     const slug = slugify(cleaned);
                                     return (
                                         <div key={committee.id}>
-                                            <Link href={`${ROUTES.COMMITTEES}/commissies/${slug}`} className={LINK_CLS}>
+                                            <Link href={`${ROUTES.COMMITTEES}/${slug}`} className={LINK_CLS}>
                                                 {cleaned}
                                             </Link>
                                         </div>
@@ -149,7 +149,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                     const slug = slugify(cleaned);
                                     return (
                                         <div key={committee.id}>
-                                            <Link href={`${ROUTES.COMMITTEES}/commissies/${slug}`} className={LINK_CLS}>
+                                            <Link href={`${ROUTES.COMMITTEES}/${slug}`} className={LINK_CLS}>
                                                 {cleaned}
                                             </Link>
                                         </div>

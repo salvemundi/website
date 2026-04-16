@@ -99,7 +99,7 @@ export default async function IntroPage() {
                                 <IntroParentIsland
                                     userName={session.user.name}
                                     userEmail={session.user.email}
-                                    initialPhone={''}
+                                    initialPhone={(session.user as any).phone_number || ''}
                                 />
                             )
                         ) : (

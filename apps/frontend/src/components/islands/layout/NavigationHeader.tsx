@@ -37,7 +37,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
         { name: 'Intro', href: ROUTES.INTRO, icon: 'Sparkles' },
         { name: 'Lidmaatschap', href: ROUTES.MEMBERSHIP, icon: 'User' },
         { name: 'Activiteiten', href: ROUTES.ACTIVITIES, icon: 'CalendarDays' },
-        { name: 'De Vereniging', href: ROUTES.COMMITTEES, icon: 'Users' },
+        { name: 'Commissies', href: ROUTES.COMMITTEES, icon: 'Users' },
         { name: 'Kroegentocht', href: ROUTES.PUB_CRAWL, icon: 'Beer' },
         { name: 'Reis', href: ROUTES.TRIP, icon: 'Map' },
         { name: 'Safe Havens', href: ROUTES.SAFE_HAVENS, icon: 'Shield' },

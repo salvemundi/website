@@ -112,7 +112,7 @@ export async function triggerUserSyncAction(userId: string) {
 
         revalidateTag(`user_${userId}`, 'max');
         revalidatePath(`/beheer/leden/${userId}`);
-        revalidatePath('/beheer/vereniging');
+        revalidatePath('/beheer/commissies');
 
         return { success: true, message: `Synchronisatie voor gebruiker ${userId} voltooid.` };
     } catch (err: any) {
