@@ -38,26 +38,17 @@ interface AdminActivity {
 interface Props {
     event?: AdminActivity;
     canEdit?: boolean;
-    isSuperAdmin?: boolean;
     isPending?: boolean;
-    isSending?: boolean;
     onViewSignups?: (id: number) => void;
-    onReminder?: (id: number, name: string) => void;
-    onCustomNotify?: (event: AdminActivity) => void;
     onEdit?: (id: number) => void;
-    onDelete?: (id: number, name: string) => void;
 }
 
 export default function ActivityCard({
     event,
     canEdit = false,
     isPending = false,
-    isSending = false,
     onViewSignups = () => {},
-    onReminder = () => {},
-    onCustomNotify = () => {},
     onEdit = () => {},
-    onDelete = () => {},
 }: Props) {
     if (!event) return null;
     const eventDate = new Date(event.event_date);
@@ -168,53 +159,24 @@ export default function ActivityCard({
                     </div>
                 </div>
 
-                {/* Actions */}
-                <div className="flex flex-row lg:flex-col gap-3 justify-end items-stretch lg:w-48 pt-6 lg:pt-0 border-t lg:border-t-0 border-[var(--beheer-border)]">
+                {/* Actions Area - Simplified into two primary buttons */}
+                <div className="flex flex-col sm:flex-row lg:flex-col gap-3 justify-center items-stretch lg:w-64 pt-6 lg:pt-0 border-t lg:border-t-0 border-[var(--beheer-border)]">
                     <button
                         onClick={() => onViewSignups(event.id)}
-                        className="flex-1 flex items-center justify-center gap-3 px-5 py-4 text-[10px] bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] hover:bg-[var(--beheer-accent)] hover:text-white rounded-2xl transition-all font-black uppercase tracking-widest cursor-pointer active:scale-95 group/btn"
+                        className="flex-1 flex items-center justify-center gap-4 px-6 py-5 text-[11px] bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] hover:bg-[var(--beheer-accent)] hover:text-white rounded-2xl transition-all font-black tracking-widest cursor-pointer active:scale-95 group/btn"
                     >
-                        <Eye className="h-4 w-4 group-hover/btn:scale-110 transition-transform" />
+                        <Eye className="h-5 w-5 group-hover/btn:scale-110 transition-transform" />
                         <span>Aanmeldingen</span>
                     </button>
 
-                    {!isPast && !isDraft && (
-                        <div className="flex flex-1 lg:flex-none gap-3">
-                            <button
-                                onClick={() => onReminder(event.id, event.name)}
-                                disabled={isSending}
-                                className="flex-1 flex items-center justify-center gap-2 p-4 text-[10px] bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-white rounded-2xl transition-all font-black uppercase tracking-widest disabled:opacity-50 cursor-pointer active:scale-95 group/btn"
-                                title="Stuur herinnering"
-                            >
-                                <Bell className="h-4 w-4 group-hover/btn:animate-bounce" />
-                            </button>
-                            <button
-                                onClick={() => onCustomNotify(event)}
-                                disabled={isSending}
-                                className="flex-1 flex items-center justify-center gap-2 p-4 text-[10px] bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white rounded-2xl transition-all font-black uppercase tracking-widest disabled:opacity-50 cursor-pointer active:scale-95 group/btn"
-                                title="Stuur update"
-                            >
-                                <Send className="h-4 w-4 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
-                            </button>
-                        </div>
-                    )}
-
                     {canEdit && (
-                        <div className="flex flex-1 lg:flex-none gap-3">
-                            <button
-                                onClick={() => onEdit(event.id)}
-                                className="flex-1 flex items-center justify-center gap-2 p-4 text-[10px] border border-[var(--beheer-border)] text-[var(--beheer-text)] hover:bg-[var(--beheer-border)] rounded-2xl transition-all font-black uppercase tracking-widest cursor-pointer active:scale-95 group/btn"
-                            >
-                                <Edit className="h-4 w-4 group-hover/btn:rotate-12 transition-transform" />
-                            </button>
-                            <button
-                                onClick={() => onDelete(event.id, event.name)}
-                                disabled={isPending}
-                                className="flex-1 flex items-center justify-center gap-2 p-4 text-[10px] bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-2xl transition-all font-black uppercase tracking-widest disabled:opacity-50 cursor-pointer active:scale-95 group/btn"
-                            >
-                                <Trash2 className="h-4 w-4 group-hover/btn:scale-125 transition-transform" />
-                            </button>
-                        </div>
+                        <button
+                            onClick={() => onEdit(event.id)}
+                            className="flex-1 flex items-center justify-center gap-4 px-6 py-5 text-[11px] border border-[var(--beheer-border)] text-[var(--beheer-text)] hover:bg-[var(--beheer-border)] rounded-2xl transition-all font-black tracking-widest cursor-pointer active:scale-95 group/btn"
+                        >
+                            <Edit className="h-5 w-5 group-hover/btn:rotate-12 transition-transform" />
+                            <span>Bewerken</span>
+                        </button>
                     )}
                 </div>
             </div>
