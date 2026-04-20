@@ -31,4 +31,18 @@ export default async function userRoutes(fastify: FastifyInstance) {
             return reply.status(500).send({ error: 'Failed to update user in Azure AD', details: err.message });
         }
     });
+
+    // Get user's groups
+    fastify.get('/:entraId/groups', async (request: any, reply) => {
+        const { entraId } = request.params;
+
+        try {
+            const token = await TokenService.getAccessToken();
+            const groups = await GraphService.getUserGroups(entraId, token);
+            return { success: true, groups };
+        } catch (err: any) {
+            fastify.log.error(`[USERS] Failed to fetch groups for user ${entraId}:`, err.message);
+            return reply.status(500).send({ error: 'Failed to fetch groups', details: err.message });
+        }
+    });
 }
