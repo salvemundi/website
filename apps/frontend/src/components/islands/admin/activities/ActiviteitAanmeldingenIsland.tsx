@@ -166,6 +166,7 @@ export default function ActiviteitAanmeldingenIsland({
                 showToast(res.error || 'Fout bij bijwerken check-in', 'error');
             } else {
                 showToast(`Check-in ${newValue ? 'voltooid' : 'ongedaan gemaakt'}`, 'success');
+                router.refresh();
             }
         });
     }
@@ -269,7 +270,7 @@ export default function ActiviteitAanmeldingenIsland({
                             <table className="w-full text-left border-collapse min-w-[800px]">
                                 <thead>
                                     <tr className="border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[10px] uppercase font-black tracking-widest text-[var(--beheer-text-muted)]">
-                                        <th className="px-6 py-4">Status</th>
+                                        <th className="px-6 py-4">Inchecken</th>
                                         <th className="px-6 py-4">Deelnemer</th>
                                         <th className="px-6 py-4">Contact</th>
                                         <th className="px-6 py-4">Lidmaatschap & Datum</th>
@@ -286,12 +287,34 @@ export default function ActiviteitAanmeldingenIsland({
                                     return (
                                         <tr key={signup.id} className={`group hover:bg-[var(--beheer-card-soft)] transition-colors ${isRowDeleting ? 'opacity-50 pointer-events-none' : ''}`}>
                                             <td className="px-6 py-5">
-                                                <button
-                                                    onClick={() => handleToggleCheckIn(signup.id, !!signup.checked_in)}
-                                                    className={`p-2 rounded-xl transition-all cursor-pointer ${signup.checked_in ? 'bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)]' : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] opacity-30 hover:opacity-100 hover:text-[var(--beheer-accent)] group-hover:scale-110'}`}
-                                                >
-                                                    {signup.checked_in ? <CheckCircle2 className="h-6 w-6" /> : <Circle className="h-6 w-6" />}
-                                                </button>
+                                                <div className="flex flex-col gap-1.5">
+                                                    <button
+                                                        onClick={() => handleToggleCheckIn(signup.id, !!signup.checked_in)}
+                                                        className={`flex items-center gap-2 self-start px-3 py-2 rounded-xl transition-all font-black text-[10px] uppercase tracking-wider border shadow-sm active:scale-95 ${
+                                                            signup.checked_in 
+                                                            ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30' 
+                                                            : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] border-[var(--beheer-border)] hover:border-emerald-500/50 hover:text-emerald-500'
+                                                        }`}
+                                                    >
+                                                        {signup.checked_in ? (
+                                                            <>
+                                                                <CheckCircle2 className="h-4 w-4" />
+                                                                <span>Ingecheckt</span>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Circle className="h-4 w-4" />
+                                                                <span>Inchecken</span>
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                    {signup.checked_in && signup.checked_in_at && (
+                                                        <div className="flex items-center gap-1 text-[9px] text-[var(--beheer-text-muted)] opacity-60 font-black tracking-tight ml-1">
+                                                            <Clock className="h-3 w-3" />
+                                                            {format(new Date(signup.checked_in_at), 'HH:mm')}
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </td>
                                             <td className="px-6 py-5">
                                                 <div className="font-black text-[var(--beheer-text)] text-sm uppercase tracking-tight mb-1">{name}</div>
