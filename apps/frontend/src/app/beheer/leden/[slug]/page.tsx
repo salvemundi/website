@@ -9,9 +9,9 @@ import { getSystemDirectus } from '@/lib/directus';
 import { readUser, readItems as dReadItems } from '@directus/sdk';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 
-export default async function LidDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function LidDetailPage({ params }: { params: Promise<{ slug: string }> }) {
     const resolvedParams = await params;
-    const id = resolvedParams.id;
+    const decodedSlug = decodeURIComponent(resolvedParams.slug);
 
     // NUCLEAR SSR: All access and permission checks must happen before flushing the shell
     const session = await auth.api.getSession({
@@ -36,13 +36,22 @@ export default async function LidDetailPage({ params }: { params: Promise<{ id: 
     }
 
     try {
-        // NUCLEAR SSR: Parallel fetch for all detail data
-        const [member, userCommitteesResult, signupsResult, allCommitteesResult] = await Promise.allSettled([
-            getSystemDirectus().request(
-                readUser<any, any>(id, {
-                    fields: ['id', 'first_name', 'last_name', 'email', 'date_of_birth', 'membership_expiry', 'status', 'phone_number', 'avatar', 'entra_id']
-                })
-            ),
+        // NUCLEAR SSR: Sequential fetch because we need the ID from the slug
+        const memberResult = await getSystemDirectus().request(
+            dReadItems<any, any, any>('directus_users', {
+                filter: { email: { _starts_with: `${decodedSlug}@` } },
+                fields: ['id', 'first_name', 'last_name', 'email', 'date_of_birth', 'membership_expiry', 'status', 'phone_number', 'avatar', 'entra_id'],
+                limit: 1
+            })
+        );
+
+        if (!memberResult || memberResult.length === 0) return notFound();
+        const memberData = memberResult[0];
+        if (memberData.status === 'rejected') return notFound();
+        
+        const id = memberData.id;
+
+        const [userCommitteesResult, signupsResult, allCommitteesResult] = await Promise.allSettled([
             getSystemDirectus().request(
                 dReadItems<any, any, any>('committee_members' as any, {
                     filter: { user_id: { _eq: id } },
@@ -50,9 +59,10 @@ export default async function LidDetailPage({ params }: { params: Promise<{ id: 
                     limit: -1
                 })
             ),
+            // Re-fetch signups by email since the lookup uses participant_email
             getSystemDirectus().request(
                 dReadItems<any, any, any>('event_signups', {
-                    filter: { participant_email: { _eq: id } }, // Initial fetch might be by ID or email
+                    filter: { participant_email: { _eq: memberData.email } },
                     fields: ['id', 'payment_status', { event_id: ['id', 'name', 'event_date'] }],
                     limit: -1
                 })
@@ -66,17 +76,7 @@ export default async function LidDetailPage({ params }: { params: Promise<{ id: 
             )
         ]);
 
-        if (member.status === 'rejected') return notFound();
-        const memberData = member.value;
-
-        // Re-fetch signups by email now that we have the member record
-        const signups = await getSystemDirectus().request(
-            dReadItems<any, any, any>('event_signups', {
-                filter: { participant_email: { _eq: memberData.email } },
-                fields: ['id', 'payment_status', { event_id: ['id', 'name', 'event_date'] }],
-                limit: -1
-            })
-        ).catch(() => []);
+        const signups = signupsResult.status === 'fulfilled' ? signupsResult.value : [];
 
         let userCommittees = userCommitteesResult.status === 'fulfilled' ? userCommitteesResult.value : [];
         const allCommittees = allCommitteesResult.status === 'fulfilled' ? allCommitteesResult.value : [];

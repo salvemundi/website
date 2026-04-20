@@ -80,7 +80,10 @@ export async function manageAzureMembershipAction(userId: string, azureGroupId: 
         }
 
     // Revalidate
-    revalidatePath(`/beheer/leden/${directusUserId}`);
+    const { query: queryReval } = await import("@/lib/database");
+    const { rows: revalRows } = await queryReval('SELECT email FROM directus_users WHERE id = $1 LIMIT 1', [directusUserId]);
+    const emailSlug = revalRows?.[0]?.email?.split('@')[0] ?? directusUserId;
+    revalidatePath(`/beheer/leden/${encodeURIComponent(emailSlug)}`);
     revalidateTag(`user_${directusUserId}`, 'default');
     revalidateTag(`user_committees_${directusUserId}`, 'default');
 
@@ -163,7 +166,8 @@ export async function updateMemberProfileAction(
             }).catch(() => {});
         }
 
-        revalidatePath(`/beheer/leden/${directusUserId}`);
+        const emailSlugForUpdate = (await (await import("@/lib/database")).query('SELECT email FROM directus_users WHERE id = $1 LIMIT 1', [directusUserId])).rows?.[0]?.email?.split('@')[0] ?? directusUserId;
+        revalidatePath(`/beheer/leden/${encodeURIComponent(emailSlugForUpdate)}`);
         
         // Log the change
         await logAdminAction('member_profile_updated', 'SUCCESS', { 
@@ -231,7 +235,8 @@ export async function renewMembershipAction(
             }).catch(() => {});
         }
 
-        revalidatePath(`/beheer/leden/${directusUserId}`);
+        const renewSlug = user.email?.split('@')[0] ?? directusUserId;
+        revalidatePath(`/beheer/leden/${encodeURIComponent(renewSlug)}`);
         revalidatePath('/beheer/leden');
 
         // Log the renewal
@@ -282,7 +287,8 @@ export async function provisionAzureAccountAction(directusUserId: string) {
             return { success: false, error: errData.error || "Azure provisioning mislukt." };
         }
 
-        revalidatePath(`/beheer/leden/${directusUserId}`);
+        const provisionSlug = user.email?.split('@')[0] ?? directusUserId;
+        revalidatePath(`/beheer/leden/${encodeURIComponent(provisionSlug)}`);
 
         // Log the provisioning
         await logAdminAction('azure_provisioning', 'SUCCESS', { 
