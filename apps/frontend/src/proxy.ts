@@ -37,18 +37,30 @@ async function proxy(request: NextRequest) {
     };
 
     const nextWithNonce = () => {
-        // Avoid cloning the request body for requests that might have one (POST, PUT, PATCH, DELETE)
-        // to prevent 'TypeError: controller[kState].transformAlgorithm is not a function' in Node.js Proxy
-        const methodsWithBody = ['POST', 'PUT', 'PATCH', 'DELETE'];
-        if (methodsWithBody.includes(request.method)) {
+        // DETECT STREAMING CONFLICTS:
+        // Node.js 22 + Next.js 15/16 'transformAlgorithm' error occurs when cloning requests with bodies 
+        // or during specific prefetch/streaming states.
+        const isMutation = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method);
+        const isPrefetch = request.headers.get('x-next-prefetch') === '1' || request.headers.get('purpose') === 'prefetch';
+        const isDataRequest = pathname.includes('/_next/data/');
+
+        // If it's a mutation or prefetch, we avoid cloning the request headers via NextResponse.next({request})
+        // because it triggers an internal 'request.clone()' which fails on the stream controller.
+        if (isMutation || isPrefetch || isDataRequest) {
             return withSecurity(NextResponse.next());
         }
 
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set('x-nonce', nonce);
-        return withSecurity(NextResponse.next({
-            request: { headers: requestHeaders }
-        }));
+        
+        try {
+            return withSecurity(NextResponse.next({
+                request: { headers: requestHeaders }
+            }));
+        } catch (e) {
+            // Fallback for any other unexpected streaming failures
+            return withSecurity(NextResponse.next());
+        }
     };
 
     const internalToken = process.env.INTERNAL_SERVICE_TOKEN;
@@ -129,8 +141,8 @@ async function proxy(request: NextRequest) {
 }
 
 export const config = {
-    // Exclude API routes, static files, images, and PWA assets (sw.js, manifest, workbox)
-    matcher: ['/((?!_next/static|_next/image|fonts|img|api/assets|favicon.ico|robots.txt|.well-known|sw.js|manifest.json|manifest.webmanifest|workbox-).*)'],
+    // Exclude API routes, static files, images, and PWA assets
+    matcher: ['/((?!_next/static|_next/image|fonts|img|api/assets|favicon.ico|robots.txt|.well-known|sw.js|manifest.json|manifest.webmanifest|workbox-|logo.svg|icons/).*)'],
 };
 
 export default proxy;
