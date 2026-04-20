@@ -1,10 +1,14 @@
+import type { Metadata } from 'next';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 import ActiviteitNieuwIsland from '@/components/islands/admin/activities/ActiviteitNieuwIsland';
-import AdminPageShell from '@/components/ui/admin/AdminPageShell';
+
+export const metadata: Metadata = {
+    title: 'Activiteit Aanmaken | SV Salve Mundi',
+};
 
 async function getCommittees(user: any) {
     const memberships = user.committees || [];
@@ -15,7 +19,6 @@ async function getCommittees(user: any) {
 
     try {
         if (isPowerful) {
-            // Power users see all committees
             return await getSystemDirectus().request(
                 readItems<any, any, any>('committees', {
                     fields: ['id', 'name'],
@@ -24,12 +27,9 @@ async function getCommittees(user: any) {
                 })
             );
         } else {
-            // Regular members see only their own committees
             if (memberships.length === 0) return [];
             
-            // Map the IDs from session memberships
             const committeeIds = memberships.map((m: any) => m.id).filter(Boolean);
-            
             if (committeeIds.length === 0) return [];
 
             return await getSystemDirectus().request(
@@ -62,18 +62,11 @@ export default async function ActivityCreatePage() {
         );
     }
 
-    // NUCLEAR SSR: Fetch all data before flushing any part of the page content
     const committees = await getCommittees(session.user);
 
     return (
-        <AdminPageShell
-            title="Activiteit Aanmaken"
-            subtitle="Publiceer een nieuwe activiteit op de website."
-            backHref="/beheer/activiteiten"
-        >
-            <div className="pb-20">
-                <ActiviteitNieuwIsland committees={committees as any} />
-            </div>
-        </AdminPageShell>
+        <div className="pb-20">
+            <ActiviteitNieuwIsland committees={committees as any} />
+        </div>
     );
 }
