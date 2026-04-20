@@ -55,19 +55,17 @@
 
 /* ── Logo ─────────────────────────────────────────────────────────────────── */
 .sponsor-logo {
-    max-height: 64px;
+    max-height: 80px;
     height: auto;
     width: auto;
     max-width: 220px;
     object-fit: contain;
-    opacity: 0.85;
     transition: all 0.3s ease;
     display: block;
 }
 
 .sponsor-item:hover .sponsor-logo {
     transform: scale(1.05);
-    opacity: 1;
 }
 
 .dark .sponsor-logo,
