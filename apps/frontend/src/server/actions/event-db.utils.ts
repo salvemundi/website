@@ -11,9 +11,9 @@ export async function createEventDb(data: any): Promise<number | null> {
                 name, description, location, max_sign_ups, price_members, price_non_members,
                 only_members, registration_deadline, contact, image, committee_id,
                 event_date, event_time, event_date_end, event_time_end, status, publish_date,
-                description_logged_in
+                description_logged_in, category, custom_url
             ) VALUES (
-                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
             ) RETURNING id
         `;
         
@@ -35,7 +35,9 @@ export async function createEventDb(data: any): Promise<number | null> {
             data.event_time_end || null,
             data.status || 'draft',
             data.publish_date || null,
-            data.description_logged_in || null
+            data.description_logged_in || null,
+            data.category || null,
+            data.custom_url || null
         ];
 
         const { rows } = await query(sql, params);
@@ -57,7 +59,7 @@ export async function updateEventDb(id: number, data: any): Promise<boolean> {
             if (['name', 'description', 'location', 'max_sign_ups', 'price_members', 'price_non_members',
                  'only_members', 'registration_deadline', 'contact', 'image', 'committee_id',
                  'event_date', 'event_time', 'event_date_end', 'event_time_end', 'status', 'publish_date',
-                 'description_logged_in'].includes(key)) {
+                 'description_logged_in', 'category', 'custom_url'].includes(key)) {
                 fields.push(`${key} = $${paramIndex}`);
                 params.push(value);
                 paramIndex++;
