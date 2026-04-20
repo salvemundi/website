@@ -204,4 +204,16 @@ export class GraphService {
 
         return await client.api(`/users/${entraId}`).update(payload);
     }
+
+    /**
+     * Gets a user's group memberships from Entra ID
+     */
+    static async getUserGroups(entraId: string, token: string) {
+        const client = this.getClient(token);
+        const response = await client.api(`/users/${entraId}/memberOf`)
+            .select('id,displayName')
+            .get();
+        
+        return response.value || [];
+    }
 }
