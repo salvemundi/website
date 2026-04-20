@@ -52,18 +52,18 @@ import { query } from '@/lib/database';
  * Fetches all published activities directly from the database (SQL-first).
  * Enriches each activity with 'is_signed_up' status if userId is provided.
  */
-export const getActivities = cache(async (userId?: string): Promise<(Activiteit & { is_signed_up?: boolean })[]> => {
+export const getActivities = cache(async (email?: string): Promise<(Activiteit & { is_signed_up?: boolean })[]> => {
     const activities = await getActivitiesInternal(true);
     
-    if (!userId) return activities;
+    if (!email) return activities;
 
     try {
-        // Fetch user signups for these activities
-        const userSignups = await fetchUserEventSignupsDb(userId);
+        // Fetch user signups for these activities by email
+        const userSignups = await fetchUserEventSignupsDb(email);
         const signedUpEventIds = new Set(userSignups.map(s => s.event_id.id));
 
-        // Also check Pub Crawl signups
-        const pubCrawlSignups = await fetchUserPubCrawlSignupsDb(userId);
+        // Also check Pub Crawl signups by email
+        const pubCrawlSignups = await fetchUserPubCrawlSignupsDb(email);
         const signedUpPubCrawlIds = new Set(pubCrawlSignups.map(s => s.pub_crawl_event_id.id));
 
         return activities.map(activity => ({
@@ -83,6 +83,31 @@ export const getActivities = cache(async (userId?: string): Promise<(Activiteit 
 export const getActivityById = cache(async (id: string): Promise<Activiteit | null> => {
     return await getActivityByIdInternal(id);
 });
+
+/**
+ * Checks if a user is already signed up for an activity (By email).
+ */
+export async function checkUserSignupStatus(eventId: number, email: string) {
+    try {
+        const { query } = await import('@/lib/database');
+        const res = await query(
+            `SELECT id, qr_token, payment_status FROM event_signups 
+             WHERE event_id = $1 AND participant_email = $2 
+             AND payment_status != 'failed' LIMIT 1`,
+            [eventId, email]
+        );
+        if (res.rows.length > 0) {
+            return { 
+                isSignedUp: true, 
+                qrToken: res.rows[0].qr_token, 
+                paymentStatus: res.rows[0].payment_status 
+            };
+        }
+        return { isSignedUp: false };
+    } catch (error) {
+        return { isSignedUp: false };
+    }
+}
 
 /**
  * Fetches all signups for a specific activity (Admin only).
@@ -138,12 +163,13 @@ export async function signupForActivity(data: EventSignupForm) {
 
         // Extra check for existing signups (Guest by email or Member by ID)
         // This acts as a primary check before the DB constraint catches it
+        // Extra check for existing signups (By email)
         const { query } = await import('@/lib/database');
         const existingCheck = await query(
             `SELECT id FROM event_signups 
-             WHERE event_id = $1 AND (participant_email = $2 OR (directus_relations IS NOT NULL AND directus_relations = $3))
+             WHERE event_id = $1 AND participant_email = $2
              AND payment_status != 'failed' LIMIT 1`,
-            [parsed.data.event_id, parsed.data.email, userId || null]
+            [parsed.data.event_id, parsed.data.email]
         );
 
         if (existingCheck.rows.length > 0) {
@@ -396,19 +422,19 @@ export async function getSignupStatus(
  */
 export async function getMyTickets() {
     const session = await auth.api.getSession({ headers: await headers() });
-    const userId = session?.user?.id;
-    if (!userId) return [];
+    const email = session?.user?.email;
+    if (!email) return [];
 
     try {
-        // 1. Fetch event signups (SQL)
-        const eventSignups = await fetchUserEventSignupsDb(userId);
+        // 1. Fetch event signups (SQL by email)
+        const eventSignups = await fetchUserEventSignupsDb(email);
 
-        // 2. Fetch pub crawl signups (SQL)
-        const pubCrawlSignups = await fetchUserPubCrawlSignupsDb(userId);
+        // 2. Fetch pub crawl signups (SQL by email)
+        const pubCrawlSignups = await fetchUserPubCrawlSignupsDb(email);
 
-        // 3. Fetch trip signups (Legacy Directus for now)
+        // 3. Fetch trip signups (Legacy Directus for now - by email)
         const tripSignups = await getSystemDirectus().request(readItems('trip_signups', {
-            filter: { directus_relations: { _eq: userId } },
+            filter: { email: { _eq: email } },
             fields: ['id', 'status', 'created_at', 'first_name', 'last_name', { trip_id: ['id', 'name', 'event_date'] }] as any,
             sort: ['-created_at']
         })) as unknown as DbTripSignup[];

@@ -21,15 +21,15 @@ import { fetchUserPubCrawlSignupsDb } from './kroegentocht-db.utils';
 import { fetchUserEventSignupsDb } from './event-db.utils';
 
 
-export async function getUserEventSignups(overrideUserId?: string): Promise<EventSignup[]> {
+export async function getUserEventSignups(overrideEmail?: string): Promise<EventSignup[]> {
     const session = await auth.api.getSession({ headers: await headers() });
     const user = session?.user;
 
-    const targetUserId = overrideUserId || user?.id;
-    if (!targetUserId) return [];
+    const email = overrideEmail || user?.email;
+    if (!email) return [];
 
     try {
-        const registrations = await fetchUserEventSignupsDb(targetUserId, user?.email || undefined);
+        const registrations = await fetchUserEventSignupsDb(email);
         const parsed = eventSignupSchema.array().safeParse(registrations);
 
         if (!parsed.success) {
@@ -45,15 +45,15 @@ export async function getUserEventSignups(overrideUserId?: string): Promise<Even
 }
 
 
-export async function getUserPubCrawlSignups(overrideUserId?: string): Promise<any[]> {
+export async function getUserPubCrawlSignups(overrideEmail?: string): Promise<any[]> {
     const session = await auth.api.getSession({ headers: await headers() });
     const user = session?.user;
 
-    const targetUserId = overrideUserId || user?.id;
-    if (!targetUserId) return [];
+    const email = overrideEmail || user?.email;
+    if (!email) return [];
 
     try {
-        return await fetchUserPubCrawlSignupsDb(targetUserId, user?.email || undefined);
+        return await fetchUserPubCrawlSignupsDb(email);
     } catch (err: any) {
         
         return [];

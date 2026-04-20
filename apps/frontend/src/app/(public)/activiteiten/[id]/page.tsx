@@ -1,7 +1,7 @@
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
-import { getActivityById } from '@/server/actions/activiteit-actions';
+import { getActivityById, checkUserSignupStatus } from '@/server/actions/activiteit-actions';
 import ActivityDetailIsland from '@/components/islands/activities/ActivityDetailIsland';
 import EventSignupIsland from '@/components/islands/activities/EventSignupIsland';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
@@ -41,12 +41,23 @@ export default async function PageActivityId({ params, searchParams }: PageProps
     const price = isMember ? (activity.price_members ?? 0) : (activity.price_non_members ?? 0);
 
     // Server-side payment verification
-    let verifiedPaymentStatus: 'paid' | null = null;
+    let verifiedPaymentStatus: 'paid' | 'open' | 'failed' | 'canceled' | null = null;
     let qrToken: string | undefined = undefined;
+    let isSignedUp = false;
+
+    if (user?.email) {
+        const signupStatus = await checkUserSignupStatus(Number(activity.id), user.email);
+        if (signupStatus.isSignedUp) {
+            isSignedUp = true;
+            qrToken = signupStatus.qrToken;
+            verifiedPaymentStatus = signupStatus.paymentStatus as any;
+        }
+    }
 
     if (sParams.status === 'paid' && sParams.token) {
         verifiedPaymentStatus = 'paid';
         qrToken = sParams.token;
+        isSignedUp = true;
     }
 
     return (
@@ -73,6 +84,7 @@ export default async function PageActivityId({ params, searchParams }: PageProps
                     initialUser={session?.user || null}
                     verifiedPaymentStatus={verifiedPaymentStatus}
                     initialQrToken={qrToken}
+                    initialIsSignedUp={isSignedUp}
                 />
             </ActivityDetailIsland>
         </PublicPageShell>

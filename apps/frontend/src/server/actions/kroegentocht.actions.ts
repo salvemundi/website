@@ -9,9 +9,9 @@ import {
     pubCrawlSignupFormSchema,
     type PubCrawlSignupForm
 } from '@salvemundi/validations/schema/pub-crawl.zod';
-import { 
-    PUB_CRAWL_EVENT_FIELDS, 
-    PUB_CRAWL_SIGNUP_FIELDS, 
+import {
+    PUB_CRAWL_EVENT_FIELDS,
+    PUB_CRAWL_SIGNUP_FIELDS,
     PUB_CRAWL_TICKET_FIELDS,
     EVENT_FIELDS
 } from '@salvemundi/validations/directus/fields';
@@ -23,9 +23,9 @@ import { logAdminAction } from './audit.actions';
 
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems, createItem, updateItem, deleteItem } from '@directus/sdk';
-import { 
-    createPubCrawlSignupDb, 
-    deletePubCrawlSignupDb, 
+import {
+    createPubCrawlSignupDb,
+    deletePubCrawlSignupDb,
     getPubCrawlTicketCountDb,
     createPubCrawlTicketsDb,
     deletePubCrawlTicketsBySignupIdDb,
@@ -68,7 +68,7 @@ export const getKroegentochtEvent = cache(async (): Promise<PubCrawlEvent | null
     return await cacheTag(
         async () => {
             const today = new Date().toISOString().split('T')[0];
-            
+
             try {
                 const events = await fetchPubCrawlEventsDb();
                 // Sort ascending to find the nearest upcoming event
@@ -81,7 +81,7 @@ export const getKroegentochtEvent = cache(async (): Promise<PubCrawlEvent | null
                 const event = nearestEvents.find((e: any) => e.date >= today);
 
                 if (!event) {
-                    
+
                     return null;
                 }
 
@@ -92,12 +92,12 @@ export const getKroegentochtEvent = cache(async (): Promise<PubCrawlEvent | null
 
                 const parsed = pubCrawlEventSchema.safeParse(event);
                 if (!parsed.success) {
-                    
+
                     return null;
                 }
                 return parsed.data;
             } catch (error: any) {
-                
+
                 return null;
             }
         },
@@ -132,7 +132,7 @@ export async function getKroegentochtTickets(email: string): Promise<PubCrawlTic
         const parsed = items.map((t: any) => pubCrawlTicketSchema.safeParse(t).data).filter(Boolean);
         return parsed as PubCrawlTicket[];
     } catch (error: any) {
-        
+
         return [];
     }
 }
@@ -156,9 +156,9 @@ export async function initiateKroegentochtPayment(formData: any) {
     try {
         const events = await fetchPubCrawlEventsDb();
         const eventData = events.find((e: any) => e.id === Number(parsed.data.pub_crawl_event_id));
-        
+
         if (!eventData) {
-            return { success: false, error: 'Evenement niet gevonden' };
+            return { success: false, error: 'Kroegentocht niet gevonden' };
         }
 
         const price = 1;
@@ -187,7 +187,7 @@ export async function initiateKroegentochtPayment(formData: any) {
 
         const ticketsTable = [];
         const names = (parsed.data.name_initials || '').split(',').map(n => n.trim()).filter(Boolean);
-        
+
         for (let i = 0; i < parsed.data.amount_tickets; i++) {
             ticketsTable.push({
                 name: names[i] || parsed.data.name,
@@ -215,18 +215,18 @@ export async function initiateKroegentochtPayment(formData: any) {
         } catch (err: any) {
             const errorMsg = String(err?.message || '');
             if (errorMsg.includes('unique') || (err?.errors && JSON.stringify(err.errors).includes('unique'))) {
-                
+
                 try {
                     await getSystemDirectus().request(updateItem('pub_crawl_signups', signupId, syncPayload));
                 } catch (updateErr) {
-                    
+
                     // Rollback both if even update fails
                     await deletePubCrawlTicketsBySignupIdDb(signupId);
                     await deletePubCrawlSignupDb(signupId);
                     return { success: false, error: 'Synchronisatie met CMS mislukt (collision fallback failed).' };
                 }
             } else {
-                
+
                 // Cleanup DB if sync fails for other reasons
                 await deletePubCrawlTicketsBySignupIdDb(signupId);
                 await deletePubCrawlSignupDb(signupId);
@@ -245,7 +245,7 @@ export async function initiateKroegentochtPayment(formData: any) {
                 registrationId: signupId,
                 registrationType: 'pub_crawl_signup',
                 email: parsed.data.email,
-                firstName: parsed.data.name, 
+                firstName: parsed.data.name,
                 isContribution: false,
                 redirectUrl: `${process.env.PUBLIC_URL}/kroegentocht/bevestiging?id=${signupId}`,
                 webhookUrl: `${process.env.PUBLIC_URL}/api/finance/webhook/mollie`
@@ -256,18 +256,18 @@ export async function initiateKroegentochtPayment(formData: any) {
         if (paymentRes.ok && paymentData.checkoutUrl) {
             return { success: true, checkoutUrl: paymentData.checkoutUrl };
         }
- 
+
         try {
             await deletePubCrawlTicketsBySignupIdDb(signupId);
             await deletePubCrawlSignupDb(signupId);
-            getSystemDirectus().request(deleteItem('pub_crawl_signups', signupId)).catch(() => {});
+            getSystemDirectus().request(deleteItem('pub_crawl_signups', signupId)).catch(() => { });
         } catch (cleanupErr: any) {
         }
 
         return { success: false, error: 'Failed to initiate payment. Please try again later.' };
 
     } catch (error: any) {
-        
+
         return { success: false, error: 'An internal error occurred.' };
     }
 }
@@ -286,7 +286,7 @@ export async function getKroegentochtStatus(signupId: string) {
 
         return { status: 'open' };
     } catch (error: any) {
-        
+
         return { status: 'error' };
     }
 }

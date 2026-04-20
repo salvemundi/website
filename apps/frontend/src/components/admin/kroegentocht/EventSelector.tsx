@@ -24,8 +24,8 @@ export default function EventSelector({
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const filteredEvents = showPastEvents 
-        ? events 
+    const filteredEvents = showPastEvents
+        ? events
         : events.filter(e => e.date && new Date(e.date) >= today);
 
     return (
@@ -37,20 +37,19 @@ export default function EventSelector({
                 </div>
                 <button
                     onClick={() => setShowPastEvents(!showPastEvents)}
-                    className={`flex items-center gap-2 px-4 py-2 text-xs font-black rounded-[var(--radius-lg)] border-2 transition-all active:scale-95 ${
-                        showPastEvents
+                    className={`flex items-center gap-2 px-4 py-2 text-xs font-black rounded-[var(--radius-lg)] border-2 transition-all active:scale-95 ${showPastEvents
                         ? 'bg-[var(--theme-purple)]/10 border-[var(--theme-purple)] text-[var(--theme-purple)]'
                         : 'bg-[var(--bg-main)]/50 border-[var(--border-color)] text-[var(--text-light)] hover:border-[var(--theme-purple)]/30'
-                    }`}
+                        }`}
                 >
-                    {showPastEvents ? '✅ Oude events getoond' : '👁️ Toon oude events'}
+                    {showPastEvents ? '✅ Oude activiteit getoond' : '👁️ Toon oude activiteit'}
                 </button>
             </div>
 
             {filteredEvents.length === 0 ? (
                 <div className="text-center py-10 bg-[var(--bg-main)]/30 rounded-[var(--radius-xl)] border-2 border-dashed border-[var(--border-color)]/50">
                     <Calendar className="h-10 w-10 text-[var(--text-muted)] opacity-20 mx-auto mb-3" />
-                    <p className="text-sm text-[var(--text-subtle)] italic font-medium">Geen evenementen gevonden.</p>
+                    <p className="text-sm text-[var(--text-subtle)] italic font-medium">Geen activiteit gevonden.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -63,11 +62,10 @@ export default function EventSelector({
                             <button
                                 key={event.id}
                                 onClick={() => onSelect(event)}
-                                className={`group p-4 rounded-[var(--radius-xl)] border-2 transition-all text-left relative overflow-hidden active:scale-[0.98] ${
-                                    isSelected
+                                className={`group p-4 rounded-[var(--radius-xl)] border-2 transition-all text-left relative overflow-hidden active:scale-[0.98] ${isSelected
                                     ? 'border-[var(--theme-purple)] bg-[var(--theme-purple)]/5 shadow-[var(--shadow-glow)]'
                                     : 'border-[var(--border-color)]/50 bg-[var(--bg-card)] hover:border-[var(--theme-purple)]/30 hover:bg-[var(--bg-main)]/30'
-                                }`}
+                                    }`}
                             >
                                 {isSelected && (
                                     <div className="absolute top-0 right-0 w-12 h-12 bg-[var(--theme-purple)]/10 rounded-bl-full flex items-center justify-end pr-2 pb-2">

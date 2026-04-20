@@ -151,16 +151,15 @@ export async function getPubCrawlTicketCountDb(eventId: number): Promise<number>
 /**
  * Fetches signups for a specific user.
  */
-export async function fetchUserPubCrawlSignupsDb(userId: string, email?: string): Promise<any[]> {
+export async function fetchUserPubCrawlSignupsDb(email: string): Promise<any[]> {
     try {
         const res = await query(
             `SELECT s.*, e.name as event_name, e.date as event_date, e.description as event_description, e.image as event_image
              FROM pub_crawl_signups s
              JOIN pub_crawl_events e ON s.pub_crawl_event_id = e.id
-             WHERE s.directus_relations = $1
-                OR (s.email IS NOT NULL AND s.email = $2)
+             WHERE s.email = $1
              ORDER BY s.created_at DESC`,
-            [userId, email || null]
+            [email]
         );
         return (res.rows || []).map(row => ({
             ...row,
