@@ -73,7 +73,7 @@ export default async function PageActivityId({ params, searchParams }: PageProps
                 </Link>
             </div>
 
-            <ActivityDetailIsland activity={activity}>
+            <ActivityDetailIsland activity={activity} isLoggedIn={!!session}>
                 <EventSignupIsland 
                     eventId={Number(activity.id)}
                     price={price}

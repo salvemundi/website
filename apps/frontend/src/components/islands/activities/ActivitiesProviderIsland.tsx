@@ -83,7 +83,7 @@ export default function ActivitiesProviderIsland({
             const bDateTime = (b.event_time && bDate.length <= 10)
                 ? new Date(`${bDate}T${b.event_time}`).getTime()
                 : new Date(bDate).getTime();
-            return aDateTime - bDateTime;
+            return showPastActivities ? bDateTime - aDateTime : aDateTime - bDateTime;
         });
     }, [events, showPastActivities, serverTime, upcomingEvent]);
 
@@ -142,7 +142,7 @@ export default function ActivitiesProviderIsland({
 
                             <button
                                 onClick={() => setShowPastActivities(!showPastActivities)}
-                                className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all border ${showPastActivities
+                                className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all border w-[160px] text-center ${showPastActivities
                                     ? 'bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] border-[var(--theme-purple)]/20 shadow-sm'
                                     : 'bg-[var(--bg-card)] text-[var(--theme-purple)] border-[var(--border-color)] hover:bg-[var(--theme-purple)]/5'
                                     }`}
