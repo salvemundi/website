@@ -167,7 +167,7 @@ export async function signupForActivity(data: EventSignupForm) {
         const { query } = await import('@/lib/database');
         const existingCheck = await query(
             `SELECT id FROM event_signups 
-             WHERE event_id = $1 AND participant_email = $2
+             WHERE event_id = $1 AND LOWER(participant_email) = LOWER($2)
              AND payment_status != 'failed' LIMIT 1`,
             [parsed.data.event_id, parsed.data.email]
         );
@@ -426,26 +426,37 @@ export async function getMyTickets() {
     if (!email) return [];
 
     try {
-        // 1. Fetch event signups (SQL by email)
-        const eventSignups = await fetchUserEventSignupsDb(email);
+        // 1. Fetch event signups (SQL by email - Case Insensitive)
+        const eventSignups = await fetchUserEventSignupsDb(email).catch(err => {
+            
+            return [];
+        });
 
-        // 2. Fetch pub crawl signups (SQL by email)
-        const pubCrawlSignups = await fetchUserPubCrawlSignupsDb(email);
+        // 2. Fetch pub crawl signups (SQL by email - Case Insensitive)
+        const pubCrawlSignups = await fetchUserPubCrawlSignupsDb(email).catch(err => {
+            
+            return [];
+        });
 
         // 3. Fetch trip signups (Legacy Directus for now - by email)
         const tripSignups = await getSystemDirectus().request(readItems('trip_signups', {
             filter: { email: { _eq: email } },
             fields: ['id', 'status', 'created_at', 'first_name', 'last_name', { trip_id: ['id', 'name', 'event_date'] }] as any,
             sort: ['-created_at']
-        })) as unknown as DbTripSignup[];
+        })).catch(err => {
+            
+            return [];
+        }) as unknown as DbTripSignup[];
 
         const formattedPubCrawl = pubCrawlSignups.map(s => ({
             ...s,
+            date_created: s.created_at, // Normalize for TicketListIsland
             type: 'pub_crawl'
         }));
 
         const formattedEvents = eventSignups.map(s => ({
             ...s,
+            date_created: s.created_at, // Normalize for TicketListIsland
             type: 'event'
         }));
 
@@ -453,6 +464,7 @@ export async function getMyTickets() {
             const trip = s.trip_id as DbTrip | undefined;
             return {
                 ...s,
+                date_created: s.created_at, // Normalize for TicketListIsland
                 event_id: { 
                     id: trip?.id, 
                     name: trip?.name,
