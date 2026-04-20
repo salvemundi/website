@@ -136,8 +136,8 @@ export default function ActiviteitNieuwIsland({
                                             <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
                                         </div>
                                     ) : (
-                                        <div className="relative group overflow-hidden rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] h-[340px]">
-                                            <img src={imagePreview} alt="Preview" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                                        <div className="relative group overflow-hidden rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] h-[340px] bg-[var(--beheer-card-soft)]/50">
+                                            <img src={imagePreview} alt="Preview" className="w-full h-full object-contain transition-transform duration-700" />
                                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
                                                 <button type="button" onClick={() => fileInputRef.current?.click()} className="bg-white text-slate-900 p-4 rounded-2xl hover:scale-110 transition shadow-xl cursor-pointer"><Upload className="h-5 w-5" /></button>
                                                 <button type="button" onClick={handleRemoveImage} className="bg-red-500 text-white p-4 rounded-2xl hover:scale-110 transition shadow-xl cursor-pointer"><X className="h-5 w-5" /></button>
