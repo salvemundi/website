@@ -32,6 +32,12 @@ export default function ProfielSignups({
                         {showPastEvents ? "Verberg oude" : "Toon oude"}
                     </button>
                     <Link
+                        href="/profiel/tickets"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-purple-50)] px-4 py-2 text-[10px] font-black uppercase text-[var(--color-purple-700)] hover:bg-[var(--color-purple-100)] transition border border-[var(--color-purple-100)]"
+                    >
+                        Tickets <ChevronRight className="h-3 w-3" />
+                    </Link>
+                    <Link
                         href="/activiteiten"
                         className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-purple-500)] px-4 py-2 text-[10px] font-black uppercase text-white hover:bg-[var(--color-purple-600)] transition shadow-lg"
                     >

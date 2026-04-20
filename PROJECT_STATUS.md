@@ -58,6 +58,7 @@ This file tracks the current state, technical stack, and pending verification ta
 - [x] **UX**: Implemented proactive signup detection on the activity detail page to hide the signup form and show the ticket QR when already registered.
 - [x] **Auth/Lookup Fix**: Resolved ticket visibility issue by implementing case-insensitive email lookup in SQL and normalizing field names (`date_created`) for the UI.
 - [x] **Admin Fix**: Resolved check-in button state sync issue by adding `router.refresh()` and redesigned the registration list UI with clearer labels and timestamps.
+- [x] **UX**: Added back button to `/profiel/tickets` and a quick-link from the main profile page to the tickets list.
 - [ ] **Next Steps**: Awaiting new priorities from the USER.
 
 ---
