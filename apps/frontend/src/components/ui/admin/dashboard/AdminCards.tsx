@@ -35,7 +35,8 @@ export function ActionCard({
     icon,
     href,
     colorClass = 'purple',
-    disabled = false
+    disabled = false,
+    isExternal = false
 }: CardProps & {
     subtitle?: string;
     value?: string | number;
