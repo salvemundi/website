@@ -6,6 +6,7 @@ interface CardProps {
     title?: string;
     href?: string;
     disabled?: boolean;
+    isExternal?: boolean;
     colorClass?: 'purple' | 'blue' | 'red' | 'green' | 'orange' | 'teal' | 'amber';
 }
 
@@ -41,12 +42,16 @@ export function ActionCard({
     icon?: React.ReactNode;
 }) {
     const isLink = !disabled && href;
-    const Component = (isLink ? Link : 'div') as any;
+    const isInternal = isLink && !isExternal;
+    const Component = (isInternal ? Link : (isLink ? 'a' : 'div')) as any;
     const colorStyle = getColorClasses(colorClass);
     
     return (
         <Component
-            {...((isLink && href) ? { href } : {})}
+            {...((isLink && href) ? { 
+                href, 
+                ...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {}) 
+            } : {})}
             className={`w-full flex items-center gap-4 p-4 rounded-[var(--beheer-radius)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] shadow-sm 
                 ${disabled ? 'opacity-50 cursor-not-allowed shadow-none' : ''} 
                 ${!disabled && href ? 'hover:border-[var(--beheer-accent)]/30 hover:shadow-md transition-all cursor-pointer active:scale-[0.98] group' : ''}`}

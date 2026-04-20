@@ -6,6 +6,7 @@ import { COMMITTEES } from '@/shared/lib/permissions-config';
 import ServicesStatusIsland from '@/components/islands/admin/ServicesStatusIsland';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import { getServicesStatusAction } from '@/server/actions/services-status.actions';
+import { checkAdminAccess } from '@/server/actions/admin.actions';
 
 export const metadata = {
     title: 'System Status | SV Salve Mundi',
@@ -16,22 +17,8 @@ export const metadata = {
  * All initial data is fetched on the server to prevent layout shift and skeletons.
  */
 export default async function ServicesStatusPage() {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
-    
-    if (!session || !session.user) {
-        redirect('/beheer');
-    }
-    
-    const user = session.user as any;
-    const memberships = user.committees || [];
-    
-    const hasAccess = memberships.some((c: any) => 
-        c.id === COMMITTEES.ICT || c.id === COMMITTEES.BESTUUR
-    );
-
-    if (!hasAccess) {
+    const access = await checkAdminAccess();
+    if (!access || !access.isAuthorized || !access.isIct) {
         redirect('/beheer');
     }
 
@@ -47,5 +34,4 @@ export default async function ServicesStatusPage() {
             <ServicesStatusIsland initialStatuses={initialStatuses} />
         </AdminPageShell>
     );
-}
 

@@ -4,7 +4,7 @@ import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { getSystemDirectus } from "@/lib/directus";
 import { readMe } from "@directus/sdk";
-import { COMMITTEES } from "@/shared/lib/permissions-config";
+import { checkAdminAccess } from "./admin.actions";
 
 const AZURE_MGMT_URL = process.env.AZURE_MANAGEMENT_SERVICE_URL;
 const AZURE_SYNC_URL = process.env.AZURE_SYNC_SERVICE_URL;
@@ -12,20 +12,9 @@ const NOTIFICATION_API_URL = process.env.NEXT_PUBLIC_NOTIFICATION_API_URL;
 const INTERNAL_TOKEN = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
 
 async function checkSystemAdminAccess() {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
-    if (!session || !session.user) return null;
-    
-    const user = session.user as any;
-    const memberships = user.committees || [];
-    
-    // Only ICT and Bestuur are allowed to see system status
-    const hasAccess = user.isAdmin || user.isICT || memberships.some((c: any) => 
-        c.id === COMMITTEES.ICT || c.id === COMMITTEES.BESTUUR
-    );
-    
-    return hasAccess ? session : null;
+    const access = await checkAdminAccess();
+    if (!access || !access.isAuthorized || !access.isIct) return null;
+    return access;
 }
 
 export interface ServiceStatus {
