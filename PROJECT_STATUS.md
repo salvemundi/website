@@ -59,6 +59,7 @@ This file tracks the current state, technical stack, and pending verification ta
 - [x] **Auth/Lookup Fix**: Resolved ticket visibility issue by implementing case-insensitive email lookup in SQL and normalizing field names (`date_created`) for the UI.
 - [x] **Admin Fix**: Resolved check-in button state sync issue by adding `router.refresh()` and redesigned the registration list UI with clearer labels and timestamps.
 - [x] **UX**: Added back button to `/profiel/tickets` and a quick-link from the main profile page to the tickets list.
+- [x] **UI Polish**: Fully modernized `EventSignupIsland.tsx` with semantic variables for seamless Dark/Light mode transitions in success and past states.
 - [ ] **Next Steps**: Awaiting new priorities from the USER.
 
 ---
