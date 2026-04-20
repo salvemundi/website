@@ -13,8 +13,7 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
     const resolvedParams = await params;
     const decodedSlug = decodeURIComponent(resolvedParams.slug);
 
-    return <div>DEBUG SLUG: {decodedSlug}</div>;
-    /*
+    // NUCLEAR SSR: All access and permission checks must happen before flushing the shell
     const session = await auth.api.getSession({
         headers: await headers()
     });
@@ -38,21 +37,25 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
 
     try {
         // NUCLEAR SSR: Sequential fetch because we need the ID from the slug
-        // Use _icontains for case-insensitivity as Directus _starts_with is case-sensitive on many DBs (like Postgres)
+        // Since dots are replaced by dashes in the URL, we search for the prefix
+        // the first part of the slug and then filter precisely in JS.
+        const searchPrefix = decodedSlug.split('-')[0];
         const memberResult = await getSystemDirectus().request(
             dReadItems<any, any, any>('directus_users', {
-                filter: { email: { _icontains: `${decodedSlug}@` } }, 
+                filter: { email: { _icontains: searchPrefix } }, 
                 fields: ['id', 'first_name', 'last_name', 'email', 'date_of_birth', 'membership_expiry', 'status', 'phone_number', 'avatar', 'entra_id'],
-                limit: 5 // Allow some room for potential duplicates or similar prefixes
+                limit: 20
             })
         );
 
         if (!memberResult || memberResult.length === 0) return notFound();
         
-        // Find exact match by prefix to avoid false positives with _icontains
-        const memberData = memberResult.find((u: any) => 
-            u.email?.toLowerCase().startsWith(`${decodedSlug.toLowerCase()}@`)
-        );
+        // Find exact match by comparing the normalized prefix (dots converted to dashes)
+        const memberData = memberResult.find((u: any) => {
+            const emailPrefix = (u.email || '').split('@')[0].toLowerCase();
+            const normalizedPrefix = emailPrefix.replace(/\./g, '-');
+            return normalizedPrefix === decodedSlug.toLowerCase();
+        });
 
         if (!memberData) return notFound();
         if (memberData.status === 'rejected') return notFound();
@@ -153,6 +156,7 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
             </AdminPageShell>
         );
     } catch (e) {
+        console.error("[LidDetailPage] Error loading member:", e);
         return notFound();
     }
 }

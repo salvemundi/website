@@ -82,7 +82,7 @@ export async function manageAzureMembershipAction(userId: string, azureGroupId: 
     // Revalidate
     const { query: queryReval } = await import("@/lib/database");
     const { rows: revalRows } = await queryReval('SELECT email FROM directus_users WHERE id = $1 LIMIT 1', [directusUserId]);
-    const emailSlug = revalRows?.[0]?.email?.split('@')[0] ?? directusUserId;
+    const emailSlug = revalRows?.[0]?.email?.split('@')[0]?.replace(/\./g, '-') ?? directusUserId;
     revalidatePath(`/beheer/leden/${encodeURIComponent(emailSlug)}`);
     revalidateTag(`user_${directusUserId}`, 'default');
     revalidateTag(`user_committees_${directusUserId}`, 'default');
@@ -166,7 +166,7 @@ export async function updateMemberProfileAction(
             }).catch(() => {});
         }
 
-        const emailSlugForUpdate = (await (await import("@/lib/database")).query('SELECT email FROM directus_users WHERE id = $1 LIMIT 1', [directusUserId])).rows?.[0]?.email?.split('@')[0] ?? directusUserId;
+        const emailSlugForUpdate = (await (await import("@/lib/database")).query('SELECT email FROM directus_users WHERE id = $1 LIMIT 1', [directusUserId])).rows?.[0]?.email?.split('@')[0]?.replace(/\./g, '-') ?? directusUserId;
         revalidatePath(`/beheer/leden/${encodeURIComponent(emailSlugForUpdate)}`);
         
         // Log the change
@@ -235,7 +235,7 @@ export async function renewMembershipAction(
             }).catch(() => {});
         }
 
-        const renewSlug = user.email?.split('@')[0] ?? directusUserId;
+        const renewSlug = user.email?.split('@')[0]?.replace(/\./g, '-') ?? directusUserId;
         revalidatePath(`/beheer/leden/${encodeURIComponent(renewSlug)}`);
         revalidatePath('/beheer/leden');
 
@@ -287,7 +287,7 @@ export async function provisionAzureAccountAction(directusUserId: string) {
             return { success: false, error: errData.error || "Azure provisioning mislukt." };
         }
 
-        const provisionSlug = user.email?.split('@')[0] ?? directusUserId;
+        const provisionSlug = user.email?.split('@')[0]?.replace(/\./g, '-') ?? directusUserId;
         revalidatePath(`/beheer/leden/${encodeURIComponent(provisionSlug)}`);
 
         // Log the provisioning
