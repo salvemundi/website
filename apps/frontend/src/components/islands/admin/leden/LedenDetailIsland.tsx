@@ -149,7 +149,10 @@ export default function LedenDetailIsland({
     };
 
     const handleForceSync = async () => {
-        const res = await triggerUserSyncAction(localMember.id);
+        if (!localMember.entra_id) {
+            return { success: false, message: 'Dit lid heeft geen gekoppeld Azure account.' };
+        }
+        const res = await triggerUserSyncAction(localMember.entra_id);
         return { success: res.success, message: res.success ? 'Synchronisatie gestart' : (res.error || 'Sync mislukt') };
     };
 
