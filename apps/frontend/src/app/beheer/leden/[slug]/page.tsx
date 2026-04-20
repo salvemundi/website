@@ -37,14 +37,16 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
 
     try {
         // NUCLEAR SSR: Sequential fetch because we need the ID from the slug
-        // Since dots are replaced by dashes in the URL, we search for the prefix
-        // the first part of the slug and then filter precisely in JS.
-        const searchPrefix = decodedSlug.split('-')[0];
         const memberResult = await getSystemDirectus().request(
             dReadItems<any, any, any>('directus_users', {
-                filter: { email: { _icontains: searchPrefix } }, 
+                filter: { 
+                    _or: [
+                        { email: { _istarts_with: decodedSlug + '@' } },
+                        { email: { _istarts_with: decodedSlug.replace(/-/g, '.') + '@' } }
+                    ]
+                }, 
                 fields: ['id', 'first_name', 'last_name', 'email', 'date_of_birth', 'membership_expiry', 'status', 'phone_number', 'avatar', 'entra_id'],
-                limit: 20
+                limit: 100
             })
         );
 
