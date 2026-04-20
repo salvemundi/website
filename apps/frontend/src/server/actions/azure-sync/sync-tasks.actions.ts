@@ -110,8 +110,9 @@ export async function triggerUserSyncAction(userId: string) {
             };
         }
 
-        revalidateTag(`user_${userId}`, 'max');
-        revalidatePath(`/beheer/leden/${userId}`);
+        const emailSlug = (targetUser?.email as string | undefined)?.split('@')[0];
+        if (emailSlug) revalidatePath(`/beheer/leden/${encodeURIComponent(emailSlug)}`);
+        revalidateTag(`user_${entraId}`, 'max');
         revalidatePath('/beheer/commissies');
 
         return { success: true, message: `Synchronisatie voor gebruiker ${userId} voltooid.` };
