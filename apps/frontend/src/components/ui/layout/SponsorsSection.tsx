@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import type { Sponsor } from '@salvemundi/validations/schema/home.zod';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { cn } from '@/lib/utils/cn';
@@ -10,7 +11,7 @@ interface SponsorsSectionProps {
 
 /**
  * UI Component voor de sponsoren-sectie op de homepagina.
- * V7.12 SSR: Clean implementation without loading logic.
+ * V7.13 Nuclear SSR: Restored interactivity and premium styling.
  */
 export const SponsorsSection: React.FC<SponsorsSectionProps> = ({
     sponsors = []
@@ -43,21 +44,39 @@ export const SponsorsSection: React.FC<SponsorsSectionProps> = ({
                                 const key = `${sponsor.sponsor_id}-${index}`;
                                 const src = getImageUrl(sponsor.image) || '/img/newlogo.png';
 
-                                return (
+                                const content = (
                                     <div
-                                        key={key}
-                                        className="flex-shrink-0 transition-all duration-300"
+                                        className={cn(
+                                            "sponsor-item flex-shrink-0 transition-all duration-300",
+                                            sponsor.dark_bg && "sponsor-dark-bg"
+                                        )}
                                     >
                                         <Image
                                             src={src}
-                                            alt="Sponsor"
+                                            alt="Sponsor Logo"
                                             height={80}
                                             width={160}
-                                            className="h-20 w-auto object-contain"
+                                            className="sponsor-logo h-20 w-auto object-contain"
                                             unoptimized
                                         />
                                     </div>
                                 );
+
+                                if (sponsor.website_url) {
+                                    return (
+                                        <Link
+                                            key={key}
+                                            href={sponsor.website_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="block"
+                                        >
+                                            {content}
+                                        </Link>
+                                    );
+                                }
+
+                                return <React.Fragment key={key}>{content}</React.Fragment>;
                             })}
                         </div>
                     </div>
