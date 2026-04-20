@@ -6,7 +6,7 @@ import LedenDetailIsland from '@/components/islands/admin/leden/LedenDetailIslan
 import { getSystemDirectus } from '@/lib/directus';
 
 // Correct Directus SDK imports
-import { readUser, readItems as dReadItems } from '@directus/sdk';
+import { readUser, readItems as dReadItems, readUsers } from '@directus/sdk';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 
 export default async function LidDetailPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -37,8 +37,9 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
 
     try {
         // NUCLEAR SSR: Sequential fetch because we need the ID from the slug
+        // NUCLEAR SSR: Sequential fetch because we need the ID from the slug
         const memberResult = await getSystemDirectus().request(
-            dReadItems<any, any, any>('directus_users', {
+            readUsers({
                 filter: { 
                     _or: [
                         { email: { _istarts_with: decodedSlug + '@' } },
@@ -50,10 +51,10 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
             })
         );
 
-        if (!memberResult || memberResult.length === 0) return notFound();
+        if (!memberResult || (memberResult as unknown as any[]).length === 0) return notFound();
         
         // Find exact match by comparing the normalized prefix (dots converted to dashes)
-        const memberData = memberResult.find((u: any) => {
+        const memberData = (memberResult as unknown as any[]).find((u: any) => {
             const emailPrefix = (u.email || '').split('@')[0].toLowerCase();
             const normalizedPrefix = emailPrefix.replace(/\./g, '-');
             return normalizedPrefix === decodedSlug.toLowerCase();
