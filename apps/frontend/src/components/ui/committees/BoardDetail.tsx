@@ -4,14 +4,14 @@ import { type Committee } from '@salvemundi/validations/schema/committees.zod';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { Mail, User, Users, Calendar, Instagram, Facebook, Globe, History, LayoutGrid, UserPlus } from 'lucide-react';
 
-interface CommitteeDetailProps {
+interface BoardDetailProps {
     committee?: Committee;
 }
 
-export const CommitteeDetail: React.FC<CommitteeDetailProps> = ({
+export const BoardDetail: React.FC<BoardDetailProps> = ({
     committee = {} as Committee
 }) => {
-    const cleanedName = committee.name?.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim() || 'Commissie';
+    const cleanedName = committee.name?.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim() || 'Bestuur';
 
     const members = (committee.members?.filter((m: any) => m.is_visible) || []).sort((a: any, b: any) => {
         if (a.is_leader && !b.is_leader) return -1;
@@ -30,7 +30,7 @@ export const CommitteeDetail: React.FC<CommitteeDetailProps> = ({
                     </h1>
 
                     <div className="mb-10 text-xl leading-relaxed text-[var(--text-muted)] max-w-2xl font-medium">
-                        {committee.description || `De ${cleanedName} van Salve Mundi zet zich dagelijks in om de vereniging naar een hoger niveau te tillen en memorabele momenten te creëren voor al onze leden.`}
+                        {committee.description || `Het ${cleanedName} van Salve Mundi zet zich dagelijks in om de vereniging naar een hoger niveau te tillen en memorabele momenten te creëren voor al onze leden.`}
                     </div>
 
                     <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4">
@@ -74,7 +74,7 @@ export const CommitteeDetail: React.FC<CommitteeDetailProps> = ({
                 <div className="flex flex-col items-center mb-16">
                     <h2 className="flex items-center gap-4 text-4xl font-black text-[var(--text-main)]">
                         <Users className="h-10 w-10 text-[var(--color-purple-500)]" />
-                        Ons Team
+                        Ons Bestuur
                     </h2>
                     <div className="h-2 w-24 bg-gradient-to-r from-transparent via-[var(--color-purple-500)] to-transparent rounded-full mt-6" />
                 </div>
@@ -95,7 +95,7 @@ export const CommitteeDetail: React.FC<CommitteeDetailProps> = ({
                                 {`${member.user_id?.first_name} ${member.user_id?.last_name}`}
                             </h4>
                             <span className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em] bg-[var(--bg-soft)] px-4 py-1.5 rounded-full border border-[var(--border-color)]/10 text-center">
-                                {member.is_leader ? 'Commissieleider' : 'Commissielid'}
+                                {member.user_id?.title || 'Algemeen bestuurslid'}
                             </span>
                         </div>
                     ))}

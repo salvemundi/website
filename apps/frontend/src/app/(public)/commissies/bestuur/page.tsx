@@ -3,18 +3,16 @@ import { notFound } from 'next/navigation';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
-import CommitteeDetailDisplay from '@/components/islands/committees/CommitteeDetailDisplay';
 import { getCommitteeBySlug } from '@/server/actions/committees.actions';
+import { BoardDetail } from '@/components/ui/committees/BoardDetail';
 
 export const metadata: Metadata = {
-    title: 'Commissie Detail | SV Salve Mundi',
-    description: 'Ontdek deze commissie en wat zij doen voor de vereniging.',
+    title: 'Bestuur | SV Salve Mundi',
+    description: 'Het bestuur van SV Salve Mundi',
 };
 
-export default async function CommitteePage(props: { params: Promise<{ slug: string }> }) {
-    const { slug } = await props.params;
-
-    const committee = await getCommitteeBySlug(slug);
+export default async function BestuurPage() {
+    const committee = await getCommitteeBySlug('bestuur');
 
     if (!committee) {
         return (
@@ -22,9 +20,9 @@ export default async function CommitteePage(props: { params: Promise<{ slug: str
                 <div className="mx-auto max-w-app px-4 py-16 text-center">
                     <div className="rounded-3xl bg-[var(--bg-card)] border border-[var(--border-color)] p-12 shadow-xl border-t-8 border-red-500">
                         <h1 className="text-4xl font-black text-theme mb-4">404</h1>
-                        <p className="text-xl text-theme-muted mb-8 italic uppercase tracking-widest font-bold">Commissie niet gevonden</p>
+                        <p className="text-xl text-theme-muted mb-8 italic uppercase tracking-widest font-bold">Bestuur niet gevonden</p>
                         <p className="text-theme-muted max-w-md mx-auto leading-relaxed">
-                            De opgevraagde commissie bestaat niet of is momenteel niet actief op onze website.
+                            De opgevraagde pagina bestaat niet of is momenteel niet actief op onze website.
                         </p>
                         <a href="/commissies" className="mt-6 inline-block text-[var(--color-purple-600)] font-semibold hover:underline">
                             Terug naar overzicht
@@ -35,7 +33,7 @@ export default async function CommitteePage(props: { params: Promise<{ slug: str
         );
     }
 
-    const cleanedName = committee.name?.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim() || 'Commissie';
+    const cleanedName = committee.name?.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim() || 'Bestuur';
 
     return (
         <PublicPageShell>
@@ -50,7 +48,7 @@ export default async function CommitteePage(props: { params: Promise<{ slug: str
                 </Link>
             </div>
             <main className="mx-auto max-w-app px-4 pb-24 sm:px-6 lg:px-8">
-                <CommitteeDetailDisplay committee={committee} />
+                <BoardDetail committee={committee} />
             </main>
         </PublicPageShell>
     );
