@@ -78,6 +78,8 @@ export const activityAdminSchema = z.object({
     only_members: z.union([z.boolean(), z.string()]).optional().transform(v => v === true || v === 'on' || v === 'true'),
     status: z.enum(['published', 'draft', 'scheduled']).optional().default('published'),
     publish_date: z.string().nullable().optional(),
+    category: z.string().nullable().optional(),
+    custom_url: z.string().nullable().optional(),
 });
 
 export type ActivityAdmin = z.infer<typeof activityAdminSchema>;

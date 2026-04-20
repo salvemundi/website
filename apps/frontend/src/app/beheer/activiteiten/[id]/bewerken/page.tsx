@@ -33,7 +33,8 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
                         'id', 'name', 'description', 'location', 'event_date', 'event_date_end', 
                         'max_sign_ups', 'price_members', 'price_non_members', 'only_members', 
                         'registration_deadline', 'contact', 'image', 'committee_id', 'status', 
-                        'publish_date', 'event_time', 'event_time_end'
+                        'publish_date', 'event_time', 'event_time_end', 'description_logged_in',
+                        'category', 'custom_url'
                     ],
                     filter: { id: { _eq: id } },
                     limit: 1
