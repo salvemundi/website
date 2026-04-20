@@ -91,9 +91,9 @@ export default function AdminActivitiesIsland({
         const upcomingCount = filteredEvents.filter(e => new Date(e.event_date) >= new Date()).length;
         const totalSignups = filteredEvents.reduce((acc, curr) => acc + (curr.signup_count || 0), 0);
         return [
-            { label: 'Upcoming', value: upcomingCount, icon: Clock, trend: 'Activities' },
-            { label: 'Total', value: filteredEvents.length, icon: Calendar, trend: 'Events' },
-            { label: 'Sign-ups', value: totalSignups, icon: Users, trend: 'Registrations' },
+            { label: 'Aankomende activiteiten', value: upcomingCount, icon: Clock },
+            { label: 'Totale activiteiten', value: filteredEvents.length, icon: Calendar },
+            { label: 'Totale aanmeldingen', value: totalSignups, icon: Users },
         ];
     }, [filteredEvents]);
 
