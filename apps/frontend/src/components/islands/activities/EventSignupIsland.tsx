@@ -86,6 +86,8 @@ export default function EventSignupIsland({
             if (result.success) {
                 if (result.checkoutUrl) {
                     window.location.href = result.checkoutUrl;
+                } else if ((result as any).custom_url) {
+                    window.location.href = (result as any).custom_url;
                 } else {
                     setSuccess(result.message || 'Aanmelding geslaagd!');
                     setSignupStatus({ isSignedUp: true, paymentStatus: isPaid ? 'open' : 'paid' });

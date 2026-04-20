@@ -93,6 +93,19 @@ export default function ConfirmationIsland({
         checkStatus();
     }, [initialId, initialTransactionId, retryCount]);
     
+    // Delayed redirect if custom_url exists for paid events
+    useEffect(() => {
+        if (status === 'paid' && !isMembership && !isTrip) {
+            const customUrl = (signupData as any)?.event_id?.custom_url || (signupData as any)?.custom_url;
+            if (customUrl) {
+                const timeout = setTimeout(() => {
+                    window.location.href = customUrl;
+                }, 3000);
+                return () => clearTimeout(timeout);
+            }
+        }
+    }, [status, signupData, isMembership, isTrip]);
+
     const downloadTicket = async (elementId: string, ticketName: string) => {
         const element = document.getElementById(elementId);
         if (!element) return;
@@ -174,6 +187,11 @@ export default function ConfirmationIsland({
                         <p className="text-[var(--text-muted)] text-lg font-medium max-w-md mx-auto">
                             Bedankt! Je ticket{amount > 1 ? 's' : ''} {amount > 1 ? 'zijn' : 'is'} nu beschikbaar.
                         </p>
+                        {((signupData as any)?.event_id?.custom_url || (signupData as any)?.custom_url) && (
+                            <p className="text-[10px] uppercase font-black text-[var(--theme-purple)] mt-2 tracking-widest animate-pulse">
+                                Je wordt zo automatisch doorgestuurd...
+                            </p>
+                        )}
                     </div>
 
                     <div className="flex flex-wrap justify-center gap-6 max-w-6xl mx-auto">

@@ -244,7 +244,11 @@ export async function signupForActivity(data: EventSignupForm) {
 
             await redis.xadd('v7:events', '*', 'payload', JSON.stringify(eventPayload));
             
-            return { success: true, message: 'Inschrijving geslaagd!' };
+            return { 
+                success: true, 
+                message: 'Inschrijving geslaagd!',
+                custom_url: (activity as any).custom_url || null
+            };
         }
     } catch (error: any) {
         

@@ -40,7 +40,6 @@ interface EventProps {
     image?: any;
     status?: 'published' | 'draft' | 'archived';
     publish_date?: string | null;
-    category?: string | null;
     custom_url?: string | null;
 }
 
@@ -259,21 +258,12 @@ export default function ActiviteitBewerkenIsland({
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-[var(--beheer-border)]">
-                                <div>
-                                    <label htmlFor="category" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Categorie</label>
-                                    <select id="category" name="category" defaultValue={event.category || ''} className="beheer-select">
-                                        <option value="">Standaard Activiteit</option>
-                                        <option value="kroegentocht">Kroegentocht</option>
-                                        <option value="reis">Reis / Trip</option>
-                                        <option value="workshop">Workshop</option>
-                                    </select>
-                                </div>
+                            <div className="pt-4 border-t border-[var(--beheer-border)]">
                                 <div>
                                     <label htmlFor="custom_url" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2 flex items-center gap-2">
-                                        <LinkIcon className="h-3 w-3" /> Custom Slug (optioneel)
+                                        <LinkIcon className="h-3 w-3" /> Custom Slug / Redirect URL (optioneel)
                                     </label>
-                                    <input type="text" id="custom_url" name="custom_url" defaultValue={event.custom_url || ''} className="beheer-input" placeholder="bijv. introductie-borrel" />
+                                    <input type="text" id="custom_url" name="custom_url" defaultValue={event.custom_url || ''} className="beheer-input" placeholder="bijv. https://forms.gle/..." />
                                 </div>
                             </div>
                         </div>

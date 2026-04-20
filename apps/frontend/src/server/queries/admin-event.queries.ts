@@ -44,6 +44,7 @@ export async function getActivitiesInternal(onlyPublished = true): Promise<Activ
             event_time: item.event_time ?? null,
             event_time_end: item.event_time_end ?? null,
             committee_name: item.committee_name || null,
+            custom_url: item.custom_url || null,
         };
     });
 
@@ -93,6 +94,7 @@ export async function getActivityByIdInternal(id: string): Promise<Activiteit | 
         event_time: item.event_time ?? null,
         event_time_end: item.event_time_end ?? null,
         committee_name: item.committee_name || null,
+        custom_url: item.custom_url || null,
     };
 
     const parsed = activitiesSchema.element.safeParse(mapped);
