@@ -37,16 +37,23 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
 
     try {
         // NUCLEAR SSR: Sequential fetch because we need the ID from the slug
+        // Use _icontains for case-insensitivity as Directus _starts_with is case-sensitive on many DBs (like Postgres)
         const memberResult = await getSystemDirectus().request(
             dReadItems<any, any, any>('directus_users', {
-                filter: { email: { _starts_with: `${decodedSlug}@` } },
+                filter: { email: { _icontains: `${decodedSlug}@` } }, 
                 fields: ['id', 'first_name', 'last_name', 'email', 'date_of_birth', 'membership_expiry', 'status', 'phone_number', 'avatar', 'entra_id'],
-                limit: 1
+                limit: 5 // Allow some room for potential duplicates or similar prefixes
             })
         );
 
         if (!memberResult || memberResult.length === 0) return notFound();
-        const memberData = memberResult[0];
+        
+        // Find exact match by prefix to avoid false positives with _icontains
+        const memberData = memberResult.find((u: any) => 
+            u.email?.toLowerCase().startsWith(`${decodedSlug.toLowerCase()}@`)
+        );
+
+        if (!memberData) return notFound();
         if (memberData.status === 'rejected') return notFound();
         
         const id = memberData.id;
