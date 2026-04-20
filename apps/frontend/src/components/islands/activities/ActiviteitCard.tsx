@@ -120,9 +120,14 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                                 </span>
                             )}
                         </div>
-                        <h3 className="text-xl font-black text-[var(--theme-purple)]/90 leading-tight group-hover:text-[var(--theme-purple)] transition-colors" title={title}>
+                        <h3 className="text-xl font-black text-[var(--theme-purple)]/90 leading-tight group-hover:text-[var(--theme-purple)] transition-colors line-clamp-2 break-words" title={title}>
                             {title}
                         </h3>
+                        {description && (
+                            <p className="hidden md:block text-[var(--text-muted)] text-sm line-clamp-2 mt-2 leading-relaxed pr-4">
+                                {description}
+                            </p>
+                        )}
                         {contact && (
                             <p className="text-xs text-[var(--text-muted)] mt-2 flex items-center gap-1">
                                 <span className="font-bold opacity-70">Contact:</span>
@@ -218,7 +223,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
             </div>
 
             <div className="flex flex-col flex-grow relative z-10 space-y-3">
-                <h3 className="text-xl font-bold text-[var(--theme-purple)]/80 leading-snug line-clamp-2">
+                <h3 className="text-xl font-bold text-[var(--theme-purple)]/80 leading-snug line-clamp-2 break-words">
                     {title}
                 </h3>
 

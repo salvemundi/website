@@ -9,10 +9,11 @@ import { getImageUrl } from '@/lib/utils/image-utils';
 
 interface ActivityDetailIslandProps {
     activity?: Activiteit;
+    isLoggedIn?: boolean;
     children?: React.ReactNode; // For EventSignupIsland
 }
 
-export default function ActivityDetailIsland({ activity, children }: ActivityDetailIslandProps) {
+export default function ActivityDetailIsland({ activity, isLoggedIn = false, children }: ActivityDetailIslandProps) {
     const imageUrl = activity?.afbeelding_id ? getImageUrl(activity.afbeelding_id) : '/img/backgrounds/Kroto2025.jpg';
 
     const committeeEmail = activity?.contact?.includes('@') 
@@ -149,6 +150,18 @@ export default function ActivityDetailIsland({ activity, children }: ActivityDet
                             </div>
                             <div className="prose prose-purple max-w-none text-[var(--text-main)] font-medium leading-relaxed">
                                 <SafeHtml html={activity?.beschrijving || 'Geen beschrijving beschikbaar.'} />
+                                {isLoggedIn && activity?.description_logged_in && (
+                                    <>
+                                        <hr className="my-8 border-[var(--border-color)]/50" />
+                                        <div className="flex items-center gap-3 mb-6">
+                                            <div className="h-6 w-1.5 bg-amber-500 rounded-full shadow-[0_0_10px_theme(colors.amber.500)]" />
+                                            <h3 className="text-xl font-black text-amber-500/90 uppercase tracking-widest">
+                                                Extra Informatie (alleen ingelogd)
+                                            </h3>
+                                        </div>
+                                        <SafeHtml html={activity.description_logged_in} />
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -157,3 +170,4 @@ export default function ActivityDetailIsland({ activity, children }: ActivityDet
         </div>
     );
 }
+
