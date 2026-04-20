@@ -22,7 +22,7 @@ export const SponsorsSection: React.FC<SponsorsSectionProps> = ({
     const displaySponsors = Array.from({ length: 20 }, () => sponsors).flat();
 
     return (
-        <section className="py-12 bg-white/50 dark:bg-black/20 overflow-hidden">
+        <section className="py-12 overflow-hidden">
             <div className="mx-auto max-w-app px-6">
                 <div className="text-center mb-10">
                     <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[var(--color-purple-700)] dark:text-[var(--color-purple-300)] mb-2">
@@ -38,28 +38,21 @@ export const SponsorsSection: React.FC<SponsorsSectionProps> = ({
                         <p className="text-center text-sm text-[var(--text-muted)] italic">Binnenkort meer informatie.</p>
                     </div>
                 ) : (
-                    <div className="relative overflow-visible min-h-[120px] h-32 flex items-center rounded-3xl">
-                        <div className="sponsors-scroll-track flex items-center gap-16 whitespace-nowrap px-8">
+                    <div className="relative overflow-visible h-24 flex items-center">
+                        <div className="sponsors-scroll-track flex items-center gap-12 whitespace-nowrap">
                             {displaySponsors.map((sponsor, index) => {
                                 const key = `${sponsor.sponsor_id}-${index}`;
                                 const src = getImageUrl(sponsor.image) || '/img/newlogo.png';
 
-                                const content = (
-                                    <div
-                                        className={cn(
-                                            "sponsor-item flex-shrink-0 transition-all duration-300",
-                                            sponsor.dark_bg && "sponsor-dark-bg"
-                                        )}
-                                    >
-                                        <Image
-                                            src={src}
-                                            alt="Sponsor Logo"
-                                            height={80}
-                                            width={160}
-                                            className="sponsor-logo h-20 w-auto object-contain"
-                                            unoptimized
-                                        />
-                                    </div>
+                                const imageContent = (
+                                    <Image
+                                        src={src}
+                                        alt="Sponsor Logo"
+                                        height={60}
+                                        width={140}
+                                        className="sponsor-logo h-12 w-auto object-contain transition-all duration-300 hover:scale-110 grayscale-[0.2] hover:grayscale-0"
+                                        unoptimized
+                                    />
                                 );
 
                                 if (sponsor.website_url) {
@@ -69,14 +62,18 @@ export const SponsorsSection: React.FC<SponsorsSectionProps> = ({
                                             href={sponsor.website_url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="block"
+                                            className="sponsor-item flex-shrink-0"
                                         >
-                                            {content}
+                                            {imageContent}
                                         </Link>
                                     );
                                 }
 
-                                return <React.Fragment key={key}>{content}</React.Fragment>;
+                                return (
+                                    <div key={key} className="sponsor-item flex-shrink-0">
+                                        {imageContent}
+                                    </div>
+                                );
                             })}
                         </div>
                     </div>
