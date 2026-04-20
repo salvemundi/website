@@ -110,7 +110,7 @@ export async function triggerUserSyncAction(userId: string) {
             };
         }
 
-        const emailSlug = (targetUser?.email as string | undefined)?.split('@')[0];
+        const emailSlug = (targetUser?.email as string | undefined)?.split('@')[0]?.replace(/\./g, '-');
         if (emailSlug) revalidatePath(`/beheer/leden/${encodeURIComponent(emailSlug)}`);
         revalidateTag(`user_${entraId}`, 'max');
         revalidatePath('/beheer/commissies');

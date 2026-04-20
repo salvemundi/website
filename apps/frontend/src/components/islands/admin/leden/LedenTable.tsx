@@ -74,7 +74,7 @@ export default function LedenTable({
                                 </td>
                                 <td className="px-8 py-5 text-right">
                                     <button
-                                        onClick={() => router.push(`/beheer/leden/${encodeURIComponent((member.email || member.id).split('@')[0])}`)}
+                                        onClick={() => router.push(`/beheer/leden/${encodeURIComponent((member.email || member.id).split('@')[0].replace(/\./g, '-'))}`)}
                                         className="inline-flex items-center justify-center w-10 h-10 rounded-xl text-slate-300 hover:text-primary hover:bg-primary/5 dark:text-slate-600 transition-all cursor-pointer"
                                     >
                                         <ChevronRight className="h-5 w-5" />
