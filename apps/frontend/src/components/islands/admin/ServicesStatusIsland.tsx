@@ -157,7 +157,7 @@ export default function ServicesStatusIsland({
 
             {lastUpdated && (
                 <p className="mt-8 text-center text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">
-                    {`Laatst gecontroleerd: ${formatDate(lastUpdated!, true)} · Volgende auto-refresh in 30s`}
+                    {`Laatst gecontroleerd: ${formatDate(lastUpdated!, true)}`}
                 </p>
             )}
         </div>
