@@ -11,6 +11,7 @@ import { Input } from '@/shared/ui/Input';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { Loader2, CheckCircle2, AlertCircle, CreditCard, Send, Users, Ticket, Info } from 'lucide-react';
 import QRDisplay from '@/shared/ui/QRDisplay';
+import { formatPhoneNumber } from '@/lib/utils/phone-utils';
 interface EventSignupIslandProps {
     id?: number | string;
     isPast?: boolean;
@@ -65,7 +66,7 @@ export default function EventSignupIsland({
             event_id: eventId,
             name: user?.name || (user as any)?.first_name ? `${(user as any).first_name} ${(user as any).last_name || ''}`.trim() : '',
             email: user?.email || '',
-            phoneNumber: (user as any)?.phone_number || '',
+            phoneNumber: formatPhoneNumber((user as any)?.phone_number),
             website: '',
         }
     });
