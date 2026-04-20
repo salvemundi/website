@@ -48,9 +48,9 @@ export const SponsorsSection: React.FC<SponsorsSectionProps> = ({
                                     <Image
                                         src={src}
                                         alt="Sponsor Logo"
-                                        height={60}
-                                        width={140}
-                                        className="sponsor-logo h-12 w-auto object-contain transition-all duration-300 hover:scale-110 grayscale-[0.2] hover:grayscale-0"
+                                        height={80}
+                                        width={160}
+                                        className="sponsor-logo h-20 w-auto object-contain transition-all duration-300 hover:scale-110"
                                         unoptimized
                                     />
                                 );
