@@ -1,15 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
     Ticket, 
     Calendar, 
     MapPin, 
     QrCode, 
-    ChevronRight,
     Search,
-    Download
+    X
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import QRDisplay from '@/shared/ui/QRDisplay';
 import { formatDate } from '@/shared/lib/utils/date';
 
@@ -20,14 +21,23 @@ interface TicketListIslandProps {
 export default function TicketListIsland({ tickets }: TicketListIslandProps) {
     const [selectedTicket, setSelectedTicket] = useState<any | null>(null);
     const [search, setSearch] = useState('');
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    // Scroll Lock when modal is open
+    useEffect(() => {
+        if (selectedTicket) {
+            document.body.style.overflow = 'hidden';
+            return () => { document.body.style.overflow = 'unset'; };
+        }
+    }, [selectedTicket]);
 
     const handleTicketSelect = (ticket: any) => setSelectedTicket(ticket);
     const handleCloseModal = () => setSelectedTicket(null);
 
-    /**
-     * Users can search for specific events by name to quickly find their QR 
-     * in a long list of historical tickets.
-     */
     const filteredTickets = tickets.filter(ticket => 
         (ticket.event_id?.name || 'Activiteit').toLowerCase().includes(search.toLowerCase())
     );
@@ -52,7 +62,7 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
                             <Ticket className="h-4 w-4" />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Totaal</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Totaal aantal tickets</p>
                             <p className="text-sm font-black text-[var(--text-main)]">{tickets.length}</p>
                         </div>
                     </div>
@@ -102,47 +112,64 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
                 </div>
             )}
 
-            {/* Ticket Modal Integration */}
-            {selectedTicket && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl animate-in fade-in duration-300">
-                    <div className="bg-[var(--bg-card)] rounded-[3rem] w-full max-w-lg shadow-2xl border border-white/10 overflow-hidden relative group">
-                        <button 
-                            onClick={handleCloseModal}
-                            className="absolute top-6 right-6 p-2 h-10 w-10 flex items-center justify-center rounded-full bg-black/5 hover:bg-black/10 transition-colors z-20"
-                        >
-                            <ChevronRight className="h-6 w-6 rotate-90" />
-                        </button>
+            {/* Ticket Modal Integration via Portal */}
+            {mounted && createPortal(
+                <AnimatePresence>
+                    {selectedTicket && (
+                        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 isolate">
+                            {/* Backdrop */}
+                            <motion.div 
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={handleCloseModal}
+                                className="absolute inset-0 bg-black/60 backdrop-blur-xl"
+                            />
+                            
+                            {/* Modal Content */}
+                            <motion.div 
+                                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                                className="bg-[var(--bg-card)] rounded-[3rem] w-full max-w-lg shadow-2xl border border-white/10 overflow-hidden relative z-10"
+                            >
+                                <button 
+                                    onClick={handleCloseModal}
+                                    className="absolute top-6 right-6 p-2 h-10 w-10 flex items-center justify-center rounded-full bg-black/5 hover:bg-black/10 transition-colors z-20 group"
+                                >
+                                    <X className="h-5 w-5 text-[var(--text-muted)] group-hover:text-[var(--text-main)] transition-colors" />
+                                </button>
 
-                        <div className="p-12 space-y-8 flex flex-col items-center">
-                            <div className="text-center space-y-2">
-                                <p className="text-[10px] font-black text-[var(--theme-purple)] uppercase tracking-[0.3em]">Jouw Digitale Ticket</p>
-                                <h2 className="text-3xl font-black text-[var(--text-main)] uppercase tracking-tighter italic">
-                                    {selectedTicket.event_id?.name || 'Activiteit'}
-                                </h2>
-                            </div>
+                                <div className="p-8 md:p-12 space-y-8 flex flex-col items-center">
+                                    <div className="text-center space-y-2">
+                                        <p className="text-[10px] font-black text-[var(--theme-purple)] uppercase tracking-[0.3em]">Jouw Digitale Ticket</p>
+                                        <h2 className="text-3xl font-black text-[var(--text-main)] uppercase tracking-tighter italic">
+                                            {selectedTicket.event_id?.name || 'Activiteit'}
+                                        </h2>
+                                    </div>
 
-                            <div className="p-6 bg-white rounded-[3rem] shadow-2xl ring-1 ring-black/5">
-                                <QRDisplay qrToken={selectedTicket.qr_token} size={240} />
-                            </div>
+                                    <div className="p-6 bg-white rounded-[3rem] shadow-2xl ring-1 ring-black/5">
+                                        <QRDisplay qrToken={selectedTicket.qr_token} size={240} />
+                                    </div>
 
-                            <div className="text-center space-y-1">
-                                <p className="text-lg font-black text-[var(--text-main)] uppercase tracking-tight italic">{selectedTicket.participant_name}</p>
-                                <p className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest opacity-60 italic">Toon deze code bij de entree</p>
-                            </div>
+                                    <div className="text-center space-y-1">
+                                        <p className="text-lg font-black text-[var(--text-main)] uppercase tracking-tight italic">{selectedTicket.participant_name}</p>
+                                        <p className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest opacity-60 italic">Toon deze code bij de entree</p>
+                                    </div>
 
-                            <div className="w-full grid grid-cols-2 gap-4 border-t border-[var(--border-color)]/50 pt-8">
-                                <div className="space-y-1">
-                                    <p className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest">Inschrijfdatum</p>
-                                    <p className="text-sm font-bold text-[var(--text-main)] uppercase">{formatDate(selectedTicket.date_created)}</p>
+                                    <div className="w-full border-t border-[var(--border-color)]/50 pt-8">
+                                        <div className="space-y-1">
+                                            <p className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest">Inschrijfdatum</p>
+                                            <p className="text-sm font-bold text-[var(--text-main)] uppercase">{formatDate(selectedTicket.date_created)}</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="space-y-1 text-right">
-                                    <p className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest">Status</p>
-                                    <p className="text-sm font-bold text-green-500 uppercase italic">GELIDIGEERT</p>
-                                </div>
-                            </div>
+                            </motion.div>
                         </div>
-                    </div>
-                </div>
+                    )}
+                </AnimatePresence>,
+                document.body
             )}
         </div>
     );
