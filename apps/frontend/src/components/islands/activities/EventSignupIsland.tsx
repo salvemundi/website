@@ -109,7 +109,7 @@ export default function EventSignupIsland({
                     </div>
                     <h3 className="text-3xl font-black text-[var(--text-main)] leading-tight">🎉 Aanmelding Definitief!</h3>
                     <p className="text-[var(--text-muted)] font-medium">
-                        Je bent succesvol aangemeld voor <span className="text-[var(--theme-purple)] font-bold">{eventName}</span>.
+                        Je bent succesvol aangemeld voor <span className="text-[var(--theme-purple)] font-black">{eventName}</span>.
                     </p>
                     {signupStatus.paymentStatus === 'open' && (
                         <p className="text-[10px] uppercase font-black text-amber-500 tracking-widest bg-amber-500/10 px-4 py-2 rounded-xl border border-amber-500/20">
@@ -117,9 +117,11 @@ export default function EventSignupIsland({
                         </p>
                     )}
                 </div>
-                <div className="relative group p-6 bg-white rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center">
-                    <QRDisplay qrToken={signupStatus.qrToken || 'PENDING_VERIFICATION'} />
-                    <div className="mt-4 flex items-center gap-2 text-[10px] uppercase font-black text-slate-400 tracking-widest">
+                <div className="relative group p-8 bg-[var(--bg-soft)] rounded-[2.5rem] border border-[var(--border-color)]/60 flex flex-col items-center transition-all hover:bg-[var(--bg-card)]">
+                    <div className="p-3 bg-white rounded-3xl shadow-xl ring-1 ring-black/5">
+                        <QRDisplay qrToken={signupStatus.qrToken || 'PENDING_VERIFICATION'} size={240} />
+                    </div>
+                    <div className="mt-6 flex items-center gap-2 text-[10px] uppercase font-black text-[var(--text-muted)] opacity-60 tracking-[0.2em]">
                         <Ticket className="h-3 w-3" /> Toon bij de ingang
                     </div>
                 </div>
@@ -129,11 +131,11 @@ export default function EventSignupIsland({
 
     if (isPast) {
         return (
-            <div className="h-full flex flex-col justify-center items-center p-12 rounded-[2rem] bg-slate-50/50 border border-dashed border-slate-300 dark:border-white/10 text-center space-y-4">
-                <AlertCircle className="h-12 w-12 text-slate-300" />
+            <div className="h-full flex flex-col justify-center items-center p-12 rounded-[2.5rem] bg-[var(--bg-soft)]/50 border border-dashed border-[var(--border-color)] text-center space-y-4">
+                <AlertCircle className="h-12 w-12 text-[var(--text-muted)] opacity-20" />
                 <div>
-                    <h3 className="text-xl font-black text-slate-400 uppercase">Activiteit Afgelopen</h3>
-                    <p className="text-sm text-slate-400/80 font-medium max-w-[200px] mx-auto">Helaas kun je je voor deze activiteit niet meer aanmelden.</p>
+                    <h3 className="text-xl font-black text-[var(--text-muted)] opacity-40 uppercase tracking-widest italic">Activiteit Afgelopen</h3>
+                    <p className="text-xs text-[var(--text-muted)] opacity-30 font-bold uppercase tracking-tight max-w-[200px] mx-auto mt-2">Helaas kun je je voor deze activiteit niet meer aanmelden.</p>
                 </div>
             </div>
         );
