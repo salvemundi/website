@@ -66,9 +66,10 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
                 title="Aanmeldingen"
                 subtitle={`Lijst van deelnemers voor "${event.name}"`}
                 backHref={`/beheer/activiteiten`}
+                hideToolbar={true}
             >
                 <div className="pb-20">
-                    <ActiviteitAanmeldingenIsland event={event} initialSignups={signups} />
+                    <ActiviteitAanmeldingenIsland event={event as any} initialSignups={signups} />
                 </div>
             </AdminPageShell>
         );

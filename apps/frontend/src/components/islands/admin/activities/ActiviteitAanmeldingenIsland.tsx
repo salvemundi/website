@@ -33,12 +33,20 @@ interface Signup {
     } | null;
 }
 
+interface AdminEvent {
+    id: number | string;
+    name: string;
+    price_members?: number | null;
+    committee_id?: number | string | null;
+    max_sign_ups?: number | null;
+}
+
 export default function ActiviteitAanmeldingenIsland({ 
-    event = {}, 
+    event, 
     initialSignups = [], 
 }: { 
-    event?: any, 
-    initialSignups?: Signup[], 
+    event: AdminEvent;
+    initialSignups: Signup[]; 
 }) {
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
@@ -153,7 +161,7 @@ export default function ActiviteitAanmeldingenIsland({
         const newValue = !currentCheckedIn;
         startTransition(async () => {
             setOptimisticSignups({ id: signupId, checkedIn: newValue });
-            const res = await toggleCheckInAction(signupId, event.id, newValue);
+            const res = await toggleCheckInAction(signupId, Number(event.id), newValue);
             if (!res.success) {
                 showToast(res.error || 'Fout bij bijwerken check-in', 'error');
             } else {
@@ -193,27 +201,27 @@ export default function ActiviteitAanmeldingenIsland({
     return (
         <>
             <AdminToolbar 
-                title={event.name || 'Aanmeldingen'}
+                title={event.name}
                 subtitle="Deelnemerslijst en inchecken"
                 backHref="/beheer/activiteiten"
                 actions={
                     <>
-                            <button
-                                onClick={exportToCSV}
-                                disabled={filteredSignups.length === 0}
-                                className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-xs font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50"
-                            >
-                                <Download className="h-4 w-4" />
-                                Exporteer
-                            </button>
-                            <button
-                                onClick={() => setIsManualModalOpen(true)}
-                                className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
-                            >
-                                <UserPlus className="h-4 w-4" />
-                                Handmatig
-                            </button>
-                        </>
+                        <button
+                            onClick={exportToCSV}
+                            disabled={filteredSignups.length === 0}
+                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-xs font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50"
+                        >
+                            <Download className="h-4 w-4" />
+                            Exporteer
+                        </button>
+                        <button
+                            onClick={() => setIsManualModalOpen(true)}
+                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
+                        >
+                            <UserPlus className="h-4 w-4" />
+                            Handmatig
+                        </button>
+                    </>
                 }
             />
 
