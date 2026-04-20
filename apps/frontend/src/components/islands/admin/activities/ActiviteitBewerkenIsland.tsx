@@ -3,8 +3,8 @@
 import { auth } from '@/server/auth/auth';
 import { useState, useRef, useOptimistic, useActionState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Save, Upload, X, Loader2 } from 'lucide-react';
-import { updateActivityAction } from '@/server/actions/activiteiten.actions';
+import { ArrowLeft, Save, Upload, X, Loader2, Trash2 } from 'lucide-react';
+import { updateActivityAction, deleteActivity } from '@/server/actions/activiteiten.actions';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminToast from '@/components/ui/admin/AdminToast';
@@ -88,6 +88,24 @@ export default function ActiviteitBewerkenIsland({
 
     // Optimistic UI for the saving state
     const [optimisticSaving, setOptimisticSaving] = useOptimistic(isPending);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const handleDelete = async () => {
+        if (!confirm(`Weet je zeker dat je "${event.name}" wilt verwijderen? Dit kan niet ongedaan worden gemaakt.`)) return;
+        
+        setIsDeleting(true);
+        try {
+            const res = await deleteActivity(event.id);
+            if (res.success) {
+                showToast('Activiteit succesvol verwijderd', 'success');
+                router.push('/beheer/activiteiten');
+            } else {
+                showToast(res.error || 'Er is een fout opgetreden bij het verwijderen', 'error');
+            }
+        } finally {
+            setIsDeleting(false);
+        }
+    };
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -128,6 +146,17 @@ export default function ActiviteitBewerkenIsland({
                 title="Bewerk Activiteit"
                 subtitle={`Wijzig de gegevens van "${event.name}"`}
                 backHref="/beheer/activiteiten"
+                actions={
+                    <button
+                        type="button"
+                        onClick={handleDelete}
+                        disabled={isDeleting || optimisticSaving}
+                        className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-[var(--beheer-radius)] transition-all font-black text-[10px] uppercase tracking-widest disabled:opacity-50 cursor-pointer active:scale-95"
+                    >
+                        {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                        Verwijderen
+                    </button>
+                }
             />
             <div className="container mx-auto px-4 py-12 max-w-4xl overflow-x-hidden">
                     <form action={formAction} className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-2xl p-6 sm:p-10 space-y-8 text-[var(--beheer-text)] border border-[var(--beheer-border)] relative overflow-hidden">
