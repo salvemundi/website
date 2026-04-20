@@ -34,4 +34,4 @@ export default async function ServicesStatusPage() {
             <ServicesStatusIsland initialStatuses={initialStatuses} />
         </AdminPageShell>
     );
-
+}
