@@ -21,8 +21,9 @@ interface EventSignupIslandProps {
     description?: string;
     eventName?: string;
     initialUser?: any;
-    verifiedPaymentStatus?: 'paid' | null;
+    verifiedPaymentStatus?: 'paid' | 'open' | 'failed' | 'canceled' | null;
     initialQrToken?: string;
+    initialIsSignedUp?: boolean;
 }
 
 export default function EventSignupIsland({
@@ -33,7 +34,8 @@ export default function EventSignupIsland({
     eventName = 'Activiteit',
     initialUser,
     verifiedPaymentStatus,
-    initialQrToken
+    initialQrToken,
+    initialIsSignedUp = false
 }: EventSignupIslandProps) {
     const user = initialUser;
 
@@ -46,8 +48,8 @@ export default function EventSignupIsland({
         paymentStatus?: 'paid' | 'open' | 'failed' | 'canceled';
         qrToken?: string;
     }>({ 
-        isSignedUp: verifiedPaymentStatus === 'paid',
-        paymentStatus: verifiedPaymentStatus || undefined,
+        isSignedUp: initialIsSignedUp || verifiedPaymentStatus === 'paid' || verifiedPaymentStatus === 'open',
+        paymentStatus: (verifiedPaymentStatus as any) || undefined,
         qrToken: initialQrToken
     });
 
@@ -98,7 +100,7 @@ export default function EventSignupIsland({
     // Het formulier staat nu direct in de HTML.
 
 
-    if (signupStatus.paymentStatus === 'paid') {
+    if (signupStatus.isSignedUp && (signupStatus.paymentStatus === 'paid' || signupStatus.paymentStatus === 'open')) {
         return (
             <div className="h-full flex flex-col justify-center space-y-8 p-8 rounded-[2rem] bg-[var(--bg-card)] border border-[var(--color-success)]/30 shadow-2xl">
                 <div className="text-center space-y-4">
@@ -109,6 +111,11 @@ export default function EventSignupIsland({
                     <p className="text-[var(--text-muted)] font-medium">
                         Je bent succesvol aangemeld voor <span className="text-[var(--theme-purple)] font-bold">{eventName}</span>.
                     </p>
+                    {signupStatus.paymentStatus === 'open' && (
+                        <p className="text-[10px] uppercase font-black text-amber-500 tracking-widest bg-amber-500/10 px-4 py-2 rounded-xl border border-amber-500/20">
+                            Betaling wordt verwerkt
+                        </p>
+                    )}
                 </div>
                 <div className="relative group p-6 bg-white rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center">
                     <QRDisplay qrToken={signupStatus.qrToken || 'PENDING_VERIFICATION'} />

@@ -162,17 +162,16 @@ export async function deleteEventSignupDb(id: number): Promise<boolean> {
 /**
  * Fetches multiple event signups for a user (consistent with fetchUserEventSignupsDb)
  */
-export async function fetchUserEventSignupsDb(userId: string, email?: string): Promise<any[]> {
+export async function fetchUserEventSignupsDb(email: string): Promise<any[]> {
     try {
         const sql = `
             SELECT es.*, e.name as event_name, e.event_date, e.description, e.image, e.contact
             FROM event_signups es
             JOIN events e ON es.event_id = e.id
-            WHERE es.directus_relations = $1
-               OR (es.participant_email IS NOT NULL AND es.participant_email = $2)
+            WHERE es.participant_email = $1
             ORDER BY e.event_date DESC
         `;
-        const { rows } = await query(sql, [userId, email || null]);
+        const { rows } = await query(sql, [email]);
         return rows.map(row => ({
             ...row,
             event_id: {
