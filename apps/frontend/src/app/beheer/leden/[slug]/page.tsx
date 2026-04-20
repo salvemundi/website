@@ -13,7 +13,8 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
     const resolvedParams = await params;
     const decodedSlug = decodeURIComponent(resolvedParams.slug);
 
-    // NUCLEAR SSR: All access and permission checks must happen before flushing the shell
+    return <div>DEBUG SLUG: {decodedSlug}</div>;
+    /*
     const session = await auth.api.getSession({
         headers: await headers()
     });
