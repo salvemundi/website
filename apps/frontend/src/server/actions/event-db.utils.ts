@@ -168,7 +168,7 @@ export async function fetchUserEventSignupsDb(email: string): Promise<any[]> {
             SELECT es.*, e.name as event_name, e.event_date, e.description, e.image, e.contact
             FROM event_signups es
             JOIN events e ON es.event_id = e.id
-            WHERE es.participant_email = $1
+            WHERE LOWER(es.participant_email) = LOWER($1)
             ORDER BY e.event_date DESC
         `;
         const { rows } = await query(sql, [email]);

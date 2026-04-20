@@ -157,7 +157,7 @@ export async function fetchUserPubCrawlSignupsDb(email: string): Promise<any[]> 
             `SELECT s.*, e.name as event_name, e.date as event_date, e.description as event_description, e.image as event_image
              FROM pub_crawl_signups s
              JOIN pub_crawl_events e ON s.pub_crawl_event_id = e.id
-             WHERE s.email = $1
+             WHERE LOWER(s.email) = LOWER($1)
              ORDER BY s.created_at DESC`,
             [email]
         );

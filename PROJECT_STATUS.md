@@ -56,6 +56,7 @@ This file tracks the current state, technical stack, and pending verification ta
 - [x] **UI Cleanup**: Removed redundant header bars in `/beheer/activiteiten/[id]/aanmeldingen` and cleaned up component code and prop types.
 - [x] **Auth/Lookup**: Transitioned to **Email-only lookup** for activity signups and tickets to fix visibility issues and ensure consistency across the profile.
 - [x] **UX**: Implemented proactive signup detection on the activity detail page to hide the signup form and show the ticket QR when already registered.
+- [x] **Auth/Lookup Fix**: Resolved ticket visibility issue by implementing case-insensitive email lookup in SQL and normalizing field names (`date_created`) for the UI.
 - [x] **Admin Fix**: Resolved check-in button state sync issue by adding `router.refresh()` and redesigned the registration list UI with clearer labels and timestamps.
 - [ ] **Next Steps**: Awaiting new priorities from the USER.
 
