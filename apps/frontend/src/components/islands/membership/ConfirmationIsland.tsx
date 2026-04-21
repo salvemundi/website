@@ -9,11 +9,13 @@ import { getTransactionStatusAction } from '@/server/actions/membership.actions'
 interface ConfirmationIslandProps {
     transactionId: string | null;
     type: string | null;
+    initialStatus?: 'loading' | 'paid' | 'open' | 'failed' | 'error';
+    initialUserId?: string | null;
 }
 
-export default function ConfirmationIsland({ transactionId, type }: ConfirmationIslandProps) {
+export default function ConfirmationIsland({ transactionId, type, initialStatus, initialUserId }: ConfirmationIslandProps) {
     const router = useRouter();
-    const [status, setStatus] = useState<'loading' | 'paid' | 'open' | 'failed' | 'error'>(transactionId ? 'loading' : 'paid');
+    const [status, setStatus] = useState<'loading' | 'paid' | 'open' | 'failed' | 'error'>(initialStatus || (transactionId ? 'loading' : 'paid'));
     const [retryCount, setRetryCount] = useState(0);
 
     useEffect(() => {

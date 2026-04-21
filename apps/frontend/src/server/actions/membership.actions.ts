@@ -143,7 +143,11 @@ export async function getTransactionStatusAction(transactionId: string) {
 
     try {
         const { rows } = await query(
-            'SELECT payment_status, user_id FROM transactions WHERE id = $1 LIMIT 1',
+            `SELECT payment_status, user_id FROM transactions 
+             WHERE id::text = $1 
+                OR mollie_id::text = $1 
+                OR access_token::text = $1 
+             LIMIT 1`,
             [parsed.data.id]
         );
 
@@ -155,15 +159,15 @@ export async function getTransactionStatusAction(transactionId: string) {
             if (transaction.user_id) {
                 revalidateTag(`user-${transaction.user_id}`, 'default');
             }
-            return { status: 'paid' };
+            return { status: 'paid', user_id: transaction.user_id };
         } else if (['failed', 'canceled', 'expired'].includes(transaction.payment_status ?? '')) {
-            return { status: 'failed' };
+            return { status: 'failed', user_id: transaction.user_id };
         }
 
-        return { status: 'open' };
+        return { status: 'open', user_id: transaction.user_id };
     } catch (error) {
         
-        return { status: 'error' };
+        return { status: 'error', user_id: null };
     }
 }
 
