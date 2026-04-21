@@ -161,9 +161,13 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           envs: MOLLIE_API_KEY,MOLLIE_WEBHOOK_SECRET,DB_USER,DB_PASSWORD,DB_NAME,DIRECTUS_KEY,DIRECTUS_SECRET,INTERNAL_SERVICE_TOKEN,AZURE_WEBSITEV7_TENANT_ID,AZURE_WEBSITEV7_SYNC_CLIENT_ID,AZURE_WEBSITEV7_SYNC_CLIENT_SECRET,AZURE_WEBSITEV7_MAIL_CLIENT_ID,AZURE_WEBSITEV7_MAIL_CLIENT_SECRET,AZURE_MAIL_SENDER,AZURE_WEBSITEV7_AUTH_CLIENT_ID,AZURE_WEBSITEV7_AUTH_CLIENT_SECRET,AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID,AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET,BETTER_AUTH_SECRET,DIRECTUS_STATIC_TOKEN,REDIS_PASSWORD,AZURE_WEBSITEV7_PROVISIONING_CLIENT_ID,AZURE_WEBSITEV7_PROVISIONING_CLIENT_SECRET,VPN_IP,IMAGE_TAG,PUBLIC_URL,BETTER_AUTH_URL
           script: |
+            set -e
             cd /opt/salve-mundi-v7
             
-            # Omgevingsdetectie
+            # 1. Login to Registry
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # 2. Omgevingsdetectie
             ENV_NAME="acc"
             FRONTEND_PORT="3000"
             if [ "${{ needs.prepare.outputs.tag }}" = "main" ]; then 
@@ -171,29 +175,24 @@ jobs:
               FRONTEND_PORT="4000"
             fi
 
-            # 1. Maak .env leeg
+            # 3. Maak .env leeg
             echo "# Auto-generated V7 App Environment" > .env
             
-            # 2. Opschonen van ALLE secrets (hufterproof) naar lokale shell variabelen
-            # We gebruiken shell expansion voor het strippen van quotes om sed-separator issues te voorkomen.
+            # 4. Opschonen van ALLE secrets (hufterproof) naar lokale shell variabelen
             VARIABLES="MOLLIE_API_KEY MOLLIE_WEBHOOK_SECRET DB_USER DB_PASSWORD DB_NAME DIRECTUS_KEY DIRECTUS_SECRET INTERNAL_SERVICE_TOKEN AZURE_WEBSITEV7_TENANT_ID AZURE_WEBSITEV7_SYNC_CLIENT_ID AZURE_WEBSITEV7_SYNC_CLIENT_SECRET AZURE_WEBSITEV7_MAIL_CLIENT_ID AZURE_WEBSITEV7_MAIL_CLIENT_SECRET AZURE_MAIL_SENDER AZURE_WEBSITEV7_AUTH_CLIENT_ID AZURE_WEBSITEV7_AUTH_CLIENT_SECRET AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET BETTER_AUTH_SECRET DIRECTUS_STATIC_TOKEN REDIS_PASSWORD AZURE_WEBSITEV7_PROVISIONING_CLIENT_ID AZURE_WEBSITEV7_PROVISIONING_CLIENT_SECRET VPN_IP"
             
             for var in $VARIABLES; do
               eval val=\$$var
               if [ ! -z "$val" ]; then
-                # Strip newlines en carriage returns
                 val=$(printf '%s' "$val" | tr -d '\n\r')
-                # Strip quotes met shell expansion (veilig voor alle tekens)
                 val="${val#\"}"
                 val="${val%\"}"
-                # Export voor gebruik in afgeleide variabelen
                 export "$var=$val"
-                # Schrijf naar .env
                 echo "$var=\"$val\"" >> .env
               fi
             done
 
-            # 3. Voeg de afgeleide en overige variabelen toe
+            # 5. Voeg de afgeleide en overige variabelen toe
             echo "IMAGE_TAG=${IMAGE_TAG}" >> .env
             echo "PUBLIC_URL=${PUBLIC_URL}" >> .env
             echo "BETTER_AUTH_URL=${BETTER_AUTH_URL}" >> .env
@@ -213,8 +212,7 @@ jobs:
               echo "REDIS_URL=redis://v7-core-redis:6379" >> .env
             fi
 
-            # Login en start
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            # 6. Pull en restart
             docker compose pull
             docker compose up -d --remove-orphans
-            docker image prune -af
+            docker image prune -af

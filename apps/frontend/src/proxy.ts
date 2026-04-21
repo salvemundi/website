@@ -146,8 +146,8 @@ async function proxy(request: NextRequest) {
 }
 
 export const config = {
-    // Exclude API routes, static files, images, and PWA assets
-    matcher: ['/((?!_next/static|_next/image|fonts|img|api/assets|favicon.ico|robots.txt|.well-known|sw.js|manifest.json|manifest.webmanifest|workbox-|logo.svg|icons/).*)'],
+    // Exclude static files, images, and PWA assets. API/Assets is now protected.
+    matcher: ['/((?!_next/static|_next/image|fonts|img|favicon.ico|robots.txt|.well-known|sw.js|manifest.json|manifest.webmanifest|workbox-|logo.svg|icons/).*)'],
 };
 
 export default proxy;
