@@ -64,7 +64,7 @@ services:
       - TZ=Europe/Amsterdam
     restart: always
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/api/finance/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3001/api/finance/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -100,7 +100,7 @@ services:
       - TZ=Europe/Amsterdam
     restart: always
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3002/api/sync/status"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3002/api/sync/status"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -135,7 +135,7 @@ services:
       - TZ=Europe/Amsterdam
     restart: always
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3003/api/mail/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3003/api/mail/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -166,7 +166,7 @@ services:
       - TZ=Europe/Amsterdam
     restart: always
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3004/api/management/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3004/api/management/health"]
       interval: 30s
       timeout: 10s
       retries: 3
