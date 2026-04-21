@@ -10,18 +10,21 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
      */
     fastify.post('/webhook/mollie', async (request: any, reply) => {
         const webhookSecret = process.env.MOLLIE_WEBHOOK_SECRET;
-        if (webhookSecret) {
-            const headerSecretRaw = request.headers['x-webhook-secret'];
-            const headerSecret = Array.isArray(headerSecretRaw) ? headerSecretRaw[0] : headerSecretRaw;
-            const queryTokenRaw = request.query?.token;
-            const queryToken = Array.isArray(queryTokenRaw) ? queryTokenRaw[0] : queryTokenRaw;
+        if (!webhookSecret) {
+            fastify.log.error('[FINANCE] MOLLIE_WEBHOOK_SECRET is NOT SET. Webhook processing disabled for security.');
+            return reply.status(500).send({ error: 'Webhook secret not configured' });
+        }
 
-            const isAuthorized = timingSafeCompare(headerSecret || '', webhookSecret) || 
-                                timingSafeCompare(queryToken || '', webhookSecret);
+        const headerSecretRaw = request.headers['x-webhook-secret'];
+        const headerSecret = Array.isArray(headerSecretRaw) ? headerSecretRaw[0] : headerSecretRaw;
+        const queryTokenRaw = request.query?.token;
+        const queryToken = Array.isArray(queryTokenRaw) ? queryTokenRaw[0] : queryTokenRaw;
 
-            if (!isAuthorized) {
-                return reply.status(401).send({ error: 'Unauthorized' });
-            }
+        const isAuthorized = timingSafeCompare(headerSecret || '', webhookSecret) || 
+                            timingSafeCompare(queryToken || '', webhookSecret);
+
+        if (!isAuthorized) {
+            return reply.status(401).send({ error: 'Unauthorized' });
         }
 
         const { id } = request.body;

@@ -17,14 +17,12 @@ export default async function statusRoutes(fastify: FastifyInstance) {
         const isMollieId = id.startsWith('tr_');
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
 
-        if (!isMollieId && !isUuid) {
-            return reply.status(400).send({ error: 'Invalid ID format' });
+        if (!isUuid) {
+            return reply.status(400).send({ error: 'Invalid ID format. Only UUID access tokens are allowed for status checks.' });
         }
 
         try {
-            const query = isMollieId 
-                ? 'SELECT mollie_id, payment_status, amount, product_type, created_at, updated_at FROM transactions WHERE mollie_id = $1 LIMIT 1'
-                : 'SELECT mollie_id, payment_status, amount, product_type, created_at, updated_at FROM transactions WHERE access_token = $1 LIMIT 1';
+            const query = 'SELECT mollie_id, payment_status, amount, product_type, created_at, updated_at FROM transactions WHERE access_token = $1 LIMIT 1';
 
             const result = await fastify.db.query(query, [id]);
 

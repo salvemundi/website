@@ -139,6 +139,13 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
      * Manually approves a pending payment and triggers automated processing.
      */
     fastify.post('/approve', async (request: any, reply) => {
+        const authHeader = request.headers.authorization;
+        const internalToken = process.env.INTERNAL_SERVICE_TOKEN;
+
+        if (!internalToken || authHeader !== `Bearer ${internalToken}`) {
+            return reply.status(401).send({ error: 'Unauthorized: Internal Service Token required' });
+        }
+
         const { mollieId } = request.body;
         if (!mollieId) return reply.status(400).send({ error: 'Missing mollieId' });
 

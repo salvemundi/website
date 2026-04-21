@@ -63,8 +63,13 @@ async function proxy(request: NextRequest) {
         }
     };
 
+    const publicUrl = process.env.PUBLIC_URL || origin;
+
     const internalToken = process.env.INTERNAL_SERVICE_TOKEN;
     if (internalToken && request.headers.get('authorization') === `Bearer ${internalToken}`) {
+        // Only allow internal token from internal network or specific headers if behind a trusted proxy
+        // For now, we trust the token if it matches, but we should be careful.
+        // VULN-002: Ensure we don't leak this token to clients.
         return nextWithNonce();
     }
     if (pathname === '/api/finance/webhook/mollie' || pathname.startsWith('/api/auth/')) {
@@ -95,14 +100,14 @@ async function proxy(request: NextRequest) {
             }
 
             if (!hasSession) {
-                const internalBase = process.env.NEXT_APP_INTERNAL_URL || origin;
+                const internalBase = process.env.NEXT_APP_INTERNAL_URL || publicUrl;
                 const sessionUrl = new URL('/api/auth/get-session', internalBase);
                 const sessionRes = await fetch(sessionUrl, {
                     headers: {
                         cookie: request.headers.get('cookie') || '',
-                        'x-better-auth-origin': origin,
-                        'x-forwarded-host': request.nextUrl.host,
-                        'x-forwarded-proto': request.nextUrl.protocol.replace(':', '')
+                        'x-better-auth-origin': publicUrl,
+                        'x-forwarded-host': new URL(publicUrl).host,
+                        'x-forwarded-proto': new URL(publicUrl).protocol.replace(':', '')
                     },
                     signal: AbortSignal.timeout(10000),
                 });
@@ -126,7 +131,7 @@ async function proxy(request: NextRequest) {
 
             if (!hasSession) {
                 const callbackUrl = encodeURIComponent(pathname + request.nextUrl.search);
-                const authRedirectUrl = new URL(`/?needLogin=true&callbackURL=${callbackUrl}`, request.url);
+                const authRedirectUrl = new URL(`/?needLogin=true&callbackURL=${callbackUrl}`, publicUrl);
                 return withSecurity(NextResponse.redirect(authRedirectUrl));
             }
 
