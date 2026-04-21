@@ -74,10 +74,11 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
             };
 
             let productType = 'Overig';
-            if (registrationType && productTypeMap[registrationType]) {
+            if (isContribution) {
+                // INTERNAL type for audit logs and system triggers
+                productType = 'membership';
+            } else if (registrationType && productTypeMap[registrationType]) {
                 productType = productTypeMap[registrationType];
-            } else if (isContribution) {
-                productType = isNewMember ? 'Inschrijving' : 'Lidmaatschap Verlenging';
             } else if (registrationType) {
                 // Pre-mapped or fallback to registrationType itself
                 productType = registrationType;
