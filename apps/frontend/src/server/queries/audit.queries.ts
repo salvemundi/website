@@ -69,11 +69,22 @@ export async function insertSystemLogInternal(data: {
     payload: any
 }): Promise<void> {
     try {
+        let payloadStr = JSON.stringify(data.payload);
+        
+        // VULN-008 Defense: Truncate if somehow still too large
+        if (payloadStr.length > 20000) {
+            payloadStr = JSON.stringify({ 
+                error: 'Payload truncated due to size limit', 
+                original_type: data.type,
+                truncated: true 
+            });
+        }
+
         const sql = `
             INSERT INTO system_logs (type, status, payload, created_at)
             VALUES ($1, $2, $3, NOW())
         `;
-        await query(sql, [data.type, data.status, JSON.stringify(data.payload)]);
+        await query(sql, [data.type, data.status, payloadStr]);
     } catch (error) {
         console.error('[AuditQueries] Failed to insert system log:', error);
     }

@@ -18,8 +18,20 @@ type LogsResponse = { success: true; data: any[]; totalCount: number } | { succe
 export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' | 'INFO', payload?: any) {
     try {
         const session = await auth.api.getSession({ headers: await headers() });
-        const user = session?.user as any;
+        if (!session || !session.user) {
+            // Drop unauthenticated logs to prevent VULN-012 (Log Poisoning)
+            return;
+        }
+
+        const user = session.user as any;
         
+        // Prevent VULN-008 (Payload Bloat)
+        const payloadStr = JSON.stringify(payload || {});
+        if (payloadStr.length > 15000) {
+            console.warn('[AuditActions] Log payload too large, dropping.');
+            return;
+        }
+
         await insertSystemLogInternal({
             type,
             status,

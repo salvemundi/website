@@ -24,7 +24,7 @@ services:
   v7-core-redis:
     image: redis:7.4-alpine
     container_name: v7-core-redis
-    command: redis-server --requirepass ${REDIS_PASSWORD:-salve_mundi_v7_redis_pass}
+    command: redis-server --requirepass ${REDIS_PASSWORD}
     ports:
       - "${INTERNAL_SERVER_IP:-127.0.0.1}:6379:6379"
     healthcheck:
@@ -67,8 +67,8 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       CACHE_ENABLED: "true"
       CACHE_STORE: "redis"
-      CACHE_REDIS: "redis://default:${REDIS_PASSWORD:-salve_mundi_v7_redis_pass}@v7-core-redis:6379"
-      REDIS: "redis://default:${REDIS_PASSWORD:-salve_mundi_v7_redis_pass}@v7-core-redis:6379"
+      CACHE_REDIS: "redis://default:${REDIS_PASSWORD}@v7-core-redis:6379"
+      REDIS: "redis://default:${REDIS_PASSWORD}@v7-core-redis:6379"
       PM2_HOME: "/tmp/pm2"
       PUBLIC_URL: ${PUBLIC_URL}
       CORS_ORIGIN: ${CORS_ORIGIN}
@@ -81,7 +81,7 @@ services:
       AUTH_MICROSOFT_ISSUER_URL: "https://login.microsoftonline.com/${AZURE_WEBSITEV7_TENANT_ID}/v2.0/.well-known/openid-configuration"
       AUTH_MICROSOFT_REDIRECT_URL: "${PUBLIC_URL}/auth/login/microsoft/callback"
       AUTH_MICROSOFT_IDENTIFIER_KEY: "email"
-      AUTH_MICROSOFT_ALLOW_PUBLIC_REGISTRATION: "true"
+      AUTH_MICROSOFT_ALLOW_PUBLIC_REGISTRATION: "false"
       AUTH_MICROSOFT_DEFAULT_ROLE_ID: "85750035-2d6e-4405-9f5b-6f069ce58a9e"
       AUTH_SAFE_REDIRECT_HOSTS: ${DIRECTUS_ALLOWED_REDIRECTS}
       DIRECTUS_STATIC_TOKEN: ${DIRECTUS_STATIC_TOKEN}

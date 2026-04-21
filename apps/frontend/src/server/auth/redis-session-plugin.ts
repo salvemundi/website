@@ -140,11 +140,26 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                         }
 
                                         if (targetUser) {
+                                            const originalUser = { ...sessionWithUser.user };
+
+                                            // Audit log before swapping
+                                            await pool.query(
+                                                `INSERT INTO system_logs (type, status, payload, created_at)
+                                                 VALUES ($1, $2, $3, NOW())`,
+                                                ['impersonation_active', 'INFO', {
+                                                    admin_id: originalUser.id,
+                                                    admin_name: originalUser.name || originalUser.email,
+                                                    target_id: targetUser.id,
+                                                    target_name: targetUser.name,
+                                                    timestamp: new Date().toISOString()
+                                                }]
+                                            );
+
                                             // Store original admin context
                                             sessionWithUser.impersonatedBy = {
-                                                id: sessionWithUser.user.id,
-                                                name: sessionWithUser.user.name || sessionWithUser.user.email,
-                                                email: sessionWithUser.user.email,
+                                                id: originalUser.id,
+                                                name: originalUser.name || originalUser.email,
+                                                email: originalUser.email,
                                                 isNormallyAdmin: true
                                             };
 
@@ -162,6 +177,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                         }
                                     } catch (e) {
                                         // Failed to impersonate, standard admin session continues
+                                        console.error('[RedisSessionPlugin] Impersonation fail:', e);
                                     }
                                 }
 
