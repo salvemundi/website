@@ -27,19 +27,22 @@ export default function ActivitiesBannerIsland({ events, serverTime }: Activitie
         return allEvents.sort((a, b) => e_to_time(b) - e_to_time(a))[0] || null;
 
         function e_to_time(e: any) {
+            const datePart = e.datum_start.split('T')[0];
             return e.event_time
-                    ? new Date(`${e.datum_start}T${e.event_time}`).getTime()
+                    ? new Date(`${datePart}T${e.event_time}`).getTime()
                     : new Date(e.datum_start).getTime();
         }
     }, [events, serverTime]);
 
     if (!upcomingEvent) return null;
     
+    const datePart = upcomingEvent.datum_start.split('T')[0];
+    
     return (
         <div className="relative w-full">
             <FlipClock
                 targetDate={upcomingEvent.event_time
-                    ? `${upcomingEvent.datum_start}T${upcomingEvent.event_time}`
+                    ? `${datePart}T${upcomingEvent.event_time}`
                     : upcomingEvent.datum_start
                 }
                 title={upcomingEvent.titel}

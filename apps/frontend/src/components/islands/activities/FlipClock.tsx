@@ -18,7 +18,7 @@ const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href, serverTi
         const adjustedNow = timeOffset !== null ? now.getTime() + timeOffset : now.getTime();
         const difference = +new Date(targetDate) - adjustedNow;
         
-        if (difference <= 0) {
+        if (isNaN(difference) || difference <= 0) {
             return { days: 0, hours: 0, minutes: 0, seconds: 0 };
         }
 
