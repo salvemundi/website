@@ -29,7 +29,7 @@ export const dateOfBirthSchema = z.string()
         const hundredYearsAgo = new Date();
         hundredYearsAgo.setFullYear(hundredYearsAgo.getFullYear() - 100);
         return date >= hundredYearsAgo;
-    }, 'Ongeldige datum');
+    }, 'Geboortedatum kan niet meer dan 100 jaar geleden zijn.');
 
 /**
  * Validates a phone number.

@@ -1,11 +1,12 @@
 import React from 'react';
-import { Loader2, ChevronRight, ArrowRight } from 'lucide-react';
+import { ChevronRight, CreditCard, ChevronLeft } from 'lucide-react';
 import { type Trip } from '@salvemundi/validations/schema/admin-reis.zod';
 
 interface FlowNavigationProps {
     step: number;
     loading: boolean;
     isProcessing: boolean;
+    isValid?: boolean;
     paymentType: 'deposit' | 'final';
     trip: Trip;
     onPrevious: () => void;
@@ -13,55 +14,63 @@ interface FlowNavigationProps {
     onPayment: () => void;
 }
 
-export function FlowNavigation({
-    step,
-    loading,
-    isProcessing,
-    paymentType,
-    trip,
-    onPrevious,
-    onNext,
-    onPayment
+export function FlowNavigation({ 
+    step, 
+    loading, 
+    isProcessing, 
+    isValid = true,
+    paymentType, 
+    trip, 
+    onPrevious, 
+    onNext, 
+    onPayment 
 }: FlowNavigationProps) {
-    if (step >= 4) return null;
+    if (step > 3) return null;
+
+    // Next button should be disabled if we are on step 1 and the form is invalid
+    const isNextDisabled = loading || (step === 1 && !isValid);
 
     return (
-        <div className="px-8 pb-8 md:px-12 md:pb-12 pt-0 flex flex-col md:flex-row gap-4">
-            <button
-                disabled={loading || isProcessing}
-                onClick={onPrevious}
-                className="px-8 py-4 rounded-2xl bg-[var(--bg-soft)] border border-[var(--border-color)]/40 text-[var(--text-main)] font-bold hover:bg-[var(--bg-soft)]/80 transition-all flex items-center justify-center gap-2"
-            >
-                Vorige
-            </button>
+        <div className="py-8 flex flex-col sm:flex-row gap-4 justify-between items-center">
+            <div className="order-2 sm:order-1 w-full sm:w-auto">
+                <button
+                    onClick={step === 1 ? () => window.location.href = '/reis' : onPrevious}
+                    className="w-full sm:w-auto px-8 py-3 rounded-xl font-bold text-sm text-[var(--text-muted)] hover:text-[var(--text-main)] transition-all flex items-center justify-center gap-2"
+                >
+                    <ChevronLeft className="w-4 h-4" /> 
+                    {step === 1 ? 'Annuleren' : 'Vorige'}
+                </button>
+            </div>
 
-            {step < 3 ? (
-                <button
-                    disabled={loading || isProcessing}
-                    onClick={onNext}
-                    className="flex-1 bg-theme-purple text-white py-4 rounded-2xl font-black uppercase tracking-widest text-sm flex items-center justify-center gap-3 hover:bg-theme-purple-dark transition-all shadow-xl shadow-theme-purple/5 disabled:opacity-50"
-                >
-                    {loading ? <Loader2 className="animate-spin w-5 h-5" /> : (
-                        <>
-                            {step === 2 && paymentType === 'final' && !trip.allow_final_payments ? 'Keuzes Opslaan' : 'Opslaan & Volgende'}
-                            <ChevronRight className="w-5 h-5" />
-                        </>
-                    )}
-                </button>
-            ) : (
-                <button
-                    disabled={isProcessing || loading}
-                    onClick={onPayment}
-                    className="flex-1 bg-theme-purple text-white py-5 rounded-2xl font-black uppercase tracking-widest text-sm flex items-center justify-center gap-3 hover:bg-theme-purple-dark transition-all shadow-2xl shadow-theme-purple/10 disabled:opacity-50"
-                >
-                    {isProcessing ? <Loader2 className="animate-spin w-5 h-5" /> : (
-                        <>
-                            Betaal nu met Mollie
-                            <ArrowRight className="w-5 h-5" />
-                        </>
-                    )}
-                </button>
-            )}
+            <div className="order-1 sm:order-2 w-full sm:w-auto">
+                {step < 3 ? (
+                    <button
+                        onClick={onNext}
+                        disabled={isNextDisabled}
+                        className={`form-button px-10 ${isNextDisabled ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}
+                    >
+                        {loading ? 'Laden...' : (
+                            <>
+                                Volgende
+                                <ChevronRight className="w-4 h-4" />
+                            </>
+                        )}
+                    </button>
+                ) : (
+                    <button
+                        onClick={onPayment}
+                        disabled={isProcessing}
+                        className="form-button px-10 bg-gradient-to-br from-theme-purple to-theme-purple-dark"
+                    >
+                        {isProcessing ? 'Verwerken...' : (
+                            <>
+                                <CreditCard className="w-5 h-5" />
+                                {paymentType === 'deposit' ? 'Aanbetaling voldoen' : 'Restbetaling voldoen'}
+                            </>
+                        )}
+                    </button>
+                )}
+            </div>
         </div>
     );
 }

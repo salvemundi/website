@@ -29,6 +29,7 @@ export async function fetchUserSignupStatusDb(userId: string, tripId: number): P
         const sanitized = {
             ...raw,
             date_of_birth: raw.date_of_birth instanceof Date ? raw.date_of_birth.toISOString() : raw.date_of_birth,
+            document_expiry_date: raw.document_expiry_date instanceof Date ? raw.document_expiry_date.toISOString() : raw.document_expiry_date,
             date_created: (raw.created_at instanceof Date ? raw.created_at : new Date(raw.created_at)).toISOString(),
             created_at: (raw.created_at instanceof Date ? raw.created_at : new Date(raw.created_at)).toISOString(),
             deposit_paid: !!raw.deposit_paid,
@@ -68,6 +69,7 @@ export async function fetchAllTripSignupsDb(tripId: number): Promise<ReisTripSig
         const sanitized = (res.rows || []).map(raw => ({
             ...raw,
             date_of_birth: raw.date_of_birth instanceof Date ? raw.date_of_birth.toISOString() : raw.date_of_birth,
+            document_expiry_date: raw.document_expiry_date instanceof Date ? raw.document_expiry_date.toISOString() : raw.document_expiry_date,
             date_created: (raw.created_at instanceof Date ? raw.created_at : new Date(raw.created_at)).toISOString(),
             created_at: (raw.created_at instanceof Date ? raw.created_at : new Date(raw.created_at)).toISOString(),
             deposit_paid: !!raw.deposit_paid,
@@ -106,6 +108,7 @@ export async function fetchTripSignupByIdDb(signupId: number): Promise<ReisTripS
         const sanitized = {
             ...raw,
             date_of_birth: raw.date_of_birth instanceof Date ? raw.date_of_birth.toISOString() : raw.date_of_birth,
+            document_expiry_date: raw.document_expiry_date instanceof Date ? raw.document_expiry_date.toISOString() : raw.document_expiry_date,
             date_created: (raw.created_at instanceof Date ? raw.created_at : new Date(raw.created_at)).toISOString(),
             created_at: (raw.created_at instanceof Date ? raw.created_at : new Date(raw.created_at)).toISOString(),
             deposit_paid: !!raw.deposit_paid,

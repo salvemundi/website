@@ -1,14 +1,20 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Info, AlertCircle } from 'lucide-react';
+import { z } from 'zod';
+import { useForm, FormProvider } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { AlertCircle, ArrowLeft } from 'lucide-react';
 import { 
     type Trip, 
     type TripSignup, 
     type TripActivity, 
     type TripSignupActivity 
 } from '@salvemundi/validations/schema/admin-reis.zod';
-import { type ReisPaymentEnrichment } from '@salvemundi/validations/schema/reis.zod';
+import { 
+    reisPaymentEnrichmentSchema,
+    type ReisPaymentEnrichment 
+} from '@salvemundi/validations/schema/reis.zod';
 import ActivitySelector from './ActivitySelector';
 import { 
     updateSignupDetails, 
@@ -17,9 +23,10 @@ import {
 } from '@/server/actions/reis-payment.actions';
 import { calculateTripPricing } from '@/lib/reis/pricing';
 import { format } from 'date-fns';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Sub-components
-import { StepIndicator } from './payment/StepIndicator';
+import { NameConfirmModal } from './shared/NameConfirmModal';
 import { EnrichmentForm } from './payment/EnrichmentForm';
 import { PaymentSummary } from './payment/PaymentSummary';
 import { PaymentSuccess } from './payment/PaymentSuccess';
@@ -46,19 +53,60 @@ export default function TripPaymentFlowIsland({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [showNameConfirm, setShowNameConfirm] = useState(false);
+    const [localSignup, setLocalSignup] = useState(signup);
 
-    // Form State
-    const [enrichment, setEnrichment] = useState<ReisPaymentEnrichment>({
-        first_name: signup.first_name || '',
-        last_name: signup.last_name || '',
-        phone_number: signup.phone_number || '',
-        date_of_birth: signup.date_of_birth ? format(new Date(signup.date_of_birth), 'yyyy-MM-dd') : '',
-        id_document: signup.id_document || 'none',
-        document_number: signup.document_number || '',
-        allergies: signup.allergies || '',
-        special_notes: signup.special_notes || '',
-        willing_to_drive: signup.willing_to_drive || false,
+    // Dynamic schema extension to include trip-specific end date validation
+    const enrichmentSchema = useMemo(() => {
+        return reisPaymentEnrichmentSchema.superRefine((data, ctx) => {
+            if (data.document_expiry_date && trip.end_date) {
+                const expiry = new Date(data.document_expiry_date);
+                const tripEnd = new Date(trip.end_date);
+                
+                // Lower bound: must be at least end of trip
+                if (expiry < tripEnd) {
+                    ctx.addIssue({
+                        code: z.ZodIssueCode.custom,
+                        message: `Document moet geldig zijn tot tenminste het einde van de reis (${format(new Date(trip.end_date), 'dd-MM-yyyy')}).`,
+                        path: ['document_expiry_date']
+                    });
+                }
+
+                // Upper bound: block if more than 15 years in the future (typo protection)
+                const maxExpiry = new Date(tripEnd);
+                maxExpiry.setFullYear(maxExpiry.getFullYear() + 15);
+                if (expiry > maxExpiry) {
+                    ctx.addIssue({
+                        code: z.ZodIssueCode.custom,
+                        message: 'Vervaldatum ligt te ver in de toekomst (max 15 jaar).',
+                        path: ['document_expiry_date']
+                    });
+                }
+            }
+        });
+    }, [trip.end_date]);
+
+    // Form setup with React Hook Form
+    const methods = useForm<ReisPaymentEnrichment>({
+        resolver: zodResolver(enrichmentSchema),
+        defaultValues: {
+            first_name: localSignup.first_name || '',
+            last_name: localSignup.last_name || '',
+            phone_number: localSignup.phone_number || '',
+            date_of_birth: localSignup.date_of_birth ? format(new Date(localSignup.date_of_birth), 'yyyy-MM-dd') : '',
+            id_document: localSignup.id_document || 'none',
+            document_number: localSignup.document_number || '',
+            document_expiry_date: (localSignup as any).document_expiry_date ? format(new Date((localSignup as any).document_expiry_date), 'yyyy-MM-dd') : '',
+            extra_luggage: (localSignup as any).extra_luggage || false,
+            allergies: localSignup.allergies || '',
+            special_notes: localSignup.special_notes || '',
+            willing_to_drive: localSignup.willing_to_drive || false,
+        },
+        mode: 'onChange'
     });
+
+    const { handleSubmit, watch, getValues, trigger, formState: { isValid } } = methods;
+    const firstName = watch('first_name');
 
     const [activitySelections, setActivitySelections] = useState<{ activityId: number, options: any }[]>(
         selectedActivities.map(sa => ({
@@ -67,7 +115,7 @@ export default function TripPaymentFlowIsland({
         }))
     );
 
-    // Pricing Calculation (extracted to lib)
+    // Pricing Calculation
     const pricing = useMemo(() => {
         return calculateTripPricing(
             trip,
@@ -84,13 +132,19 @@ export default function TripPaymentFlowIsland({
 
         try {
             if (step === 1) {
-                const res = await updateSignupDetails(signup.id!, enrichment, token);
-                if (!res.success) {
-                    setError(res.error || 'Fout bij opslaan gegevens.');
+                // Step 1: Validation
+                const isValid = await trigger();
+                if (!isValid) {
                     setLoading(false);
                     return;
                 }
+                
+                // Show confirmation modal for the name
+                setShowNameConfirm(true);
+                setLoading(false);
+                return;
             } else if (step === 2) {
+                // Step 2: Sync Activities
                 const res = await syncSignupActivities(signup.id!, activitySelections, token);
                 if (!res.success) {
                     setError(res.error || 'Fout bij opslaan activiteiten.');
@@ -108,6 +162,28 @@ export default function TripPaymentFlowIsland({
             setStep(step + 1);
         } catch (err) {
             setError('Er is een onverwachte fout opgetreden. Probeer het later opnieuw.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const confirmNameAndProceed = async () => {
+        setShowNameConfirm(false);
+        setLoading(true);
+        try {
+            const formData = getValues();
+            const res = await updateSignupDetails(signup.id!, formData, token);
+            if (!res.success) {
+                setError(res.error || 'Fout bij opslaan gegevens.');
+                setLoading(false);
+                return;
+            }
+            
+            // Sync local state so Step 3 and back-navigation show updated data
+            setLocalSignup({ ...localSignup, ...formData });
+            setStep(2);
+        } catch (err) {
+            setError('Fout bij opslaan gegevens.');
         } finally {
             setLoading(false);
         }
@@ -132,62 +208,84 @@ export default function TripPaymentFlowIsland({
     };
 
     return (
-        <div className="max-w-4xl mx-auto px-4 py-12">
-            <StepIndicator step={step} />
+        <FormProvider {...methods}>
+            <div className="max-w-4xl mx-auto px-6 py-4">
+                <form autoComplete="off" onSubmit={(e) => e.preventDefault()}>
+                    <div className="py-4 min-h-[400px]">
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={step}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                            >
+                                {step === 1 && (
+                                    <EnrichmentForm 
+                                        trip={trip} 
+                                    />
+                                )}
 
-            {error && (
-                <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/50 text-red-500 flex items-center gap-3 animate-in fade-in slide-in-from-top-4">
-                    <AlertCircle className="w-5 h-5 shrink-0" />
-                    <p className="text-sm font-medium">{error}</p>
-                </div>
-            )}
+                                {step === 2 && (
+                                    <ActivitySelector 
+                                        activities={allActivities}
+                                        selectedSelections={activitySelections}
+                                        onChange={setActivitySelections}
+                                    />
+                                )}
 
-            <div className="bg-[var(--bg-card)] border border-[var(--border-color)]/20 rounded-3xl overflow-hidden shadow-2xl">
-                <div className="p-8 md:p-12">
-                    {step === 1 && (
-                        <EnrichmentForm 
-                            trip={trip} 
-                            enrichment={enrichment} 
-                            setEnrichment={setEnrichment} 
+                                {step === 3 && (
+                                    <PaymentSummary 
+                                        signup={localSignup}
+                                        pricing={pricing} 
+                                        paymentType={paymentType} 
+                                    />
+                                )}
+
+                                {step === 4 && <PaymentSuccess trip={trip} />}
+                            </motion.div>
+                        </AnimatePresence>
+                    </div>
+
+                    <div className="mt-4">
+                        <AnimatePresence>
+                            {error && (
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 10 }}
+                                    className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 flex items-center gap-3"
+                                >
+                                    <AlertCircle className="w-5 h-5 shrink-0" />
+                                    <div className="text-sm">
+                                        <p className="font-bold uppercase tracking-tight italic">Er is iets misgegaan</p>
+                                        <p className="opacity-80">{error}</p>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        <FlowNavigation 
+                            step={step}
+                            loading={loading}
+                            isProcessing={isProcessing}
+                            isValid={isValid}
+                            paymentType={paymentType}
+                            trip={trip}
+                            onPrevious={() => setStep(step - 1)}
+                            onNext={handleNext}
+                            onPayment={handleStartPayment}
                         />
-                    )}
-
-                    {step === 2 && (
-                        <div className="animate-in fade-in duration-500">
-                            <ActivitySelector 
-                                activities={allActivities}
-                                selectedSelections={activitySelections}
-                                onChange={setActivitySelections}
-                            />
-                        </div>
-                    )}
-
-                    {step === 3 && (
-                        <PaymentSummary 
-                            pricing={pricing} 
-                            paymentType={paymentType} 
-                        />
-                    )}
-
-                    {step === 4 && <PaymentSuccess trip={trip} />}
-                </div>
-
-                <FlowNavigation 
-                    step={step}
-                    loading={loading}
-                    isProcessing={isProcessing}
-                    paymentType={paymentType}
-                    trip={trip}
-                    onPrevious={() => setStep(step - 1)}
-                    onNext={handleNext}
-                    onPayment={handleStartPayment}
-                />
+                    </div>
+                </form>
             </div>
 
-             <div className="mt-8 flex items-center justify-center gap-2 text-[var(--text-muted)] text-xs">
-                <Info className="w-3.5 h-3.5" />
-                <p>Betalingen worden beveiligd verwerkt door Mollie. Je wordt omgeleid naar een veilige betaalomgeving.</p>
-            </div>
-        </div>
+            <NameConfirmModal 
+                isOpen={showNameConfirm} 
+                name={firstName}
+                onConfirm={confirmNameAndProceed}
+                onCancel={() => setShowNameConfirm(false)}
+            />
+        </FormProvider>
     );
 }

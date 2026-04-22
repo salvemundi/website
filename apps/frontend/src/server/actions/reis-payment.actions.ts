@@ -232,15 +232,18 @@ export async function initiateTripPaymentAction(signupId: number, paymentType: '
 
         if (!response.ok) {
             const errData = await response.json();
-            return { success: false, error: errData.error || 'Betaalverzoek mislukt.' };
+            console.error('[REIS_PAYMENT] Finance service error:', errData);
+            const errorMsg = errData.message || errData.error || 'Betaalverzoek mislukt.';
+            const details = errData.details ? ` (${JSON.stringify(errData.details)})` : '';
+            return { success: false, error: `${errorMsg}${details}` };
         }
 
         const data = await response.json();
         return { success: true, checkoutUrl: data.checkoutUrl };
 
-    } catch (err) {
-        
-        return { success: false, error: 'Interne fout bij starten betaling.' };
+    } catch (err: any) {
+        console.error('[REIS_PAYMENT] Exception in initiateTripPaymentAction:', err);
+        return { success: false, error: `Interne fout bij starten betaling: ${err.message}` };
     }
 }
 

@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { getMollieClient } from '../services/mollie.service.js';
+import crypto from 'node:crypto';
 
 export default async function paymentsRoutes(fastify: FastifyInstance) {
     /**
@@ -102,8 +103,14 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 accessToken
             ];
 
-            if (['event_signup', 'trip_signup', 'pub_crawl_signup', 'membership'].includes(registrationType)) {
+            if (registrationType === 'event_signup' || registrationType === 'membership') {
                 columns.push('registration');
+                params.push(registrationId || null);
+            } else if (registrationType === 'trip_signup') {
+                columns.push('trip_signup');
+                params.push(registrationId || null);
+            } else if (registrationType === 'pub_crawl_signup') {
+                columns.push('pub_crawl_signup');
                 params.push(registrationId || null);
             }
 

@@ -57,8 +57,39 @@ export default async function AanbetalingPage({ searchParams }: PageProps) {
 
     if (!signup || !trip) return notFound();
 
-    // Redirection logic from legacy requirements:
-    // "Als de aanbetaling al is voldaan, moet de gebruiker automatisch worden doorgestuurd naar de restbetalingspagina."
+    // Redirection logic:
+    // 1. Waitlist check: Waitlisted users cannot pay yet.
+    if (signup.status === 'waitlist') {
+        return (
+            <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
+                <div className="relative mb-8 pt-10">
+                    <div className="absolute inset-x-0 top-0 h-40 w-40 mx-auto blur-3xl bg-amber-500/10 rounded-full pointer-events-none" />
+                    <div className="relative rounded-3xl bg-[var(--bg-card)] p-6 shadow-2xl border border-[var(--border-color)]/20 text-amber-500 inline-block">
+                        <Search className="h-16 w-16" />
+                    </div>
+                </div>
+
+                <h2 className="text-4xl font-black text-[var(--text-main)] mb-3 tracking-tight italic uppercase">
+                    Wachtlijst
+                </h2>
+                
+                <p className="text-[var(--text-muted)] max-w-md mx-auto mb-10 font-medium text-balance">
+                    Je staat momenteel op de wachtlijst voor deze reis. Je kunt pas betalen zodra er een plek vrijkomt en je status is aangepast naar 'Geregistreerd'.
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+                    <BackButton 
+                        href="/reis" 
+                        text="Terug naar Reizen" 
+                        icon={Home} 
+                        className="rounded-full px-8 py-3.5"
+                    />
+                </div>
+            </div>
+        );
+    }
+
+    // 2. Already paid check:
     if (signup.deposit_paid) {
         redirect(`/reis/betalen/restbetaling?id=${signupId}${token ? `&t=${token}` : ''}`);
     }
