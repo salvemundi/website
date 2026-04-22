@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getTripSignupByToken } from '@/server/actions/reis-payment.actions';
 import TripPaymentFlowIsland from '@/components/islands/reis/TripPaymentFlowIsland';
 import { CheckCircle2, Search, Home } from 'lucide-react';
+import BackButton from '@/components/ui/navigation/BackButton';
 
 export const metadata: Metadata = {
     title: 'Restbetaling Reis | SV Salve Mundi',
@@ -41,13 +42,12 @@ export default async function RestbetalingPage({ searchParams }: PageProps) {
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-                    <a
-                        href="/reis"
-                        className="flex items-center gap-2 rounded-full bg-[var(--color-purple-500)] text-white px-8 py-3.5 font-bold shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:-translate-y-0.5 transition-all text-sm uppercase tracking-widest"
-                    >
-                        <Home className="h-4 w-4" />
-                        Terug naar Reizen
-                    </a>
+                    <BackButton 
+                        href="/reis" 
+                        text="Terug naar Reizen" 
+                        icon={Home} 
+                        className="rounded-full px-8 py-3.5"
+                    />
                 </div>
             </div>
         );
@@ -70,9 +70,7 @@ export default async function RestbetalingPage({ searchParams }: PageProps) {
                     Je hoeft verder niets te doen! Je hoort binnenkort meer van ons.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <a href="/reis" className="px-8 py-4 bg-white/5 border border-white/10 text-white font-bold rounded-2xl hover:bg-white/10 transition-all">
-                        Terug naar Reizen
-                    </a>
+                    <BackButton href="/reis" text="Terug naar Reizen" />
                     <a href="/profiel/lidmaatschap" className="px-8 py-4 bg-orange-500 text-white font-bold rounded-2xl shadow-xl shadow-orange-500/10 transition-all">
                         Bekijk je profiel
                     </a>
@@ -118,13 +116,12 @@ async function PaymentDataWrapper({ signupId, token, paymentType }: { signupId: 
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-                    <a
-                        href="/reis"
-                        className="flex items-center gap-2 rounded-full bg-[var(--color-purple-500)] text-white px-8 py-3.5 font-bold shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:-translate-y-0.5 transition-all text-sm uppercase tracking-widest"
-                    >
-                        <Home className="h-4 w-4" />
-                        Terug naar Reizen
-                    </a>
+                    <BackButton 
+                        href="/reis" 
+                        text="Terug naar Reizen" 
+                        icon={Home} 
+                        className="rounded-full px-8 py-3.5"
+                    />
                 </div>
             </div>
         );
@@ -147,9 +144,7 @@ async function PaymentDataWrapper({ signupId, token, paymentType }: { signupId: 
                     Je hoeft verder niets te doen! Je hoort binnenkort meer van ons.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <a href="/reis" className="px-8 py-4 bg-white/5 border border-white/10 text-white font-bold rounded-2xl hover:bg-white/10 transition-all">
-                        Terug naar Reizen
-                    </a>
+                    <BackButton href="/reis" text="Terug naar Reizen" />
                     <a href="/profiel/lidmaatschap" className="px-8 py-4 bg-orange-500 text-white font-bold rounded-2xl shadow-xl shadow-orange-500/10 transition-all">
                         Bekijk je profiel
                     </a>

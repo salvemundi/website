@@ -8,10 +8,15 @@ import {
     Loader2, 
     Edit, 
     Trash2, 
-    FileText 
+    FileText,
+    ChevronDown,
+    Globe,
+    Eye,
+    Type
 } from 'lucide-react';
 import type { IntroBlog } from '@salvemundi/validations/schema/intro.zod';
-import { Field, inputClass } from './IntroTabComponents';
+import { ActionButton, EmptyState, Button } from './IntroTabComponents';
+import BlogEditForm from './BlogEditForm';
 
 interface Props {
     blogs: IntroBlog[];
@@ -22,125 +27,221 @@ interface Props {
 }
 
 export default function IntroBlogsTab({ blogs, onSave, onDelete, saving, deletingId }: Props) {
-    const [editingBlog, setEditingBlog] = useState<Partial<IntroBlog> | null>(null);
+    const [expandedRows, setExpandedRows] = useState<number[]>([]);
+    const [editingId, setEditingId] = useState<number | null>(null);
+    const [editData, setEditData] = useState<Partial<IntroBlog>>({});
+
+    const toggleExpand = (id: number) => {
+        setExpandedRows(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+        if (editingId === id) setEditingId(null);
+    };
+
+    const startEdit = (e: React.MouseEvent, blog: IntroBlog) => {
+        e.stopPropagation();
+        setEditingId(blog.id!);
+        // Sanitize: convert nulls to undefined to avoid Zod validation issues
+        const sanitized = Object.fromEntries(
+            Object.entries(blog).map(([k, v]) => [k, v === null ? undefined : v])
+        );
+        setEditData(sanitized);
+        if (!expandedRows.includes(blog.id!)) setExpandedRows(prev => [...prev, blog.id!]);
+    };
 
     const handleSave = async () => {
-        if (!editingBlog) return;
-        await onSave(editingBlog);
-        setEditingBlog(null);
+        // Remove empty strings for required fields to ensure clean validation
+        const sanitized = { ...editData };
+        if (sanitized.title === '') delete sanitized.title;
+        if (sanitized.content === '') delete sanitized.content;
+        
+        await onSave(sanitized);
+        setEditingId(null);
+    };
+
+    const startNew = () => {
+        const tempId = -1;
+        setEditingId(tempId);
+        setEditData({ title: '', content: '', blog_type: 'update', is_published: false });
+        setExpandedRows([tempId]);
+    };
+
+    const blogTypes = {
+        update: { label: 'Update', color: 'blue' },
+        pictures: { label: 'Foto\'s', color: 'pink' },
+        event: { label: 'Evenement', color: 'amber' },
+        announcement: { label: 'Aankondiging', color: 'emerald' }
     };
 
     return (
         <div className="animate-in fade-in duration-500">
-            {/* Blog Form */}
-            {editingBlog !== null ? (
-                <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] p-8 mb-8 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-500">
-                    <div className="flex items-center justify-between mb-8">
-                        <h3 className="font-black text-xs uppercase tracking-[0.2em] text-[var(--beheer-text-muted)]">
-                            {editingBlog.id ? 'Blog Bewerken' : 'Nieuwe Blog'}
-                        </h3>
-                        <button onClick={() => setEditingBlog(null)} className="p-2 text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] transition-colors">
-                            <X className="h-5 w-5" />
-                        </button>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <Field label="Titel *">
-                            <input type="text" value={editingBlog.title || ''} onChange={e => setEditingBlog({ ...editingBlog, title: e.target.value })} className={inputClass} placeholder="Titel van de blog..." />
-                        </Field>
-                        <Field label="Slug">
-                            <input type="text" value={editingBlog.slug || ''} onChange={e => setEditingBlog({ ...editingBlog, slug: e.target.value })} className={inputClass} placeholder="blog-titel-slug" />
-                        </Field>
-                        <div className="md:col-span-2">
-                            <Field label="Excerpt (kort overzicht)">
-                                <textarea value={editingBlog.excerpt || ''} onChange={e => setEditingBlog({ ...editingBlog, excerpt: e.target.value })} rows={2} className={inputClass} placeholder="Een korte samenvatting..." />
-                            </Field>
-                        </div>
-                        <div className="md:col-span-2">
-                            <Field label="Content *">
-                                <textarea value={editingBlog.content || ''} onChange={e => setEditingBlog({ ...editingBlog, content: e.target.value })} rows={8} className={inputClass} placeholder="Schrijf hier je blog post..." />
-                            </Field>
-                        </div>
-                        <Field label="Type">
-                            <select value={editingBlog.blog_type || 'update'} onChange={e => setEditingBlog({ ...editingBlog, blog_type: e.target.value as any })} className={inputClass}>
-                                <option value="update">Update</option>
-                                <option value="pictures">Foto's</option>
-                                <option value="event">Event</option>
-                                <option value="announcement">Aankondiging</option>
-                            </select>
-                        </Field>
-                        <div className="flex items-center gap-3 mt-8">
-                            <label className="relative inline-flex items-center cursor-pointer">
-                                <input 
-                                    type="checkbox" 
-                                    className="sr-only peer"
-                                    checked={editingBlog.is_published || false} 
-                                    onChange={e => setEditingBlog({ ...editingBlog, is_published: e.target.checked })}
-                                />
-                                <div className="w-11 h-6 bg-[var(--beheer-card-soft)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--beheer-accent)]"></div>
-                                <span className="ml-3 text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">Gepubliceerd</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div className="flex gap-3 pt-10 border-t border-[var(--beheer-border)] mt-10">
-                        <button 
-                            onClick={handleSave} 
-                            disabled={saving} 
-                            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-4 bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 disabled:opacity-50"
-                        >
-                            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} 
-                            Opslaan
-                        </button>
-                        <button 
-                            onClick={() => setEditingBlog(null)} 
-                            className="px-8 py-4 rounded-[var(--beheer-radius)] text-xs font-black uppercase tracking-widest text-[var(--beheer-text-muted)] hover:bg-[var(--beheer-card-soft)] border border-transparent hover:border-[var(--beheer-border)] transition-all"
-                        >
-                            Annuleren
-                        </button>
-                    </div>
+            <div className="flex justify-between items-center mb-8">
+                <div className="flex flex-col">
+                    <h2 className="text-xl font-black text-[var(--beheer-text)] uppercase tracking-tight">Blogs</h2>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] opacity-50">Beheer introductie updates en nieuws</p>
                 </div>
-            ) : (
-                <button 
-                    onClick={() => setEditingBlog({ title: '', content: '', blog_type: 'update', is_published: false })} 
-                    className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 mb-8"
-                >
-                    <Plus className="h-4 w-4" /> 
-                    Nieuwe Blog
-                </button>
-            )}
+                <Button onClick={startNew} icon={Plus}>Nieuwe Blog</Button>
+            </div>
 
-            <div className="grid gap-4">
-                {blogs.map(blog => (
-                    <div key={blog.id} className="group bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] p-6 flex items-start justify-between gap-6 hover:border-[var(--beheer-accent)]/30 transition-all shadow-sm hover:shadow-xl">
-                        <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-3 mb-2">
-                                <h4 className="font-black uppercase tracking-tight text-base text-[var(--beheer-text)] truncate">{blog.title}</h4>
-                                <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${blog.is_published ? 'bg-green-500/10 text-green-500' : 'bg-gray-500/10 text-[var(--beheer-text-muted)]'}`}>
-                                    {blog.is_published ? 'Gepubliceerd' : 'Concept'}
-                                </span>
-                            </div>
-                            <p className="inline-block text-[10px] font-black uppercase tracking-[0.15em] text-[var(--beheer-accent)] bg-[var(--beheer-accent)]/5 px-2 py-0.5 rounded">
-                                {blog.blog_type}
-                            </p>
-                            {blog.excerpt && <p className="text-sm text-[var(--beheer-text-muted)] mt-3 line-clamp-2 font-medium">{blog.excerpt}</p>}
-                        </div>
-                        <div className="flex gap-2 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onClick={() => setEditingBlog(blog)} className="p-3 text-[var(--beheer-text-muted)] hover:text-[var(--beheer-accent)] hover:bg-[var(--beheer-accent)]/10 rounded-xl transition-all"><Edit className="h-4 w-4" /></button>
-                            <button onClick={() => onDelete(blog.id!)} disabled={deletingId === blog.id} className="p-3 text-[var(--beheer-text-muted)] hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all">
-                                {deletingId === blog.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                            </button>
-                        </div>
-                    </div>
-                ))}
-                {blogs.length === 0 && (
-                    <div className="py-20 text-center text-[var(--beheer-text-muted)]">
-                        <div className="p-6 bg-[var(--beheer-card-soft)] rounded-full w-fit mx-auto mb-6">
-                            <FileText className="h-12 w-12 opacity-20" />
-                        </div>
-                        <p className="font-black uppercase tracking-widest text-xs">Nog geen blogs aangemaakt</p>
-                    </div>
-                )}
+            <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] overflow-hidden shadow-2xl transition-all">
+                <table className="w-full text-sm">
+                    <thead className="bg-[var(--beheer-card-soft)] border-b border-[var(--beheer-border)]">
+                        <tr>
+                            <th className="px-8 py-5 text-left text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest w-20">Status</th>
+                            <th className="px-8 py-5 text-left text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Titel</th>
+                            <th className="px-8 py-5 text-left text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest hidden lg:table-cell w-32">Datum</th>
+                            <th className="px-8 py-5 text-left text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest hidden md:table-cell w-32">Type</th>
+                            <th className="px-8 py-5 text-right text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest w-48">Acties</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[var(--beheer-border)]/10">
+                        {/* New Blog row if editingId is -1 */}
+                        {editingId === -1 && (
+                            <tr className="bg-[var(--beheer-accent)]/[0.03]">
+                                <td colSpan={5} className="px-12 py-10">
+                                    <BlogEditForm 
+                                        blog={{ id: -1 }}
+                                        data={editData}
+                                        onChange={setEditData}
+                                        onSave={handleSave}
+                                        onCancel={() => setEditingId(null)}
+                                        saving={saving}
+                                    />
+                                </td>
+                            </tr>
+                        )}
+
+                        {blogs.map(blog => {
+                            const isExpanded = expandedRows.includes(blog.id!);
+                            const isEditing = editingId === blog.id;
+                            const typeInfo = blogTypes[blog.blog_type as keyof typeof blogTypes] || blogTypes.update;
+                            const date = blog.created_at;
+
+                            return (
+                                <React.Fragment key={blog.id}>
+                                    <tr 
+                                        onClick={() => toggleExpand(blog.id!)} 
+                                        className="hover:bg-[var(--beheer-accent)]/[0.02] cursor-pointer transition-colors group"
+                                    >
+                                        <td className="px-8 py-5">
+                                            <div className={`h-2.5 w-2.5 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.1)] transition-all ${blog.is_published ? 'bg-emerald-500 shadow-emerald-500/40 scale-110' : 'bg-[var(--beheer-border)] opacity-30'}`} />
+                                        </td>
+                                        <td className="px-8 py-5">
+                                            <div className="flex items-center gap-3">
+                                                <div className="text-sm font-black text-[var(--beheer-text)] uppercase tracking-tight group-hover:text-[var(--beheer-accent)] transition-colors truncate max-w-md">
+                                                    {blog.title}
+                                                </div>
+                                                {!blog.is_published && (
+                                                    <span className="bg-amber-500/10 text-amber-500 text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full border border-amber-500/20">
+                                                        Concept
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-5 hidden lg:table-cell">
+                                            <span className="text-[10px] font-bold text-[var(--beheer-text-muted)] uppercase tracking-tighter">
+                                                {date ? new Date(date).toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-'}
+                                            </span>
+                                        </td>
+                                        <td className="px-8 py-5 hidden md:table-cell">
+                                            <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded bg-${typeInfo.color}-500/10 text-${typeInfo.color}-500 border border-${typeInfo.color}-500/20`}>
+                                                {typeInfo.label}
+                                            </span>
+                                        </td>
+                                        <td className="px-12 py-5 text-right">
+                                            <div className="flex justify-end items-center gap-3">
+                                                <ActionButton 
+                                                    icon={Edit} 
+                                                    onClick={(e) => startEdit(e, blog)} 
+                                                    title="Bewerken" 
+                                                />
+                                                <ActionButton 
+                                                    icon={Trash2} 
+                                                    onClick={(e) => { e.stopPropagation(); onDelete(blog.id!); }} 
+                                                    variant="danger"
+                                                    disabled={deletingId === blog.id}
+                                                    title="Verwijderen"
+                                                />
+                                                <div className="text-[var(--beheer-text-muted)] p-2 group-hover:text-[var(--beheer-accent)] transition-colors">
+                                                    <ChevronDown className="h-4 w-4 transition-transform duration-300" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {isExpanded && (
+                                        <tr className="bg-[var(--beheer-card-soft)]/30">
+                                            <td colSpan={5} className="px-12 py-10 animate-in slide-in-from-top-2 duration-300">
+                                                {isEditing ? (
+                                                    <BlogEditForm 
+                                                        blog={blog}
+                                                        data={editData}
+                                                        onChange={setEditData}
+                                                        onSave={handleSave}
+                                                        onCancel={() => setEditingId(null)}
+                                                        saving={saving}
+                                                    />
+                                                ) : (
+                                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 text-[11px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">
+                                                        <div className="lg:col-span-2 space-y-8">
+                                                            <div className="flex items-center justify-between">
+                                                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--beheer-accent)]">Inhoud</p>
+                                                                <Button onClick={(e: any) => startEdit(e, blog)} variant="ghost" icon={Edit}>
+                                                                    Bewerken
+                                                                </Button>
+                                                            </div>
+                                                            <div className="space-y-6">
+                                                                {blog.excerpt && (
+                                                                    <div className="space-y-2">
+                                                                        <span className="opacity-50 text-[9px] uppercase tracking-[0.1em]">Samenvatting</span>
+                                                                        <p className="text-xs font-semibold text-[var(--beheer-text)] leading-relaxed italic normal-case bg-white/5 p-4 rounded-xl border border-[var(--beheer-border)]/10">
+                                                                            {blog.excerpt}
+                                                                        </p>
+                                                                    </div>
+                                                                )}
+                                                                <div className="space-y-2">
+                                                                    <span className="opacity-50 text-[9px] uppercase tracking-[0.1em]">Inhoud</span>
+                                                                    <div className="text-xs font-medium text-[var(--beheer-text)] leading-relaxed normal-case whitespace-pre-wrap">
+                                                                        {blog.content}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="space-y-8 lg:border-l lg:border-[var(--beheer-border)]/10 lg:pl-12">
+                                                            <div className="space-y-4">
+                                                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--beheer-accent)]">Details</p>
+                                                                <div className="grid gap-4">
+                                                                    <div className="flex flex-col gap-1">
+                                                                        <span className="opacity-50">Type</span>
+                                                                        <span className="text-[var(--beheer-text)] text-sm font-bold uppercase tracking-tight">{typeInfo.label}</span>
+                                                                    </div>
+                                                                    <div className="flex flex-col gap-1">
+                                                                        <span className="opacity-50">Link-naam (Slug)</span>
+                                                                        <span className="text-[var(--beheer-text)] text-[10px] font-black tracking-widest">{blog.slug || '-'}</span>
+                                                                    </div>
+                                                                    <div className="flex flex-col gap-1">
+                                                                        <span className="opacity-50">Datum</span>
+                                                                        <span className="text-[var(--beheer-text)] text-[10px] font-black tracking-widest">
+                                                                            {date ? new Date(date).toLocaleString('nl-NL', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-'}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    )}
+                                </React.Fragment>
+                            );
+                        })}
+                        {blogs.length === 0 && editingId !== -1 && (
+                            <tr>
+                                <td colSpan={4}>
+                                    <EmptyState icon={FileText} text="Nog geen blogs aangemaakt" />
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
             </div>
         </div>
     );

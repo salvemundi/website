@@ -12,8 +12,11 @@ const IMAGES = [
 ];
 
 export const IntroLightboxIsland = () => {
+    const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+
+    const fallbackImage = '/img/newlogo.svg';
 
     useEffect(() => {
         if (!lightboxOpen) return;
@@ -28,7 +31,7 @@ export const IntroLightboxIsland = () => {
     }, [lightboxOpen]);
 
     const openLightbox = (src: string) => {
-        setLightboxSrc(src);
+        setLightboxSrc(failedImages[src] ? fallbackImage : src);
         setLightboxOpen(true);
     };
 
@@ -41,14 +44,16 @@ export const IntroLightboxIsland = () => {
         <>
             <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {IMAGES.map((img, idx) => (
-                    <div key={idx} className="relative h-32 w-full">
+                    <div key={idx} className="relative h-32 w-full bg-[var(--color-purple-50)] dark:bg-white/5 rounded-lg overflow-hidden border border-[var(--color-purple-100)] dark:border-white/10 flex items-center justify-center">
                         <Image
-                            src={img.src}
+                            src={failedImages[img.src] ? fallbackImage : img.src}
                             alt={img.alt}
                             fill
                             sizes="(max-width: 640px) 50vw, 33vw"
-                            className="object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                            className={`object-cover transition-opacity cursor-pointer hover:opacity-80 ${failedImages[img.src] ? 'p-6 object-contain' : ''}`}
                             onClick={() => openLightbox(img.src)}
+                            onError={() => setFailedImages(prev => ({ ...prev, [img.src]: true }))}
+                            unoptimized={failedImages[img.src]}
                         />
                     </div>
                 ))}

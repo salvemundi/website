@@ -186,7 +186,7 @@ export default function AdminReisTableIsland({
                     'Bijzonderheden': signup.special_notes || '',
                     'Activiteiten': activitiesStr,
                     'Wil rijden': signup.willing_to_drive ? 'Ja' : 'Nee',
-                    'Rol': signup.role === 'crew' ? 'Crew' : 'Deelnemer',
+                    'Rol': signup.role === 'crew' ? 'Crew' : 'Reiziger',
                     'Status': getStatusBadge(signup.status || 'registered').label,
                     'Betalingstatus': getPaymentStatus(signup).label,
                     'Aanbetaling betaald op': signup.deposit_paid_at ? format(new Date(signup.deposit_paid_at), 'dd-MM-yyyy HH:mm') : '',

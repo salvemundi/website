@@ -9,12 +9,12 @@ import {
     Clock, 
     Loader2 
 } from 'lucide-react';
-import { isSuperAdmin } from '@/lib/auth';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import ActivityCard from './ActivityCard';
 import ActivityFilters from './ActivityFilters';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
+import type { UserPermissions } from '@/shared/lib/permissions';
 
 function cleanCommitteeName(name: string): string {
     return name?.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim() || '';
@@ -45,12 +45,14 @@ interface Props {
     committees?: any[];
     userId?: string;
     userCommittees?: any[];
+    permissions?: UserPermissions;
 }
 
 export default function AdminActivitiesIsland({
     initialEvents = [],
     committees = [],
     userCommittees = [],
+    permissions
 }: Props) {
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
@@ -62,8 +64,6 @@ export default function AdminActivitiesIsland({
     const [isPending, startTransition] = useTransition();
 
     const handleFilterChange = (newFilter: 'all' | 'upcoming' | 'past') => setFilter(newFilter);
-
-
 
     const availableCommittees = useMemo(() => {
         return committees
@@ -85,7 +85,7 @@ export default function AdminActivitiesIsland({
     }, [events, filter, searchQuery, selectedCommittee]);
 
     const displayedEvents = pageSize === -1 ? filteredEvents : filteredEvents.slice(0, pageSize);
-    const superAdmin = useMemo(() => isSuperAdmin(userCommittees), [userCommittees]);
+    const canEdit = !!permissions?.canAccessActivitiesEdit;
 
     const stats = useMemo(() => {
         const upcomingCount = filteredEvents.filter(e => new Date(e.event_date) >= new Date()).length;
@@ -99,15 +99,17 @@ export default function AdminActivitiesIsland({
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="flex justify-end mb-8">
-                <button
-                    onClick={() => router.push('/beheer/activiteiten/nieuw')}
-                    className="bg-[var(--beheer-accent)] text-white px-8 py-2 rounded-[var(--beheer-radius)] font-black uppercase tracking-widest text-[10px] shadow-[var(--shadow-glow)] transition-all hover:opacity-90 active:scale-95 flex items-center gap-2 group disabled:opacity-50"
-                >
-                    <Plus className="h-4 w-4" />
-                    Nieuw
-                </button>
-            </div>
+            {canEdit && (
+                <div className="flex justify-end mb-8">
+                    <button
+                        onClick={() => router.push('/beheer/activiteiten/nieuw')}
+                        className="bg-[var(--beheer-accent)] text-white px-8 py-2 rounded-[var(--beheer-radius)] font-black uppercase tracking-widest text-[10px] shadow-[var(--shadow-glow)] transition-all hover:opacity-90 active:scale-95 flex items-center gap-2 group disabled:opacity-50"
+                    >
+                        <Plus className="h-4 w-4" />
+                        Nieuw
+                    </button>
+                </div>
+            )}
 
             <AdminStatsBar stats={stats} />
 
@@ -128,7 +130,7 @@ export default function AdminActivitiesIsland({
                     <ActivityCard 
                         key={event.id}
                         event={event}
-                        canEdit={superAdmin || (event.committee_id !== null && userCommittees.some(c => String(c.id) === String(event.committee_id)))}
+                        canEdit={canEdit}
                         isPending={isPending}
                         onViewSignups={(id) => router.push(`/beheer/activiteiten/${id}/aanmeldingen`)}
                         onEdit={(id) => router.push(`/beheer/activiteiten/${id}/bewerken`)}

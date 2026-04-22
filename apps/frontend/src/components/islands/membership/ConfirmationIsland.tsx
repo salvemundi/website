@@ -2,9 +2,10 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckCircle, Home, User, XCircle, Loader2, AlertTriangle } from 'lucide-react';
+import { CheckCircle, Home, User, XCircle, Loader2, AlertTriangle, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getTransactionStatusAction } from '@/server/actions/membership.actions';
+import BackButton from '@/components/ui/navigation/BackButton';
 
 interface ConfirmationIslandProps {
     transactionId: string | null;

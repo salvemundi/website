@@ -58,7 +58,7 @@ export async function fetchUserProfileByEmailDb(email: string): Promise<UserProf
  */
 export async function fetchUserCommitteesDb(userId: string): Promise<any[]> {
     const { rows } = await query(
-        `SELECT c.id, c.name, c.azure_group_id
+        `SELECT c.id, c.name, c.azure_group_id, cm.is_leader
          FROM committees c
          JOIN committee_members cm ON c.id = cm.committee_id
          WHERE cm.user_id = $1`,
@@ -72,7 +72,7 @@ export async function fetchUserCommitteesDb(userId: string): Promise<any[]> {
  */
 export async function fetchUserMetadataDb(userId: string): Promise<any | null> {
     const { rows } = await query(
-        `SELECT membership_status, membership_expiry, phone_number, date_of_birth, minecraft_username 
+        `SELECT membership_status, membership_expiry, phone_number, date_of_birth, minecraft_username, entra_id
          FROM directus_users 
          WHERE id = $1 
          LIMIT 1`,

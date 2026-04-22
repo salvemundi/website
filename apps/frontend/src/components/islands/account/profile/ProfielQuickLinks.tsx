@@ -7,9 +7,10 @@ import { Tile, QuickLink } from './ProfielUI';
 interface ProfielQuickLinksProps {
     user?: any;
     canAccessAdmin?: boolean;
+    isICT?: boolean;
 }
 
-export default function ProfielQuickLinks({ user = {}, canAccessAdmin = false }: ProfielQuickLinksProps) {
+export default function ProfielQuickLinks({ user = {}, canAccessAdmin = false, isICT = false }: ProfielQuickLinksProps) {
     return (
         <Tile title="Snelle links" icon={<ChevronRight className="h-5 w-5" />} className="h-fit">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -29,9 +30,10 @@ export default function ProfielQuickLinks({ user = {}, canAccessAdmin = false }:
                     href="/profiel/whatsapp"
                     locked={user.membership_status !== "active"}
                 />
-                {canAccessAdmin && (
+                {isICT && (
                     <QuickLink
                         label="Admin panel"
+                        subtitle="NetBird VPN nodig"
                         icon={<Shield className="h-6 w-6" />}
                         href={process.env.NEXT_PUBLIC_DIRECTUS_URL || "#"}
                         external

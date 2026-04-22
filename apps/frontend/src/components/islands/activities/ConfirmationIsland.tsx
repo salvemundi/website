@@ -12,8 +12,10 @@ import {
     Download,
     UserPlus,
     Save,
-    RefreshCw
+    RefreshCw,
+    Home
 } from 'lucide-react';
+import BackButton from '@/components/ui/navigation/BackButton';
 import { toPng } from 'html-to-image';
 import { getSignupStatus, type PaymentStatus } from '@/server/actions/activiteit-actions';
 import QRDisplay from '@/shared/ui/QRDisplay';
@@ -226,13 +228,18 @@ export default function ConfirmationIsland({
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                        <a href="/activiteiten" className="h-14 px-10 rounded-2xl bg-[var(--theme-purple)] text-white font-black flex items-center justify-center gap-2 hover:scale-105 transition-all shadow-xl shadow-[var(--theme-purple)]/20 uppercase tracking-widest">
-                            TERUG NAAR OVERZICHT
-                        </a>
+                        <BackButton 
+                            href="/activiteiten" 
+                            text="TERUG NAAR OVERZICHT" 
+                            className="h-14 px-10 rounded-2xl bg-[var(--theme-purple)] text-white shadow-xl shadow-[var(--theme-purple)]/20 uppercase tracking-widest"
+                        />
                         {isLoggedIn && (
-                            <a href="/profiel/tickets" className="h-14 px-10 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] font-black flex items-center justify-center gap-2 hover:bg-[var(--bg-soft)] transition-all uppercase tracking-widest">
-                                ALLE TICKETS
-                            </a>
+                            <BackButton 
+                                href="/profiel/tickets" 
+                                text="ALLE TICKETS" 
+                                icon={QrCode}
+                                className="h-14 px-10 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] uppercase tracking-widest"
+                            />
                         )}
                     </div>
                 </div>
@@ -261,19 +268,22 @@ export default function ConfirmationIsland({
                         </p>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <a 
+                        <BackButton 
                             href={
                                 isMembership ? '/lidmaatschap' : 
                                 isTrip ? '/reis' : 
                                 (signupData?.event_id?.id ? `/activiteiten/${signupData.event_id.id}-${slugify(signupData.event_id.name || '')}` : '/activiteiten')
                             }
-                            className="inline-flex h-14 px-10 rounded-2xl bg-[var(--theme-purple)] text-white font-black items-center justify-center gap-2 hover:scale-105 transition-all shadow-xl shadow-[var(--theme-purple)]/20 uppercase tracking-widest"
-                        >
-                            Opnieuw Proberen
-                        </a>
-                        <a href="/" className="inline-flex h-14 px-10 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] font-black items-center justify-center gap-2 hover:bg-[var(--bg-soft)] transition-all uppercase tracking-widest">
-                            Terug naar Home
-                        </a>
+                            text="Opnieuw Proberen"
+                            icon={RefreshCw}
+                            className="h-14 px-10 rounded-2xl bg-[var(--theme-purple)] text-white shadow-xl shadow-[var(--theme-purple)]/20 uppercase tracking-widest"
+                        />
+                        <BackButton 
+                            href="/" 
+                            text="Terug naar Home" 
+                            icon={Home}
+                            className="h-14 px-10 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] uppercase tracking-widest"
+                        />
                     </div>
                 </div>
             );

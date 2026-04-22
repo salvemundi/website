@@ -27,6 +27,7 @@ import {
     deleteItem, 
     createItem
 } from '@directus/sdk';
+import { normalizeDate } from '@/lib/utils/date-utils';
 
 export async function getTripSignups(tripId: number) {
     await requireReisAdmin();
@@ -143,7 +144,7 @@ export async function updateTripSignup(prevState: any, formData: FormData) {
         willing_to_drive: rawData.willing_to_drive === 'on' || rawData.willing_to_drive === 'true',
         deposit_paid: rawData.deposit_paid === 'on' || rawData.deposit_paid === 'true',
         full_payment_paid: rawData.full_payment_paid === 'on' || rawData.full_payment_paid === 'true',
-        date_of_birth: rawData.date_of_birth || null,
+        date_of_birth: normalizeDate(rawData.date_of_birth as string),
         status: rawData.status as string,
         role: rawData.role as string,
         allergies: rawData.allergies as string,

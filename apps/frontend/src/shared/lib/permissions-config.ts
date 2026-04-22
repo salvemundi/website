@@ -14,7 +14,9 @@ export enum AdminResource {
     Sync = 'admin:sync',
     Permissions = 'admin:permissions',
     Users = 'admin:users',
-    Kroegentocht = 'admin:kroegentocht'
+    Kroegentocht = 'admin:kroegentocht',
+    ActivitiesView = 'admin:activities:view',
+    ActivitiesEdit = 'admin:activities:edit'
 }
 
 export interface PermissionRequirement {
@@ -40,6 +42,8 @@ export const COMMITTEES = {
     KANDI: process.env.NEXT_PUBLIC_COMMITTEE_KANDI_ID || '00000000-0000-0000-0000-000000000000',
 };
 
+const ALL_COMMITTEES = Object.values(COMMITTEES);
+
 export const RESOURCE_PERMISSIONS: Record<AdminResource, PermissionRequirement> = {
     [AdminResource.Intro]: { 
         allowedCommitteeIds: [COMMITTEES.ICT, COMMITTEES.BESTUUR, COMMITTEES.KANDI, COMMITTEES.INTRO] 
@@ -57,19 +61,25 @@ export const RESOURCE_PERMISSIONS: Record<AdminResource, PermissionRequirement> 
         allowedCommitteeIds: [COMMITTEES.ICT, COMMITTEES.BESTUUR] 
     },
     [AdminResource.Logging]: { 
-        allowedCommitteeIds: [COMMITTEES.ICT, COMMITTEES.BESTUUR],
-        leaderOnly: true 
+        allowedCommitteeIds: [COMMITTEES.ICT]
     },
     [AdminResource.Sync]: { 
-        allowedCommitteeIds: [COMMITTEES.ICT, COMMITTEES.BESTUUR] 
+        allowedCommitteeIds: [COMMITTEES.ICT] 
     },
     [AdminResource.Permissions]: { 
-        allowedCommitteeIds: [COMMITTEES.ICT, COMMITTEES.BESTUUR] 
+        allowedCommitteeIds: [COMMITTEES.ICT] 
     },
     [AdminResource.Users]: { 
         allowedCommitteeIds: [COMMITTEES.ICT, COMMITTEES.BESTUUR] 
     },
     [AdminResource.Kroegentocht]: { 
         allowedCommitteeIds: [COMMITTEES.ICT, COMMITTEES.BESTUUR, COMMITTEES.FEEST] 
+    },
+    [AdminResource.ActivitiesView]: { 
+        allowedCommitteeIds: ALL_COMMITTEES
+    },
+    [AdminResource.ActivitiesEdit]: { 
+        allowedCommitteeIds: ALL_COMMITTEES,
+        leaderOnly: true 
     },
 };

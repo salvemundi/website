@@ -9,7 +9,7 @@ import {
     Save, 
     Loader2 
 } from 'lucide-react';
-import { createActivityAction } from '@/server/actions/activiteiten.actions';
+import { createActivityAction } from '@/server/actions/activiteiten/activities-write.actions';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 

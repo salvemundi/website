@@ -71,7 +71,7 @@ export default function SignupForm({ signup }: SignupFormProps) {
                         </Select>
 
                         <Select label="Gebruikersrol" name="role" defaultValue={signup.role}>
-                            <option value="participant">Deelnemer</option>
+                            <option value="participant">Reiziger</option>
                             <option value="crew">Crew / Organisatie</option>
                         </Select>
                     </div>
@@ -109,25 +109,28 @@ export default function SignupForm({ signup }: SignupFormProps) {
 function DateAndLabel({ label, defaultValue, name }: any) {
     const [val, setVal] = React.useState(defaultValue);
     return (
-        <div className="space-y-2">
-            <label className="block text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text)] px-1">{label}</label>
-            <DateInput 
-                name={name} 
-                value={val} 
-                onChange={(newVal) => setVal(newVal)}
-                autoComplete="off"
-            />
+        <div className="space-y-2 group/field">
+            <label className="block text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] group-focus-within/field:text-[var(--beheer-accent)] transition-colors px-1">{label}</label>
+            <div className="relative">
+                <DateInput 
+                    name={name} 
+                    value={val} 
+                    onChange={(newVal) => setVal(newVal)}
+                    autoComplete="off"
+                    className="w-full px-4 py-3 bg-[var(--bg-main)]/40 dark:bg-black/20 backdrop-blur-sm border-0 ring-1 ring-[var(--beheer-border)]/40 rounded-xl text-sm text-[var(--beheer-text)] focus:ring-2 focus:ring-[var(--beheer-accent)] focus:bg-[var(--bg-main)]/80 transition-all font-semibold outline-none shadow-inner"
+                />
+            </div>
         </div>
     );
 }
 
 function Input({ label, ...props }: any) {
     return (
-        <div className="space-y-2">
-            <label className="block text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text)] px-1">{label}</label>
+        <div className="space-y-2 group/field">
+            <label className="block text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] group-focus-within/field:text-[var(--beheer-accent)] transition-colors px-1">{label}</label>
             <input 
                 {...props} 
-                className={`w-full px-4 py-3 bg-[var(--bg-main)]/50 border-0 ring-1 ring-[var(--beheer-border)]/50 rounded-xl text-sm text-[var(--beheer-text)] focus:ring-2 focus:ring-[var(--beheer-accent)] transition-all font-semibold ${props.className || ''}`}
+                className={`w-full px-4 py-3 bg-[var(--bg-main)]/40 dark:bg-black/20 backdrop-blur-sm border-0 ring-1 ring-[var(--beheer-border)]/40 rounded-xl text-sm text-[var(--beheer-text)] focus:ring-2 focus:ring-[var(--beheer-accent)] focus:bg-[var(--bg-main)]/80 transition-all font-semibold outline-none shadow-inner ${props.className || ''}`}
             />
         </div>
     );
@@ -135,16 +138,18 @@ function Input({ label, ...props }: any) {
 
 function Select({ label, children, ...props }: any) {
     return (
-        <div className="space-y-2">
-            <label className="block text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text)] px-1">{label}</label>
+        <div className="space-y-2 group/field">
+            <label className="block text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] group-focus-within/field:text-[var(--beheer-accent)] transition-colors px-1">{label}</label>
             <div className="relative group">
                 <select 
                     {...props} 
-                    className="w-full pl-4 pr-10 py-3 bg-[var(--bg-main)]/50 border-0 ring-1 ring-[var(--beheer-border)]/50 rounded-xl text-[var(--beheer-text)] font-black uppercase tracking-widest text-xs focus:ring-2 focus:ring-[var(--beheer-accent)] transition-all appearance-none cursor-pointer"
+                    className="w-full pl-4 pr-10 py-3 bg-[var(--bg-main)]/40 dark:bg-black/20 backdrop-blur-sm border-0 ring-1 ring-[var(--beheer-border)]/40 rounded-xl text-[var(--beheer-text)] font-black uppercase tracking-widest text-xs focus:ring-2 focus:ring-[var(--beheer-accent)] focus:bg-[var(--bg-main)]/80 transition-all appearance-none cursor-pointer outline-none shadow-inner"
                 >
                     {children}
                 </select>
-                <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 rotate-90 h-4 w-4 text-[var(--beheer-text-muted)] pointer-events-none group-hover:text-[var(--beheer-accent)] transition-colors" />
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none group-hover:text-[var(--beheer-accent)] transition-colors text-[var(--beheer-text-muted)]">
+                    <ChevronRight className="h-4 w-4 rotate-90" />
+                </div>
             </div>
         </div>
     );
@@ -152,11 +157,11 @@ function Select({ label, children, ...props }: any) {
 
 function Textarea({ label, ...props }: any) {
     return (
-        <div className="space-y-2">
-            <label className="block text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text)] px-1">{label}</label>
+        <div className="space-y-2 group/field">
+            <label className="block text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] group-focus-within/field:text-[var(--beheer-accent)] transition-colors px-1">{label}</label>
             <textarea 
                 {...props} 
-                className="w-full px-4 py-3 bg-[var(--bg-main)]/50 border-0 ring-1 ring-[var(--beheer-border)]/50 rounded-xl text-sm text-[var(--beheer-text)] focus:ring-2 focus:ring-[var(--beheer-accent)] transition-all resize-none min-h-[100px] font-semibold"
+                className="w-full px-4 py-3 bg-[var(--bg-main)]/40 dark:bg-black/20 backdrop-blur-sm border-0 ring-1 ring-[var(--beheer-border)]/40 rounded-xl text-sm text-[var(--beheer-text)] focus:ring-2 focus:ring-[var(--beheer-accent)] focus:bg-[var(--bg-main)]/80 transition-all resize-none min-h-[100px] font-semibold outline-none shadow-inner"
             />
         </div>
     );
@@ -164,13 +169,15 @@ function Textarea({ label, ...props }: any) {
 
 function Checkbox({ label, ...props }: any) {
     return (
-        <label className="flex items-center gap-3 cursor-pointer group">
+        <label className="flex items-center gap-4 cursor-pointer group select-none">
             <div className="relative">
                 <input type="checkbox" {...props} className="sr-only peer" />
-                <div className="h-6 w-11 bg-[var(--beheer-border)]/30 rounded-full peer-checked:bg-[var(--beheer-accent)] transition-all border border-[var(--beheer-border)]/20" />
-                <div className="absolute left-1 top-1 h-4 w-4 bg-white rounded-full transition-all peer-checked:left-6 shadow-sm" />
+                <div className="h-6 w-11 bg-[var(--beheer-border)]/20 dark:bg-white/5 backdrop-blur-md rounded-full peer-checked:bg-[var(--beheer-accent)] transition-all border border-[var(--beheer-border)]/30 group-hover:border-[var(--beheer-accent)]/50 shadow-inner" />
+                <div className="absolute left-1 top-1 h-4 w-4 bg-white rounded-full transition-all peer-checked:left-6 shadow-lg transform peer-active:scale-90" />
             </div>
-            <span className="text-[10px] font-black text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-text)] transition-colors uppercase tracking-widest">{label}</span>
+            <div className="flex flex-col">
+                <span className="text-[10px] font-black text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-text)] transition-colors uppercase tracking-widest">{label}</span>
+            </div>
         </label>
     );
 }

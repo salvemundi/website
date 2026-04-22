@@ -1,7 +1,6 @@
 import { getMyTickets } from '@/server/actions/activiteit-actions';
 import TicketListIsland from '@/components/islands/activities/TicketListIsland';
-import Link from 'next/link';
-import { ChevronLeft } from 'lucide-react';
+import BackButton from '@/components/ui/navigation/BackButton';
 
 export const metadata = {
     title: 'Mijn Tickets | Salve Mundi',
@@ -18,14 +17,7 @@ export default async function TicketsPage() {
             
             <div className="container mx-auto px-4 py-12 max-w-7xl">
                 <div className="mb-8 flex items-center justify-between">
-                    <Link 
-                        href="/profiel" 
-                        className="inline-flex items-center gap-2 p-3 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--theme-purple)] transition-all active:scale-95 shadow-sm"
-                        title="Terug naar profiel"
-                    >
-                        <ChevronLeft className="h-5 w-5" />
-                        <span className="text-sm font-bold pr-1">Terug</span>
-                    </Link>
+                    <BackButton href="/profiel" />
                 </div>
                 <TicketListIsland tickets={tickets} />
             </div>

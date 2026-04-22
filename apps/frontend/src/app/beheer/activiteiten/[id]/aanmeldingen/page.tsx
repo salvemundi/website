@@ -26,11 +26,9 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
     if (!session || !session.user) return <AdminUnauthorized title="Activiteit Aanmeldingen" />;
 
     const user = session.user as any;
-    const memberships = user.committees || [];
-    const hasPriv = memberships.some((c: any) => {
-        const name = (c?.name || '').toString().toLowerCase();
-        return name.includes('bestuur') || name.includes('ict') || name.includes('kandi');
-    });
+    
+    // RBAC: Use the standardized permission from the session
+    const hasAccess = !!user.canAccessActivitiesView;
 
     try {
         // Fetch Event
@@ -42,18 +40,11 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
         
         if (!event) return notFound();
 
-        // RBAC
-        let hasAccess = hasPriv;
-        if (!hasAccess && event.committee_id) {
-            const isMember = memberships.some((c: any) => String(c.id) === String(event.committee_id));
-            if (isMember) hasAccess = true;
-        }
-
         if (!hasAccess) {
             return (
                 <AdminUnauthorized 
                     title="Activiteit Aanmeldingen"
-                    description="Je hebt geen rechten om deze aanmeldingen te bekijken. Dit gedeelte is alleen voor organisatoren, bestuur of ICT."
+                    description="Je hebt geen rechten om deze aanmeldingen te bekijken. Dit gedeelte is alleen voor commissieleden, bestuur of ICT."
                 />
             );
         }
@@ -69,7 +60,11 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
                 hideToolbar={true}
             >
                 <div className="pb-20">
-                    <ActiviteitAanmeldingenIsland event={event as any} initialSignups={signups} />
+                    <ActiviteitAanmeldingenIsland 
+                        event={event as any} 
+                        initialSignups={signups} 
+                        canAccessEdit={!!user.canAccessActivitiesEdit}
+                    />
                 </div>
             </AdminPageShell>
         );

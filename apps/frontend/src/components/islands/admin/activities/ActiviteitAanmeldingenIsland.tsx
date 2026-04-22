@@ -44,9 +44,11 @@ interface AdminEvent {
 export default function ActiviteitAanmeldingenIsland({ 
     event, 
     initialSignups = [], 
+    canAccessEdit = false
 }: { 
     event: AdminEvent;
     initialSignups: Signup[]; 
+    canAccessEdit?: boolean;
 }) {
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
@@ -215,13 +217,15 @@ export default function ActiviteitAanmeldingenIsland({
                             <Download className="h-4 w-4" />
                             Exporteer
                         </button>
-                        <button
-                            onClick={() => setIsManualModalOpen(true)}
-                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
-                        >
-                            <UserPlus className="h-4 w-4" />
-                            Handmatig
-                        </button>
+                        {canAccessEdit && (
+                            <button
+                                onClick={() => setIsManualModalOpen(true)}
+                                className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
+                            >
+                                <UserPlus className="h-4 w-4" />
+                                Handmatig
+                            </button>
+                        )}
                     </>
                 }
             />
@@ -290,11 +294,12 @@ export default function ActiviteitAanmeldingenIsland({
                                                 <div className="flex flex-col gap-1.5">
                                                     <button
                                                         onClick={() => handleToggleCheckIn(signup.id, !!signup.checked_in)}
+                                                        disabled={!canAccessEdit}
                                                         className={`flex items-center gap-2 self-start px-3 py-2 rounded-xl transition-all font-black text-[10px] uppercase tracking-wider border shadow-sm active:scale-95 ${
                                                             signup.checked_in 
                                                             ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30' 
                                                             : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] border-[var(--beheer-border)] hover:border-emerald-500/50 hover:text-emerald-500'
-                                                        }`}
+                                                        } ${!canAccessEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                     >
                                                         {signup.checked_in ? (
                                                             <>
@@ -342,17 +347,19 @@ export default function ActiviteitAanmeldingenIsland({
                                                 </div>
                                             </td>
                                             <td className="px-6 py-5 text-right">
-                                                <button
-                                                    onClick={() => handleDelete(signup.id, email)}
-                                                    className="inline-flex items-center justify-center w-10 h-10 rounded-xl text-[var(--beheer-text-muted)] opacity-30 hover:opacity-100 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer"
-                                                    title="Verwijder aanmelding"
-                                                >
-                                                    {isRowDeleting ? (
-                                                        <Loader2 className="h-5 w-5 animate-spin" />
-                                                    ) : (
-                                                        <Trash2 className="h-5 w-5" />
-                                                    )}
-                                                </button>
+                                                {canAccessEdit && (
+                                                    <button
+                                                        onClick={() => handleDelete(signup.id, email)}
+                                                        className="inline-flex items-center justify-center w-10 h-10 rounded-xl text-[var(--beheer-text-muted)] opacity-30 hover:opacity-100 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer"
+                                                        title="Verwijder aanmelding"
+                                                    >
+                                                        {isRowDeleting ? (
+                                                            <Loader2 className="h-5 w-5 animate-spin" />
+                                                        ) : (
+                                                            <Trash2 className="h-5 w-5" />
+                                                        )}
+                                                    </button>
+                                                )}
                                             </td>
                                         </tr>
                                     );

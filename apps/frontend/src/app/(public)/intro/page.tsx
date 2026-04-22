@@ -6,7 +6,9 @@ import { headers } from 'next/headers';
 import { IntroStudentIsland } from '@/components/islands/intro/IntroStudentIsland';
 import { IntroParentIsland } from '@/components/islands/intro/IntroParentIsland';
 import { IntroLightboxIsland } from '@/components/islands/intro/IntroLightboxIsland';
+import { IntroBlogsIsland } from '@/components/islands/intro/IntroBlogsIsland';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
+import { getIntroBlogsPublic } from '@/server/actions/intro.actions';
 
 export const metadata = {
     title: 'Introductie | Salve Mundi',
@@ -75,6 +77,7 @@ export default async function IntroPage() {
     const session = await auth.api.getSession({ headers: await headers() });
     const isAlreadyParent = session ? await hasParentSignup() : false;
     const isAuthenticated = !!session;
+    const blogs = await getIntroBlogsPublic();
 
     return (
         <PublicPageShell>
@@ -106,6 +109,10 @@ export default async function IntroPage() {
                             <IntroStudentIsland />
                         )}
                     </div>
+                </div>
+
+                <div className="max-w-7xl mx-auto w-full">
+                    <IntroBlogsIsland blogs={blogs} />
                 </div>
             </section>
         </PublicPageShell>

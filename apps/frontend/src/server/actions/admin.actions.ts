@@ -76,6 +76,7 @@ export async function checkAdminAccess() {
             user.minecraft_username = metadata.minecraft_username;
             user.phone_number = metadata.phone_number;
             user.date_of_birth = metadata.date_of_birth;
+            user.entra_id = metadata.entra_id;
         }
         if (committees) {
             user.committees = committees;
@@ -95,9 +96,9 @@ export async function checkAdminAccess() {
     }
     const impersonatedBy = (session as any).impersonatedBy || null;
 
-    const isIct = user.isICT || false;
-    const isBestuur = user.canAccessIntro || false;
-    const isAuthorized = isIct || isBestuur;
+    const perms = getPermissions(user.committees || []);
+    const isAuthorized = Object.values(perms).some(v => v === true);
+    const isIct = perms.isICT || false;
 
     return {
         isAuthorized,
@@ -133,7 +134,7 @@ export async function getDashboardPermissions() {
         canAccessKroegentocht: permissions.canAccessKroegentocht || false,
         canAccessMembers: permissions.canAccessMembers || false,
         canAccessCommittees: permissions.canAccessCommittees || false,
-        canAccessMail: isAuthorized,
+        canAccessMail: isIct,
         isIct
     };
 }
@@ -290,7 +291,8 @@ export async function setImpersonateToken(token: string) {
             httpOnly: true,
         });
 
-        const sessionToken = cookieStore.get('better-auth.session-token')?.value;
+        const sessionToken = cookieStore.get('better-auth.session-token')?.value || 
+                           cookieStore.get('__Secure-better-auth.session-token')?.value;
         const redis = await getRedis();
 
         if (sessionToken) {
@@ -328,7 +330,8 @@ export async function clearImpersonateToken() {
     cookieStore.delete(TEST_TOKEN_COOKIE);
     cookieStore.delete(IMPERSONATION_INFO_COOKIE);
 
-    const sessionToken = cookieStore.get('better-auth.session-token')?.value;
+    const sessionToken = cookieStore.get('better-auth.session-token')?.value || 
+                       cookieStore.get('__Secure-better-auth.session-token')?.value;
     const redis = await getRedis();
 
     if (sessionToken) {

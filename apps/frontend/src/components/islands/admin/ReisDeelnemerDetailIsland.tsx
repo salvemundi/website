@@ -89,7 +89,7 @@ export default function ReisDeelnemerDetailIsland({
         { label: 'Status', value: initialSignup.status === 'confirmed' ? 'Bevestigd' : 'Afwachtend', icon: CheckCircle2 },
         { label: 'Leeftijd', value: `${age} jaar`, icon: User },
         { label: 'Betaling', value: paymentStatus, icon: CreditCard },
-        { label: 'Rol', value: initialSignup.role === 'crew' ? 'Crew' : 'Deelnemer', icon: Shield },
+        { label: 'Rol', value: initialSignup.role === 'crew' ? 'Crew' : 'Reiziger', icon: Shield },
     ];
 
     useEffect(() => {
@@ -106,7 +106,7 @@ export default function ReisDeelnemerDetailIsland({
         <>
             <AdminToolbar 
                 title={`${initialSignup.first_name} ${initialSignup.last_name}`}
-                subtitle={`Beheer details voor deze deelnemer aan ${selectedTrip?.name || 'de reis'}`}
+                subtitle={`Beheer details voor deze reiziger aan ${selectedTrip?.name || 'de reis'}`}
                 backHref="/beheer/reis"
                 actions={
                     <button
@@ -127,7 +127,7 @@ export default function ReisDeelnemerDetailIsland({
                 <form action={formAction} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <input type="hidden" name="id" value={initialSignup.id} />
                     <div className="lg:col-span-2 space-y-8">
-                        <SignupForm signup={initialSignup} />
+                        <SignupForm key={`${initialSignup.id}-${initialSignup.role}`} signup={initialSignup} />
                     </div>
 
                     <div className="space-y-8">

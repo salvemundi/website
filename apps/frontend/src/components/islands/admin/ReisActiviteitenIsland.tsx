@@ -13,6 +13,9 @@ import {
 import { deleteTripActivity, createTripActivity, updateTripActivity } from '@/server/actions/reis-admin-activities.actions';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
+import AdminToast from '@/components/ui/admin/AdminToast';
+
+import { useAdminToast } from '@/hooks/use-admin-toast';
 
 // Reuse sub-components from Phase 2
 import TripActivityCard from './reis/TripActivityCard';
@@ -51,6 +54,7 @@ export default function ReisActiviteitenIsland({
     initialSignupsByActivity = {},
 }: Props) {
     const router = useRouter();
+    const { toast, showToast, hideToast } = useAdminToast();
     const [selectedTripId, setSelectedTripId] = useState<number>(initialSelectedTripId);
     const [activities, setActivities] = useState<TripActivity[]>(initialActivities);
     const [signupsByActivity] = useState<Record<number, any[]>>(initialSignupsByActivity);
@@ -58,7 +62,6 @@ export default function ReisActiviteitenIsland({
     const [isPending, startTransition] = useTransition();
     const [editingActivity, setEditingActivity] = useState<Partial<TripActivity> | null>(null);
     const [viewingSignupsId, setViewingSignupsId] = useState<number | null>(null);
-    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
     // Sync when props change (trip switch via URL)
     useEffect(() => {
@@ -69,11 +72,6 @@ export default function ReisActiviteitenIsland({
     const handleTripChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const id = parseInt(e.target.value);
         router.push(`/beheer/reis/activiteiten?tripId=${id}`);
-    };
-
-    const showToast = (message: string, type: 'success' | 'error') => {
-        setToast({ message, type });
-        setTimeout(() => setToast(null), 5000);
     };
 
     const handleSave = async (formData: FormData, options: any[]) => {
@@ -124,22 +122,21 @@ export default function ReisActiviteitenIsland({
     return (
         <>
             <AdminToolbar 
-                title={`${activeTrip?.name || 'Reis'} Activiteiten`}
-                subtitle="Beheer extra opties en inschrijvingen per activiteit"
-                backHref={`/beheer/reis?tripId=${selectedTripId}`}
                 actions={
                     <>
-                        <div className="relative group min-w-[200px]">
+                        <div className="relative group min-w-[240px]">
                                 <select
                                     value={selectedTripId}
                                     onChange={handleTripChange}
-                                    className="w-full pl-4 pr-10 py-2.5 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-[10px] font-black uppercase tracking-widest focus:ring-2 focus:ring-[var(--beheer-accent)] focus:border-transparent transition-all appearance-none cursor-pointer shadow-sm"
+                                    className="w-full pl-4 pr-10 py-3 bg-[var(--bg-main)]/40 dark:bg-black/20 backdrop-blur-sm border-0 ring-1 ring-[var(--beheer-border)]/40 text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-[10px] font-black uppercase tracking-[0.2em] focus:ring-2 focus:ring-[var(--beheer-accent)] focus:bg-[var(--bg-main)]/80 transition-all appearance-none cursor-pointer shadow-inner outline-none"
                                 >
                                     {initialTrips.map(trip => (
-                                        <option key={trip.id} value={trip.id} className="bg-[var(--beheer-card-bg)] text-base font-bold">{trip.name}</option>
+                                        <option key={trip.id} value={trip.id} className="bg-[var(--beheer-card-bg)] text-base font-bold uppercase">{trip.name}</option>
                                     ))}
                                 </select>
-                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)] transition-all opacity-40" />
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)] transition-colors">
+                                    <ChevronDown className="h-4 w-4" />
+                                </div>
                             </div>
 
                             <button
@@ -201,14 +198,10 @@ export default function ReisActiviteitenIsland({
 
                 {/* Toast Notification */}
                 {toast && (
-                    <div className="fixed bottom-12 right-12 z-[100] animate-in fade-in slide-in-from-right-12 duration-500">
-                        <div className={`px-10 py-6 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center gap-5 border ${toast.type === 'success' ? 'bg-green-500 text-white border-green-400' : 'bg-red-500 text-white border-red-400'}`}>
-                            <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center font-black text-xl">
-                                {toast.type === 'success' ? '✓' : '!'}
-                            </div>
-                            <span className="font-black uppercase tracking-widest text-[10px]">{toast.message}</span>
-                        </div>
-                    </div>
+                    <AdminToast 
+                        toast={toast} 
+                        onClose={hideToast} 
+                    />
                 )}
             </div>
         </>

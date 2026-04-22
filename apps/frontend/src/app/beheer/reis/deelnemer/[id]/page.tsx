@@ -48,7 +48,7 @@ export default async function DeelnemerDetailPage({ params }: PageProps) {
     const [trips, activities, signupActivities] = await Promise.all([
         getSystemDirectus().request(readItems('trips', {
             fields: ['id', 'name'] as any,
-            sort: ['-event_date']
+            sort: ['-start_date']
         })),
         getSystemDirectus().request(readItems('trip_activities', {
             filter: { trip_id: { _eq: tripId } },

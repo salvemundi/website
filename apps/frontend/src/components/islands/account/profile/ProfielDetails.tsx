@@ -1,11 +1,13 @@
 'use client';
 
 import React from 'react';
-import { Mail, Phone, Calendar, Edit2, Save, Loader2, X } from 'lucide-react';
+import { Mail, Phone, Calendar, Edit2, Save, Loader2, X, LogOut } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { Tile, formatForBreak } from './ProfielUI';
 import { formatPhoneNumber } from '@/lib/utils/phone-utils';
+import { authClient } from '@/lib/auth';
+import { useRouter } from 'next/navigation';
 
 interface ProfielDetailsProps {
     user?: any;
@@ -30,8 +32,38 @@ export default function ProfielDetails({
     phoneErrors = {},
     isPending = false
 }: ProfielDetailsProps) {
+    const router = useRouter();
+
+    const handleLogout = async () => {
+        try {
+            await authClient.signOut();
+            if (typeof window !== 'undefined') {
+                window.location.href = '/?noAuto=true';
+            } else {
+                router.push('/');
+            }
+        } catch (error) {
+            console.error('Logout failed:', error);
+        }
+    };
+
+    const logoutButton = (
+        <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-red-500 bg-red-500/5 hover:bg-red-500/10 border border-red-500/10 transition-all active:scale-95 group"
+        >
+            <LogOut className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
+            <span>Uitloggen</span>
+        </button>
+    );
+
     return (
-        <Tile title="Mijn gegevens" icon={<Mail className="h-5 w-5" />} className="h-fit">
+        <Tile 
+            title="Mijn gegevens" 
+            icon={<Mail className="h-5 w-5" />} 
+            className="h-fit"
+            actions={logoutButton}
+        >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Email Box */}
                 <div className="flex items-center gap-4 rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm">

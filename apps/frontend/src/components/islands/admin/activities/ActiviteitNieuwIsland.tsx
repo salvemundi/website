@@ -3,7 +3,7 @@
 import { useState, useRef, useOptimistic, useActionState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Save, Upload, X, Loader2, Info, Calendar as CalendarIcon, MapPin, Users, Euro, Link as LinkIcon, Eye } from 'lucide-react';
-import { createActivityAction } from '@/server/actions/activiteiten.actions';
+import { createActivityAction } from '@/server/actions/activiteiten/activities-write.actions';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
@@ -128,16 +128,16 @@ export default function ActiviteitNieuwIsland({
                                 </div>
 
                                 <div className="space-y-4">
-                                    <label className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Omslagafbeelding</label>
+                                    <label className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Banner</label>
                                     {!imagePreview ? (
-                                        <div onClick={() => fileInputRef.current?.click()} className="flex flex-col items-center justify-center w-full h-[340px] border-2 border-dashed border-[var(--beheer-border)] rounded-[var(--beheer-radius)] cursor-pointer hover:border-[var(--beheer-accent)] hover:bg-[var(--beheer-accent)]/5 transition-all bg-[var(--beheer-card-soft)] group">
+                                        <div onClick={() => fileInputRef.current?.click()} className="flex flex-col items-center justify-center w-full min-h-[340px] border-2 border-dashed border-[var(--beheer-border)] rounded-[var(--beheer-radius)] cursor-pointer hover:border-[var(--beheer-accent)] hover:bg-[var(--beheer-accent)]/5 transition-all bg-[var(--beheer-card-soft)] group">
                                             <Upload className="h-8 w-8 mb-3 text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)] transition-colors" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)] text-center px-8">Klik om een afbeelding te uploaden</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)] text-center px-8">Klik om een banner te uploaden</span>
                                             <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
                                         </div>
                                     ) : (
-                                        <div className="relative group overflow-hidden rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] h-[340px] bg-[var(--beheer-card-soft)]/50">
-                                            <img src={imagePreview} alt="Preview" className="w-full h-full object-contain transition-transform duration-700" />
+                                        <div className="relative group overflow-hidden rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 h-[340px] p-4 flex items-center justify-center">
+                                            <img src={imagePreview} alt="Preview" className="w-full h-full object-contain transition-transform duration-700 drop-shadow-lg" />
                                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
                                                 <button type="button" onClick={() => fileInputRef.current?.click()} className="bg-white text-slate-900 p-4 rounded-2xl hover:scale-110 transition shadow-xl cursor-pointer"><Upload className="h-5 w-5" /></button>
                                                 <button type="button" onClick={handleRemoveImage} className="bg-red-500 text-white p-4 rounded-2xl hover:scale-110 transition shadow-xl cursor-pointer"><X className="h-5 w-5" /></button>

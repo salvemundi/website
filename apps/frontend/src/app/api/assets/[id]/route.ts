@@ -37,25 +37,27 @@ export async function GET(
             headers: {
                 Authorization: `Bearer ${token}`,
             },
-            // Cache de afbeeldingen voor 1 uur
-            next: { revalidate: 3600 },
+            cache: 'no-store',
         });
 
         if (!res.ok) {
-            return new NextResponse('Asset not found or unauthorized', { status: res.status });
+            return new NextResponse(null, { status: res.status });
         }
 
         const contentType = res.headers.get('content-type') || 'application/octet-stream';
         const buffer = await res.arrayBuffer();
 
-        return new NextResponse(buffer, {
+        if (buffer.byteLength === 0) {
+            return new NextResponse(null, { status: 404 });
+        }
+
+        return new NextResponse(new Uint8Array(buffer), {
             headers: {
                 'Content-Type': contentType,
                 'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
             },
         });
     } catch (error) {
-        
-        return new NextResponse('Internal Server Error', { status: 500 });
+        return new NextResponse(null, { status: 500 });
     }
 }

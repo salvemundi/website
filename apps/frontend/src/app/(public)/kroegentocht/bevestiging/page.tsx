@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import PaymentStatusIsland from '@/components/islands/activities/PaymentStatusIsland';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
+import BackButton from '@/components/ui/navigation/BackButton';
 
 import { getPaymentStatusAction } from '@/server/actions/reis-payment.actions';
 
@@ -22,9 +23,7 @@ export default async function KroegentochtConfirmationPage({ searchParams }: Pag
                 <div className="container mx-auto px-4 py-32 max-w-2xl text-center">
                     <h1 className="text-2xl font-black text-white uppercase italic mb-4">Ongeldige Status</h1>
                     <p className="text-gray-400 mb-8">We kunnen de status van je betaling niet verifiëren zonder een geldige transactie.</p>
-                    <a href="/kroegentocht" className="inline-block px-8 py-4 bg-white text-black font-bold rounded-2xl">
-                        Terug naar Kroegentocht
-                    </a>
+                    <BackButton href="/kroegentocht" text="Terug naar Kroegentocht" />
                 </div>
             </div>
         );
@@ -45,18 +44,17 @@ export default async function KroegentochtConfirmationPage({ searchParams }: Pag
                             <div className="absolute inset-0 bg-green-500/20 blur-3xl rounded-full" />
                             <div className="w-20 h-20 bg-green-500 rounded-full text-white flex items-center justify-center relative z-10 mx-auto text-4xl font-bold">✓</div>
                         </div>
-                        <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter italic mb-4">
+                        <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter mb-4">
                             Betaling Geslaagd!
                         </h2>
                         <p className="text-gray-400 max-w-sm mx-auto leading-relaxed mb-10">
                             Je betaling voor de kroegentocht is succesvol verwerkt. Je ontvangt binnen enkele minuten een bevestiging en je tickets in je e-mail.
                         </p>
-                        <a 
-                            href="/kroegentocht"
-                            className="px-10 py-5 rounded-2xl bg-white text-black font-black uppercase tracking-widest text-sm hover:bg-green-500 hover:text-white transition-all shadow-2xl shadow-green-500/10 flex items-center gap-2 mx-auto"
-                        >
-                            Terug naar Kroegentocht
-                        </a>
+                        <BackButton 
+                            href="/kroegentocht" 
+                            text="Terug naar Kroegentocht" 
+                            className="bg-white text-black hover:bg-green-500 hover:text-white" 
+                        />
                     </div>
                 ) : (
                     <PaymentStatusIsland 

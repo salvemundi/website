@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { getTripSignupByToken } from '@/server/actions/reis-payment.actions';
 import TripPaymentFlowIsland from '@/components/islands/reis/TripPaymentFlowIsland';
 import { Search, Home } from 'lucide-react';
+import BackButton from '@/components/ui/navigation/BackButton';
 
 export const metadata: Metadata = {
     title: 'Aanbetaling Reis | SV Salve Mundi',
@@ -41,13 +42,12 @@ export default async function AanbetalingPage({ searchParams }: PageProps) {
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-                    <a
-                        href="/reis"
-                        className="flex items-center gap-2 rounded-full bg-[var(--color-purple-500)] text-white px-8 py-3.5 font-bold shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:-translate-y-0.5 transition-all text-sm uppercase tracking-widest"
-                    >
-                        <Home className="h-4 w-4" />
-                        Terug naar Reizen
-                    </a>
+                    <BackButton 
+                        href="/reis" 
+                        text="Terug naar Reizen" 
+                        icon={Home} 
+                        className="rounded-full px-8 py-3.5"
+                    />
                 </div>
             </div>
         );
@@ -100,13 +100,12 @@ async function PaymentDataWrapper({ signupId, token, paymentType }: { signupId: 
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-                    <a
-                        href="/reis"
-                        className="flex items-center gap-2 rounded-full bg-[var(--color-purple-500)] text-white px-8 py-3.5 font-bold shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:-translate-y-0.5 transition-all text-sm uppercase tracking-widest"
-                    >
-                        <Home className="h-4 w-4" />
-                        Terug naar Reizen
-                    </a>
+                    <BackButton 
+                        href="/reis" 
+                        text="Terug naar Reizen" 
+                        icon={Home} 
+                        className="rounded-full px-8 py-3.5"
+                    />
                 </div>
             </div>
         );

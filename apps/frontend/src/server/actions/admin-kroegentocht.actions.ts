@@ -14,7 +14,6 @@ import {
     PUB_CRAWL_SIGNUP_FIELDS, 
     PUB_CRAWL_TICKET_FIELDS 
 } from '@salvemundi/validations/directus/fields';
-import { isSuperAdmin } from "@/lib/auth";
 import { getRedis } from '@/server/auth/redis-client';
 import { FLAGS_CACHE_KEY } from '@/lib/config/feature-flags';
 
@@ -36,16 +35,11 @@ import {
     updatePubCrawlSignupDb,
     deletePubCrawlSignupDb
 } from './kroegentocht-db.utils';
+import { requireAdminResource } from '../auth/auth-utils';
+import { AdminResource } from '@/shared/lib/permissions-config';
 
 async function requireKroegAdmin() {
-    const session = await auth.api.getSession({ headers: await headers() });
-    if (!session?.user) throw new Error('Niet ingelogd');
-
-    if (!isSuperAdmin((session.user as any).committees)) {
-        throw new Error('Geen toegang tot Kroegentocht beheer: SuperAdmin rechten vereist');
-    }
-
-    return session;
+    return requireAdminResource(AdminResource.Kroegentocht);
 }
 
 

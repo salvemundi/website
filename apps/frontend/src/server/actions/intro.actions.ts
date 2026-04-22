@@ -17,6 +17,7 @@ import { getSystemDirectus } from '@/lib/directus';
 import { readItems, createItem } from '@directus/sdk';
 import { query } from '@/lib/database';
 import { revalidateTag, revalidatePath, unstable_noStore as noStore } from 'next/cache';
+import { normalizeDate } from '@/lib/utils/date-utils';
 
 const getMailUrl = () => process.env.MAIL_SERVICE_URL;
 
@@ -65,6 +66,9 @@ export async function hasParentSignup(): Promise<boolean> {
 }
 
 export async function submitIntroSignup(data: IntroSignupForm): Promise<{ success: boolean; error?: string }> {
+    // Normalize date before validation
+    data.geboortedatum = normalizeDate(data.geboortedatum) as string;
+    
     const parsed = introSignupFormSchema.safeParse(data);
     if (!parsed.success) {
         return { success: false, error: 'Validatie mislukt' };
@@ -111,8 +115,40 @@ export async function submitIntroSignup(data: IntroSignupForm): Promise<{ succes
             }
         })
     }).catch(() => {});
-
     return { success: true };
+}
+
+export async function getIntroBlogsPublic() {
+    noStore();
+    try {
+        const sql = 'SELECT * FROM intro_blogs WHERE is_published = true ORDER BY id DESC LIMIT 6';
+        const { rows } = await query(sql);
+        return rows as any[];
+    } catch (e) {
+        return [];
+    }
+}
+
+export async function getAllIntroBlogsPublic() {
+    noStore();
+    try {
+        const sql = 'SELECT * FROM intro_blogs WHERE is_published = true ORDER BY id DESC';
+        const { rows } = await query(sql);
+        return rows as any[];
+    } catch (e) {
+        return [];
+    }
+}
+
+export async function getIntroBlogBySlug(slug: string) {
+    noStore();
+    try {
+        const sql = 'SELECT * FROM intro_blogs WHERE slug = $1 AND is_published = true LIMIT 1';
+        const { rows } = await query(sql, [slug]);
+        return rows[0] as any;
+    } catch (e) {
+        return null;
+    }
 }
 
 export async function submitIntroParentSignup(data: IntroParentSignupForm): Promise<{ success: boolean; error?: string }> {
