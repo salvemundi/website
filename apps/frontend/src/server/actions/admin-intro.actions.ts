@@ -33,12 +33,6 @@ import {
     createItem,
 } from '@directus/sdk';
 
-const introNotificationSchema = z.object({
-    title: z.string().min(1, 'Titel is verplicht'),
-    body: z.string().min(1, 'Inhoud is verplicht'),
-    includeParents: z.boolean().default(false),
-});
-
 import { AdminResource } from '@/shared/lib/permissions-config';
 import { getRedis } from '@/server/auth/redis-client';
 import { FLAGS_CACHE_KEY } from '@/lib/config/feature-flags';
@@ -101,9 +95,19 @@ export async function getIntroBlogs() {
 export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ success: boolean; data?: IntroBlog; error?: string; fieldErrors?: any }> {
     const session = await checkIntroAdminAccess();
 
-    const validated = introBlogSchema.partial().safeParse(blog);
+    // Sanitize: Directus returns null for empty fields, but Zod .optional() expects undefined.
+    const sanitized = Object.fromEntries(
+        Object.entries(blog).map(([k, v]) => [k, v === null ? undefined : v])
+    );
+
+    const validated = introBlogSchema.safeParse(sanitized);
     if (!validated.success) {
-        return { success: false, error: 'Validatie mislukt', fieldErrors: validated.error.flatten().fieldErrors };
+        const fieldErrors = validated.error.flatten().fieldErrors;
+        return { 
+            success: false, 
+            error: `Validatie mislukt: ${Object.keys(fieldErrors).join(', ')}`, 
+            fieldErrors 
+        };
     }
 
     const { id, ...payload } = validated.data;
@@ -156,9 +160,19 @@ export async function getIntroPlanning() {
 export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Promise<{ success: boolean; data?: IntroPlanningItem; error?: string; fieldErrors?: any }> {
     const session = await checkIntroAdminAccess();
 
-    const validated = introPlanningSchema.partial().safeParse(item);
+    // Sanitize: Directus returns null for empty fields, but Zod .optional() expects undefined.
+    const sanitized = Object.fromEntries(
+        Object.entries(item).map(([k, v]) => [k, v === null ? undefined : v])
+    );
+
+    const validated = introPlanningSchema.safeParse(sanitized);
     if (!validated.success) {
-        return { success: false, error: 'Validatie mislukt', fieldErrors: validated.error.flatten().fieldErrors };
+        const fieldErrors = validated.error.flatten().fieldErrors;
+        return { 
+            success: false, 
+            error: `Validatie mislukt: ${Object.keys(fieldErrors).join(', ')}`, 
+            fieldErrors 
+        };
     }
 
     const { id, date, ...rest } = validated.data;
@@ -166,8 +180,20 @@ export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Pro
     let day = rest.day;
     if (date) {
         try {
-            day = new Date(date).toLocaleDateString('nl-NL', { weekday: 'long' });
-        } catch { }
+            // Use a more robust way to get the Dutch day name
+            const d = new Date(date);
+            if (!isNaN(d.getTime())) {
+                day = d.toLocaleDateString('nl-NL', { weekday: 'long' });
+            }
+        } catch (e) {
+            console.error('Error calculating day:', e);
+        }
+    }
+
+    // Ensure day is at least an empty string if it's missing, 
+    // but better to throw an error if it's required and we can't calculate it.
+    if (!day && date) {
+        day = 'Onbekend'; // Fallback if calculation fails
     }
 
     const payload = { ...rest, date, day };
@@ -188,9 +214,8 @@ export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Pro
             title: result.title || '',
             description: result.description || ''
         } as IntroPlanningItem };
-    } catch (e) {
-        
-        return { success: false, error: 'Opslaan mislukt' };
+    } catch (e: any) {
+        return { success: false, error: `Opslaan mislukt: ${e.message || 'Onbekende fout'}` };
     }
 }
 
@@ -203,6 +228,28 @@ export async function deleteIntroPlanning(id: number): Promise<{ success: boolea
     } catch (e) {
         
         return { success: false, error: 'Verwijderen mislukt' };
+    }
+}
+
+export async function updateIntroSignup(id: number, data: any): Promise<{ success: boolean; error?: string }> {
+    await checkIntroAdminAccess();
+    try {
+        await getSystemDirectus().request(updateItem('intro_signups', id, data));
+        revalidatePath('/beheer/intro');
+        return { success: true };
+    } catch (e) {
+        return { success: false, error: 'Bijwerken mislukt' };
+    }
+}
+
+export async function updateIntroParentSignup(id: number, data: any): Promise<{ success: boolean; error?: string }> {
+    await checkIntroAdminAccess();
+    try {
+        await getSystemDirectus().request(updateItem('intro_parent_signups', id, data));
+        revalidatePath('/beheer/intro');
+        return { success: true };
+    } catch (e) {
+        return { success: false, error: 'Bijwerken mislukt' };
     }
 }
 
@@ -258,36 +305,6 @@ export async function toggleIntroVisibility(): Promise<{ success: boolean; show?
     } catch (e) {
         
         return { success: false, error: 'Bijwerken mislukt' };
-    }
-}
-
-
-export async function sendIntroCustomNotification(
-    title: string,
-    body: string,
-    includeParents: boolean
-): Promise<{ success: boolean; sent?: number; error?: string }> {
-    await checkIntroAdminAccess();
-
-    const validated = introNotificationSchema.safeParse({ title, body, includeParents });
-    if (!validated.success) {
-        return { success: false, error: 'Validatie mislukt' };
-    }
-
-    const notificationApiUrl = process.env.NEXT_PUBLIC_NOTIFICATION_API_URL;
-    if (!notificationApiUrl) return { success: false, error: 'Notification API niet geconfigureerd' };
-
-    try {
-        const res = await fetch(`${notificationApiUrl}/api/notifications/send-intro-custom`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(validated.data),
-        });
-        if (!res.ok) return { success: false, error: 'Verzenden mislukt' };
-        const json = await res.json();
-        return { success: true, sent: json.sent ?? 0 };
-    } catch {
-        return { success: false, error: 'Verzenden mislukt' };
     }
 }
 

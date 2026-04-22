@@ -81,17 +81,20 @@ export default function TripActivityForm({ activity, onSave, onCancel, pending }
                                 <input type="number" step="0.01" name="price" defaultValue={activity?.price || 0} required className={`${inputClass} pl-12`} />
                             </div>
                         </Field>
-                        <Field label="Max Deelnemers">
+                        <Field label="Max Reizigers">
                             <input type="number" name="max_participants" defaultValue={activity?.max_participants || ''} placeholder="Onbeperkt" className={inputClass} />
                         </Field>
                         <Field label="Weergave Volgorde">
                             <input type="number" name="display_order" defaultValue={activity?.display_order || 0} className={inputClass} />
                         </Field>
                         <div className="flex items-end pb-4">
-                            <label className="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" name="is_active" className="sr-only peer" defaultChecked={activity?.is_active ?? true} />
-                                <div className="w-11 h-6 bg-[var(--beheer-card-soft)] rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--beheer-accent)]"></div>
-                                <span className="ml-3 text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">Zichtbaar</span>
+                            <label className="flex items-center gap-4 cursor-pointer group select-none">
+                                <div className="relative">
+                                    <input type="checkbox" name="is_active" className="sr-only peer" defaultChecked={activity?.is_active ?? true} />
+                                    <div className="h-6 w-11 bg-[var(--beheer-border)]/20 dark:bg-white/5 backdrop-blur-md rounded-full peer-checked:bg-[var(--beheer-accent)] transition-all border border-[var(--beheer-border)]/30 group-hover:border-[var(--beheer-accent)]/50 shadow-inner" />
+                                    <div className="absolute left-1 top-1 h-4 w-4 bg-white rounded-full transition-all peer-checked:left-6 shadow-lg transform peer-active:scale-90" />
+                                </div>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-text)] transition-colors">Zichtbaar</span>
                             </label>
                         </div>
                     </div>
@@ -108,22 +111,28 @@ export default function TripActivityForm({ activity, onSave, onCancel, pending }
                         </button>
                     </div>
 
-                    <div className="flex flex-wrap gap-10 border-b border-[var(--beheer-border)]/50 pb-8">
-                        <label className="flex items-start gap-4 cursor-pointer group">
+                    <div className="flex flex-wrap gap-10 border-b border-[var(--beheer-border)]/30 pb-8">
+                        <label className="flex items-start gap-4 cursor-pointer group select-none">
                             <div className="relative flex items-center h-5">
-                                <input type="radio" name="max_selections" value="" defaultChecked={activity?.max_selections === null} className="w-5 h-5 text-[var(--beheer-accent)] peer focus:ring-0" />
+                                <input type="radio" name="max_selections" value="" defaultChecked={activity?.max_selections === null} className="sr-only peer" />
+                                <div className="h-5 w-5 rounded-full border-2 border-[var(--beheer-border)]/50 peer-checked:border-[var(--beheer-accent)] peer-checked:bg-[var(--beheer-accent)] transition-all flex items-center justify-center">
+                                    <div className="h-2 w-2 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity" />
+                                </div>
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text)]">Checkbox Modus</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text)] group-hover:text-[var(--beheer-accent)] transition-colors">Checkbox Modus</span>
                                 <span className="text-[9px] text-[var(--beheer-text-muted)] uppercase tracking-widest opacity-60">Meerdere extra's selecteren</span>
                             </div>
                         </label>
-                        <label className="flex items-start gap-4 cursor-pointer group">
+                        <label className="flex items-start gap-4 cursor-pointer group select-none">
                             <div className="relative flex items-center h-5">
-                                <input type="radio" name="max_selections" value="1" defaultChecked={activity?.max_selections === 1} className="w-5 h-5 text-[var(--beheer-accent)] peer focus:ring-0" />
+                                <input type="radio" name="max_selections" value="1" defaultChecked={activity?.max_selections === 1} className="sr-only peer" />
+                                <div className="h-5 w-5 rounded-full border-2 border-[var(--beheer-border)]/50 peer-checked:border-[var(--beheer-accent)] peer-checked:bg-[var(--beheer-accent)] transition-all flex items-center justify-center">
+                                    <div className="h-2 w-2 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity" />
+                                </div>
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text)]">Radio Button Modus</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text)] group-hover:text-[var(--beheer-accent)] transition-colors">Radio Button Modus</span>
                                 <span className="text-[9px] text-[var(--beheer-text-muted)] uppercase tracking-widest opacity-60">Slechts één extra kiestbaar</span>
                             </div>
                         </label>

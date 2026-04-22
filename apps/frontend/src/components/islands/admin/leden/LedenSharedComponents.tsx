@@ -6,6 +6,7 @@ import {
     Award, 
     Hash 
 } from 'lucide-react';
+import { COMMITTEES } from '@/shared/lib/permissions-config';
 
 export function InfoRow({ icon: Icon, label, value }: { icon: any, label: string, value: string }) {
     return (
@@ -30,7 +31,7 @@ export function CommitteeCard({ membership, cleanName }: { membership: any, clea
                 </div>
                 <div className="min-w-0">
                     <p className="font-extrabold text-[var(--beheer-text)] truncate">{cleanName(membership.committee_id.name)}</p>
-                    {membership.is_leader && (
+                    {membership.is_leader && membership.committee_id.azure_group_id !== COMMITTEES.BESTUUR && (
                         <span className="inline-flex items-center gap-1.5 text-[9px] font-black text-[var(--beheer-accent)] uppercase tracking-widest mt-0.5">
                             <Award className="h-3 w-3" />
                             Commissie Leider

@@ -53,68 +53,70 @@ export default function AdminReisSelectorIsland({
     };
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700">
-            <div className="flex flex-wrap items-center gap-4">
-                <div className="relative group min-w-[200px]">
-                    <select
-                        value={selectedId}
-                        onChange={handleChange}
-                        className="beheer-select"
-                    >
-                        {trips.map(trip => {
-                            const displayStartDate = trip.start_date;
-                            if (!displayStartDate) return <option key={trip.id} value={trip.id} className="bg-[var(--beheer-card-bg)]">{trip.name}</option>;
+        <>
+            <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700">
+                <div className="flex flex-wrap items-center gap-4">
+                    <div className="relative group min-w-[200px]">
+                        <select
+                            value={selectedId}
+                            onChange={handleChange}
+                            className="beheer-select"
+                        >
+                            {trips.map(trip => {
+                                const displayStartDate = trip.start_date;
+                                if (!displayStartDate) return <option key={trip.id} value={trip.id} className="bg-[var(--beheer-card-bg)]">{trip.name}</option>;
 
-                            const dateDisplay = trip.end_date
-                                ? `${format(new Date(displayStartDate), 'd MMM yyyy', { locale: nl })} - ${format(new Date(trip.end_date), 'd MMM yyyy', { locale: nl })}`
-                                : format(new Date(displayStartDate), 'd MMM yyyy', { locale: nl });
+                                const dateDisplay = trip.end_date
+                                    ? `${format(new Date(displayStartDate), 'd MMM yyyy', { locale: nl })} - ${format(new Date(trip.end_date), 'd MMM yyyy', { locale: nl })}`
+                                    : format(new Date(displayStartDate), 'd MMM yyyy', { locale: nl });
 
-                            return (
-                                <option key={trip.id} value={trip.id} className="text-sm font-black uppercase tracking-widest bg-[var(--beheer-card-bg)] text-[var(--beheer-text)]">
-                                    {trip.name} ({dateDisplay})
-                                </option>
-                            );
-                        })}
-                    </select>
-                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)] transition-colors opacity-40">
-                        <ChevronDown className="h-4 w-4" />
+                                return (
+                                    <option key={trip.id} value={trip.id} className="text-sm font-black uppercase tracking-widest bg-[var(--beheer-card-bg)] text-[var(--beheer-text)]">
+                                        {trip.name} ({dateDisplay})
+                                    </option>
+                                );
+                            })}
+                        </select>
+                        <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)] transition-colors opacity-40">
+                            <ChevronDown className="h-4 w-4" />
+                        </div>
                     </div>
-                </div>
 
-                <AdminVisibilityToggle 
-                    isVisible={settings.show}
-                    onToggle={handleToggleVisibility}
-                    isPending={isPending}
-                />
+                    <AdminVisibilityToggle 
+                        isVisible={settings.show}
+                        onToggle={handleToggleVisibility}
+                        isPending={isPending}
+                    />
 
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={() => router.push('/beheer/reis/mail')}
-                        className="flex items-center justify-center gap-2 px-8 py-2 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-[10px] font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50"
-                    >
-                        <Plane className="h-4 w-4 rotate-45 text-[var(--beheer-accent)]" />
-                        Email
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => router.push('/beheer/reis/mail')}
+                            className="flex items-center justify-center gap-2 px-8 py-2 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-[10px] font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50"
+                        >
+                            <Plane className="h-4 w-4 rotate-45 text-[var(--beheer-accent)]" />
+                            Email
+                        </button>
 
-                    <button
-                        onClick={() => router.push('/beheer/reis/activiteiten')}
-                        className="flex items-center justify-center gap-2 px-8 py-2 bg-[var(--beheer-accent)] text-white font-black text-[10px] uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 disabled:opacity-50"
-                    >
-                        <Plane className="h-4 w-4" />
-                        Activiteiten
-                    </button>
-                    
-                    <button
-                        onClick={() => router.push('/beheer/reis/instellingen')}
-                        className="flex items-center justify-center gap-2 px-8 py-2 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-[10px] font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50"
-                    >
-                        <Edit2 className="h-4 w-4" />
-                        Instellingen
-                    </button>
+                        <button
+                            onClick={() => router.push('/beheer/reis/activiteiten')}
+                            className="flex items-center justify-center gap-2 px-8 py-2 bg-[var(--beheer-accent)] text-white font-black text-[10px] uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 disabled:opacity-50"
+                        >
+                            <Plane className="h-4 w-4" />
+                            Activiteiten
+                        </button>
+                        
+                        <button
+                            onClick={() => router.push('/beheer/reis/instellingen')}
+                            className="flex items-center justify-center gap-2 px-8 py-2 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-[10px] font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50"
+                        >
+                            <Edit2 className="h-4 w-4" />
+                            Instellingen
+                        </button>
+                    </div>
                 </div>
             </div>
             
             <AdminToast toast={toast} onClose={hideToast} />
-        </div>
+        </>
     );
 }

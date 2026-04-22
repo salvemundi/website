@@ -21,11 +21,11 @@ import { fetchUserPubCrawlSignupsDb } from './kroegentocht-db.utils';
 import { fetchUserEventSignupsDb } from './event-db.utils';
 
 
-export async function getUserEventSignups(overrideEmail?: string): Promise<EventSignup[]> {
+export async function getUserEventSignups(): Promise<EventSignup[]> {
     const session = await auth.api.getSession({ headers: await headers() });
     const user = session?.user;
 
-    const email = overrideEmail || user?.email;
+    const email = user?.email;
     if (!email) return [];
 
     try {
@@ -45,11 +45,11 @@ export async function getUserEventSignups(overrideEmail?: string): Promise<Event
 }
 
 
-export async function getUserPubCrawlSignups(overrideEmail?: string): Promise<any[]> {
+export async function getUserPubCrawlSignups(): Promise<any[]> {
     const session = await auth.api.getSession({ headers: await headers() });
     const user = session?.user;
 
-    const email = overrideEmail || user?.email;
+    const email = user?.email;
     if (!email) return [];
 
     try {
@@ -61,11 +61,11 @@ export async function getUserPubCrawlSignups(overrideEmail?: string): Promise<an
 }
 
 
-export async function getUserTransactions(overrideUserId?: string): Promise<Transaction[]> {
+export async function getUserTransactions(): Promise<Transaction[]> {
     const session = await auth.api.getSession({ headers: await headers() });
     const user = session?.user;
 
-    const targetUserId = overrideUserId || user?.id;
+    const targetUserId = user?.id;
     if (!targetUserId) return [];
 
     try {
@@ -92,6 +92,9 @@ export async function getUserTransactions(overrideUserId?: string): Promise<Tran
 
 
 export async function getWhatsAppGroups(): Promise<WhatsAppGroup[]> {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session?.user) return [];
+
     try {
         const res = await query(
             `SELECT id, name, invite_link, is_active 

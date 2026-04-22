@@ -6,16 +6,16 @@ import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 import ActiviteitNieuwIsland from '@/components/islands/admin/activities/ActiviteitNieuwIsland';
 
+import { getPermissions } from '@/shared/lib/permissions';
+import { fetchUserCommitteesDb } from '@/server/actions/user-db.utils';
+
 export const metadata: Metadata = {
     title: 'Activiteit Aanmaken | SV Salve Mundi',
 };
 
-async function getCommittees(user: any) {
+async function getCommittees(user: any, permissions: any) {
     const memberships = user.committees || [];
-    const isPowerful = memberships.some((c: any) => {
-        const name = (c?.name || '').toString().toLowerCase();
-        return name.includes('bestuur') || name.includes('ict') || name.includes('kandi');
-    });
+    const isPowerful = permissions.isLeader || permissions.isICT;
 
     try {
         if (isPowerful) {
@@ -62,7 +62,20 @@ export default async function ActivityCreatePage() {
         );
     }
 
-    const committees = await getCommittees(session.user);
+    const user = session.user as any;
+    const userCommittees = await fetchUserCommitteesDb(user.id).catch(() => []);
+    const permissions = getPermissions(userCommittees || []);
+
+    if (!permissions.canAccessActivitiesEdit) {
+        return (
+            <AdminUnauthorized 
+                title="Activiteit Aanmaken"
+                description="Je hebt geen rechten om activiteiten aan te maken. Alleen commissieleiders en beheer hebben deze rechten."
+            />
+        );
+    }
+
+    const committees = await getCommittees(user, permissions);
 
     return (
         <div className="pb-20">

@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { Tile } from './ProfielUI';
 import { getImageUrl } from '@/lib/utils/image-utils';
+import { COMMITTEES } from '@/shared/lib/permissions-config';
 
 interface ProfielHeaderProps {
     user?: any;
@@ -63,7 +64,7 @@ export default function ProfielHeader({ user = {}, membershipStatus = { text: ''
                                         key={committee.id || (committee.name ?? 'unknown')}
                                         className="group relative inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-purple-50)] dark:bg-white/10 border border-[var(--color-purple-100)] dark:border-white/20 rounded-full text-xs font-bold text-[var(--color-purple-700)] dark:text-white shadow-sm max-w-full"
                                     >
-                                        {committee.is_leader && (
+                                        {committee.is_leader && committee.azure_group_id !== COMMITTEES.BESTUUR && (
                                             <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 border-2 border-[var(--bg-card)] shadow-md flex items-center justify-center shrink-0">
                                                 <span className="text-[8px]">⭐</span>
                                             </span>

@@ -29,8 +29,8 @@ interface Props {
 
 export default function TripActivitySignupsModal({ activityName, options, signups, loading, onClose }: Props) {
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="bg-[var(--beheer-card-bg)] w-full max-w-4xl rounded-[var(--beheer-radius)] shadow-[0_0_50px_rgba(0,0,0,0.3)] overflow-hidden border border-[var(--beheer-border)] flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-500">
+            <div className="bg-[var(--beheer-card-bg)]/90 backdrop-blur-xl w-full max-w-4xl rounded-[2rem] shadow-[0_40px_100px_rgba(0,0,0,0.5)] overflow-hidden border border-[var(--beheer-border)]/50 flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-500">
                 <div className="p-8 border-b border-[var(--beheer-border)] flex items-center justify-between">
                     <div className="space-y-2">
                         <h2 className="text-xl font-black text-[var(--beheer-text)] uppercase tracking-tight flex items-center gap-3">
@@ -64,7 +64,7 @@ export default function TripActivitySignupsModal({ activityName, options, signup
                             <table className="w-full text-left">
                                 <thead className="bg-[var(--beheer-card-soft)]/50 border-b border-[var(--beheer-border)]">
                                     <tr className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">
-                                        <th className="px-8 py-5">Deelnemer</th>
+                                        <th className="px-8 py-5">Reiziger</th>
                                         <th className="px-8 py-5">Email</th>
                                         <th className="px-8 py-5">Gekozen Opties</th>
                                     </tr>

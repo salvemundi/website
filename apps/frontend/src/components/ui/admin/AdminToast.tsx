@@ -25,7 +25,7 @@ export default function AdminToast({ toast, onClose }: AdminToastProps) {
                     initial={{ opacity: 0, scale: 0.9, y: 50, x: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
                     exit={{ opacity: 0, scale: 0.9, y: 20, transition: { duration: 0.2 } }}
-                    className="fixed bottom-10 right-10 z-[9999]"
+                    className="fixed bottom-10 right-10 z-[100000]"
                 >
                     <div className={`
                         px-8 py-5 rounded-[2rem] shadow-2xl flex items-center gap-5 backdrop-blur-xl border border-white/10 relative overflow-hidden group

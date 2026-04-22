@@ -101,7 +101,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                                 const { rows: dbUsers } = await pool.query(
                                                     `SELECT id, first_name, last_name, email, avatar, 
                                                             membership_status, membership_expiry, phone_number, 
-                                                            date_of_birth, minecraft_username, admin_access, role, is_ict
+                                                            date_of_birth, minecraft_username, admin_access, role
                                                      FROM directus_users 
                                                      WHERE id = $1 LIMIT 1`,
                                                     [rawImpUser.id]
@@ -110,7 +110,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                                 if (dbUsers.length > 0) {
                                                     const dbUser = dbUsers[0];
                                                     const { rows: impCommittees } = await pool.query(
-                                                        `SELECT c.id, c.name, c.azure_group_id FROM committee_members m 
+                                                        `SELECT c.id, c.name, c.azure_group_id, m.is_leader FROM committee_members m 
                                                          JOIN committees c ON m.committee_id = c.id 
                                                          WHERE m.user_id = $1`,
                                                         [dbUser.id]
@@ -129,7 +129,6 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                                         date_of_birth: dbUser.date_of_birth,
                                                         minecraft_username: dbUser.minecraft_username,
                                                         isAdmin: !!dbUser.admin_access,
-                                                        isICT: !!dbUser.is_ict,
                                                         role: dbUser.role,
                                                         committees: impCommittees
                                                     };

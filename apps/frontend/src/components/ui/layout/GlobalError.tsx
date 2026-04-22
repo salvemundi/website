@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { AlertTriangle, RefreshCcw, Home } from 'lucide-react';
-import Link from 'next/link';
+import BackButton from '@/components/ui/navigation/BackButton';
 
 interface GlobalErrorProps {
     error: Error & { digest?: string };
@@ -46,13 +46,12 @@ export default function GlobalError({
                     Opnieuw Proberen
                 </button>
 
-                <Link
-                    href="/"
-                    className="flex items-center gap-2 rounded-full px-8 py-3.5 font-bold text-[var(--text-main)] bg-[var(--bg-card)] border border-[var(--border-color)]/20 hover:bg-[var(--border-color)]/5 transition-all"
-                >
-                    <Home className="h-4 w-4" />
-                    Terug naar Home
-                </Link>
+                <BackButton 
+                    href="/" 
+                    text="Terug naar Home" 
+                    icon={Home} 
+                    className="rounded-full px-8 py-3.5"
+                />
             </div>
 
             {error.digest && (

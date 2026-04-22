@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import BackButton from '@/components/ui/navigation/BackButton';
 
 export const metadata: Metadata = {
     title: 'Safe Haven | SV Salve Mundi',
@@ -9,7 +10,8 @@ export default function SafeHavenPage() {
     return (
         <div className="bg-[var(--bg-main)]">
             <header className="bg-[var(--bg-soft)] py-12">
-                <div className="mx-auto max-w-app px-4">
+                <div className="mx-auto max-w-app px-4 space-y-4">
+                    <BackButton href="/profiel" text="Terug naar profiel" />
                     <h1 className="text-4xl font-extrabold text-[var(--text-main)]">Safe Haven Beschikbaarheid</h1>
                 </div>
             </header>

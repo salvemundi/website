@@ -1,4 +1,5 @@
-import Link from 'next/link';
+import BackButton from '@/components/ui/navigation/BackButton';
+import { Home } from 'lucide-react';
 
 export default function Page() {
     return (
@@ -23,15 +24,12 @@ export default function Page() {
                     Er is een fout opgetreden tijdens het inloggen. Probeer het opnieuw of neem contact op met de ICT-commissie voor ondersteuning.
                 </p>
                 
-                <Link
-                    href="/"
-                    className="inline-block w-full text-white font-bold px-8 py-3 rounded-xl shadow-lg transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
-                    style={{ 
-                        background: 'linear-gradient(to right, var(--color-purple-500), var(--color-purple-600))',
-                    }}
-                >
-                    Terug naar de homepage
-                </Link>
+                <BackButton 
+                    href="/" 
+                    text="Terug naar Home" 
+                    icon={Home} 
+                    className="w-full justify-center py-4 rounded-xl shadow-lg"
+                />
             </div>
         </div>
     );

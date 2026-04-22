@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import PaymentStatusIsland from '@/components/islands/activities/PaymentStatusIsland';
 import { getPaymentStatusAction } from '@/server/actions/reis-payment.actions';
-import { CheckCircle2, ChevronRight, XCircle } from 'lucide-react';
+import { CheckCircle2, ChevronRight, XCircle, Home } from 'lucide-react';
+import BackButton from '@/components/ui/navigation/BackButton';
 
 export const metadata: Metadata = {
     title: 'Bevestiging Betaling | SV Salve Mundi',
@@ -26,9 +27,7 @@ export default async function TripConfirmationPage({ searchParams }: PageProps) 
                         <XCircle className="w-16 h-16 text-red-500 mx-auto mb-6" />
                         <h1 className="text-2xl font-black text-white uppercase italic mb-4 tracking-tighter">Ongeldige Status</h1>
                         <p className="text-[var(--text-muted)] mb-8 leading-relaxed">We kunnen de status van je betaling niet verifiëren zonder een geldige transactie- of token-ID.</p>
-                        <a href="/reis" className="inline-block px-8 py-4 bg-white text-black font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-[var(--color-purple-theme)] hover:text-white transition-all">
-                            Terug naar Reizen
-                        </a>
+                        <BackButton href="/reis" text="Terug naar Reizen" />
                     </div>
                 </div>
             </PublicPageShell>
@@ -55,13 +54,12 @@ export default async function TripConfirmationPage({ searchParams }: PageProps) 
                         <p className="text-[var(--text-muted)] max-w-sm mx-auto leading-relaxed mb-10">
                             Je betaling is succesvol verwerkt. Je ontvangt binnen enkele minuten een bevestiging in je e-mail.
                         </p>
-                        <a 
-                            href="/reis"
-                            className="px-10 py-5 rounded-2xl bg-white text-black font-black uppercase tracking-widest text-xs hover:bg-green-500 hover:text-white transition-all shadow-2xl shadow-green-500/10 flex items-center gap-2 mx-auto"
-                        >
-                            Terug naar Reizen
-                            <ChevronRight className="w-5 h-5" />
-                        </a>
+                        <BackButton 
+                            href="/reis" 
+                            text="Terug naar Reizen" 
+                            icon={ChevronRight} 
+                            className="bg-white text-black hover:bg-green-500 hover:text-white" 
+                        />
                     </div>
                 ) : (
                     <PaymentStatusIsland mollieId={token} initialStatus={initialStatus} />

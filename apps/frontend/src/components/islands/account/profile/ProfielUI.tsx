@@ -43,6 +43,7 @@ export function Tile({
 
 interface QuickLinkProps {
     label: string; 
+    subtitle?: string;
     icon: React.ReactNode; 
     onClick?: () => void;
     href?: string; 
@@ -51,7 +52,7 @@ interface QuickLinkProps {
 }
 
 export function QuickLink({
-    label, icon, onClick, href, locked, external
+    label, subtitle, icon, onClick, href, locked, external
 }: QuickLinkProps) {
     const common = "group flex items-center gap-4 rounded-2xl bg-slate-50 dark:bg-black/20 p-5 transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-purple-300)] border border-slate-200 dark:border-white/10 hover:border-[var(--color-purple-300)] shadow-sm w-full hover:-translate-y-0.5";
     const inner = (
@@ -60,7 +61,10 @@ export function QuickLink({
                 {icon}
             </div>
             <span className="flex-1 flex items-center justify-between text-sm font-bold text-[var(--color-purple-700)] dark:text-white">
-                <span>{label}</span>
+                <div className="flex flex-col items-start gap-0.5">
+                    <span>{label}</span>
+                    {subtitle && <span className="text-[10px] font-medium text-[var(--color-purple-500)] dark:text-[var(--color-purple-400)] leading-none opacity-80">{subtitle}</span>}
+                </div>
                 <div className="flex items-center gap-2">
                     {locked && <Lock className="h-3 w-3 opacity-50" />}
                     {external && <ExternalLink className="h-3 w-3 opacity-50" />}

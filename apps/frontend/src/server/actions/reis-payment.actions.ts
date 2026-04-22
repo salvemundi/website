@@ -27,6 +27,7 @@ import {
 import { auth } from '@/server/auth/auth';
 import { headers as nextHeaders } from 'next/headers';
 import { getRedis } from '@/server/auth/redis-client';
+import { normalizeDate } from '@/lib/utils/date-utils';
 
 /**
  * Validates if the current request has access to a signup.
@@ -115,6 +116,10 @@ export async function updateSignupDetails(signupId: number, data: ReisPaymentEnr
         const access = await validateAccess(signupId, token);
         if (!access.authorized || !access.signup) {
             return { success: false, error: access.error };
+        }
+
+        if (data.date_of_birth) {
+            data.date_of_birth = normalizeDate(data.date_of_birth) as any;
         }
 
         const validated = reisPaymentEnrichmentSchema.safeParse(data);

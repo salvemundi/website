@@ -28,6 +28,7 @@ export const auth = betterAuth({
             clientId: process.env.AZURE_WEBSITEV7_AUTH_CLIENT_ID!,
             clientSecret: process.env.AZURE_WEBSITEV7_AUTH_CLIENT_SECRET!,
             tenantId: process.env.AZURE_WEBSITEV7_TENANT_ID!,
+            prompt: "select_account",
         },
     },
     user: {

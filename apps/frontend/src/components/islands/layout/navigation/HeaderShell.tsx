@@ -24,7 +24,10 @@ export function HeaderShell({ children, mobileMenu }: HeaderShellProps) {
 
         if (needLogin === 'true') {
             router.replace(pathname || '/');
-            authClient.signIn.social({ provider: 'microsoft', callbackURL }).catch(console.error);
+            authClient.signIn.social({ 
+                provider: 'microsoft', 
+                callbackURL
+            }).catch(console.error);
         }
     }, [searchParams, pathname, router]);
 

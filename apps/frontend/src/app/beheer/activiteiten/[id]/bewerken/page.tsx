@@ -7,6 +7,9 @@ import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 import ActiviteitBewerkenIsland from '@/components/islands/admin/activities/ActiviteitBewerkenIsland';
 
+import { getPermissions } from '@/shared/lib/permissions';
+import { fetchUserCommitteesDb } from '@/server/actions/user-db.utils';
+
 export const metadata: Metadata = {
     title: 'Activiteit Bewerken | SV Salve Mundi',
 };
@@ -22,8 +25,20 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
     if (!session || !session.user) return <AdminUnauthorized title="Activiteit Bewerken" />;
 
     const user = session.user as any;
-    const memberships = user.committees || [];
-    
+    const userCommittees = await fetchUserCommitteesDb(user.id).catch(() => []);
+    const permissions = getPermissions(userCommittees || []);
+
+    if (!permissions.canAccessActivitiesEdit) {
+        return (
+            <AdminUnauthorized 
+                title="Activiteit Bewerken"
+                description="Je hebt geen rechten om activiteiten te bewerken. Alleen commissieleiders en beheer hebben deze rechten."
+            />
+        );
+    }
+
+    const isPowerful = permissions.isLeader || permissions.isICT;
+
     // NUCLEAR SSR: Fetch all data before flushing any part of the page content
     const [event, allCommittees] = await Promise.all([
         getSystemDirectus().request(
@@ -56,30 +71,10 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
         name: c.name.replace(/\|\|.*salvemundi.*$/i, '').replace(/\|+$/g, '').trim()
     }));
 
-    // RBAC
-    const isPowerful = memberships.some((c: any) => {
-        const name = (c?.name || '').toString().toLowerCase();
-        return name.includes('bestuur') || name.includes('ict') || name.includes('kandi');
-    });
-
-    let hasAccess = isPowerful;
-    if (!hasAccess) {
-        hasAccess = eventData.committee_id ? memberships.some((c: any) => String(c.id) === String(eventData.committee_id)) : false;
-    }
-
-    if (!hasAccess) {
-        return (
-            <AdminUnauthorized 
-                title="Activiteit Bewerken"
-                description="Je hebt geen rechten om deze specifieke activiteit te bewerken. Dit kan alleen als je lid bent van de organiserende commissie, het bestuur of de ICT-commissie."
-            />
-        );
-    }
-
     // Filter allowed committees for the dropdown (only if not powerful, otherwise show all)
     const allowedCommitteesForDropdown = isPowerful 
         ? cleanedCommittees 
-        : cleanedCommittees.filter((c: any) => memberships.some((m: any) => String(m.id) === String(c.id)));
+        : cleanedCommittees.filter((c: any) => (userCommittees || []).some((m: any) => String(m.id) === String(c.id)));
 
     return (
         <div className="pb-20">

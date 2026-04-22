@@ -16,7 +16,7 @@ import { formatDate } from '@/shared/lib/utils/date';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import type { IntroPlanningItem } from '@salvemundi/validations/schema/intro.zod';
-import { Field, inputClass } from './IntroTabComponents';
+import { ActionButton, EmptyState, Field, inputClass, Button } from './IntroTabComponents';
 
 interface Props {
     planning: IntroPlanningItem[];
@@ -32,7 +32,16 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
 
     const handleSave = async () => {
         if (!editingPlanning) return;
-        await onSave(editingPlanning);
+
+        // Clean up empty strings to avoid Zod validation errors on the server
+        const sanitized = { ...editingPlanning };
+        Object.keys(sanitized).forEach(key => {
+            if ((sanitized as any)[key] === '') {
+                delete (sanitized as any)[key];
+            }
+        });
+
+        await onSave(sanitized);
         setEditingPlanning(null);
     };
 
@@ -40,10 +49,12 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
         <div className="animate-in fade-in duration-500">
             <div className="flex items-center justify-between mb-8">
                 {editingPlanning === null && (
-                    <button onClick={() => setEditingPlanning({ date: '', time_start: '', title: '', description: '' })} className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95">
-                        <Plus className="h-4 w-4" /> 
+                    <Button 
+                        onClick={() => setEditingPlanning({ date: '', time_start: '', title: '', description: '' })} 
+                        icon={Plus}
+                    >
                         Nieuw Item
-                        </button>
+                    </Button>
                 )}
                 <div className="flex gap-1 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] p-1.5 ml-auto shadow-sm">
                     <button onClick={() => setView('list')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${view === 'list' ? 'bg-[var(--beheer-accent)] text-white shadow-md' : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)]'}`}>
@@ -69,13 +80,13 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <Field label="Datum *">
-                            <input type="date" value={editingPlanning.date || ''} onChange={e => setEditingPlanning({ ...editingPlanning, date: e.target.value })} className={inputClass} />
+                            <input type="date" value={editingPlanning.date || ''} onChange={e => setEditingPlanning({ ...editingPlanning, date: e.target.value })} className={`${inputClass} dark:[color-scheme:dark]`} />
                         </Field>
                         <Field label="Starttijd *">
-                            <input type="time" value={editingPlanning.time_start || ''} onChange={e => setEditingPlanning({ ...editingPlanning, time_start: e.target.value })} className={inputClass} />
+                            <input type="time" value={editingPlanning.time_start || ''} onChange={e => setEditingPlanning({ ...editingPlanning, time_start: e.target.value })} className={`${inputClass} dark:[color-scheme:dark]`} />
                         </Field>
                         <Field label="Eindtijd">
-                            <input type="time" value={editingPlanning.time_end || ''} onChange={e => setEditingPlanning({ ...editingPlanning, time_end: e.target.value })} className={inputClass} />
+                            <input type="time" value={editingPlanning.time_end || ''} onChange={e => setEditingPlanning({ ...editingPlanning, time_end: e.target.value })} className={`${inputClass} dark:[color-scheme:dark]`} />
                         </Field>
                         <div className="md:col-span-2">
                             <Field label="Titel *">
@@ -92,14 +103,18 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                         </div>
                     </div>
 
-                    <div className="flex gap-3 pt-10 border-t border-[var(--beheer-border)] mt-10">
-                        <button onClick={handleSave} disabled={saving} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-4 bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 disabled:opacity-50">
-                            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} 
+                    <div className="flex gap-3 pt-10 border-t border-[var(--beheer-border)]/50 mt-10">
+                        <Button 
+                            onClick={handleSave} 
+                            loading={saving} 
+                            icon={Save}
+                            disabled={!editingPlanning.date || !editingPlanning.time_start || !editingPlanning.title || !editingPlanning.description}
+                        >
                             Opslaan
-                        </button>
-                        <button onClick={() => setEditingPlanning(null)} className="px-8 py-4 rounded-[var(--beheer-radius)] text-xs font-black uppercase tracking-widest text-[var(--beheer-text-muted)] hover:bg-[var(--beheer-card-soft)] border border-transparent hover:border-[var(--beheer-border)] transition-all">
+                        </Button>
+                        <Button onClick={() => setEditingPlanning(null)} variant="ghost" icon={X}>
                             Annuleren
-                        </button>
+                        </Button>
                     </div>
                 </div>
             )}
@@ -121,20 +136,23 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                                 {item.description && <p className="text-sm text-[var(--beheer-text-muted)] mt-4 font-medium leading-relaxed">{item.description}</p>}
                             </div>
                             <div className="flex gap-2 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onClick={() => setEditingPlanning(item)} className="p-3 text-[var(--beheer-text-muted)] hover:text-[var(--beheer-accent)] hover:bg-[var(--beheer-accent)]/10 rounded-xl transition-all"><Edit className="h-4 w-4" /></button>
-                                <button onClick={() => onDelete(item.id!)} disabled={deletingId === item.id} className="p-3 text-[var(--beheer-text-muted)] hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all">
-                                    {deletingId === item.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                                </button>
+                                <ActionButton 
+                                    icon={Edit} 
+                                    onClick={() => setEditingPlanning(item)} 
+                                    title="Bewerken" 
+                                />
+                                <ActionButton 
+                                    icon={Trash2} 
+                                    onClick={() => onDelete(item.id!)} 
+                                    variant="danger"
+                                    disabled={deletingId === item.id}
+                                    title="Verwijderen"
+                                />
                             </div>
                         </div>
                     ))}
                     {planning.length === 0 && (
-                        <div className="py-20 text-center text-[var(--beheer-text-muted)]">
-                            <div className="p-6 bg-[var(--beheer-card-soft)] rounded-full w-fit mx-auto mb-6">
-                                <Calendar className="h-12 w-12 opacity-20" />
-                            </div>
-                            <p className="font-black uppercase tracking-widest text-xs">Geen planning items aangemaakt</p>
-                        </div>
+                        <EmptyState icon={Calendar} text="Nog geen planning items aangemaakt" />
                     )}
                 </div>
             )}
@@ -163,8 +181,18 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                                                     <p className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] opacity-70">{item.time_start}{item.time_end ? ` - ${item.time_end}` : ''}</p>
                                                 </div>
                                                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button onClick={() => setEditingPlanning(item)} className="p-1.5 text-[var(--beheer-text-muted)] hover:text-[var(--beheer-accent)] transition-colors"><Edit className="h-3.5 w-3.5" /></button>
-                                                    <button onClick={() => onDelete(item.id!)} className="p-1.5 text-[var(--beheer-text-muted)] hover:text-red-500 transition-colors"><Trash2 className="h-3.5 w-3.5" /></button>
+                                                    <ActionButton 
+                                                        icon={Edit} 
+                                                        onClick={() => setEditingPlanning(item)} 
+                                                        title="Bewerken" 
+                                                    />
+                                                    <ActionButton 
+                                                        icon={Trash2} 
+                                                        onClick={() => onDelete(item.id!)} 
+                                                        variant="danger"
+                                                        disabled={deletingId === item.id}
+                                                        title="Verwijderen"
+                                                    />
                                                 </div>
                                             </div>
                                         </div>
@@ -175,6 +203,9 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                     </div>
                 );
             })()}
+            {view === 'calendar' && planning.length === 0 && (
+                <EmptyState icon={Calendar} text="Nog geen planning items aangemaakt" />
+            )}
         </div>
     );
 }

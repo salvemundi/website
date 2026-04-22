@@ -1,10 +1,9 @@
 'use client';
 
-import { auth } from '@/server/auth/auth';
 import { useState, useRef, useOptimistic, useActionState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save, Upload, X, Loader2, Trash2, Info, Calendar as CalendarIcon, MapPin, Users, Euro, Link as LinkIcon, Eye } from 'lucide-react';
-import { updateActivityAction, deleteActivity } from '@/server/actions/activiteiten.actions';
+import { updateActivityAction, deleteActivity } from '@/server/actions/activiteiten/activities-write.actions';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminToast from '@/components/ui/admin/AdminToast';
@@ -127,16 +126,34 @@ export default function ActiviteitBewerkenIsland({
 
     const formatDate = (dateStr?: string | null) => {
         if (!dateStr) return '';
-        try { return new Date(dateStr).toISOString().slice(0, 10); } catch { return ''; }
+        try { 
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return '';
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        } catch { return ''; }
     };
     
     const formatDateTime = (dateStr?: string | null) => {
         if (!dateStr) return '';
         try { 
             const d = new Date(dateStr);
-            d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-            return d.toISOString().slice(0, 16);
+            if (isNaN(d.getTime())) return '';
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
         } catch { return ''; }
+    };
+
+    const formatTime = (timeStr?: string | null) => {
+        if (!timeStr) return '';
+        // Directus returns HH:mm:ss, but input type="time" expects HH:mm
+        return timeStr.slice(0, 5);
     };
 
     const formErrors = state.fieldErrors || {};
@@ -196,16 +213,16 @@ export default function ActiviteitBewerkenIsland({
                                 </div>
 
                                 <div className="space-y-4">
-                                    <label className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Omslagafbeelding</label>
+                                    <label className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Banner</label>
                                     {!imagePreview ? (
-                                        <div onClick={() => fileInputRef.current?.click()} className="flex flex-col items-center justify-center w-full h-[340px] border-2 border-dashed border-[var(--beheer-border)] rounded-[var(--beheer-radius)] cursor-pointer hover:border-[var(--beheer-accent)] hover:bg-[var(--beheer-accent)]/5 transition-all bg-[var(--beheer-card-soft)] group">
+                                        <div onClick={() => fileInputRef.current?.click()} className="flex flex-col items-center justify-center w-full min-h-[340px] border-2 border-dashed border-[var(--beheer-border)] rounded-[var(--beheer-radius)] cursor-pointer hover:border-[var(--beheer-accent)] hover:bg-[var(--beheer-accent)]/5 transition-all bg-[var(--beheer-card-soft)] group">
                                             <Upload className="h-8 w-8 mb-3 text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)] transition-colors" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)] text-center px-8">Klik om een afbeelding te uploaden</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)] text-center px-8">Klik om een banner te uploaden</span>
                                             <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
                                         </div>
                                     ) : (
-                                        <div className="relative group overflow-hidden rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] h-[340px] bg-[var(--beheer-card-soft)]/50">
-                                            <img src={imagePreview} alt="Preview" className="w-full h-full object-contain transition-transform duration-700" />
+                                        <div className="relative group overflow-hidden rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 h-[340px] p-4 flex items-center justify-center">
+                                            <img src={imagePreview} alt="Preview" className="w-full h-full object-contain transition-transform duration-700 drop-shadow-lg" />
                                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
                                                 <button type="button" onClick={() => fileInputRef.current?.click()} className="bg-white text-slate-900 p-4 rounded-2xl hover:scale-110 transition shadow-xl cursor-pointer"><Upload className="h-5 w-5" /></button>
                                                 <button type="button" onClick={handleRemoveImage} className="bg-red-500 text-white p-4 rounded-2xl hover:scale-110 transition shadow-xl cursor-pointer"><X className="h-5 w-5" /></button>
@@ -228,20 +245,20 @@ export default function ActiviteitBewerkenIsland({
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                                 <div className="lg:col-span-2">
                                     <label htmlFor="event_date" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Startdatum *</label>
-                                    <input type="date" id="event_date" name="event_date" defaultValue={formatDate(event.event_date)} className={`beheer-input ${formErrors.event_date ? 'border-red-500' : ''}`} />
+                                    <input type="date" id="event_date" name="event_date" defaultValue={formatDate(event.event_date)} suppressHydrationWarning className={`beheer-input ${formErrors.event_date ? 'border-red-500' : ''}`} />
                                     {formErrors.event_date && <p className="text-red-500 text-[10px] font-black uppercase tracking-widest mt-2">{formErrors.event_date[0]}</p>}
                                 </div>
                                 <div className="lg:col-span-2">
                                     <label htmlFor="event_time" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Starttijd</label>
-                                    <input type="time" id="event_time" name="event_time" defaultValue={event.event_time?.slice(0, 5) || ''} className="beheer-input" />
+                                    <input type="time" id="event_time" name="event_time" defaultValue={formatTime(event.event_time)} suppressHydrationWarning className="beheer-input" />
                                 </div>
                                 <div className="lg:col-span-2">
                                     <label htmlFor="event_date_end" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Einddatum</label>
-                                    <input type="date" id="event_date_end" name="event_date_end" defaultValue={formatDate(event.event_date_end)} className="beheer-input" />
+                                    <input type="date" id="event_date_end" name="event_date_end" defaultValue={formatDate(event.event_date_end)} suppressHydrationWarning className="beheer-input" />
                                 </div>
                                 <div className="lg:col-span-2">
                                     <label htmlFor="event_time_end" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Eindtijd</label>
-                                    <input type="time" id="event_time_end" name="event_time_end" defaultValue={event.event_time_end?.slice(0, 5) || ''} className="beheer-input" />
+                                    <input type="time" id="event_time_end" name="event_time_end" defaultValue={formatTime(event.event_time_end)} suppressHydrationWarning className="beheer-input" />
                                 </div>
                             </div>
 
@@ -254,7 +271,7 @@ export default function ActiviteitBewerkenIsland({
                                 </div>
                                 <div>
                                     <label htmlFor="registration_deadline" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Inschrijfdeadline</label>
-                                    <input type="datetime-local" id="registration_deadline" name="registration_deadline" defaultValue={formatDateTime(event.registration_deadline)} className="beheer-input" />
+                                    <input type="datetime-local" id="registration_deadline" name="registration_deadline" defaultValue={formatDateTime(event.registration_deadline)} suppressHydrationWarning className="beheer-input" />
                                 </div>
                             </div>
 
@@ -353,7 +370,7 @@ export default function ActiviteitBewerkenIsland({
                                                 <span className="text-[10px] font-black text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-text)] uppercase tracking-widest transition-colors">Inplannen</span>
                                                 {status === 'scheduled' && (
                                                     <div className="mt-4 animate-in slide-in-from-top-2 duration-300">
-                                                        <input type="datetime-local" name="publish_date" defaultValue={formatDateTime(event.publish_date)} className="beheer-input bg-[var(--beheer-card-soft)]" />
+                                                        <input type="datetime-local" name="publish_date" defaultValue={formatDateTime(event.publish_date)} suppressHydrationWarning className="beheer-input bg-[var(--beheer-card-soft)]" />
                                                     </div>
                                                 )}
                                             </div>

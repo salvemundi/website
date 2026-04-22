@@ -14,6 +14,7 @@ import { rateLimit } from '../utils/ratelimit';
 import { query } from '@/lib/database';
 import { getExpandedEnv } from '../utils/env';
 import { getValidCoupon } from '../utils/coupon.utils';
+import { normalizeDate } from '@/lib/utils/date-utils';
 
 const getFinanceServiceUrl = () =>
     getExpandedEnv('FINANCE_SERVICE_URL');
@@ -56,6 +57,9 @@ export async function validateCouponAction(formData: FormData) {
 }
 
 export async function initiateMembershipPaymentAction(formData: SignupFormData) {
+    // Normalize date before validation
+    formData.geboortedatum = normalizeDate(formData.geboortedatum) as string;
+    
     const parsed = signupSchema.safeParse(formData);
 
     if (!parsed.success) {

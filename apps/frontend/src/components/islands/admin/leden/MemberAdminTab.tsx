@@ -14,6 +14,7 @@ import {
     RefreshCw 
 } from 'lucide-react';
 import { cleanName } from './LedenSharedComponents';
+import { COMMITTEES } from '@/shared/lib/permissions-config';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 
@@ -146,7 +147,7 @@ export default function MemberAdminTab({
                             {optimisticMemberships.filter(m => m.committee_id.azure_group_id).map(m => (
                                 <div key={m.id} className="flex items-center justify-between p-4 rounded-2xl bg-[var(--beheer-card-soft)]/50 border border-[var(--beheer-border)] group">
                                     <div className="flex items-center gap-3">
-                                        <Award className={`h-5 w-5 ${m.is_leader ? 'text-[var(--beheer-accent)]' : 'text-[var(--beheer-text-muted)] opacity-20'}`} />
+                                        <Award className={`h-5 w-5 ${m.is_leader && m.committee_id.azure_group_id !== COMMITTEES.BESTUUR ? 'text-[var(--beheer-accent)]' : 'text-[var(--beheer-text-muted)] opacity-20'}`} />
                                         <span className="font-bold text-[var(--beheer-text)] text-sm uppercase tracking-tight">{cleanName(m.committee_id.name)}</span>
                                     </div>
                                     <button 

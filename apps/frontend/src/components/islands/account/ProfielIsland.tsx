@@ -42,6 +42,8 @@ type SessionUser = {
     isAdmin?: boolean;
     isLeader?: boolean;
     isICT?: boolean;
+    canAccessIntro?: boolean;
+    entra_id?: string | null;
 };
 
 interface ProfielIslandProps {
@@ -67,20 +69,32 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
     const user = useMemo<SessionUser>(() => {
         const sUser = session?.user as SessionUser;
         
-        // NUCLEAR SSR: Prefer SSR data initially, then enrich with client session
+        // NUCLEAR SSR: Start with server-provided enriched user
         if (!sUser) return initialUser;
 
+        // Merge client session with fresh server metadata
+        // We prefer server data for critical metadata fields to bypass Better Auth stale cache
+        const mergedUser = {
+            ...sUser,
+            minecraft_username: initialUser?.minecraft_username ?? sUser.minecraft_username,
+            phone_number: initialUser?.phone_number ?? sUser.phone_number,
+            membership_status: initialUser?.membership_status ?? sUser.membership_status,
+            membership_expiry: initialUser?.membership_expiry ?? sUser.membership_expiry,
+            date_of_birth: initialUser?.date_of_birth ?? sUser.date_of_birth,
+            entra_id: initialUser?.entra_id ?? sUser.entra_id,
+        };
+
         // Enrich name if missing on client
-        if (!sUser.name && (sUser.first_name || sUser.last_name)) {
-            sUser.name = `${sUser.first_name || ''} ${sUser.last_name || ''}`.trim();
+        if (!mergedUser.name && (mergedUser.first_name || mergedUser.last_name)) {
+            mergedUser.name = `${mergedUser.first_name || ''} ${mergedUser.last_name || ''}`.trim();
         }
         
         // Merge committees from initialUser if missing in session
-        if (!sUser.committees && initialUser?.committees) {
-            return { ...sUser, committees: initialUser.committees };
+        if (!mergedUser.committees && initialUser?.committees) {
+            mergedUser.committees = initialUser.committees;
         }
         
-        return sUser;
+        return mergedUser;
     }, [session?.user, initialUser]);
     
     const router = useRouter();
@@ -207,26 +221,24 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
 
     const membershipStatus = useMemo(() => {
         const isLeader = !!optimisticUser.isLeader;
-        const isAdmin = !!optimisticUser.isAdmin;
+        const isAdmin = !!(optimisticUser.isAdmin || optimisticUser.canAccessIntro || optimisticUser.isICT);
         const isInCommittee = isCommitteeMember;
         const status = optimisticUser.membership_status;
         const isMember = status === 'active';
 
-        let role = "Gebruiker";
-        if (isAdmin) {
-            const isBestuur = !!optimisticUser.committees?.some(c => c.name?.toLowerCase().includes('bestuur'));
-            const isICTMember = !!optimisticUser.isICT;
-            if (isBestuur) role = "Beheerder";
-            else if (isICTMember) role = "ICT-commissie";
-            else role = "Beheerder";
-        }
+        const isBestuur = !!optimisticUser.committees?.some(c => c.name?.toLowerCase().includes('bestuur'));
+        const isICTMember = !!optimisticUser.isICT;
+
+        let role = "Lid";
+        if (isBestuur) role = "Bestuur";
+        else if (isICTMember) role = "ICT";
         else if (isLeader) role = "Commissie Leider";
         else if (isInCommittee) role = "Actief Lid";
-        else if (isMember) role = "Lid";
+        else role = "Lid";
 
-        let statusText = "Geen Lidmaatschap";
-        if (status === "active") statusText = "Lidmaatschap Actief";
-        else if (status === "expired") statusText = "Lidmaatschap Verlopen";
+        let statusText = "Geen status";
+        if (status === "active") statusText = "Actief";
+        else if (status === "expired") statusText = "Verlopen";
 
         let color = "bg-slate-100 dark:bg-white/5 border border-[var(--color-purple-200)] text-[var(--color-purple-700)] dark:text-white";
         let textColor = "text-[var(--color-purple-700)] dark:text-white font-bold";
@@ -284,6 +296,7 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
                 <ProfielQuickLinks 
                     user={optimisticUser}
                     canAccessAdmin={!!(optimisticUser.isAdmin || optimisticUser.isICT)}
+                    isICT={!!optimisticUser.isICT}
                 />
             </div>
 

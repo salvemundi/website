@@ -6,8 +6,7 @@ import {
     Users, 
     Heart, 
     FileText, 
-    Calendar, 
-    Bell 
+    Calendar,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import type { IntroBlog, IntroPlanningItem } from '@salvemundi/validations/schema/intro.zod';
@@ -16,17 +15,15 @@ import {
     getIntroParentSignups,
     deleteIntroSignup,
     deleteIntroParentSignup,
+    updateIntroSignup,
+    updateIntroParentSignup,
     getIntroBlogs,
     upsertIntroBlog,
     deleteIntroBlog,
     getIntroPlanning,
     upsertIntroPlanning,
     deleteIntroPlanning,
-    toggleIntroVisibility,
-    sendIntroCustomNotification,
 } from '@/server/actions/admin-intro.actions';
-import AdminToolbar from '@/components/ui/admin/AdminToolbar';
-import AdminVisibilityToggle from '@/components/ui/admin/AdminVisibilityToggle';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
@@ -36,7 +33,6 @@ import IntroSignupsTab from './intro/IntroSignupsTab';
 import IntroParentsTab from './intro/IntroParentsTab';
 import IntroBlogsTab from './intro/IntroBlogsTab';
 import IntroPlanningTab from './intro/IntroPlanningTab';
-import IntroNotificationModal from './intro/IntroNotificationModal';
 
 type TabType = 'signups' | 'parents' | 'blogs' | 'planning';
 
@@ -49,6 +45,9 @@ type IntroSignupRow = {
     date_of_birth?: string;
     favorite_gif?: string;
     date_created?: string;
+    created_at?: string;
+    status?: string;
+    approved?: boolean;
 };
 
 type IntroParentRow = {
@@ -59,6 +58,9 @@ type IntroParentRow = {
     phone_number?: string;
     motivation?: string;
     date_created?: string;
+    created_at?: string;
+    status?: string;
+    approved?: boolean;
 };
 
 interface Props {
@@ -79,14 +81,10 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
     const [parents, setParents] = useState(initialParents);
     const [blogs, setBlogs] = useState(initialBlogs);
     const [planning, setPlanning] = useState(initialPlanning);
-    const [introVisible, setIntroVisible] = useState(initialIntroVisible);
 
     // Global UI state
-    const [showNotifModal, setShowNotifModal] = useState(false);
     const [savingBlog, setSavingBlog] = useState(false);
     const [savingPlanning, setSavingPlanning] = useState(false);
-    const [sendingNotif, setSendingNotif] = useState(false);
-    const [togglingVisibility, setTogglingVisibility] = useState(false);
 
     // Global loading IDs
     const [deletingSignupId, setDeletingSignupId] = useState<number | null>(null);
@@ -125,6 +123,26 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
             showToast(res.error || 'Verwijderen mislukt', 'error');
         }
         setDeletingParentId(null);
+    };
+
+    const handleUpdateSignup = async (id: number, data: any) => {
+        const res = await updateIntroSignup(id, data);
+        if (res.success) {
+            setSignups(prev => prev.map(s => s.id === id ? { ...s, ...data } : s));
+            showToast('Bijgewerkt', 'success');
+        } else {
+            showToast(res.error || 'Bijwerken mislukt', 'error');
+        }
+    };
+
+    const handleUpdateParentSignup = async (id: number, data: any) => {
+        const res = await updateIntroParentSignup(id, data);
+        if (res.success) {
+            setParents(prev => prev.map(p => p.id === id ? { ...p, ...data } : p));
+            showToast('Bijgewerkt', 'success');
+        } else {
+            showToast(res.error || 'Bijwerken mislukt', 'error');
+        }
     };
 
     const handleSaveBlog = async (blog: Partial<IntroBlog>) => {
@@ -177,36 +195,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
         setDeletingPlanningId(null);
     };
 
-    const handleToggleVisibility = async () => {
-        setTogglingVisibility(true);
-        try {
-            const res = await toggleIntroVisibility();
-            if (res.success) {
-                setIntroVisible(res.show ?? false);
-                showToast(`Introductie is nu ${res.show ? 'zichtbaar' : 'verborgen'}`, 'success');
-                router.refresh();
-            } else {
-                showToast(res.error || 'Bijwerken mislukt', 'error');
-            }
-        } catch (err) {
-            
-            showToast('Er is een onverwachte fout opgetreden', 'error');
-        } finally {
-            setTogglingVisibility(false);
-        }
-    };
 
-    const handleSendNotification = async (title: string, body: string, includeParents: boolean) => {
-        setSendingNotif(true);
-        const res = await sendIntroCustomNotification(title, body, includeParents);
-        if (res.success) {
-            showToast(`Notificatie verstuurd naar ${res.sent ?? 0} gebruiker(s)!`, 'success');
-            setShowNotifModal(false);
-        } else {
-            showToast(res.error || 'Verzenden mislukt', 'error');
-        }
-        setSendingNotif(false);
-    };
 
     const exportSignupsToCSV = () => {
         const rows = [
@@ -251,34 +240,12 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
 
     return (
         <>
-            <AdminToolbar 
-                title="Introductie"
-                subtitle="Beheer aanmeldingen, ouders, blogs & planning"
-                backHref="/beheer"
-                actions={
-                    <>
-                        <AdminVisibilityToggle 
-                            isVisible={introVisible}
-                            onToggle={handleToggleVisibility}
-                            isPending={togglingVisibility}
-                        />
-
-                        <button 
-                            onClick={() => setShowNotifModal(true)}
-                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
-                        >
-                            <Bell className="h-4 w-4" />
-                            Notificatie
-                        </button>
-                    </>
-                }
-            />
 
             <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700">
                 <AdminStatsBar stats={adminStats} />
 
                 {/* Tabs - Tokenized */}
-                <div className="flex flex-wrap gap-0 border-b border-[var(--beheer-border)] mb-8">
+                <div className="flex flex-wrap gap-2 mb-10 bg-[var(--beheer-card-bg)]/50 backdrop-blur-md p-1.5 rounded-[2rem] border border-[var(--beheer-border)]/50 w-fit">
                     {[
                         { id: 'signups', label: 'Aanmeldingen', count: signups.length, icon: Users },
                         { id: 'parents', label: 'Ouders', count: parents.length, icon: Heart },
@@ -288,13 +255,17 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                         <button 
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as TabType)} 
-                            className={`flex items-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] font-black text-xs uppercase tracking-widest transition-all border-b-2 ${
+                            className={`flex items-center gap-3 px-6 py-3.5 font-black text-[10px] uppercase tracking-[0.15em] transition-all rounded-[1.5rem] ${
                                 activeTab === tab.id 
-                                    ? 'text-[var(--beheer-accent)] border-[var(--beheer-accent)]' 
-                                    : 'text-[var(--beheer-text-muted)] border-transparent hover:text-[var(--beheer-text)]'
+                                    ? 'bg-[var(--beheer-accent)] text-white shadow-[var(--shadow-glow)]' 
+                                    : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] hover:bg-[var(--beheer-card-soft)]/50'
                             }`}
                         >
-                            <tab.icon className="h-4 w-4" /> {tab.label} ({tab.count})
+                            <tab.icon className={`h-4 w-4 ${activeTab === tab.id ? 'opacity-100' : 'opacity-40'}`} /> 
+                            {tab.label} 
+                            <span className={`ml-1 px-2 py-0.5 rounded-full text-[9px] ${activeTab === tab.id ? 'bg-white/20 text-white' : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)]'}`}>
+                                {tab.count}
+                            </span>
                         </button>
                     ))}
                 </div>
@@ -304,6 +275,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                     <IntroSignupsTab 
                         signups={signups} 
                         onDelete={handleDeleteSignup} 
+                        onUpdate={handleUpdateSignup}
                         onExport={exportSignupsToCSV}
                         deletingId={deletingSignupId}
                     />
@@ -312,6 +284,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                     <IntroParentsTab 
                         parents={parents} 
                         onDelete={handleDeleteParent} 
+                        onUpdate={handleUpdateParentSignup}
                         onExport={exportParentsToCSV}
                         deletingId={deletingParentId}
                     />
@@ -335,15 +308,6 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                     />
                 )}
 
-                {/* Modals */}
-                {showNotifModal && (
-                    <IntroNotificationModal 
-                        onClose={() => setShowNotifModal(false)}
-                        onSend={handleSendNotification}
-                        sending={sendingNotif}
-                        showToast={showToast}
-                    />
-                )}
             </div>
             <AdminToast toast={toast} onClose={hideToast} />
         </>

@@ -1,4 +1,4 @@
-import { AdminResource, RESOURCE_PERMISSIONS } from './permissions-config';
+import { AdminResource, RESOURCE_PERMISSIONS, COMMITTEES } from './permissions-config';
 
 export interface Committee {
     id: number | string;
@@ -22,6 +22,8 @@ export interface UserPermissions {
     canAccessKroegentocht: boolean;
     canAccessMembers: boolean;
     canAccessCommittees: boolean;
+    canAccessActivitiesView: boolean;
+    canAccessActivitiesEdit: boolean;
 }
 
 /**
@@ -57,7 +59,7 @@ export function getPermissions(committees: Committee[] = []): UserPermissions {
     // Basic flags for backward compatibility or general navigation
     // const isAdmin = hasPermission(committees, AdminResource.Intro); 
     const isICT = hasPermission(committees, AdminResource.Sync); // Using Sync access as proxy for ICT-level access
-    const isLeader = committees.some(c => c.is_leader);
+    const isLeader = committees.some(c => c.is_leader && c.azure_group_id !== COMMITTEES.BESTUUR);
 
     return {
         // isAdmin,
@@ -73,5 +75,7 @@ export function getPermissions(committees: Committee[] = []): UserPermissions {
         canAccessKroegentocht: hasPermission(committees, AdminResource.Kroegentocht),
         canAccessMembers: hasPermission(committees, AdminResource.Users),
         canAccessCommittees: hasPermission(committees, AdminResource.Committees),
+        canAccessActivitiesView: hasPermission(committees, AdminResource.ActivitiesView),
+        canAccessActivitiesEdit: hasPermission(committees, AdminResource.ActivitiesEdit),
     };
 }

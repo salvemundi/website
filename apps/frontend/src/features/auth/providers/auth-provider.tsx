@@ -22,7 +22,9 @@ export function useAuth() {
  */
 export function useAuthActions() {
     return {
-        login: () => authClient.signIn.social({ provider: 'microsoft' }),
+        login: () => authClient.signIn.social({ 
+            provider: 'microsoft'
+        }),
         logout: () => authClient.signOut(),
     };
 }

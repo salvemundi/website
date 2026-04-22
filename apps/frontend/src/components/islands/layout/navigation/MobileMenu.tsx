@@ -174,7 +174,10 @@ export default function MobileMenu({
                                 type="button"
                                 onClick={async () => {
                                     try {
-                                        await authClient.signIn.social({ provider: 'microsoft', callbackURL: '/profiel' });
+                                        await authClient.signIn.social({ 
+                                            provider: 'microsoft', 
+                                            callbackURL: '/profiel'
+                                        });
                                     } catch (error) {
                                         // Handle error
                                     }

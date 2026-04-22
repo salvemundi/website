@@ -1,10 +1,9 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
-import Link from 'next/link';
-import { ChevronLeft } from 'lucide-react';
 import CommitteeDetailDisplay from '@/components/islands/committees/CommitteeDetailDisplay';
 import { getCommitteeBySlug } from '@/server/actions/committees.actions';
+import BackButton from '@/components/ui/navigation/BackButton';
 
 export const metadata: Metadata = {
     title: 'Commissie Detail | SV Salve Mundi',
@@ -40,14 +39,7 @@ export default async function CommitteePage(props: { params: Promise<{ slug: str
     return (
         <PublicPageShell>
             <div className="container mx-auto px-4 max-w-7xl pt-8 pb-4">
-                <Link 
-                    href="/commissies" 
-                    className="inline-flex items-center gap-2 p-3 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--theme-purple)] transition-all active:scale-95 shadow-sm"
-                    title="Terug naar overzicht"
-                >
-                    <ChevronLeft className="h-5 w-5" />
-                    <span className="text-sm font-bold pr-1">Terug</span>
-                </Link>
+                <BackButton href="/commissies" title="Terug naar overzicht" />
             </div>
             <main className="mx-auto max-w-app px-4 pb-24 sm:px-6 lg:px-8">
                 <CommitteeDetailDisplay committee={committee} />

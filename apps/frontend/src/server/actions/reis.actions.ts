@@ -17,8 +17,10 @@ import {
     TRIP_SIGNUP_FIELDS, 
     SAFE_TRIP_SIGNUP_FIELDS, 
     USER_FULL_FIELDS, 
-    TRIP_ID_FIELDS 
+    TRIP_ID_FIELDS,
+    TRIP_ACTIVITY_FIELDS 
 } from '@salvemundi/validations/directus/fields';
+import { COMMITTEES } from '@/shared/lib/permissions-config';
 
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems, createItem, readUsers } from '@directus/sdk';
@@ -31,11 +33,16 @@ import {
     fetchPublicTripsDb, 
     insertTripSignupDb, 
     deleteTripSignupDb,
-    fetchAllTripSignupsDb
+    fetchAllTripSignupsDb,
+    fetchTripSignupByIdDb, 
+    fetchTripByIdDb, 
+    fetchTripActivitiesByTripIdDb,
+    fetchSelectedSignupActivitiesDb
 } from './reis-db.utils';
-import { fetchUserProfileByEmailDb } from './user-db.utils';
+import { fetchUserProfileByEmailDb, fetchUserCommitteesDb } from './user-db.utils';
 import { getRedis } from '@/server/auth/redis-client';
 import { randomUUID } from 'crypto';
+import { normalizeDate } from '@/lib/utils/date-utils';
 
 const getMailUrl = () => process.env.MAIL_SERVICE_URL;
 
@@ -163,6 +170,9 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
         return { success: false, message: 'Te veel aanmeldingen vanaf dit IP-adres. Probeer het over een kwartier opnieuw.' };
     }
 
+    // Normalize DD-MM-YYYY to YYYY-MM-DD before validation
+    data.date_of_birth = normalizeDate(data.date_of_birth) as any;
+
     const parsed = reisSignupFormSchema.safeParse(data);
     if (!parsed.success) {
         
@@ -217,7 +227,8 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
     const participantsCount = existingSignups.filter(s => s.status === 'confirmed' || s.status === 'registered').length;
     const shouldBeWaitlisted = participantsCount >= targetTrip.max_participants;
 
-    const isCommitteeMember = !!session?.user?.id;
+    const userCommittees = userId ? await fetchUserCommitteesDb(userId) : [];
+    const isReisCommitteeMember = userCommittees.some((c: any) => c.azure_group_id === '4c027a6d-0307-4aee-b719-23d67bcd0959'); // Reiscommissie UUID
 
     const redis = await getRedis();
     const lockKey = `lock:trip:${tripId}:signup`;
@@ -284,7 +295,7 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
             terms_accepted: parsed.data.terms_accepted,
             directus_relations: userId || null, 
             status: shouldBeWaitlisted ? ('waitlist' as const) : ('registered' as const),
-            role: isCommitteeMember ? ('crew' as const) : ('participant' as const),
+            role: isReisCommitteeMember ? ('crew' as const) : ('participant' as const),
             deposit_paid: false,
             full_payment_paid: false,
             access_token: randomUUID(),

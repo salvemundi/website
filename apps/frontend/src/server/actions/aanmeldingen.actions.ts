@@ -4,6 +4,7 @@ import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
 import { getSystemDirectus } from "@/lib/directus";
+import { getAuthorizedUser } from "./activiteiten/auth-check";
 import { isSuperAdmin } from "@/lib/auth";
 import { 
     deleteItem,
@@ -25,12 +26,13 @@ async function getSession() {
 }
 
 async function checkAdminAccess() {
-    const session = await getSession();
-    if (!session || !session.user) return null;
+    const user = await getAuthorizedUser();
+    if (!user) return null;
 
-    const user = session.user;
-    // Use isAdmin/isICT for broad management access
-    if (user.isAdmin || user.isICT) return session;
+    // Use isAdmin/isICT for broad management access, or check for granular activity edit permission
+    if (user.isAdmin || user.isICT || user.canAccessActivitiesEdit) {
+        return { user };
+    }
 
     return null;
 }
