@@ -20,7 +20,7 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, InputProps>(({
             className={`form-input ${error ? 'border-theme-error ring-1 ring-theme-error' : ''} ${className}`}
             type="tel"
             inputMode="tel"
-            autoComplete="one-time-code"
+            autoComplete="off"
             onInput={(e: any) => {
                 const input = e.target as HTMLInputElement;
                 let val = input.value;

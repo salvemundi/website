@@ -1,196 +1,148 @@
+'use client';
+
 import React from 'react';
+import { useFormContext, Controller } from 'react-hook-form';
 import { 
     User, 
-    Info, 
     Calendar, 
     IdCard, 
     Phone, 
     HeartPulse, 
-    FileText, 
-    Bus 
+    Bus,
+    AlertCircle,
+    Briefcase
 } from 'lucide-react';
 import { DateInput } from '@/shared/ui/DateInput';
+import { PhoneInput } from '@/shared/ui/PhoneInput';
+import { FormField } from '@/shared/ui/FormField';
+import { Input } from '@/shared/ui/Input';
 import { type ReisPaymentEnrichment } from '@salvemundi/validations/schema/reis.zod';
 import { type Trip } from '@salvemundi/validations/schema/admin-reis.zod';
-import { formatPhoneNumber } from '@/lib/utils/phone-utils';
 
 interface EnrichmentFormProps {
     trip: Trip;
-    enrichment: ReisPaymentEnrichment;
-    setEnrichment: (enrichment: ReisPaymentEnrichment) => void;
 }
 
-export function EnrichmentForm({ trip, enrichment, setEnrichment }: EnrichmentFormProps) {
+export function EnrichmentForm({ trip }: EnrichmentFormProps) {
+    const { register, control, watch, formState: { errors } } = useFormContext<ReisPaymentEnrichment>();
+    const idDocument = watch('id_document');
+
     return (
-        <div className="space-y-10 animate-in fade-in duration-500">
-            <div>
-                <h2 className="text-3xl font-black text-[var(--text-main)] mb-2 uppercase italic tracking-tighter italic">Gegevens voor de Aanbetaling</h2>
-                <p className="text-[var(--text-muted)]">Controleer en vul je gegevens aan voor de aanbetaling van de reis naar {trip.name}.</p>
-            </div>
+        <div className="space-y-6 animate-in fade-in duration-500">
+            <header className="mb-4">
+                <h2 className="text-3xl font-black text-[var(--text-main)] mb-1 uppercase italic tracking-tighter">Reisgegevens</h2>
+                <p className="text-[var(--text-muted)] text-sm">Vul je gegevens aan voor <span className="text-theme-purple font-bold">{trip.name}</span>.</p>
+            </header>
 
-            <div className="space-y-12">
-                {/* Group 1: Identity */}
-                <div className="space-y-6">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-theme-purple/10 flex items-center justify-center text-theme-purple">
-                            <User className="w-4 h-4" />
+            <div className="grid md:grid-cols-2 gap-x-8 gap-y-5">
+                {/* Identity */}
+                <div className="md:col-span-1">
+                    <FormField id="first_name" label="Voornaam (zoals op ID/Paspoort)" required error={errors.first_name?.message}>
+                        <div className="relative group">
+                            <Input 
+                                {...register('first_name')} 
+                                placeholder="Volledige voornaam" 
+                                className="pr-10" 
+                                /* We use 'one-time-code' to block Chrome's aggressive autofill. */
+                                autoComplete="one-time-code"
+                            />
+                            <AlertCircle className="w-5 h-5 text-red-500 absolute right-3 top-1/2 -translate-y-1/2 opacity-50 group-hover:opacity-100 transition-opacity" />
                         </div>
-                        <h3 className="text-sm font-black uppercase tracking-wider text-[var(--text-main)]">Identiteit & Geboorte</h3>
-                    </div>
-
-                    {/* Identity Rule Notice */}
-                    <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-start gap-3 animate-in slide-in-from-left-2 duration-500">
-                        <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-                        <p className="text-[11px] text-blue-200/80 font-medium leading-relaxed uppercase tracking-tight">
-                            <strong className="text-blue-300">Belangrijk:</strong> Je voor- en achternaam moeten <strong className="text-[var(--text-main)]">exact</strong> overeenkomen met de gegevens op je paspoort of ID-kaart voor de boeking.
+                        <p className="text-[10px] text-red-500 font-bold uppercase mt-1 flex items-center gap-1">
+                            <span className="animate-pulse">→</span> LET OP: MOET EXACT OVEREENKOMEN MET JE ID-BEWIJS!
                         </p>
-                    </div>
+                    </FormField>
+                </div>
 
-                    <div className="grid md:grid-cols-2 gap-6 p-6 rounded-2xl bg-[var(--bg-soft)] border border-[var(--border-color)]/20">
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Voornaam *</label>
-                            <input 
-                                type="text"
-                                value={enrichment.first_name}
-                                onChange={(e) => setEnrichment({...enrichment, first_name: e.target.value})}
-                                className="w-full bg-[var(--bg-main)] border border-[var(--border-color)]/40 rounded-xl px-4 py-3 text-[var(--text-main)] focus:outline-none focus:border-theme-purple/50 transition-all font-medium"
-                            />
-                        </div>
+                <FormField id="last_name" label="Achternaam" required error={errors.last_name?.message}>
+                    <Input {...register('last_name')} placeholder="Achternaam" />
+                </FormField>
 
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Achternaam *</label>
-                            <input 
-                                type="text"
-                                value={enrichment.last_name}
-                                onChange={(e) => setEnrichment({...enrichment, last_name: e.target.value})}
-                                className="w-full bg-[var(--bg-main)] border border-[var(--border-color)]/40 rounded-xl px-4 py-3 text-[var(--text-main)] focus:outline-none focus:border-theme-purple/50 transition-all font-medium"
-                            />
-                        </div>
+                <FormField id="date_of_birth" label="Geboortedatum" required error={errors.date_of_birth?.message}>
+                    <Controller 
+                        name="date_of_birth"
+                        control={control}
+                        render={({ field }) => <DateInput {...field} autoComplete="off" />}
+                    />
+                </FormField>
 
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] flex items-center gap-2">
-                                <Calendar className="w-3 h-3" /> Geboortedatum *
-                            </label>
-                            <DateInput 
-                                name="date_of_birth"
-                                value={enrichment.date_of_birth}
-                                onChange={(val) => setEnrichment({...enrichment, date_of_birth: val})}
-                                autoComplete="off"
-                                className="w-full bg-[var(--bg-main)] border border-[var(--border-color)]/40 rounded-xl px-4 py-3 text-[var(--text-main)] focus:outline-none focus:border-theme-purple/50 transition-all font-medium"
-                            />
-                        </div>
+                <FormField id="phone_number" label="Telefoonnummer" required error={errors.phone_number?.message}>
+                    <Controller 
+                        name="phone_number"
+                        control={control}
+                        render={({ field }) => <PhoneInput {...field} />}
+                    />
+                </FormField>
 
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] flex items-center gap-2">
-                                <IdCard className="w-3 h-3" /> ID Document Type *
-                            </label>
-                            <select 
-                                value={enrichment.id_document}
-                                onChange={(e) => setEnrichment({...enrichment, id_document: e.target.value})}
-                                className="w-full bg-[var(--bg-main)] border border-[var(--border-color)]/40 rounded-xl px-4 py-3 text-[var(--text-main)] focus:outline-none focus:border-theme-purple/50 transition-all appearance-none font-medium"
-                            >
-                                <option value="none">Maak een keuze...</option>
-                                <option value="id_card">ID-kaart</option>
-                                <option value="passport">Paspoort</option>
-                            </select>
-                        </div>
+                <FormField id="id_document" label="ID Document Type" required error={errors.id_document?.message}>
+                    <select {...register('id_document')} className="form-input" autoComplete="off">
+                        <option value="none">Maak een keuze...</option>
+                        <option value="id_card">ID-kaart</option>
+                        <option value="passport">Paspoort</option>
+                    </select>
+                </FormField>
 
-                        {enrichment.id_document !== 'none' && (
-                            <div className="space-y-2 md:col-span-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Documentnummer *</label>
-                                <input 
-                                    type="text"
-                                    placeholder="Bijv. ABC123456"
-                                    value={enrichment.document_number || ''}
-                                    onChange={(e) => setEnrichment({...enrichment, document_number: e.target.value})}
-                                    className="w-full bg-[var(--bg-main)] border border-[var(--border-color)]/40 rounded-xl px-4 py-3 text-[var(--text-main)] focus:outline-none focus:border-theme-purple/50 transition-all font-medium"
-                                />
+                <FormField id="document_number" label="Documentnummer" required error={errors.document_number?.message}>
+                    <Input 
+                        {...register('document_number')} 
+                        placeholder="Bijv. ABC123456" 
+                        autoComplete="off"
+                        minLength={6}
+                        maxLength={12}
+                    />
+                </FormField>
+
+                <FormField id="document_expiry_date" label="Vervaldatum Document" required error={errors.document_expiry_date?.message}>
+                    <Controller 
+                        name="document_expiry_date"
+                        control={control}
+                        render={({ field }) => <DateInput {...field} value={field.value ?? undefined} autoComplete="off" />}
+                    />
+                </FormField>
+
+                <div className="md:col-span-2">
+                    <FormField id="allergies" label="Allergieën & Medisch" error={errors.allergies?.message}>
+                        <textarea {...register('allergies')} placeholder="Bijv. Notenallergie, medicijngebruik..." className="form-input min-h-[80px]" autoComplete="off" />
+                    </FormField>
+                </div>
+
+                <div className="md:col-span-2">
+                    <FormField id="special_notes" label="Speciale Opmerkingen" error={errors.special_notes?.message}>
+                        <textarea {...register('special_notes')} placeholder="Overige zaken..." className="form-input min-h-[80px]" autoComplete="off" />
+                    </FormField>
+                </div>
+
+                <div className="md:col-span-2 grid sm:grid-cols-2 gap-4">
+                    {trip.is_bus_trip && (
+                        <div className="p-4 rounded-xl bg-theme-purple/5 flex items-center justify-start gap-8">
+                            <div className="flex items-center gap-3 min-w-[180px]">
+                                <Bus className="w-5 h-5 text-theme-purple" />
+                                <div>
+                                    <p className="font-bold text-[var(--text-main)] text-sm">Vrijwillige Chauffeur?</p>
+                                    <p className="text-[10px] text-[var(--text-muted)]">Bereid om een busje te rijden.</p>
+                                </div>
                             </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Group 2: Contact */}
-                <div className="space-y-6">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-theme-purple/10 flex items-center justify-center text-theme-purple">
-                            <Phone className="w-4 h-4" />
-                        </div>
-                        <h3 className="text-sm font-black uppercase tracking-wider text-[var(--text-main)]">Contactgegevens</h3>
-                    </div>
-                    <div className="grid md:grid-cols-1 gap-6 p-6 rounded-2xl bg-[var(--bg-soft)] border border-[var(--border-color)]/20">
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] flex items-center gap-2">
-                                Telefoonnummer *
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input {...register('willing_to_drive')} type="checkbox" className="sr-only peer" />
+                                <div className="w-11 h-6 bg-[var(--bg-soft)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-theme-purple"></div>
                             </label>
-                            <input 
-                                type="tel"
-                                placeholder="+31 6 12345678"
-                                value={formatPhoneNumber(enrichment.phone_number)}
-                                onChange={(e) => setEnrichment({...enrichment, phone_number: e.target.value})}
-                                className="w-full bg-[var(--bg-main)] border border-[var(--border-color)]/40 rounded-xl px-4 py-3 text-[var(--text-main)] focus:outline-none focus:border-theme-purple/50 transition-all font-medium"
-                            />
                         </div>
-                    </div>
-                </div>
+                    )}
 
-                {/* Group 3: Medical & Notes */}
-                <div className="space-y-6">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-theme-purple/10 flex items-center justify-center text-theme-purple">
-                            <HeartPulse className="w-4 h-4" />
-                        </div>
-                        <h3 className="text-sm font-black uppercase tracking-wider text-[var(--text-main)]">Medisch & Opmerkingen</h3>
-                    </div>
-                    <div className="grid md:grid-cols-1 gap-6 p-6 rounded-2xl bg-[var(--bg-soft)] border border-[var(--border-color)]/20">
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] flex items-center gap-2">
-                                Allergieën & Medisch
-                            </label>
-                            <textarea 
-                                placeholder="Bijv. Notenallergie, medicijngebruik..."
-                                value={enrichment.allergies || ''}
-                                onChange={(e) => setEnrichment({...enrichment, allergies: e.target.value})}
-                                className="w-full bg-[var(--bg-main)] border border-[var(--border-color)]/40 rounded-xl px-4 py-3 text-[var(--text-main)] focus:outline-none focus:border-theme-purple/50 transition-all min-h-[100px] font-medium resize-none"
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] flex items-center gap-2">
-                                <FileText className="w-3 h-3" /> Speciale Opmerkingen
-                            </label>
-                            <textarea 
-                                placeholder="Andere zaken waar we rekening mee moeten houden?"
-                                value={enrichment.special_notes || ''}
-                                onChange={(e) => setEnrichment({...enrichment, special_notes: e.target.value})}
-                                className="w-full bg-[var(--bg-main)] border border-[var(--border-color)]/40 rounded-xl px-4 py-3 text-[var(--text-main)] focus:outline-none focus:border-theme-purple/50 transition-all min-h-[100px] font-medium resize-none"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                {trip.is_bus_trip && (
-                    <div className="p-6 rounded-2xl bg-theme-purple/5 border border-theme-purple/20 flex items-center justify-between animate-in zoom-in-95 duration-500">
-                        <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-full bg-theme-purple/10 flex items-center justify-center text-theme-purple shadow-glow-sm">
-                                <Bus className="w-6 h-6" />
-                            </div>
+                    <div className="p-4 rounded-xl bg-theme-purple/5 flex items-center justify-start gap-8">
+                        <div className="flex items-center gap-3 min-w-[180px]">
+                            <Briefcase className="w-5 h-5 text-theme-purple" />
                             <div>
-                                <p className="font-black text-[var(--text-main)] text-sm uppercase tracking-tight">Vrijwillige Chauffeur?</p>
-                                <p className="text-xs text-[var(--text-muted)] font-medium">Ben je bereid om een van de busjes te rijden?</p>
+                                <p className="font-bold text-[var(--text-main)] text-sm">Extra Koffer?</p>
+                                <p className="text-[10px] text-[var(--text-muted)]">Ik wil een grote koffer meenemen.</p>
                             </div>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
-                            <input 
-                                type="checkbox" 
-                                className="sr-only peer"
-                                checked={enrichment.willing_to_drive || false}
-                                onChange={(e) => setEnrichment({...enrichment, willing_to_drive: e.target.checked})}
-                            />
-                            <div className="w-11 h-6 bg-[var(--bg-soft)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-theme-purple"></div>
+                            <input {...register('extra_luggage')} type="checkbox" className="sr-only peer" />
+                            <div className="w-11 h-6 bg-[var(--bg-soft)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-theme-purple"></div>
                         </label>
                     </div>
-                )}
+                </div>
             </div>
         </div>
     );

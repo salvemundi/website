@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { createDirectus, rest, staticToken, readItem, readItems, updateItem } from '@directus/sdk';
 import { getMollieClient } from '../services/mollie.service.js';
 import { TRIP_SIGNUP_FIELDS, TRIP_FIELDS } from '@salvemundi/validations';
+import crypto from 'node:crypto';
 
 export default async function tripRoutes(fastify: FastifyInstance) {
     /**
@@ -28,47 +29,55 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                 directus.request(readItem('trips', tripId, { fields: [...TRIP_FIELDS] })),
                 directus.request(readItems('trip_signup_activities', {
                     filter: { trip_signup_id: { _eq: signupId } },
-                    fields: ['id', 'trip_activity_id', { trip_activity_id: ['id', 'price', 'name'] }] as any
+                    fields: ['id', 'trip_activity_id', 'selected_options', { trip_activity_id: ['id', 'price', 'name', 'options'] }] as any
                 }))
             ]) as [any, any[]];
 
-            // 2. Fetch Signup (Expliciet om te voorkomen dat permissies op access_token de boel blokkeren)
+            // 2. Fetch Signup
             let signup: any;
             try {
-                // We proberen access_token mee te pakken, maar vallen terug op basisvelden als het failt
-                signup = await directus.request(readItem('trip_signups', signupId, { 
-                    fields: [...TRIP_SIGNUP_FIELDS, 'access_token' as any] 
-                }));
-            } catch (err) {
-                fastify.log.warn(`[TRIP] Could not read access_token from signup ${signupId}. Falling back to standard fields.`);
                 signup = await directus.request(readItem('trip_signups', signupId, { 
                     fields: [...TRIP_SIGNUP_FIELDS] 
                 }));
+            } catch (err) {
+                return reply.status(404).send({ error: 'Signup not found' });
             }
 
             if (!signup || !trip) {
                 return reply.status(404).send({ error: 'Trip or Signup not found' });
             }
 
-            // 3. Manage Access Token (Generate if missing)
-            let accessToken = signup.access_token;
-            if (!accessToken) {
-                accessToken = crypto.randomUUID();
-                try {
-                    await directus.request(updateItem('trip_signups', signupId, { 
-                        access_token: accessToken 
-                    }));
-                    fastify.log.info(`[TRIP] Generated and saved access_token for signup ${signupId}`);
-                } catch (updateErr: any) {
-                    fastify.log.error(updateErr, `[TRIP] Failed to update access_token for signup ${signupId}. Check Directus permissions!`);
-                }
+            // 3. Status checks
+            if (paymentType === 'deposit' && signup.deposit_paid) {
+                return reply.status(400).send({ error: 'Aanbetaling is al voldaan.' });
+            }
+            if (paymentType === 'final' && signup.full_payment_paid) {
+                return reply.status(400).send({ error: 'Restbetaling is al voldaan.' });
+            }
+            if (paymentType === 'final' && !trip.allow_final_payments && signup.role !== 'admin') {
+                return reply.status(403).send({ error: 'Restbetalingen zijn nog niet geopend voor deze reis.' });
             }
 
-            // 4. Calculate Total Price
+            // 4. Calculate Total Price (Robustly include sub-options)
             const basePrice = Number(trip.base_price || 0);
             const crewDiscount = (signup.role === 'crew' ? Number(trip.crew_discount || 0) : 0);
+            
             const activitiesPrice = (signupActivities || []).reduce((sum, sa) => {
-                const price = Number(sa.trip_activity_id?.price || 0);
+                const activity = sa.trip_activity_id;
+                let price = Number(activity?.price || 0);
+                
+                // Add sub-option prices
+                const selectedOpts = sa.selected_options || {};
+                const availableOpts = activity?.options || [];
+                
+                if (Array.isArray(availableOpts)) {
+                    availableOpts.forEach((opt: any) => {
+                        if (opt.id && selectedOpts[opt.id]) {
+                            price += Number(opt.price || 0);
+                        }
+                    });
+                }
+                
                 return sum + price;
             }, 0);
 
@@ -84,12 +93,23 @@ export default async function tripRoutes(fastify: FastifyInstance) {
             } else {
                 amount = totalPrice - depositAmount;
                 description = `Restbetaling: ${trip.name}`;
-                if (!trip.allow_final_payments && signup.role !== 'admin' && !isConfirmedByUser) {
-                    return reply.status(403).send({ error: 'Final payments are not yet enabled for this trip' });
+            }
+
+            // 5. Manage Access Token (Generate if missing)
+            let accessToken = signup.access_token;
+            if (!accessToken) {
+                accessToken = crypto.randomUUID();
+                try {
+                    await directus.request(updateItem('trip_signups', signupId, { 
+                        access_token: accessToken 
+                    }));
+                    fastify.log.info(`[TRIP] Generated and saved access_token for signup ${signupId}`);
+                } catch (updateErr: any) {
+                    fastify.log.error(updateErr, `[TRIP] Failed to update access_token for signup ${signupId}`);
                 }
             }
 
-            // 5. Case A: Admin just wants to send the enrichment mail
+            // 6. Case A: Admin just wants to send the enrichment mail
             if (!isConfirmedByUser) {
                 const mailServiceUrl = process.env.MAIL_SERVICE_URL;
                 const internalToken = process.env.INTERNAL_SERVICE_TOKEN;
@@ -132,10 +152,16 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                 return { success: true, message: 'Enrichment email sent' };
             }
 
-            // 6. Case B: User confirmed on frontend, create REAL Mollie payment
+            // 7. Case B: User confirmed on frontend, create REAL Mollie payment
             if (amount <= 0) {
-                return reply.status(400).send({ error: 'Calculated amount is zero or negative' });
+                return reply.status(400).send({ 
+                    error: 'Het te betalen bedrag is 0 of negatief. Neem contact op met de reiscommissie als je denkt dat dit een fout is.' 
+                });
             }
+
+            const webhookUrl = process.env.PUBLIC_URL && !process.env.PUBLIC_URL.includes('localhost') 
+                ? `${process.env.PUBLIC_URL}/api/finance/webhook/mollie` 
+                : undefined;
 
             const confirmationUrl = `${process.env.PUBLIC_URL}/reis/bevestiging?id=${signupId}&t=${accessToken}`;
             const mollie = getMollieClient();
@@ -143,7 +169,8 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                 amount: { currency: 'EUR', value: amount.toFixed(2) },
                 description,
                 redirectUrl: confirmationUrl,
-                webhookUrl: `${process.env.PUBLIC_URL}/api/finance/webhook/mollie`,
+                // Only provide webhookUrl if it's not localhost (Mollie requirement)
+                ...(webhookUrl ? { webhookUrl } : {}),
                 metadata: {
                     registrationId: signupId,
                     registrationType: 'trip_signup',
@@ -156,7 +183,7 @@ export default async function tripRoutes(fastify: FastifyInstance) {
             await fastify.db.query(
                 `INSERT INTO transactions (
                     mollie_id, amount, payment_status, product_name, product_type,
-                    user_id, email, first_name, last_name, access_token, registration,
+                    user_id, email, first_name, last_name, access_token, trip_signup,
                     created_at, updated_at
                 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW())`,
                 [
@@ -168,8 +195,18 @@ export default async function tripRoutes(fastify: FastifyInstance) {
 
             return { success: true, checkoutUrl: payment._links?.checkout?.href };
         } catch (err: any) {
-            fastify.log.error(err, '[TRIP] Error in payment flow');
-            return reply.status(500).send({ error: 'Internal server error', details: err.message });
+            fastify.log.error({ 
+                err, 
+                message: err.message, 
+                stack: err.stack,
+                signupId,
+                tripId
+            }, '[TRIP] Error in payment flow');
+            return reply.status(500).send({ 
+                error: 'Internal server error', 
+                message: err.message,
+                details: err.response?.data?.errors || err.details || err.message 
+            });
         }
     });
 }
