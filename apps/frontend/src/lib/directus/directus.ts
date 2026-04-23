@@ -41,7 +41,7 @@ async function logDirectusError(err: DirectusError) {
 /**
  * Fetch with a simple retry mechanism for transient network errors.
  */
-async function fetchWithRetry(
+export async function fetchWithRetry(
     url: string, 
     init: RequestInit, 
     retries = 2, 
