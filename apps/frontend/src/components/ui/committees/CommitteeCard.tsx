@@ -8,6 +8,7 @@ import Image from 'next/image';
 
 interface CommitteeCardProps {
     committee?: Committee;
+    index?: number;
 }
 
 // Helper function to clean committee names
@@ -18,7 +19,10 @@ function cleanCommitteeName(name: string): string {
 /**
  * CommitteeCard: Zero-Skeleton SSR standard.
  */
-export const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee = {} as Committee }) => {
+export const CommitteeCard: React.FC<CommitteeCardProps> = ({ 
+    committee = {} as Committee,
+    index = 0
+}) => {
     const cleanedName = cleanCommitteeName(committee.name || '');
     const isBestuur = cleanedName.toLowerCase().includes('bestuur');
     const slug = slugify(cleanedName);
@@ -32,6 +36,8 @@ export const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee = {} as 
         })) || [];
 
     const hasHistory = (committee as any).has_history ?? false;
+    const hasImage = !!committee.image;
+    const imageUrl = getImageUrl(committee.image);
 
     return (
         <div className={`${isBestuur ? 'md:col-span-2' : ''}`}>
@@ -41,13 +47,14 @@ export const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee = {} as 
                     ${isBestuur ? 'ring-4 ring-[var(--color-purple-500)]/20 shadow-purple-500/10' : ''}`}
             >
                 {/* Image Header */}
-                <div className="relative h-56 w-full overflow-hidden bg-gradient-to-br from-[var(--color-purple-500)]/10 to-[var(--color-purple-900)]/10">
+                <div className="relative h-56 w-full overflow-hidden bg-gradient-to-br from-[var(--color-purple-500)]/20 to-[var(--color-purple-900)]/40">
                     <Image 
-                        src={getImageUrl(committee.image) ?? '/img/placeholder.svg'} 
+                        src={imageUrl} 
                         alt={committee.name || 'Committee'} 
                         fill 
-                        className="object-cover"
+                        className={`transition-all duration-700 ${hasImage ? 'object-cover group-hover:scale-110' : 'object-contain p-12 opacity-40 group-hover:scale-105'}`}
                         unoptimized
+                        priority={index < 4}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
                     

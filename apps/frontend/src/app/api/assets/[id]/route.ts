@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { fetchWithRetry } from '@/lib/directus/directus';
 
 /**
  * Proxy route voor Directus assets.
@@ -33,11 +34,11 @@ export async function GET(
     const url = `${directusUrl}/assets/${id}${search}`;
 
     try {
-        const res = await fetch(url, {
+        const res = await fetchWithRetry(url, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
-            cache: 'no-store',
+            signal: AbortSignal.timeout(15000), // 15s timeout
         });
 
         if (!res.ok) {
@@ -45,19 +46,17 @@ export async function GET(
         }
 
         const contentType = res.headers.get('content-type') || 'application/octet-stream';
-        const buffer = await res.arrayBuffer();
-
-        if (buffer.byteLength === 0) {
-            return new NextResponse(null, { status: 404 });
-        }
-
-        return new NextResponse(new Uint8Array(buffer), {
+        
+        // STREAMING: In plaats van de hele buffer in het geheugen te laden (.arrayBuffer()),
+        // streamen we de body direct door naar de client. Dit is sneller en voorkomt "half-loading".
+        return new NextResponse(res.body, {
             headers: {
                 'Content-Type': contentType,
-                'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+                'Cache-Control': 'public, max-age=31536000, immutable', // Assets in Directus zijn immutable bij ID
             },
         });
-    } catch (error) {
+    } catch (error: any) {
+        console.error(`[AssetProxy] Error fetching ${id}:`, error.message);
         return new NextResponse(null, { status: 500 });
     }
 }

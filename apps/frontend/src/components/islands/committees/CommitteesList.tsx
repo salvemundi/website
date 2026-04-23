@@ -33,8 +33,8 @@ export default function CommitteesList({ initialCommittees = [] }: CommitteesLis
 
     return (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {sortedCommittees.map((committee) => (
-                <CommitteeCard key={committee.id} committee={committee} />
+            {sortedCommittees.map((committee, idx) => (
+                <CommitteeCard key={committee.id} committee={committee} index={idx} />
             ))}
         </div>
     );
