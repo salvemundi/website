@@ -31,12 +31,14 @@ export default async function groupRoutes(fastify: FastifyInstance) {
             await GraphService.addGroupMember(groupId, userId, token);
             return { success: true, message: 'Member added to Azure group' };
         } catch (err: any) {
-            // Already a member?
-            if (err.message?.includes('already exists') || err.message?.includes('One or more added object references already exist')) {
+            // Idempotent: Already a member?
+            const msg = err.message || '';
+            if (msg.includes('already exist') || msg.includes('already exists') || err.statusCode === 400 && msg.includes('object references')) {
                 return { success: true, message: 'User is already a member of this group' };
             }
-            fastify.log.error(err);
-            return reply.status(500).send({ error: 'Failed to add member to Azure group', details: err.message });
+            
+            fastify.log.error({ groupId, userId, err }, 'Failed to add group member');
+            return reply.status(500).send({ error: 'Failed to add member to Azure group', details: msg });
         }
     });
 
@@ -49,12 +51,14 @@ export default async function groupRoutes(fastify: FastifyInstance) {
             await GraphService.removeGroupMember(groupId, userId, token);
             return { success: true, message: 'Member removed from Azure group' };
         } catch (err: any) {
-            // Not a member?
-            if (err.message?.includes('does not exist') || err.status === 404) {
+            // Idempotent: Not a member?
+            const msg = err.message || '';
+            if (err.statusCode === 404 || msg.includes('does not exist') || msg.includes('not found')) {
                 return { success: true, message: 'User was not a member of this group' };
             }
-            fastify.log.error(err);
-            return reply.status(500).send({ error: 'Failed to remove member from Azure group', details: err.message });
+            
+            fastify.log.error({ groupId, userId, err }, 'Failed to remove group member');
+            return reply.status(500).send({ error: 'Failed to remove member from Azure group', details: msg });
         }
     });
 
@@ -66,9 +70,14 @@ export default async function groupRoutes(fastify: FastifyInstance) {
         try {
             const token = await TokenService.getAccessToken();
             await GraphService.addGroupOwner(groupId, userId, token);
-            return { success: true };
+            return { success: true, message: 'Owner added to Azure group' };
         } catch (err: any) {
-            return reply.status(500).send({ error: 'Failed to add owner', details: err.message });
+            const msg = err.message || '';
+            if (msg.includes('already exist') || msg.includes('already exists')) {
+                return { success: true, message: 'User is already an owner of this group' };
+            }
+            fastify.log.error({ groupId, userId, err }, 'Failed to add group owner');
+            return reply.status(500).send({ error: 'Failed to add owner', details: msg });
         }
     });
 
@@ -79,9 +88,14 @@ export default async function groupRoutes(fastify: FastifyInstance) {
         try {
             const token = await TokenService.getAccessToken();
             await GraphService.removeGroupOwner(groupId, userId, token);
-            return { success: true };
+            return { success: true, message: 'Owner removed from Azure group' };
         } catch (err: any) {
-            return reply.status(500).send({ error: 'Failed to remove owner', details: err.message });
+            const msg = err.message || '';
+            if (err.statusCode === 404 || msg.includes('does not exist')) {
+                return { success: true, message: 'User was not an owner of this group' };
+            }
+            fastify.log.error({ groupId, userId, err }, 'Failed to remove owner');
+            return reply.status(500).send({ error: 'Failed to remove owner', details: msg });
         }
     });
 }
