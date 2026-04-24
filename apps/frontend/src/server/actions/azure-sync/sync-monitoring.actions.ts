@@ -61,3 +61,26 @@ export async function stopSyncAction() {
         return { success: false, error: error.message };
     }
 }
+
+export async function resetSyncStatusAction() {
+    const admin = await checkSyncAccess();
+    if (!admin) return { success: false, error: "Unauthorized" };
+
+    if (!AZURE_SYNC_URL) return { success: false, error: "Sync service URL niet geconfigureerd." };
+
+    try {
+        const res = await fetch(`${AZURE_SYNC_URL}/api/sync/reset`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${INTERNAL_TOKEN}`
+            }
+        });
+
+        if (!res.ok) return { success: false, error: "Reset mislukt" };
+
+        return { success: true };
+    } catch (error: any) {
+        console.error("[SYNC-ACTION] Reset sync failed:", error.message);
+        return { success: false, error: error.message };
+    }
+}

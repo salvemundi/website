@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { SyncJob } from '../services/sync/sync-job.js';
 import { TokenService } from '../services/token.service.js';
 import { timingSafeCompare } from '@salvemundi/validations';
+import { SYNC_REDIS_KEY, SYNC_ABORT_KEY, DEFAULT_SYNC_STATUS } from '../services/sync/sync-types.js';
 
 export default async function syncRoutes(fastify: FastifyInstance) {
     /**
@@ -65,6 +66,23 @@ export default async function syncRoutes(fastify: FastifyInstance) {
                 error: 'Failed to sync user',
                 details: err.message || (typeof err === 'object' ? JSON.stringify(err) : String(err))
             });
+        }
+    });
+
+    /**
+     * POST /reset
+     * Forcefully resets the sync status to idle.
+     */
+    fastify.post('/reset', async (request, reply) => {
+        try {
+            await Promise.all([
+                fastify.redis.set(SYNC_REDIS_KEY, JSON.stringify(DEFAULT_SYNC_STATUS), 'EX', 86400 * 7),
+                fastify.redis.del(SYNC_ABORT_KEY)
+            ]);
+            return { message: 'Sync status reset to idle' };
+        } catch (err: any) {
+            fastify.log.error(`[SYNC] Failed to reset status: ${err.message}`);
+            return reply.status(500).send({ error: 'Failed to reset sync status' });
         }
     });
 
