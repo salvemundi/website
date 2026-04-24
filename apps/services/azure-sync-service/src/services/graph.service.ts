@@ -117,47 +117,32 @@ export class GraphService {
     }
 
     /**
-     * Fetches members and owners for multiple groups in batches to minimize round-trips.
-     * Uses Microsoft Graph JSON Batching.
+     * Fetches members and owners for multiple groups. 
+     * Handles pagination for large groups to ensure all members are returned.
      */
     static async getBatchGroupDetails(groupIds: string[], token: string): Promise<Map<string, { members: string[], owners: string[] }>> {
         const result = new Map<string, { members: string[], owners: string[] }>();
         const client = this.getClient(token);
 
-        // Process in batches of 10 groups (each group needs 2 calls: members & owners)
-        // Max 20 requests per batch in MS Graph
-        for (let i = 0; i < groupIds.length; i += 10) {
-            const batchIds = groupIds.slice(i, i + 10);
-            const requests = batchIds.flatMap(id => [
-                {
-                    id: `${id}-members`,
-                    method: 'GET',
-                    url: `/groups/${id}/members?$select=id`
-                },
-                {
-                    id: `${id}-owners`,
-                    method: 'GET',
-                    url: `/groups/${id}/owners?$select=id`
-                }
-            ]);
+        for (const id of groupIds) {
+            try {
+                // 1. Fetch all members with pagination
+                let members: string[] = [];
+                let response = await client.api(`/groups/${id}/members`).select('id').top(999).get();
+                members = [...(response.value || []).map((m: any) => m.id)];
 
-            const batchResponse = await client.api('/$batch').post({ requests });
-            
-            for (const id of batchIds) {
-                const membersRes = batchResponse.responses.find((r: any) => r.id === `${id}-members`);
-                const ownersRes = batchResponse.responses.find((r: any) => r.id === `${id}-owners`);
-
-                if (membersRes?.status === 403) {
-                    console.warn(`[GraphService] Batch: Insufficient privileges to read members for group ${id}`);
-                }
-                if (ownersRes?.status === 403) {
-                    console.warn(`[GraphService] Batch: Insufficient privileges to read owners for group ${id}`);
+                while (response['@odata.nextLink']) {
+                    response = await client.api(response['@odata.nextLink']).get();
+                    members = [...members, ...(response.value || []).map((m: any) => m.id)];
                 }
 
-                result.set(id, {
-                    members: (membersRes?.body?.value || []).map((m: any) => m.id),
-                    owners: (ownersRes?.body?.value || []).map((o: any) => o.id)
-                });
+                // 2. Fetch owners (usually few, but we use the dedicated method)
+                const owners = await this.getGroupOwners(id, token);
+
+                result.set(id, { members, owners });
+            } catch (err: any) {
+                console.error(`[GraphService] Failed to fetch details for group ${id}:`, err.message);
+                result.set(id, { members: [], owners: [] });
             }
         }
 
