@@ -78,7 +78,7 @@ export async function deleteSignupAction(signupId: number, eventId: string | num
             await sendCancellationEmail(participantEmail, eventName);
         }
         
-        revalidateTag(`event_signups_${eventId}`, 'default');
+        revalidateTag(`event_signups_${eventId}`, 'max');
         revalidatePath(`/beheer/activiteiten/${eventId}/aanmeldingen`);
         revalidatePath('/beheer/activiteiten');
         return { success: true };
@@ -143,7 +143,7 @@ export async function createManualSignupAction(eventId: number, eventName: strin
             return { success: false, error: 'Synchronisatie met CMS mislukt. Aanmelding niet opgeslagen.' };
         }
 
-        revalidateTag(`event_signups_${eventId}`, 'default');
+        revalidateTag(`event_signups_${eventId}`, 'max');
         revalidatePath(`/beheer/activiteiten/${eventId}/aanmeldingen`);
         revalidatePath('/beheer/activiteiten');
         return { success: true };
@@ -181,7 +181,7 @@ export async function toggleCheckInAction(signupId: number, eventId: number, che
             return { success: false, error: "CMS Synchronisatie mislukt. Check-in status niet bijgewerkt." };
         }
 
-        revalidateTag(`event_signups_${eventId}`, 'default');
+        revalidateTag(`event_signups_${eventId}`, 'max');
         return { success: true };
     } catch (error) {
         

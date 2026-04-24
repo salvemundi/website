@@ -162,7 +162,7 @@ export async function updateAuditSettingsAction(manualApproval: boolean) {
             value: manualApproval 
         });
 
-        revalidateTag('audit_settings', 'default');
+        revalidateTag('audit_settings', 'max');
         return { success: true };
     } catch (error) {
         

@@ -194,7 +194,7 @@ export async function signupForActivity(data: EventSignupForm) {
 
         // Note: Directus and our SQL query share the same database table.
         // We revalidate to ensure Next.js cache stays in sync with the primary DB.
-        revalidateTag(`event_signups_${parsed.data.event_id}`, 'default');
+        revalidateTag(`event_signups_${parsed.data.event_id}`, 'max');
 
         if ((price ?? 0) > 0) {
             const financeUrl = `${getFinanceServiceUrl()}/api/payments/create`;

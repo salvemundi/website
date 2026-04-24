@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { updatePubCrawlSignup } from '@/server/actions/admin-kroegentocht.actions';
+import { updatePubCrawlSignup, togglePubCrawlTicketCheckIn } from '@/server/actions/admin-kroegentocht.actions';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 
@@ -27,6 +27,7 @@ export default function SignupForm({ signup }: SignupFormProps) {
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
     const [isPending, startTransition] = useTransition();
+    const [togglingId, setTogglingId] = useState<number | null>(null);
     const [formData, setFormData] = useState({
         name: signup?.name || '',
         email: signup?.email || '',
@@ -36,6 +37,20 @@ export default function SignupForm({ signup }: SignupFormProps) {
     });
 
     const tickets = signup?.tickets || [];
+
+    const handleToggleCheckIn = async (ticketId: number, currentStatus: boolean) => {
+        if (togglingId) return;
+        setTogglingId(ticketId);
+        try {
+            await togglePubCrawlTicketCheckIn(ticketId, currentStatus, signup.pub_crawl_event_id.id);
+            showToast('Kaart status bijgewerkt', 'success');
+            router.refresh();
+        } catch (err) {
+            showToast('Fout bij bijwerken: ' + err, 'error');
+        } finally {
+            setTogglingId(null);
+        }
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -67,7 +82,7 @@ export default function SignupForm({ signup }: SignupFormProps) {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] ml-1 flex items-center gap-2">
-                                <User className="h-3 w-3" /> Naam Contactpersoon
+                                <User className="h-3 w-3" /> Groep
                             </label>
                             <input
                                 type="text"
@@ -112,17 +127,22 @@ export default function SignupForm({ signup }: SignupFormProps) {
                             <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] ml-1 flex items-center gap-2">
                                 <Tag className="h-3 w-3" /> Betaalstatus
                             </label>
-                            <select
-                                value={formData.payment_status}
-                                onChange={(e) => setFormData({ ...formData, payment_status: e.target.value })}
-                                className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-bold text-[var(--text-main)] appearance-none"
-                                autoComplete="off"
-                            >
-                                <option value="paid">✅ Betaald</option>
-                                <option value="open">⏳ Open</option>
-                                <option value="canceled">❌ Geannuleerd</option>
-                                <option value="failed">⚠️ Mislukt</option>
-                            </select>
+                            <div className="relative group">
+                                <select
+                                    value={formData.payment_status}
+                                    onChange={(e) => setFormData({ ...formData, payment_status: e.target.value })}
+                                    className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-bold text-[var(--text-main)] appearance-none cursor-pointer hover:border-[var(--theme-purple)]/30"
+                                    autoComplete="off"
+                                >
+                                    <option value="paid" className="bg-[var(--bg-card)] text-[var(--text-main)]">Paid</option>
+                                    <option value="open" className="bg-[var(--bg-card)] text-[var(--text-main)]">Open</option>
+                                    <option value="canceled" className="bg-[var(--bg-card)] text-[var(--text-main)]">Canceled</option>
+                                    <option value="failed" className="bg-[var(--bg-card)] text-[var(--text-main)]">Failed</option>
+                                </select>
+                                <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text-muted)] group-hover:text-[var(--theme-purple)] transition-colors">
+                                    <ArrowLeft className="h-4 w-4 -rotate-90" />
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -141,19 +161,28 @@ export default function SignupForm({ signup }: SignupFormProps) {
                             {tickets.map((ticket: any, idx: number) => (
                                 <div key={ticket.id} className="p-4 bg-[var(--bg-main)]/30 rounded-[var(--radius-xl)] border border-[var(--border-color)]/50 flex items-center justify-between group hover:border-[var(--theme-purple)]/30 transition-all">
                                     <div className="flex flex-col gap-1">
-                                        <p className="text-sm font-black text-[var(--text-main)]">{ticket.name} {ticket.initial}.</p>
+                                        <p className="text-sm font-black text-[var(--text-main)]">{ticket.name}{ticket.initial ? ` ${ticket.initial}` : ''}</p>
                                         <p className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-tighter">{ticket.qr_token}</p>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        {ticket.checked_in ? (
-                                            <span className="flex items-center gap-1.5 px-3 py-1 bg-green-500/10 text-green-500 text-[9px] font-black uppercase rounded-full ring-1 ring-green-500/20">
-                                                <CheckCircle className="h-3 w-3" /> Check-in ✅
-                                            </span>
-                                        ) : (
-                                            <span className="flex items-center gap-1.5 px-3 py-1 bg-[var(--text-muted)]/10 text-[var(--text-muted)] text-[9px] font-black uppercase rounded-full ring-1 ring-[var(--text-muted)]/20">
-                                                <XCircle className="h-3 w-3 opacity-50" /> Niet binnen
-                                            </span>
-                                        )}
+                                        <button 
+                                            type="button"
+                                            onClick={() => handleToggleCheckIn(ticket.id, !!ticket.checked_in)}
+                                            disabled={!!togglingId}
+                                            className="transition-all active:scale-95 disabled:opacity-50"
+                                        >
+                                            {ticket.checked_in ? (
+                                                <span className="flex items-center gap-1.5 px-3 py-1 bg-green-500/10 text-green-500 text-[9px] font-black uppercase rounded-full ring-1 ring-green-500/20 hover:bg-green-500/20 transition-all">
+                                                    {togglingId === ticket.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle className="h-3 w-3" />}
+                                                    Heeft de kaart
+                                                </span>
+                                            ) : (
+                                                <span className="flex items-center gap-1.5 px-3 py-1 bg-red-500/10 text-red-500 text-[9px] font-black uppercase rounded-full ring-1 ring-red-500/20 hover:bg-red-500/20 transition-all">
+                                                    {togglingId === ticket.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <XCircle className="h-3 w-3 opacity-50" />}
+                                                    Geen kaart
+                                                </span>
+                                            )}
+                                        </button>
                                         <div className="w-8 h-8 rounded-lg bg-[var(--bg-card)] flex items-center justify-center text-[10px] font-black text-[var(--text-muted)] border border-[var(--border-color)] select-none group-hover:bg-[var(--theme-purple)] group-hover:text-white group-hover:border-[var(--theme-purple)] transition-all">
                                             {idx + 1}
                                         </div>

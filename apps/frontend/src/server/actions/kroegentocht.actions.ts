@@ -186,12 +186,32 @@ export async function initiateKroegentochtPayment(formData: any) {
         });
 
         const ticketsTable = [];
-        const names = (parsed.data.name_initials || '').split(',').map(n => n.trim()).filter(Boolean);
+        let participantsData: { name: string, initial: string }[] = [];
+        
+        try {
+            // Try parsing as JSON first (modern frontend behavior)
+            if (parsed.data.name_initials?.startsWith('[')) {
+                participantsData = JSON.parse(parsed.data.name_initials);
+            } else {
+                // Fallback for legacy comma-separated strings
+                participantsData = (parsed.data.name_initials || '').split(',')
+                    .map(n => n.trim())
+                    .filter(Boolean)
+                    .map(name => ({
+                        name: name,
+                        initial: name.substring(0, 1).toUpperCase()
+                    }));
+            }
+        } catch (e) {
+            // Final fallback
+            participantsData = [];
+        }
 
         for (let i = 0; i < parsed.data.amount_tickets; i++) {
+            const p = participantsData[i];
             ticketsTable.push({
-                name: names[i] || parsed.data.name,
-                initial: (names[i] || parsed.data.name).substring(0, 1).toUpperCase(),
+                name: p?.name || parsed.data.name,
+                initial: (p?.initial || p?.name || parsed.data.name).substring(0, 1).toUpperCase(),
                 qr_token: crypto.randomUUID()
             });
         }
@@ -278,7 +298,7 @@ export async function getKroegentochtStatus(signupId: string) {
         if (!signup) return { status: 'error' };
 
         if (signup.payment_status === 'paid') {
-            revalidateTag(`tickets-${signup.email}`, 'default');
+            revalidateTag(`tickets-${signup.email}`, 'max');
             return { status: 'paid', signup };
         } else if (['failed', 'canceled', 'expired'].includes(signup.payment_status)) {
             return { status: 'failed' };

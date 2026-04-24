@@ -84,8 +84,8 @@ export async function manageAzureMembershipAction(userId: string, azureGroupId: 
     const { rows: revalRows } = await queryReval('SELECT email FROM directus_users WHERE id = $1 LIMIT 1', [directusUserId]);
     const emailSlug = revalRows?.[0]?.email?.split('@')[0]?.replace(/\./g, '-') ?? directusUserId;
     revalidatePath(`/beheer/leden/${encodeURIComponent(emailSlug)}`);
-    revalidateTag(`user_${directusUserId}`, 'default');
-    revalidateTag(`user_committees_${directusUserId}`, 'default');
+    revalidateTag(`user_${directusUserId}`, 'max');
+    revalidateTag(`user_committees_${directusUserId}`, 'max');
 
         return { success: true };
     } catch (err: any) {

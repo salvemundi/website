@@ -37,7 +37,7 @@ export async function deleteActivity(eventId: number) {
 
         await logAdminAction('activity_deleted', 'SUCCESS', { id: eventId });
         
-        revalidateTag('events', 'default');
+        revalidateTag('events', 'max');
         revalidatePath('/beheer/activiteiten');
         revalidatePath('/beheer');
         return { success: true };
@@ -101,7 +101,7 @@ export async function createActivityAction(prevState: any, formData: FormData): 
             return { success: false, error: 'Synchronisatie met CMS mislukt. Activiteit is niet aangemaakt.' };
         }
 
-        revalidateTag('events', 'default');
+        revalidateTag('events', 'max');
         revalidatePath('/beheer/activiteiten');
         revalidatePath('/beheer');
 
@@ -172,8 +172,8 @@ export async function updateActivityAction(eventId: number, prevState: any, form
 
         await logAdminAction('activity_updated', 'SUCCESS', { id: eventId, data: directusPayload });
 
-        revalidateTag('events', 'default');
-        revalidateTag(`event_${eventId}`, 'default');
+        revalidateTag('events', 'max');
+        revalidateTag(`event_${eventId}`, 'max');
         revalidatePath('/beheer/activiteiten');
         revalidatePath(`/beheer/activiteiten/${eventId}/bewerken`);
         revalidatePath('/beheer');
