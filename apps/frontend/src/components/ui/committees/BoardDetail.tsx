@@ -45,21 +45,21 @@ export const BoardDetail: React.FC<BoardDetailProps> = ({
                             </a>
                         )}
                         
-                        <a 
-                            href="/contact"
-                            className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-[var(--border-color)]/50 px-8 py-4 text-lg font-bold text-[var(--text-muted)] hover:text-[var(--text-main)] hover:border-[var(--border-color)] transition-all"
-                        >
-                            <LayoutGrid className="h-5 w-5" />
-                            Andere vragen?
-                        </a>
-
-                        {cleanedName.toLowerCase().includes('bestuur') && (
+                        {cleanedName.toLowerCase().includes('bestuur') ? (
                             <a 
                                 href="/commissies/oud-besturen"
                                 className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-[var(--border-color)]/50 px-8 py-4 text-lg font-bold text-[var(--text-muted)] hover:text-[var(--text-main)] hover:border-[var(--border-color)] transition-all"
                             >
                                 <History className="h-5 w-5" />
                                 Geschiedenis
+                            </a>
+                        ) : (
+                            <a 
+                                href="/contact"
+                                className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-[var(--border-color)]/50 px-8 py-4 text-lg font-bold text-[var(--text-muted)] hover:text-[var(--text-main)] hover:border-[var(--border-color)] transition-all"
+                            >
+                                <LayoutGrid className="h-5 w-5" />
+                                Andere vragen?
                             </a>
                         )}
                     </div>
