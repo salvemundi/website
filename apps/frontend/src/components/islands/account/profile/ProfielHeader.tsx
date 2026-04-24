@@ -23,23 +23,50 @@ export default function ProfielHeader({ user = {}, membershipStatus = { text: ''
         <Tile className="h-fit">
             <div className="flex flex-col gap-6 items-center text-center">
                 <div className="relative group shrink-0">
-                    <div className="relative h-28 w-28 sm:h-32 sm:w-32 rounded-full overflow-hidden border-4 border-[var(--color-purple-100)] shadow-lg bg-white">
-                        {user.avatar || user.image ? (
-                            <Image
-                                src={(user.avatar ? getImageUrl(user.avatar) : user.image ? getImageUrl(user.image) : '') as string}
-                                alt={user.name || "Avatar"}
-                                fill
-                                unoptimized
-                                className="object-cover"
-                            />
-                        ) : (
-                            <div className="h-full w-full bg-[var(--color-purple-50)] border border-[var(--color-purple-100)] flex items-center justify-center">
-                                <span className="text-4xl font-bold text-[var(--color-purple-300)]">
-                                    {user.name?.[0] || '?'}
-                                </span>
+                    <label 
+                        className="relative block cursor-pointer group"
+                        title="Profielfoto wijzigen"
+                    >
+                        <div className="relative h-28 w-28 sm:h-32 sm:w-32 rounded-full overflow-hidden border-4 border-[var(--color-purple-100)] shadow-lg bg-white transition-transform group-hover:scale-105">
+                            {user.avatar || user.image ? (
+                                <Image
+                                    src={(user.avatar ? getImageUrl(user.avatar) : user.image ? getImageUrl(user.image) : '') as string}
+                                    alt={user.name || "Avatar"}
+                                    fill
+                                    unoptimized
+                                    className="object-cover"
+                                />
+                            ) : (
+                                <div className="h-full w-full bg-[var(--color-purple-50)] border border-[var(--color-purple-100)] flex items-center justify-center">
+                                    <span className="text-4xl font-bold text-[var(--color-purple-300)]">
+                                        {user.name?.[0] || '?'}
+                                    </span>
+                                </div>
+                            )}
+                            
+                            {/* Hover Overlay */}
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white p-2">
+                                <svg className="h-8 w-8 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span className="text-[10px] font-black uppercase tracking-wider">Wijzigen</span>
                             </div>
-                        )}
-                    </div>
+                        </div>
+                        <input 
+                            type="file" 
+                            className="hidden" 
+                            accept="image/*"
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file && (user as any).onAvatarChange) {
+                                    (user as any).onAvatarChange(file);
+                                }
+                                // Reset input so same file can be picked again if needed
+                                e.target.value = '';
+                            }}
+                        />
+                    </label>
                 </div>
 
                 <div className="min-w-0 w-full animate-in fade-in duration-500">
