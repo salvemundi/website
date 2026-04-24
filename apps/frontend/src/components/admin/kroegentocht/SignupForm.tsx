@@ -11,7 +11,8 @@ import {
     Ticket, 
     CheckCircle,
     XCircle,
-    Tag
+    Tag,
+    RefreshCw
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -200,13 +201,20 @@ export default function SignupForm({ signup }: SignupFormProps) {
             </div>
 
             <div className="flex justify-between items-center gap-4">
-                <Link 
-                    href="/beheer/kroegentocht"
-                    className="flex items-center gap-2 px-8 py-4 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-xl)] text-xs font-black uppercase tracking-widest text-[var(--text-light)] hover:text-[var(--theme-purple)] transition-all active:scale-95 shadow-sm"
+                <button 
+                    type="button"
+                    onClick={() => setFormData({
+                        name: signup?.name || '',
+                        email: signup?.email || '',
+                        association: signup?.association || '',
+                        payment_status: signup?.payment_status || 'open',
+                        amount_tickets: signup?.amount_tickets || 1,
+                    })}
+                    className="flex items-center gap-2 px-8 py-4 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-xl)] text-xs font-black uppercase tracking-widest text-[var(--text-light)] hover:text-red-500 hover:border-red-500/30 transition-all active:scale-95 shadow-sm"
                 >
-                    <ArrowLeft className="h-4 w-4" />
-                    Terug naar lijst
-                </Link>
+                    <RefreshCw className="h-4 w-4" />
+                    Annuleren
+                </button>
 
                 <button
                     type="submit"
