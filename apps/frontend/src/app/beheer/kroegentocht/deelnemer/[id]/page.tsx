@@ -1,7 +1,7 @@
 'use server';
 
 import SignupForm from '@/components/admin/kroegentocht/SignupForm';
-import { User } from 'lucide-react';
+import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import { getPubCrawlSignup } from '@/server/actions/admin-kroegentocht.actions';
 import { notFound } from 'next/navigation';
 import { unstable_noStore as noStore } from 'next/cache';
@@ -28,20 +28,13 @@ export default async function DeelnemerPage({ params }: DeelnemerPageProps) {
 
     return (
         <div className="w-full">
-            <div className="bg-[var(--bg-card)] border-b border-[var(--border-color)] mb-12">
-                <div className="container mx-auto px-4 py-12 max-w-7xl flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 rounded-[var(--radius-xl)] bg-[var(--theme-purple)]/10 text-[var(--theme-purple)]">
-                            <User className="h-6 w-6" />
-                        </div>
-                        <h1 className="text-3xl font-black text-[var(--text-main)] tracking-widest uppercase">
-                            Deelnemer <span className="text-[var(--theme-purple)]">Beheer</span>
-                        </h1>
-                    </div>
-                </div>
-            </div>
+            <AdminToolbar 
+                title="Deelnemer Beheer"
+                subtitle={`Groep #${id}`}
+                backHref="/beheer/kroegentocht"
+            />
 
-            <div className="container mx-auto px-4 pb-20">
+            <div className="container mx-auto px-4 py-12 max-w-7xl">
                 <SignupForm signup={signup} />
             </div>
         </div>

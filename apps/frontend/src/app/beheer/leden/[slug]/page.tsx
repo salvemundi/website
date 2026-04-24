@@ -158,7 +158,8 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
                 </div>
             </AdminPageShell>
         );
-    } catch (e) {
+    } catch (e: any) {
+        if (e.digest?.startsWith('NEXT_')) throw e;
         console.error("[LidDetailPage] Error loading member:", e);
         return notFound();
     }
