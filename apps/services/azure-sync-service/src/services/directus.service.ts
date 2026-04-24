@@ -1,12 +1,12 @@
 import { getDirectusClient } from '../config/directus.js';
-import { updateItem, readItems, createItem, deleteItem, readUsers, updateUser, createUser } from '@directus/sdk';
+import { updateItem, readItems, createItem, deleteItem, readUsers, updateUser, createUser, uploadFiles } from '@directus/sdk';
 import { Event, EventSignup, FeatureFlag } from '../types/schema.js';
 
 export class DirectusService {
     static async getUserById(id: string) {
         const users = await getDirectusClient().request(readUsers({
             filter: { id: { _eq: id } },
-            fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status']
+            fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'avatar']
         }));
         return users[0] || null;
     }
@@ -14,7 +14,7 @@ export class DirectusService {
     static async getUserByEntraId(entraId: string) {
         const users = await getDirectusClient().request(readUsers({
             filter: { entra_id: { _eq: entraId } },
-            fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status']
+            fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'avatar']
         }));
         return users[0] || null;
     }
@@ -22,7 +22,7 @@ export class DirectusService {
     static async getUserByEmail(email: string) {
         const users = await getDirectusClient().request(readUsers({
             filter: { email: { _eq: email.toLowerCase() } },
-            fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status']
+            fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'avatar']
         }));
         return users[0] || null;
     }
@@ -94,7 +94,7 @@ export class DirectusService {
 
     static async getAllUsers() {
         return await getDirectusClient().request(readUsers({
-            fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'membership_expiry'],
+            fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'membership_expiry', 'avatar'],
             limit: -1
         }));
     }
@@ -130,6 +130,32 @@ export class DirectusService {
         } catch (err) {
             console.error(`[DirectusService] Error checking flag ${key}:`, err);
             return false;
+        }
+    }
+
+    /**
+     * Uploads a photo buffer to Directus and links it to the user.
+     */
+    static async uploadUserAvatar(userId: string, buffer: Buffer, filename: string, contentType: string) {
+        const client = getDirectusClient();
+        const formData = new FormData();
+        
+        // Convert Buffer to Blob for the SDK/FormData
+        const blob = new Blob([buffer], { type: contentType });
+        formData.append('file', blob, filename);
+
+        try {
+            const uploadResult: any = await client.request(uploadFiles(formData));
+            const fileId = Array.isArray(uploadResult) ? uploadResult[0].id : uploadResult.id;
+
+            await client.request(updateUser(userId, {
+                avatar: fileId
+            }));
+
+            return fileId;
+        } catch (err) {
+            console.error(`[DirectusService] Failed to upload avatar for user ${userId}:`, err);
+            throw err;
         }
     }
 }

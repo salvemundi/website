@@ -31,6 +31,7 @@ export interface SyncOptions {
     fields: string[];
     forceLink?: boolean;
     activeOnly?: boolean;
+    forceSyncPhotos?: boolean;
 }
 
 export interface SyncContext {

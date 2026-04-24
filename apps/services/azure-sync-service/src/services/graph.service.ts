@@ -163,4 +163,31 @@ export class GraphService {
 
         return result;
     }
+
+    /**
+     * Fetches a user's profile photo binary data from Entra ID.
+     */
+    static async getUserPhoto(userId: string, token: string): Promise<{ buffer: Buffer; contentType: string } | null> {
+        try {
+            const response = await fetch(`https://graph.microsoft.com/v1.0/users/${userId}/photo/$value`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                if (response.status === 404) return null;
+                throw new Error(`Failed to fetch photo: ${response.statusText}`);
+            }
+
+            const arrayBuffer = await response.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            const contentType = response.headers.get('content-type') || 'image/jpeg';
+
+            return { buffer, contentType };
+        } catch (err) {
+            console.error(`[GraphService] Error fetching photo for user ${userId}:`, err);
+            return null;
+        }
+    }
 }
