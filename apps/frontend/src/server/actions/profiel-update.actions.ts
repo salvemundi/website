@@ -8,7 +8,7 @@ import { updateProfileSchema } from '@salvemundi/validations/schema/profiel.zod'
 
 
 import { getSystemDirectus } from '@/lib/directus';
-import { updateUser } from '@directus/sdk';
+import { updateUser, uploadFiles } from '@directus/sdk';
 import { getRedis } from '@/server/auth/redis-client';
 import { cookies } from 'next/headers';
 import { triggerUserSyncAction } from './azure-sync/sync-tasks.actions';
@@ -88,6 +88,61 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
     } catch (err) {
         
         return { success: false, error: 'Bijwerken mislukt door een onbekende systeemfout.' };
+    }
+}
+
+/**
+ * Upload a new avatar and update the user record.
+ */
+export async function uploadUserAvatar(formData: FormData) {
+    const session = await auth.api.getSession({ headers: await headers() });
+    const user = session?.user;
+
+    if (!user?.id) {
+        return { success: false, error: 'Not authenticated' };
+    }
+
+    const file = formData.get('file') as File;
+    if (!file) {
+        return { success: false, error: 'Geen bestand geselecteerd.' };
+    }
+
+    // Basic validation
+    if (!file.type.startsWith('image/')) {
+        return { success: false, error: 'Alleen afbeeldingen zijn toegestaan.' };
+    }
+
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        return { success: false, error: 'Afbeelding is te groot (max 5MB).' };
+    }
+
+    try {
+        const directus = getSystemDirectus();
+        
+        // Step 1: Upload the file to Directus
+        const uploadResult = await directus.request(uploadFiles(formData));
+        const fileId = Array.isArray(uploadResult) ? uploadResult[0].id : uploadResult.id;
+
+        // Step 2: Update the user record with the new file ID
+        await directus.request(updateUser(user.id, {
+            avatar: fileId
+        }));
+
+        // Step 3: Clear session cache
+        const cookieStore = await cookies();
+        const sessionToken = cookieStore.get('better-auth.session-token')?.value || 
+                           cookieStore.get('__Secure-better-auth.session-token')?.value;
+                           
+        if (sessionToken) {
+            const redis = await getRedis();
+            await redis.del(`session:${sessionToken}`);
+        }
+
+        revalidatePath('/profiel');
+        return { success: true, avatarId: fileId };
+    } catch (err: any) {
+        console.error('[AvatarUpload] Error:', err);
+        return { success: false, error: 'Uploaden van profielfoto mislukt.' };
     }
 }
 

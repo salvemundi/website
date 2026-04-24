@@ -7,7 +7,7 @@ import { authClient } from '@/lib/auth';
 import { type EventSignup, updateProfileSchema } from '@salvemundi/validations/schema/profiel.zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { updateUserProfile } from '@/server/actions/profiel-update.actions';
+import { updateUserProfile, uploadUserAvatar } from '@/server/actions/profiel-update.actions';
 import { z } from 'zod';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
@@ -187,6 +187,34 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
             }
         });
     };
+
+    const onAvatarChange = (file: File) => {
+        // Confirmation before upload
+        if (!window.confirm('Weet je zeker dat je je profielfoto wilt wijzigen?')) return;
+
+        startUpdateTransition(async () => {
+            const previewUrl = URL.createObjectURL(file);
+            
+            // Step 1: Trigger optimistic update with local blob URL
+            addOptimisticUpdate({ avatar: previewUrl, image: previewUrl });
+            
+            // Step 2: Upload to Directus
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const result = await uploadUserAvatar(formData);
+            
+            if (result.success) {
+                await refetch();
+                router.refresh();
+                showToast('Profielfoto succesvol bijgewerkt!', 'success');
+            } else {
+                showToast(result.error || 'Het uploaden van je profielfoto is mislukt.', 'error');
+            }
+            
+            URL.revokeObjectURL(previewUrl);
+        });
+    };
     
     // Derived values
     const isCommitteeMember = Array.isArray(optimisticUser.committees) && optimisticUser.committees.length > 0;
@@ -264,7 +292,7 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
             {/* Left Column */}
             <div className="md:col-span-12 lg:col-span-4 flex flex-col gap-6">
                 <ProfielHeader 
-                    user={optimisticUser} 
+                    user={{ ...optimisticUser, onAvatarChange }} 
                     membershipStatus={membershipStatus} 
                 />
                 <ProfielGaming 
