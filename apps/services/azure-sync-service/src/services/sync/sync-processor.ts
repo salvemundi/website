@@ -140,9 +140,16 @@ export class SyncProcessor {
         if (fields.includes('profile_photo')) {
             const shouldSync = ctx.options.forceSyncPhotos || !dUser.avatar;
             if (shouldSync) {
-                const photo = await GraphService.getUserPhoto(aUser.id, ctx.token);
+                // Use pre-fetched batch photo if available
+                let photo = ctx.photoCache?.get(aUser.id);
+                
+                // Fallback to individual fetch if cache is missing (e.g. single user sync)
+                if (photo === undefined) {
+                    photo = await GraphService.getUserPhoto(aUser.id, ctx.token);
+                }
+
                 if (photo) {
-                    const fileId = await DirectusService.uploadUserAvatar(dUser.id, photo.buffer, `avatar_${aUser.id}.jpg`, photo.contentType);
+                    await DirectusService.uploadUserAvatar(dUser.id, photo.buffer, `avatar_${aUser.id}.jpg`, photo.contentType);
                     changes.push({ field: 'Profielfoto', old: dUser.avatar ? 'Bestaand' : 'Geen', new: 'Bijgewerkt vanuit Azure' });
                 }
             }

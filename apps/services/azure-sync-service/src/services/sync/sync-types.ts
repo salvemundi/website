@@ -47,6 +47,7 @@ export interface SyncContext {
     // mainMembershipState: entrapId -> Set of active group IDs the user is in
     mainMembershipState: Map<string, Set<string>>; 
     processedEmails?: Set<string>;
+    photoCache?: Map<string, { buffer: Buffer; contentType: string } | null>;
 }
 
 export const SYNC_REDIS_KEY = 'v7:sync:status';
