@@ -288,7 +288,7 @@ export async function toggleIntroVisibility(): Promise<{ success: boolean; show?
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         
-        revalidateTag('feature_flags', 'default');
+        revalidateTag('feature_flags', 'max');
         revalidatePath('/', 'layout');
         revalidatePath('/beheer/intro');
 

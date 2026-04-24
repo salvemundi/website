@@ -9,7 +9,8 @@ import {
     ChevronLeft,
     AlertCircle,
     Users,
-    Building2
+    Building2,
+    RefreshCw
 } from 'lucide-react';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminVisibilityToggle from '@/components/ui/admin/AdminVisibilityToggle';
@@ -23,7 +24,7 @@ import {
     toggleKroegentochtVisibility,
     getPubCrawlSignups
 } from '@/server/actions/admin-kroegentocht.actions';
-import EventSelector from '@/components/admin/kroegentocht/EventSelector';
+import EventDropdown from '@/components/admin/kroegentocht/EventDropdown';
 import SignupList from '@/components/admin/kroegentocht/SignupList';
 import { type PubCrawlEvent, type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 
@@ -49,7 +50,6 @@ export default function KroegentochtManagementIsland({
         initialEvents.find(e => e.date && new Date(e.date) >= new Date()) || initialEvents[0] || null
     );
     const [signups, setSignups] = useState<ExtendedSignup[]>(initialSignups);
-    const [showPastEvents, setShowPastEvents] = useState(false);
     const [settings, setSettings] = useState(initialSettings);
     const [error, setError] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
@@ -60,11 +60,24 @@ export default function KroegentochtManagementIsland({
         startTransition(async () => {
             try {
                 const data = await getPubCrawlSignups(Number(eventId));
+                if (!data || data.length === 0) {
+                    // Check if it's really empty or an error occurred silently
+                    console.log('[Kroegentocht] No signups found for event', eventId);
+                }
                 setSignups(data);
             } catch (err) {
-                showToast('Kon aanmeldingen niet laden. Controleer je verbinding.', 'error');
+                console.error('[Kroegentocht] Error loading signups:', err);
+                showToast('Fout bij het laden van aanmeldingen. Probeer het opnieuw.', 'error');
+                setError('Kon gegevens niet ophalen van de server.');
             }
         });
+    };
+
+    const handleRefresh = () => {
+        if (selectedEvent) {
+            loadSignups(selectedEvent.id);
+            showToast('Gegevens worden ververst...', 'success');
+        }
     };
 
     // NUCLEAR SSR: Effect only triggers on manual event change, not mount if initialSignups matches
@@ -111,20 +124,34 @@ export default function KroegentochtManagementIsland({
 
     const paidSignups = signups.filter(s => s.payment_status === 'paid');
     const adminStats = [
-        { label: 'Aanmeldingen', value: paidSignups.length, icon: Users, trend: 'Groepen' },
-        { label: 'Tickets', value: paidSignups.reduce((sum, s) => sum + (s.amount_tickets || 0), 0), icon: Beer, trend: 'Totaal' },
-        { label: 'Verenigingen', value: [...new Set(paidSignups.map(s => s.association).filter(Boolean))].length, icon: Building2, trend: 'Uniek' },
-        { label: 'Onbetaald', value: signups.filter(s => s.payment_status !== 'paid').length, icon: AlertCircle, trend: 'Open' },
+        { label: 'Tickets', value: paidSignups.reduce((sum, s) => sum + (s.amount_tickets || 0), 0), icon: Beer, trend: 'Totaal verkocht' },
+        { label: 'Groepen', value: paidSignups.length, icon: Users, trend: 'Aanmeldingen' },
+        { label: 'Verenigingen', value: [...new Set(paidSignups.map(s => s.association).filter(Boolean))].length, icon: Building2, trend: 'Deelnemend' },
     ];
 
     return (
         <>
             <AdminToolbar 
                 title="Kroegentocht"
-                subtitle="Aanmeldingen, tickets & event instellingen"
+                subtitle={selectedEvent ? `Beheer: ${selectedEvent.name}` : "Aanmeldingen, tickets & event instellingen"}
                 backHref="/beheer"
                 actions={
                     <>
+                        <EventDropdown 
+                            events={events}
+                            selectedEventId={selectedEvent?.id || null}
+                            onSelect={handleEventSelect}
+                        />
+
+                        <button
+                            onClick={handleRefresh}
+                            disabled={isPending}
+                            className="p-2.5 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] text-[var(--beheer-text-muted)] hover:text-[var(--beheer-accent)] hover:border-[var(--beheer-accent)]/30 transition-all active:scale-90 disabled:opacity-50"
+                            title="Vernieuwen"
+                        >
+                            <RefreshCw className={`h-4 w-4 ${isPending ? 'animate-spin' : ''}`} />
+                        </button>
+
                         <AdminVisibilityToggle 
                             isVisible={settings.show}
                             onToggle={handleToggleVisibility}
@@ -143,18 +170,14 @@ export default function KroegentochtManagementIsland({
             />
 
             <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <AdminStatsBar stats={adminStats} />
-
-            {/* Event Selector Section */}
-            <div className="mb-10">
-                <EventSelector 
-                    events={events}
-                    selectedEventId={selectedEvent?.id || null}
-                    onSelect={handleEventSelect}
-                    showPastEvents={showPastEvents}
-                    setShowPastEvents={setShowPastEvents}
-                />
-            </div>
+                
+                {error && (
+                    <div className="mb-8 p-4 bg-red-500/10 border border-red-500/50 rounded-[var(--beheer-radius)] text-red-500 text-sm font-bold flex items-center gap-3">
+                        <AlertCircle className="h-5 w-5" />
+                        {error}
+                        <button onClick={handleRefresh} className="ml-auto underline">Probeer opnieuw</button>
+                    </div>
+                )}
 
             {selectedEvent ? (
                 <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">

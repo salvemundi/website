@@ -96,18 +96,6 @@ export default function SignupList({
 
                     <div className="flex flex-wrap gap-3">
                         <button
-                            onClick={() => setShowAll(!showAll)}
-                            className={`flex items-center gap-2 px-6 py-3 rounded-[var(--radius-xl)] font-black text-xs uppercase tracking-widest transition-all active:scale-95 border-2 ${
-                                showAll
-                                ? 'bg-amber-500/10 border-amber-500 text-amber-500'
-                                : 'bg-[var(--bg-card)] border-[var(--border-color)] text-[var(--text-light)] hover:border-[var(--theme-purple)]/30'
-                            }`}
-                        >
-                            <AlertCircle className="h-4 w-4" />
-                            {showAll ? 'Verberg onbetaald' : 'Toon alles'}
-                        </button>
-
-                        <button
                             onClick={exportToCSV}
                             disabled={filteredSignups.length === 0}
                             className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-black text-xs uppercase tracking-widest rounded-[var(--radius-xl)] shadow-lg shadow-green-600/20 transition-all active:scale-95 disabled:opacity-50"
@@ -127,7 +115,6 @@ export default function SignupList({
                             <tr className="bg-[var(--bg-main)]/50 border-b border-[var(--border-color)]/30">
                                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Groep / Deelnemers</th>
                                 <th className="px-6 py-4 text-center text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Tickets</th>
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] hidden md:table-cell">Status</th>
                                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] hidden lg:table-cell">Vereniging</th>
                                 <th className="px-6 py-4 text-right text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Acties</th>
                             </tr>
@@ -135,70 +122,85 @@ export default function SignupList({
                         <tbody className="divide-y divide-[var(--border-color)]/20">
                             {filteredSignups.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-16 text-center text-[var(--text-muted)] italic font-medium">
-                                        Geen aanmeldingen gevonden voor dit filter.
+                                    <td colSpan={4} className="px-6 py-16 text-center text-[var(--text-muted)] italic font-medium">
+                                        Geen aanmeldingen gevonden.
                                     </td>
                                 </tr>
                             ) : (
-                                filteredSignups.map((signup) => (
-                                    <tr key={signup.id} className="hover:bg-[var(--bg-main)]/30 transition-colors group">
-                                        <td className="px-6 py-4">
-                                            <div className="flex flex-col gap-1">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="font-bold text-[var(--text-main)] group-hover:text-[var(--theme-purple)] transition-colors">{signup.name}</span>
-                                                    <a href={`mailto:${signup.email}`} className="text-[var(--text-light)] hover:text-[var(--theme-purple)]">
-                                                        <Mail className="h-3 w-3" />
-                                                    </a>
-                                                </div>
-                                                <div className="text-[10px] font-mono text-[var(--text-muted)] uppercase">{signup.email}</div>
-                                                {signup.participants && signup.participants.length > 0 && (
-                                                    <div className="mt-2 space-y-1 pl-3 border-l-2 border-[var(--theme-purple)]/20">
-                                                        {signup.participants.map((p, i: number) => (
-                                                            <div key={i} className="text-[11px] text-[var(--text-light)] font-medium">
-                                                                • {p.name} {p.initial}.
-                                                            </div>
-                                                        ))}
+                                filteredSignups.map((signup) => {
+                                    // Robust participant parsing
+                                    let participants = signup.participants || [];
+                                    if (typeof participants === 'string') {
+                                        try { participants = JSON.parse(participants); } catch { participants = []; }
+                                    }
+                                    if (!Array.isArray(participants)) participants = [];
+
+                                    return (
+                                        <tr key={signup.id} className="hover:bg-[var(--bg-main)]/30 transition-colors group border-b border-[var(--border-color)]/10 last:border-0">
+                                            <td className="px-6 py-3 min-w-[300px]">
+                                                <div className="flex flex-col gap-0.5">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-bold text-sm text-[var(--text-main)] group-hover:text-[var(--theme-purple)] transition-colors">
+                                                            Groep {signups.length - signups.findIndex(s => s.id === signup.id)}
+                                                        </span>
+                                                        <a href={`mailto:${signup.email}`} className="text-[var(--text-muted)] hover:text-[var(--theme-purple)] transition-colors" title={signup.email}>
+                                                            <Mail className="h-3 w-3" />
+                                                        </a>
                                                     </div>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] text-xs font-black ring-1 ring-[var(--theme-purple)]/20">
-                                                {signup.amount_tickets}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 hidden md:table-cell">
-                                            <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ring-1 ${
-                                                signup.payment_status === 'paid'
-                                                ? 'bg-green-500/10 text-green-500 ring-green-500/20'
-                                                : signup.payment_status === 'open'
-                                                ? 'bg-amber-500/10 text-amber-500 ring-amber-500/20'
-                                                : 'bg-red-500/10 text-red-500 ring-red-500/20'
-                                            }`}>
-                                                {signup.payment_status === 'paid' ? 'Betaald' : signup.payment_status === 'open' ? 'Open' : signup.payment_status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-xs font-bold text-[var(--text-subtle)] hidden lg:table-cell">
-                                            {signup.association || '-'}
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex justify-end gap-1">
-                                                <button 
-                                                    onClick={() => signup.id && onEdit(signup.id)}
-                                                    className="p-2 rounded-lg hover:bg-[var(--theme-purple)]/10 text-[var(--text-muted)] hover:text-[var(--theme-purple)] transition-all active:scale-90"
-                                                >
-                                                    <Edit className="h-4 w-4" />
-                                                </button>
-                                                <button 
-                                                    onClick={() => signup.id && onDelete(signup.id)}
-                                                    className="p-2 rounded-lg hover:bg-red-500/10 text-[var(--text-muted)] hover:text-red-500 transition-all active:scale-90"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
+                                                    
+                                                    {participants.length > 0 && (
+                                                        <div className="mt-1.5 flex flex-wrap gap-1.5">
+                                                            {participants.map((p: any, i: number) => {
+                                                                // AGGRESSIVE CLEANUP for broken JSON data
+                                                                let rawName = typeof p === 'object' ? (p.name || 'Onbekend') : String(p);
+                                                                let rawInitial = typeof p === 'object' ? (p.initial || '') : '';
+
+                                                                if (rawName.includes('{"name":') || rawName.includes('"name":')) {
+                                                                    const match = rawName.match(/"name":"([^"]+)"/);
+                                                                    if (match) rawName = match[1];
+                                                                    const initMatch = rawName.match(/"initial":"([^"]+)"/);
+                                                                    if (initMatch) rawInitial = initMatch[1];
+                                                                }
+
+                                                                return (
+                                                                    <div key={i} className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-[var(--bg-main)]/80 rounded-md ring-1 ring-[var(--border-color)]/30 text-[10px] font-medium text-[var(--text-light)]">
+                                                                        <span className="text-[var(--text-muted)] truncate max-w-[120px]">
+                                                                            {rawName}{rawInitial ? ` ${rawInitial}` : ''}
+                                                                        </span>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-3 text-center">
+                                                <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] text-[10px] font-black ring-1 ring-[var(--theme-purple)]/30">
+                                                    {signup.amount_tickets}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-3 text-[11px] font-medium text-[var(--text-muted)] hidden lg:table-cell">
+                                                {signup.association || '-'}
+                                            </td>
+                                            <td className="px-6 py-3 text-right">
+                                                <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button 
+                                                        onClick={() => signup.id && onEdit(signup.id)}
+                                                        className="p-1.5 rounded-md hover:bg-[var(--theme-purple)]/10 text-[var(--text-muted)] hover:text-[var(--theme-purple)] transition-all"
+                                                    >
+                                                        <Edit className="h-3.5 w-3.5" />
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => signup.id && onDelete(signup.id)}
+                                                        className="p-1.5 rounded-md hover:bg-red-500/10 text-[var(--text-muted)] hover:text-red-500 transition-all"
+                                                    >
+                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
                             )}
                         </tbody>
                     </table>

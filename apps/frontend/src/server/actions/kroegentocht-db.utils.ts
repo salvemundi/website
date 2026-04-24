@@ -52,22 +52,27 @@ export async function fetchPubCrawlSignupsDb(eventId: number): Promise<(PubCrawl
 
         if (signupRes.rowCount === 0) return [];
 
-        const signupIds = signupRes.rows.map(r => r.id);
-        const ticketRes = await query(
-            `SELECT signup_id, name, initial FROM pub_crawl_tickets WHERE signup_id = ANY($1::int[])`,
-            [signupIds]
-        );
+        return signupRes.rows.map(raw => {
+            let participants = [];
+            
+            if (raw.name_initials) {
+                if (Array.isArray(raw.name_initials)) {
+                    participants = raw.name_initials;
+                } else if (typeof raw.name_initials === 'string') {
+                    try {
+                        const parsed = JSON.parse(raw.name_initials);
+                        participants = Array.isArray(parsed) ? parsed : [parsed];
+                    } catch (e) {
+                        // Silent fail
+                    }
+                }
+            }
 
-        const ticketsBySignup = (ticketRes.rows || []).reduce((acc: any, t) => {
-            if (!acc[t.signup_id]) acc[t.signup_id] = [];
-            acc[t.signup_id].push({ name: t.name, initial: t.initial });
-            return acc;
-        }, {});
-
-        return signupRes.rows.map(raw => ({
-            ...raw,
-            participants: ticketsBySignup[raw.id] || []
-        })) as any;
+            return {
+                ...raw,
+                participants
+            };
+        }) as any;
     } catch (error: any) {
         
         return [];
@@ -96,6 +101,28 @@ export async function fetchPubCrawlSignupByIdDb(signupId: number): Promise<any |
             [signupId]
         );
 
+        let participants = [];
+        if (signup.name_initials) {
+            if (Array.isArray(signup.name_initials)) {
+                participants = signup.name_initials;
+            } else if (typeof signup.name_initials === 'string') {
+                try {
+                    const parsed = JSON.parse(signup.name_initials);
+                    participants = Array.isArray(parsed) ? parsed : [parsed];
+                } catch (e) {}
+            }
+        }
+
+        // Map tickets, but use participant names if available
+        const tickets = (ticketRes.rows || []).map((t, i) => {
+            const p = participants[i];
+            return {
+                ...t,
+                name: p?.name || t.name,
+                initial: p?.initial || t.initial
+            };
+        });
+
         return {
             ...signup,
             pub_crawl_event_id: {
@@ -105,7 +132,7 @@ export async function fetchPubCrawlSignupByIdDb(signupId: number): Promise<any |
                 description: signup.event_description,
                 image: signup.event_image
             },
-            tickets: ticketRes.rows || []
+            tickets
         };
     } catch (error: any) {
         

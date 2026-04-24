@@ -56,7 +56,7 @@ export async function createTripActivity(prevState: any, formData: FormData) {
             
         });
 
-        revalidateTag('trip_activities', 'default');
+        revalidateTag('trip_activities', 'max');
         revalidatePath('/beheer/reis');
         revalidatePath('/beheer/reis/instellingen');
         revalidatePath('/beheer/reis/activiteiten');
@@ -106,7 +106,7 @@ export async function updateTripActivity(prevState: any, formData: FormData) {
             
         });
 
-        revalidateTag('trip_activities', 'default');
+        revalidateTag('trip_activities', 'max');
         revalidatePath('/beheer/reis');
         revalidatePath('/beheer/reis/instellingen');
         revalidatePath('/beheer/reis/activiteiten');

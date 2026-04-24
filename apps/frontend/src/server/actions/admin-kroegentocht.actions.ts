@@ -71,9 +71,12 @@ export async function getPubCrawlEvent(id: string | number): Promise<PubCrawlEve
 }
 
 export async function upsertPubCrawlEvent(data: Partial<PubCrawlEvent>) {
-    const session = await requireKroegAdmin();
-    const { id, ...payload } = data as any;
+    await requireKroegAdmin();
+    const { id, name, description, date, email, image } = data as any;
     
+    // Alleen velden sturen die daadwerkelijk in de Directus collectie zitten
+    const payload = { name, description, date, email, image };
+
     try {
         const client = getSystemDirectus();
         if (id) {
@@ -81,12 +84,16 @@ export async function upsertPubCrawlEvent(data: Partial<PubCrawlEvent>) {
         } else {
             await client.request(createItem('pub_crawl_events', payload));
         }
-        revalidateTag('kroegentocht-events', 'default');
-        revalidateTag('kroegentocht-event', 'default');
-        return { success: true };
-    } catch (e) {
         
-        throw new Error('Opslaan van event mislukt');
+        // Standaard Next.js cache revalidatie (met 'max' argument om deprecation te voorkomen)
+        revalidateTag('kroegentocht-events', 'max');
+        revalidateTag('kroegentocht-event', 'max');
+        revalidatePath('/beheer/kroegentocht');
+        
+        return { success: true };
+    } catch (e: any) {
+        console.error('[Kroegentocht-Action] Upsert failed:', e.message);
+        throw new Error('Opslaan van event mislukt: ' + (e.message || 'Onbekende fout'));
     }
 }
 
@@ -104,12 +111,43 @@ export async function uploadPubCrawlImage(formData: FormData) {
 
 
 export async function getPubCrawlSignups(eventId: number) {
+    noStore();
     await requireKroegAdmin();
     try {
-        // Direct DB fetch to bypass API cache
-        return await fetchPubCrawlSignupsDb(eventId);
-    } catch (e) {
+        // 1. Fetch from SQL (fastest)
+        const sqlSignups = await fetchPubCrawlSignupsDb(eventId);
         
+        // 2. Identify 'open' signups that might have been paid (Directus is source of truth via webhooks)
+        const openSignupIds = sqlSignups.filter(s => s.payment_status === 'open').map(s => s.id);
+        
+        if (openSignupIds.length > 0) {
+            try {
+                // Check Directus for latest status
+                const directusItems = await getSystemDirectus().request(readItems('pub_crawl_signups', {
+                    filter: { id: { _in: openSignupIds } },
+                    fields: ['id', 'payment_status']
+                }));
+                
+                const directusStatusMap = new Map(directusItems.map((item: any) => [item.id, item.payment_status]));
+                
+                // Update SQL for those that changed
+                for (const signup of sqlSignups) {
+                    const latestStatus = directusStatusMap.get(signup.id);
+                    if (latestStatus && latestStatus !== signup.payment_status && signup.id) {
+                        signup.payment_status = latestStatus;
+                        // Background update SQL
+                        updatePubCrawlSignupDb(Number(signup.id), { payment_status: latestStatus }).catch(() => {});
+                    }
+                }
+            } catch (err) {
+                // Directus check failed, fall back to SQL only (silent error)
+                console.error('[Kroegentocht-Action] Directus sync check failed:', err);
+            }
+        }
+
+        return sqlSignups;
+    } catch (e: any) {
+        console.error('[Kroegentocht-Action] getPubCrawlSignups failed:', e.message);
         throw new Error('Kon aanmeldingen niet ophalen');
     }
 }
@@ -129,7 +167,7 @@ export async function deletePubCrawlSignup(id: number, eventId: number) {
     await requireKroegAdmin();
     try {
         await deletePubCrawlSignupDb(id);
-        revalidateTag(`signups-${eventId}`, 'default');
+        revalidateTag(`signups-${eventId}`, 'max');
 
         // Background sync to Directus
         getSystemDirectus().request(deleteItem('pub_crawl_signups', id)).catch(() => {});
@@ -144,7 +182,7 @@ export async function updatePubCrawlSignup(id: number, eventId: number, data: an
     await requireKroegAdmin();
     try {
         await updatePubCrawlSignupDb(id, data);
-        revalidateTag(`signups-${eventId}`, 'default');
+        revalidateTag(`signups-${eventId}`, 'max');
 
         // Background sync to Directus
         getSystemDirectus().request(updateItem('pub_crawl_signups', id, data)).catch(() => {});
@@ -186,7 +224,7 @@ export async function toggleKroegentochtVisibility(): Promise<{ success: boolean
         // Wait for Directus cache consistency
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        revalidateTag('feature_flags', 'default');
+        revalidateTag('feature_flags', 'max');
         revalidatePath('/', 'layout');
         
         // Final Redis flush
@@ -217,3 +255,27 @@ export async function getKroegentochtSettings() {
     }
 }
 
+export async function togglePubCrawlTicketCheckIn(ticketId: number, currentStatus: boolean, eventId: number) {
+    await requireKroegAdmin();
+    const newStatus = !currentStatus;
+    const now = newStatus ? new Date().toISOString() : null;
+
+    try {
+        // 1. Update SQL (fast source of truth for admin list)
+        await query(
+            'UPDATE pub_crawl_tickets SET checked_in = $1, checked_in_at = $2 WHERE id = $3',
+            [newStatus, now, ticketId]
+        );
+
+        // 2. Background update Directus
+        getSystemDirectus().request(updateItem('pub_crawl_tickets', ticketId, {
+            checked_in: newStatus,
+            checked_in_at: now
+        })).catch(() => {});
+
+        revalidateTag(`signups-${eventId}`, 'max');
+        return { success: true, newStatus };
+    } catch (e) {
+        throw new Error('Inchecken mislukt');
+    }
+}
