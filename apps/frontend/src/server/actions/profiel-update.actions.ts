@@ -112,8 +112,8 @@ export async function uploadUserAvatar(formData: FormData) {
         return { success: false, error: 'Alleen afbeeldingen zijn toegestaan.' };
     }
 
-    if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        return { success: false, error: 'Afbeelding is te groot (max 5MB).' };
+    if (file.size > 30 * 1024 * 1024) { // 30MB limit
+        return { success: false, error: 'Afbeelding is te groot (max 30MB).' };
     }
 
     try {
@@ -145,4 +145,5 @@ export async function uploadUserAvatar(formData: FormData) {
         return { success: false, error: 'Uploaden van profielfoto mislukt.' };
     }
 }
+
 
