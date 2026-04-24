@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { triggerFullSyncAction, triggerUserSyncAction } from '@/server/actions/azure-sync/sync-tasks.actions';
-import { getSyncStatusAction, stopSyncAction } from '@/server/actions/azure-sync/sync-monitoring.actions';
+import { getSyncStatusAction, stopSyncAction, resetSyncStatusAction } from '@/server/actions/azure-sync/sync-monitoring.actions';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import AdminToast from '@/components/ui/admin/AdminToast';
 
@@ -11,6 +11,7 @@ interface SyncContextType {
     isLoading: boolean;
     isStartingSync: boolean;
     isStopping: boolean;
+    isResetting: boolean;
     isUserSyncLoading: boolean;
     userId: string;
     setUserId: (id: string) => void;
@@ -27,6 +28,7 @@ interface SyncContextType {
     fetchStatus: () => Promise<void>;
     handleFullSync: () => Promise<void>;
     handleStopSync: () => Promise<void>;
+    handleResetSync: () => Promise<void>;
     handleUserSync: (e: React.FormEvent) => Promise<void>;
 }
 
@@ -39,6 +41,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
     const [status, setStatus] = useState<any | null>(initialStatus);
     const [isStartingSync, setIsStartingSync] = useState(false);
     const [isStopping, setIsStopping] = useState(false);
+    const [isResetting, setIsResetting] = useState(false);
     const [isUserSyncLoading, setIsUserSyncLoading] = useState(false);
     const [userId, setUserId] = useState('');
     const [lastUpdated, setLastUpdated] = useState<Date | null>(
@@ -136,6 +139,23 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
         }
     };
 
+    const handleResetSync = async () => {
+        setIsResetting(true);
+        try {
+            const result = await resetSyncStatusAction();
+            if (!result.success) {
+                showToast(result.error || 'Kon sync niet resetten', 'error');
+            } else {
+                showToast('Synchronisatie status gereset naar Idle', 'success');
+                fetchStatus();
+            }
+        } catch (err) {
+            showToast('Netwerkfout bij het resetten van de sync.', 'error');
+        } finally {
+            setIsResetting(false);
+        }
+    };
+
     const handleUserSync = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!userId.trim()) return;
@@ -164,11 +184,11 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
 
     return (
         <SyncContext.Provider value={{
-            status, isLoading: false, isStartingSync, isStopping, isUserSyncLoading,
+            status, isLoading: false, isStartingSync, isStopping, isResetting, isUserSyncLoading,
             userId, setUserId, lastUpdated, selectedSyncFields, toggleField,
             forceLink, setForceLink, activeOnly, setActiveOnly,
             resultFilter, setResultFilter, syncFieldOptions, fetchStatus,
-            handleFullSync, handleStopSync, handleUserSync
+            handleFullSync, handleStopSync, handleResetSync, handleUserSync
         }}>
             {children}
             <AdminToast toast={toast} onClose={hideToast} />

@@ -10,9 +10,9 @@ interface Props {
 
 export default function SyncControlIsland({ tasks = [] }: Props) {
     const { 
-        isStartingSync, isStopping, isUserSyncLoading,
+        isStartingSync, isStopping, isResetting, isUserSyncLoading,
         selectedSyncFields, toggleField, forceLink, setForceLink,
-        activeOnly, setActiveOnly, handleFullSync, handleStopSync,
+        activeOnly, setActiveOnly, handleFullSync, handleStopSync, handleResetSync,
         userId, setUserId, handleUserSync, syncFieldOptions, status 
     } = useSync();
     
@@ -64,16 +64,28 @@ export default function SyncControlIsland({ tasks = [] }: Props) {
                         </button>
                     </div>
 
-                    <div className="pt-4">
+                    <div className="pt-4 flex flex-col gap-3">
                         {status?.active ? (
-                            <button
-                                onClick={handleStopSync}
-                                disabled={isStopping || status?.abortRequested}
-                                className="w-full flex items-center justify-center gap-2 py-4 bg-[var(--beheer-inactive)] text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-[var(--beheer-inactive)]/20 hover:scale-[1.01] active:scale-95 disabled:opacity-50 transition-all"
-                            >
-                                <X className={`h-5 w-5 ${isStopping ? 'animate-spin' : ''}`} />
-                                {status?.abortRequested ? 'Afbreken aangevraagd...' : 'Synchronisatie Stoppen'}
-                            </button>
+                            <>
+                                <button
+                                    onClick={handleStopSync}
+                                    disabled={isStopping || status?.abortRequested}
+                                    className="w-full flex items-center justify-center gap-2 py-4 bg-[var(--beheer-inactive)] text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-[var(--beheer-inactive)]/20 hover:scale-[1.01] active:scale-95 disabled:opacity-50 transition-all"
+                                >
+                                    <X className={`h-5 w-5 ${isStopping ? 'animate-spin' : ''}`} />
+                                    {status?.abortRequested ? 'Afbreken aangevraagd...' : 'Synchronisatie Stoppen'}
+                                </button>
+                                {status?.abortRequested && (
+                                    <button
+                                        onClick={handleResetSync}
+                                        disabled={isResetting}
+                                        className="w-full flex items-center justify-center gap-2 py-2 text-[10px] text-[var(--beheer-inactive)] font-black uppercase tracking-widest hover:underline disabled:opacity-50"
+                                    >
+                                        <RefreshCw className={`h-3 w-3 ${isResetting ? 'animate-spin' : ''}`} />
+                                        Forceer Reset (Emergency)
+                                    </button>
+                                )}
+                            </>
                         ) : (
                             <button
                                 onClick={handleFullSync}

@@ -149,7 +149,13 @@ export class SyncProcessor {
         }
 
         if (changes.length > 0) {
-            ctx.status.successCount++;
+            // Avoid double counting for stats if user was already processed
+            if (!ctx.processedEmails) ctx.processedEmails = new Set<string>();
+            if (!ctx.processedEmails.has(email)) {
+                ctx.status.successCount++;
+                ctx.processedEmails.add(email);
+            }
+            
             ctx.status.successfulUsers.push({ 
                 email, 
                 changes
