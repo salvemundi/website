@@ -6,7 +6,7 @@ export class DirectusService {
     static async getUserById(id: string) {
         const users = await getDirectusClient().request(readUsers({
             filter: { id: { _eq: id } },
-            fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'avatar']
+            fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'avatar', 'phone_number', 'date_of_birth', 'originele_betaaldatum', 'membership_status', 'membership_expiry'] as any[]
         }));
         return users[0] || null;
     }
@@ -14,7 +14,7 @@ export class DirectusService {
     static async getUserByEntraId(entraId: string) {
         const users = await getDirectusClient().request(readUsers({
             filter: { entra_id: { _eq: entraId } },
-            fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'avatar']
+            fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'avatar', 'phone_number', 'date_of_birth', 'originele_betaaldatum', 'membership_status', 'membership_expiry'] as any[]
         }));
         return users[0] || null;
     }
@@ -22,7 +22,7 @@ export class DirectusService {
     static async getUserByEmail(email: string) {
         const users = await getDirectusClient().request(readUsers({
             filter: { email: { _eq: email.toLowerCase() } },
-            fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'avatar']
+            fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'avatar', 'phone_number', 'date_of_birth', 'originele_betaaldatum', 'membership_status', 'membership_expiry'] as any[]
         }));
         return users[0] || null;
     }
@@ -94,7 +94,7 @@ export class DirectusService {
 
     static async getAllUsers() {
         return await getDirectusClient().request(readUsers({
-            fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'membership_expiry', 'avatar'],
+            fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'avatar', 'phone_number', 'date_of_birth', 'originele_betaaldatum', 'membership_status', 'membership_expiry'] as any[],
             limit: -1
         }));
     }
