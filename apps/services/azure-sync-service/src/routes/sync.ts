@@ -52,11 +52,12 @@ export default async function syncRoutes(fastify: FastifyInstance) {
      */
     fastify.post<{ Params: { userId: string } }>('/run/:userId', async (request, reply) => {
         const { userId } = request.params;
+        const options = request.body as any;
 
         try {
             const accessToken = await TokenService.getAccessToken(fastify.redis);
 
-            await SyncJob.syncByEntraId(fastify.redis, userId, accessToken);
+            await SyncJob.syncByEntraId(fastify.redis, userId, accessToken, options);
             return { message: `Sync for Entra ID ${userId} completed` };
         } catch (err: any) {
             fastify.log.error(`[SYNC] Failed to sync user ${userId}: ${err.stack || err.message || err}`);

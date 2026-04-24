@@ -151,7 +151,8 @@ export async function uploadUserAvatar(formData: FormData) {
 
         // Step 3: Trigger Sync Task (Azure -> Directus)
         // We wait for the sync to complete so the UI can refresh with the new image
-        await triggerUserSyncAction(entraId);
+        // Only sync the profile_photo field to avoid accidental updates to other fields
+        await triggerUserSyncAction(entraId, { fields: ['profile_photo'] });
 
         // Step 4: Clear session cache
         const cookieStore = await cookies();

@@ -42,6 +42,11 @@ export async function stopSyncAction() {
 
     try {
         const redis = await getRedis();
+        
+        // 1. Set the actual abort trigger key that the service polls
+        await redis.set('v7:sync:abort', 'true', 'EX', 3600);
+        
+        // 2. Update the status object for instant UI feedback (abortRequested flag)
         const statusRaw = await redis.get('v7:sync:status');
         if (statusRaw) {
             const status = JSON.parse(statusRaw);

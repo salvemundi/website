@@ -54,7 +54,7 @@ export async function triggerFullSyncAction(options?: { fields: string[]; forceL
     }
 }
 
-export async function triggerUserSyncAction(userId: string) {
+export async function triggerUserSyncAction(userId: string, options?: { fields: string[]; forceLink?: boolean; activeOnly?: boolean; forceSyncPhotos?: boolean }) {
     const admin = await checkSyncAccess(userId);
     if (!admin) return { success: false, error: "Unauthorized" };
 
@@ -95,8 +95,10 @@ export async function triggerUserSyncAction(userId: string) {
         const res = await fetch(`${AZURE_SYNC_URL}/api/sync/run/${encodeURIComponent(entraId)}`, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${INTERNAL_TOKEN}`
+                'Authorization': `Bearer ${INTERNAL_TOKEN}`,
+                'Content-Type': 'application/json'
             },
+            body: JSON.stringify(options || { fields: ['membership_expiry', 'geboortedatum', 'phone_number', 'committees', 'profile_photo', 'membership_status'] }),
             signal: controller.signal
         });
         clearTimeout(timeoutId);
