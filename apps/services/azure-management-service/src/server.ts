@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import dotenv from 'dotenv';
+import multipart from '@fastify/multipart';
 import redisPlugin from './plugins/redis.js';
 import provisioningRoutes from './routes/provisioning.js';
 import groupRoutes from './routes/groups.js';
@@ -13,6 +14,11 @@ const fastify = Fastify({
 });
 
 // Register Plugins
+fastify.register(multipart, {
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5MB
+    }
+});
 fastify.register(redisPlugin);
 
 // Register Routes

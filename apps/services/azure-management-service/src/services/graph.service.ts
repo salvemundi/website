@@ -216,4 +216,14 @@ export class GraphService {
         
         return response.value || [];
     }
+
+    /**
+     * Updates a user's profile photo in Microsoft Entra ID.
+     */
+    static async updateUserPhoto(entraId: string, photo: Buffer, token: string) {
+        const client = this.getClient(token);
+        return await client.api(`/users/${entraId}/photo/$value`)
+            .header('Content-Type', 'image/jpeg')
+            .put(photo);
+    }
 }

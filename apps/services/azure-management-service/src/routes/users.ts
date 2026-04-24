@@ -45,4 +45,26 @@ export default async function userRoutes(fastify: FastifyInstance) {
             return reply.status(500).send({ error: 'Failed to fetch groups', details: err.message });
         }
     });
+
+    // Update user photo
+    fastify.put('/:entraId/photo', async (request: any, reply) => {
+        const { entraId } = request.params;
+
+        try {
+            const data = await request.file();
+            if (!data) {
+                return reply.status(400).send({ error: 'No photo provided' });
+            }
+
+            const buffer = await data.toBuffer();
+            const token = await TokenService.getAccessToken();
+
+            await GraphService.updateUserPhoto(entraId, buffer, token);
+
+            return { success: true, message: 'Photo updated in Microsoft Entra ID' };
+        } catch (err: any) {
+            fastify.log.error(`[USERS] Failed to update photo for user ${entraId}:`, err.message);
+            return reply.status(500).send({ error: 'Failed to update photo in Azure AD', details: err.message });
+        }
+    });
 }

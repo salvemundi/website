@@ -1,4 +1,4 @@
-import { AzureUser } from '../graph.service.js';
+import { AzureUser, GraphService } from '../graph.service.js';
 import { DirectusService } from '../directus.service.js';
 import { SyncContext } from './sync-types.js';
 import { parseAzureDate } from './sync-helpers.js';
@@ -126,6 +126,18 @@ export class SyncProcessor {
                 if (!azureMemberships.has(current.committee_id)) {
                     await DirectusService.removeMemberFromCommittee(current.id);
                     changes.push({ field: 'Commissie', old: `ID ${current.committee_id}`, new: 'Verwijderd' });
+                }
+            }
+        }
+
+        // PROFILE PHOTO
+        if (fields.includes('profile_photo')) {
+            const shouldSync = ctx.options.forceSyncPhotos || !dUser.avatar;
+            if (shouldSync) {
+                const photo = await GraphService.getUserPhoto(aUser.id, ctx.token);
+                if (photo) {
+                    const fileId = await DirectusService.uploadUserAvatar(dUser.id, photo.buffer, `avatar_${aUser.id}.jpg`, photo.contentType);
+                    changes.push({ field: 'Profielfoto', old: dUser.avatar ? 'Bestaand' : 'Geen', new: 'Bijgewerkt vanuit Azure' });
                 }
             }
         }
