@@ -134,6 +134,11 @@ export class SyncJob {
                 // De-duplicate chunk just in case Graph paging returned same users
                 const uniqueChunk = Array.from(new Map(chunk.map(u => [u.id, u])).values());
 
+                // Optimization: Fetch photos for the whole chunk in one batch request if needed
+                if (options.fields.includes('profile_photo')) {
+                    ctx.photoCache = await GraphService.getUserPhotosBatch(uniqueChunk.map(u => u.id), ctx.token);
+                }
+
                 await Promise.all(uniqueChunk.map(async (aUser) => {
                     const email = (aUser.mail || aUser.userPrincipalName || 'Unknown').toLowerCase();
                     if (shouldExcludeUser(email)) {

@@ -165,6 +165,45 @@ export class GraphService {
     }
 
     /**
+     * Fetches profile photos for multiple users in a single batch request.
+     * Note: Returns null if no photo exists for a user.
+     */
+    static async getUserPhotosBatch(userIds: string[], token: string): Promise<Map<string, { buffer: Buffer; contentType: string } | null>> {
+        const result = new Map<string, { buffer: Buffer; contentType: string } | null>();
+        const client = this.getClient(token);
+
+        // MS Graph batch limit is 20 requests
+        for (let i = 0; i < userIds.length; i += 20) {
+            const batchIds = userIds.slice(i, i + 20);
+            const requests = batchIds.map(id => ({
+                id: id,
+                method: 'GET',
+                url: `/users/${id}/photo/$value`
+            }));
+
+            try {
+                const batchResponse = await client.api('/$batch').post({ requests });
+                
+                for (const res of batchResponse.responses) {
+                    if (res.status === 200) {
+                        const buffer = Buffer.from(res.body, 'base64');
+                        const contentType = res.headers?.['Content-Type'] || 'image/jpeg';
+                        result.set(res.id, { buffer, contentType });
+                    } else {
+                        result.set(res.id, null);
+                    }
+                }
+            } catch (err) {
+                console.error(`[GraphService] Batch photo fetch failed:`, err);
+                // Fallback: fill remaining with nulls so we don't crash
+                batchIds.forEach(id => { if (!result.has(id)) result.set(id, null); });
+            }
+        }
+
+        return result;
+    }
+
+    /**
      * Fetches a user's profile photo binary data from Entra ID.
      */
     static async getUserPhoto(userId: string, token: string): Promise<{ buffer: Buffer; contentType: string } | null> {
