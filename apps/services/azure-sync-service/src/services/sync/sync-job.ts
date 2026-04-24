@@ -122,12 +122,19 @@ export class SyncJob {
                 const abort = await redis.get(SYNC_ABORT_KEY);
                 if (abort) {
                     status.active = false; status.status = 'aborted'; status.endTime = new Date().toISOString();
-                    await persistSyncStatus(redis, status, false);
+                    await Promise.all([
+                        persistSyncStatus(redis, status, false),
+                        redis.del(SYNC_ABORT_KEY)
+                    ]);
                     return;
                 }
 
                 const chunk = azureUsers.slice(i, i + CHUNK_SIZE);
-                await Promise.all(chunk.map(async (aUser) => {
+                
+                // De-duplicate chunk just in case Graph paging returned same users
+                const uniqueChunk = Array.from(new Map(chunk.map(u => [u.id, u])).values());
+
+                await Promise.all(uniqueChunk.map(async (aUser) => {
                     const email = (aUser.mail || aUser.userPrincipalName || 'Unknown').toLowerCase();
                     if (shouldExcludeUser(email)) {
                         status.excludedCount++; status.excludedUsers.push({ email }); status.processed++;
@@ -176,7 +183,7 @@ export class SyncJob {
     /**
      * Entry point for a single user synchronization.
      */
-    static async syncByEntraId(redis: Redis, entraId: string, token: string) {
+    static async syncByEntraId(redis: Redis, entraId: string, token: string, options: SyncOptions = { fields: ['membership_expiry', 'geboortedatum', 'phone_number', 'committees', 'profile_photo', 'membership_status'] }) {
         console.log(`[SYNC] [single-${entraId}] Starting single-user sync...`);
         const startTime = Date.now();
 
@@ -237,7 +244,7 @@ export class SyncJob {
         console.log(`[SYNC] [single-${entraId}] Pre-sync setup completed in ${Date.now() - startTime}ms`);
 
         const ctx: SyncContext & { membershipMap: Map<string, Map<number, boolean>> } = {
-            redis, status, options: { fields: ['membership_expiry', 'geboortedatum', 'phone_number'] },
+            redis, status, options,
             token, committeeCache, ownerCache: new Map(), userCacheByEntra, membershipCache, membershipMap, mainMembershipState
         };
 

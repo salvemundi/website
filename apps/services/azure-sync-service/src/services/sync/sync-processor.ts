@@ -59,11 +59,11 @@ export class SyncProcessor {
         const csa = aUser.customSecurityAttributes?.SalveMundiLidmaatschap;
         const updatePayload: any = {};
 
-        if (dUser.status !== 'active') {
+        const fields = ctx.options.fields;
+
+        if (fields.includes('status') && dUser.status !== 'active') {
             updatePayload.status = 'active';
         }
-
-        const fields = ctx.options.fields;
 
         if (fields.includes('membership_expiry')) {
             const date = csa?.VerloopdatumStr || csa?.Verloopdatum;
@@ -78,7 +78,7 @@ export class SyncProcessor {
             }
         }
 
-        if (csa?.OrigineleBetaalDatumStr) {
+        if (fields.includes('originele_betaaldatum') && csa?.OrigineleBetaalDatumStr) {
             updatePayload.originele_betaaldatum = parseAzureDate(csa.OrigineleBetaalDatumStr);
         }
 
@@ -89,8 +89,11 @@ export class SyncProcessor {
         if (Object.keys(updatePayload).length > 0) {
             // Track changes for existing user
             for (const key of Object.keys(updatePayload)) {
-                if (dUser[key] !== updatePayload[key]) {
-                    changes.push({ field: key, old: dUser[key], new: updatePayload[key] });
+                // Precise comparison to avoid redundant logs
+                const oldValue = dUser[key];
+                const newValue = updatePayload[key];
+                if (oldValue != newValue) { // Use loose inequality to handle null vs undefined if needed, but be careful
+                    changes.push({ field: key, old: oldValue || 'leeg', new: newValue });
                 }
             }
             if (changes.length > 0) {
@@ -99,8 +102,11 @@ export class SyncProcessor {
         }
 
         // LIFECYCLE MANAGEMENT
-        const lifecycleChanges = await SyncLifecycle.handleLifecycle(ctx, aUser, dUser, updatePayload.membership_expiry);
-        changes.push(...lifecycleChanges);
+        // Only run lifecycle if explicitly requested or if relevant fields are being synced
+        if (fields.includes('membership_status') || fields.includes('membership_expiry')) {
+            const lifecycleChanges = await SyncLifecycle.handleLifecycle(ctx, aUser, dUser, updatePayload.membership_expiry);
+            changes.push(...lifecycleChanges);
+        }
 
         // COMMITTEES
         if (fields.includes('committees')) {
