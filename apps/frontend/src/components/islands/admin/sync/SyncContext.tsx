@@ -45,7 +45,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
         initialStatus && !initialStatus.error ? new Date() : null
     );
 
-    const [selectedSyncFields, setSelectedSyncFields] = useState<string[]>(['membership_expiry', 'geboortedatum', 'phone_number', 'committees']);
+    const [selectedSyncFields, setSelectedSyncFields] = useState<string[]>(['membership_expiry', 'geboortedatum', 'phone_number', 'committees', 'profile_photo']);
     const [forceLink, setForceLink] = useState(false);
     const [activeOnly, setActiveOnly] = useState(false);
     const [resultFilter, setResultFilter] = useState<string>('all');
@@ -55,6 +55,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
         { id: 'geboortedatum', label: 'Geboortedatum' },
         { id: 'phone_number', label: 'Telefoonnummer' },
         { id: 'committees', label: 'Commissies' },
+        { id: 'profile_photo', label: 'Profielfoto' },
     ];
 
     const fetchStatus = useCallback(async () => {
