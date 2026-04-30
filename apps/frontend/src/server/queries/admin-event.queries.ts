@@ -49,7 +49,8 @@ export async function getActivitiesInternal(onlyPublished = true): Promise<Activ
             committee_name: item.committee_name || null,
             description_logged_in: item.description_logged_in || null,
             publish_date: safeISO(item.publish_date),
-            custom_url: item.custom_url || null,
+            slug: item.slug || null,
+            success_redirect_url: item.success_redirect_url || null,
         };
     });
 
@@ -104,7 +105,8 @@ export async function getActivityByIdInternal(id: string): Promise<Activiteit | 
         committee_name: item.committee_name || null,
         description_logged_in: item.description_logged_in || null,
         publish_date: safeISO(item.publish_date),
-        custom_url: item.custom_url || null,
+        slug: item.slug || null,
+        success_redirect_url: item.success_redirect_url || null,
     };
 
     const parsed = activitiesSchema.element.safeParse(mapped);
@@ -116,55 +118,16 @@ export async function getActivityByIdInternal(id: string): Promise<Activiteit | 
 }
 
 export async function getActivityBySlugInternal(slug: string): Promise<Activiteit | null> {
-    const sql = `
-        SELECT e.*, c.name as committee_name, f.type as image_type
-        FROM events e 
-        LEFT JOIN committees c ON e.committee_id = c.id
-        LEFT JOIN directus_files f ON e.image = f.id
-        WHERE e.custom_url = $1 OR e.id::text = $1
-        LIMIT 1
-    `;
-    const { rows } = await query(sql, [slug]);
+    const { slugify } = await import('@/shared/lib/utils/slug');
+    const activities = await getActivitiesInternal(false); // Get all to be sure
     
-    const item = rows?.[0];
-    if (!item) return null;
-
-    const safeISO = (d: any) => {
-        if (!d) return null;
-        const date = d instanceof Date ? d : new Date(d);
-        return isNaN(date.getTime()) ? null : date.toISOString();
-    };
-
-    const mapped = {
-        id: String(item.id ?? ''),
-        titel: item.name ?? '',
-        beschrijving: item.description ?? null,
-        locatie: item.location ?? null,
-        datum_start: safeISO(item.event_date) || new Date().toISOString(),
-        datum_eind: safeISO(item.event_date_end),
-        afbeelding_id: item.image ? { id: item.image, type: item.image_type } : null,
-        status: item.status ?? undefined,
-        price_members: item.price_members != null ? Number(item.price_members) : 0,
-        price_non_members: item.price_non_members != null ? Number(item.price_non_members) : 0,
-        max_sign_ups: item.max_sign_ups != null ? Number(item.max_sign_ups) : null,
-        only_members: item.only_members ?? false,
-        registration_deadline: safeISO(item.registration_deadline),
-        contact: item.contact ?? null,
-        event_time: item.event_time ?? null,
-        event_time_end: item.event_time_end ?? null,
-        committee_id: item.committee_id ? Number(item.committee_id) : null,
-        committee_name: item.committee_name || null,
-        description_logged_in: item.description_logged_in || null,
-        publish_date: safeISO(item.publish_date),
-        custom_url: item.custom_url || null,
-    };
-
-    const parsed = activitiesSchema.element.safeParse(mapped);
-    if (!parsed.success) {
-        console.error('[Validation Error] getActivityBySlugInternal:', parsed.error);
-        return mapped as Activiteit;
-    }
-    return parsed.data;
+    return activities.find(a => {
+        const genSlug = slugify(a.titel);
+        const dateStr = a.datum_start.split('T')[0];
+        const genSlugWithDate = `${genSlug}-${dateStr}`;
+        
+        return genSlug === slug || genSlugWithDate === slug || a.id === slug;
+    }) || null;
 }
 
 export async function getActivitySignupsInternal(eventId: string): Promise<DbEventSignup[]> {
