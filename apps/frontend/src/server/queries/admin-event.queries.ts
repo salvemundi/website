@@ -12,9 +12,10 @@ import { z } from 'zod';
 
 export async function getActivitiesInternal(onlyPublished = true): Promise<Activiteit[]> {
     const sql = `
-        SELECT e.*, c.name as committee_name 
+        SELECT e.*, c.name as committee_name, f.type as image_type
         FROM events e 
         LEFT JOIN committees c ON e.committee_id = c.id
+        LEFT JOIN directus_files f ON e.image = f.id
         ${onlyPublished ? "WHERE e.status = 'published'" : ""}
         ORDER BY e.event_date DESC
     `;
@@ -34,7 +35,7 @@ export async function getActivitiesInternal(onlyPublished = true): Promise<Activ
             locatie: item.location ?? null,
             datum_start: safeISO(item.event_date) || new Date().toISOString(),
             datum_eind: safeISO(item.event_date_end),
-            afbeelding_id: item.image ?? null,
+            afbeelding_id: item.image ? { id: item.image, type: item.image_type } : null,
             status: item.status ?? undefined,
             price_members: item.price_members != null ? Number(item.price_members) : 0,
             price_non_members: item.price_non_members != null ? Number(item.price_non_members) : 0,
@@ -60,9 +61,10 @@ export async function getActivitiesInternal(onlyPublished = true): Promise<Activ
 
 export async function getActivityByIdInternal(id: string): Promise<Activiteit | null> {
     const sql = `
-        SELECT e.*, c.name as committee_name 
+        SELECT e.*, c.name as committee_name, f.type as image_type
         FROM events e 
         LEFT JOIN committees c ON e.committee_id = c.id
+        LEFT JOIN directus_files f ON e.image = f.id
         WHERE e.id = $1
         LIMIT 1
     `;
@@ -84,7 +86,7 @@ export async function getActivityByIdInternal(id: string): Promise<Activiteit | 
         locatie: item.location ?? null,
         datum_start: safeISO(item.event_date) || new Date().toISOString(),
         datum_eind: safeISO(item.event_date_end),
-        afbeelding_id: item.image ?? null,
+        afbeelding_id: item.image ? { id: item.image, type: item.image_type } : null,
         status: item.status ?? undefined,
         price_members: item.price_members != null ? Number(item.price_members) : 0,
         price_non_members: item.price_non_members != null ? Number(item.price_non_members) : 0,
@@ -109,16 +111,21 @@ export async function getActivitySignupsInternal(eventId: string): Promise<any[]
     const sql = `
         SELECT 
             es.*, 
-            COALESCE(es.is_member, (u.id IS NOT NULL)) as is_member,
+            COALESCE(es.is_member, (u.id IS NOT NULL)) as calculated_is_member,
             u.id as user_id
         FROM event_signups es
         LEFT JOIN directus_users u ON es.participant_email = u.email
         WHERE es.event_id = $1 
         AND es.payment_status = 'paid'
-        ORDER BY is_member DESC, es.created_at DESC
+        ORDER BY calculated_is_member DESC, es.created_at DESC
     `;
     const { rows } = await query(sql, [eventId]);
-    return rows;
+    
+    // Map back to ensure compatibility with existing components that expect is_member
+    return rows.map(r => ({
+        ...r,
+        is_member: r.calculated_is_member
+    }));
 }
 
 /**
@@ -144,9 +151,11 @@ export async function getActivitiesWithSignupCountsInternal(search?: string, fil
         SELECT 
             e.*, 
             c.name as committee_name,
-            (SELECT COUNT(*) FROM event_signups es WHERE es.event_id = e.id AND es.payment_status = 'paid') as signup_count
+            (SELECT COUNT(*) FROM event_signups es WHERE es.event_id = e.id AND es.payment_status = 'paid') as signup_count,
+            f.type as image_type
         FROM events e 
         LEFT JOIN committees c ON e.committee_id = c.id
+        LEFT JOIN directus_files f ON e.image = f.id
         ${whereClause}
         ORDER BY e.event_date DESC
     `;
@@ -166,6 +175,6 @@ export async function getActivitiesWithSignupCountsInternal(search?: string, fil
         max_sign_ups: r.max_sign_ups ? Number(r.max_sign_ups) : null,
         committee_id: r.committee_id ? Number(r.committee_id) : null,
         signup_count: Number(r.signup_count || 0),
-        image: r.image ? { id: r.image } : null // Map to object for AdminActivitySchema compatibility
+        image: r.image ? { id: r.image, type: r.image_type } : null // Map to object for AdminActivitySchema compatibility
     }));
 }

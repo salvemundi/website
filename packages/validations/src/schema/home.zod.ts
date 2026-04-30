@@ -8,7 +8,13 @@ export const heroBannerSchema = z.object({
     title: z.string(),
     subtitle: z.string().nullable().optional(),
     // UUID van het achtergrondplaatje binnen Directus Files
-    afbeelding_id: z.string().nullable().optional(),
+    afbeelding_id: z.union([
+        z.string(),
+        z.object({
+            id: z.string(),
+            type: z.string().nullable().optional()
+        })
+    ]).nullable().optional(),
     status: z.enum(['draft', 'published', 'archived']).optional(),
     display_order: z.number().int().default(0),
 });

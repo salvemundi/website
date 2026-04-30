@@ -5,6 +5,7 @@ import SafeHtml from '@/components/ui/security/SafeHtml';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 import { type Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { buildCommitteeEmail, formatDutchDate, formatTime } from '@/shared/lib/activity-utils';
+import BannerAsset from '@/components/ui/media/BannerAsset';
 import { getImageUrl } from '@/lib/utils/image-utils';
 
 interface ActivityDetailIslandProps {
@@ -30,13 +31,12 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
             {activity?.afbeelding_id ? (
                 <div className="relative h-[45vh] min-h-[400px] w-full overflow-hidden bg-[var(--bg-soft)]">
                     {activity && (
-                        <Image
-                            src={imageUrl}
+                        <BannerAsset
+                            asset={activity.afbeelding_id}
                             alt={activity.titel}
                             fill
                             priority
                             className="object-cover"
-                            unoptimized
                         />
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-main)] via-[var(--bg-main)]/40 to-transparent" />

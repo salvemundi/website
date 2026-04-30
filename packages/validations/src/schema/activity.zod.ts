@@ -12,7 +12,13 @@ export const activitySchema = z.object({
     event_time_end: z.string().nullable().optional(),
     time_end: z.string().nullable().optional(),
     locatie: z.string().nullable().optional(),
-    afbeelding_id: z.string().nullable().optional(),
+    afbeelding_id: z.union([
+        z.string(),
+        z.object({
+            id: z.string(),
+            type: z.string().nullable().optional()
+        })
+    ]).nullable().optional(),
     price_members: z.number().nullable().optional(),
     price_non_members: z.number().nullable().optional(),
     committee_name: z.string().nullable().optional(),
