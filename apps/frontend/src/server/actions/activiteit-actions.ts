@@ -247,6 +247,8 @@ export async function signupForActivity(data: EventSignupForm) {
             return { 
                 success: true, 
                 message: 'Inschrijving geslaagd!',
+                signupId: signupId,
+                qrToken: qrToken,
                 custom_url: (activity as any).custom_url || null
             };
         }

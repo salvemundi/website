@@ -42,7 +42,7 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
     // Fetch data using SQL instead of Directus API for better performance and consistency
     const [eventData, allCommittees] = await Promise.all([
         getActivityByIdInternal(id),
-        query('SELECT id, name FROM committees WHERE is_visible = true').then(res => res.rows)
+        query('SELECT id, name, email FROM committees WHERE is_visible = true').then(res => res.rows)
     ]);
     
     if (!eventData) return notFound();
@@ -54,16 +54,22 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
         description: eventData.beschrijving,
         event_date: eventData.datum_start,
         event_date_end: eventData.datum_eind,
+        location: eventData.locatie,
         image: eventData.afbeelding_id,
         // Ensure numeric fields are correctly typed
         price_members: eventData.price_members,
         price_non_members: eventData.price_non_members,
         max_sign_ups: eventData.max_sign_ups,
+        // Missing fields
+        description_logged_in: eventData.description_logged_in,
+        publish_date: eventData.publish_date,
+        only_members: eventData.only_members,
     };
 
     const cleanedCommittees = allCommittees.map((c: any) => ({
         id: c.id,
-        name: c.name.replace(/\|\|.*salvemundi.*$/i, '').replace(/\|+$/g, '').trim()
+        name: c.name.replace(/\|\|.*salvemundi.*$/i, '').replace(/\|+$/g, '').trim(),
+        email: c.email
     }));
 
     // Filter allowed committees for the dropdown (only if not powerful, otherwise show all)
