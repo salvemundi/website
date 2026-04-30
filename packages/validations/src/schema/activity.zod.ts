@@ -28,6 +28,7 @@ export const activitySchema = z.object({
     registration_deadline: z.string().nullable().optional(),
     only_members: z.boolean().nullable().optional().default(false),
     status: z.string().nullable().optional(),
+    publish_date: z.string().nullable().optional(),
     custom_url: z.string().nullable().optional(),
 });
 

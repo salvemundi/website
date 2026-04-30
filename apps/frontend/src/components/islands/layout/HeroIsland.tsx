@@ -81,7 +81,7 @@ export async function HeroIsland({ banners = [], activiteiten = [], initialSessi
                                              </div>
                                          </Link>
                                      ) : nextEvent ? (
-                                         <Link href={(nextEvent as any).custom_url || `/activiteiten/${nextEvent.id}`} className="block w-full transition-transform hover:scale-[1.02] group/event">
+                                         <Link href={`/activiteiten/${nextEvent.id}`} className="block w-full transition-transform hover:scale-[1.02] group/event">
                                              <div className="w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-4 sm:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-4 h-full">
                                                  <div className="flex-1 min-w-0">
                                                      <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-purple-300)]/60 dark:text-white/60">Volgende activiteit</p>

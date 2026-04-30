@@ -17,6 +17,7 @@ function cleanCommitteeName(name: string): string {
 interface Committee {
     id: number;
     name: string;
+    email?: string | null;
 }
 
 interface EventProps {
@@ -67,6 +68,7 @@ export default function ActiviteitBewerkenIsland({
     };
     const [status, setStatus] = useState(determineStatus());
     const [onlyMembers, setOnlyMembers] = useState(!!event.only_members);
+    const [contactEmail, setContactEmail] = useState(event.contact || '');
     
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -123,6 +125,23 @@ export default function ActiviteitBewerkenIsland({
         setImageFile(null);
         setImagePreview(null);
         setRemoveExistingImage(true);
+    };
+
+    const handleCommitteeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const committeeId = e.target.value;
+        const committee = committees.find(c => String(c.id) === committeeId);
+        
+        // Alleen invullen als het veld leeg is OF als de huidige waarde een commissie-email is (zodat we het mogen overschrijven)
+        const isCurrentEmailACommitteeEmail = !contactEmail || committees.some(c => c.email && c.email === contactEmail);
+        
+        if (isCurrentEmailACommitteeEmail) {
+            if (committee?.email) {
+                setContactEmail(committee.email);
+            } else if (committeeId === '') {
+                // Als 'Geen' is geselecteerd
+                setContactEmail('info@salvemundi.nl');
+            }
+        }
     };
 
     const formatDate = (dateStr?: string | null) => {
@@ -330,14 +349,29 @@ export default function ActiviteitBewerkenIsland({
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-[var(--beheer-border)] pt-8">
                                         <div>
                                             <label htmlFor="committee_id" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Organiserende Commissie</label>
-                                            <select id="committee_id" name="committee_id" defaultValue={event.committee_id || ''} className="beheer-select">
+                                            <select 
+                                                id="committee_id" 
+                                                name="committee_id" 
+                                                defaultValue={event.committee_id || ''} 
+                                                onChange={handleCommitteeChange}
+                                                className="beheer-select"
+                                            >
                                                 <option value="">Geen (Algemeen)</option>
                                                 {committees.map(c => <option key={c.id} value={c.id}>{cleanCommitteeName(c.name)}</option>)}
                                             </select>
                                         </div>
                                         <div>
                                             <label htmlFor="contact" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Contactpersoon (e-mail)</label>
-                                            <input type="email" id="contact" name="contact" defaultValue={event.contact || ''} className="beheer-input" placeholder="naam@salvemundi.nl" />
+                                            <input 
+                                                type="email" 
+                                                id="contact" 
+                                                name="contact" 
+                                                value={contactEmail}
+                                                onChange={(e) => setContactEmail(e.target.value)}
+                                                autoComplete="off"
+                                                className="beheer-input" 
+                                                placeholder="naam@salvemundi.nl" 
+                                            />
                                         </div>
                                     </div>
 

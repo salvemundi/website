@@ -166,7 +166,7 @@ export async function deleteEventSignupDb(id: number): Promise<boolean> {
 export async function fetchUserEventSignupsDb(email: string): Promise<any[]> {
     try {
         const sql = `
-            SELECT es.*, e.name as event_name, e.event_date, e.description, e.image, e.contact
+            SELECT es.*, e.name as event_name, e.event_date, e.description, e.image, e.contact, e.custom_url
             FROM event_signups es
             JOIN events e ON es.event_id = e.id
             WHERE LOWER(es.participant_email) = LOWER($1)
@@ -181,7 +181,8 @@ export async function fetchUserEventSignupsDb(email: string): Promise<any[]> {
                 event_date: row.event_date,
                 description: row.description,
                 image: row.image,
-                contact: row.contact
+                contact: row.contact,
+                custom_url: row.custom_url
             }
         }));
     } catch (error) {
@@ -196,7 +197,7 @@ export async function fetchUserEventSignupsDb(email: string): Promise<any[]> {
 export async function fetchEventSignupByIdDb(id: number): Promise<any | null> {
     try {
         const sql = `
-            SELECT es.*, e.name as event_name, e.event_date, e.description, e.image, e.contact
+            SELECT es.*, e.name as event_name, e.event_date, e.description, e.image, e.contact, e.custom_url
             FROM event_signups es
             JOIN events e ON es.event_id = e.id
             WHERE es.id = $1
@@ -214,7 +215,8 @@ export async function fetchEventSignupByIdDb(id: number): Promise<any | null> {
                 event_date: row.event_date,
                 description: row.description,
                 image: row.image,
-                contact: row.contact
+                contact: row.contact,
+                custom_url: row.custom_url
             }
         };
     } catch (error) {
