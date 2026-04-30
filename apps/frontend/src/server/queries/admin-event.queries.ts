@@ -109,7 +109,7 @@ export async function getActivitySignupsInternal(eventId: string): Promise<any[]
     const sql = `
         SELECT 
             es.*, 
-            (u.id IS NOT NULL) as is_member,
+            COALESCE(es.is_member, (u.id IS NOT NULL)) as is_member,
             u.id as user_id
         FROM event_signups es
         LEFT JOIN directus_users u ON es.participant_email = u.email
