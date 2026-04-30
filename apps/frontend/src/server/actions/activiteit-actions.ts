@@ -220,7 +220,7 @@ export async function signupForActivity(data: EventSignupForm) {
                     email: parsed.data.email,
                     firstName: parsed.data.name,
                     isContribution: false,
-                    redirectUrl: `${process.env.PUBLIC_URL}/activiteiten/bevestiging?id=${signupId}`
+                    redirectUrl: (activity as any).success_redirect_url || `${process.env.PUBLIC_URL}/activiteiten/bevestiging?id=${signupId}`
                 })
             });
             const paymentData = await paymentRes.json();
@@ -260,7 +260,7 @@ export async function signupForActivity(data: EventSignupForm) {
                 message: 'Inschrijving geslaagd!',
                 signupId: signupId,
                 qrToken: qrToken,
-                custom_url: (activity as any).custom_url || null
+                success_redirect_url: (activity as any).success_redirect_url || null
             };
         }
     } catch (error: any) {

@@ -85,7 +85,7 @@ export default function ActivitiesProviderIsland({
     }, [events, showPastActivities, serverTime, upcomingEvent]);
 
     const handleShowDetails = useCallback((activity: Activiteit) => {
-        const slug = activity.custom_url || `${activity.id}-${slugify(activity.titel || '')}`;
+        const slug = slugify(activity.titel || '');
         router.push(`/activiteiten/${slug}`);
     }, [router]);
 
@@ -95,7 +95,7 @@ export default function ActivitiesProviderIsland({
 
         if (status === 'success' && eventId) {
             const event = events.find(e => e.id.toString() === eventId.toString());
-            const slug = event?.custom_url || (event ? `${event.id}-${slugify(event.titel || '')}` : eventId);
+            const slug = event ? slugify(event.titel || '') : eventId;
             router.replace(`/activiteiten/${slug}`);
         }
     }, [searchParams, router, events]);
