@@ -2,6 +2,8 @@
 
 import React from 'react';
 import Image from 'next/image';
+import BannerAsset from '@/components/ui/media/BannerAsset';
+import { getImageUrl } from '@/lib/utils/image-utils';
 import { Calendar } from 'lucide-react';
 import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider';
 import AdminToast from '@/components/ui/admin/AdminToast';
@@ -12,7 +14,7 @@ interface ActiviteitCardProps {
     id?: number | string;
     description?: string;
     description_logged_in?: string;
-    image?: string;
+    image?: any;
     date?: string;
     endDate?: string;
     startTime?: string | null;
@@ -190,18 +192,12 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
         >
             <div className="relative z-10 aspect-video mb-5 rounded-2xl overflow-hidden shadow-inner bg-[var(--bg-soft)]">
                 {image ? (
-                    <Image
-                        src={image}
+                    <BannerAsset
+                        asset={image}
                         alt={title}
                         fill
                         sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
                         className="object-contain transition-all duration-500"
-                        loading="lazy"
-                        unoptimized
-                        onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                        }}
                     />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center bg-[var(--theme-purple)]/5">

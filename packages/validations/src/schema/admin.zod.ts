@@ -16,7 +16,10 @@ export const AdminActivitySchema = z.object({
     contact: z.string().optional().nullable(),
     image: z.union([
         z.string(),
-        z.object({ id: z.string() })
+        z.object({
+            id: z.string(),
+            type: z.string().nullable().optional()
+        })
     ]).optional().nullable(),
     committee_id: z.coerce.number().optional().nullable(),
     committee_name: z.string().optional().nullable(),

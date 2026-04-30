@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import BannerAsset from '@/components/ui/media/BannerAsset';
 import { Clock, MapPin, Calendar } from 'lucide-react';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import type { Activity } from '@salvemundi/validations/schema/activity.zod';
@@ -51,18 +52,14 @@ export default function FeaturedEvent({ event, onEventClick }: FeaturedEventProp
                         className="lg:w-2/3 aspect-[21/9] md:aspect-[16/7] lg:aspect-auto min-h-[300px] rounded-3xl overflow-hidden relative cursor-pointer group/img shadow-2xl border border-[var(--border-color)]"
                     >
                         {event.afbeelding_id ? (
-                            <Image
-                                src={getImageUrl(event.afbeelding_id) || '/img/newlogo.png'}
+                            <BannerAsset
+                                asset={event.afbeelding_id}
                                 alt={event.titel || 'Featured Event'}
                                 fill
                                 sizes="(max-width: 1024px) 100vw, 800px"
                                 className="object-cover transition-transform duration-700 group-hover/img:scale-105"
-                                loading="eager" // Load hero image immediately
-                                unoptimized
-                                onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.style.display = 'none';
-                                }}
+                                priority
+                                loading="eager"
                             />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center bg-[var(--theme-purple)]/5">
