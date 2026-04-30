@@ -7,8 +7,10 @@ function cleanCommitteeName(name: string): string {
     return name?.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim() || '';
 }
 
+import { type Committee } from '@salvemundi/validations/schema/committees.zod';
+
 interface CommitteesListProps {
-    initialCommittees?: any[]; // Using any for simplicity as it matches original logic
+    initialCommittees?: Committee[]; 
 }
 
 /**

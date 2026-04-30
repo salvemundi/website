@@ -147,7 +147,7 @@ const FlipDigit: React.FC<{ digit: number }> = ({ digit }) => {
                     }}
                     className="absolute inset-0 flex items-center justify-center"
                 >
-                    <span className="text-4xl sm:text-6xl lg:text-8xl font-black font-mono text-[var(--color-purple-800)] dark:text-[var(--color-purple-300)]">
+                    <span suppressHydrationWarning className="text-4xl sm:text-6xl lg:text-8xl font-black font-mono text-[var(--color-purple-800)] dark:text-[var(--color-purple-300)]">
                         {digit}
                     </span>
                 </motion.div>

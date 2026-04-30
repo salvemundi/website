@@ -1,9 +1,41 @@
-import type { BetterAuthPlugin } from "better-auth";
+import type { BetterAuthPlugin, Session, User } from "better-auth";
 import { Pool } from "pg";
 import { getRedis } from "./redis-client";
-import { getPermissions } from "@/shared/lib/permissions";
+import { getPermissions, type UserPermissions, type Committee } from "@/shared/lib/permissions";
 import { getSystemDirectus } from "@/lib/directus";
 import { readMe } from "@directus/sdk";
+
+interface ExtendedUser extends User, Omit<UserPermissions, 'isICT'> {
+    first_name?: string;
+    last_name?: string;
+    membership_status?: string;
+    membership_expiry?: string;
+    phone_number?: string;
+    date_of_birth?: string;
+    avatar?: string;
+    minecraft_username?: string;
+    entra_id?: string;
+    isAdmin?: boolean;
+    role?: string;
+    committees?: Committee[];
+    id: string;
+    email: string;
+    name?: string;
+    emailVerified?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+interface ExtendedSession {
+    user: ExtendedUser;
+    session: Session;
+    impersonatedBy?: {
+        id: string;
+        name: string;
+        email: string;
+        isNormallyAdmin: boolean;
+    };
+}
 
 /**
  * Better Auth plugin die sessies cached in Redis (TTL: 5 minuten).
@@ -15,10 +47,10 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
         hooks: {
             before: [
                 {
-                    matcher: (ctx) => ctx?.path?.includes("get-session"),
+                    matcher: (ctx) => !!ctx?.path?.includes("get-session"),
                     handler: async (ctx) => {
                         try {
-                            const headersSource = ctx?.headers || (ctx as any)?.request?.headers || {};
+                            const headersSource = ctx?.headers || (ctx as { request?: { headers: any } }).request?.headers || {};
                             const requestHeaders = new Headers(headersSource);
                             const token = requestHeaders.get("authorization")?.split(" ")[1] ||
                                 requestHeaders.get("cookie")?.split("better-auth.session-token=")[1]?.split(";")[0];
@@ -28,7 +60,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                 const cached = await redis.get(`session:${token}`);
                                 if (cached) {
                                     return {
-                                        response: JSON.parse(cached)
+                                        response: JSON.parse(cached) as ExtendedSession
                                     };
                                 }
                             }
@@ -40,18 +72,18 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
             ],
             after: [
                 {
-                    matcher: (ctx) => ctx?.path?.includes("get-session"),
+                    matcher: (ctx) => !!ctx?.path?.includes("get-session"),
                     handler: async (ctx) => {
                         try {
-                            const headersSource = ctx?.headers || (ctx as any)?.request?.headers || {};
+                            const headersSource = ctx?.headers || (ctx as { request?: { headers: any } }).request?.headers || {};
                             const requestHeaders = new Headers(headersSource);
-                            const session = (ctx as any)?.context?.returned || (ctx as any)?.response || (ctx as any)?.json || (ctx as any)?.body;
+                            const session = ((ctx as any)?.context?.returned || (ctx as any)?.response || (ctx as any)?.json || (ctx as any)?.body) as ExtendedSession | null;
                             
                             const token = requestHeaders.get("authorization")?.split(" ")[1] ||
                                 requestHeaders.get("cookie")?.split("better-auth.session-token=")[1]?.split(";")[0];
 
                             if (session && typeof session === 'object' && 'user' in session) {
-                                const sessionWithUser = session as any;
+                                const sessionWithUser = session;
                                 
                                 if (!sessionWithUser.user?.id) return {};
 
@@ -82,7 +114,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                         const directusUrl = process.env.DIRECTUS_SERVICE_URL;
                                         const cacheKey = `impersonation:${testToken}`;
                                         
-                                        let targetUser = null;
+                                        let targetUser: ExtendedUser | null = null;
                                         const cachedImp = await redis.get(cacheKey);
                                         
                                         if (cachedImp) {
@@ -95,7 +127,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                                 .with(rest());
 
                                             // Determine target user identity via token
-                                            const rawImpUser = await testClient.request(readMe({ fields: ['id'] } as any)) as any;
+                                            const rawImpUser = await testClient.request(readMe({ fields: ['id'] })) as { id: string } | null;
                                             
                                             if (rawImpUser?.id) {
                                                 const { rows: dbUsers } = await pool.query(
@@ -130,7 +162,9 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                                         minecraft_username: dbUser.minecraft_username,
                                                         isAdmin: !!dbUser.admin_access,
                                                         role: dbUser.role,
-                                                        committees: impCommittees
+                                                        committees: impCommittees,
+                                                        emailVerified: true,
+                                                        ...getPermissions(impCommittees)
                                                     };
                                                     
                                                     await redis.set(cacheKey, JSON.stringify(targetUser), 'EX', 3600);
@@ -199,5 +233,5 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                 }
             ]
         }
-    } as BetterAuthPlugin;
+    };
 }

@@ -160,6 +160,7 @@ export interface DbEvent {
     event_date_end?: string | null;
     attendance_officers?: any | null;
     signups?: any | null;
+    custom_url?: string | null;
 }
 
 export interface DbEventsDirectusUser {

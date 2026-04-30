@@ -46,7 +46,7 @@ export default function ActivitiesBannerIsland({ events, serverTime }: Activitie
                     : upcomingEvent.datum_start
                 }
                 title={upcomingEvent.titel}
-                href={`/activiteiten/${upcomingEvent.id}-${slugify(upcomingEvent.titel || '')}`}
+                href={`/activiteiten/${upcomingEvent.custom_url || slugify(upcomingEvent.titel || '')}`}
                 serverTime={serverTime}
             />
         </div>

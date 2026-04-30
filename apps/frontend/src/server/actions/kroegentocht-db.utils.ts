@@ -12,6 +12,18 @@ import {
 } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { z } from 'zod';
 
+export type EnrichedPubCrawlSignup = PubCrawlSignup & {
+    pub_crawl_event_id: {
+        id: string | number;
+        name: string;
+        date?: string;
+        description?: string;
+        image?: string;
+    };
+    tickets?: PubCrawlTicket[];
+    amount_tickets: number;
+};
+
 /**
  * Fetches all pub crawl events.
  */
@@ -53,7 +65,7 @@ export async function fetchPubCrawlSignupsDb(eventId: number): Promise<(PubCrawl
         if (signupRes.rowCount === 0) return [];
 
         return signupRes.rows.map(raw => {
-            let participants = [];
+            let participants: { name: string, initial: string }[] = [];
             
             if (raw.name_initials) {
                 if (Array.isArray(raw.name_initials)) {
@@ -82,7 +94,7 @@ export async function fetchPubCrawlSignupsDb(eventId: number): Promise<(PubCrawl
 /**
  * Fetches a single signup by ID with event details.
  */
-export async function fetchPubCrawlSignupByIdDb(signupId: number): Promise<any | null> {
+export async function fetchPubCrawlSignupByIdDb(signupId: number): Promise<EnrichedPubCrawlSignup | null> {
     try {
         const res = await query(
             `SELECT s.*, e.name as event_name, e.date as event_date, e.description as event_description, e.image as event_image
@@ -101,7 +113,7 @@ export async function fetchPubCrawlSignupByIdDb(signupId: number): Promise<any |
             [signupId]
         );
 
-        let participants = [];
+        let participants: { name: string, initial: string }[] = [];
         if (signup.name_initials) {
             if (Array.isArray(signup.name_initials)) {
                 participants = signup.name_initials;
@@ -178,7 +190,7 @@ export async function getPubCrawlTicketCountDb(eventId: number): Promise<number>
 /**
  * Fetches signups for a specific user.
  */
-export async function fetchUserPubCrawlSignupsDb(email: string): Promise<any[]> {
+export async function fetchUserPubCrawlSignupsDb(email: string): Promise<EnrichedPubCrawlSignup[]> {
     try {
         const res = await query(
             `SELECT s.*, e.name as event_name, e.date as event_date, e.description as event_description, e.image as event_image

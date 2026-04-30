@@ -69,7 +69,7 @@ export default function EventList({ events, onEventClick, variant = 'list' }: Ev
                     endTime={event.event_time_end ?? undefined}
                     location={event.locatie ?? undefined}
                     price={(user as any)?.membership_status === 'active' ? (event.price_members ?? undefined) : (event.price_non_members ?? undefined)}
-                    image={getImageUrl(event.afbeelding_id) ?? undefined}
+                    image={event.afbeelding_id ?? undefined}
                     isPast={isEventPast(event.datum_start)}
                     isSignedUp={event.is_signed_up}
                     variant="list"

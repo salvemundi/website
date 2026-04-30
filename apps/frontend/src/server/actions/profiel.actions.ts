@@ -30,11 +30,13 @@ export async function getUserEventSignups(): Promise<EventSignup[]> {
 
     try {
         const registrations = await fetchUserEventSignupsDb(email);
-        const parsed = eventSignupSchema.array().safeParse(registrations);
+        // Ensure all registrations have an ID before parsing
+        const validRegistrations = registrations.filter(r => r.id !== null);
+        const parsed = eventSignupSchema.array().safeParse(validRegistrations);
 
         if (!parsed.success) {
             
-            return registrations as any;
+            return validRegistrations as any;
         }
 
         return parsed.data;

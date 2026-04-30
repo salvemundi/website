@@ -33,7 +33,7 @@ export default async function LidmaatschapConfirmationPage({ searchParams }: Pag
                 <ConfirmationIsland 
                     transactionId={identifier}
                     type={type || null}
-                    initialStatus={initialStatusRes.status as any}
+                    initialStatus={initialStatusRes.status as 'paid' | 'open' | 'failed' | 'error'}
                     initialUserId={initialStatusRes.user_id}
                 />
             </div>

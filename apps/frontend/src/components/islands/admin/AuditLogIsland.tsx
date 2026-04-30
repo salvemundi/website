@@ -25,15 +25,23 @@ import PendingTab from './audit/PendingTab';
 import LogsTab from './audit/LogsTab';
 import QueuesTab from './audit/QueuesTab';
 
+export interface SystemLog {
+    id: string;
+    type: string;
+    status: string;
+    payload: Record<string, any>;
+    created_at: string;
+}
+
 interface AuditLogIslandProps {
     initialData: {
         signups: PendingSignup[];
         manualApproval: boolean;
-        adminLogs: any[];
+        adminLogs: SystemLog[];
         adminLogsTotal: number;
-        systemLogs: any[];
+        systemLogs: SystemLog[];
         systemLogsTotal: number;
-        queueData: any;
+        queueData: Record<string, any>;
     };
 }
 
@@ -42,11 +50,11 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
     const [activeTab, setActiveTab] = useState<'pending' | 'admin_logs' | 'system_logs' | 'queues'>('pending');
     
     const [signups, setSignups] = useState<PendingSignup[]>(initialData.signups);
-    const [adminLogs, setAdminLogs] = useState<any[]>(initialData.adminLogs);
-    const [systemLogs, setSystemLogs] = useState<any[]>(initialData.systemLogs);
+    const [adminLogs, setAdminLogs] = useState<SystemLog[]>(initialData.adminLogs);
+    const [systemLogs, setSystemLogs] = useState<SystemLog[]>(initialData.systemLogs);
     const [adminLogsTotalCount, setAdminLogsTotalCount] = useState(initialData.adminLogsTotal);
     const [systemLogsTotalCount, setSystemLogsTotalCount] = useState(initialData.systemLogsTotal);
-    const [queueData, setQueueData] = useState<any>(initialData.queueData);
+    const [queueData, setQueueData] = useState<Record<string, any>>(initialData.queueData);
     
     const [isProcessing, setIsProcessing] = useState<string | null>(null);
     const [isBulkProcessing, setIsBulkProcessing] = useState<'approve' | 'reject' | null>(null);

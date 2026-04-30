@@ -9,12 +9,13 @@ import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import { formatDate as coreFormatDate } from '@/shared/lib/utils/date';
+import { type MembershipUserData } from '@/components/islands/account/MembershipStatusIsland';
 
 interface ActiviteitCardProps {
     id?: number | string;
     description?: string;
     description_logged_in?: string;
-    image?: any;
+    image?: string | { id: string; type?: string | null } | null;
     date?: string;
     endDate?: string;
     startTime?: string | null;
@@ -66,7 +67,8 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     const handleSignupClick = (e: React.MouseEvent) => {
         e.stopPropagation();
 
-        if (onlyMembers && (user as any)?.membership_status !== 'active') {
+        const userData = user as unknown as MembershipUserData | undefined;
+        if (onlyMembers && userData?.membership_status !== 'active') {
             if (!isAuthenticated) {
                 const returnTo = window.location.pathname + window.location.search;
                 localStorage.setItem('auth_return_to', returnTo);
@@ -108,76 +110,95 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
         return (
             <div
                 onClick={onShowDetails}
-                className={`group relative z-0 overflow-hidden w-full rounded-2xl bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-5 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 ${isPast ? 'opacity-60 filter grayscale' : ''}`}
+                className={`group relative z-0 overflow-hidden w-full rounded-2xl bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-0 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 flex flex-col md:flex-row ${isPast ? 'opacity-60 filter grayscale' : ''}`}
             >
-                <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
-                    <div className="flex-1 min-w-[200px]">
-                        <div className="flex items-center gap-2 mb-1">
-                            <span className="text-[10px] uppercase tracking-widest text-[var(--theme-purple)] font-black bg-[var(--theme-purple)]/10 px-2 py-0.5 rounded-md">
-                                {committeeLabel}
-                            </span>
-                            {onlyMembers && (
-                                <span className="text-[10px] uppercase tracking-widest text-amber-600 font-black bg-amber-50 px-2 py-0.5 rounded-md">
-                                    Leden
-                                </span>
-                            )}
+                {/* Image Section */}
+                <div className="relative w-full md:w-64 aspect-video flex-shrink-0 overflow-hidden">
+                    {image ? (
+                        <BannerAsset
+                            asset={image}
+                            alt={title}
+                            fill
+                            sizes="(max-width: 768px) 100vw, 300px"
+                            className="object-contain"
+                        />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-transparent">
+                            <Calendar className="h-8 w-8 text-[var(--theme-purple)]/20" />
                         </div>
-                        <h3 className="text-xl font-black text-[var(--theme-purple)]/90 leading-tight group-hover:text-[var(--theme-purple)] transition-colors line-clamp-2 break-words" title={title}>
-                            {title}
-                        </h3>
-                        {description && (
-                            <p className="hidden md:block text-[var(--text-muted)] text-sm line-clamp-2 mt-2 leading-relaxed pr-4">
-                                {description}
-                            </p>
-                        )}
-                        {contact && (
-                            <p className="text-xs text-[var(--text-muted)] mt-2 flex items-center gap-1">
-                                <span className="font-bold opacity-70">Contact:</span>
-                                <span>{contact}</span>
-                            </p>
-                        )}
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center lg:items-center gap-6 md:gap-10">
-                        <div className="text-left sm:text-right min-w-[160px] flex-shrink-0">
-                            <p className="text-[10px] font-black text-[var(--theme-purple)]/40 uppercase tracking-widest mb-1 leading-none">Datum & Tijd</p>
-                            <div className="space-y-0.5">
-                                <p className="text-sm font-bold text-[var(--theme-purple)]/80 whitespace-nowrap">
-                                    {displayDate}
-                                </p>
-                                <p className="text-xs font-medium text-[var(--text-muted)] whitespace-nowrap overflow-hidden text-ellipsis max-w-[180px]">
-                                    {timeRange || 'Tijd volgt'} • {location || 'Locatie volgt'}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="bg-[var(--bg-soft)] px-4 py-2 rounded-xl border border-[var(--border-color)] text-center min-w-[80px]">
-                            <p className="text-[10px] font-black text-[var(--theme-purple)]/40 uppercase tracking-widest mb-0.5">Prijs</p>
-                            <p className="text-lg font-black text-[var(--theme-purple)]">€{safePrice}</p>
-                        </div>
-                    </div>
+                    )}
                 </div>
 
-                <div className="flex flex-wrap justify-end gap-2 mt-3 pt-3 border-t border-[var(--border-color)]/5">
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onShowDetails?.();
-                        }}
-                        className="px-4 py-2 text-sm font-semibold rounded-full text-[var(--theme-purple)] hover:bg-[var(--theme-purple)] hover:text-[var(--color-white)] transition"
-                    >
-                        MEER INFO
-                    </button>
+                <div className="p-5 flex-1 flex flex-col">
+                    <div className="relative z-10 flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-8 flex-1">
+                        <div className="flex-1 min-w-[200px]">
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="text-[10px] uppercase tracking-widest text-[var(--theme-purple)] font-black bg-[var(--theme-purple)]/10 px-2 py-0.5 rounded-md">
+                                    {committeeLabel}
+                                </span>
+                                {onlyMembers && (
+                                    <span className="text-[10px] uppercase tracking-widest text-amber-600 font-black bg-amber-50 px-2 py-0.5 rounded-md">
+                                        Leden
+                                    </span>
+                                )}
+                            </div>
+                            <h3 className="text-xl font-black text-[var(--theme-purple)]/90 leading-tight group-hover:text-[var(--theme-purple)] transition-colors line-clamp-2 break-words" title={title}>
+                                {title}
+                            </h3>
+                            {description && (
+                                <p className="hidden md:block text-[var(--text-muted)] text-sm line-clamp-2 mt-2 leading-relaxed pr-4">
+                                    {description}
+                                </p>
+                            )}
+                            {contact && (
+                                <p className="text-xs text-[var(--text-muted)] mt-2 flex items-center gap-1">
+                                    <span className="font-bold opacity-70">Contact:</span>
+                                    <span>{contact}</span>
+                                </p>
+                            )}
+                        </div>
 
-                    {!isPast && (
+                        <div className="flex flex-row items-center gap-6 lg:gap-10">
+                            <div className="text-left lg:text-right min-w-[140px] flex-shrink-0">
+                                <p className="text-[10px] font-black text-[var(--theme-purple)]/40 uppercase tracking-widest mb-1 leading-none">Datum & Tijd</p>
+                                <div className="space-y-0.5">
+                                    <p className="text-sm font-bold text-[var(--theme-purple)]/80 whitespace-nowrap">
+                                        {displayDate}
+                                    </p>
+                                    <p className="text-xs font-medium text-[var(--text-muted)] whitespace-nowrap overflow-hidden text-ellipsis max-w-[180px]">
+                                        {timeRange || 'Tijd volgt'} • {location || 'Locatie volgt'}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="bg-[var(--bg-soft)] px-4 py-2 rounded-xl border border-[var(--border-color)] text-center min-w-[80px] ml-auto">
+                                <p className="text-[10px] font-black text-[var(--theme-purple)]/40 uppercase tracking-widest mb-0.5">Prijs</p>
+                                <p className="text-lg font-black text-[var(--theme-purple)]">€{safePrice}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-wrap justify-end gap-2 mt-4 pt-4 border-t border-[var(--border-color)]/10">
                         <button
-                            onClick={handleSignupClick}
-                            className={`${cannotSignUp ? 'bg-[var(--color-purple-100)] text-[var(--text-muted)] cursor-not-allowed' : 'bg-[var(--theme-purple)] text-[var(--color-white)] shadow-lg shadow-[var(--theme-purple)]/30 hover:-translate-y-0.5 hover:shadow-xl'} px-4 py-2 text-sm font-semibold rounded-full transition-transform`}
-                            disabled={cannotSignUp}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onShowDetails?.();
+                            }}
+                            className="px-4 py-2 text-sm font-semibold rounded-full text-[var(--theme-purple)] hover:bg-[var(--theme-purple)] hover:text-[var(--color-white)] transition"
                         >
-                            {alreadySignedUp ? 'AL AANGEMELD' : isDeadlinePassed ? 'AANMELDING GESLOTEN' : 'AANMELDEN'}
+                            MEER INFO
                         </button>
-                    )}
+
+                        {!isPast && (
+                            <button
+                                onClick={handleSignupClick}
+                                className={`${cannotSignUp ? 'bg-[var(--color-purple-100)] text-[var(--text-muted)] cursor-not-allowed' : 'bg-[var(--theme-purple)] text-[var(--color-white)] shadow-lg shadow-[var(--theme-purple)]/30 hover:-translate-y-0.5 hover:shadow-xl'} px-4 py-2 text-sm font-semibold rounded-full transition-transform`}
+                                disabled={cannotSignUp}
+                            >
+                                {alreadySignedUp ? 'AL AANGEMELD' : isDeadlinePassed ? 'AANMELDING GESLOTEN' : 'AANMELDEN'}
+                            </button>
+                        )}
+                    </div>
                 </div>
                 <AdminToast toast={toast} onClose={hideToast} />
             </div>
@@ -188,29 +209,29 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     return (
         <div
             onClick={onShowDetails}
-            className={`group relative z-0 overflow-hidden w-full rounded-[1.75rem] bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-5 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 ${isPast ? 'opacity-60 filter grayscale' : ''}`}
+            className={`group relative z-0 overflow-hidden w-full rounded-[1.75rem] bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-0 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 ${isPast ? 'opacity-60 filter grayscale' : ''}`}
         >
-            <div className="relative z-10 aspect-video mb-5 rounded-2xl overflow-hidden shadow-inner bg-[var(--bg-soft)]">
+            <div className="relative z-10 w-full aspect-video mb-0 overflow-hidden">
                 {image ? (
                     <BannerAsset
                         asset={image}
                         alt={title}
                         fill
                         sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
-                        className="object-contain transition-all duration-500"
+                        className="object-contain"
                     />
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-[var(--theme-purple)]/5">
+                    <div className="w-full h-full flex items-center justify-center bg-transparent">
                         <Calendar className="h-12 w-12 text-[var(--theme-purple)]/20" />
                     </div>
                 )}
                 {!isPast && (
                     <div className="absolute top-4 right-4 z-20 flex flex-col gap-2 items-end">
-                        <span className="bg-[var(--theme-purple)] text-[var(--color-white)] text-[10px] font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider">
+                        <span className="bg-[var(--theme-purple)] text-[var(--color-white)] text-[10px] font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider backdrop-blur-md">
                             {committeeLabel}
                         </span>
                         {onlyMembers && (
-                            <span className="bg-[var(--theme-warning)] text-[var(--color-white)] text-[10px] font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider">
+                            <span className="bg-[var(--theme-warning)] text-[var(--color-white)] text-[10px] font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider backdrop-blur-md">
                                 Leden Alleen
                             </span>
                         )}
@@ -218,7 +239,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                 )}
             </div>
 
-            <div className="flex flex-col flex-grow relative z-10 space-y-3">
+            <div className="p-5 flex flex-col flex-grow relative z-10 space-y-3">
                 <h3 className="text-xl font-bold text-[var(--theme-purple)]/80 leading-snug line-clamp-2 break-words">
                     {title}
                 </h3>

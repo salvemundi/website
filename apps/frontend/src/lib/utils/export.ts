@@ -23,7 +23,7 @@ export function downloadCSV(data: Record<string, any>[], filename: string) {
     };
 
     // 3. Build CSV string
-    const csvRows = [];
+    const csvRows: string[] = [];
     csvRows.push(headers.join(',')); // Add header row
 
     for (const row of data) {

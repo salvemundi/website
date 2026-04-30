@@ -64,7 +64,7 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
                 <div className="pb-20">
                     <ActiviteitAanmeldingenIsland 
                         event={legacyEventData as any} 
-                        initialSignups={signups} 
+                        initialSignups={signups.filter(s => s.id !== null) as any[]} 
                         canAccessEdit={!!user.canAccessActivitiesEdit}
                     />
                 </div>

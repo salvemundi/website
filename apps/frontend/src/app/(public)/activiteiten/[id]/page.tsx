@@ -1,9 +1,10 @@
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
-import { getActivityById, checkUserSignupStatus } from '@/server/actions/activiteit-actions';
+import { getActivityBySlug, checkUserSignupStatus } from '@/server/actions/activiteit-actions';
 import ActivityDetailIsland from '@/components/islands/activities/ActivityDetailIsland';
 import EventSignupIsland from '@/components/islands/activities/EventSignupIsland';
+import { type MembershipUserData } from '@/components/islands/account/MembershipStatusIsland';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import BackButton from '@/components/ui/navigation/BackButton';
 
@@ -19,12 +20,10 @@ export default async function PageActivityId({ params, searchParams }: PageProps
     const { id: rawId } = await params;
     const sParams = await searchParams;
 
-    // Extract real ID from slug (e.g., "841-website-launch" -> "841")
-    const id = rawId.split('-')[0];
-
-    // NUCLEAR SSR: Fetch activity, session and headers in parallel before flushing
+    // Extract real ID or use slug
+    // Try By Slug first (which handles id, id-slug, and custom_url)
     const [activity, session] = await Promise.all([
-        getActivityById(id),
+        getActivityBySlug(rawId),
         auth.api.getSession({
             headers: await headers()
         })
@@ -35,7 +34,7 @@ export default async function PageActivityId({ params, searchParams }: PageProps
     const isPast = new Date(activity.datum_start) < new Date();
     
     // Server-side authoritative price determination
-    const user = session?.user as any;
+    const user = session?.user as MembershipUserData | undefined;
     const isMember = user?.membership_status === 'active';
     const price = isMember ? (activity.price_members ?? 0) : (activity.price_non_members ?? 0);
 
@@ -49,7 +48,7 @@ export default async function PageActivityId({ params, searchParams }: PageProps
         if (signupStatus.isSignedUp) {
             isSignedUp = true;
             qrToken = signupStatus.qrToken;
-            verifiedPaymentStatus = signupStatus.paymentStatus as any;
+            verifiedPaymentStatus = signupStatus.paymentStatus as 'paid' | 'open' | 'failed' | 'canceled' | null;
         }
     }
 
