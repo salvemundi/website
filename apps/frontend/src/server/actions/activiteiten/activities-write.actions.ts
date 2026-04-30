@@ -168,7 +168,8 @@ export async function updateActivityAction(eventId: number, prevState: any, form
         const data = validated.data;
 
         // Check for duplicate name if changed
-        if (data.name.toLowerCase() !== oldData.name?.toLowerCase()) {
+        const oldName = (oldData as any).name;
+        if (data.name.toLowerCase() !== oldName?.toLowerCase()) {
             const { query: dbQuery } = await import("@/lib/database");
             const nameCheck = await dbQuery(
                 "SELECT id FROM events WHERE LOWER(name) = LOWER($1) AND id != $2 LIMIT 1",
