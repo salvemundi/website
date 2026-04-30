@@ -4,6 +4,8 @@ import { ChevronRight, Calendar } from 'lucide-react';
 import type { Activity } from '@salvemundi/validations/schema/activity.zod';
 import { EventCard } from './EventCard';
 
+import { slugify } from '@/shared/lib/utils/slug';
+
 interface EventsSectionProps {
     activities?: Activity[];
     count?: number;
@@ -61,7 +63,7 @@ export function EventsSection({ activities = [], count = 4 }: EventsSectionProps
                                 <EventCard 
                                     key={activity.id}
                                     activity={activity as any} 
-                                    href={activity.custom_url || `/activiteiten/${activity.id}`} 
+                                    href={`/activiteiten/${slugify(activity.titel || '')}`} 
                                 />
                             ))
                         )}
