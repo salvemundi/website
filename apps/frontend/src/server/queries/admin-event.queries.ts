@@ -49,8 +49,6 @@ export async function getActivitiesInternal(onlyPublished = true): Promise<Activ
             committee_name: item.committee_name || null,
             description_logged_in: item.description_logged_in || null,
             publish_date: safeISO(item.publish_date),
-            slug: item.slug || null,
-            success_redirect_url: item.success_redirect_url || null,
         };
     });
 
@@ -105,8 +103,6 @@ export async function getActivityByIdInternal(id: string): Promise<Activiteit | 
         committee_name: item.committee_name || null,
         description_logged_in: item.description_logged_in || null,
         publish_date: safeISO(item.publish_date),
-        slug: item.slug || null,
-        success_redirect_url: item.success_redirect_url || null,
     };
 
     const parsed = activitiesSchema.element.safeParse(mapped);
