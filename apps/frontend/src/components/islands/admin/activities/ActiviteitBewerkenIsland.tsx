@@ -80,6 +80,7 @@ export default function ActiviteitBewerkenIsland({
         const res = await updateActivityAction(event.id, prevState, formData);
         if (res.success) {
             showToast('Activiteit succesvol bijgewerkt!', 'success');
+            router.refresh();
         } else {
             showToast(res.error || 'Er is een fout opgetreden', 'error');
         }
