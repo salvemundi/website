@@ -3,10 +3,10 @@ import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import { notFound } from 'next/navigation';
-import { getSystemDirectus } from '@/lib/directus';
-import { readItems } from '@directus/sdk';
 import ActiviteitBewerkenIsland from '@/components/islands/admin/activities/ActiviteitBewerkenIsland';
 
+import { getActivityByIdInternal } from '@/server/queries/admin-event.queries';
+import { query } from '@/lib/database';
 import { getPermissions } from '@/shared/lib/permissions';
 import { fetchUserCommitteesDb } from '@/server/actions/user-db.utils';
 
@@ -39,32 +39,27 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
 
     const isPowerful = permissions.isLeader || permissions.isICT;
 
-    // NUCLEAR SSR: Fetch all data before flushing any part of the page content
-    const [event, allCommittees] = await Promise.all([
-        getSystemDirectus().request(
-            readItems<any, any, any>('events', {
-                fields: [
-                    'id', 'name', 'description', 'location', 'event_date', 'event_date_end', 
-                    'max_sign_ups', 'price_members', 'price_non_members', 'only_members', 
-                    'registration_deadline', 'contact', 'image.*', 'committee_id', 'status', 
-                    'publish_date', 'event_time', 'event_time_end', 'description_logged_in',
-                    'custom_url'
-                ],
-                filter: { id: { _eq: id } },
-                limit: 1
-            })
-        ),
-        getSystemDirectus().request(
-            readItems<any, any, any>('committees', {
-                fields: ['id', 'name'],
-                filter: { is_visible: { _eq: true } },
-                limit: -1
-            })
-        )
+    // Fetch data using SQL instead of Directus API for better performance and consistency
+    const [eventData, allCommittees] = await Promise.all([
+        getActivityByIdInternal(id),
+        query('SELECT id, name FROM committees WHERE is_visible = true').then(res => res.rows)
     ]);
     
-    if (!event || event.length === 0) return notFound();
-    const eventData = event[0];
+    if (!eventData) return notFound();
+    
+    // Remap database fields to match the form expectations (if needed)
+    const legacyEventData = {
+        ...eventData,
+        name: eventData.titel,
+        description: eventData.beschrijving,
+        event_date: eventData.datum_start,
+        event_date_end: eventData.datum_eind,
+        image: eventData.afbeelding_id,
+        // Ensure numeric fields are correctly typed
+        price_members: eventData.price_members,
+        price_non_members: eventData.price_non_members,
+        max_sign_ups: eventData.max_sign_ups,
+    };
 
     const cleanedCommittees = allCommittees.map((c: any) => ({
         id: c.id,
@@ -78,7 +73,7 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
 
     return (
         <div className="pb-20">
-            <ActiviteitBewerkenIsland event={eventData as any} committees={allowedCommitteesForDropdown as any} />
+            <ActiviteitBewerkenIsland event={legacyEventData as any} committees={allowedCommitteesForDropdown as any} />
         </div>
     );
 }

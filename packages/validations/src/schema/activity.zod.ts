@@ -19,6 +19,7 @@ export const activitySchema = z.object({
             type: z.string().nullable().optional()
         })
     ]).nullable().optional(),
+    max_sign_ups: z.number().nullable().optional(),
     price_members: z.number().nullable().optional(),
     price_non_members: z.number().nullable().optional(),
     committee_name: z.string().nullable().optional(),

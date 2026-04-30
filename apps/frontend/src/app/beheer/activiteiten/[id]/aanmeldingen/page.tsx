@@ -4,9 +4,8 @@ import { headers } from 'next/headers';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import { notFound } from 'next/navigation';
 import ActiviteitAanmeldingenIsland from '@/components/islands/admin/activities/ActiviteitAanmeldingenIsland';
-import { getSystemDirectus } from '@/lib/directus';
-import { readItem } from '@directus/sdk';
 import { 
+    getActivityByIdInternal,
     getActivitySignupsInternal 
 } from '@/server/queries/admin-event.queries';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
@@ -31,14 +30,10 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
     const hasAccess = !!user.canAccessActivitiesView;
 
     try {
-        // Fetch Event
-        const event = await getSystemDirectus().request(
-            readItem<any, any, any>('events', id, {
-                fields: ['id', 'name', 'price_members', 'committee_id', 'max_sign_ups']
-            })
-        );
+        // Fetch Event using SQL
+        const eventData = await getActivityByIdInternal(id);
         
-        if (!event) return notFound();
+        if (!eventData) return notFound();
 
         if (!hasAccess) {
             return (
@@ -49,19 +44,26 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
             );
         }
 
+        // Remap to legacy format for the Island
+        const legacyEventData = {
+            ...eventData,
+            name: eventData.titel,
+            price_members: eventData.price_members,
+        };
+
         // Fetch Signups using high-performance SQL query (filters out failed payments)
         const signups = await getActivitySignupsInternal(id);
 
         return (
             <AdminPageShell
                 title="Aanmeldingen"
-                subtitle={`Lijst van deelnemers voor "${event.name}"`}
+                subtitle={`Lijst van deelnemers voor "${legacyEventData.name}"`}
                 backHref={`/beheer/activiteiten`}
                 hideToolbar={true}
             >
                 <div className="pb-20">
                     <ActiviteitAanmeldingenIsland 
-                        event={event as any} 
+                        event={legacyEventData as any} 
                         initialSignups={signups} 
                         canAccessEdit={!!user.canAccessActivitiesEdit}
                     />
