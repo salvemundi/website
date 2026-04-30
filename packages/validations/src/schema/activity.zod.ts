@@ -22,6 +22,7 @@ export const activitySchema = z.object({
     max_sign_ups: z.number().nullable().optional(),
     price_members: z.number().nullable().optional(),
     price_non_members: z.number().nullable().optional(),
+    committee_id: z.number().nullable().optional(),
     committee_name: z.string().nullable().optional(),
     contact: z.string().nullable().optional(),
     registration_deadline: z.string().nullable().optional(),
