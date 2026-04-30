@@ -87,12 +87,8 @@ export default function EventSignupIsland({
                 if (result.checkoutUrl) {
                     window.location.href = result.checkoutUrl;
                 } else if ((result as any).signupId && (result as any).qrToken) {
-                    // Voor gratis events: ga naar de bevestigingspagina of custom redirect
-                    if ((result as any).success_redirect_url) {
-                        window.location.href = (result as any).success_redirect_url;
-                    } else {
-                        window.location.href = `/activiteiten/bevestiging?id=${(result as any).signupId}&transactionId=${(result as any).qrToken}`;
-                    }
+                    // Voor gratis events: ga naar de bevestigingspagina zodat men de QR-code ziet
+                    window.location.href = `/activiteiten/bevestiging?id=${(result as any).signupId}&transactionId=${(result as any).qrToken}`;
                 } else {
                     setSuccess(result.message || 'Aanmelding geslaagd!');
                     setSignupStatus({ isSignedUp: true, paymentStatus: isPaid ? 'open' : 'paid' });
