@@ -8,7 +8,6 @@ export type EnrichedEvent = {
     description?: string;
     image?: string;
     contact?: string;
-    custom_url?: string;
 };
 
 export type EnrichedEventSignup = DbEventSignup & {
@@ -26,9 +25,9 @@ export async function createEventDb(data: Partial<DbEvent>): Promise<number | nu
                 name, description, location, max_sign_ups, price_members, price_non_members,
                 only_members, registration_deadline, contact, image, committee_id,
                 event_date, event_time, event_date_end, event_time_end, status, publish_date,
-                description_logged_in, custom_url
+                description_logged_in
             ) VALUES (
-                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18
             ) RETURNING id
         `;
         
@@ -51,7 +50,6 @@ export async function createEventDb(data: Partial<DbEvent>): Promise<number | nu
             data.status || 'draft',
             data.publish_date || null,
             data.description_logged_in || null,
-            data.custom_url || null
         ];
 
         const { rows } = await query(sql, params);
@@ -73,7 +71,7 @@ export async function updateEventDb(id: number, data: Partial<DbEvent>): Promise
             if (['name', 'description', 'location', 'max_sign_ups', 'price_members', 'price_non_members',
                  'only_members', 'registration_deadline', 'contact', 'image', 'committee_id',
                  'event_date', 'event_time', 'event_date_end', 'event_time_end', 'status', 'publish_date',
-                 'description_logged_in', 'custom_url'].includes(key)) {
+                 'description_logged_in'].includes(key)) {
                 fields.push(`${key} = $${paramIndex}`);
                 params.push(value);
                 paramIndex++;
@@ -181,7 +179,7 @@ export async function deleteEventSignupDb(id: number): Promise<boolean> {
 export async function fetchUserEventSignupsDb(email: string): Promise<EnrichedEventSignup[]> {
     try {
         const sql = `
-            SELECT es.*, e.name as event_name, e.event_date, e.description, e.image, e.contact, e.custom_url
+            SELECT es.*, e.name as event_name, e.event_date, e.description, e.image, e.contact
             FROM event_signups es
             JOIN events e ON es.event_id = e.id
             WHERE LOWER(es.participant_email) = LOWER($1)
@@ -196,8 +194,7 @@ export async function fetchUserEventSignupsDb(email: string): Promise<EnrichedEv
                 event_date: row.event_date,
                 description: row.description,
                 image: row.image,
-                contact: row.contact,
-                custom_url: row.custom_url
+                contact: row.contact
             }
         }));
     } catch (error) {
@@ -212,7 +209,7 @@ export async function fetchUserEventSignupsDb(email: string): Promise<EnrichedEv
 export async function fetchEventSignupByIdDb(id: number): Promise<EnrichedEventSignup | null> {
     try {
         const sql = `
-            SELECT es.*, e.name as event_name, e.event_date, e.description, e.image, e.contact, e.custom_url
+            SELECT es.*, e.name as event_name, e.event_date, e.description, e.image, e.contact
             FROM event_signups es
             JOIN events e ON es.event_id = e.id
             WHERE es.id = $1
@@ -230,8 +227,7 @@ export async function fetchEventSignupByIdDb(id: number): Promise<EnrichedEventS
                 event_date: row.event_date,
                 description: row.description,
                 image: row.image,
-                contact: row.contact,
-                custom_url: row.custom_url
+                contact: row.contact
             }
         };
     } catch (error) {
