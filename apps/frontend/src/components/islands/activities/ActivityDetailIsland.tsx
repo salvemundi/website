@@ -133,7 +133,9 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                                         <ObfuscatedEmail email={committeeEmail} showIcon={false} />
                                     </div>
                                 ) : (
-                                    <span className="text-sm font-bold text-[var(--text-muted)] italic">Via website</span>
+                                    <div className="text-sm font-bold text-[var(--theme-purple)] truncate block">
+                                        <ObfuscatedEmail email="bestuur@salvemundi.nl" showIcon={false} />
+                                    </div>
                                 )}
                             </div>
                         </div>

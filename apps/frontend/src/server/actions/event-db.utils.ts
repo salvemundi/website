@@ -1,10 +1,25 @@
 import { query } from '@/lib/database';
+import { type DbEvent, type DbEventSignup } from '@salvemundi/validations/directus/schema';
+
+export type EnrichedEvent = {
+    id: number;
+    name: string;
+    event_date?: string;
+    description?: string;
+    image?: string;
+    contact?: string;
+    custom_url?: string;
+};
+
+export type EnrichedEventSignup = DbEventSignup & {
+    event_id: EnrichedEvent;
+};
 
 /**
  * Event Operations
  */
 
-export async function createEventDb(data: any): Promise<number | null> {
+export async function createEventDb(data: Partial<DbEvent>): Promise<number | null> {
     try {
         const sql = `
             INSERT INTO events (
@@ -47,10 +62,10 @@ export async function createEventDb(data: any): Promise<number | null> {
     }
 }
 
-export async function updateEventDb(id: number, data: any): Promise<boolean> {
+export async function updateEventDb(id: number, data: Partial<DbEvent>): Promise<boolean> {
     try {
-        const fields = [];
-        const params = [];
+        const fields: string[] = [];
+        const params: any[] = [];
         let paramIndex = 1;
 
         for (const [key, value] of Object.entries(data)) {
@@ -92,7 +107,7 @@ export async function deleteEventDb(id: number): Promise<boolean> {
  * Event Signup Operations
  */
 
-export async function createEventSignupDb(data: any): Promise<number | null> {
+export async function createEventSignupDb(data: Partial<DbEventSignup>): Promise<number | null> {
     try {
         const sql = `
             INSERT INTO event_signups (
@@ -123,10 +138,10 @@ export async function createEventSignupDb(data: any): Promise<number | null> {
     }
 }
 
-export async function updateEventSignupDb(id: number, data: any): Promise<boolean> {
+export async function updateEventSignupDb(id: number, data: Partial<DbEventSignup>): Promise<boolean> {
     try {
-        const fields = [];
-        const params = [];
+        const fields: string[] = [];
+        const params: any[] = [];
         let paramIndex = 1;
 
         for (const [key, value] of Object.entries(data)) {
@@ -163,7 +178,7 @@ export async function deleteEventSignupDb(id: number): Promise<boolean> {
 /**
  * Fetches multiple event signups for a user (consistent with fetchUserEventSignupsDb)
  */
-export async function fetchUserEventSignupsDb(email: string): Promise<any[]> {
+export async function fetchUserEventSignupsDb(email: string): Promise<EnrichedEventSignup[]> {
     try {
         const sql = `
             SELECT es.*, e.name as event_name, e.event_date, e.description, e.image, e.contact, e.custom_url
@@ -173,7 +188,7 @@ export async function fetchUserEventSignupsDb(email: string): Promise<any[]> {
             ORDER BY e.event_date DESC
         `;
         const { rows } = await query(sql, [email]);
-        return rows.map((row: any) => ({
+        return rows.map((row) => ({
             ...row,
             event_id: {
                 id: row.event_id,
@@ -194,7 +209,7 @@ export async function fetchUserEventSignupsDb(email: string): Promise<any[]> {
 /**
  * Fetches a single event signup by ID with event details.
  */
-export async function fetchEventSignupByIdDb(id: number): Promise<any | null> {
+export async function fetchEventSignupByIdDb(id: number): Promise<EnrichedEventSignup | null> {
     try {
         const sql = `
             SELECT es.*, e.name as event_name, e.event_date, e.description, e.image, e.contact, e.custom_url

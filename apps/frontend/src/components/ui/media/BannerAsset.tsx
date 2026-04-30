@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { getImageUrl } from '@/lib/utils/image-utils';
 
 interface BannerAssetProps {
-    asset: any; // Can be ID string or object { id, type }
+    asset?: string | { id: string; type?: string | null } | null;
     alt?: string;
     className?: string;
     fill?: boolean;
@@ -43,7 +43,7 @@ export default function BannerAsset({
         return (
             <video
                 src={url}
-                className={`${className} ${fill ? 'absolute inset-0 w-full h-full object-cover' : ''}`}
+                className={`${className} ${fill ? 'absolute inset-0 w-full h-full' : ''}`}
                 autoPlay
                 loop
                 muted

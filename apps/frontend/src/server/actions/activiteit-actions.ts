@@ -26,6 +26,7 @@ import { readItems, createItem, deleteItem } from '@directus/sdk';
 import { 
     getActivitiesInternal, 
     getActivityByIdInternal,
+    getActivityBySlugInternal,
     getActivitySignupsInternal 
 } from "@/server/queries/admin-event.queries";
 import { logAdminAction } from './audit.actions';
@@ -60,15 +61,15 @@ export const getActivities = cache(async (email?: string): Promise<(Activiteit &
     try {
         // Fetch user signups for these activities by email
         const userSignups = await fetchUserEventSignupsDb(email);
-        const signedUpEventIds = new Set(userSignups.map(s => s.event_id.id));
+        const signedUpEventIds = new Set(userSignups.map(s => Number(s.event_id.id)));
 
         // Also check Pub Crawl signups by email
         const pubCrawlSignups = await fetchUserPubCrawlSignupsDb(email);
-        const signedUpPubCrawlIds = new Set(pubCrawlSignups.map(s => s.pub_crawl_event_id.id));
+        const signedUpPubCrawlIds = new Set(pubCrawlSignups.map(s => Number(s.pub_crawl_event_id.id)));
 
         return activities.map(activity => ({
             ...activity,
-            is_signed_up: signedUpEventIds.has(activity.id) || (activity as any).type === 'pub_crawl' && signedUpPubCrawlIds.has(activity.id)
+            is_signed_up: signedUpEventIds.has(Number(activity.id)) || ((activity as any).type === 'pub_crawl' && signedUpPubCrawlIds.has(Number(activity.id)))
         }));
     } catch (error) {
         // User signup fetch failure is non-critical for the list view, log and return activities without signup status
@@ -81,7 +82,17 @@ export const getActivities = cache(async (email?: string): Promise<(Activiteit &
  * Fetches a single activity by ID directly from the database (SQL-first).
  */
 export const getActivityById = cache(async (id: string): Promise<Activiteit | null> => {
-    return await getActivityByIdInternal(id);
+    // If ID is in format "841-website-launch", extract the numeric part
+    const cleanId = id.includes('-') ? id.split('-')[0] : id;
+    if (!/^\d+$/.test(cleanId)) return null;
+    return await getActivityByIdInternal(cleanId);
+});
+
+/**
+ * Fetches a single activity by custom URL slug or numeric ID.
+ */
+export const getActivityBySlug = cache(async (slug: string): Promise<Activiteit | null> => {
+    return await getActivityBySlugInternal(slug);
 });
 
 /**
@@ -322,11 +333,6 @@ export async function getSignupStatus(
 
             const krotoSignup = await fetchPubCrawlSignupByIdDb(signupId);
             if (krotoSignup) {
-                krotoSignup.amount_tickets = krotoSignup.tickets?.length || 1;
-                krotoSignup.event_id = { 
-                    id: krotoSignup.pub_crawl_event_id.id,
-                    name: krotoSignup.pub_crawl_event_id?.name || 'Pub Crawl' 
-                };
                 const status = krotoSignup.payment_status !== 'open' ? krotoSignup.payment_status : paymentStatus;
                 return { status: status as PaymentStatus, signup: krotoSignup };
             }
@@ -395,11 +401,6 @@ export async function getSignupStatus(
             if (krotoSignup) {
                 const isOwner = user?.id && krotoSignup.directus_relations === user.id;
                 if (isAdmin || isOwner) {
-                    krotoSignup.amount_tickets = krotoSignup.tickets?.length || 1;
-                    krotoSignup.event_id = { 
-                        id: krotoSignup.pub_crawl_event_id.id,
-                        name: krotoSignup.pub_crawl_event_id?.name || 'Pub Crawl' 
-                    };
                     return { status: (krotoSignup.payment_status as PaymentStatus) || paymentStatus, signup: krotoSignup };
                 }
                 return { status: 'unauthorized' };

@@ -185,7 +185,7 @@ export async function initiateKroegentochtPayment(formData: any) {
             directus_relations: userId || null,
         });
 
-        const ticketsTable = [];
+        const ticketsTable: any[] = [];
         let participantsData: { name: string, initial: string }[] = [];
         
         try {

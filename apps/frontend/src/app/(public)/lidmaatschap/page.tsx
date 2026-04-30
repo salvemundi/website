@@ -4,7 +4,7 @@ import MembershipFormIsland from '@/components/islands/membership/MembershipForm
 import MembershipStatusIsland, { type MembershipUserData } from '@/components/islands/account/MembershipStatusIsland';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
-import { fetchUserCommitteesDb } from '@/server/actions/user-db.utils';
+import { fetchUserCommitteesDb, type Committee } from '@/server/actions/user-db.utils';
 
 export const metadata = {
     title: 'Word Lid | Salve Mundi',
@@ -16,10 +16,10 @@ export const dynamic = 'force-dynamic';
 export default async function MembershipPage() {
     // NUCLEAR SSR: Fetch all data before flushing any part of the page content
     const session = await auth.api.getSession({ headers: await headers() });
-    const user = session?.user as any;
+    const user = session?.user as MembershipUserData | undefined;
     const isGuest = !user;
     
-    let committees = [];
+    let committees: Committee[] = [];
     if (user) {
         try {
             committees = await fetchUserCommitteesDb(user.id);

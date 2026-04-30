@@ -21,6 +21,18 @@ export const userProfileSchema = z.object({
 
 export type UserProfile = z.infer<typeof userProfileSchema>;
 
+import { type Committee } from '@/shared/lib/permissions';
+export type { Committee };
+
+export interface UserMetadata {
+    membership_status: string | null;
+    membership_expiry: string | null;
+    phone_number: string | null;
+    date_of_birth: string | null;
+    minecraft_username: string | null;
+    entra_id: string | null;
+}
+
 /**
  * Fetches a user profile directly from the database by email.
  */
@@ -56,7 +68,7 @@ export async function fetchUserProfileByEmailDb(email: string): Promise<UserProf
 /**
  * Fetches the committees a user belongs to.
  */
-export async function fetchUserCommitteesDb(userId: string): Promise<any[]> {
+export async function fetchUserCommitteesDb(userId: string): Promise<Committee[]> {
     const { rows } = await query(
         `SELECT c.id, c.name, c.azure_group_id, cm.is_leader
          FROM committees c
@@ -64,13 +76,13 @@ export async function fetchUserCommitteesDb(userId: string): Promise<any[]> {
          WHERE cm.user_id = $1`,
         [userId]
     );
-    return rows || [];
+    return rows as Committee[] || [];
 }
 
 /**
  * Fetches user metadata (membership, phone, dob) directly by ID.
  */
-export async function fetchUserMetadataDb(userId: string): Promise<any | null> {
+export async function fetchUserMetadataDb(userId: string): Promise<UserMetadata | null> {
     const { rows } = await query(
         `SELECT membership_status, membership_expiry, phone_number, date_of_birth, minecraft_username, entra_id
          FROM directus_users 
@@ -86,5 +98,5 @@ export async function fetchUserMetadataDb(userId: string): Promise<any | null> {
         ...raw,
         date_of_birth: raw.date_of_birth instanceof Date ? raw.date_of_birth.toISOString() : raw.date_of_birth,
         membership_expiry: raw.membership_expiry instanceof Date ? raw.membership_expiry.toISOString() : raw.membership_expiry,
-    };
+    } as UserMetadata;
 }

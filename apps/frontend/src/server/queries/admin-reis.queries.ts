@@ -21,7 +21,7 @@ export async function getTrips(): Promise<Trip[]> {
         if (!parsed.success) {
             
             // Fallback to sanitized raw if validation fails slightly, to keep UI working
-            return sanitized as any; 
+            return sanitized as Trip[]; 
         }
 
         return parsed.data;
