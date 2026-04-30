@@ -109,6 +109,27 @@ export function getSystemDirectus() {
                 if (urlStr.includes('/items/Stickers') && !tags.includes('stickers')) tags.push('stickers');
                 if (urlStr.includes('/items/feature_flags') && !tags.includes('feature_flags')) tags.push('feature_flags');
                 if ((urlStr.includes('/items/trip_signups') || urlStr.includes('/items/trips')) && !tags.includes('reis-status')) tags.push('reis-status');
+                
+                // Events tagging for targeted revalidation
+                if (urlStr.includes('/items/events')) {
+                    if (!tags.includes('events')) tags.push('events');
+                    
+                    // Try to extract ID for specific event revalidation
+                    // 1. Path based: /items/events/123
+                    const pathMatch = urlStr.match(/\/items\/events\/(\d+|[0-9a-f-]+)/);
+                    if (pathMatch) {
+                        const id = pathMatch[1];
+                        if (!tags.includes(`event_${id}`)) tags.push(`event_${id}`);
+                    } 
+                    // 2. Query based: ?filter[id][_eq]=123
+                    else if (urlStr.includes('filter') && urlStr.includes('id') && urlStr.includes('_eq')) {
+                        const filterMatch = urlStr.match(/filter\[id\]\[_eq\]=(\d+|[0-9a-f-]+)/);
+                        if (filterMatch) {
+                            const id = filterMatch[1];
+                            if (!tags.includes(`event_${id}`)) tags.push(`event_${id}`);
+                        }
+                    }
+                }
 
                 const requestInit: RequestInit = {
                     ...options,

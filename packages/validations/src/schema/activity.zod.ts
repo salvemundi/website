@@ -56,12 +56,12 @@ export const attendanceSchema = z.object({
 export const activityAdminSchema = z.object({
     name: z.string().min(1, 'Naam is verplicht'),
     description: z.string().min(1, 'Beschrijving is verplicht'),
-    description_logged_in: z.string().nullable().optional(),
+    description_logged_in: z.string().nullable().optional().transform(v => v === '' ? null : v),
     event_date: z.string().min(1, 'Startdatum is verplicht'),
-    event_time: z.string().nullable().optional(),
-    event_date_end: z.string().nullable().optional(),
-    event_time_end: z.string().nullable().optional(),
-    location: z.string().nullable().optional(),
+    event_time: z.string().nullable().optional().transform(v => v === '' ? null : v),
+    event_date_end: z.string().nullable().optional().transform(v => v === '' ? null : v),
+    event_time_end: z.string().nullable().optional().transform(v => v === '' ? null : v),
+    location: z.string().nullable().optional().transform(v => v === '' ? null : v),
     max_sign_ups: z.union([z.string(), z.number()]).nullable().optional().transform(v => {
         if (v === '' || v === undefined) return null;
         return typeof v === 'string' ? parseInt(v) : v;
@@ -74,16 +74,16 @@ export const activityAdminSchema = z.object({
         if (v === '' || v === undefined) return null;
         return typeof v === 'string' ? parseFloat(v) : v;
     }),
-    registration_deadline: z.string().nullable().optional(),
+    registration_deadline: z.string().nullable().optional().transform(v => v === '' ? null : v),
     committee_id: z.union([z.string(), z.number()]).nullable().optional().transform(v => {
         if (v === '' || v === undefined) return null;
         return typeof v === 'string' ? parseInt(v) : v;
     }),
-    contact: z.string().nullable().optional(),
+    contact: z.string().nullable().optional().transform(v => v === '' ? null : v),
     only_members: z.union([z.boolean(), z.string()]).optional().transform(v => v === true || v === 'on' || v === 'true'),
     status: z.enum(['published', 'draft', 'scheduled']).optional().default('published'),
-    publish_date: z.string().nullable().optional(),
-    custom_url: z.string().nullable().optional(),
+    publish_date: z.string().nullable().optional().transform(v => v === '' ? null : v),
+    custom_url: z.string().nullable().optional().transform(v => v === '' ? null : v),
 });
 
 export type ActivityAdmin = z.infer<typeof activityAdminSchema>;
