@@ -31,6 +31,8 @@ export async function getRedis() {
 
         redisClient = new Redis(redisUrl, {
             maxRetriesPerRequest: null,
+            connectTimeout: 500,
+            lazyConnect: true,
             retryStrategy: (times) => {
                 if (times > 10) {
                     

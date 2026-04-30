@@ -1,5 +1,6 @@
 import type { NextConfig } from 'next';
 import withSerwistInit from '@serwist/next';
+import withBundleAnalyzer from '@next/bundle-analyzer';
 
 const nextConfig: NextConfig = {
     output: 'standalone',
@@ -113,5 +114,7 @@ const withSerwist = withSerwistInit({
     swDest: 'public/sw.js',
 });
 
+const withAnalyzer = withBundleAnalyzer({ enabled: process.env.ANALYZE === 'true', openAnalyzer: true });
+
 // export default nextConfig;
-export default withSerwist(nextConfig);
+export default withAnalyzer(withSerwist(nextConfig));

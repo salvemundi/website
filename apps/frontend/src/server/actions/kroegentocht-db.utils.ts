@@ -22,7 +22,7 @@ export async function fetchPubCrawlEventsDb(): Promise<PubCrawlEvent[]> {
             []
         );
 
-        const items = (res.rows || []).map(raw => ({
+        const items = (res.rows || []).map((raw: any) => ({
             ...raw,
             date: raw.date instanceof Date ? raw.date.toISOString().split('T')[0] : raw.date,
             price: 1,

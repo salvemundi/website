@@ -15,7 +15,7 @@ export async function getMailSettings() {
         
         return {
             success: true,
-            settings: rows.map(r => ({
+            settings: rows.map((r: any) => ({
                 id: r.route_match,
                 name: r.name,
                 isActive: r.is_active,

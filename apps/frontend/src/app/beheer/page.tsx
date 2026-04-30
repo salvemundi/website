@@ -68,7 +68,6 @@ export default async function BeheerPage() {
         <AdminPageShell
             title="Beheer Dashboard"
             subtitle={`Welkom terug, ${access.user?.first_name || 'Admin'}. Beheer de vereniging vanaf één plek.`}
-            backHref="/beheer"
         >
             <div className="container mx-auto px-4 py-8 md:py-12 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700">
                 <div className={`grid grid-cols-1 ${isLimitedAccess ? 'lg:grid-cols-1 max-w-5xl mx-auto' : 'lg:grid-cols-12'} gap-8 md:gap-12 items-start`}>

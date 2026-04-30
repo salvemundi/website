@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import dynamic from 'next/dynamic';
 import { 
     Plus, 
     X, 
@@ -13,9 +14,15 @@ import {
     TrendingUp
 } from 'lucide-react';
 import { createStickerPublic, uploadFileAction } from '@/server/actions/stickers.actions';
-import StickerMap from '@/components/ui/maps/StickerMap';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
+
+const StickerMap = dynamic(() => import('@/components/ui/maps/StickerMap'), {
+    ssr: false,
+    loading: () => (
+        <div className="w-full rounded-[var(--radius-2xl)] overflow-hidden shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)]/30 bg-[var(--bg-soft)] animate-pulse" style={{ height: '600px' }} />
+    ),
+});
 
 interface StickerMapIslandProps {
     initialStickers: any[];
