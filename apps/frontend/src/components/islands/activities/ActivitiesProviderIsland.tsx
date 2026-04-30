@@ -67,11 +67,8 @@ export default function ActivitiesProviderIsland({
             });
         }
 
-        // Deduplicate: remove the featured upcoming event from the list (Legacy logic)
-        // We disable this if it's the only event to avoid the "Geen activiteiten gevonden" confusion.
-        if (upcomingEvent && !showPastActivities && filtered.length > 1) {
-            filtered = filtered.filter(e => e.id !== upcomingEvent.id);
-        }
+        // We no longer remove the featured upcoming event from the list.
+        // Users found it confusing when an activity was in the banner but missing from the list.
 
         return filtered.sort((a, b) => {
             const aDate = a.datum_start;

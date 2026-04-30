@@ -139,7 +139,7 @@ export function getSystemDirectus() {
                         tags,
                         revalidate: revalidate,
                     },
-                    signal: AbortSignal.timeout(15000),
+                    signal: AbortSignal.timeout(8000),
                 };
 
                 try {

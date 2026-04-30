@@ -173,7 +173,7 @@ export async function fetchUserEventSignupsDb(email: string): Promise<any[]> {
             ORDER BY e.event_date DESC
         `;
         const { rows } = await query(sql, [email]);
-        return rows.map(row => ({
+        return rows.map((row: any) => ({
             ...row,
             event_id: {
                 id: row.event_id,

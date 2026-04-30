@@ -3,33 +3,54 @@ import { Pool } from 'pg';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
-// Gebruik de interne Docker host en credentials van Directus/VPS
-const pool = new Pool({
+// Declare global variable to hold the pool instance across hot-reloads
+declare global {
+    var _pgPool: Pool | undefined;
+}
+
+const poolConfig = {
     user: process.env.DB_USER,
     host: process.env.DB_HOST!,
     database: process.env.DB_NAME,
     password: process.env.DB_PASSWORD,
     port: Number(process.env.DB_PORT) || 5432,
-});
+    max: 20, // Max 20 clients in the pool
+    idleTimeoutMillis: 30000,
+};
+
+// Use global cache in development to prevent connection exhaustion during hot-reloads
+export const pool = globalThis._pgPool || new Pool(poolConfig);
+
+if (!isProduction) {
+    globalThis._pgPool = pool;
+}
 
 pool.on('error', (err) => {
     
 });
 
-export async function query(text: string, params?: any[]) {
+export async function query(text: string, params?: any[], retries = 2): Promise<any> {
     const start = Date.now();
-    try {
-        const res = await pool.query(text, params);
-        const duration = Date.now() - start;
-        // console.debug(`[DB-Query] Executed in ${duration}ms`, { text, rows: res.rowCount });
-        return res;
-    } catch (e) {
-        console.error('[DB-Query Error]', {
-            message: e instanceof Error ? e.message : 'Unknown error',
-            text,
-            params,
-        });
-        throw e;
+    for (let i = 0; i <= retries; i++) {
+        try {
+            const res = await pool.query(text, params);
+            const duration = Date.now() - start;
+            // console.debug(`[DB-Query] Executed in ${duration}ms`, { text, rows: res.rowCount });
+            return res;
+        } catch (e: any) {
+            const isConnectionError = e.message?.includes('Connection terminated unexpectedly') || e.code === 'ECONNRESET';
+            if (isConnectionError && i < retries) {
+                console.warn(`[DB-Query] Connection error, retrying... (${i + 1}/${retries})`);
+                await new Promise(resolve => setTimeout(resolve, 500 * (i + 1)));
+                continue;
+            }
+            console.error('[DB-Query Error]', {
+                message: e instanceof Error ? e.message : 'Unknown error',
+                text,
+                params,
+            });
+            throw e;
+        }
     }
 }
 

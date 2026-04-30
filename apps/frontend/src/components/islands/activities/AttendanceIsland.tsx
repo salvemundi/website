@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import React, { useState, useEffect } from 'react';
 import { getActivitySignups } from '@/server/actions/activiteit-actions';
 import { toggleCheckInAction } from '@/server/actions/aanmeldingen.actions';
 import { Search, UserCheck, UserX, QrCode, Loader2, RefreshCw } from 'lucide-react';
@@ -42,9 +41,12 @@ export default function AttendanceIsland({ eventId, eventName, initialSignups = 
         }
     };
 
-    const startScanner = () => {
+    const startScanner = async () => {
         setScanning(true);
         setScanResult(null);
+        
+        // Dynamically import the scanner library only when needed
+        const { Html5QrcodeScanner } = await import('html5-qrcode');
         
         // Wait for element to be in DOM
         setTimeout(() => {

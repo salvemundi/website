@@ -1,4 +1,4 @@
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 import type { Metadata } from 'next';
 import ContactInfoCard from '@/components/ui/social/ContactInfoCard';
 import { getDocumenten } from '@/server/actions/website.actions';
