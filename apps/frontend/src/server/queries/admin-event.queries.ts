@@ -45,6 +45,7 @@ export async function getActivitiesInternal(onlyPublished = true): Promise<Activ
             contact: item.contact ?? null,
             event_time: item.event_time ?? null,
             event_time_end: item.event_time_end ?? null,
+            committee_id: item.committee_id ? Number(item.committee_id) : null,
             committee_name: item.committee_name || null,
             custom_url: item.custom_url || null,
         };
@@ -97,6 +98,7 @@ export async function getActivityByIdInternal(id: string): Promise<Activiteit | 
         contact: item.contact ?? null,
         event_time: item.event_time ?? null,
         event_time_end: item.event_time_end ?? null,
+        committee_id: item.committee_id ? Number(item.committee_id) : null,
         committee_name: item.committee_name || null,
         custom_url: item.custom_url || null,
     };
