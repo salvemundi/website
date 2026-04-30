@@ -80,6 +80,20 @@ export async function createActivityAction(prevState: any, formData: FormData): 
     }
 
     const data = validated.data;
+
+    // Check for duplicate name (case-insensitive)
+    const { query: dbQuery } = await import("@/lib/database");
+    const nameCheck = await dbQuery(
+        "SELECT id FROM events WHERE LOWER(name) = LOWER($1) LIMIT 1",
+        [data.name]
+    );
+    if (nameCheck.rows.length > 0) {
+        return { 
+            success: false, 
+            error: `Er bestaat al een activiteit met de naam "${data.name}". Kies een unieke naam.` 
+        };
+    }
+
     const directusPayload: Record<string, any> = {
         ...data,
         status: data.status === 'scheduled' ? 'published' : data.status,
@@ -152,6 +166,22 @@ export async function updateActivityAction(eventId: number, prevState: any, form
         }
 
         const data = validated.data;
+
+        // Check for duplicate name if changed
+        if (data.name.toLowerCase() !== oldData.name?.toLowerCase()) {
+            const { query: dbQuery } = await import("@/lib/database");
+            const nameCheck = await dbQuery(
+                "SELECT id FROM events WHERE LOWER(name) = LOWER($1) AND id != $2 LIMIT 1",
+                [data.name, eventId]
+            );
+            if (nameCheck.rows.length > 0) {
+                return { 
+                    success: false, 
+                    error: `Er bestaat al een andere activiteit met de naam "${data.name}".` 
+                };
+            }
+        }
+
         const directusPayload: Record<string, any> = {
             ...data,
             status: data.status === 'scheduled' ? 'published' : data.status,
