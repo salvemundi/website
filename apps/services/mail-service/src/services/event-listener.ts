@@ -15,9 +15,10 @@ export class EventListenerService {
 
         try {
             await redis.xgroup('CREATE', this.STREAM_KEY, this.GROUP_NAME, '0', 'MKSTREAM');
-        } catch (err: any) {
-            if (!err.message.includes('BUSYGROUP')) {
-                console.error('[MailEventListener] Error creating consumer group:', err);
+        } catch (err) {
+            const error = err instanceof Error ? err : new Error(String(err));
+            if (!error.message.includes('BUSYGROUP')) {
+                console.error('[MailEventListener] Error creating consumer group:', error);
             }
         }
 
@@ -27,12 +28,12 @@ export class EventListenerService {
                     'GROUP', this.GROUP_NAME, this.CONSUMER_NAME,
                     'COUNT', 1, 'BLOCK', 5000,
                     'STREAMS', this.STREAM_KEY, '>'
-                )) as any[];
+                )) as [string, [string, string[]][]][];
 
                 if (response && response.length > 0) {
                     for (const [stream, messages] of response) {
                         for (const [id, fields] of messages) {
-                            const data: any = {};
+                            const data: Record<string, string> = {};
                             for (let i = 0; i < fields.length; i += 2) {
                                 data[fields[i]] = fields[i + 1];
                             }
@@ -42,8 +43,9 @@ export class EventListenerService {
                         }
                     }
                 }
-            } catch (err: any) {
-                console.error('[MailEventListener] Loop Error:', err.message);
+            } catch (err) {
+                const error = err instanceof Error ? err : new Error(String(err));
+                console.error('[MailEventListener] Loop Error:', error.message);
                 await new Promise(resolve => setTimeout(resolve, 5000));
             }
         }
@@ -57,7 +59,7 @@ export class EventListenerService {
         expectedCount: number,
         maxAttempts = 5,
         delayMs = 1000
-    ): Promise<any[]> {
+    ): Promise<Record<string, unknown>[]> {
         for (let attempt = 1; attempt <= maxAttempts; attempt++) {
             try {
                 const res = await query(
@@ -89,7 +91,7 @@ export class EventListenerService {
                 `${directusUrl}/users?filter[email][_eq]=${encodeURIComponent(email)}&fields=id&limit=1`,
                 { headers: { 'Authorization': `Bearer ${directusToken}` } }
             );
-            const json: any = await res.json();
+            const json = await res.json() as { data: unknown[] };
             return (json?.data?.length ?? 0) > 0;
         } catch {
             return false;
@@ -113,8 +115,12 @@ export class EventListenerService {
         }
     }
 
-    private static async handleEvent(redis: Redis, message: any) {
+    private static async handleEvent(redis: Redis, message: { id: string; data: Record<string, string> }) {
         try {
+            if (!message.data.payload) {
+                console.warn(`[MailEventListener] Message ${message.id} missing payload`);
+                return;
+            }
             const payload = JSON.parse(message.data.payload);
             console.log(`[MailEventListener] Received event: ${payload.event}`);
 
@@ -125,7 +131,7 @@ export class EventListenerService {
                 const directusToken = process.env.DIRECTUS_STATIC_TOKEN!;
 
                 let templateId = 'payment_confirmed';
-                let mailData: any = {
+                let mailData: Record<string, unknown> = {
                     paymentId: data.paymentId,
                     userId: data.userId,
                     registrationId: data.registrationId,
@@ -142,7 +148,7 @@ export class EventListenerService {
                 // Build confirmation URL if registrationId and accessToken are present
                 const baseUrl = process.env.PUBLIC_URL || 'https://salvemundi.nl';
                 if (data.registrationId && data.accessToken) {
-                    const path = data.registrationType === 'membership' || (data as any).isContribution ? '/lidmaatschap/bevestiging' :
+                    const path = data.registrationType === 'membership' || (data as { isContribution?: boolean }).isContribution ? '/lidmaatschap/bevestiging' :
                                  data.registrationType === 'trip_signup' ? '/reis/bevestiging' :
                                  '/activiteiten/bevestiging';
                     
@@ -150,7 +156,7 @@ export class EventListenerService {
                 }
 
                 // Handle Membership (New vs Renewal)
-                if ((data as any).isContribution || data.registrationType === 'membership') {
+                if ((data as { isContribution?: boolean }).isContribution || data.registrationType === 'membership') {
                     if (data.isNewMember || !data.userId) {
                         console.log(`[MailEventListener] Skipping welcome_payment for member ${data.email}. Handled by provisioning service or missing userId.`);
                         return;
@@ -161,7 +167,7 @@ export class EventListenerService {
                         const userRes = await fetch(`${directusUrl}/users/${data.userId}?fields=first_name,membership_expiry`, {
                             headers: { 'Authorization': `Bearer ${directusToken}` }
                         });
-                        const userData: any = await userRes.json();
+                        const userData = await userRes.json() as { data: { first_name?: string; membership_expiry?: string } };
                         mailData.firstName = userData?.data?.first_name || data.firstName || 'Lid';
                         mailData.expiryDate = userData?.data?.membership_expiry || 'Onbekend';
                         mailData.amount = '20.00';
@@ -182,7 +188,7 @@ export class EventListenerService {
                             `${directusUrl}/items/pub_crawl_signups/${data.registrationId}?fields=name,email,amount_tickets,pub_crawl_event_id.name`,
                             { headers: { 'Authorization': `Bearer ${directusToken}` } }
                         );
-                        const signupJson: any = await signupRes.json();
+                        const signupJson = await signupRes.json() as { data: { name?: string; email?: string; amount_tickets?: number; pub_crawl_event_id?: { name?: string } } };
                         const signup = signupJson?.data;
 
                         const signupName = signup?.name || 'Deelnemer';
@@ -193,9 +199,9 @@ export class EventListenerService {
                         const rawTickets = await this.fetchPubCrawlTicketsDb(data.registrationId, amountTickets);
 
                         // Generate QR code data URLs for each ticket
-                        const tickets = await Promise.all(rawTickets.map(async (t: any) => ({
+                        const tickets = await Promise.all(rawTickets.map(async (t) => ({
                             ...t,
-                            qrDataUrl: t.qr_token ? await this.generateQrDataUrl(t.qr_token) : ''
+                            qrDataUrl: t.qr_token ? await this.generateQrDataUrl(String(t.qr_token)) : ''
                         })));
 
                         // Check if this email belongs to a registered user
@@ -230,31 +236,31 @@ export class EventListenerService {
                             const signupRes = await fetch(`${directusUrl}/items/trip_signups/${data.registrationId}?fields=trip_id,first_name`, {
                                 headers: { 'Authorization': `Bearer ${directusToken}` }
                             });
-                            const signupData: any = await signupRes.json();
-                            const tripId = signupData?.data?.trip_id;
-                            mailData.firstName = signupData?.data?.first_name;
+                            const signupJson = await signupRes.json() as { data: { trip_id?: string; first_name?: string } };
+                            const tripId = signupJson?.data?.trip_id;
+                            mailData.firstName = signupJson?.data?.first_name;
 
                             if (tripId) {
                                 const tripRes = await fetch(`${directusUrl}/items/trips/${tripId}?fields=name`, {
                                     headers: { 'Authorization': `Bearer ${directusToken}` }
                                 });
-                                const tripData: any = await tripRes.json();
-                                mailData.eventName = tripData?.data?.name || 'Reis';
+                                const tripJson = await tripRes.json() as { data: { name?: string } };
+                                mailData.eventName = tripJson?.data?.name || 'Reis';
                             }
                         } else if (data.registrationType === 'event_signup' && data.registrationId) {
                             const signupRes = await fetch(`${directusUrl}/items/event_signups/${data.registrationId}?fields=event_id,first_name`, {
                                 headers: { 'Authorization': `Bearer ${directusToken}` }
                             });
-                            const signupData: any = await signupRes.json();
-                            const eventId = signupData?.data?.event_id;
-                            mailData.firstName = signupData?.data?.first_name;
+                            const signupJson = await signupRes.json() as { data: { event_id?: number; first_name?: string } };
+                            const eventId = signupJson?.data?.event_id;
+                            mailData.firstName = signupJson?.data?.first_name;
 
                             if (eventId) {
                                 const eventRes = await fetch(`${directusUrl}/items/events/${eventId}?fields=name`, {
                                     headers: { 'Authorization': `Bearer ${directusToken}` }
                                 });
-                                const eventData: any = await eventRes.json();
-                                mailData.eventName = eventData?.data?.name || 'Evenement';
+                                const eventJson = await eventRes.json() as { data: { name?: string } };
+                                mailData.eventName = eventJson?.data?.name || 'Evenement';
                             }
 
                             // If qrToken is missing from event and it's an event_signup, try to fetch it
@@ -263,7 +269,7 @@ export class EventListenerService {
                                     const qrRes = await fetch(`${directusUrl}/items/event_signups/${data.registrationId}?fields=qr_token`, {
                                         headers: { 'Authorization': `Bearer ${directusToken}` }
                                     });
-                                    const qrJson: any = await qrRes.json();
+                                    const qrJson = await qrRes.json() as { data: { qr_token?: string } };
                                     mailData.qrToken = qrJson?.data?.qr_token;
                                 } catch (qrErr) {
                                     console.error('[MailEventListener] Failed to fetch qr_token:', qrErr);
@@ -305,8 +311,9 @@ export class EventListenerService {
 
                 console.log(`[MailEventListener] Queued activity ticket mail for ${data.email}`);
             }
-        } catch (err: any) {
-            console.error('[MailEventListener] Error handling event:', err.message);
+        } catch (err) {
+            const error = err instanceof Error ? err : new Error(String(err));
+            console.error('[MailEventListener] Error handling event:', error.message);
         }
     }
 

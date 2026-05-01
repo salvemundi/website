@@ -33,30 +33,46 @@ export async function GET(
     const { search } = new URL(request.url);
     const url = `${directusUrl}/assets/${id}${search}`;
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
     try {
+        console.log(`[AssetProxy] Fetching: ${url}`);
         const res = await fetchWithRetry(url, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
-            signal: AbortSignal.timeout(15000), // 15s timeout
+            signal: controller.signal,
+            cache: 'no-store',
         });
 
         if (!res.ok) {
+            console.error(`[AssetProxy] Directus error for ${id}: ${res.status}`);
             return new NextResponse(null, { status: res.status });
         }
 
         const contentType = res.headers.get('content-type') || 'application/octet-stream';
         
-        // STREAMING: In plaats van de hele buffer in het geheugen te laden (.arrayBuffer()),
-        // streamen we de body direct door naar de client. Dit is sneller en voorkomt "half-loading".
-        return new NextResponse(res.body, {
+        // Use arrayBuffer() instead of streaming body to resolve Node.js TransformStream bug
+        // (TypeError: controller[kState].transformAlgorithm is not a function)
+        const arrayBuffer = await res.arrayBuffer();
+
+        if (arrayBuffer.byteLength === 0) {
+            console.warn(`[AssetProxy] Empty buffer for ${id}`);
+            return new NextResponse(null, { status: 404 });
+        }
+
+        return new NextResponse(Buffer.from(arrayBuffer), {
+            status: 200,
             headers: {
                 'Content-Type': contentType,
-                'Cache-Control': 'public, max-age=31536000, immutable', // Assets in Directus zijn immutable bij ID
+                'Cache-Control': 'public, max-age=31536000, immutable',
             },
         });
     } catch (error: any) {
-        console.error(`[AssetProxy] Error fetching ${id}:`, error.message);
+        console.error(`[AssetProxy] Critical error fetching ${id}:`, error.message);
         return new NextResponse(null, { status: 500 });
+    } finally {
+        clearTimeout(timeoutId);
     }
 }

@@ -11,14 +11,17 @@ export const metadata: Metadata = {
     description: 'Bekijk alle komende en afgelopen activiteiten van studievereniging Salve Mundi.',
 };
 
+import type { Session } from 'better-auth';
+import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
+
 // Server component to fetch banner data
-async function ActivitiesBannerData({ session, events, serverTime }: { session: any, events: any[], serverTime: string }) {
+async function ActivitiesBannerData({ events, serverTime }: { events: Activiteit[], serverTime: string }) {
     return <ActivitiesBannerIsland events={events} serverTime={serverTime} />;
 }
 
 // Server component to fetch list data
-async function ActivitiesListData({ session, events, serverTime }: { session: any, events: any[], serverTime: string }) {
-    return <ActivitiesProviderIsland events={events as any} serverTime={serverTime} />;
+async function ActivitiesListData({ events, serverTime }: { events: (Activiteit & { is_signed_up?: boolean })[], serverTime: string }) {
+    return <ActivitiesProviderIsland events={events} serverTime={serverTime} />;
 }
 
 export default async function ActivitiesPage() {
@@ -35,11 +38,11 @@ export default async function ActivitiesPage() {
             <h1 className="sr-only">Activiteiten Salve Mundi</h1>
 
             <div className="w-full px-4 py-8 md:py-16 flex justify-center">
-                <ActivitiesBannerData session={session} events={events} serverTime={serverTime} />
+                <ActivitiesBannerData events={events} serverTime={serverTime} />
             </div>
 
             <main className="w-full px-4 py-8 sm:py-10 md:py-12 max-w-7xl mx-auto">
-                <ActivitiesListData session={session} events={events} serverTime={serverTime} />
+                <ActivitiesListData events={events} serverTime={serverTime} />
             </main>
         </div>
     );

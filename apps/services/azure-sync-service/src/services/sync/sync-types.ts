@@ -1,4 +1,5 @@
 import { Redis } from 'ioredis';
+import { Committee, DirectusUser, CommitteeMember } from '../../types/schema.js';
 
 export interface SyncStatus {
     jobId?: string;
@@ -17,9 +18,9 @@ export interface SyncStatus {
     errors: { email: string; message: string; timestamp: string; stack?: string }[];
     warnings: { email: string; message: string }[];
     missingData: { email: string; reason: string }[];
-    successfulUsers: { email: string; changes?: { field: string; old: any; new: any }[] }[];
+    successfulUsers: { email: string; changes?: { field: string; old: unknown; new: unknown }[] }[];
     excludedUsers: { email: string }[];
-    createdUsers: { email: string; changes?: { field: string; old: any; new: any }[] }[];
+    createdUsers: { email: string; changes?: { field: string; old: unknown; new: unknown }[] }[];
     startTime?: string;
     endTime?: string;
     lastHeartbeat?: string;
@@ -39,10 +40,10 @@ export interface SyncContext {
     status: SyncStatus;
     options: SyncOptions;
     token: string;
-    committeeCache: Map<string, any>; // azure_group_id -> committee
+    committeeCache: Map<string, Committee>; // azure_group_id -> committee
     ownerCache: Map<string, string[]>; // azure_group_id -> owner_ids[]
-    userCacheByEntra: Map<string, any>;
-    membershipCache: Map<string, any[]>; // user_id -> membership[]
+    userCacheByEntra: Map<string, DirectusUser>;
+    membershipCache: Map<string, CommitteeMember[]>; // user_id -> membership[]
     membershipMap?: Map<string, Map<number, boolean>>;
     // mainMembershipState: entrapId -> Set of active group IDs the user is in
     mainMembershipState: Map<string, Set<string>>; 

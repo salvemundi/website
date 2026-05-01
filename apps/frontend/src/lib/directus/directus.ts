@@ -58,12 +58,13 @@ export async function fetchWithRetry(
             }
             
             throw new Error(`Server responded with ${response.status}`);
-        } catch (err: any) {
+        } catch (err) {
+            const error = err instanceof Error ? err : new Error(String(err));
             const isLastRetry = i === retries;
-            const isTimeout = err.name === 'TimeoutError' || err.name === 'AbortError' || err.message?.includes('timeout');
+            const isTimeout = error.name === 'TimeoutError' || error.name === 'AbortError' || error.message?.includes('timeout');
             
             // We only retry on timeouts or server errors
-            if (isLastRetry || (!isTimeout && !err.message?.includes('Server responded with 5'))) {
+            if (isLastRetry || (!isTimeout && !error.message?.includes('Server responded with 5'))) {
                 throw err;
             }
             
@@ -84,7 +85,7 @@ export function getSystemDirectus() {
             fetch: async (url, options) => {
                 const urlStr = url.toString();
                 
-                const nextOptions = (options as any)?.next || {};
+                const nextOptions = (options as RequestInit & { next?: { revalidate?: number | false; tags?: string[] } })?.next || {};
                 const tags: string[] = nextOptions.tags || [];
 
                 // ─── TIERED REVALIDATION STRATEGY ────────────────────────────────
@@ -114,14 +115,11 @@ export function getSystemDirectus() {
                 if (urlStr.includes('/items/events')) {
                     if (!tags.includes('events')) tags.push('events');
                     
-                    // Try to extract ID for specific event revalidation
-                    // 1. Path based: /items/events/123
                     const pathMatch = urlStr.match(/\/items\/events\/(\d+|[0-9a-f-]+)/);
                     if (pathMatch) {
                         const id = pathMatch[1];
                         if (!tags.includes(`event_${id}`)) tags.push(`event_${id}`);
                     } 
-                    // 2. Query based: ?filter[id][_eq]=123
                     else if (urlStr.includes('filter') && urlStr.includes('id') && urlStr.includes('_eq')) {
                         const filterMatch = urlStr.match(/filter\[id\]\[_eq\]=(\d+|[0-9a-f-]+)/);
                         if (filterMatch) {
@@ -131,6 +129,9 @@ export function getSystemDirectus() {
                     }
                 }
 
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000);
+
                 const requestInit: RequestInit = {
                     ...options,
                     cache: revalidate === 0 ? 'no-store' : 'force-cache',
@@ -139,7 +140,7 @@ export function getSystemDirectus() {
                         tags,
                         revalidate: revalidate,
                     },
-                    signal: AbortSignal.timeout(8000),
+                    signal: controller.signal,
                 };
 
                 try {
@@ -157,8 +158,9 @@ export function getSystemDirectus() {
                     }
                     
                     return response;
-                } catch (err: any) {
-                    if (err.name === 'TimeoutError' || err.name === 'AbortError' || err.message?.includes('timeout')) {
+                } catch (err) {
+                    const error = err instanceof Error ? err : new Error(String(err));
+                    if (error.name === 'TimeoutError' || error.name === 'AbortError' || error.message?.includes('timeout')) {
                         const error = new DirectusError(
                             `Service timeout (15s) for ${urlStr}. The service might be under heavy load or unreachable via VPN.`,
                             504,
@@ -171,14 +173,17 @@ export function getSystemDirectus() {
                     
                     if (err instanceof DirectusError) throw err;
                     
-                    const error = new DirectusError(
-                        err.message || 'Unknown network error during Directus fetch',
+                    const errorMsg = err instanceof Error ? err.message : String(err);
+                    const errorObj = new DirectusError(
+                        errorMsg || 'Unknown network error during Directus fetch',
                         500,
                         'FETCH_ERROR',
                         urlStr
                     );
-                    await logDirectusError(error);
-                    throw error;
+                    await logDirectusError(errorObj);
+                    throw errorObj;
+                } finally {
+                    clearTimeout(timeoutId);
                 }
             }
         }

@@ -22,7 +22,7 @@ export async function getActivitiesInternal(onlyPublished = true): Promise<Activ
     const { rows } = await query(sql);
 
     const mappedData = rows.map((item) => {
-        const safeISO = (d: any) => {
+        const safeISO = (d: string | Date | null | undefined) => {
             if (!d) return null;
             const date = d instanceof Date ? d : new Date(d);
             return isNaN(date.getTime()) ? null : date.toISOString();
@@ -76,7 +76,7 @@ export async function getActivityByIdInternal(id: string): Promise<Activiteit | 
     const item = rows?.[0];
     if (!item) return null;
 
-    const safeISO = (d: any) => {
+    const safeISO = (d: string | Date | null | undefined) => {
         if (!d) return null;
         const date = d instanceof Date ? d : new Date(d);
         return isNaN(date.getTime()) ? null : date.toISOString();
@@ -151,9 +151,9 @@ export async function getActivitySignupsInternal(eventId: string): Promise<DbEve
  * Fetch all activities with their valid signup counts using SQL.
  * High performance alternative to Directus aggregates.
  */
-export async function getActivitiesWithSignupCountsInternal(search?: string, filter: 'all' | 'upcoming' | 'past' = 'all'): Promise<any[]> {
+export async function getActivitiesWithSignupCountsInternal(search?: string, filter: 'all' | 'upcoming' | 'past' = 'all'): Promise<(Activiteit & { signup_count: number })[]> {
     let whereClause = "WHERE 1=1";
-    const params: any[] = [];
+    const params: (string | number | boolean | null)[] = [];
     
     if (filter === 'upcoming') {
         whereClause += " AND e.event_date >= NOW()";

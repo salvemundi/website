@@ -1,4 +1,5 @@
 import { GraphService } from '../graph.service.js';
+import { Committee, DirectusUser, CommitteeMember } from '../../types/schema.js';
 import { DirectusService } from '../directus.service.js';
 import { TokenService } from '../token.service.js';
 import { Redis } from 'ioredis';
@@ -64,7 +65,7 @@ export class SyncJob {
                 }
             }
 
-            const committeeCache = new Map<string, any>();
+            const committeeCache = new Map<string, Committee>();
             const relevantAzureGroupIds: string[] = [];
             for (const c of committees) {
                 if (c.azure_group_id) {
@@ -88,10 +89,10 @@ export class SyncJob {
                 }
             }
 
-            const userCacheByEntra = new Map<string, any>();
+            const userCacheByEntra = new Map<string, DirectusUser>();
             for (const u of allLeden) if (u.entra_id) userCacheByEntra.set(u.entra_id, u);
 
-            const membershipCache = new Map<string, any[]>();
+            const membershipCache = new Map<string, CommitteeMember[]>();
             for (const m of allMemberships) {
                 const list = membershipCache.get(m.user_id) || [];
                 list.push(m);
@@ -147,13 +148,14 @@ export class SyncJob {
                         try {
                             await SyncProcessor.syncUserOptimized(ctx, aUser);
                             status.processed++;
-                        } catch (err: any) {
+                        } catch (err) {
+                            const error = err instanceof Error ? err : new Error(String(err));
                             status.errorCount++; status.processed++;
                             status.errors.push({ 
                                 email, 
-                                message: err.message, 
+                                message: error.message, 
                                 timestamp: new Date().toISOString(),
-                                stack: err.stack
+                                stack: error.stack
                             });
                         }
                     }
@@ -176,11 +178,12 @@ export class SyncJob {
             }
 
             console.log(`[SYNC] [${jobId}] Bulk sync finished successfully.`);
-        } catch (error: any) {
-            console.error(`[SYNC] [${jobId}] Fatal error:`, error);
+        } catch (error) {
+            const err = error instanceof Error ? error : new Error(String(error));
+            console.error(`[SYNC] [${jobId}] Fatal error:`, err);
             const currentStatus = await getSyncStatus(redis);
             currentStatus.active = false; currentStatus.status = 'failed'; currentStatus.endTime = new Date().toISOString();
-            currentStatus.fatalError = { message: error.message, stack: error.stack };
+            currentStatus.fatalError = { message: err.message, stack: err.stack };
             await persistSyncStatus(redis, currentStatus);
         }
     }
@@ -199,16 +202,16 @@ export class SyncJob {
         ]);
         console.log(`[SYNC] [single-${entraId}] Pre-fetched Directus data in ${Date.now() - startTime}ms`);
 
-        const committeeCache = new Map<string, any>();
-        for (const c of committees) if (c.azure_group_id) committeeCache.set(c.azure_group_id, c);
+        const committeeCache = new Map<string, Committee>();
+        for (const c of committees) if (c.azure_group_id) committeeCache.set(c.azure_group_id, c as Committee);
 
-        const userCacheByEntra = new Map<string, any>();
-        for (const u of allLeden) if (u.entra_id) userCacheByEntra.set(u.entra_id, u);
+        const userCacheByEntra = new Map<string, DirectusUser>();
+        for (const u of allLeden) if (u.entra_id) userCacheByEntra.set(u.entra_id, u as DirectusUser);
 
-        const membershipCache = new Map<string, any[]>();
+        const membershipCache = new Map<string, CommitteeMember[]>();
         for (const m of allMemberships) {
             const list = membershipCache.get(m.user_id) || [];
-            list.push(m);
+            list.push(m as CommitteeMember);
             membershipCache.set(m.user_id, list);
         }
 
@@ -259,17 +262,18 @@ export class SyncJob {
             await SyncProcessor.syncUserOptimized(ctx, aUser);
             status.processed = 1; status.active = false; status.status = 'completed'; status.endTime = new Date().toISOString();
             await persistSyncStatus(redis, status, true);
-        } catch (error: any) {
+        } catch (error) {
+            const err = error instanceof Error ? error : new Error(String(error));
             status.active = false; status.status = 'failed'; status.endTime = new Date().toISOString(); status.errorCount = 1;
             status.errors.push({ 
                 email: aUser.mail || aUser.userPrincipalName, 
-                message: error.message, 
+                message: err.message, 
                 timestamp: new Date().toISOString(),
-                stack: error.stack 
+                stack: err.stack 
             });
-            status.fatalError = { message: error.message, stack: error.stack };
+            status.fatalError = { message: err.message, stack: err.stack };
             await persistSyncStatus(redis, status, true);
-            throw error;
+            throw err;
         }
     }
 }

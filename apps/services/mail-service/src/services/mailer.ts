@@ -29,7 +29,7 @@ export class MailerService {
     /**
      * Renders a Handlebars template with the provided data.
      */
-    private static async renderTemplate(templateId: string, data: any): Promise<string> {
+    private static async renderTemplate(templateId: string, data: Record<string, unknown>): Promise<string> {
         const templatePath = path.join(__dirname, '../templates', `${templateId}.hbs`);
         
         if (!fs.existsSync(templatePath)) {
@@ -44,7 +44,7 @@ export class MailerService {
     /**
      * Sends an email via Microsoft Graph API.
      */
-    static async send(redis: Redis, to: string, templateId: string, data: any): Promise<boolean> {
+    static async send(redis: Redis, to: string, templateId: string, data: Record<string, unknown>): Promise<boolean> {
         try {
             console.log(`[MailerService] Preparing ${templateId} for ${to}...`);
 
@@ -114,9 +114,10 @@ export class MailerService {
 
             console.log(`[MailerService] Successfully dispatched to ${to}`);
             return true;
-        } catch (error: any) {
-            console.error(`[MailerService] Failed to send email:`, error.message);
-            throw error;
+        } catch (error) {
+            const err = error instanceof Error ? error : new Error(String(error));
+            console.error(`[MailerService] Failed to send email:`, err.message);
+            throw err;
         }
     }
 }

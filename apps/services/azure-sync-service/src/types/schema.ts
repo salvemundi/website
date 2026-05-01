@@ -37,9 +37,15 @@ export interface DirectusUser {
     first_name?: string;
     last_name?: string;
     entra_id?: string;
+    status?: string;
+    avatar?: string | null;
+    phone_number?: string | null;
+    membership_status?: string | null;
     membership_expiry?: string | null;
     date_of_birth?: string | null;
     originele_betaaldatum?: string | null;
+    text_direction?: string;
+    admin_access?: boolean;
 }
 
 export interface Committee {
@@ -53,5 +59,5 @@ export interface CommitteeMember {
     user_id: string;
     committee_id: number;
     is_leader: boolean;
-    is_visible: boolean;
+    is_visible?: boolean;
 }

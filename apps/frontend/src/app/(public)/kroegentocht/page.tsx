@@ -1,4 +1,5 @@
 import { getKroegentochtEvent, getKroegentochtTickets } from '@/server/actions/kroegentocht.actions';
+import { type PubCrawlTicket } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import KroegentochtFormIsland from '@/components/islands/kroegentocht/KroegentochtFormIsland';
@@ -152,7 +153,7 @@ export default async function KroegentochtPage() {
     const isAuthenticated = !!session;
 
     // NUCLEAR SSR: Fetch tickets if authenticated
-    let tickets: any[] = [];
+    let tickets: PubCrawlTicket[] = [];
     if (isAuthenticated) {
         tickets = await getKroegentochtTickets(session.user.email!).catch(() => []);
     }

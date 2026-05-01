@@ -19,15 +19,14 @@ const poolConfig = {
 };
 
 // Use global cache in development to prevent connection exhaustion during hot-reloads
-export const pool = globalThis._pgPool || new Pool(poolConfig);
-
-if (!isProduction) {
-    globalThis._pgPool = pool;
+if (!globalThis._pgPool) {
+    globalThis._pgPool = new Pool(poolConfig);
+    globalThis._pgPool.on('error', (err) => {
+        console.error('[DB-Pool] Unexpected error on idle client', err);
+    });
 }
 
-pool.on('error', (err) => {
-    
-});
+export const pool = globalThis._pgPool;
 
 export async function query(text: string, params?: any[], retries = 2): Promise<any> {
     const start = Date.now();
