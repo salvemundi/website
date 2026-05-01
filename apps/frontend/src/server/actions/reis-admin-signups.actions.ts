@@ -128,7 +128,7 @@ export async function deleteTripSignup(signupId: number) {
     }
 }
 
-export async function updateTripSignup(prevState: any, formData: FormData) {
+export async function updateTripSignup(prevState: unknown, formData: FormData) {
     await requireReisAdmin();
 
     const id = parseInt(formData.get('id') as string);

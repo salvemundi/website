@@ -37,7 +37,7 @@ import {
 import { Pool } from "pg";
 import { createDirectus, staticToken, rest } from "@directus/sdk";
 import { AdminResource } from '@/shared/lib/permissions-config';
-import { getPermissions, hasPermission, type UserPermissions } from '@/shared/lib/permissions';
+import { getPermissions, hasPermission, type UserPermissions, type Committee } from '@/shared/lib/permissions';
 import { getRedis } from "@/server/auth/redis-client";
 import { getComputedCouponStatus } from "@/lib/coupons";
 import { fetchUserMetadataDb, fetchUserCommitteesDb } from "./user-db.utils";
@@ -62,7 +62,7 @@ export async function checkAdminAccess() {
         return { isAuthorized: false, user: null, isIct: false, impersonation: null };
     }
 
-    const user = session.user as any;
+    const user = session.user as DirectusUser & { id: string, name?: string | null, committees?: Committee[], membership_status?: string | null, membership_expiry?: string | null, minecraft_username?: string | null, phone_number?: string | null, date_of_birth?: string | null, entra_id?: string | null, isICT?: boolean };
 
     try {
         const [metadata, committees] = await Promise.all([
@@ -87,14 +87,14 @@ export async function checkAdminAccess() {
             // Store granular permissions in the user object for convenience
             Object.assign(user, perms);
         }
-    } catch (e: any) {
-        
+    } catch (e: unknown) {
+        console.error('[AdminActions] Failed to enrich user metadata:', e);
     }
 
     if (!user.name && (user.first_name || user.last_name)) {
         user.name = `${user.first_name || ''} ${user.last_name || ''}`.trim();
     }
-    const impersonatedBy = (session as any).impersonatedBy || null;
+    const impersonatedBy = (session as { impersonatedBy?: { id: string, name: string, email: string, isNormallyAdmin: boolean } }).impersonatedBy || null;
 
     const perms = getPermissions(user.committees || []);
     const isAuthorized = Object.values(perms).some(v => v === true);
@@ -111,7 +111,7 @@ export async function checkAdminAccess() {
             isNormallyAdmin: impersonatedBy.isNormallyAdmin,
             // For the UI, we might want to know who we are impersonating
             targetName: user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim(),
-            targetCommittees: user.committees?.map((c: any) => c.name) || []
+            targetCommittees: user.committees?.map((c: { name: string }) => c.name) || []
         } : null
     };
 }
@@ -120,7 +120,7 @@ export async function getDashboardPermissions() {
     const { isAuthorized, user, isIct } = await checkAdminAccess();
     if (!isAuthorized) return { canAccessIntro: false, canAccessReis: false, canAccessLogging: false, canAccessSync: false, canAccessCoupons: false, canAccessPermissions: false, canAccessStickers: false };
 
-    const permissions = (user as any) as UserPermissions;
+    const permissions = (user as unknown) as UserPermissions;
     // Removed duplicate isIct declaration
 
     return {
@@ -151,7 +151,7 @@ export async function getUpcomingBirthdays(): Promise<Birthday[]> {
     if (!isAuthorized) return [];
     try {
         const users = await getSystemDirectus().request(readUsers({
-            fields: [...USER_BASIC_FIELDS, 'date_of_birth' as any],
+            fields: [...USER_BASIC_FIELDS, 'date_of_birth' as keyof DirectusUser],
             filter: { date_of_birth: { _nnull: true } },
             limit: -1
         }));
@@ -205,17 +205,17 @@ export async function getTopStickers(): Promise<TopSticker[]> {
     const { isAuthorized } = await checkAdminAccess();
     if (!isAuthorized) return [];
     try {
-        const stickers = await getSystemDirectus().request(readItems('Stickers' as any, {
-            fields: [{ user_created: ['id', 'first_name', 'last_name'] }] as any,
+        const stickers = await getSystemDirectus().request(readItems('Stickers' as 'Stickers', {
+            fields: [{ user_created: ['id', 'first_name', 'last_name'] }] as unknown as any[],
             limit: -1
         }));
         const counts: Record<string, TopSticker> = {};
 
-        (stickers as any[]).forEach((s: any) => {
-            const user = s.user_created;
-            if (user && (user as any).id) {
-                const userId = (user as any).id;
-                if (!counts[userId]) counts[userId] = { id: userId, first_name: (user as any).first_name || 'Onbekend', last_name: (user as any).last_name || '', count: 0 };
+        (stickers as Record<string, unknown>[]).forEach((s) => {
+            const user = s.user_created as { id: string, first_name?: string, last_name?: string } | null;
+            if (user && user.id) {
+                const userId = user.id;
+                if (!counts[userId]) counts[userId] = { id: userId, first_name: user.first_name || 'Onbekend', last_name: user.last_name || '', count: 0 };
                 counts[userId].count++;
             }
         });
@@ -242,7 +242,7 @@ export async function setImpersonateToken(token: string) {
         // We fetch only basic fields first to ensure the token is valid.
         const user = await testClient.request(readMe({
             fields: ['id', 'first_name', 'last_name', 'email', 'avatar']
-        } as any)) as unknown as DirectusUser;
+        } as unknown as any)) as unknown as DirectusUser;
 
         if (!user) {
             return { success: false, error: "Token is ongeldig." };

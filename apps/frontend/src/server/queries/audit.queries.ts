@@ -6,6 +6,14 @@ import { type PendingSignup } from '@salvemundi/validations/schema/audit.zod';
  * Bypasses Directus API for immediate consistency and better performance.
  */
 
+export interface SystemLog {
+    id: string;
+    type: string;
+    status: string;
+    payload: Record<string, unknown>;
+    created_at: string;
+}
+
 export async function getPendingSignupsInternal(): Promise<PendingSignup[]> {
     try {
         // Memberships (Transactions) — only type that needs manual approval
@@ -39,7 +47,7 @@ export async function getPendingSignupsInternal(): Promise<PendingSignup[]> {
     }
 }
 
-export async function getSystemLogsInternal(limit: number = 50, source: 'admin' | 'system' = 'admin'): Promise<{ logs: any[]; totalCount: number }> {
+export async function getSystemLogsInternal(limit: number = 50, source: 'admin' | 'system' = 'admin'): Promise<{ logs: SystemLog[]; totalCount: number }> {
     try {
         const filter = source === 'admin' 
             ? "WHERE type NOT LIKE 'system_%'" 
@@ -66,7 +74,7 @@ export async function getSystemLogsInternal(limit: number = 50, source: 'admin' 
 export async function insertSystemLogInternal(data: {
     type: string,
     status: string,
-    payload: any
+    payload: unknown
 }): Promise<void> {
     try {
         let payloadStr = JSON.stringify(data.payload);

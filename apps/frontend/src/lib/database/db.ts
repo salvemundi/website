@@ -1,5 +1,5 @@
 import 'server-only';
-import { Pool } from 'pg';
+import { Pool, type QueryResult } from 'pg';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -28,7 +28,7 @@ if (!globalThis._pgPool) {
 
 export const pool = globalThis._pgPool;
 
-export async function query(text: string, params?: any[], retries = 2): Promise<any> {
+export async function query(text: string, params?: (string | number | boolean | null | undefined | object)[], retries = 2): Promise<QueryResult> {
     const start = Date.now();
     for (let i = 0; i <= retries; i++) {
         try {
@@ -36,8 +36,10 @@ export async function query(text: string, params?: any[], retries = 2): Promise<
             const duration = Date.now() - start;
             // console.debug(`[DB-Query] Executed in ${duration}ms`, { text, rows: res.rowCount });
             return res;
-        } catch (e: any) {
-            const isConnectionError = e.message?.includes('Connection terminated unexpectedly') || e.code === 'ECONNRESET';
+        } catch (e: unknown) {
+            const errorMessage = e instanceof Error ? e.message : '';
+            const errorCode = (e as { code?: string })?.code;
+            const isConnectionError = errorMessage.includes('Connection terminated unexpectedly') || errorCode === 'ECONNRESET';
             if (isConnectionError && i < retries) {
                 console.warn(`[DB-Query] Connection error, retrying... (${i + 1}/${retries})`);
                 await new Promise(resolve => setTimeout(resolve, 500 * (i + 1)));
@@ -46,11 +48,12 @@ export async function query(text: string, params?: any[], retries = 2): Promise<
             console.error('[DB-Query Error]', {
                 message: e instanceof Error ? e.message : 'Unknown error',
                 text,
-                params,
+                // params removed for security
             });
             throw e;
         }
     }
+    throw new Error('[DB-Query] Unexpected end of function');
 }
 
 export default pool;

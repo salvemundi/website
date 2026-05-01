@@ -44,12 +44,13 @@ export async function triggerFullSyncAction(options?: { fields: string[]; forceL
         }
 
         return { success: true, message: "Synchronisatie taak succesvol gestart." };
-    } catch (err: any) {
+    } catch (err: unknown) {
         clearTimeout(timeoutId);
-        if (err.name === 'AbortError') {
+        const errorMessage = err instanceof Error ? err.message : 'Onbekende fout';
+        if (err instanceof Error && err.name === 'AbortError') {
             return { success: false, error: "Kon de synchronisatie niet starten (Timeout 30s)." };
         }
-        console.error(`[SYNC-ACTION] Connection error to ${AZURE_SYNC_URL}/api/sync/run:`, err.message);
+        console.error(`[SYNC-ACTION] Connection error to ${AZURE_SYNC_URL}/api/sync/run:`, errorMessage);
         return { success: false, error: "Kon geen verbinding maken met de sync service." };
     }
 }
@@ -72,11 +73,12 @@ export async function triggerUserSyncAction(userId: string, options?: { fields: 
     try {
         const users = await getSystemDirectus().request(readUsers({
             filter: { entra_id: { _eq: userId } },
-            fields: [...USER_FULL_FIELDS] as any
+            fields: USER_FULL_FIELDS as any
         }));
         targetUser = users?.[0];
-    } catch (err: any) {
-        console.error(`[SYNC-ACTION] Directus lookup failed for user ${userId}:`, err.message);
+    } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : 'Onbekende fout';
+        console.error(`[SYNC-ACTION] Directus lookup failed for user ${userId}:`, errorMessage);
         return { success: false, error: "Kon de gebruiker niet ophalen uit Directus." };
     }
         
@@ -118,16 +120,17 @@ export async function triggerUserSyncAction(userId: string, options?: { fields: 
         revalidatePath('/beheer/commissies');
 
         return { success: true, message: `Synchronisatie voor gebruiker ${userId} voltooid.` };
-    } catch (err: any) {
+    } catch (err: unknown) {
         clearTimeout(timeoutId);
-        if (err.name === 'AbortError') {
+        const errorMessage = err instanceof Error ? err.message : 'Onbekende fout';
+        if (err instanceof Error && err.name === 'AbortError') {
             console.warn(`[SYNC-ACTION] Request to ${AZURE_SYNC_URL} timed out after 60s`);
             return { 
                 success: false, 
                 error: "De synchronisatie duurt te lang (60s). De taak loopt mogelijk nog op de achtergrond; ververs de pagina over een minuut." 
             };
         }
-        console.error(`[SYNC-ACTION] Connection error to ${AZURE_SYNC_URL}/api/sync/run/${userId}:`, err.message);
+        console.error(`[SYNC-ACTION] Connection error to ${AZURE_SYNC_URL}/api/sync/run/${userId}:`, errorMessage);
         return { success: false, error: "Kon geen verbinding maken met de sync service." };
     }
 }

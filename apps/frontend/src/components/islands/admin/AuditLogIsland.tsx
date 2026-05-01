@@ -29,7 +29,7 @@ export interface SystemLog {
     id: string;
     type: string;
     status: string;
-    payload: Record<string, any>;
+    payload: Record<string, unknown>;
     created_at: string;
 }
 

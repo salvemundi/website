@@ -88,8 +88,8 @@ export async function manageAzureMembershipAction(userId: string, azureGroupId: 
     revalidateTag(`user_committees_${directusUserId}`, 'max');
 
         return { success: true };
-    } catch (err: any) {
-        
+    } catch (err: unknown) {
+        console.error(`[LedenActions] Failed to manage Azure membership for ${directusUserId}:`, err);
         return { success: false, error: "Er is een fout opgetreden bij het bijwerken in Azure." };
     }
 }
@@ -176,8 +176,8 @@ export async function updateMemberProfileAction(
         });
 
         return { success: true };
-    } catch (err) {
-        
+    } catch (err: unknown) {
+        console.error(`[LedenActions] Failed to update profile for ${directusUserId}:`, err);
         return { success: false, error: 'Opslaan mislukt' };
     }
 }
@@ -212,7 +212,7 @@ export async function renewMembershipAction(
         newExpiry.setMonth(newExpiry.getMonth() + months);
         const newExpiryStr = newExpiry.toISOString().substring(0, 10);
 
-        await getSystemDirectus().request(updateUser(directusUserId, { membership_expiry: newExpiryStr } as any));
+        await getSystemDirectus().request(updateUser(directusUserId, { membership_expiry: newExpiryStr }));
 
         if (user.entra_id && AZURE_MGMT_URL && INTERNAL_TOKEN) {
             const { rows: committees } = await (await import("@/lib/database")).query(
@@ -247,8 +247,8 @@ export async function renewMembershipAction(
         });
 
         return { success: true, newExpiry: newExpiryStr };
-    } catch (err) {
-        
+    } catch (err: unknown) {
+        console.error(`[LedenActions] Failed to renew membership for ${directusUserId}:`, err);
         return { success: false, error: 'Er is een fout opgetreden' };
     }
 }
@@ -297,8 +297,8 @@ export async function provisionAzureAccountAction(directusUserId: string) {
         });
 
         return { success: true };
-    } catch (err: any) {
-        
+    } catch (err: unknown) {
+        console.error(`[LedenActions] Failed to provision Azure account for ${directusUserId}:`, err);
         return { success: false, error: "Interne fout bij provisioning." };
     }
 }

@@ -49,9 +49,9 @@ export async function getRedis() {
 
         isConnecting = false;
         return redisClient;
-    } catch (e: any) {
+    } catch (e: unknown) {
         isConnecting = false;
-        
+        console.error('[RedisClient] Connection failed:', e instanceof Error ? e.message : e);
         throw e;
     }
 }

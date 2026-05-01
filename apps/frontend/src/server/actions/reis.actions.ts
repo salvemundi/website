@@ -68,7 +68,7 @@ export async function getReisSiteSettings(): Promise<ReisSiteSettings | null> {
     };
 }
 
-export async function getCurrentUserProfileAction(): Promise<{ success: boolean; data?: any; error?: string }> {
+export async function getCurrentUserProfileAction(): Promise<{ success: boolean; data?: Record<string, unknown>; error?: string }> {
     try {
         const headers = await nextHeaders();
         const session = await auth.api.getSession({ headers });
@@ -96,7 +96,7 @@ export async function getUpcomingTrips(): Promise<ReisTrip[]> {
     const parsed = reisTripSchema.array().safeParse(data ?? []);
     if (!parsed.success) {
         console.error('[Validation Error] getUpcomingTrips:', parsed.error);
-        return (data ?? []) as any;
+        return (data ?? []) as ReisTrip[];
     }
 
     const today = new Date();
@@ -171,7 +171,7 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
     }
 
     // Normalize DD-MM-YYYY to YYYY-MM-DD before validation
-    data.date_of_birth = normalizeDate(data.date_of_birth) as any;
+    data.date_of_birth = normalizeDate(data.date_of_birth) || data.date_of_birth;
 
     const parsed = reisSignupFormSchema.safeParse(data);
     if (!parsed.success) {
@@ -228,7 +228,7 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
     const shouldBeWaitlisted = participantsCount >= targetTrip.max_participants;
 
     const userCommittees = userId ? await fetchUserCommitteesDb(userId) : [];
-    const isReisCommitteeMember = userCommittees.some((c: any) => c.azure_group_id === '4c027a6d-0307-4aee-b719-23d67bcd0959'); // Reiscommissie UUID
+    const isReisCommitteeMember = userCommittees.some((c: { azure_group_id?: string | null }) => c.azure_group_id === '4c027a6d-0307-4aee-b719-23d67bcd0959'); // Reiscommissie UUID
 
     const redis = await getRedis();
     const lockKey = `lock:trip:${tripId}:signup`;
@@ -307,12 +307,13 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
 
         try {
             await getSystemDirectus().request(createItem('trip_signups', { ...payload, id: signupId }));
-        } catch (err: any) {
-            const firstError = err.errors?.[0];
+        } catch (err: unknown) {
+            const errorObj = err as { errors?: { extensions?: { code?: string }, message?: string }[], message?: string };
+            const firstError = errorObj.errors?.[0];
             const isUniqueError = 
                 firstError?.extensions?.code === 'RECORD_NOT_UNIQUE' || 
                 firstError?.message?.toLowerCase().includes('unique') || 
-                (err.message || '').toLowerCase().includes('unique');
+                (errorObj.message || '').toLowerCase().includes('unique');
             
             if (isUniqueError) {
                 try {
@@ -354,7 +355,8 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
         }).catch(() => {});
 
         return { success: true };
-    } catch (err: any) {
+    } catch (err: unknown) {
+        console.error('[ReisActions] Critical error in signup:', err);
         return { success: false, message: 'Interne serverfout tijdens inschrijving.' };
     } finally {
         const currentToken = await redis.get(lockKey);

@@ -37,7 +37,7 @@ export async function GET(
     const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     try {
-        console.log(`[AssetProxy] Fetching: ${url}`);
+        // console.log(`[AssetProxy] Fetching: ${url}`);
         const res = await fetchWithRetry(url, {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -47,7 +47,7 @@ export async function GET(
         });
 
         if (!res.ok) {
-            console.error(`[AssetProxy] Directus error for ${id}: ${res.status}`);
+            console.error(`Directus error for asset ${id}: ${res.status}`);
             return new NextResponse(null, { status: res.status });
         }
 
@@ -58,7 +58,7 @@ export async function GET(
         const arrayBuffer = await res.arrayBuffer();
 
         if (arrayBuffer.byteLength === 0) {
-            console.warn(`[AssetProxy] Empty buffer for ${id}`);
+            console.warn(`Empty buffer for asset ${id}`);
             return new NextResponse(null, { status: 404 });
         }
 
@@ -70,7 +70,7 @@ export async function GET(
             },
         });
     } catch (error: any) {
-        console.error(`[AssetProxy] Critical error fetching ${id}:`, error.message);
+        console.error(`Critical error fetching asset ${id}:`, error.message);
         return new NextResponse(null, { status: 500 });
     } finally {
         clearTimeout(timeoutId);

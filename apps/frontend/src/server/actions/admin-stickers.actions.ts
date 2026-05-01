@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
 import { logAdminAction } from "./audit.actions";
 import { isSuperAdmin } from "@/lib/auth";
+import { type Committee } from "@/shared/lib/permissions";
 
 import { getSystemDirectus } from "@/lib/directus";
 import { readItems, deleteItem, updateItem } from "@directus/sdk";
@@ -17,7 +18,7 @@ async function requireStickerAdmin() {
 
     if (!session?.user) throw new Error('Niet ingelogd');
 
-    const user = session.user as any;
+    const user = session.user as { committees?: Committee[] };
     if (!isSuperAdmin(user.committees)) {
         throw new Error('Geen beheer rechten: SuperAdmin vereist');
     }
@@ -33,16 +34,16 @@ export async function getStickers() {
             fields: [
                 ...STICKER_FIELDS, 
                 { user_created: ['id', 'first_name', 'last_name', 'avatar'] }
-            ] as any,
+            ] as unknown as any[],
             sort: ['-date_created'],
             limit: -1
         }));
-        return (stickers ?? []).map((s: any) => ({
+        return (stickers as Record<string, unknown>[] ?? []).map((s) => ({
             ...s,
             id: Number(s.id)
         }));
-    } catch (e) {
-        
+    } catch (e: unknown) {
+        console.error('[AdminStickers] Failed to fetch stickers:', e);
         throw new Error('Could not fetch stickers');
     }
 }
@@ -65,7 +66,7 @@ export async function deleteSticker(id: number) {
     }
 }
 
-export async function updateSticker(id: number, data: any) {
+export async function updateSticker(id: number, data: Partial<Record<string, unknown>>) {
     const session = await requireStickerAdmin();
 
     try {
