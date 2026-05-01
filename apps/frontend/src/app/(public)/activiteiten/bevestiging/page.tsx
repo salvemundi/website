@@ -30,7 +30,7 @@ export default async function ActiviteitenConfirmationPage({ searchParams }: Pag
                     initialTransactionId={transaction_id || t} 
                     isLoggedIn={!!session?.user} 
                     initialStatus={initialStatusRes.status}
-                    initialData={initialStatusRes.signup}
+                    initialData={initialStatusRes.signup as any}
                 />
             </div>
         </div>

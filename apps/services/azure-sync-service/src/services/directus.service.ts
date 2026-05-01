@@ -1,37 +1,37 @@
 import { getDirectusClient } from '../config/directus.js';
 import { updateItem, readItems, createItem, deleteItem, readUsers, updateUser, createUser, uploadFiles } from '@directus/sdk';
-import { Event, EventSignup, FeatureFlag } from '../types/schema.js';
+import { DirectusUser, Committee, CommitteeMember, Event, EventSignup, FeatureFlag } from '../types/schema.js';
 
 export class DirectusService {
-    static async getUserById(id: string) {
+    static async getUserById(id: string): Promise<DirectusUser | null> {
         const users = await getDirectusClient().request(readUsers({
             filter: { id: { _eq: id } },
-            fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'avatar', 'phone_number', 'date_of_birth', 'originele_betaaldatum', 'membership_status', 'membership_expiry'] as any[]
+            fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'avatar', 'phone_number', 'date_of_birth', 'originele_betaaldatum', 'membership_status', 'membership_expiry'] as never[]
         }));
-        return users[0] || null;
+        return (users[0] as unknown as DirectusUser) || null;
     }
 
-    static async getUserByEntraId(entraId: string) {
+    static async getUserByEntraId(entraId: string): Promise<DirectusUser | null> {
         const users = await getDirectusClient().request(readUsers({
             filter: { entra_id: { _eq: entraId } },
-            fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'avatar', 'phone_number', 'date_of_birth', 'originele_betaaldatum', 'membership_status', 'membership_expiry'] as any[]
+            fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'avatar', 'phone_number', 'date_of_birth', 'originele_betaaldatum', 'membership_status', 'membership_expiry'] as never[]
         }));
-        return users[0] || null;
+        return (users[0] as unknown as DirectusUser) || null;
     }
 
-    static async getUserByEmail(email: string) {
+    static async getUserByEmail(email: string): Promise<DirectusUser | null> {
         const users = await getDirectusClient().request(readUsers({
             filter: { email: { _eq: email.toLowerCase() } },
-            fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'avatar', 'phone_number', 'date_of_birth', 'originele_betaaldatum', 'membership_status', 'membership_expiry'] as any[]
+            fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'avatar', 'phone_number', 'date_of_birth', 'originele_betaaldatum', 'membership_status', 'membership_expiry'] as never[]
         }));
-        return users[0] || null;
+        return (users[0] as unknown as DirectusUser) || null;
     }
 
-    static async updateUser(id: string, data: any) {
+    static async updateUser(id: string, data: Partial<DirectusUser>) {
         return await getDirectusClient().request(updateUser(id, data));
     }
-
-    static async createUser(data: any) {
+    
+    static async createUser(data: Partial<DirectusUser>) {
         return await getDirectusClient().request(createUser(data));
     }
 
@@ -77,7 +77,7 @@ export class DirectusService {
         }));
     }
 
-    static async updateCommitteeMember(id: number, data: any) {
+    static async updateCommitteeMember(id: number, data: Partial<CommitteeMember>) {
         return await getDirectusClient().request(updateItem('committee_members', id, data));
     }
 
@@ -92,11 +92,12 @@ export class DirectusService {
         }));
     }
 
-    static async getAllUsers() {
-        return await getDirectusClient().request(readUsers({
-            fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'avatar', 'phone_number', 'date_of_birth', 'originele_betaaldatum', 'membership_status', 'membership_expiry'] as any[],
+    static async getAllUsers(): Promise<DirectusUser[]> {
+        const users = await getDirectusClient().request(readUsers({
+            fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'avatar', 'phone_number', 'date_of_birth', 'originele_betaaldatum', 'membership_status', 'membership_expiry'] as never[],
             limit: -1
         }));
+        return users as unknown as DirectusUser[];
     }
 
     static async getUpcomingEvents(daysAhead: number): Promise<Event[]> {
@@ -145,8 +146,8 @@ export class DirectusService {
         formData.append('file', blob, filename);
 
         try {
-            const uploadResult: any = await client.request(uploadFiles(formData));
-            const fileId = Array.isArray(uploadResult) ? uploadResult[0].id : uploadResult.id;
+            const uploadResult = await client.request(uploadFiles(formData));
+            const fileId = Array.isArray(uploadResult) ? (uploadResult[0] as { id: string }).id : (uploadResult as { id: string }).id;
 
             await client.request(updateUser(userId, {
                 avatar: fileId

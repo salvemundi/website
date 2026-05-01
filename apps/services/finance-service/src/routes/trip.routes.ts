@@ -3,14 +3,22 @@ import { createDirectus, rest, staticToken, readItem, readItems, updateItem } fr
 import { getMollieClient } from '../services/mollie.service.js';
 import { TRIP_SIGNUP_FIELDS, TRIP_FIELDS } from '@salvemundi/validations';
 import crypto from 'node:crypto';
+import { DbTripSignup as TripSignup, DbTrip as Trip } from '@salvemundi/validations/directus/schema';
+
+interface TripPaymentRequest {
+    signupId: number;
+    tripId: number;
+    paymentType: 'deposit' | 'final';
+    isConfirmedByUser?: boolean;
+}
 
 export default async function tripRoutes(fastify: FastifyInstance) {
     /**
      * POST /api/finance/trip-payment-request
      * Handles both admin enrichment mail generation AND user payment creation.
      */
-    fastify.post('/trip-payment-request', async (request: any, reply) => {
-        const { signupId, tripId, paymentType, isConfirmedByUser } = request.body;
+    fastify.post('/trip-payment-request', async (request, reply) => {
+        const { signupId, tripId, paymentType, isConfirmedByUser } = request.body as TripPaymentRequest;
 
         if (!signupId || !tripId || !paymentType) {
             return reply.status(400).send({ error: 'Missing required fields (signupId, tripId, paymentType)' });
@@ -29,16 +37,16 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                 directus.request(readItem('trips', tripId, { fields: [...TRIP_FIELDS] })),
                 directus.request(readItems('trip_signup_activities', {
                     filter: { trip_signup_id: { _eq: signupId } },
-                    fields: ['id', 'trip_activity_id', 'selected_options', { trip_activity_id: ['id', 'price', 'name', 'options'] }] as any
+                    fields: ['id', 'trip_activity_id', 'selected_options', { trip_activity_id: ['id', 'price', 'name', 'options'] }] as never[]
                 }))
-            ]) as [any, any[]];
+            ]) as [Trip, any[]];
 
             // 2. Fetch Signup
-            let signup: any;
+            let signup: TripSignup;
             try {
                 signup = await directus.request(readItem('trip_signups', signupId, { 
                     fields: [...TRIP_SIGNUP_FIELDS] 
-                }));
+                })) as TripSignup;
             } catch (err) {
                 return reply.status(404).send({ error: 'Signup not found' });
             }
@@ -71,7 +79,7 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                 const availableOpts = activity?.options || [];
                 
                 if (Array.isArray(availableOpts)) {
-                    availableOpts.forEach((opt: any) => {
+                    availableOpts.forEach((opt: { id?: string; price?: number }) => {
                         if (opt.id && selectedOpts[opt.id]) {
                             price += Number(opt.price || 0);
                         }
@@ -104,7 +112,7 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                         access_token: accessToken 
                     }));
                     fastify.log.info(`[TRIP] Generated and saved access_token for signup ${signupId}`);
-                } catch (updateErr: any) {
+                } catch (updateErr) {
                     fastify.log.error(updateErr, `[TRIP] Failed to update access_token for signup ${signupId}`);
                 }
             }
@@ -194,7 +202,8 @@ export default async function tripRoutes(fastify: FastifyInstance) {
             );
 
             return { success: true, checkoutUrl: payment._links?.checkout?.href };
-        } catch (err: any) {
+        } catch (error) {
+            const err = error as Error & { response?: { data?: { errors?: unknown } }; details?: unknown };
             fastify.log.error({ 
                 err, 
                 message: err.message, 

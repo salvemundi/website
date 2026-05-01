@@ -1,4 +1,5 @@
 import { AzureUser, GraphService } from '../graph.service.js';
+import { DirectusUser } from '../../types/schema.js';
 import { DirectusService } from '../directus.service.js';
 import { SyncContext } from './sync-types.js';
 import { parseAzureDate } from './sync-helpers.js';
@@ -50,18 +51,21 @@ export class SyncProcessor {
                 membership_expiry: expiry,
                 originele_betaaldatum: paidDate,
                 membership_status: 'none'
-            });
+            }) as DirectusUser;
             ctx.status.createdCount++;
             changes.push({ field: 'User', old: 'Bestaat niet', new: 'Nieuw lid aangemaakt' });
             ctx.status.createdUsers.push({ email, changes });
         }
+
+        // Ensure dUser is seen as defined by TypeScript
+        const currentUser = dUser as DirectusUser;
 
         const csa = aUser.customSecurityAttributes?.SalveMundiLidmaatschap;
         const updatePayload: any = {};
 
         const fields = ctx.options.fields;
 
-        if (fields.includes('status') && dUser.status !== 'active') {
+        if (fields.includes('status') && currentUser.status !== 'active') {
             updatePayload.status = 'active';
         }
 
@@ -90,27 +94,27 @@ export class SyncProcessor {
             // Track changes for existing user
             for (const key of Object.keys(updatePayload)) {
                 // Precise comparison to avoid redundant logs
-                const oldValue = dUser[key];
+                const oldValue = currentUser[key as keyof DirectusUser];
                 const newValue = updatePayload[key];
                 if (oldValue != newValue) { // Use loose inequality to handle null vs undefined if needed, but be careful
-                    changes.push({ field: key, old: oldValue || 'leeg', new: newValue });
+                    changes.push({ field: key, old: (oldValue as string | number | boolean) || 'leeg', new: newValue });
                 }
             }
             if (changes.length > 0) {
-                await DirectusService.updateUser(dUser.id, updatePayload);
+                await DirectusService.updateUser(currentUser.id, updatePayload);
             }
         }
 
         // LIFECYCLE MANAGEMENT
         // Only run lifecycle if explicitly requested or if relevant fields are being synced
         if (fields.includes('membership_status') || fields.includes('membership_expiry')) {
-            const lifecycleChanges = await SyncLifecycle.handleLifecycle(ctx, aUser, dUser, updatePayload.membership_expiry);
+            const lifecycleChanges = await SyncLifecycle.handleLifecycle(ctx, aUser, currentUser, updatePayload.membership_expiry);
             changes.push(...lifecycleChanges);
         }
 
         // COMMITTEES
         if (fields.includes('committees')) {
-            const currentMemberships = ctx.membershipCache.get(dUser.id) || [];
+            const currentMemberships = ctx.membershipCache.get(currentUser.id) || [];
             const azureMemberships = ctx.membershipMap.get(aUser.id) || new Map<number, boolean>();
 
             for (const [committeeId, isLeader] of azureMemberships) {
@@ -120,7 +124,7 @@ export class SyncProcessor {
                 });
 
                 if (!existing) {
-                    await DirectusService.addMemberToCommittee(dUser.id, committeeId, isLeader);
+                    await DirectusService.addMemberToCommittee(currentUser.id, committeeId, isLeader);
                     changes.push({ field: 'Commissie', old: 'Geen', new: `Toegevoegd aan ID ${committeeId}${isLeader ? ' (Leider)' : ''}` });
                 } else if (existing.is_leader !== isLeader) {
                     await DirectusService.updateCommitteeMember(existing.id, { is_leader: isLeader });
@@ -138,7 +142,7 @@ export class SyncProcessor {
 
         // PROFILE PHOTO
         if (fields.includes('profile_photo')) {
-            const shouldSync = ctx.options.forceSyncPhotos || !dUser.avatar;
+            const shouldSync = ctx.options.forceSyncPhotos || !currentUser.avatar;
             if (shouldSync) {
                 // Use pre-fetched batch photo if available
                 let photo = ctx.photoCache?.get(aUser.id);
@@ -149,8 +153,8 @@ export class SyncProcessor {
                 }
 
                 if (photo) {
-                    await DirectusService.uploadUserAvatar(dUser.id, photo.buffer, `avatar_${aUser.id}.jpg`, photo.contentType);
-                    changes.push({ field: 'Profielfoto', old: dUser.avatar ? 'Bestaand' : 'Geen', new: 'Bijgewerkt vanuit Azure' });
+                    await DirectusService.uploadUserAvatar(currentUser.id, photo.buffer, `avatar_${aUser.id}.jpg`, photo.contentType);
+                    changes.push({ field: 'Profielfoto', old: currentUser.avatar ? 'Bestaand' : 'Geen', new: 'Bijgewerkt vanuit Azure' });
                 }
             }
         }

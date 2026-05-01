@@ -69,7 +69,7 @@ export const getActivities = cache(async (email?: string): Promise<(Activiteit &
 
         return activities.map(activity => ({
             ...activity,
-            is_signed_up: signedUpEventIds.has(Number(activity.id)) || ((activity as any).type === 'pub_crawl' && signedUpPubCrawlIds.has(Number(activity.id)))
+            is_signed_up: signedUpEventIds.has(Number(activity.id)) || ((activity as unknown as { type?: string }).type === 'pub_crawl' && signedUpPubCrawlIds.has(Number(activity.id)))
         }));
     } catch (error) {
         // User signup fetch failure is non-critical for the list view, log and return activities without signup status
@@ -278,7 +278,7 @@ export type PaymentStatus = 'paid' | 'open' | 'failed' | 'canceled' | 'expired' 
 
 export interface SignupStatusResult {
     status: PaymentStatus;
-    signup?: DbEventSignup | DbPubCrawlSignup | DbTripSignup | any;
+    signup?: DbEventSignup | DbPubCrawlSignup | DbTripSignup | unknown;
     isMembership?: boolean;
     isTrip?: boolean;
     errorType?: string;

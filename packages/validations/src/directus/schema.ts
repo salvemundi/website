@@ -507,6 +507,7 @@ export interface DbTripSignup {
     final_email_sent?: boolean | null;
     document_number?: string | null;
     directus_relations?: string | null;
+    access_token?: string | null;
 }
 
 export interface DbTrip {

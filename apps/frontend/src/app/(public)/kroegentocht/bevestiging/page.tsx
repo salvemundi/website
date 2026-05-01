@@ -31,7 +31,7 @@ export default async function KroegentochtConfirmationPage({ searchParams }: Pag
 
     // NUCLEAR SSR: Fetch initial status server-side
     const statusRes = await getPaymentStatusAction(token);
-    const initialStatus = statusRes.success ? (statusRes.payment_status as any) : 'loading';
+    const initialStatus = statusRes.success && 'payment_status' in statusRes ? statusRes.payment_status : 'loading';
     const isPaid = initialStatus === 'paid';
 
     return (

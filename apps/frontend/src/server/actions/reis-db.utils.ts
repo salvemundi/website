@@ -7,6 +7,7 @@ import {
     type ReisTripSignup, 
 } from '@salvemundi/validations/schema/reis.zod';
 import { z } from 'zod';
+import { DbTripSignup as TripSignup, DbTrip as Trip, DbTripActivitie as TripActivity, DbTripSignupActivitie as TripSignupActivity } from '@salvemundi/validations/directus/schema';
 
 /**
  * Fetches the registration status for a specific user and trip directly from the database to bypass caching.
@@ -41,9 +42,7 @@ export async function fetchUserSignupStatusDb(userId: string, tripId: number): P
 
         const parsed = reisTripSignupSchema.safeParse(sanitized);
         if (!parsed.success) {
-            
-            // Return raw with casting as fallback if validation is too strict for DB nulls
-            return sanitized as ReisTripSignup;
+            return sanitized as unknown as ReisTripSignup;
         }
 
         return parsed.data as ReisTripSignup;
@@ -81,8 +80,7 @@ export async function fetchAllTripSignupsDb(tripId: number): Promise<ReisTripSig
 
         const parsed = z.array(reisTripSignupSchema).safeParse(sanitized);
         if (!parsed.success) {
-            
-            return sanitized as any as ReisTripSignup[];
+            return sanitized as unknown as ReisTripSignup[];
         }
 
         return parsed.data as ReisTripSignup[];
@@ -120,8 +118,7 @@ export async function fetchTripSignupByIdDb(signupId: number): Promise<ReisTripS
 
         const parsed = reisTripSignupSchema.safeParse(sanitized);
         if (!parsed.success) {
-            
-            return sanitized as ReisTripSignup;
+            return sanitized as unknown as ReisTripSignup;
         }
 
         return parsed.data as ReisTripSignup;
@@ -134,7 +131,7 @@ export async function fetchTripSignupByIdDb(signupId: number): Promise<ReisTripS
 /**
  * Fetches activity selections for a specific trip directly from the database.
  */
-export async function fetchTripSignupActivitiesDb(tripId: number): Promise<any[]> {
+export async function fetchTripSignupActivitiesDb(tripId: number): Promise<(TripSignupActivity & { activity_name: string; activity_price: number; activity_options: unknown; first_name: string; last_name: string; email: string })[]> {
     try {
         const res = await query(
             `SELECT sa.*, a.name as activity_name, a.price as activity_price, a.options as activity_options,
@@ -163,7 +160,7 @@ export async function fetchTripSignupActivitiesDb(tripId: number): Promise<any[]
 /**
  * Fetches all signups for a specific activity.
  */
-export async function fetchSignupsByActivityIdDb(activityId: number): Promise<any[]> {
+export async function fetchSignupsByActivityIdDb(activityId: number): Promise<{ id: number; selected_options: unknown; trip_signup_id: { id: number; first_name: string; last_name: string; email: string } }[]> {
     try {
         const { rows } = await query(
             `SELECT sa.id, sa.selected_options, 
@@ -192,7 +189,7 @@ export async function fetchSignupsByActivityIdDb(activityId: number): Promise<an
 /**
  * Fetches all trips with full details directly from the database for management.
  */
-export async function fetchFullTripsDb(): Promise<any[]> {
+export async function fetchFullTripsDb(): Promise<Trip[]> {
     try {
         const res = await query(
             `SELECT * FROM trips ORDER BY start_date DESC`,
@@ -221,7 +218,7 @@ export async function fetchFullTripsDb(): Promise<any[]> {
 /**
  * Fetches all activities for a specific trip directly from the database.
  */
-export async function fetchTripActivitiesByTripIdDb(tripId: number): Promise<any[]> {
+export async function fetchTripActivitiesByTripIdDb(tripId: number): Promise<TripActivity[]> {
     try {
         const res = await query(
             `SELECT * FROM trip_activities WHERE trip_id = $1 ORDER BY display_order ASC, name ASC`,
@@ -243,7 +240,7 @@ export async function fetchTripActivitiesByTripIdDb(tripId: number): Promise<any
 /**
  * Fetches all trips directly from the database for the admin selector (summary version).
  */
-export async function fetchAllTripsDb(): Promise<any[]> {
+export async function fetchAllTripsDb(): Promise<Pick<Trip, 'id' | 'name' | 'start_date' | 'end_date' | 'allow_final_payments'>[]> {
     try {
         const res = await query(
             `SELECT id, name, start_date, end_date, allow_final_payments 
@@ -261,7 +258,7 @@ export async function fetchAllTripsDb(): Promise<any[]> {
 /**
  * Fetches selected activities for a specific registration.
  */
-export async function fetchSelectedSignupActivitiesDb(signupId: number): Promise<any[]> {
+export async function fetchSelectedSignupActivitiesDb(signupId: number): Promise<TripSignupActivity[]> {
     try {
         const { rows } = await query(
             'SELECT * FROM trip_signup_activities WHERE trip_signup_id = $1',
@@ -277,7 +274,7 @@ export async function fetchSelectedSignupActivitiesDb(signupId: number): Promise
 /**
  * Fetches a single trip by ID.
  */
-export async function fetchTripByIdDb(tripId: number): Promise<any | null> {
+export async function fetchTripByIdDb(tripId: number): Promise<Trip | null> {
     try {
         const { rows } = await query(
             'SELECT * FROM trips WHERE id = $1 LIMIT 1',
@@ -308,7 +305,7 @@ export async function fetchTripByIdDb(tripId: number): Promise<any | null> {
 /**
  * Updates a trip's basic information directly in the database.
  */
-export async function updateTripDb(id: number, data: any): Promise<boolean> {
+export async function updateTripDb(id: number, data: Partial<Trip>): Promise<boolean> {
     try {
         const fields = Object.keys(data);
         const values = Object.values(data);
@@ -328,7 +325,7 @@ export async function updateTripDb(id: number, data: any): Promise<boolean> {
 /**
  * Creates a new trip signup directly in the database.
  */
-export async function insertTripSignupDb(payload: any): Promise<number | null> {
+export async function insertTripSignupDb(payload: Partial<TripSignup>): Promise<number | null> {
     try {
         const fields = Object.keys(payload);
         const values = Object.values(payload);
@@ -348,7 +345,7 @@ export async function insertTripSignupDb(payload: any): Promise<number | null> {
 /**
  * Updates a trip signup directly in the database.
  */
-export async function updateTripSignupDb(id: number, data: any): Promise<boolean> {
+export async function updateTripSignupDb(id: number, data: Partial<TripSignup>): Promise<boolean> {
     try {
         const fields = Object.keys(data);
         const values = Object.values(data);
@@ -381,7 +378,7 @@ export async function deleteTripSignupDb(id: number): Promise<boolean> {
 /**
  * Creates a new trip directly in the database.
  */
-export async function createTripDb(data: any): Promise<number | null> {
+export async function createTripDb(data: Partial<Trip>): Promise<number | null> {
     try {
         const fields = Object.keys(data);
         const values = Object.values(data);
@@ -401,7 +398,7 @@ export async function createTripDb(data: any): Promise<number | null> {
 /**
  * Fetches all published or recently completed trips directly from the database.
  */
-export async function fetchPublicTripsDb(): Promise<any[]> {
+export async function fetchPublicTripsDb(): Promise<Trip[]> {
     try {
         const res = await query(
             `SELECT * FROM trips 
@@ -427,7 +424,7 @@ export async function fetchPublicTripsDb(): Promise<any[]> {
 /**
  * Creates a new trip activity directly in the database.
  */
-export async function createTripActivityDb(data: any): Promise<number | null> {
+export async function createTripActivityDb(data: Partial<TripActivity>): Promise<number | null> {
     try {
         const fields = Object.keys(data);
         const values = Object.values(data);
@@ -447,7 +444,7 @@ export async function createTripActivityDb(data: any): Promise<number | null> {
 /**
  * Updates a trip activity directly in the database.
  */
-export async function updateTripActivityDb(id: number, data: any): Promise<boolean> {
+export async function updateTripActivityDb(id: number, data: Partial<TripActivity>): Promise<boolean> {
     try {
         const fields = Object.keys(data);
         const values = Object.values(data);

@@ -22,8 +22,8 @@ export default function PaymentStatusIsland({
     returnText = 'Terug naar Reizen',
     successText = 'Je aanbetaling is succesvol verwerken. Je ontvangt binnen enkele minuten een bevestiging in je e-mail.',
     initialStatus = 'loading'
-}: PaymentStatusProps & { initialStatus?: 'loading' | 'open' | 'paid' | 'expired' | 'failed' }) {
-    const [status, setStatus] = useState<'loading' | 'open' | 'paid' | 'expired' | 'failed'>(initialStatus);
+}: PaymentStatusProps & { initialStatus?: 'loading' | 'open' | 'paid' | 'expired' | 'failed' | 'canceled' }) {
+    const [status, setStatus] = useState<'loading' | 'open' | 'paid' | 'expired' | 'failed' | 'canceled'>(initialStatus);
     const [attempts, setAttempts] = useState(0);
 
     const maxAttempts = 20;
@@ -68,7 +68,7 @@ export default function PaymentStatusIsland({
     };
 
     useEffect(() => {
-        if (status === 'paid' || status === 'expired' || status === 'failed') return;
+        if (status === 'paid' || status === 'expired' || status === 'failed' || status === 'canceled') return;
 
         const timer = setTimeout(() => {
             checkStatus();

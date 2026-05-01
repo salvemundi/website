@@ -6,6 +6,7 @@ import { getImageUrl } from '@/lib/utils/image-utils';
 import { isEventPast } from '@/shared/lib/utils/date';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
+import { type MembershipUserData } from '@/components/islands/account/MembershipStatusIsland';
 
 interface EventListProps {
     events: (Activiteit & { is_signed_up?: boolean })[];
@@ -38,7 +39,7 @@ export default function EventList({ events, onEventClick, variant = 'list' }: Ev
                         startTime={event.event_time ?? undefined}
                         endTime={event.event_time_end ?? undefined}
                         location={event.locatie ?? undefined}
-                        price={(user as any)?.membership_status === 'active' ? (event.price_members ?? undefined) : (event.price_non_members ?? undefined)}
+                        price={(user as unknown as MembershipUserData)?.membership_status === 'active' ? (event.price_members ?? undefined) : (event.price_non_members ?? undefined)}
                         image={event.afbeelding_id ?? undefined}
                         isPast={isEventPast(event.datum_start)}
                         isSignedUp={event.is_signed_up}
@@ -68,7 +69,7 @@ export default function EventList({ events, onEventClick, variant = 'list' }: Ev
                     startTime={event.event_time ?? undefined}
                     endTime={event.event_time_end ?? undefined}
                     location={event.locatie ?? undefined}
-                    price={(user as any)?.membership_status === 'active' ? (event.price_members ?? undefined) : (event.price_non_members ?? undefined)}
+                    price={(user as unknown as MembershipUserData)?.membership_status === 'active' ? (event.price_members ?? undefined) : (event.price_non_members ?? undefined)}
                     image={event.afbeelding_id ?? undefined}
                     isPast={isEventPast(event.datum_start)}
                     isSignedUp={event.is_signed_up}

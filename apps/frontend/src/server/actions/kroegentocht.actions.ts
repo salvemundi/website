@@ -78,7 +78,7 @@ export const getKroegentochtEvent = cache(async (): Promise<PubCrawlEvent | null
                     return dateA - dateB;
                 });
 
-                const event = nearestEvents.find((e: any) => e.date >= today);
+                const event = nearestEvents.find((e) => (e.date ?? '') >= today);
 
                 if (!event) {
 
@@ -96,8 +96,7 @@ export const getKroegentochtEvent = cache(async (): Promise<PubCrawlEvent | null
                     return null;
                 }
                 return parsed.data;
-            } catch (error: any) {
-
+            } catch (error) {
                 return null;
             }
         },
@@ -120,7 +119,7 @@ export async function getKroegentochtTickets(email: string): Promise<PubCrawlTic
             [email]
         );
 
-        const items = (res.rows || []).map((t: any) => ({
+        const items = (res.rows || []).map((t) => ({
             ...t,
             signup_id: {
                 pub_crawl_event_id: {
@@ -129,15 +128,14 @@ export async function getKroegentochtTickets(email: string): Promise<PubCrawlTic
             }
         }));
 
-        const parsed = items.map((t: any) => pubCrawlTicketSchema.safeParse(t).data).filter(Boolean);
-        return parsed as PubCrawlTicket[];
-    } catch (error: any) {
-
+        const parsed = items.map((t) => pubCrawlTicketSchema.safeParse(t).data).filter((t): t is PubCrawlTicket => !!t);
+        return parsed;
+    } catch (error) {
         return [];
     }
 }
 
-export async function initiateKroegentochtPayment(formData: any) {
+export async function initiateKroegentochtPayment(formData: unknown) {
     const { rateLimit } = await import('../utils/ratelimit');
     const { success: rateLimitSuccess } = await rateLimit('kroegentocht-signup', 15, 600); // 15 pogingen per 10 min
     if (!rateLimitSuccess) {
@@ -155,7 +153,7 @@ export async function initiateKroegentochtPayment(formData: any) {
 
     try {
         const events = await fetchPubCrawlEventsDb();
-        const eventData = events.find((e: any) => e.id === Number(parsed.data.pub_crawl_event_id));
+        const eventData = events.find((e) => e.id === Number(parsed.data.pub_crawl_event_id));
 
         if (!eventData) {
             return { success: false, error: 'Kroegentocht niet gevonden' };
@@ -185,7 +183,7 @@ export async function initiateKroegentochtPayment(formData: any) {
             directus_relations: userId || null,
         });
 
-        const ticketsTable: any[] = [];
+        const ticketsTable: { name: string; initial: string; qr_token: string }[] = [];
         let participantsData: { name: string, initial: string }[] = [];
         
         try {
@@ -231,10 +229,10 @@ export async function initiateKroegentochtPayment(formData: any) {
         };
 
         try {
-            await getSystemDirectus().request(createItem('pub_crawl_signups', syncPayload));
-        } catch (err: any) {
-            const errorMsg = String(err?.message || '');
-            if (errorMsg.includes('unique') || (err?.errors && JSON.stringify(err.errors).includes('unique'))) {
+            await getSystemDirectus().request(createItem('pub_crawl_signups', syncPayload as any));
+        } catch (err) {
+            const errorMsg = err instanceof Error ? err.message : String(err);
+            if (errorMsg.includes('unique') || (typeof err === 'object' && err !== null && 'errors' in err && JSON.stringify(err.errors).includes('unique'))) {
 
                 try {
                     await getSystemDirectus().request(updateItem('pub_crawl_signups', signupId, syncPayload));
@@ -281,13 +279,12 @@ export async function initiateKroegentochtPayment(formData: any) {
             await deletePubCrawlTicketsBySignupIdDb(signupId);
             await deletePubCrawlSignupDb(signupId);
             getSystemDirectus().request(deleteItem('pub_crawl_signups', signupId)).catch(() => { });
-        } catch (cleanupErr: any) {
+        } catch (cleanupErr) {
         }
 
         return { success: false, error: 'Failed to initiate payment. Please try again later.' };
 
-    } catch (error: any) {
-
+    } catch (error) {
         return { success: false, error: 'An internal error occurred.' };
     }
 }
@@ -305,8 +302,7 @@ export async function getKroegentochtStatus(signupId: string) {
         }
 
         return { status: 'open' };
-    } catch (error: any) {
-
+    } catch (error) {
         return { status: 'error' };
     }
 }

@@ -38,7 +38,7 @@ interface IntroSignupRow {
 interface Props {
     signups: IntroSignupRow[];
     onDelete: (id: number) => Promise<void>;
-    onUpdate: (id: number, data: any) => Promise<void>;
+    onUpdate: (id: number, data: Partial<IntroSignupRow>) => Promise<void>;
     onExport: () => void;
     deletingId: number | null;
 }
@@ -227,12 +227,12 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, onExport,
                                                                     )}
                                                                     <div className="flex flex-col gap-1">
                                                                         <span className="opacity-50">Aangemeld op</span>
-                                                                        <span className="text-[var(--beheer-text)] text-sm font-bold">{(s as any).date_created || (s as any).created_at ? formatDate((s as any).date_created || (s as any).created_at) : '-'}</span>
+                                                                        <span className="text-[var(--beheer-text)] text-sm font-bold">{s.date_created || s.created_at ? formatDate(s.date_created || s.created_at) : '-'}</span>
                                                                     </div>
                                                                     <div className="flex flex-col gap-1">
                                                                         <span className="opacity-50">Status</span>
                                                                         <span className="text-[var(--beheer-text)] text-sm font-bold uppercase tracking-tight">
-                                                                            {(s as any).status === 'approved' ? 'Goedgekeurd' : 'Geregistreerd'}
+                                                                            {s.status === 'approved' ? 'Goedgekeurd' : 'Geregistreerd'}
                                                                         </span>
                                                                     </div>
                                                                 </div>
@@ -243,12 +243,12 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, onExport,
                                                             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--beheer-accent)]">Beheer Acties</p>
                                                             <div className="flex flex-col gap-3">
                                                                 <Button 
-                                                                    onClick={() => onUpdate(s.id, { approved: !(s as any).approved, status: !(s as any).approved ? 'approved' : 'registered' })}
-                                                                    variant={(s as any).approved ? 'success' : 'secondary'}
+                                                                    onClick={() => onUpdate(s.id, { approved: !s.approved, status: !s.approved ? 'approved' : 'registered' })}
+                                                                    variant={s.approved ? 'success' : 'secondary'}
                                                                     icon={UserCheck}
                                                                     className="w-full"
                                                                 >
-                                                                    {(s as any).approved ? 'Goedgekeurd' : 'Keur Goed'}
+                                                                    {s.approved ? 'Goedgekeurd' : 'Keur Goed'}
                                                                 </Button>
                                                                 
                                                                 {s.favorite_gif && (

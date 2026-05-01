@@ -34,7 +34,7 @@ export async function fetchPubCrawlEventsDb(): Promise<PubCrawlEvent[]> {
             []
         );
 
-        const items = (res.rows || []).map((raw: any) => ({
+        const items = (res.rows || []).map((raw) => ({
             ...raw,
             date: raw.date instanceof Date ? raw.date.toISOString().split('T')[0] : raw.date,
             price: 1,
@@ -43,11 +43,10 @@ export async function fetchPubCrawlEventsDb(): Promise<PubCrawlEvent[]> {
         }));
 
         const parsed = z.array(pubCrawlEventSchema).safeParse(items);
-        if (!parsed.success) return items as any;
+        if (!parsed.success) return items as unknown as PubCrawlEvent[];
 
         return parsed.data;
-    } catch (error: any) {
-        
+    } catch (error) {
         return [];
     }
 }
@@ -84,9 +83,8 @@ export async function fetchPubCrawlSignupsDb(eventId: number): Promise<(PubCrawl
                 ...raw,
                 participants
             };
-        }) as any;
-    } catch (error: any) {
-        
+        }) as (PubCrawlSignup & { participants: { name: string, initial: string }[] })[];
+    } catch (error) {
         return [];
     }
 }
@@ -146,8 +144,7 @@ export async function fetchPubCrawlSignupByIdDb(signupId: number): Promise<Enric
             },
             tickets
         };
-    } catch (error: any) {
-        
+    } catch (error) {
         return null;
     }
 }
@@ -163,9 +160,8 @@ export async function fetchPubCrawlTicketsDb(eventId: number): Promise<PubCrawlT
              WHERE s.pub_crawl_event_id = $1`,
             [eventId]
         );
-        return res.rows || [];
-    } catch (error: any) {
-        
+        return (res.rows as PubCrawlTicket[]) || [];
+    } catch (error: unknown) {
         return [];
     }
 }
@@ -181,8 +177,7 @@ export async function getPubCrawlTicketCountDb(eventId: number): Promise<number>
             [eventId]
         );
         return parseInt(res.rows[0]?.total || '0', 10);
-    } catch (error: any) {
-        
+    } catch (error: unknown) {
         return 0;
     }
 }
@@ -209,9 +204,8 @@ export async function fetchUserPubCrawlSignupsDb(email: string): Promise<Enriche
                 description: row.event_description,
                 image: row.event_image
             }
-        }));
-    } catch (error: any) {
-        
+        })) as EnrichedPubCrawlSignup[];
+    } catch (error) {
         return [];
     }
 }
@@ -250,8 +244,7 @@ export async function createPubCrawlSignupDb(data: {
         const id = res.rows[0]?.id;
         if (!id) throw new Error('Insert failed');
         return id;
-    } catch (error: any) {
-        
+    } catch (error) {
         throw error;
     }
 }
@@ -275,8 +268,7 @@ export async function createPubCrawlTicketsDb(signupId: number, tickets: { name:
              VALUES ${placeHolders}`,
             values
         );
-    } catch (error: any) {
-        
+    } catch (error) {
         throw error;
     }
 }
@@ -285,7 +277,7 @@ export async function deletePubCrawlTicketsBySignupIdDb(signupId: number): Promi
     await query(`DELETE FROM pub_crawl_tickets WHERE signup_id = $1`, [signupId]);
 }
 
-export async function updatePubCrawlSignupDb(id: number, data: Record<string, any>): Promise<void> {
+export async function updatePubCrawlSignupDb(id: number, data: Partial<PubCrawlSignup>): Promise<void> {
     const keys = Object.keys(data);
     if (keys.length === 0) return;
 

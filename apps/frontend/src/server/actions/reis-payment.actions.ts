@@ -105,7 +105,7 @@ export async function getTripSignupByToken(signupId: number, token?: string) {
             }
         };
 
-    } catch (err: any) {
+    } catch (error) {
         
         return { success: false, error: 'Er is een fout opgetreden bij het ophalen van je gegevens. Probeer het later opnieuw.' };
     }
@@ -119,7 +119,7 @@ export async function updateSignupDetails(signupId: number, data: ReisPaymentEnr
         }
 
         if (data.date_of_birth) {
-            data.date_of_birth = normalizeDate(data.date_of_birth) as any;
+            data.date_of_birth = normalizeDate(data.date_of_birth) as string;
         }
 
         const validated = reisPaymentEnrichmentSchema.safeParse(data);
@@ -141,13 +141,13 @@ export async function updateSignupDetails(signupId: number, data: ReisPaymentEnr
         });
 
         return { success: true };
-    } catch (err: any) {
+    } catch (error) {
         
         return { success: false, error: 'Opslaan mislukt door een serverfout.' };
     }
 }
 
-export async function syncSignupActivities(signupId: number, selections: { activityId: number, options: any }[], token?: string) {
+export async function syncSignupActivities(signupId: number, selections: { activityId: number, options: Record<string, unknown> }[], token?: string) {
     try {
         const access = await validateAccess(signupId, token);
         if (!access.authorized || !access.signup) return { success: false, error: access.error };
@@ -241,7 +241,8 @@ export async function initiateTripPaymentAction(signupId: number, paymentType: '
         const data = await response.json();
         return { success: true, checkoutUrl: data.checkoutUrl };
 
-    } catch (err: any) {
+    } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
         console.error('[REIS_PAYMENT] Exception in initiateTripPaymentAction:', err);
         return { success: false, error: `Interne fout bij starten betaling: ${err.message}` };
     }
