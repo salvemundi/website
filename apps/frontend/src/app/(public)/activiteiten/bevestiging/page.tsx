@@ -7,7 +7,7 @@ interface PageProps {
     searchParams: Promise<{ id?: string; transaction_id?: string; t?: string }>;
 }
 
-import { getSignupStatus } from '@/server/actions/activiteit-actions';
+import { getSignupStatus, type SignupStatusResult } from '@/server/actions/activiteit-actions';
 
 export default async function ActiviteitenConfirmationPage({ searchParams }: PageProps) {
     const { id, transaction_id, t } = await searchParams;

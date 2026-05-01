@@ -1,12 +1,12 @@
 import React from 'react';
-import { type Activity } from '@salvemundi/validations/schema/activity.zod';
+import { type Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { Calendar, Tag, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { formatDate } from '@/shared/lib/utils/date';
 import { cn } from '@/lib/utils/cn';
 
 interface EventCardProps {
-    activity?: Activity;
+    activity?: Activiteit;
     title?: string;
     category?: string;
     date?: string;
@@ -24,16 +24,16 @@ export const EventCard: React.FC<EventCardProps> = ({
     href = "#"
 }) => {
     // Gebruik props of activity
-    const displayTitle = title || (activity as any)?.titel;
+    const displayTitle = title || activity?.titel;
 
-    const rawCategory = category || (activity as any)?.category || (activity as any)?.committee_name;
+    const rawCategory = category || (activity as Activiteit & { category?: string; committee_name?: string })?.category || (activity as Activiteit & { committee_name?: string })?.committee_name;
     const cleanCategory = (name?: string) => {
         if (!name || name === 'S.V. Salve Mundi') return 'S.V. Salve Mundi';
         return name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim() || name;
     };
     const displayCategory = cleanCategory(rawCategory);
 
-    const displayDate = date || formatDate((activity as any)?.datum_start || new Date());
+    const displayDate = date || formatDate(activity?.datum_start || new Date());
 
     return (
         <Link

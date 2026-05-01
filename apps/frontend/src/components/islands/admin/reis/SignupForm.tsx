@@ -63,14 +63,14 @@ export default function SignupForm({ signup }: SignupFormProps) {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-6">
-                        <Select label="Registratie Status" name="status" defaultValue={signup.status}>
+                        <Select label="Registratie Status" name="status" defaultValue={signup.status ?? undefined}>
                             <option value="registered">Geregistreerd</option>
                             <option value="confirmed">Bevestigd</option>
                             <option value="waitlist">Wachtlijst</option>
                             <option value="cancelled">Geannuleerd</option>
                         </Select>
 
-                        <Select label="Gebruikersrol" name="role" defaultValue={signup.role}>
+                        <Select label="Gebruikersrol" name="role" defaultValue={signup.role ?? undefined}>
                             <option value="participant">Reiziger</option>
                             <option value="crew">Crew / Organisatie</option>
                         </Select>
@@ -79,7 +79,7 @@ export default function SignupForm({ signup }: SignupFormProps) {
                     <div className="space-y-6">
                         <div className="p-6 bg-[var(--bg-main)]/50 rounded-2xl border border-[var(--beheer-border)]/50 space-y-5">
                             <div className="flex items-center justify-between">
-                                <Checkbox label="Aanbetaling voldaan" name="deposit_paid" defaultChecked={signup.deposit_paid} />
+                                <Checkbox label="Aanbetaling voldaan" name="deposit_paid" defaultChecked={!!signup.deposit_paid} />
                                 {signup.deposit_paid_at && (
                                     <span className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest opacity-80">
                                         {format(new Date(signup.deposit_paid_at), 'd MMM yyyy', { locale: nl })}
@@ -87,7 +87,7 @@ export default function SignupForm({ signup }: SignupFormProps) {
                                 )}
                             </div>
                             <div className="flex items-center justify-between">
-                                <Checkbox label="Restbetaling voldaan" name="full_payment_paid" defaultChecked={signup.full_payment_paid} />
+                                <Checkbox label="Restbetaling voldaan" name="full_payment_paid" defaultChecked={!!signup.full_payment_paid} />
                                 {signup.full_payment_paid_at && (
                                     <span className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest opacity-80">
                                         {format(new Date(signup.full_payment_paid_at), 'd MMM yyyy', { locale: nl })}
@@ -106,7 +106,11 @@ export default function SignupForm({ signup }: SignupFormProps) {
     );
 }
 
-function DateAndLabel({ label, defaultValue, name }: any) {
+interface FieldProps extends React.InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement> {
+    label: string;
+}
+
+function DateAndLabel({ label, defaultValue, name }: { label: string; defaultValue: string; name: string }) {
     const [val, setVal] = React.useState(defaultValue);
     return (
         <div className="space-y-2 group/field">
@@ -124,7 +128,7 @@ function DateAndLabel({ label, defaultValue, name }: any) {
     );
 }
 
-function Input({ label, ...props }: any) {
+function Input({ label, ...props }: FieldProps) {
     return (
         <div className="space-y-2 group/field">
             <label className="block text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] group-focus-within/field:text-[var(--beheer-accent)] transition-colors px-1">{label}</label>
@@ -136,7 +140,7 @@ function Input({ label, ...props }: any) {
     );
 }
 
-function Select({ label, children, ...props }: any) {
+function Select({ label, children, ...props }: FieldProps & { children: React.ReactNode }) {
     return (
         <div className="space-y-2 group/field">
             <label className="block text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] group-focus-within/field:text-[var(--beheer-accent)] transition-colors px-1">{label}</label>
@@ -155,7 +159,7 @@ function Select({ label, children, ...props }: any) {
     );
 }
 
-function Textarea({ label, ...props }: any) {
+function Textarea({ label, ...props }: FieldProps) {
     return (
         <div className="space-y-2 group/field">
             <label className="block text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] group-focus-within/field:text-[var(--beheer-accent)] transition-colors px-1">{label}</label>
@@ -167,7 +171,7 @@ function Textarea({ label, ...props }: any) {
     );
 }
 
-function Checkbox({ label, ...props }: any) {
+function Checkbox({ label, ...props }: FieldProps) {
     return (
         <label className="flex items-center gap-4 cursor-pointer group select-none">
             <div className="relative">

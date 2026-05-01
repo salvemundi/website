@@ -21,7 +21,7 @@ import { useAdminToast } from '@/hooks/use-admin-toast';
 import { cn } from '@/lib/utils/cn';
 import LedenTable from './LedenTable';
 
-interface Member {
+export interface Member {
     id: string;
     first_name: string;
     last_name: string;

@@ -39,7 +39,7 @@ import {
     fetchTripActivitiesByTripIdDb,
     fetchSelectedSignupActivitiesDb
 } from './reis-db.utils';
-import { fetchUserProfileByEmailDb, fetchUserCommitteesDb } from './user-db.utils';
+import { fetchUserProfileByEmailDb, fetchUserCommitteesDb, type Committee } from './user-db.utils';
 import { getRedis } from '@/server/auth/redis-client';
 import { randomUUID } from 'crypto';
 import { normalizeDate } from '@/lib/utils/date-utils';
@@ -228,7 +228,7 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
     const shouldBeWaitlisted = participantsCount >= targetTrip.max_participants;
 
     const userCommittees = userId ? await fetchUserCommitteesDb(userId) : [];
-    const isReisCommitteeMember = userCommittees.some((c: { azure_group_id?: string | null }) => c.azure_group_id === '4c027a6d-0307-4aee-b719-23d67bcd0959'); // Reiscommissie UUID
+    const isReisCommitteeMember = userCommittees.some((c: Committee) => c.azure_group_id === '4c027a6d-0307-4aee-b719-23d67bcd0959'); // Reiscommissie UUID
 
     const redis = await getRedis();
     const lockKey = `lock:trip:${tripId}:signup`;

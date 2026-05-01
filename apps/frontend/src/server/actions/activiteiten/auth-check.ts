@@ -5,6 +5,8 @@ import { headers } from "next/headers";
 import { getPermissions } from "@/shared/lib/permissions";
 import { fetchUserCommitteesDb } from "../user-db.utils";
 
+import { type EnrichedUser } from "@/types/auth";
+
 export async function getAuthorizedUser() {
     const session = await auth.api.getSession({
         headers: await headers()
@@ -12,7 +14,7 @@ export async function getAuthorizedUser() {
 
     if (!session || !session.user) return null;
 
-    const user = session.user as any;
+    const user = session.user as unknown as EnrichedUser;
     
     // Fetch committees to ensure we have the latest permissions
     const committees = await fetchUserCommitteesDb(user.id).catch(() => []);

@@ -4,6 +4,8 @@ import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 import { notFound } from 'next/navigation';
 
+import { Trip, TripSignup } from '@salvemundi/validations';
+
 interface PageProps {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
@@ -18,9 +20,9 @@ export default async function ReisMailPage({ searchParams }: PageProps) {
 
     // NUCLEAR SSR: Fetch all trips and signups before flushing any part of the page
     const trips = await getSystemDirectus().request(readItems('trips', {
-        fields: ['id', 'name'] as any,
+        fields: ['id', 'name'],
         sort: ['-start_date']
-    }));
+    })) as unknown as Trip[];
 
     if (!trips || trips.length === 0) {
         return (
@@ -30,7 +32,7 @@ export default async function ReisMailPage({ searchParams }: PageProps) {
         );
     }
 
-    const activeTripId = tripIdParam ? Number(tripIdParam) : trips[0].id;
+    const activeTripId = tripIdParam ? Number(tripIdParam) : (trips[0].id as number);
     const activeTrip = trips.find(t => t.id === activeTripId);
 
     if (!activeTrip) {
@@ -40,15 +42,15 @@ export default async function ReisMailPage({ searchParams }: PageProps) {
     // Fetch signups for the selected trip
     const signups = await getSystemDirectus().request(readItems('trip_signups', {
         filter: { trip_id: { _eq: activeTripId } },
-        fields: ['id', 'first_name', 'last_name', 'email', 'status', 'role', 'deposit_paid', 'full_payment_paid'] as any,
+        fields: ['id', 'first_name', 'last_name', 'email', 'status', 'role', 'deposit_paid', 'full_payment_paid'],
         limit: -1
-    }));
+    })) as unknown as TripSignup[];
 
     return (
         <div className="w-full">
             <ReisMailIsland 
-                trips={trips as any} 
-                initialSignups={signups as any}
+                trips={trips} 
+                initialSignups={signups}
                 initialSelectedTripId={activeTripId}
             />
         </div>

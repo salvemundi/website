@@ -63,7 +63,7 @@ export async function createEventDb(data: Partial<DbEvent>): Promise<number | nu
 export async function updateEventDb(id: number, data: Partial<DbEvent>): Promise<boolean> {
     try {
         const fields: string[] = [];
-        const params: any[] = [];
+        const params: (string | number | boolean | object | null | undefined)[] = [];
         let paramIndex = 1;
 
         for (const [key, value] of Object.entries(data)) {

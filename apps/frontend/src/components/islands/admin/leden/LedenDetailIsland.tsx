@@ -17,55 +17,25 @@ import { triggerUserSyncAction } from '@/server/actions/azure-sync/sync-tasks.ac
 import { getImageUrl } from '@/lib/utils/image-utils';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
+import { type AdminMember, type CommitteeMembership, type AdminSignup } from '@salvemundi/validations';
+export type Member = AdminMember;
+export type Signup = AdminSignup;
+export { type CommitteeMembership };
 
 import MemberProfileTab from './MemberProfileTab';
 import MemberActivitiesTab from './MemberActivitiesTab';
 import MemberAdminTab from './MemberAdminTab';
-interface Member {
-    id: string;
-    first_name: string;
-    last_name: string;
-    email: string;
-    date_of_birth: string | null;
-    membership_expiry: string | null;
-    status: string;
-    phone_number: string | null;
-    avatar: string | null;
-    entra_id?: string | null;
-}
-
-interface CommitteeMembership {
-    id: string;
-    is_leader: boolean;
-    committee_id: {
-        id: string;
-        name: string;
-        is_visible: boolean;
-        azure_group_id?: string | null;
-    };
-}
-
-interface Signup {
-    id: number;
-    payment_status?: string;
-    created_at: string;
-    event_id: {
-        id: string;
-        name: string;
-        event_date: string;
-    };
-}
 
 interface Props {
-    member?: Member;
+    member?: AdminMember;
     initialMemberships?: CommitteeMembership[];
-    signups?: Signup[];
-    allCommittees?: any[];
+    signups?: AdminSignup[];
+    allCommittees?: { id: string; name: string; is_visible: boolean; azure_group_id?: string | null | undefined }[];
     isAdmin?: boolean;
 }
 
 export default function LedenDetailIsland({ 
-    member = {} as Member, 
+    member = {} as AdminMember, 
     initialMemberships = [], 
     signups = [],
     allCommittees = [],
@@ -79,7 +49,7 @@ export default function LedenDetailIsland({
     // Optimistic memberships
     const [optimisticMemberships, setOptimisticMemberships] = useOptimistic(
         initialMemberships,
-        (state: CommitteeMembership[], { action, membership }: { action: 'add' | 'remove' | 'toggle', membership: any }) => {
+        (state: CommitteeMembership[], { action, membership }: { action: 'add' | 'remove' | 'toggle', membership: CommitteeMembership }) => {
             if (action === 'add') return [...state, membership];
             if (action === 'remove') return state.filter(m => m.id !== membership.id);
             if (action === 'toggle') return state.map(m => m.id === membership.id ? { ...m, is_leader: !m.is_leader } : m);
@@ -112,8 +82,13 @@ export default function LedenDetailIsland({
         return localMember.membership_expiry.substring(0, 10) >= todayStr;
     }, [localMember.membership_expiry]);
 
-    const handleUpdateProfile = async (data: any) => {
-        const res = await updateMemberProfileAction(localMember.id, data);
+    const handleUpdateProfile = async (data: Partial<AdminMember>) => {
+        const cleanData = { ...data };
+        if (cleanData.first_name === null) delete cleanData.first_name;
+        if (cleanData.last_name === null) delete cleanData.last_name;
+        if (cleanData.phone_number === null) delete cleanData.phone_number;
+        
+        const res = await updateMemberProfileAction(localMember.id, cleanData as any);
         if (res.success) {
             setLocalMember(prev => ({ ...prev, ...data }));
             return true;
@@ -209,7 +184,7 @@ export default function LedenDetailIsland({
                             (!tab.adminOnly || isAdmin) && (
                                 <button
                                     key={tab.id}
-                                    onClick={() => setActiveTab(tab.id as any)}
+                                    onClick={() => setActiveTab(tab.id as typeof activeTab)}
                                     className={`flex items-center gap-3 px-8 py-5 font-black text-xs uppercase tracking-[0.2em] transition-all border-b-2 ${
                                         activeTab === tab.id 
                                             ? 'text-[var(--beheer-accent)] border-[var(--beheer-accent)]' 

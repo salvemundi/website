@@ -19,6 +19,12 @@ import {
 
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
+import { 
+    type DbPubCrawlEvent,
+    type DbTrip,
+    type DbHeroBanner,
+    type DbSponsor 
+} from '@salvemundi/validations/directus/schema';
 
 
 
@@ -40,7 +46,7 @@ export async function getHeroBanners(): Promise<HeroBanner[]> {
     const parsed = heroBannersSchema.safeParse(mappedData);
     if (!parsed.success) {
         console.error('[Validation Error] getHeroBanners:', parsed.error);
-        return mappedData as any;
+        return mappedData as HeroBanner[];
     }
 
     return parsed.data;
@@ -74,14 +80,14 @@ export async function getUpcomingActiviteiten(limit = 4): Promise<Activiteit[]> 
         getUpcomingTrips()
     ]);
 
-    const mappedRegular = (regularEvents as any[]).map((item) => {
+    const mappedRegular = (regularEvents as Activiteit[]).map((item) => {
         return {
             ...item,
-            category: item.committee_name, // Let component fallback if this is null
+            category: item.committee_name || undefined, // Let component fallback if this is null
         };
     });
 
-    const mappedPubCrawl = (pubCrawlEvents as any[]).map((item) => ({
+    const mappedPubCrawl = (pubCrawlEvents as DbPubCrawlEvent[]).map((item) => ({
         id: `kroeg-${item.id}`,
         titel: item.name ?? '',
         beschrijving: item.description ?? null,
@@ -102,7 +108,7 @@ export async function getUpcomingActiviteiten(limit = 4): Promise<Activiteit[]> 
         committee_name: 'Feestcommissie',
     }));
 
-    const mappedTrips = (tripEvents as any[]).map((item) => ({
+    const mappedTrips = (tripEvents as DbTrip[]).map((item) => ({
         id: `trip-${item.id}`,
         titel: item.name ?? '',
         beschrijving: item.description ?? null,
@@ -135,10 +141,10 @@ export async function getUpcomingActiviteiten(limit = 4): Promise<Activiteit[]> 
     const parsed = activitiesSchema.safeParse(allEvents);
     if (!parsed.success) {
         console.error('[Validation Error] getUpcomingActiviteiten:', parsed.error);
-        return allEvents as any;
+        return allEvents as unknown as Activiteit[];
     }
 
-    return parsed.data as any;
+    return parsed.data;
 }
 
 
@@ -152,7 +158,7 @@ export async function getSponsors(): Promise<Sponsor[]> {
     const parsed = sponsorsSchema.safeParse(rawData);
     if (!parsed.success) {
         console.error('[Validation Error] getSponsors:', parsed.error);
-        return rawData as any;
+        return rawData as unknown as Sponsor[];
     }
 
     return parsed.data;

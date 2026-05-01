@@ -40,7 +40,7 @@ export async function getIntroSignupsInternal() {
     try {
         const sql = 'SELECT * FROM intro_signups ORDER BY id DESC LIMIT 1000';
         const { rows } = await query(sql);
-        return rows as any[];
+        return rows;
     } catch (e) {
         
         throw new Error('Kon aanmeldingen niet ophalen');
@@ -51,7 +51,7 @@ export async function getIntroParentSignupsInternal() {
     try {
         const sql = 'SELECT * FROM intro_parent_signups ORDER BY id DESC LIMIT 1000';
         const { rows } = await query(sql);
-        return rows as any[];
+        return rows;
     } catch (e) {
         
         throw new Error('Kon ouder-aanmeldingen niet ophalen');
@@ -68,7 +68,7 @@ export async function getIntroBlogsInternal(): Promise<IntroBlog[]> {
             id: Number(i.id),
             title: i.title || '',
             content: i.content || '',
-            blog_type: (i.blog_type || 'update') as any,
+            blog_type: (i.blog_type || 'update') as IntroBlog['blog_type'],
             is_published: !!i.is_published
         }));
 

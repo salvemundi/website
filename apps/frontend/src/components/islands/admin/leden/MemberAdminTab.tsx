@@ -20,8 +20,8 @@ import { useAdminToast } from '@/hooks/use-admin-toast';
 
 interface Member {
     id: string;
-    first_name: string;
-    last_name: string;
+    first_name?: string | null;
+    last_name?: string | null;
     entra_id?: string | null;
 }
 
@@ -38,7 +38,7 @@ interface CommitteeMembership {
 interface Committee {
     id: string;
     name: string;
-    azure_group_id: string;
+    azure_group_id?: string | null | undefined;
 }
 
 interface Props {
@@ -169,13 +169,13 @@ export default function MemberAdminTab({
                         {availableCommittees.map(c => (
                             <button
                                 key={c.id}
-                                onClick={() => onMembershipChange(c.azure_group_id, 'add', c.name)}
+                                onClick={() => c.azure_group_id && onMembershipChange(c.azure_group_id, 'add', c.name)}
                                 disabled={isActionInProgress === `add-${c.azure_group_id}`}
                                 className="flex items-center justify-between p-4 rounded-2xl bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] hover:border-[var(--beheer-accent)]/50 hover:bg-[var(--beheer-accent)]/5 transition-all text-left shadow-sm group"
                             >
                                 <div className="min-w-0 flex-1">
                                     <p className="font-black text-[var(--beheer-text)] text-xs truncate uppercase tracking-tight">{cleanName(c.name)}</p>
-                                    <p className="text-[9px] text-[var(--beheer-text-muted)] font-black uppercase tracking-wider opacity-60">Azure ID: {c.azure_group_id.substring(0, 8)}...</p>
+                                    <p className="text-[9px] text-[var(--beheer-text-muted)] font-black uppercase tracking-wider opacity-60">Azure ID: {c.azure_group_id?.substring(0, 8)}...</p>
                                 </div>
                                 <div className="p-2 bg-[var(--beheer-card-soft)] rounded-lg group-hover:bg-[var(--beheer-accent)] group-hover:text-white transition-all">
                                     {isActionInProgress === `add-${c.azure_group_id}` ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}

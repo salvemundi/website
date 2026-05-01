@@ -8,25 +8,31 @@ import { getSystemDirectus } from "@/lib/directus";
 import { readItems } from "@directus/sdk";
 import { STICKER_FIELDS } from "@salvemundi/validations";
 
+import { query } from '@/lib/database';
+
 export async function getPublicStickers() {
     try {
-        const stickers = await getSystemDirectus().request(readItems('Stickers', {
-            fields: [
-                ...STICKER_FIELDS,
-                { user_created: ['id', 'first_name', 'last_name', 'avatar'] }
-            ] as any,
-            sort: ['-date_created'],
-            limit: -1
-        }));
+        const sql = `
+            SELECT 
+                s.*,
+                u.id as user_id,
+                u.first_name,
+                u.last_name,
+                u.avatar
+            FROM "Stickers" s
+            LEFT JOIN directus_users u ON s.user_created = u.id
+            ORDER BY s.date_created DESC
+        `;
+        const { rows } = await query(sql);
 
-        return (stickers || []).map((row: any) => ({
+        return rows.map((row) => ({
             ...row,
             id: Number(row.id),
-            user_created: row.user_created ? {
-                id: row.user_created.id,
-                first_name: row.user_created.first_name,
-                last_name: row.user_created.last_name,
-                avatar: row.user_created.avatar
+            user_created: row.user_id ? {
+                id: row.user_id,
+                first_name: row.first_name,
+                last_name: row.last_name,
+                avatar: row.avatar
             } : null
         }));
     } catch (error) {
@@ -35,7 +41,7 @@ export async function getPublicStickers() {
     }
 }
 
-export async function createStickerPublic(data: any) {
+export async function createStickerPublic(data: Record<string, unknown>) {
     const session = await auth.api.getSession({
         headers: await headers()
     });

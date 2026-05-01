@@ -9,6 +9,9 @@ import { getActivityByIdInternal } from '@/server/queries/admin-event.queries';
 import { query } from '@/lib/database';
 import { getPermissions } from '@/shared/lib/permissions';
 import { fetchUserCommitteesDb } from '@/server/actions/user-db.utils';
+import { type EnrichedUser } from '@/types/auth';
+import { type AdminActivity } from "@salvemundi/validations";
+import { type Committee } from '@/shared/lib/permissions';
 
 export const metadata: Metadata = {
     title: 'Activiteit Bewerken | SV Salve Mundi',
@@ -24,7 +27,7 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
     });
     if (!session || !session.user) return <AdminUnauthorized title="Activiteit Bewerken" />;
 
-    const user = session.user as any;
+    const user = session.user as unknown as EnrichedUser;
     const userCommittees = await fetchUserCommitteesDb(user.id).catch(() => []);
     const permissions = getPermissions(userCommittees || []);
 
@@ -42,7 +45,7 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
     // Fetch data using SQL instead of Directus API for better performance and consistency
     const [eventData, allCommittees] = await Promise.all([
         getActivityByIdInternal(id),
-        query('SELECT id, name, email FROM committees WHERE is_visible = true').then(res => res.rows)
+        query('SELECT id, name, email FROM committees WHERE is_visible = true').then(res => res.rows as { id: number; name: string; email: string }[])
     ]);
     
     if (!eventData) return notFound();
@@ -66,7 +69,7 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
         only_members: eventData.only_members,
     };
 
-    const cleanedCommittees = allCommittees.map((c: any) => ({
+    const cleanedCommittees = allCommittees.map((c) => ({
         id: c.id,
         name: c.name.replace(/\|\|.*salvemundi.*$/i, '').replace(/\|+$/g, '').trim(),
         email: c.email
@@ -75,11 +78,14 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
     // Filter allowed committees for the dropdown (only if not powerful, otherwise show all)
     const allowedCommitteesForDropdown = isPowerful 
         ? cleanedCommittees 
-        : cleanedCommittees.filter((c: any) => (userCommittees || []).some((m: any) => String(m.id) === String(c.id)));
+        : cleanedCommittees.filter((c) => (userCommittees || []).some((m) => String(m.id) === String(c.id)));
 
     return (
         <div className="pb-20">
-            <ActiviteitBewerkenIsland event={legacyEventData as any} committees={allowedCommitteesForDropdown as any} />
+            <ActiviteitBewerkenIsland 
+                event={legacyEventData as unknown as AdminActivity} 
+                committees={allowedCommitteesForDropdown as unknown as Committee[]} 
+            />
         </div>
     );
 }

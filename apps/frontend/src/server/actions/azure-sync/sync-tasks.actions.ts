@@ -73,7 +73,7 @@ export async function triggerUserSyncAction(userId: string, options?: { fields: 
     try {
         const users = await getSystemDirectus().request(readUsers({
             filter: { entra_id: { _eq: userId } },
-            fields: USER_FULL_FIELDS as any
+            fields: USER_FULL_FIELDS
         }));
         targetUser = users?.[0];
     } catch (err: unknown) {

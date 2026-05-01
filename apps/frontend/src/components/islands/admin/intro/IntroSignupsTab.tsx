@@ -204,7 +204,7 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, onExport,
                                                                         <span className="opacity-50 text-[9px]">Telefoon</span>
                                                                         <PhoneInput 
                                                                             value={editData.phone_number || ''} 
-                                                                            onChange={(e: any) => setEditData({...editData, phone_number: e.target.value})} 
+                                                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditData({...editData, phone_number: e.target.value})} 
                                                                             className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-lg px-3 py-2 text-[var(--beheer-text)] text-xs font-bold focus:ring-2 focus:ring-[var(--beheer-accent)] outline-none" 
                                                                         />
                                                                     </div>
@@ -214,7 +214,7 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, onExport,
                                                             <div className="space-y-4">
                                                                 <div className="flex items-center justify-between">
                                                                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--beheer-accent)]">Extra Informatie</p>
-                                                                    <Button onClick={(e: any) => startEdit(e, s)} variant="ghost" icon={Edit}>
+                                                                    <Button onClick={() => startEdit({ stopPropagation: () => {} } as React.MouseEvent, s)} variant="ghost" icon={Edit}>
                                                                         Bewerken
                                                                     </Button>
                                                                 </div>

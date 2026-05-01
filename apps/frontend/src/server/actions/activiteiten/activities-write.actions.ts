@@ -50,7 +50,7 @@ export type CreateActivityResult =
     | { success: true; id: number }
     | { success: false; error: string; fieldErrors?: Record<string, string[]> };
 
-export async function createActivityAction(prevState: any, formData: FormData): Promise<CreateActivityResult> {
+export async function createActivityAction(prevState: unknown, formData: FormData): Promise<CreateActivityResult> {
     await ensureActivitiesEdit();
 
     const imageFile = formData.get('imageFile') as File | null;
@@ -65,7 +65,7 @@ export async function createActivityAction(prevState: any, formData: FormData): 
         } catch (e) {}
     }
 
-    const rawData: Record<string, any> = {};
+    const rawData: Record<string, unknown> = {};
     formData.forEach((value, key) => {
         if (key !== 'imageFile') rawData[key] = value;
     });
@@ -94,7 +94,7 @@ export async function createActivityAction(prevState: any, formData: FormData): 
         };
     }
 
-    const directusPayload: Record<string, any> = {
+    const directusPayload: Record<string, unknown> = {
         ...data,
         status: data.status === 'scheduled' ? 'published' : data.status,
     };
@@ -125,7 +125,7 @@ export async function createActivityAction(prevState: any, formData: FormData): 
     }
 }
 
-export async function updateActivityAction(eventId: number, prevState: any, formData: FormData) {
+export async function updateActivityAction(eventId: number, prevState: unknown, formData: FormData) {
     await ensureActivitiesEdit();
 
     try {
@@ -136,7 +136,7 @@ export async function updateActivityAction(eventId: number, prevState: any, form
         }));
         
         if (!existing || existing.length === 0) return { error: "Activity not found", success: false };
-        const oldData = existing[0];
+        const oldData = existing[0] as unknown as Record<string, unknown>;
         
         const imageFile = formData.get('imageFile') as File | null;
         let imageId: string | null | undefined = undefined;
@@ -151,7 +151,7 @@ export async function updateActivityAction(eventId: number, prevState: any, form
             imageId = null;
         }
 
-        const rawData: Record<string, any> = {};
+        const rawData: Record<string, unknown> = {};
         formData.forEach((value, key) => {
             if (key !== 'imageFile' && key !== 'removeImage') rawData[key] = value;
         });
@@ -168,7 +168,7 @@ export async function updateActivityAction(eventId: number, prevState: any, form
         const data = validated.data;
 
         // Check for duplicate name if changed
-        const oldName = (oldData as any).name;
+        const oldName = oldData.name as string | undefined;
         if (data.name.toLowerCase() !== oldName?.toLowerCase()) {
             const { query: dbQuery } = await import("@/lib/database");
             const nameCheck = await dbQuery(
@@ -183,7 +183,7 @@ export async function updateActivityAction(eventId: number, prevState: any, form
             }
         }
 
-        const directusPayload: Record<string, any> = {
+        const directusPayload: Record<string, unknown> = {
             ...data,
             status: data.status === 'scheduled' ? 'published' : data.status,
         };

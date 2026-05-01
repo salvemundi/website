@@ -5,7 +5,7 @@ import { RefreshCw, X, Info } from 'lucide-react';
 import { useSync } from './SyncContext';
 
 interface Props {
-    tasks?: any[];
+    tasks?: Record<string, unknown>[];
 }
 
 export default function SyncControlIsland({ tasks = [] }: Props) {
@@ -30,7 +30,7 @@ export default function SyncControlIsland({ tasks = [] }: Props) {
                     <div>
                         <label className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] mb-4 block">Velden om te synchroniseren</label>
                         <div className="flex flex-wrap gap-2">
-                            {(syncFieldOptions || []).map((field: any) => (
+                            {(syncFieldOptions || []).map((field: { id: string; label: string }) => (
                                 <button
                                     key={field.id}
                                     onClick={() => toggleField?.(field.id)}

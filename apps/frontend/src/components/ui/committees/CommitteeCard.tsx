@@ -35,7 +35,7 @@ export const CommitteeCard: React.FC<CommitteeCardProps> = ({
             isLeader: m.is_leader
         })) || [];
 
-    const hasHistory = (committee as any).has_history ?? false;
+    const hasHistory = committee.has_history ?? false;
     const hasImage = !!committee.image;
     const imageUrl = getImageUrl(committee.image);
 

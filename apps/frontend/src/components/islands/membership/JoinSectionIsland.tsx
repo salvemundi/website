@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { authClient } from '@/lib/auth';
 
 interface JoinSectionIslandProps {
-    serverUser?: any | null; // Optional server-side user status
+    serverUser?: Record<string, unknown> | null; // Optional server-side user status
 }
 
 /**
@@ -24,7 +24,7 @@ export const JoinSectionIsland: React.FC<JoinSectionIslandProps> = ({
     // Resolve identity: Use serverUser if passed, else fallback to client session
     const user = serverUser !== undefined 
         ? serverUser 
-        : (session?.user as any ?? null);
+        : (session?.user as unknown as Record<string, unknown> ?? null);
 
     // Identity-aware loading logic - only for client-side fallback if server data not provided
     const isAuthenticating = serverUser === undefined && clientPending;

@@ -8,6 +8,11 @@ import { getAdminActivities } from '@/server/actions/activiteiten/activities-rea
 import { getCommittees } from '@/server/actions/committees.actions';
 import { fetchUserCommitteesDb } from '@/server/actions/user-db.utils';
 import { getPermissions } from '@/shared/lib/permissions';
+import { type EnrichedUser } from '@/types/auth';
+import { type AdminActivity } from "@salvemundi/validations";
+import { type Committee } from '@/shared/lib/permissions';
+
+import { type DbCommittee } from '@salvemundi/validations/directus/schema';
 
 export const metadata: Metadata = {
     title: 'Beheer Activiteiten | SV Salve Mundi',
@@ -18,8 +23,8 @@ export default async function AdminActiviteitenPage() {
         headers: await headers()
     });
 
-    const user = session?.user as any;
-    const userCommittees = await fetchUserCommitteesDb(user?.id).catch(() => []);
+    const user = session?.user as unknown as EnrichedUser | undefined;
+    const userCommittees = await fetchUserCommitteesDb(user?.id || '').catch(() => []);
     const permissions = getPermissions(userCommittees || []);
 
     const [initialEvents, committees] = await Promise.all([
@@ -34,10 +39,10 @@ export default async function AdminActiviteitenPage() {
             backHref="/beheer"
         >
             <AdminActivitiesIsland 
-                initialEvents={initialEvents as any} 
-                committees={committees as any}
+                initialEvents={initialEvents as unknown as AdminActivity[]} 
+                committees={committees as unknown as DbCommittee[]}
                 userId={session?.user?.id}
-                userCommittees={userCommittees || []}
+                userCommittees={userCommittees as unknown as DbCommittee[]}
                 permissions={permissions}
             />
         </AdminPageShell>

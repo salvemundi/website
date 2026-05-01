@@ -14,9 +14,11 @@ import { cookies } from 'next/headers';
 import { triggerUserSyncAction } from './azure-sync/sync-tasks.actions';
 import sharp from 'sharp';
 
+import { type EnrichedUser } from '@/types/auth';
+
 export async function updateUserProfile(data: z.infer<typeof updateProfileSchema>) {
     const session = await auth.api.getSession({ headers: await headers() });
-    const user = session?.user;
+    const user = session?.user as EnrichedUser | undefined;
 
     if (!user?.id) {
         return { success: false, error: 'Not authenticated' };
@@ -37,7 +39,7 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
     const INTERNAL_TOKEN = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
 
     try {
-        const entraId = (user as any).entra_id;
+        const entraId = user.entra_id;
         
         // Phase 1: Entra ID (Phone Number) - THE SOURCE OF TRUTH
         if (parsed.data.phone_number && entraId) {
@@ -63,7 +65,7 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
         }
 
         // Phase 2: Directus Only Fields (Minecraft)
-        const directusOnlyData: any = {};
+        const directusOnlyData: Record<string, unknown> = {};
         if (parsed.data.minecraft_username !== undefined) {
             directusOnlyData.minecraft_username = parsed.data.minecraft_username;
         }
@@ -97,7 +99,7 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
  */
 export async function uploadUserAvatar(formData: FormData) {
     const session = await auth.api.getSession({ headers: await headers() });
-    const user = session?.user;
+    const user = session?.user as EnrichedUser | undefined;
 
     if (!user?.id) {
         return { success: false, error: 'Not authenticated' };
@@ -115,7 +117,7 @@ export async function uploadUserAvatar(formData: FormData) {
 
     const AZURE_MGMT_URL = process.env.AZURE_MANAGEMENT_SERVICE_URL;
     const INTERNAL_TOKEN = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
-    const entraId = (user as any).entra_id;
+    const entraId = user.entra_id;
 
     if (!entraId) {
         return { success: false, error: 'Je account is nog niet gekoppeld aan Microsoft Entra ID.' };
@@ -166,7 +168,7 @@ export async function uploadUserAvatar(formData: FormData) {
 
         revalidatePath('/profiel');
         return { success: true };
-    } catch (err: any) {
+    } catch (err: unknown) {
         console.error('[AvatarUpload] Error:', err);
         return { success: false, error: 'Uploaden van profielfoto mislukt.' };
     }

@@ -17,9 +17,11 @@ import {
     type DbTrip 
 } from '@salvemundi/validations/directus/schema';
 import { auth } from '@/server/auth/auth';
+import { type EnrichedUser } from '@/types/auth';
 import { headers } from 'next/headers';
 import { revalidateTag, unstable_noStore as noStore } from 'next/cache';
 import { cache } from 'react';
+import { type EnrichedPubCrawlSignup } from './kroegentocht-db.utils';
 
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems, createItem, deleteItem } from '@directus/sdk';
@@ -168,7 +170,7 @@ export async function signupForActivity(data: EventSignupForm) {
             return { success: false, error: 'Deze activiteit is alleen voor leden.' };
         }
 
-        const user = session?.user;
+        const user = session?.user as unknown as EnrichedUser;
         const isMember = user?.membership_status === 'active';
         const price = (isMember ? activity.price_members : activity.price_non_members) ?? 0;
 
@@ -187,10 +189,10 @@ export async function signupForActivity(data: EventSignupForm) {
             return { success: false, error: 'U bent al aangemeld voor deze activiteit.' };
         }
 
-        const qrToken = `r-${parsed.data.event_id}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+        const qrToken = `r-${parsed.data.event_id}-${crypto.randomUUID()}`;
         const directus = getSystemDirectus();
         
-        const payload: any = {
+        const payload: Partial<DbEventSignup> = {
             event_id: parsed.data.event_id,
             participant_name: parsed.data.name,
             participant_email: parsed.data.email,
@@ -262,11 +264,11 @@ export async function signupForActivity(data: EventSignupForm) {
                 qrToken: qrToken
             };
         }
-    } catch (error: any) {
+    } catch (error: unknown) {
         
         
         // Postgres Code 23505: Unique Violation
-        if (error.code === '23505') {
+        if (typeof error === 'object' && error !== null && 'code' in error && error.code === '23505') {
             return { success: false, error: 'U bent al aangemeld voor deze activiteit.' };
         }
         
@@ -278,7 +280,7 @@ export type PaymentStatus = 'paid' | 'open' | 'failed' | 'canceled' | 'expired' 
 
 export interface SignupStatusResult {
     status: PaymentStatus;
-    signup?: DbEventSignup | DbPubCrawlSignup | DbTripSignup | unknown;
+    signup?: DbEventSignup | DbPubCrawlSignup | DbTripSignup;
     isMembership?: boolean;
     isTrip?: boolean;
     errorType?: string;
@@ -298,6 +300,12 @@ export async function getSignupStatus(
     
     // Determine the identifier to check against the Finance Service
     const financeId = transactionId || id;
+    
+    // PENTEST HARDENING: Validate financeId to prevent path traversal or SSRF-like behavior
+    if (financeId && !/^[a-zA-Z0-9\-_.]+$/.test(String(financeId))) {
+        return { status: 'error', errorType: 'INVALID_ID' };
+    }
+
     let paymentStatus: PaymentStatus = 'open';
     
     if (financeId) {
@@ -333,7 +341,7 @@ export async function getSignupStatus(
             const krotoSignup = await fetchPubCrawlSignupByIdDb(signupId);
             if (krotoSignup) {
                 const status = krotoSignup.payment_status !== 'open' ? krotoSignup.payment_status : paymentStatus;
-                return { status: status as PaymentStatus, signup: krotoSignup };
+                return { status: status as PaymentStatus, signup: krotoSignup as unknown as DbPubCrawlSignup };
             }
 
             const tripSignup = await fetchTripSignupByIdDb(signupId);
@@ -384,7 +392,7 @@ export async function getSignupStatus(
         if (typeof id === 'string' && /^\d+$/.test(id)) {
             const signupId = parseInt(id);
             const session = await auth.api.getSession({ headers: await headers() });
-            const user = session?.user as { id: string; role?: string };
+            const user = session?.user as unknown as EnrichedUser | undefined;
             const isAdmin = user?.role === 'admin' || user?.role === '06e78cf9-f9c3-4f9e-a86d-1907de634567'; 
 
             const signup = await fetchEventSignupByIdDb(signupId);
@@ -400,7 +408,7 @@ export async function getSignupStatus(
             if (krotoSignup) {
                 const isOwner = user?.id && krotoSignup.directus_relations === user.id;
                 if (isAdmin || isOwner) {
-                    return { status: (krotoSignup.payment_status as PaymentStatus) || paymentStatus, signup: krotoSignup };
+                    return { status: (krotoSignup.payment_status as PaymentStatus) || paymentStatus, signup: krotoSignup as unknown as DbPubCrawlSignup };
                 }
                 return { status: 'unauthorized' };
             }
@@ -444,15 +452,16 @@ export async function getMyTickets() {
             return [];
         });
 
-        // 3. Fetch trip signups (Legacy Directus for now - by email)
-        const tripSignups = await getSystemDirectus().request(readItems('trip_signups', {
-            filter: { email: { _eq: email } },
-            fields: ['id', 'status', 'created_at', 'first_name', 'last_name', { trip_id: ['id', 'name', 'event_date'] }] as any,
-            sort: ['-created_at']
-        })).catch(err => {
-            
-            return [];
-        }) as unknown as DbTripSignup[];
+        // 3. Fetch trip signups (SQL by email)
+        const tripSignupsResult = await query(`
+            SELECT ts.id, ts.status, ts.created_at, ts.first_name, ts.last_name,
+                   t.id as trip_id, t.name as trip_name, t.event_date as trip_event_date
+            FROM trip_signups ts
+            LEFT JOIN trips t ON ts.trip_id = t.id
+            WHERE LOWER(ts.email) = LOWER($1)
+            ORDER BY ts.created_at DESC
+        `, [email]).catch(() => ({ rows: [] }));
+        const tripSignups = tripSignupsResult.rows;
 
         const formattedPubCrawl = pubCrawlSignups.map(s => ({
             ...s,
@@ -467,14 +476,13 @@ export async function getMyTickets() {
         }));
 
         const formattedTrips = tripSignups.map(s => {
-            const trip = s.trip_id as DbTrip | undefined;
             return {
                 ...s,
-                date_created: s.created_at, // Normalize for TicketListIsland
+                date_created: s.created_at,
                 event_id: { 
-                    id: trip?.id, 
-                    name: trip?.name,
-                    event_date: trip?.event_date 
+                    id: s.trip_id, 
+                    name: s.trip_name,
+                    event_date: s.trip_event_date 
                 },
                 type: 'trip'
             };

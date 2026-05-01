@@ -19,11 +19,13 @@ export type Coupon = {
     date_created?: string;
 };
 
+import { type EnrichedUser } from '@/types/auth';
+
 async function checkAccess() {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) throw new Error('Niet ingelogd');
     
-    const user = session.user as any;
+    const user = session.user as unknown as EnrichedUser;
     if (!hasPermission(user.committees, AdminResource.Coupons)) {
         throw new Error('Geen toegang: onvoldoende rechten voor coupon beheer');
     }

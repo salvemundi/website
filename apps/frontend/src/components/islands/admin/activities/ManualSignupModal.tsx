@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { X, Search, Check, Loader2, User, UserPlus, XCircle, CheckCircle } from 'lucide-react';
 import { searchMembersAction, createManualSignupAction } from '@/server/actions/aanmeldingen.actions';
+import { UserBasic } from '@salvemundi/validations';
 
 function useDebounce<T>(value: T, delay: number): T {
     const [debouncedValue, setDebouncedValue] = useState<T>(value);
@@ -21,12 +22,6 @@ interface ManualSignupModalProps {
     eventPrice: number;
 }
 
-interface UserResult {
-    id: string;
-    first_name: string;
-    last_name: string;
-    email: string;
-}
 
 export default function ManualSignupModal({ isOpen, onClose, eventId, eventName, eventPrice }: ManualSignupModalProps) {
     const [activeTab, setActiveTab] = useState<'member' | 'guest'>('member');
@@ -36,8 +31,8 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName,
 
     // Member specific state
     const [memberQuery, setMemberQuery] = useState('');
-    const [memberResults, setMemberResults] = useState<UserResult[]>([]);
-    const [selectedMember, setSelectedMember] = useState<UserResult | null>(null);
+    const [memberResults, setMemberResults] = useState<UserBasic[]>([]);
+    const [selectedMember, setSelectedMember] = useState<UserBasic | null>(null);
     const [isSearchingMember, setIsSearchingMember] = useState(false);
     const debouncedMemberQuery = useDebounce(memberQuery, 300);
 
@@ -63,7 +58,7 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName,
             setIsSearchingMember(true);
             const res = await searchMembersAction(debouncedMemberQuery);
             if (res.success && res.data) {
-                setMemberResults(res.data as any);
+                setMemberResults(res.data);
             } else {
                 setMemberResults([]);
             }
@@ -86,7 +81,7 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName,
         setGuestPhone('');
     };
 
-    const handleMemberSelect = (user: UserResult) => {
+    const handleMemberSelect = (user: UserBasic) => {
         setSelectedMember(user);
         setMemberResults([]);
     };
@@ -97,7 +92,7 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName,
         setIsLoading(true);
 
         const guestData = activeTab === 'guest' ? { name: guestName, email: guestEmail, phone: guestPhone } : undefined;
-        const memberData = activeTab === 'member' ? selectedMember : undefined;
+        const memberData = activeTab === 'member' ? (selectedMember ?? undefined) : undefined;
 
         if (activeTab === 'member' && !selectedMember) {
             setError('Selecteer een lid');
@@ -189,7 +184,7 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName,
                                     <div className="flex items-center justify-between p-4 bg-[var(--beheer-card-soft)] border border-[var(--beheer-border)] rounded-2xl">
                                         <div className="flex items-center gap-4">
                                             <div className="h-10 w-10 flex items-center justify-center bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] font-black rounded-full">
-                                                {selectedMember.first_name[0]}{selectedMember.last_name?.[0] || ''}
+                                                {selectedMember.first_name?.[0] || ''}{selectedMember.last_name?.[0] || ''}
                                             </div>
                                             <div>
                                                 <p className="font-bold text-[var(--beheer-text)]">

@@ -22,12 +22,12 @@ import { useAdminToast } from '@/hooks/use-admin-toast';
 
 interface Member {
     id: string;
-    first_name: string;
-    last_name: string;
+    first_name?: string | null;
+    last_name?: string | null;
     email: string;
-    date_of_birth: string | null;
-    membership_expiry: string | null;
-    phone_number: string | null;
+    date_of_birth?: string | null;
+    membership_expiry?: string | null;
+    phone_number?: string | null;
     entra_id?: string | null;
 }
 
@@ -48,7 +48,7 @@ interface Props {
     realCommittees: CommitteeMembership[];
     otherGroups: CommitteeMembership[];
     isAdmin: boolean;
-    onUpdateProfile: (data: any) => Promise<boolean>;
+    onUpdateProfile: (data: Partial<Member>) => Promise<boolean>;
 }
 
 export default function MemberProfileTab({ 
@@ -60,9 +60,9 @@ export default function MemberProfileTab({
 }: Props) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [isEditing, setIsEditing] = useState(false);
-    const [editData, setEditData] = useState({
-        first_name: member.first_name,
-        last_name: member.last_name,
+    const [editData, setEditData] = useState<Partial<Member>>({
+        first_name: member.first_name || '',
+        last_name: member.last_name || '',
         phone_number: member.phone_number || '',
         date_of_birth: member.date_of_birth || '',
     });
@@ -80,7 +80,7 @@ export default function MemberProfileTab({
         setSaving(false);
     };
 
-    const formatDate = (dateString: string | null) => {
+    const formatDate = (dateString: string | null | undefined) => {
         if (!dateString) return 'Onbekend';
         try {
             return format(new Date(dateString), 'd MMMM yyyy', { locale: nl });
@@ -88,6 +88,13 @@ export default function MemberProfileTab({
             return 'Onbekend';
         }
     };
+
+    const editFields: { key: keyof Member; label: string; type: string }[] = [
+        { key: 'first_name', label: 'Voornaam', type: 'text' },
+        { key: 'last_name', label: 'Achternaam', type: 'text' },
+        { key: 'phone_number', label: 'Telefoon', type: 'tel' },
+        { key: 'date_of_birth', label: 'Geboortedatum', type: 'date' },
+    ];
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in duration-500">
@@ -105,17 +112,12 @@ export default function MemberProfileTab({
 
                     {isEditing ? (
                         <div className="space-y-5">
-                            {[
-                                { key: 'first_name', label: 'Voornaam', type: 'text' },
-                                { key: 'last_name', label: 'Achternaam', type: 'text' },
-                                { key: 'phone_number', label: 'Telefoon', type: 'tel' },
-                                { key: 'date_of_birth', label: 'Geboortedatum', type: 'date' },
-                            ].map(field => (
+                            {editFields.map(field => (
                                 <div key={field.key} className="space-y-2">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">{field.label}</label>
                                     <input
                                         type={field.type}
-                                        value={(editData as any)[field.key]}
+                                        value={(editData[field.key] as string) || ''}
                                         onChange={e => setEditData(prev => ({ ...prev, [field.key]: e.target.value }))}
                                         className="w-full px-4 py-3 rounded-xl bg-[var(--beheer-card-soft)] border border-[var(--beheer-border)] text-sm font-bold focus:ring-2 focus:ring-[var(--beheer-accent)] outline-none transition-all"
                                     />

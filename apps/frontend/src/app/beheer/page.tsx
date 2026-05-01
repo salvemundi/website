@@ -27,7 +27,7 @@ export default async function BeheerPage() {
         return (
             <div className="p-4 sm:p-6 lg:p-8">
                 <GlobalError 
-                    error={{ message: "Geen toegang" } as any} 
+                    error={new Error("Geen toegang")} 
                     reset={() => {}} 
                     title="Beheerderspaneel Fout" 
                 />

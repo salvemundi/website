@@ -21,7 +21,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
         try {
             const trip = await getSystemDirectus().request(readItems('trips', {
                 filter: { id: { _eq: Number(tripIdParam) } },
-                fields: ['name'] as any,
+                fields: ['name'],
                 limit: 1
             }));
             if (trip && trip[0]) {
@@ -72,8 +72,8 @@ export default async function ReisActiviteitenPage({ searchParams }: PageProps) 
     return (
         <div className="w-full">
             <ReisActiviteitenIsland 
-                initialTrips={trips as any} 
-                initialActivities={activities as any}
+                initialTrips={trips} 
+                initialActivities={activities}
                 initialSelectedTripId={activeTripId}
                 initialSignupsByActivity={signupsByActivity}
             />

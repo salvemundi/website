@@ -3,6 +3,8 @@ import { headers } from "next/headers";
 import { hasPermission } from "@/shared/lib/permissions";
 import { AdminResource } from "@/shared/lib/permissions-config";
 
+import { type EnrichedUser } from "@/types/auth";
+
 /**
  * Server-only authorization utility for Salve Mundi.
  * Uses the session-enriched committees from the Redis plugin.
@@ -17,7 +19,7 @@ export async function requireAdminResource(resource: AdminResource) {
         throw new Error('Niet ingelogd');
     }
 
-    const user = session.user as any;
+    const user = session.user as unknown as EnrichedUser;
     
     // De Redis-session plugin injecteert de committees al in het user object.
     // Dit is de meest betrouwbare en snelste bron van waarheid.

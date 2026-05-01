@@ -8,6 +8,7 @@ import {
     transactionSchema,
     whatsappGroupSchema
 } from '@salvemundi/validations/schema/profiel.zod';
+import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { 
     EVENT_SIGNUP_FIELDS,
     TRANSACTION_FIELDS,
@@ -35,19 +36,18 @@ export async function getUserEventSignups(): Promise<EventSignup[]> {
         const parsed = eventSignupSchema.array().safeParse(validRegistrations);
 
         if (!parsed.success) {
-            
-            return validRegistrations as any;
+            return validRegistrations as unknown as EventSignup[];
         }
 
         return parsed.data;
-    } catch (err: any) {
+    } catch (err: unknown) {
         
         return [];
     }
 }
 
 
-export async function getUserPubCrawlSignups(): Promise<any[]> {
+export async function getUserPubCrawlSignups(): Promise<PubCrawlSignup[]> {
     const session = await auth.api.getSession({ headers: await headers() });
     const user = session?.user;
 
@@ -56,8 +56,7 @@ export async function getUserPubCrawlSignups(): Promise<any[]> {
 
     try {
         return await fetchUserPubCrawlSignupsDb(email);
-    } catch (err: any) {
-        
+    } catch (err: unknown) {
         return [];
     }
 }
@@ -81,13 +80,11 @@ export async function getUserTransactions(): Promise<Transaction[]> {
         const parsed = transactionSchema.array().safeParse(res.rows);
 
         if (!parsed.success) {
-            
-            return res.rows as any;
+            return res.rows as unknown as Transaction[];
         }
 
         return parsed.data;
-    } catch (err: any) {
-        
+    } catch (err: unknown) {
         return [];
     }
 }
@@ -108,13 +105,11 @@ export async function getWhatsAppGroups(): Promise<WhatsAppGroup[]> {
         const parsed = whatsappGroupSchema.array().safeParse(res.rows);
 
         if (!parsed.success) {
-            
-            return res.rows as any;
+            return res.rows as unknown as WhatsAppGroup[];
         }
 
         return parsed.data;
-    } catch (err: any) {
-        
+    } catch (err: unknown) {
         return [];
     }
 }

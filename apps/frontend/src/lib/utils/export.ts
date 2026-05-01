@@ -5,14 +5,14 @@
  * Standard CSV format (UTF-8 with BOM for Excel compatibility).
  */
 
-export function downloadCSV(data: Record<string, any>[], filename: string) {
+export function downloadCSV(data: Record<string, unknown>[], filename: string) {
     if (data.length === 0) return;
 
     // 1. Extract headers from the first object
     const headers = Object.keys(data[0]);
 
     // 2. Escape values (handle commas, quotes, and newlines)
-    const escapeCSVValue = (val: any) => {
+    const escapeCSVValue = (val: unknown) => {
         if (val === null || val === undefined) return '';
         let str = String(val);
         // If the value contains quotes, commas, or newlines, wrap it in quotes and double the internal quotes

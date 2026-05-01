@@ -223,13 +223,13 @@ export async function initiateKroegentochtPayment(formData: unknown) {
             association: parsed.data.association,
             amount_tickets: parsed.data.amount_tickets,
             name_initials: parsed.data.name_initials,
-            pub_crawl_event_id: Number(parsed.data.pub_crawl_event_id) as any,
+            pub_crawl_event_id: Number(parsed.data.pub_crawl_event_id),
             payment_status: 'open',
             directus_relations: userId || null,
         };
 
         try {
-            await getSystemDirectus().request(createItem('pub_crawl_signups', syncPayload as any));
+            await getSystemDirectus().request(createItem('pub_crawl_signups', syncPayload as Record<string, unknown>));
         } catch (err) {
             const errorMsg = err instanceof Error ? err.message : String(err);
             if (errorMsg.includes('unique') || (typeof err === 'object' && err !== null && 'errors' in err && JSON.stringify(err.errors).includes('unique'))) {

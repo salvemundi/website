@@ -44,7 +44,7 @@ export function ActionCard({
 }) {
     const isLink = !disabled && href;
     const isInternal = isLink && !isExternal;
-    const Component = (isInternal ? Link : (isLink ? 'a' : 'div')) as any;
+    const Component = (isInternal ? Link : (isLink ? 'a' : 'div')) as React.ElementType;
     const colorStyle = getColorClasses(colorClass);
     
     return (
@@ -59,7 +59,7 @@ export function ActionCard({
         >
             {/* Left: Icon */}
             <div className={`p-3 rounded-xl transition-colors ${colorStyle} group-hover:bg-opacity-20 shrink-0`}>
-                {React.isValidElement(icon) ? React.cloneElement(icon as any, { className: 'h-6 w-6' }) : icon}
+                {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any>, { className: 'h-6 w-6' }) : icon}
             </div>
 
             {/* Middle: Text hierarchy */}
@@ -112,7 +112,7 @@ export function ListCard({
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                     <div className="bg-[var(--beheer-accent)]/10 p-2.5 rounded-xl text-[var(--beheer-accent)]">
-                        {React.isValidElement(icon) ? React.cloneElement(icon as any, { className: 'h-5 w-5' }) : icon}
+                        {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any>, { className: 'h-5 w-5' }) : icon}
                     </div>
                     <h3 className="text-sm font-black text-[var(--beheer-text)] tracking-widest leading-tight">
                         {title}
@@ -143,7 +143,7 @@ export function StatCard({
     icon?: React.ReactNode;
 }) {
     const isLink = !disabled && href;
-    const Component = (isLink ? Link : 'div') as any;
+    const Component = (isLink ? Link : 'div') as React.ElementType;
     const colorStyle = getColorClasses(colorClass);
 
     return (
@@ -155,7 +155,7 @@ export function StatCard({
         >
             <div className="relative z-10 flex flex-col gap-4">
                 <div className={`p-2.5 w-fit rounded-xl ${colorStyle} transition-colors group-hover:bg-opacity-20`}>
-                    {React.isValidElement(icon) ? React.cloneElement(icon as any, { className: 'h-5 w-5' }) : icon}
+                    {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any>, { className: 'h-5 w-5' }) : icon}
                 </div>
                 
                 <div className="space-y-0.5 mt-1">

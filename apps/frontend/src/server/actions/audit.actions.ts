@@ -14,6 +14,8 @@ import {
 } from "@/server/queries/audit.queries";
 import { type PendingSignup } from "@salvemundi/validations/schema/audit.zod";
 
+import { type EnrichedUser } from "@/types/auth";
+
 type ActionResponse<T> = { success: true; data: T } | { success: false; error: string };
 type LogsResponse = { success: true; data: SystemLog[]; totalCount: number } | { success: false; error: string };
 
@@ -25,7 +27,7 @@ export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' |
             return;
         }
 
-        const user = session.user as { id: string, first_name?: string, last_name?: string };
+        const user = session.user as unknown as EnrichedUser;
         
         // Prevent VULN-008 (Payload Bloat)
         const payloadStr = JSON.stringify(payload || {});

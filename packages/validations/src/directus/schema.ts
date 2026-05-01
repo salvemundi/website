@@ -133,6 +133,7 @@ export interface DbEventSignup {
     participant_phone?: string | null;
     payment_status?: string | null;
     directus_relations?: string | null;
+    is_member?: boolean | null;
 }
 
 export interface DbEvent {

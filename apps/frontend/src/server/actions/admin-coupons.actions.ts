@@ -16,12 +16,13 @@ import { COUPON_FIELDS } from '@salvemundi/validations/directus/fields';
 
 import { AdminResource } from '@/shared/lib/permissions-config';
 import { hasPermission } from '@/shared/lib/permissions';
+import { type EnrichedUser } from '@/types/auth';
 
 async function checkAccess() {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) throw new Error('Niet ingelogd');
     
-    const user = session.user as any;
+    const user = session.user as unknown as EnrichedUser;
     if (!hasPermission(user.committees, AdminResource.Coupons)) {
         throw new Error('Geen toegang: onvoldoende rechten voor coupon beheer');
     }
@@ -59,8 +60,12 @@ export async function getCoupons(): Promise<Coupon[]> {
             discount_type: (i.discount_type || 'percentage') as 'fixed' | 'percentage',
             discount_value: Number(i.discount_value),
             usage_count: Number(i.usage_count),
-            is_active: !!i.is_active
-        })) as Coupon[];
+            usage_limit: i.usage_limit ? Number(i.usage_limit) : null,
+            valid_from: i.valid_from || null,
+            valid_until: i.valid_until || null,
+            is_active: !!i.is_active,
+            date_created: i.date_created || undefined
+        } as Coupon));
     } catch (e) {
         
         throw new Error('Kon coupons niet ophalen');

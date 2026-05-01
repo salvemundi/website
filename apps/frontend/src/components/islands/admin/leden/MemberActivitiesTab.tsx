@@ -8,7 +8,7 @@ import { SignupStatus } from './LedenSharedComponents';
 
 interface Signup {
     id: number;
-    payment_status?: string;
+    payment_status?: string | null;
     created_at: string;
     event_id: {
         id: string;

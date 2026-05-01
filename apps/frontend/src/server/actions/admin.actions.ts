@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { getSystemDirectus } from "@/lib/directus";
 import { readMe, readItems, readUsers, aggregate } from "@directus/sdk";
 import { type DbDirectusUser as DirectusUser } from "@salvemundi/validations/directus/schema";
+import { query } from "@/lib/database";
 import {
     USER_BASIC_FIELDS,
     EVENT_FIELDS,
@@ -41,6 +42,7 @@ import { getPermissions, hasPermission, type UserPermissions, type Committee } f
 import { getRedis } from "@/server/auth/redis-client";
 import { getComputedCouponStatus } from "@/lib/coupons";
 import { fetchUserMetadataDb, fetchUserCommitteesDb } from "./user-db.utils";
+import { type EnrichedUser, type ImpersonationInfo } from "@/types/auth";
 
 const pool = new Pool({
     user: process.env.DB_USER,
@@ -62,7 +64,7 @@ export async function checkAdminAccess() {
         return { isAuthorized: false, user: null, isIct: false, impersonation: null };
     }
 
-    const user = session.user as DirectusUser & { id: string, name?: string | null, committees?: Committee[], membership_status?: string | null, membership_expiry?: string | null, minecraft_username?: string | null, phone_number?: string | null, date_of_birth?: string | null, entra_id?: string | null, isICT?: boolean };
+    const user = session.user as unknown as EnrichedUser;
 
     try {
         const [metadata, committees] = await Promise.all([
@@ -94,7 +96,7 @@ export async function checkAdminAccess() {
     if (!user.name && (user.first_name || user.last_name)) {
         user.name = `${user.first_name || ''} ${user.last_name || ''}`.trim();
     }
-    const impersonatedBy = (session as { impersonatedBy?: { id: string, name: string, email: string, isNormallyAdmin: boolean } }).impersonatedBy || null;
+    const impersonatedBy = (session as { impersonatedBy?: ImpersonationInfo }).impersonatedBy || null;
 
     const perms = getPermissions(user.committees || []);
     const isAuthorized = Object.values(perms).some(v => v === true);
@@ -111,17 +113,35 @@ export async function checkAdminAccess() {
             isNormallyAdmin: impersonatedBy.isNormallyAdmin,
             // For the UI, we might want to know who we are impersonating
             targetName: user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim(),
-            targetCommittees: user.committees?.map((c: { name: string }) => c.name) || []
+            targetCommittees: user.committees?.map((c) => c.name) || []
         } : null
     };
 }
 
-export async function getDashboardPermissions() {
+export async function getDashboardPermissions(): Promise<UserPermissions & { isIct: boolean }> {
     const { isAuthorized, user, isIct } = await checkAdminAccess();
-    if (!isAuthorized) return { canAccessIntro: false, canAccessReis: false, canAccessLogging: false, canAccessSync: false, canAccessCoupons: false, canAccessPermissions: false, canAccessStickers: false };
+    if (!isAuthorized) {
+        return {
+            canAccessIntro: false,
+            canAccessReis: false,
+            canAccessLogging: false,
+            canAccessSync: false,
+            canAccessCoupons: false,
+            canAccessPermissions: false,
+            canAccessStickers: false,
+            canAccessKroegentocht: false,
+            canAccessMembers: false,
+            canAccessCommittees: false,
+            canAccessActivitiesView: false,
+            canAccessActivitiesEdit: false,
+            canAccessMail: false,
+            isLeader: false,
+            isICT: false,
+            isIct: false
+        };
+    }
 
-    const permissions = (user as unknown) as UserPermissions;
-    // Removed duplicate isIct declaration
+    const permissions = (user as unknown) as EnrichedUser;
 
     return {
         canAccessIntro: permissions.canAccessIntro || false,
@@ -134,8 +154,12 @@ export async function getDashboardPermissions() {
         canAccessKroegentocht: permissions.canAccessKroegentocht || false,
         canAccessMembers: permissions.canAccessMembers || false,
         canAccessCommittees: permissions.canAccessCommittees || false,
-        canAccessMail: isIct,
-        isIct
+        canAccessActivitiesView: permissions.canAccessActivitiesView || false,
+        canAccessActivitiesEdit: permissions.canAccessActivitiesEdit || false,
+        canAccessMail: permissions.canAccessMail || false,
+        isLeader: permissions.isLeader || false,
+        isICT: permissions.isICT || false,
+        isIct: isIct || false
     };
 }
 
@@ -205,22 +229,26 @@ export async function getTopStickers(): Promise<TopSticker[]> {
     const { isAuthorized } = await checkAdminAccess();
     if (!isAuthorized) return [];
     try {
-        const stickers = await getSystemDirectus().request(readItems('Stickers' as 'Stickers', {
-            fields: [{ user_created: ['id', 'first_name', 'last_name'] }] as unknown as any[],
-            limit: -1
+        const sql = `
+            SELECT 
+                u.id, 
+                u.first_name, 
+                u.last_name, 
+                COUNT(s.id) as count
+            FROM "Stickers" s
+            JOIN directus_users u ON s.user_created = u.id
+            GROUP BY u.id, u.first_name, u.last_name
+            ORDER BY count DESC
+            LIMIT 3
+        `;
+        const { rows } = await query(sql);
+        
+        const result = rows.map(r => ({
+            id: String(r.id),
+            first_name: r.first_name || 'Onbekend',
+            last_name: r.last_name || '',
+            count: Number(r.count)
         }));
-        const counts: Record<string, TopSticker> = {};
-
-        (stickers as Record<string, unknown>[]).forEach((s) => {
-            const user = s.user_created as { id: string, first_name?: string, last_name?: string } | null;
-            if (user && user.id) {
-                const userId = user.id;
-                if (!counts[userId]) counts[userId] = { id: userId, first_name: user.first_name || 'Onbekend', last_name: user.last_name || '', count: 0 };
-                counts[userId].count++;
-            }
-        });
-
-        const result = Object.values(counts).sort((a, b) => b.count - a.count).slice(0, 3);
         return z.array(TopStickerSchema).parse(result);
     } catch {
         return [];
@@ -242,7 +270,7 @@ export async function setImpersonateToken(token: string) {
         // We fetch only basic fields first to ensure the token is valid.
         const user = await testClient.request(readMe({
             fields: ['id', 'first_name', 'last_name', 'email', 'avatar']
-        } as unknown as any)) as unknown as DirectusUser;
+        } as never)) as unknown as DirectusUser;
 
         if (!user) {
             return { success: false, error: "Token is ongeldig." };
@@ -257,7 +285,7 @@ export async function setImpersonateToken(token: string) {
             httpOnly: true,
         });
 
-        let impCommittees: any[] = [];
+        let impCommittees: Committee[] = [];
         try {
             const { rows } = await pool.query(
                 `SELECT c.id, c.name, c.azure_group_id

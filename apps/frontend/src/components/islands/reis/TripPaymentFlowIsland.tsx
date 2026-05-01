@@ -21,7 +21,7 @@ import {
     syncSignupActivities, 
     initiateTripPaymentAction 
 } from '@/server/actions/reis-payment.actions';
-import { calculateTripPricing } from '@/lib/reis/pricing';
+import { calculateTripPricing, type TripPricingResult, type ActivitySelection } from '@/lib/reis/pricing';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -96,8 +96,8 @@ export default function TripPaymentFlowIsland({
             date_of_birth: localSignup.date_of_birth ? format(new Date(localSignup.date_of_birth), 'yyyy-MM-dd') : '',
             id_document: localSignup.id_document || 'none',
             document_number: localSignup.document_number || '',
-            document_expiry_date: (localSignup as any).document_expiry_date ? format(new Date((localSignup as any).document_expiry_date), 'yyyy-MM-dd') : '',
-            extra_luggage: (localSignup as any).extra_luggage || false,
+            document_expiry_date: (localSignup as unknown as Record<string, any>).document_expiry_date ? format(new Date((localSignup as unknown as Record<string, any>).document_expiry_date), 'yyyy-MM-dd') : '',
+            extra_luggage: (localSignup as unknown as Record<string, any>).extra_luggage || false,
             allergies: localSignup.allergies || '',
             special_notes: localSignup.special_notes || '',
             willing_to_drive: localSignup.willing_to_drive || false,
@@ -108,10 +108,10 @@ export default function TripPaymentFlowIsland({
     const { handleSubmit, watch, getValues, trigger, formState: { isValid } } = methods;
     const firstName = watch('first_name');
 
-    const [activitySelections, setActivitySelections] = useState<{ activityId: number, options: any }[]>(
+    const [activitySelections, setActivitySelections] = useState<{ activityId: number, options: Record<string, boolean> }[]>(
         selectedActivities.map(sa => ({
-            activityId: typeof sa.trip_activity_id === 'object' ? (sa.trip_activity_id as any).id : Number(sa.trip_activity_id),
-            options: sa.selected_options || {}
+            activityId: typeof sa.trip_activity_id === 'object' ? (sa.trip_activity_id as unknown as Record<string, any>).id : Number(sa.trip_activity_id),
+            options: (sa.selected_options as Record<string, boolean>) || {}
         }))
     );
 
@@ -120,7 +120,7 @@ export default function TripPaymentFlowIsland({
         return calculateTripPricing(
             trip,
             signup.role,
-            activitySelections as any,
+            activitySelections as ActivitySelection[],
             allActivities,
             paymentType
         );

@@ -35,9 +35,9 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
 
         // Clean up empty strings to avoid Zod validation errors on the server
         const sanitized = { ...editingPlanning };
-        Object.keys(sanitized).forEach(key => {
-            if ((sanitized as any)[key] === '') {
-                delete (sanitized as any)[key];
+        (Object.keys(sanitized) as (keyof typeof sanitized)[]).forEach(key => {
+            if (sanitized[key] === '') {
+                delete sanitized[key];
             }
         });
 

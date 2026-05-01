@@ -37,7 +37,7 @@ const ASSOCIATIONS = [
 
 interface KroegentochtFormIslandProps {
     event?: PubCrawlEvent;
-    initialUser?: any;
+    initialUser?: { email?: string; association?: string } | null;
 }
 
 // Type removed since it's now defined in @salvemundi/validations as PubCrawlSignupForm
@@ -61,7 +61,7 @@ export default function KroegentochtFormIsland({
         resolver: zodResolver(pubCrawlSignupFormSchema),
         defaultValues: {
             email: initialUser?.email || '',
-            association: (initialUser as any)?.association || '',
+            association: initialUser?.association || '',
             customAssociation: '',
             amount_tickets: 1,
             participants: [{ 

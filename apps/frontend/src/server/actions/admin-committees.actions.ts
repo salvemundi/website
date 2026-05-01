@@ -29,11 +29,13 @@ const serviceHeaders = (contentType = true) => {
     return h;
 };
 
+import { type EnrichedUser } from '@/types/auth';
+
 async function checkAccess() {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) throw new Error('Niet ingelogd');
     
-    const user = session.user as any;
+    const user = session.user as unknown as EnrichedUser;
     if (!isSuperAdmin(user.committees)) {
         throw new Error('Geen toegang: SuperAdmin rechten vereist.');
     }
@@ -139,7 +141,7 @@ export async function toggleCommitteeLeader(
     await checkAccess();
 
     try {
-        await getSystemDirectus().request(updateItem('committee_members' as any, membershipId, { is_leader: !currentIsLeader }));
+        await getSystemDirectus().request(updateItem('committee_members', membershipId, { is_leader: !currentIsLeader }));
         revalidatePath('/beheer/commissies');
     } catch (e) {
         

@@ -1,9 +1,9 @@
 import { AdminResource, RESOURCE_PERMISSIONS, COMMITTEES } from './permissions-config';
 
 export interface Committee {
-    id: number | string;
+    id: number;
     name: string;
-    azure_group_id?: string | null;
+    azure_group_id?: string | null | undefined;
     is_leader?: boolean;
 }
 
@@ -24,6 +24,7 @@ export interface UserPermissions {
     canAccessCommittees: boolean;
     canAccessActivitiesView: boolean;
     canAccessActivitiesEdit: boolean;
+    canAccessMail: boolean;
 }
 
 /**
@@ -77,5 +78,6 @@ export function getPermissions(committees: Committee[] = []): UserPermissions {
         canAccessCommittees: hasPermission(committees, AdminResource.Committees),
         canAccessActivitiesView: hasPermission(committees, AdminResource.ActivitiesView),
         canAccessActivitiesEdit: hasPermission(committees, AdminResource.ActivitiesEdit),
+        canAccessMail: hasPermission(committees, AdminResource.Sync), // Proxying mail access to ICT/Sync for now
     };
 }
