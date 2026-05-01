@@ -22,7 +22,7 @@ export interface ServiceStatus {
     status: 'online' | 'offline' | 'degraded';
     latency?: number;
     error?: string;
-    details?: any;
+    details?: Record<string, unknown>;
 }
 
 export async function getServicesStatusAction(): Promise<ServiceStatus[]> {
@@ -53,11 +53,12 @@ export async function getServicesStatusAction(): Promise<ServiceStatus[]> {
                 latency: Date.now() - start,
                 error: res.ok ? undefined : `HTTP ${res.status}`
             };
-        } catch (e: any) {
+        } catch (e: unknown) {
+            const err = e as Error;
             return {
                 name,
                 status: 'offline',
-                error: e.name === 'AbortError' ? 'Timeout (2s)' : 'Connection failed'
+                error: err.name === 'AbortError' ? 'Timeout (2s)' : 'Connection failed'
             };
         }
     };
@@ -82,11 +83,12 @@ export async function getServicesStatusAction(): Promise<ServiceStatus[]> {
                 status: 'online',
                 latency: Date.now() - start
             };
-        } catch (e: any) {
+        } catch (e: unknown) {
+            const err = e as Error;
             return {
                 name: 'Directus CMS',
                 status: 'offline',
-                error: e.name === 'AbortError' ? 'Timeout (2s)' : e.message
+                error: err.name === 'AbortError' ? 'Timeout (2s)' : err.message
             };
         }
     };

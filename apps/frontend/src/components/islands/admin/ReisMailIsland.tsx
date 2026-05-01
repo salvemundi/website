@@ -312,7 +312,7 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
     );
 }
 
-function Card({ title, icon, children }: any) {
+function Card({ title, icon, children }: { title: string, icon: React.ReactNode, children: React.ReactNode }) {
     return (
         <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-lg border border-[var(--beheer-border)] p-6">
             <div className="flex items-center gap-2 mb-4 text-[var(--beheer-text-muted)]">
@@ -324,7 +324,7 @@ function Card({ title, icon, children }: any) {
     );
 }
 
-function FilterField({ label, value, onChange, children }: any) {
+function FilterField({ label, value, onChange, children }: { label: string, value: string, onChange: (v: string) => void, children: React.ReactNode }) {
     return (
         <div className="space-y-1">
             <label className="text-[9px] font-bold uppercase tracking-tighter text-[var(--text-muted)] ml-1">{label}</label>
@@ -342,7 +342,7 @@ function FilterField({ label, value, onChange, children }: any) {
     );
 }
 
-function TypeTab({ active, onClick, children }: any) {
+function TypeTab({ active, onClick, children }: { active: boolean, onClick: () => void, children: React.ReactNode }) {
     return (
         <button 
             onClick={onClick}
@@ -357,7 +357,7 @@ function TypeTab({ active, onClick, children }: any) {
     );
 }
 
-function TickItem({ children }: any) {
+function TickItem({ children }: { children: React.ReactNode }) {
     return (
         <li className="flex items-center gap-2 text-xs font-bold text-[var(--text-muted)]">
             <Check className="h-3 w-3 text-[var(--theme-purple)]" />

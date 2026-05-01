@@ -5,6 +5,8 @@ import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import { getPermissions } from '@/shared/lib/permissions';
 import { fetchUserCommitteesDb } from '@/server/actions/user-db.utils';
 
+import { type EnrichedUser } from '@/types/auth';
+
 export default async function ImpersonateLayout({
     children,
 }: {
@@ -18,7 +20,7 @@ export default async function ImpersonateLayout({
         redirect('/login');
     }
 
-    const user = session.user as any;
+    const user = session.user as unknown as EnrichedUser;
     const userCommittees = await fetchUserCommitteesDb(user.id).catch(() => []);
     const permissions = getPermissions(userCommittees || []);
 

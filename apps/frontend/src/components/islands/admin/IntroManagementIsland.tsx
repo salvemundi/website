@@ -125,7 +125,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
         setDeletingParentId(null);
     };
 
-    const handleUpdateSignup = async (id: number, data: any) => {
+    const handleUpdateSignup = async (id: number, data: Partial<IntroSignupRow>) => {
         const res = await updateIntroSignup(id, data);
         if (res.success) {
             setSignups(prev => prev.map(s => s.id === id ? { ...s, ...data } : s));
@@ -135,7 +135,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
         }
     };
 
-    const handleUpdateParentSignup = async (id: number, data: any) => {
+    const handleUpdateParentSignup = async (id: number, data: Partial<IntroParentRow>) => {
         const res = await updateIntroParentSignup(id, data);
         if (res.success) {
             setParents(prev => prev.map(p => p.id === id ? { ...p, ...data } : p));

@@ -3,9 +3,10 @@
 import React from 'react';
 import { RefreshCw } from 'lucide-react';
 import { formatDate } from '@/shared/lib/utils/date';
+import { SystemLog } from '@salvemundi/validations';
 
 interface LogsTabProps {
-    logs: any[];
+    logs: SystemLog[];
     onRefresh: () => void;
     title?: string;
     actions?: React.ReactNode;
@@ -49,7 +50,7 @@ export default function LogsTab({ logs, onRefresh, title = "Activiteitslogboek",
                                     </span>
                                 </td>
                                 <td className="p-4 text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">
-                                    {log.payload?.admin_name || 'Systeem'}
+                                    {(log.payload && typeof log.payload === 'object' && 'admin_name' in log.payload) ? String(log.payload.admin_name) : 'Systeem'}
                                 </td>
                                 <td className="p-4">
                                     <div className="text-[10px] font-bold text-[var(--beheer-text-muted)] uppercase tracking-widest max-w-md break-all">

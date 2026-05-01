@@ -85,7 +85,7 @@ export function getSystemDirectus() {
             fetch: async (url, options) => {
                 const urlStr = url.toString();
                 
-                const nextOptions = (options as RequestInit & { next?: { revalidate?: number | false; tags?: string[] } })?.next || {};
+                const nextOptions = (options as { next?: { revalidate?: number | false; tags?: string[] } })?.next || {};
                 const tags: string[] = nextOptions.tags || [];
 
                 // ─── TIERED REVALIDATION STRATEGY ────────────────────────────────

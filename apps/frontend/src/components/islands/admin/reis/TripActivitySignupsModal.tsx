@@ -9,7 +9,7 @@ import {
 
 import { mapActivityOptionIdToName, parseActivityOptions, parseSelectedOptions } from '@/lib/reis';
 
-interface Signup {
+export interface Signup {
     id: number;
     trip_signup_id?: {
         first_name: string;

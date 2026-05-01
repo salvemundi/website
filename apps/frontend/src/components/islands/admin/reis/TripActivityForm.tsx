@@ -12,19 +12,7 @@ import {
 } from 'lucide-react';
 import { Field, inputClass } from './TripTabComponents';
 
-interface TripActivity {
-    id: number;
-    trip_id: number;
-    name: string;
-    description?: string | null;
-    price: number;
-    image?: string | null;
-    max_participants?: number | null;
-    is_active: boolean;
-    display_order: number;
-    options?: { name: string; price: number }[] | null;
-    max_selections?: number | null;
-}
+import { type TripActivity } from '@salvemundi/validations/schema/admin-reis.zod';
 
 interface Props {
     activity: Partial<TripActivity> | null;
@@ -34,7 +22,12 @@ interface Props {
 }
 
 export default function TripActivityForm({ activity, onSave, onCancel, pending }: Props) {
-    const [options, setOptions] = useState<{ name: string; price: number }[]>(activity?.options || []);
+    // Map existing options, handling nulls from the schema type
+    const initialOptions = (activity?.options || []).map(opt => ({
+        name: opt.name || '',
+        price: opt.price || 0
+    }));
+    const [options, setOptions] = useState<{ name: string; price: number }[]>(initialOptions);
 
     const addOption = () => setOptions([...options, { name: '', price: 0 }]);
     const removeOption = (idx: number) => setOptions(options.filter((_, i) => i !== idx));

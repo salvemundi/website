@@ -4,11 +4,11 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
-import LedenOverzichtIsland from '@/components/islands/admin/leden/LedenOverzichtIsland';
-import { getSystemDirectus } from '@/lib/directus';
-import { readUsers } from '@directus/sdk';
+import LedenOverzichtIsland, { type Member } from '@/components/islands/admin/leden/LedenOverzichtIsland';
 import { isMemberAdmin } from '@/lib/auth';
 import { EXCLUDED_EMAILS } from '@/shared/lib/constants/admin.constants';
+import { type EnrichedUser } from '@/types/auth';
+import { query } from '@/lib/database';
 
 
 export const metadata = {
@@ -22,7 +22,7 @@ export default async function LedenPage() {
     
     if (!session || !session.user) return <AdminUnauthorized />;
 
-    const user = session.user as any;
+    const user = session.user as unknown as EnrichedUser;
     if (!isMemberAdmin(user.committees)) {
         return (
             <AdminUnauthorized 
@@ -32,29 +32,23 @@ export default async function LedenPage() {
         );
     }
 
-    // NUCLEAR SSR: Fetch all members at the top level
-    let members: any[] = [];
+    let members: Member[] = [];
     let totalCount = 0;
 
     try {
-        const query: any = {
-            fields: ['id', 'first_name', 'last_name', 'email', 'membership_expiry', 'status'],
-            limit: -1,
-            sort: ['last_name', 'first_name'],
-            filter: {
-                _and: [
-                    { email: { _nnull: true } },
-                    { email: { _nin: EXCLUDED_EMAILS } }
-                ]
-            }
-        };
-
-        const res = await getSystemDirectus().request(readUsers(query));
-        if (Array.isArray(res)) {
-            members = res;
-            totalCount = res.length;
-        }
-    } catch (e: any) {}
+        const excludedList = EXCLUDED_EMAILS.map((_, i) => `$${i + 1}`).join(', ');
+        const sql = `
+            SELECT id, first_name, last_name, email, membership_expiry, status
+            FROM directus_users
+            WHERE email IS NOT NULL AND email NOT IN (${excludedList})
+            ORDER BY last_name ASC, first_name ASC
+        `;
+        const { rows } = await query(sql, EXCLUDED_EMAILS);
+        members = rows;
+        totalCount = rows.length;
+    } catch (e) {
+        // Silently fail, showing empty list
+    }
 
     return (
         <AdminPageShell
@@ -63,7 +57,7 @@ export default async function LedenPage() {
             backHref="/beheer"
         >
             <LedenOverzichtIsland 
-                initialMembers={members as any} 
+                initialMembers={members} 
                 initialTotalCount={totalCount} 
             />
         </AdminPageShell>

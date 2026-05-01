@@ -3,12 +3,14 @@ import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import { notFound } from 'next/navigation';
-import ActiviteitAanmeldingenIsland from '@/components/islands/admin/activities/ActiviteitAanmeldingenIsland';
+import ActiviteitAanmeldingenIsland, { type Signup, type AdminEvent } from '@/components/islands/admin/activities/ActiviteitAanmeldingenIsland';
 import { 
     getActivityByIdInternal,
     getActivitySignupsInternal 
 } from '@/server/queries/admin-event.queries';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
+import { type EnrichedUser } from '@/types/auth';
+import { type DbEventSignup } from "@salvemundi/validations";
 
 export const metadata: Metadata = {
     title: 'Activiteit Aanmeldingen | SV Salve Mundi',
@@ -24,7 +26,7 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
     });
     if (!session || !session.user) return <AdminUnauthorized title="Activiteit Aanmeldingen" />;
 
-    const user = session.user as any;
+    const user = session.user as unknown as EnrichedUser;
     
     // RBAC: Use the standardized permission from the session
     const hasAccess = !!user.canAccessActivitiesView;
@@ -45,14 +47,27 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
         }
 
         // Remap to legacy format for the Island
-        const legacyEventData = {
-            ...eventData,
+        const legacyEventData: AdminEvent = {
+            id: eventData.id!,
             name: eventData.titel,
             price_members: eventData.price_members,
         };
 
         // Fetch Signups using high-performance SQL query (filters out failed payments)
-        const signups = await getActivitySignupsInternal(id);
+        const dbSignups = await getActivitySignupsInternal(id);
+        
+        // Ensure strictly typed mapping for the island
+        const signups: Signup[] = dbSignups.map(s => ({
+            id: s.id!,
+            participant_name: s.participant_name || 'Onbekend',
+            participant_email: s.participant_email || '-',
+            participant_phone: s.participant_phone,
+            payment_status: s.payment_status || 'open',
+            created_at: s.created_at || new Date().toISOString(),
+            checked_in: !!s.checked_in,
+            is_member: !!s.is_member,
+            directus_relations: s.directus_relations as unknown as Signup['directus_relations']
+        }));
 
         return (
             <AdminPageShell
@@ -63,8 +78,8 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
             >
                 <div className="pb-20">
                     <ActiviteitAanmeldingenIsland 
-                        event={legacyEventData as any} 
-                        initialSignups={signups.filter(s => s.id !== null) as any[]} 
+                        event={legacyEventData} 
+                        initialSignups={signups} 
                         canAccessEdit={!!user.canAccessActivitiesEdit}
                     />
                 </div>

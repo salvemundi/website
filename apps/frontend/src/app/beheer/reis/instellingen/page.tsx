@@ -12,7 +12,7 @@ export default async function ReisInstellingenPage() {
 
     return (
         <div className="w-full">
-            <ReisInstellingenIsland initialTrips={trips as any} />
+            <ReisInstellingenIsland initialTrips={trips} />
         </div>
     );
 }

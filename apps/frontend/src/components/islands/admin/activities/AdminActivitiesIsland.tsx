@@ -20,31 +20,14 @@ function cleanCommitteeName(name: string): string {
     return name?.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim() || '';
 }
 
-interface AdminActivity {
-    id: number;
-    name: string;
-    event_date: string;
-    event_date_end?: string | null;
-    description?: string | null;
-    location?: string | null;
-    max_sign_ups?: number | null;
-    price_members?: number | null;
-    price_non_members?: number | null;
-    registration_deadline?: string | null;
-    contact?: string | null;
-    image?: any;
-    committee_id?: number | null;
-    committee_name?: string | null;
-    status?: 'published' | 'draft' | 'archived' | 'scheduled' | null;
-    publish_date?: string | null;
-    signup_count?: number;
-}
+import { type AdminActivity } from '@salvemundi/validations/schema/admin.zod';
+import { type DbCommittee } from '@salvemundi/validations/directus/schema';
 
 interface Props {
     initialEvents?: AdminActivity[];
-    committees?: any[];
+    committees?: DbCommittee[];
     userId?: string;
-    userCommittees?: any[];
+    userCommittees?: DbCommittee[];
     permissions?: UserPermissions;
 }
 

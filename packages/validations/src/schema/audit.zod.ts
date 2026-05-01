@@ -21,3 +21,29 @@ export const AuditSettingsSchema = z.object({
 });
 
 export type AuditSettings = z.infer<typeof AuditSettingsSchema>;
+
+export const QueueTaskSchema = z.object({
+    email: z.string().email().optional().nullable(),
+    userId: z.string().optional().nullable(),
+    retries: z.number(),
+    maxRetries: z.number(),
+});
+
+export type QueueTask = z.infer<typeof QueueTaskSchema>;
+
+export const QueueInfoSchema = z.object({
+    count: z.number(),
+    samples: z.array(QueueTaskSchema),
+});
+
+export type QueueInfo = z.infer<typeof QueueInfoSchema>;
+
+export const SystemLogSchema = z.object({
+    id: z.string(),
+    type: z.string(),
+    status: z.string(),
+    payload: z.record(z.any()).nullable(),
+    created_at: z.string(),
+});
+
+export type SystemLog = z.infer<typeof SystemLogSchema>;

@@ -4,6 +4,7 @@ import withBundleAnalyzer from '@next/bundle-analyzer';
 
 const nextConfig: NextConfig = {
     output: 'standalone',
+    poweredByHeader: false,
     // Uitgeschakeld vanwege instabiliteit op Acceptance (Eternal Skeletons)
     // cacheComponents: true,
     productionBrowserSourceMaps: false,

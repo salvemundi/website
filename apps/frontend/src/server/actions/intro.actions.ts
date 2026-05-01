@@ -54,12 +54,8 @@ export async function hasParentSignup(): Promise<boolean> {
     if (!session?.user) return false;
 
     try {
-        const items = await getSystemDirectus().request(readItems('intro_parent_signups' as any, {
-            filter: { user_id: { _eq: session.user.id } },
-            fields: [...INTRO_PARENT_SIGNUP_FIELDS]
-        }));
-
-        return Array.isArray(items) && items.length > 0;
+        const { rows } = await query('SELECT 1 FROM intro_parent_signups WHERE user_id = $1 LIMIT 1', [session.user.id]);
+        return rows.length > 0;
     } catch {
         return false;
     }
@@ -95,7 +91,7 @@ export async function submitIntroSignup(data: IntroSignupForm): Promise<{ succes
     };
 
     try {
-        await getSystemDirectus().request(createItem('intro_signups' as any, payload as any));
+        await getSystemDirectus().request(createItem('intro_signups', payload));
     } catch (e) {
         
         throw new Error('Er is een fout opgetreden bij je inschrijving');
@@ -123,7 +119,7 @@ export async function getIntroBlogsPublic() {
     try {
         const sql = 'SELECT * FROM intro_blogs WHERE is_published = true ORDER BY id DESC LIMIT 6';
         const { rows } = await query(sql);
-        return rows as any[];
+        return rows;
     } catch (e) {
         return [];
     }
@@ -134,7 +130,7 @@ export async function getAllIntroBlogsPublic() {
     try {
         const sql = 'SELECT * FROM intro_blogs WHERE is_published = true ORDER BY id DESC';
         const { rows } = await query(sql);
-        return rows as any[];
+        return rows;
     } catch (e) {
         return [];
     }
@@ -145,7 +141,7 @@ export async function getIntroBlogBySlug(slug: string) {
     try {
         const sql = 'SELECT * FROM intro_blogs WHERE slug = $1 AND is_published = true LIMIT 1';
         const { rows } = await query(sql, [slug]);
-        return rows[0] as any;
+        return rows[0] || null;
     } catch (e) {
         return null;
     }
@@ -181,7 +177,7 @@ export async function submitIntroParentSignup(data: IntroParentSignupForm): Prom
     };
 
     try {
-        await getSystemDirectus().request(createItem('intro_parent_signups' as any, payload as any));
+        await getSystemDirectus().request(createItem('intro_parent_signups', payload));
         revalidatePath('/beheer/intro');
         return { success: true };
     } catch (e) {

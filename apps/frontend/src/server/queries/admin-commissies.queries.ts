@@ -1,9 +1,4 @@
-import { getSystemDirectus } from '@/lib/directus';
-import { readItems } from '@directus/sdk';
-import { 
-    COMMITTEE_FIELDS, 
-    COMMITTEE_MEMBER_FIELDS 
-} from '@salvemundi/validations/directus/fields';
+import { query } from '@/lib/database';
 
 /**
  * PURE QUERIES: No 'use server' and No headers() calls.
@@ -30,66 +25,51 @@ export type CommitteeMember = {
 
 export async function getCommittees(): Promise<Committee[]> {
     try {
-        const items = await getSystemDirectus().request(readItems('committees', {
-            limit: -1,
-            fields: [...COMMITTEE_FIELDS],
-            sort: ['name']
-        }));
-        return (items ?? []).map(i => ({
+        const { rows } = await query('SELECT * FROM committees ORDER BY name ASC');
+        return rows.map(i => ({
             ...i,
             id: Number(i.id),
             name: i.name || '',
         })) as Committee[];
     } catch (e) {
-        
         return [];
     }
 }
 
 export async function getCommitteeMembers(committeeId: string): Promise<CommitteeMember[]> {
     try {
-        const items = await getSystemDirectus().request(readItems('committee_members' as any, {
-            filter: { committee_id: { _eq: committeeId } },
-            fields: [
-                ...COMMITTEE_MEMBER_FIELDS,
-                { user_id: ['id', 'entra_id', 'first_name', 'last_name', 'email'] }
-            ] as any,
-            limit: -1
-        }));
+        const sql = `
+            SELECT 
+                cm.id as directus_membership_id,
+                cm.is_leader,
+                u.id as user_id,
+                u.entra_id,
+                u.first_name,
+                u.last_name,
+                u.email
+            FROM committee_members cm
+            INNER JOIN directus_users u ON cm.user_id = u.id
+            WHERE cm.committee_id = $1
+        `;
+        const { rows } = await query(sql, [committeeId]);
 
-        return (items ?? [])
-            .filter((r: any) => r.user_id)
-            .map((r: any) => ({
-                directusMembershipId: r.id,
-                entraId: r.user_id.entra_id || r.user_id.id,
-                displayName: `${r.user_id.first_name || ''} ${r.user_id.last_name || ''}`.trim() || r.user_id.email,
-                email: r.user_id.email || '',
-                isLeader: r.is_leader || false,
-            }));
+        return rows.map((r) => ({
+            directusMembershipId: r.directus_membership_id,
+            entraId: r.entra_id || r.user_id,
+            displayName: `${r.first_name || ''} ${r.last_name || ''}`.trim() || r.email,
+            email: r.email || '',
+            isLeader: r.is_leader || false,
+        }));
     } catch (e) {
-        
         return [];
     }
 }
 
 export async function countUniqueCommitteeMembers(): Promise<number> {
     try {
-        const memberships = await getSystemDirectus().request(readItems('committee_members' as any, {
-            fields: ['user_id'] as any,
-            limit: -1
-        }));
-
-        if (!memberships || !Array.isArray(memberships)) return 0;
-
-        const uniqueUserIds = new Set(
-            memberships
-                .map((m: any) => m.user_id)
-                .filter(id => id !== null && id !== undefined)
-        );
-
-        return uniqueUserIds.size;
+        const { rows } = await query('SELECT COUNT(DISTINCT user_id) as count FROM committee_members WHERE user_id IS NOT NULL');
+        return Number(rows?.[0]?.count || 0);
     } catch (e) {
-        
         return 0;
     }
 }

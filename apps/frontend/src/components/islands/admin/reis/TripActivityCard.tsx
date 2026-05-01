@@ -10,19 +10,7 @@ import {
 } from 'lucide-react';
 import { getImageUrl } from '@/lib/utils/image-utils';
 
-interface TripActivity {
-    id: number;
-    trip_id: number;
-    name: string;
-    description?: string | null;
-    price: number;
-    image?: string | null;
-    max_participants?: number | null;
-    is_active: boolean;
-    display_order: number;
-    options?: { name: string; price: number }[] | null;
-    max_selections?: number | null;
-}
+import { type TripActivity } from '@salvemundi/validations/schema/admin-reis.zod';
 
 interface Props {
     activity: TripActivity;
@@ -77,7 +65,7 @@ export default function TripActivityCard({ activity, onEdit, onDelete, onViewSig
                         <div className="flex flex-wrap gap-1.5">
                             {activity.options.slice(0, 2).map((o, i) => (
                                 <span key={i} className="text-[9px] font-black px-2 py-1 bg-[var(--beheer-card-bg)] rounded-md border border-[var(--beheer-border)] text-[var(--beheer-text-muted)] uppercase tracking-tighter">
-                                    {o.name}
+                                    {o.name || 'Naamloos'}
                                 </span>
                             ))}
                             {activity.options.length > 2 && (

@@ -205,7 +205,7 @@ export default function CommitteeManagementIsland({ initialCommittees, totalUniq
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                     <div className="lg:col-span-4">
                         <CommitteeSidebar 
-                            committees={filteredCommittees as any}
+                            committees={filteredCommittees}
                             selectedId={selected?.id || null}
                             onSelect={handleSelectCommittee}
                             searchQuery={searchQuery}

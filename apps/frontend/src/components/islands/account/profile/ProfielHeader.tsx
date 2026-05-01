@@ -10,7 +10,7 @@ import { getImageUrl } from '@/lib/utils/image-utils';
 import { COMMITTEES } from '@/shared/lib/permissions-config';
 
 interface ProfielHeaderProps {
-    user?: any;
+    user?: Record<string, any>;
     membershipStatus?: {
         text: string;
         color: string;
@@ -59,8 +59,8 @@ export default function ProfielHeader({ user = {}, membershipStatus = { text: ''
                             accept="image/*"
                             onChange={(e) => {
                                 const file = e.target.files?.[0];
-                                if (file && (user as any).onAvatarChange) {
-                                    (user as any).onAvatarChange(file);
+                                if (file && user?.onAvatarChange) {
+                                    user.onAvatarChange(file);
                                 }
                                 // Reset input so same file can be picked again if needed
                                 e.target.value = '';
@@ -86,7 +86,7 @@ export default function ProfielHeader({ user = {}, membershipStatus = { text: ''
                                 Mijn Commissies
                             </p>
                             <div className="flex flex-wrap gap-2 justify-center">
-                                {user.committees.map((committee: any) => (
+                                {user.committees.map((committee: Record<string, any>) => (
                                     <span
                                         key={committee.id || (committee.name ?? 'unknown')}
                                         className="group relative inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-purple-50)] dark:bg-white/10 border border-[var(--color-purple-100)] dark:border-white/20 rounded-full text-xs font-bold text-[var(--color-purple-700)] dark:text-white shadow-sm max-w-full"

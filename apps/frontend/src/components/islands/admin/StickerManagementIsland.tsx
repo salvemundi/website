@@ -20,7 +20,7 @@ import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import StickersTable from '@/components/admin/stickers/StickersTable';
 
 interface StickerManagementIslandProps {
-    initialStickers: any[];
+    initialStickers: Record<string, unknown>[];
 }
 
 export default function StickerManagementIsland({

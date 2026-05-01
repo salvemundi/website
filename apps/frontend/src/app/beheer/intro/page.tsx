@@ -21,12 +21,14 @@ export const metadata: Metadata = {
     title: 'Intro Beheer | SV Salve Mundi',
 };
 
+import { type EnrichedUser } from '@/types/auth';
+
 export default async function BeheerIntroPage() {
     const session = await auth.api.getSession({ headers: await headers() });
     
     if (!session?.user) redirect('/login');
 
-    const user = session.user as any;
+    const user = session.user as unknown as EnrichedUser;
     const userCommittees = await fetchUserCommitteesDb(user.id).catch(() => []);
     const permissions = getPermissions(userCommittees || []);
 

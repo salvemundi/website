@@ -1,13 +1,13 @@
 import React from 'react';
 import Link from 'next/link';
 import { ChevronRight, Calendar } from 'lucide-react';
-import type { Activity } from '@salvemundi/validations/schema/activity.zod';
+import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { EventCard } from './EventCard';
 
 import { slugify } from '@/shared/lib/utils/slug';
 
 interface EventsSectionProps {
-    activities?: Activity[];
+    activities?: Activiteit[];
     count?: number;
 }
 
@@ -62,7 +62,7 @@ export function EventsSection({ activities = [], count = 4 }: EventsSectionProps
                             displayActivities.map((activity) => (
                                 <EventCard 
                                     key={activity.id}
-                                    activity={activity as any} 
+                                    activity={activity} 
                                     href={`/activiteiten/${slugify(activity.titel || '')}`} 
                                 />
                             ))

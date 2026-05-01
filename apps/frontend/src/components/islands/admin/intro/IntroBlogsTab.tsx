@@ -181,12 +181,12 @@ export default function IntroBlogsTab({ blogs, onSave, onDelete, saving, deletin
                                                 ) : (
                                                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 text-[11px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">
                                                         <div className="lg:col-span-2 space-y-8">
-                                                            <div className="flex items-center justify-between">
-                                                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--beheer-accent)]">Inhoud</p>
-                                                                <Button onClick={(e: any) => startEdit(e, blog)} variant="ghost" icon={Edit}>
-                                                                    Bewerken
-                                                                </Button>
-                                                            </div>
+                                                                 <div className="flex items-center justify-between">
+                                                                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--beheer-accent)]">Inhoud</p>
+                                                                     <Button onClick={() => startEdit({ stopPropagation: () => {} } as unknown as React.MouseEvent, blog)} variant="ghost" icon={Edit}>
+                                                                         Bewerken
+                                                                     </Button>
+                                                                 </div>
                                                             <div className="space-y-6">
                                                                 {blog.excerpt && (
                                                                     <div className="space-y-2">

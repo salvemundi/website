@@ -72,7 +72,7 @@ export default function AdminReisTableIsland({
         try {
             const res = await updateSignupStatus(id, newStatus);
             if (res.success) {
-                setSignups(signups.map(s => s.id === id ? { ...s, status: newStatus as any } : s));
+                setSignups(signups.map(s => s.id === id ? { ...s, status: newStatus as TripSignup['status'] } : s));
                 showToast(`Status succesvol bijgewerkt naar ${newStatus}`, 'success');
             } else {
                 showToast(res.error || 'Fout bij bijwerken status.', 'error');
@@ -155,17 +155,25 @@ export default function AdminReisTableIsland({
         if (filteredSignups.length === 0) return;
 
         try {
+            interface ExpandedTripSignupActivity {
+                activity_name?: string;
+                trip_activity_id?: number | { name?: string; options?: string | any[] };
+                selected_options?: string | Record<string, unknown>;
+                activity_options?: string | any[];
+            }
+
             const csvData = filteredSignups.map(signup => {
                 const idDoc = signup.id_document || '';
                 const idDocLabel = idDoc === 'passport' ? 'Paspoort' : idDoc === 'id_card' ? 'ID Kaart' : idDoc;
 
                 const activities = signupActivitiesMap[signup.id] || [];
                 const activitiesStr = activities.map(a => {
-                    const activity = a as any;
-                    const name = activity.activity_name || activity.trip_activity_id?.name || activity.trip_activity_id;
+                    const activity = a as unknown as ExpandedTripSignupActivity;
+                    const tripActIdObj = typeof activity.trip_activity_id === 'object' ? activity.trip_activity_id : null;
+                    const name = activity.activity_name || tripActIdObj?.name || String(activity.trip_activity_id);
                     
-                    const rawOptions = parseSelectedOptions(activity.selected_options);
-                    const metaOptions = parseActivityOptions(activity.activity_options || activity.trip_activity_id?.options);
+                    const rawOptions = parseSelectedOptions(typeof activity.selected_options === 'string' ? activity.selected_options : JSON.stringify(activity.selected_options || {}));
+                    const metaOptions = parseActivityOptions(typeof activity.activity_options === 'string' ? activity.activity_options : (typeof tripActIdObj?.options === 'string' ? tripActIdObj.options : JSON.stringify(tripActIdObj?.options || [])));
                     
                     const opts = Object.keys(rawOptions);
                     const optNames = opts.map(id => mapActivityOptionIdToName(id, metaOptions)).filter(Boolean);

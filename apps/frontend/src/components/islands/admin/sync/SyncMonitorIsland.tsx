@@ -20,8 +20,8 @@ export default function SyncMonitorIsland() {
     const isRunning = status?.active || status?.status === 'running' || status?.status === 'starting';
     
     // Nuclear SSR: Calculate progress in frontend since backend doesn't send it correctly
-    const processed = status?.processed || 0;
-    const total = status?.total || 0;
+    const processed = (status?.processed as number) || 0;
+    const total = (status?.total as number) || 0;
     const progress = total > 0 ? (processed / total) * 100 : 0;
 
     return (

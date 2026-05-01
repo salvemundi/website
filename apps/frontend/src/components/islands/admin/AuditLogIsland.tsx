@@ -15,7 +15,7 @@ import {
     bulkApproveSignupsAction,
     bulkRejectSignupsAction
 } from '@/server/actions/audit.actions';
-import { type PendingSignup } from '@salvemundi/validations/schema/audit.zod';
+import { type PendingSignup, type QueueInfo, type SystemLog } from '@salvemundi/validations';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
@@ -25,13 +25,6 @@ import PendingTab from './audit/PendingTab';
 import LogsTab from './audit/LogsTab';
 import QueuesTab from './audit/QueuesTab';
 
-export interface SystemLog {
-    id: string;
-    type: string;
-    status: string;
-    payload: Record<string, unknown>;
-    created_at: string;
-}
 
 interface AuditLogIslandProps {
     initialData: {
@@ -41,7 +34,7 @@ interface AuditLogIslandProps {
         adminLogsTotal: number;
         systemLogs: SystemLog[];
         systemLogsTotal: number;
-        queueData: Record<string, any>;
+        queueData: Record<string, QueueInfo>;
     };
 }
 
@@ -54,7 +47,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
     const [systemLogs, setSystemLogs] = useState<SystemLog[]>(initialData.systemLogs);
     const [adminLogsTotalCount, setAdminLogsTotalCount] = useState(initialData.adminLogsTotal);
     const [systemLogsTotalCount, setSystemLogsTotalCount] = useState(initialData.systemLogsTotal);
-    const [queueData, setQueueData] = useState<Record<string, any>>(initialData.queueData);
+    const [queueData, setQueueData] = useState<Record<string, QueueInfo>>(initialData.queueData);
     
     const [isProcessing, setIsProcessing] = useState<string | null>(null);
     const [isBulkProcessing, setIsBulkProcessing] = useState<'approve' | 'reject' | null>(null);
@@ -227,7 +220,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                     ].map(tab => (
                         <button
                             key={tab.id}
-                            onClick={() => setActiveTab(tab.id as any)}
+                            onClick={() => setActiveTab(tab.id as typeof activeTab)}
                             className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] transition-all ${activeTab === tab.id ? 'bg-[var(--beheer-card-bg)] shadow-md text-[var(--beheer-accent)]' : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)]'}`}
                         >
                             <tab.icon className="h-3.5 w-3.5" /> {tab.label}

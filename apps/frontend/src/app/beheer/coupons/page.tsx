@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 async function CouponDataLoader() {
     const coupons = await getCoupons().catch(() => []);
-    return <CouponManagementIsland initialCoupons={coupons as any} />;
+    return <CouponManagementIsland initialCoupons={coupons} />;
 }
 
 export default async function BeheerCouponsPage() {

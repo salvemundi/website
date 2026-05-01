@@ -1,10 +1,12 @@
 import { auth } from '@/server/auth/auth';
+import { type DbEventSignup } from '@salvemundi/validations/directus/schema';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
-import { getActivityBySlug, checkUserSignupStatus } from '@/server/actions/activiteit-actions';
+import { getActivityBySlug, checkUserSignupStatus, getSignupStatus } from '@/server/actions/activiteit-actions';
 import ActivityDetailIsland from '@/components/islands/activities/ActivityDetailIsland';
 import EventSignupIsland from '@/components/islands/activities/EventSignupIsland';
 import { type MembershipUserData } from '@/components/islands/account/MembershipStatusIsland';
+import { type EnrichedUser } from '@/types/auth';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import BackButton from '@/components/ui/navigation/BackButton';
 
@@ -32,7 +34,7 @@ export default async function PageActivityId({ params, searchParams }: PageProps
     if (!activity) notFound();
 
     const isPast = new Date(activity.datum_start) < new Date();
-    
+
     // Server-side authoritative price determination
     const user = session?.user as MembershipUserData | undefined;
     const isMember = user?.membership_status === 'active';
@@ -52,10 +54,14 @@ export default async function PageActivityId({ params, searchParams }: PageProps
         }
     }
 
-    if (sParams.status === 'paid' && sParams.token) {
-        verifiedPaymentStatus = 'paid';
-        qrToken = sParams.token;
-        isSignedUp = true;
+    // Check by token if returning from payment
+    if (sParams.token) {
+        const statusRes = await getSignupStatus(undefined, sParams.token);
+        if (statusRes.status === 'paid') {
+            verifiedPaymentStatus = 'paid';
+            qrToken = (statusRes.signup as DbEventSignup)?.qr_token || sParams.token;
+            isSignedUp = true;
+        }
     }
 
     return (
@@ -65,14 +71,14 @@ export default async function PageActivityId({ params, searchParams }: PageProps
             </div>
 
             <ActivityDetailIsland activity={activity} isLoggedIn={!!session}>
-                <EventSignupIsland 
+                <EventSignupIsland
                     eventId={Number(activity.id)}
                     price={price}
                     eventDate={activity.datum_start}
                     description={activity.beschrijving || ''}
                     isPast={isPast}
                     eventName={activity.titel}
-                    initialUser={session?.user || null}
+                    initialUser={(session?.user as unknown as EnrichedUser) || null}
                     verifiedPaymentStatus={verifiedPaymentStatus}
                     initialQrToken={qrToken}
                     initialIsSignedUp={isSignedUp}

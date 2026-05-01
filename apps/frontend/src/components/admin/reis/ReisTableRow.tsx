@@ -142,7 +142,13 @@ export default function ReisTableRow({
                                     {activities ? (
                                         activities.length > 0 ? (
                                             activities.map(a => {
-                                                const activity = a as any;
+                                                interface ExpandedTripSignupActivity {
+                                                    activity_name?: string;
+                                                    trip_activity_id?: { name?: string; options?: any };
+                                                    selected_options?: any;
+                                                    activity_options?: any;
+                                                }
+                                                const activity = a as unknown as ExpandedTripSignupActivity;
                                                 const name = activity.activity_name || activity.trip_activity_id?.name || 'Activiteit';
                                                 const rawOptions = parseSelectedOptions(activity.selected_options);
                                                 const metaOptions = parseActivityOptions(activity.activity_options || activity.trip_activity_id?.options);

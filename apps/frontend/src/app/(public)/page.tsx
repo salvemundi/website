@@ -32,7 +32,7 @@ export default async function HomePage() {
         <PublicPageShell>
             <HeroIsland banners={banners} activiteiten={heroActivities} initialSession={session} />
 
-            <EventsSection activities={activities as any} />
+            <EventsSection activities={activities} />
 
             <WhySalveMundiSection />
 

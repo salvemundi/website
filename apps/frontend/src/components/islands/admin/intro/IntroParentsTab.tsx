@@ -35,7 +35,7 @@ interface IntroParentRow {
 interface Props {
     parents: IntroParentRow[];
     onDelete: (id: number) => Promise<void>;
-    onUpdate: (id: number, data: any) => Promise<void>;
+    onUpdate: (id: number, data: Partial<IntroParentRow>) => Promise<void>;
     onExport: () => void;
     deletingId: number | null;
 }
@@ -190,7 +190,7 @@ export default function IntroParentsTab({ parents, onDelete, onUpdate, onExport,
                                                                         <span className="opacity-50 text-[9px]">Telefoon</span>
                                                                         <PhoneInput 
                                                                             value={editData.phone_number || ''} 
-                                                                            onChange={(e: any) => setEditData({...editData, phone_number: e.target.value})} 
+                                                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditData({...editData, phone_number: e.target.value})} 
                                                                             className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-lg px-3 py-2 text-[var(--beheer-text)] text-xs font-bold focus:ring-2 focus:ring-[var(--beheer-accent)] outline-none" 
                                                                         />
                                                                     </div>
@@ -208,14 +208,14 @@ export default function IntroParentsTab({ parents, onDelete, onUpdate, onExport,
                                                             <div className="space-y-4">
                                                                 <div className="flex items-center justify-between">
                                                                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--beheer-accent)]">Extra Informatie</p>
-                                                                    <Button onClick={(e: any) => startEdit(e, p)} variant="ghost" icon={Edit}>
+                                                                    <Button onClick={() => startEdit({ stopPropagation: () => {} } as React.MouseEvent, p)} variant="ghost" icon={Edit}>
                                                                         Bewerken
                                                                     </Button>
                                                                 </div>
                                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                                     <div className="flex flex-col gap-1">
                                                                         <span className="opacity-50">Aangemeld op</span>
-                                                                        <span className="text-[var(--beheer-text)] text-sm font-bold">{p.date_created ? formatDate(p.date_created) : (p as any).created_at ? formatDate((p as any).created_at) : '-'}</span>
+                                                                        <span className="text-[var(--beheer-text)] text-sm font-bold">{p.date_created ? formatDate(p.date_created) : p.created_at ? formatDate(p.created_at) : '-'}</span>
                                                                     </div>
                                                                         <div className="flex flex-col gap-1">
                                                                             <span className="opacity-50">Status</span>

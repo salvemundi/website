@@ -2,12 +2,20 @@ import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import { notFound } from 'next/navigation';
-import LedenDetailIsland from '@/components/islands/admin/leden/LedenDetailIsland';
+import LedenDetailIsland, { type Member, type CommitteeMembership, type Signup } from '@/components/islands/admin/leden/LedenDetailIsland';
 import { getSystemDirectus } from '@/lib/directus';
+import { readUsers, readItems } from '@directus/sdk';
+import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 
 // Correct Directus SDK imports
-import { readUser, readItems as dReadItems, readUsers } from '@directus/sdk';
-import AdminPageShell from '@/components/ui/admin/AdminPageShell';
+import { type EnrichedUser } from '@/types/auth';
+import { type Committee } from '@/shared/lib/permissions';
+import { 
+    type DbDirectusUser, 
+    type DbCommitteeMember, 
+    type DbEventSignup, 
+    type DbCommittee as DbCommitteeSchema 
+} from '@salvemundi/validations/directus/schema';
 
 export default async function LidDetailPage({ params }: { params: Promise<{ slug: string }> }) {
     const resolvedParams = await params;
@@ -19,9 +27,9 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
     });
     if (!session || !session.user) return <AdminUnauthorized title="Lid Detail" />;
 
-    const user = session.user as any;
+    const user = session.user as unknown as EnrichedUser;
     const memberships = user.committees || [];
-    const hasPriv = memberships.some((c: any) => {
+    const hasPriv = memberships.some((c: Committee) => {
         const name = (c?.name || '').toString().toLowerCase();
         return name.includes('bestuur') || name.includes('ict') || name.includes('kandi');
     });
@@ -49,12 +57,12 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
                 fields: ['id', 'first_name', 'last_name', 'email', 'date_of_birth', 'membership_expiry', 'status', 'phone_number', 'avatar', 'entra_id'],
                 limit: 100
             })
-        );
+        ) as DbDirectusUser[];
 
-        if (!memberResult || (memberResult as unknown as any[]).length === 0) return notFound();
+        if (!memberResult || memberResult.length === 0) return notFound();
         
         // Find exact match by comparing the normalized prefix (dots converted to dashes)
-        const memberData = (memberResult as unknown as any[]).find((u: any) => {
+        const memberData = memberResult.find((u) => {
             const emailPrefix = (u.email || '').split('@')[0].toLowerCase();
             const normalizedPrefix = emailPrefix.replace(/\./g, '-');
             return normalizedPrefix === decodedSlug.toLowerCase();
@@ -67,27 +75,27 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
 
         const [userCommitteesResult, signupsResult, allCommitteesResult] = await Promise.allSettled([
             getSystemDirectus().request(
-                dReadItems<any, any, any>('committee_members' as any, {
+                readItems('committee_members', {
                     filter: { user_id: { _eq: id } },
                     fields: ['id', 'is_leader', { committee_id: ['id', 'name', 'email', 'azure_group_id', 'is_visible'] }],
                     limit: -1
                 })
-            ),
+            ) as Promise<DbCommitteeMember[]>,
             // Re-fetch signups by email since the lookup uses participant_email
             getSystemDirectus().request(
-                dReadItems<any, any, any>('event_signups', {
+                readItems('event_signups', {
                     filter: { participant_email: { _eq: memberData.email } },
                     fields: ['id', 'payment_status', { event_id: ['id', 'name', 'event_date'] }],
                     limit: -1
                 })
-            ),
+            ) as Promise<DbEventSignup[]>,
             getSystemDirectus().request(
-                dReadItems<any, any, any>('committees', {
+                readItems('committees', {
                     fields: ['id', 'name', 'azure_group_id', 'is_visible'],
                     sort: ['name'],
                     limit: -1
                 })
-            )
+            ) as Promise<DbCommitteeSchema[]>
         ]);
 
         const signups = signupsResult.status === 'fulfilled' ? signupsResult.value : [];
@@ -120,7 +128,7 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
                 if (mgmtRes.ok) {
                     const data = await mgmtRes.json();
                     if (data.success && Array.isArray(data.groups)) {
-                        const userAzureGroupIds = data.groups.map((g: any) => g.id.toLowerCase());
+                        const userAzureGroupIds = data.groups.map((g: { id: string }) => g.id.toLowerCase());
                         const matchedGroups = HARDCODED_AZURE_GROUPS.filter(hg => userAzureGroupIds.includes(hg.id.toLowerCase()));
                         
                         const fakeMemberships = matchedGroups.map(match => ({
@@ -134,7 +142,7 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
                             }
                         }));
 
-                        userCommittees = [...userCommittees, ...fakeMemberships];
+                        userCommittees = [...userCommittees, ...fakeMemberships as unknown as DbCommitteeMember[]];
                     }
                 }
             } catch (err) {
@@ -149,17 +157,17 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
             >
                 <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in slide-in-from-bottom-2 duration-500">
                     <LedenDetailIsland 
-                        member={memberData as any} 
-                        initialMemberships={userCommittees as any} 
-                        signups={signups as any}
+                        member={memberData as unknown as Member} 
+                        initialMemberships={userCommittees as unknown as CommitteeMembership[]} 
+                        signups={signups as unknown as Signup[]}
                         allCommittees={allCommittees as any}
                         isAdmin={hasPriv}
                     />
                 </div>
             </AdminPageShell>
         );
-    } catch (e: any) {
-        if (e.digest?.startsWith('NEXT_')) throw e;
+    } catch (e: unknown) {
+        if (e && typeof e === 'object' && 'digest' in e && typeof (e as { digest?: string }).digest === 'string' && (e as { digest: string }).digest.startsWith('NEXT_')) throw e;
         console.error("[LidDetailPage] Error loading member:", e);
         return notFound();
     }

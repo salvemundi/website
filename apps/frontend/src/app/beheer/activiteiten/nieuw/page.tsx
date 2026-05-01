@@ -2,46 +2,31 @@ import type { Metadata } from 'next';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
-import { getSystemDirectus } from '@/lib/directus';
-import { readItems } from '@directus/sdk';
 import ActiviteitNieuwIsland from '@/components/islands/admin/activities/ActiviteitNieuwIsland';
 
 import { getPermissions } from '@/shared/lib/permissions';
 import { fetchUserCommitteesDb } from '@/server/actions/user-db.utils';
+import { query } from '@/lib/database';
 
-export const metadata: Metadata = {
-    title: 'Activiteit Aanmaken | SV Salve Mundi',
-};
+import { type EnrichedUser } from '@/types/auth';
 
-async function getCommittees(user: any, permissions: any) {
+async function getCommitteesForUser(user: EnrichedUser, permissions: ReturnType<typeof getPermissions>) {
     const memberships = user.committees || [];
     const isPowerful = permissions.isLeader || permissions.isICT;
 
     try {
         if (isPowerful) {
-            return await getSystemDirectus().request(
-                readItems<any, any, any>('committees', {
-                    fields: ['id', 'name'],
-                    sort: ['name'],
-                    limit: -1
-                })
-            );
+            const { rows } = await query('SELECT id, name FROM committees ORDER BY name ASC');
+            return rows;
         } else {
             if (memberships.length === 0) return [];
             
-            const committeeIds = memberships.map((m: any) => m.id).filter(Boolean);
+            const committeeIds = memberships.map((m) => m.id).filter(Boolean);
             if (committeeIds.length === 0) return [];
 
-            return await getSystemDirectus().request(
-                readItems<any, any, any>('committees', {
-                    fields: ['id', 'name'],
-                    filter: {
-                        id: { _in: committeeIds }
-                    },
-                    sort: ['name'],
-                    limit: -1
-                })
-            );
+            const placeholders = committeeIds.map((_, i) => `$${i + 1}`).join(', ');
+            const { rows } = await query(`SELECT id, name FROM committees WHERE id IN (${placeholders}) ORDER BY name ASC`, committeeIds);
+            return rows;
         }
     } catch (error) {
         return [];
@@ -62,7 +47,7 @@ export default async function ActivityCreatePage() {
         );
     }
 
-    const user = session.user as any;
+    const user = session.user as unknown as EnrichedUser;
     const userCommittees = await fetchUserCommitteesDb(user.id).catch(() => []);
     const permissions = getPermissions(userCommittees || []);
 
@@ -75,11 +60,11 @@ export default async function ActivityCreatePage() {
         );
     }
 
-    const committees = await getCommittees(user, permissions);
+    const committees = await getCommitteesForUser(user, permissions);
 
     return (
         <div className="pb-20">
-            <ActiviteitNieuwIsland committees={committees as any} />
+            <ActiviteitNieuwIsland committees={committees} />
         </div>
     );
 }

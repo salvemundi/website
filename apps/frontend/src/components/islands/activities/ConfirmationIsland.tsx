@@ -29,9 +29,9 @@ interface ConfirmationIslandProps {
 interface SignupData {
     errorType?: 'canceled' | 'failed' | 'expired' | 'timeout';
     amount_tickets?: number;
-    tickets?: Array<{ qr_token: string }>;
-    qr_token?: string;
-    id?: string | number;
+    tickets?: Array<{ qr_token: string | null }>;
+    qr_token?: string | null;
+    id?: string | number | null;
     event_id?: { id?: string | number; name: string };
 }
 
@@ -88,7 +88,7 @@ export default function ConfirmationIsland({
                     setSignupData({ errorType: 'timeout' });
                 }
             } catch (err) {
-                setStatus('error' as any);
+                setStatus('failed');
             }
         };
 
@@ -98,7 +98,7 @@ export default function ConfirmationIsland({
     // Delayed redirect if custom_url exists for paid events
     useEffect(() => {
         if (status === 'paid' && !isMembership && !isTrip) {
-            const customUrl = (signupData as any)?.event_id?.custom_url || (signupData as any)?.custom_url;
+            const customUrl = (signupData as Record<string, any>)?.event_id?.custom_url || (signupData as Record<string, any>)?.custom_url;
             if (customUrl) {
                 const timeout = setTimeout(() => {
                     window.location.href = customUrl;
@@ -189,7 +189,7 @@ export default function ConfirmationIsland({
                         <p className="text-[var(--text-muted)] text-lg font-medium max-w-md mx-auto">
                             Bedankt! Je ticket{amount > 1 ? 's' : ''} {amount > 1 ? 'zijn' : 'is'} nu beschikbaar.
                         </p>
-                        {((signupData as any)?.event_id?.custom_url || (signupData as any)?.custom_url) && (
+                        {((signupData as Record<string, any>)?.event_id?.custom_url || (signupData as Record<string, any>)?.custom_url) && (
                             <p className="text-[10px] uppercase font-black text-[var(--theme-purple)] mt-2 tracking-widest animate-pulse">
                                 Je wordt zo automatisch doorgestuurd...
                             </p>
@@ -206,7 +206,7 @@ export default function ConfirmationIsland({
                                 <div className="flex flex-col items-center gap-4">
                                     <p className="text-[10px] font-black text-[var(--theme-purple)] uppercase tracking-[0.2em]">TICKET {i + 1} / {amount}</p>
                                     <div className="p-4 bg-white rounded-3xl shadow-lg ring-1 ring-black/5">
-                                        <QRDisplay qrToken={signupData?.tickets?.[i]?.qr_token || `${signupData?.qr_token}${amount > 1 ? `#${i}` : ''}`} size={180} />
+                                        <QRDisplay qrToken={signupData?.tickets?.[i]?.qr_token || `${signupData?.qr_token || ''}${amount > 1 ? `#${i}` : ''}`} size={180} />
                                     </div>
                                     <div className="text-center">
                                         <h3 className="font-black text-[var(--text-main)] uppercase tracking-tight">{eventName}</h3>

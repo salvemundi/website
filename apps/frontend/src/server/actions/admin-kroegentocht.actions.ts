@@ -60,9 +60,7 @@ export async function getPubCrawlEvent(id: string | number): Promise<PubCrawlEve
         const item = await getSystemDirectus().request(readItem('pub_crawl_events', id, {
             fields: [...PUB_CRAWL_EVENT_FIELDS]
         }));
-        const event = item as any;
-        event.price = 1;
-        event.max_tickets_per_person = 10;
+        const event = item as unknown as PubCrawlEvent;
         return pubCrawlEventSchema.parse(event);
     } catch (e) {
         
@@ -72,7 +70,7 @@ export async function getPubCrawlEvent(id: string | number): Promise<PubCrawlEve
 
 export async function upsertPubCrawlEvent(data: Partial<PubCrawlEvent>) {
     await requireKroegAdmin();
-    const { id, name, description, date, email, image } = data as any;
+    const { id, name, description, date, email, image } = data;
     
     // Alleen velden sturen die daadwerkelijk in de Directus collectie zitten
     const payload = { name, description, date, email, image };
@@ -91,9 +89,10 @@ export async function upsertPubCrawlEvent(data: Partial<PubCrawlEvent>) {
         revalidatePath('/beheer/kroegentocht');
         
         return { success: true };
-    } catch (e: any) {
-        console.error('[Kroegentocht-Action] Upsert failed:', e.message);
-        throw new Error('Opslaan van event mislukt: ' + (e.message || 'Onbekende fout'));
+    } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : 'Onbekende fout';
+        console.error('[Kroegentocht-Action] Upsert failed:', message);
+        throw new Error('Opslaan van event mislukt: ' + message);
     }
 }
 
@@ -126,17 +125,18 @@ export async function getPubCrawlSignups(eventId: number) {
                 const directusItems = await getSystemDirectus().request(readItems('pub_crawl_signups', {
                     filter: { id: { _in: openSignupIds } },
                     fields: ['id', 'payment_status']
-                }));
+                })) as unknown as { id: number; payment_status: string }[];
                 
-                const directusStatusMap = new Map(directusItems.map((item: any) => [item.id, item.payment_status]));
+                const directusStatusMap = new Map<number, string>(directusItems.map((item) => [item.id, item.payment_status]));
                 
                 // Update SQL for those that changed
                 for (const signup of sqlSignups) {
-                    const latestStatus = directusStatusMap.get(signup.id);
-                    if (latestStatus && latestStatus !== signup.payment_status && signup.id) {
-                        signup.payment_status = latestStatus;
+                    if (!signup.id) continue;
+                    const latestStatus = directusStatusMap.get(Number(signup.id));
+                    if (latestStatus && latestStatus !== signup.payment_status) {
+                        (signup as Record<string, unknown>).payment_status = latestStatus;
                         // Background update SQL
-                        updatePubCrawlSignupDb(Number(signup.id), { payment_status: latestStatus }).catch(() => {});
+                        updatePubCrawlSignupDb(Number(signup.id), { payment_status: latestStatus as 'open' | 'paid' | 'failed' | 'canceled' | 'expired' }).catch(() => {});
                     }
                 }
             } catch (err) {
@@ -146,8 +146,9 @@ export async function getPubCrawlSignups(eventId: number) {
         }
 
         return sqlSignups;
-    } catch (e: any) {
-        console.error('[Kroegentocht-Action] getPubCrawlSignups failed:', e.message);
+    } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : 'Onbekende fout';
+        console.error('[Kroegentocht-Action] getPubCrawlSignups failed:', message);
         throw new Error('Kon aanmeldingen niet ophalen');
     }
 }
@@ -178,14 +179,25 @@ export async function deletePubCrawlSignup(id: number, eventId: number) {
     }
 }
 
-export async function updatePubCrawlSignup(id: number, eventId: number, data: any) {
+export async function updatePubCrawlSignup(id: number, eventId: number, data: Partial<PubCrawlSignup>) {
     await requireKroegAdmin();
+    
+    // PENTEST HARDENING: Strictly validate update payload
+    const allowedFields = ['payment_status', 'association', 'name', 'email'];
+    const filteredData = Object.fromEntries(
+        Object.entries(data).filter(([key]) => allowedFields.includes(key))
+    );
+
+    if (Object.keys(filteredData).length === 0) {
+        throw new Error('Geen geldige velden om bij te werken');
+    }
+
     try {
-        await updatePubCrawlSignupDb(id, data);
+        await updatePubCrawlSignupDb(id, filteredData);
         revalidateTag(`signups-${eventId}`, 'max');
 
         // Background sync to Directus
-        getSystemDirectus().request(updateItem('pub_crawl_signups', id, data)).catch(() => {});
+        getSystemDirectus().request(updateItem('pub_crawl_signups', id, filteredData)).catch(() => {});
 
         return { success: true };
     } catch (e) {

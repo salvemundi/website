@@ -37,6 +37,20 @@ interface ExtendedSession {
     };
 }
 
+interface AuthContext {
+    path?: string;
+    headers?: HeadersInit | Record<string, string>;
+    request?: {
+        headers: HeadersInit | Record<string, string>;
+    };
+    context?: {
+        returned?: any;
+    };
+    response?: any;
+    json?: any;
+    body?: any;
+}
+
 /**
  * Better Auth plugin die sessies cached in Redis (TTL: 5 minuten).
  * Bevat ook de logica voor impersonatie (nadoen van andere gebruikers).
@@ -48,9 +62,9 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
             before: [
                 {
                     matcher: (ctx) => !!ctx?.path?.includes("get-session"),
-                    handler: async (ctx) => {
+                    handler: async (ctx: AuthContext) => {
                         try {
-                            const headersSource = ctx?.headers || (ctx as { request?: { headers: any } }).request?.headers || {};
+                            const headersSource = ctx?.headers || ctx?.request?.headers || {};
                             const requestHeaders = new Headers(headersSource);
                             const token = requestHeaders.get("authorization")?.split(" ")[1] ||
                                 requestHeaders.get("cookie")?.split("better-auth.session-token=")[1]?.split(";")[0];
@@ -73,11 +87,11 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
             after: [
                 {
                     matcher: (ctx) => !!ctx?.path?.includes("get-session"),
-                    handler: async (ctx) => {
+                    handler: async (ctx: AuthContext) => {
                         try {
-                            const headersSource = ctx?.headers || (ctx as { request?: { headers: any } }).request?.headers || {};
+                            const headersSource = ctx?.headers || ctx?.request?.headers || {};
                             const requestHeaders = new Headers(headersSource);
-                            const session = ((ctx as any)?.context?.returned || (ctx as any)?.response || (ctx as any)?.json || (ctx as any)?.body) as ExtendedSession | null;
+                            const session = (ctx?.context?.returned || ctx?.response || ctx?.json || ctx?.body) as ExtendedSession | null;
                             
                             const token = requestHeaders.get("authorization")?.split(" ")[1] ||
                                 requestHeaders.get("cookie")?.split("better-auth.session-token=")[1]?.split(";")[0];

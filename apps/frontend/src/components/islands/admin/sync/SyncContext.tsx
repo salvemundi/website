@@ -6,8 +6,24 @@ import { getSyncStatusAction, stopSyncAction, resetSyncStatusAction } from '@/se
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import AdminToast from '@/components/ui/admin/AdminToast';
 
+export interface SyncStatus {
+    status?: string;
+    active?: boolean;
+    successCount?: number;
+    errorCount?: number;
+    warningCount?: number;
+    createdCount?: number;
+    missingDataCount?: number;
+    movedExpiredCount?: number;
+    processed?: number;
+    total?: number;
+    fatalError?: { message: string; stack?: string };
+    abortRequested?: boolean;
+    error?: string;
+}
+
 interface SyncContextType {
-    status: any | null;
+    status: SyncStatus | null;
     isLoading: boolean;
     isStartingSync: boolean;
     isStopping: boolean;
@@ -23,7 +39,7 @@ interface SyncContextType {
     activeOnly: boolean;
     setActiveOnly: (val: boolean) => void;
     resultFilter: string;
-    setResultFilter: (filter: any) => void;
+    setResultFilter: (filter: string) => void;
     syncFieldOptions: { id: string; label: string }[];
     fetchStatus: () => Promise<void>;
     handleFullSync: () => Promise<void>;
@@ -34,11 +50,11 @@ interface SyncContextType {
 
 const SyncContext = createContext<SyncContextType | undefined>(undefined);
 
-export function SyncProvider({ children, initialStatus }: { children: ReactNode, initialStatus: any | null }) {
+export function SyncProvider({ children, initialStatus }: { children: ReactNode, initialStatus: SyncStatus | null }) {
     const { toast, showToast, hideToast } = useAdminToast();
     
     // Nuclear SSR: Initialize status directly. If null, we'll handle the empty state in the UI.
-    const [status, setStatus] = useState<any | null>(initialStatus);
+    const [status, setStatus] = useState<SyncStatus | null>(initialStatus);
     const [isStartingSync, setIsStartingSync] = useState(false);
     const [isStopping, setIsStopping] = useState(false);
     const [isResetting, setIsResetting] = useState(false);

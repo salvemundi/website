@@ -8,48 +8,20 @@ import { getImageUrl } from '@/lib/utils/image-utils';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
+import { AdminActivity, Committee } from '@salvemundi/validations';
 
 // Clean committee names (removed || SV Salve Mundi and other suffixes)
 function cleanCommitteeName(name: string): string {
     return name?.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim() || '';
 }
 
-interface Committee {
-    id: number;
-    name: string;
-    email?: string | null;
-}
-
-interface EventProps {
-    id: number;
-    name: string;
-    description: string;
-    description_logged_in?: string | null;
-    event_date: string;
-    event_date_end?: string | null;
-    event_time?: string | null;
-    event_time_end?: string | null;
-    location?: string | null;
-    max_sign_ups?: number | null;
-    price_members?: number | null;
-    price_non_members?: number | null;
-    registration_deadline?: string | null;
-    committee_id?: number | null;
-    contact?: string | null;
-    only_members?: boolean;
-    image?: any;
-    status?: 'published' | 'draft' | 'archived';
-    publish_date?: string | null;
-    custom_url?: string | null;
-}
-
 interface ActiviteitBewerkenIslandProps {
-    event?: EventProps;
+    event?: AdminActivity;
     committees?: Committee[];
 }
 
 export default function ActiviteitBewerkenIsland({ 
-    event = {} as EventProps, 
+    event = {} as AdminActivity, 
     committees = [], 
 }: ActiviteitBewerkenIslandProps) {
     const router = useRouter();
@@ -73,7 +45,7 @@ export default function ActiviteitBewerkenIsland({
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // React 19 useActionState
-    const [state, formAction, isPending] = useActionState(async (prevState: any, formData: FormData) => {
+    const [state, formAction, isPending] = useActionState(async (prevState: Record<string, unknown>, formData: FormData) => {
         if (imageFile) formData.append('imageFile', imageFile);
         if (removeExistingImage) formData.append('removeImage', 'true');
         formData.set('status', status);
@@ -211,19 +183,18 @@ export default function ActiviteitBewerkenIsland({
                                     type="text"
                                     id="name"
                                     name="name"
-                                    defaultValue={event.name}
+                                    defaultValue={event.name || ''}
                                     autoComplete="off"
                                     className={`beheer-input ${formErrors.name ? 'border-red-500 ring-4 ring-red-500/10' : ''}`}
                                     placeholder="Bijv. Borrel: Back to School"
                                 />
                                 {formErrors.name && <p className="text-red-500 text-[10px] font-black uppercase tracking-widest mt-2">{formErrors.name[0]}</p>}
                             </div>
-
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-8">
                                     <div>
                                         <label htmlFor="description" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Publieke Beschrijving *</label>
-                                        <textarea id="description" name="description" rows={8} defaultValue={event.description} className={`beheer-input ${formErrors.description ? 'border-red-500 ring-4 ring-red-500/10' : ''}`} placeholder="Wat gaan we doen?" />
+                                        <textarea id="description" name="description" rows={8} defaultValue={event.description || ''} className={`beheer-input ${formErrors.description ? 'border-red-500 ring-4 ring-red-500/10' : ''}`} placeholder="Wat gaan we doen?" />
                                         {formErrors.description && <p className="text-red-500 text-[10px] font-black uppercase tracking-widest mt-2">{formErrors.description[0]}</p>}
                                     </div>
                                     <div>
@@ -242,7 +213,7 @@ export default function ActiviteitBewerkenIsland({
                                         </div>
                                     ) : (
                                         <div className="relative group overflow-hidden rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 h-[340px] p-4 flex items-center justify-center">
-                                            {event.image?.type?.startsWith('video/') || imageFile?.type?.startsWith('video/') ? (
+                                            {(typeof event.image === 'object' && event.image?.type?.startsWith('video/')) || imageFile?.type?.startsWith('video/') ? (
                                                 <video 
                                                     src={imagePreview!} 
                                                     className="w-full h-full object-contain transition-transform duration-700 drop-shadow-lg" 

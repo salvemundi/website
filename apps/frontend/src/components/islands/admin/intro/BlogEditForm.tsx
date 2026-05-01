@@ -79,7 +79,7 @@ export default function BlogEditForm({ blog, data, onChange, onSave, onCancel, s
                     <Field label="Type">
                         <select 
                             value={data.blog_type || 'update'} 
-                            onChange={e => onChange({ ...data, blog_type: e.target.value as any })} 
+                            onChange={e => onChange({ ...data, blog_type: e.target.value as IntroBlog['blog_type'] })} 
                             className={`${inputClass} appearance-none cursor-pointer pr-10`}
                         >
                             <option value="update" className="bg-[var(--beheer-card-bg)]">Update</option>

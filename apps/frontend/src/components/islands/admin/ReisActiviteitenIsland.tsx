@@ -20,31 +20,14 @@ import { useAdminToast } from '@/hooks/use-admin-toast';
 // Reuse sub-components from Phase 2
 import TripActivityCard from './reis/TripActivityCard';
 import TripActivityForm from './reis/TripActivityForm';
-import TripActivitySignupsModal from './reis/TripActivitySignupsModal';
-interface Trip {
-    id: number;
-    name: string;
-}
+import TripActivitySignupsModal, { type Signup } from './reis/TripActivitySignupsModal';
 
-interface TripActivity {
-    id: number;
-    trip_id: number;
-    name: string;
-    description?: string | null;
-    price: number;
-    image?: string | null;
-    max_participants?: number | null;
-    is_active: boolean;
-    display_order: number;
-    options?: { name: string; price: number }[] | null;
-    max_selections?: number | null;
-}
-
+import { type Trip, type TripActivity } from '@salvemundi/validations/schema/admin-reis.zod';
 interface Props {
     initialTrips?: Trip[];
     initialActivities?: TripActivity[];
     initialSelectedTripId?: number;
-    initialSignupsByActivity?: Record<number, any[]>;
+    initialSignupsByActivity?: Record<number, Signup[]>;
 }
 
 export default function ReisActiviteitenIsland({ 
@@ -57,7 +40,7 @@ export default function ReisActiviteitenIsland({
     const { toast, showToast, hideToast } = useAdminToast();
     const [selectedTripId, setSelectedTripId] = useState<number>(initialSelectedTripId);
     const [activities, setActivities] = useState<TripActivity[]>(initialActivities);
-    const [signupsByActivity] = useState<Record<number, any[]>>(initialSignupsByActivity);
+    const [signupsByActivity] = useState<Record<number, Signup[]>>(initialSignupsByActivity);
     
     const [isPending, startTransition] = useTransition();
     const [editingActivity, setEditingActivity] = useState<Partial<TripActivity> | null>(null);
@@ -74,7 +57,7 @@ export default function ReisActiviteitenIsland({
         router.push(`/beheer/reis/activiteiten?tripId=${id}`);
     };
 
-    const handleSave = async (formData: FormData, options: any[]) => {
+    const handleSave = async (formData: FormData, options: Record<string, unknown>[]) => {
         formData.set('options', JSON.stringify(options));
         
         let res;
@@ -175,7 +158,7 @@ export default function ReisActiviteitenIsland({
                             {activities.map(activity => (
                                 <TripActivityCard 
                                     key={activity.id} 
-                                    activity={activity as any} 
+                                    activity={activity} 
                                     onEdit={setEditingActivity}
                                     onDelete={handleDelete}
                                     onViewSignups={setViewingSignupsId}

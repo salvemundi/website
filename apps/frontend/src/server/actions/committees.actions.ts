@@ -1,9 +1,8 @@
 'use server';
 
 import { committeesSchema, type Committee } from '@salvemundi/validations/schema/committees.zod';
-import { COMMITTEE_FIELDS, COMMITTEE_MEMBER_FIELDS } from '@salvemundi/validations/directus/fields';
 import { getSystemDirectus } from '@/lib/directus';
-import { readItems } from '@directus/sdk';
+import { query } from '@/lib/database';
 import { getRedis } from '@/server/auth/redis-client';
 
 const COMMITTEES_CACHE_KEY = 'cache:committees:all';
@@ -25,33 +24,33 @@ export async function getCommittees(): Promise<Committee[]> {
             
         }
 
-        const committeesData = await getSystemDirectus().request(readItems('committees', {
-            filter: { is_visible: { _eq: true } },
-            fields: [...COMMITTEE_FIELDS],
-            limit: 100
-        }));
-
-        if (committeesData.length === 0) {
-            return [];
-        }
-
-        const committeeIds = (committeesData as any[]).map((c: { id: string | number }) => c.id);
-        const allMembers = await getSystemDirectus().request(readItems('committee_members', {
-            fields: [
-                ...COMMITTEE_MEMBER_FIELDS, 
-                { user_id: ['id', 'first_name', 'last_name', 'avatar', 'title'] } as unknown as any
-            ],
-            filter: { 
-                committee_id: { _in: committeeIds as (string | number)[] },
-                is_visible: { _eq: true }
-            },
-            limit: 500
-        }));
-
-        const committeesWithMembers = committeesData.map((committee: Record<string, unknown>) => ({
-            ...committee,
-            members: (allMembers as any[]).filter((m: { committee_id: string | number | { id: string | number } }) => (typeof m.committee_id === 'object' ? m.committee_id.id : m.committee_id) === committee.id)
-        }));
+        const sql = `
+            SELECT 
+                c.*,
+                COALESCE(
+                    json_agg(
+                        json_build_object(
+                            'id', cm.id,
+                            'is_visible', cm.is_visible,
+                            'is_leader', cm.is_leader,
+                            'user_id', json_build_object(
+                                'id', u.id,
+                                'first_name', u.first_name,
+                                'last_name', u.last_name,
+                                'avatar', u.avatar,
+                                'title', u.title
+                            )
+                        )
+                    ) FILTER (WHERE cm.id IS NOT NULL), 
+                    '[]'
+                ) as members
+            FROM committees c
+            LEFT JOIN committee_members cm ON c.id = cm.committee_id AND cm.is_visible = true
+            LEFT JOIN directus_users u ON cm.user_id = u.id
+            WHERE c.is_visible = true
+            GROUP BY c.id
+        `;
+        const { rows: committeesWithMembers } = await query(sql);
 
         const parsed = committeesSchema.safeParse(committeesWithMembers);
 

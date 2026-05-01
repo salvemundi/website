@@ -38,7 +38,7 @@ export default async function ProfielPage() {
         <PublicPageShell title="Mijn Profiel">
             <div className="container mx-auto px-4 py-12 max-w-7xl">
                 <ProfielIsland 
-                    user={enrichedUser as any} 
+                    user={enrichedUser as unknown as Record<string, unknown>} 
                     initialSignups={eventSignups}
                     pubCrawlSignups={pubCrawlSignups}
                 />

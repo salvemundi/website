@@ -36,7 +36,7 @@ export default async function TripConfirmationPage({ searchParams }: PageProps) 
 
     // NUCLEAR SSR: Fetch initial status server-side
     const statusRes = await getPaymentStatusAction(token);
-    const initialStatus = statusRes.success ? (statusRes.payment_status as any) : 'loading';
+    const initialStatus = statusRes.success ? (statusRes.payment_status as 'loading' | 'open' | 'paid' | 'expired' | 'failed' | 'canceled') : 'loading';
     const isPaid = initialStatus === 'paid';
 
     return (

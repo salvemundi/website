@@ -113,28 +113,50 @@ export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ succe
     const { id, ...payload } = validated.data;
     
     try {
-        let result;
+        let rows: any[];
         const sanitizedPayload = {
             ...payload,
             created_at: payload.created_at instanceof Date ? payload.created_at.toISOString() : payload.created_at
         };
         
         if (id) {
-            result = await getSystemDirectus().request(updateItem('intro_blogs', id, sanitizedPayload));
+            const sql = `
+                UPDATE intro_blogs 
+                SET title = $1, content = $2, blog_type = $3, is_published = $4, slug = $5, excerpt = $6, created_at = $7
+                WHERE id = $8 RETURNING *
+            `;
+            const result = await query(sql, [
+                sanitizedPayload.title, sanitizedPayload.content, sanitizedPayload.blog_type, 
+                sanitizedPayload.is_published, sanitizedPayload.slug, sanitizedPayload.excerpt, 
+                sanitizedPayload.created_at, id
+            ]);
+            rows = result.rows;
         } else {
-            result = await getSystemDirectus().request(createItem('intro_blogs', sanitizedPayload));
+            const sql = `
+                INSERT INTO intro_blogs (title, content, blog_type, is_published, slug, excerpt, created_at)
+                VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *
+            `;
+            const result = await query(sql, [
+                sanitizedPayload.title, sanitizedPayload.content, sanitizedPayload.blog_type, 
+                sanitizedPayload.is_published, sanitizedPayload.slug, sanitizedPayload.excerpt, 
+                sanitizedPayload.created_at
+            ]);
+            rows = result.rows;
         }
         revalidatePath('/beheer/intro');
-        return { success: true, data: { 
-            ...result, 
-            id: Number(result.id),
-            title: result.title || '',
-            content: result.content || '',
-            blog_type: (result.blog_type || 'update') as IntroBlog['blog_type'],
-            is_published: !!result.is_published
-        } as IntroBlog };
-    } catch (e) {
         
+        const row = rows[0];
+        return { success: true, data: { 
+            id: Number(row.id),
+            title: row.title || '',
+            content: row.content || '',
+            blog_type: (row.blog_type || 'update') as IntroBlog['blog_type'],
+            is_published: !!row.is_published,
+            created_at: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
+            slug: row.slug || '',
+            excerpt: row.excerpt || ''
+        } };
+    } catch (e) {
         return { success: false, error: 'Opslaan mislukt' };
     }
 }
@@ -207,13 +229,14 @@ export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Pro
         }
         revalidatePath('/beheer/intro');
         return { success: true, data: { 
-            ...result, 
             id: Number(result.id),
             date: result.date || '',
             time_start: result.time_start || '',
             title: result.title || '',
-            description: result.description || ''
-        } as IntroPlanningItem };
+            description: result.description || '',
+            day: result.day || '',
+            location: result.location
+        } };
     } catch (e: unknown) {
         const message = e instanceof Error ? e.message : 'Onbekende fout';
         console.error('[AdminIntro] Failed to upsert planning:', e);
@@ -235,8 +258,18 @@ export async function deleteIntroPlanning(id: number): Promise<{ success: boolea
 
 export async function updateIntroSignup(id: number, data: Partial<Record<string, unknown>>): Promise<{ success: boolean; error?: string }> {
     await checkIntroAdminAccess();
+    
+    const allowedFields = ['status', 'payment_status', 'is_member', 'notes', 'checked_in'];
+    const filteredData = Object.fromEntries(
+        Object.entries(data).filter(([key]) => allowedFields.includes(key))
+    );
+
+    if (Object.keys(filteredData).length === 0) {
+        return { success: false, error: 'Geen geldige velden om bij te werken' };
+    }
+
     try {
-        await getSystemDirectus().request(updateItem('intro_signups', id, data));
+        await getSystemDirectus().request(updateItem('intro_signups', id, filteredData));
         revalidatePath('/beheer/intro');
         return { success: true };
     } catch (e) {
@@ -246,8 +279,19 @@ export async function updateIntroSignup(id: number, data: Partial<Record<string,
 
 export async function updateIntroParentSignup(id: number, data: Partial<Record<string, unknown>>): Promise<{ success: boolean; error?: string }> {
     await checkIntroAdminAccess();
+    
+    // PENTEST HARDENING: Strictly validate update payload
+    const allowedFields = ['status', 'payment_status', 'notes', 'checked_in'];
+    const filteredData = Object.fromEntries(
+        Object.entries(data).filter(([key]) => allowedFields.includes(key))
+    );
+
+    if (Object.keys(filteredData).length === 0) {
+        return { success: false, error: 'Geen geldige velden om bij te werken' };
+    }
+
     try {
-        await getSystemDirectus().request(updateItem('intro_parent_signups', id, data));
+        await getSystemDirectus().request(updateItem('intro_parent_signups', id, filteredData));
         revalidatePath('/beheer/intro');
         return { success: true };
     } catch (e) {
@@ -304,7 +348,7 @@ export async function toggleIntroVisibility(): Promise<{ success: boolean; show?
         }
         
         return { success: true, show: newStatus };
-    } catch (e) {
+    } catch (e: unknown) {
         
         return { success: false, error: 'Bijwerken mislukt' };
     }

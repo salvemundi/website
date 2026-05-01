@@ -8,6 +8,7 @@ import {
 } from '@salvemundi/validations/schema/membership.zod';
 import { TRANSACTION_FIELDS } from '@salvemundi/validations/directus/fields';
 import { auth } from '@/server/auth/auth';
+import { type EnrichedUser } from '@/types/auth';
 import { headers } from 'next/headers';
 import { revalidateTag } from 'next/cache';
 import { rateLimit } from '../utils/ratelimit';
@@ -76,7 +77,7 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
         headers: await headers()
     });
 
-    const user = session?.user;
+    const user = session?.user as unknown as EnrichedUser;
     const isExpired = user && user.membership_status !== 'active';
 
     // Fetch committees for pricing (Active members pay €10 for renewal)

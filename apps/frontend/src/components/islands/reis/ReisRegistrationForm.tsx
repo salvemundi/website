@@ -90,7 +90,7 @@ export function ReisRegistrationForm({
         setShowNameConfirm(false);
         setLoading(true);
         try {
-            const result = await createTripSignup(pendingData as any, nextTrip.id);
+            const result = await createTripSignup(pendingData, nextTrip.id);
             if (!result.success) {
                 showToast(result.message || 'Fout bij inschrijven.', 'error');
             } else {

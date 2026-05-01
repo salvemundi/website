@@ -12,6 +12,8 @@ import SyncMonitorIsland from '@/components/islands/admin/sync/SyncMonitorIsland
 import { SyncProvider } from '@/components/islands/admin/sync/SyncContext';
 
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
+import { type EnrichedUser } from '@/types/auth';
+import { type Committee } from '@/shared/lib/permissions';
 
 export const metadata: Metadata = {
     title: 'Beheer Sync | SV Salve Mundi',
@@ -23,9 +25,9 @@ async function checkSyncAccess() {
     });
     if (!session || !session.user) return false;
     
-    const user = session.user as any;
-    const memberships = user.committees || [];
-    return memberships.some((c: any) => {
+    const user = session.user as unknown as EnrichedUser;
+    const memberships = (user.committees as Committee[]) || [];
+    return memberships.some((c: Committee) => {
         const name = (c?.name || '').toString().toLowerCase();
         return name.includes('bestuur') || name.includes('ict') || name.includes('kandi');
     });

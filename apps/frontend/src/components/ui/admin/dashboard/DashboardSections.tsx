@@ -27,6 +27,7 @@ import {
     type RecentActivity,
     type TopSticker
 } from "@salvemundi/validations/schema/admin-dashboard.zod";
+import { UserPermissions } from '@/shared/lib/permissions';
 
 /**
  * Universal Dashboard Hub.
@@ -36,7 +37,7 @@ export function DashboardHub({
     permissions,
     stats
 }: { 
-    permissions: any;
+    permissions: UserPermissions;
     stats: DashboardStats;
 }) {
     const getGroups = (stats: DashboardStats) => [
@@ -65,10 +66,10 @@ export function DashboardHub({
             icon: <Settings />,
             items: [
                 { title: "Azure Sync", value: "Beheer", icon: <Zap />, subtitle: "Azure AD", href: "/beheer/sync", colorClass: "blue" as const, disabled: !permissions.canAccessSync },
-                { title: "Systeem Status", icon: <Activity />, subtitle: "Backend", href: "/beheer/services", colorClass: "blue" as const, disabled: !permissions.isIct },
+                { title: "Systeem Status", icon: <Activity />, subtitle: "Backend", href: "/beheer/services", colorClass: "blue" as const, disabled: !permissions.isICT },
                 { title: "Mail", value: "Beheer", icon: <Mail />, subtitle: "Mails", href: "/beheer/mail", colorClass: "purple" as const, disabled: !permissions.canAccessMail },
                 { title: "Logboek", value: "Bekijken", icon: <FileText />, subtitle: "Audit Logs", href: "/beheer/logging", colorClass: "amber" as const, disabled: !permissions.canAccessLogging },
-                { title: "Test Modus", value: "Start", icon: <UserCheck />, subtitle: "Impersonatie", href: "/beheer/impersonate", colorClass: "teal" as const, disabled: !permissions.isIct },
+                { title: "Test Modus", value: "Start", icon: <UserCheck />, subtitle: "Impersonatie", href: "/beheer/impersonate", colorClass: "teal" as const, disabled: !permissions.isICT },
             ].filter(i => !i.disabled)
         }
     ];
@@ -81,7 +82,7 @@ export function DashboardHub({
             <div className="space-y-5">
                 <div className="flex items-center gap-3 px-1">
                     <div className="bg-[var(--beheer-accent)]/10 p-2 rounded-xl text-[var(--beheer-accent)]">
-                        {React.cloneElement(icon as any, { className: 'h-4 w-4' })}
+                        {React.isValidElement(icon) && React.cloneElement(icon as React.ReactElement<any>, { className: 'h-4 w-4' })}
                     </div>
                     <h2 className="text-sm font-black text-[var(--beheer-text)] tracking-[0.2em]">{title}</h2>
                     <div className="h-px flex-1 bg-gradient-to-r from-[var(--beheer-border)] to-transparent" />

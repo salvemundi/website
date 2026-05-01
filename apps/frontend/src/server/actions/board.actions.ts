@@ -3,6 +3,7 @@
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 import { boardHistorySchema, type Board } from '@salvemundi/validations/schema/board.zod';
+import { type EnrichedUser } from '@/types/auth';
 
 /**
  * Fetch the entire board history from Directus.
@@ -23,7 +24,7 @@ export async function getBoardHistory(): Promise<Board[]> {
                         'name',
                         { user_id: ['id', 'first_name', 'last_name', 'avatar', 'title'] }
                     ] 
-                } as any
+                }
             ],
             sort: ['-year'],
             limit: -1
@@ -38,7 +39,7 @@ export async function getBoardHistory(): Promise<Board[]> {
         if (!parsed.success) {
             console.error('[BoardActions] Schema validation failed:', parsed.error.format());
             // Return raw data if parsing fails but it exists, or handle gracefully
-            return (boardsData as any[]).map(b => ({
+            return (boardsData as unknown as Board[]).map(b => ({
                 id: b.id,
                 image: b.image,
                 naam: b.naam,

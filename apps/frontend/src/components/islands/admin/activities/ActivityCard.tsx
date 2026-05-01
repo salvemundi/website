@@ -15,26 +15,11 @@ import {
     Euro, 
     Loader2 
 } from 'lucide-react';
+import { AdminActivity } from '@salvemundi/validations';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import BannerAsset from '@/components/ui/media/BannerAsset';
-
-interface AdminActivity {
-    id: number;
-    name: string;
-    event_date: string;
-    description?: string | null;
-    location?: string | null;
-    max_sign_ups?: number | null;
-    price_members?: number | null;
-    price_non_members?: number | null;
-    contact?: string | null;
-    image?: any;
-    status?: 'published' | 'draft' | 'archived' | 'scheduled' | null;
-    publish_date?: string | null;
-    signup_count?: number;
-}
 
 interface Props {
     event?: AdminActivity;

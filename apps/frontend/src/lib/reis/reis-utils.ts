@@ -1,6 +1,7 @@
-/**
- * Utility functions for trip-related mapping and display logic.
- */
+interface ActivityOption {
+    id: string;
+    name: string;
+}
 
 /**
  * Maps a selection ID (like "opt-1" or a custom ID) to a human-readable name
@@ -10,11 +11,11 @@
  * @param metaOptions The array of configured options for the activity
  * @returns The readable name of the option or the original ID as fallback
  */
-export function mapActivityOptionIdToName(optId: string, metaOptions: any[]): string {
+export function mapActivityOptionIdToName(optId: string, metaOptions: ActivityOption[]): string {
     if (!Array.isArray(metaOptions)) return optId;
 
     // 1. Try to find by explicit ID if it exists (for future-proofing/extensibility)
-    const exactMatch = metaOptions.find((m: any) => m.id === optId);
+    const exactMatch = metaOptions.find((m: ActivityOption) => m.id === optId);
     if (exactMatch?.name) return exactMatch.name;
 
     // 2. Try to parse "opt-X" format for indexed options
@@ -28,7 +29,7 @@ export function mapActivityOptionIdToName(optId: string, metaOptions: any[]): st
     }
 
     // 3. Fallback: Check if the optId itself is actually the name (sometimes happens in legacy data or simpler forms)
-    const nameMatch = metaOptions.find((m: any) => m.name === optId);
+    const nameMatch = metaOptions.find((m: ActivityOption) => m.name === optId);
     if (nameMatch) return nameMatch.name;
 
     return optId;
@@ -37,12 +38,12 @@ export function mapActivityOptionIdToName(optId: string, metaOptions: any[]): st
 /**
  * Safely parses activity options that might be a string or an object.
  */
-export function parseActivityOptions(options: any): any[] {
+export function parseActivityOptions(options: unknown): ActivityOption[] {
     if (!options) return [];
-    if (Array.isArray(options)) return options;
+    if (Array.isArray(options)) return options as ActivityOption[];
     if (typeof options === 'string') {
         try {
-            return JSON.parse(options);
+            return JSON.parse(options) as ActivityOption[];
         } catch {
             return [];
         }
@@ -53,13 +54,13 @@ export function parseActivityOptions(options: any): any[] {
 /**
  * Safely parses selected options that might be a string or a record.
  */
-export function parseSelectedOptions(selected: any): Record<string, boolean> {
+export function parseSelectedOptions(selected: unknown): Record<string, boolean> {
     if (!selected) return {};
-    if (typeof selected === 'object' && !Array.isArray(selected)) return selected;
+    if (typeof selected === 'object' && selected !== null && !Array.isArray(selected)) return selected as Record<string, boolean>;
     if (typeof selected === 'string') {
         try {
             const parsed = JSON.parse(selected);
-            return typeof parsed === 'object' ? parsed : {};
+            return (typeof parsed === 'object' && parsed !== null) ? parsed : {};
         } catch {
             return {};
         }

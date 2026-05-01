@@ -11,6 +11,7 @@ import { getReisSiteSettings } from '@/server/actions/reis.actions';
 import { checkAdminAccess } from '@/server/actions/admin.actions';
 import { getAdminTrips, getAdminTripById } from '@/server/actions/reis-admin-core.actions';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
+import type { Trip, TripSignup, TripSignupActivity } from '@salvemundi/validations/schema/admin-reis.zod';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,7 +51,7 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
     const tripIdParam = typeof resolvedSearchParams.tripId === 'string' ? resolvedSearchParams.tripId : undefined;
 
     // Fetch initial trips and settings concurrently
-    let trips: any[] = [];
+    let trips: Record<string, unknown>[] = [];
     let reisSettings = { show: true };
     let errorMsg: string | null = null;
     
@@ -60,10 +61,10 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
             getReisSiteSettings()
         ]);
         
-        trips = tripsRes || [];
+        trips = (tripsRes as unknown as Record<string, unknown>[]) || [];
         reisSettings = settingsRes || { show: true };
-    } catch (e: any) {
-        errorMsg = e.message || 'Interne serverfout';
+    } catch (e: unknown) {
+        errorMsg = (e instanceof Error) ? e.message : 'Interne serverfout';
     }
 
     if (errorMsg === 'Forbidden: Reis Admin rechten vereist voor reisbeheer' || errorMsg === 'Niet geautoriseerd') {
@@ -95,37 +96,38 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
     }
 
     // Now fetch signups and activities for the active trip concurrently
-    let signups: any[] = [];
-    let allSignupActivities: any[] = [];
+    let signups: Record<string, unknown>[] = [];
+    let allSignupActivities: Record<string, unknown>[] = [];
     
     try {
-        [signups, allSignupActivities] = await Promise.all([
-            getTripSignups(activeTrip.id),
-            getTripSignupActivitiesAction(activeTrip.id)
+        const [sRes, saRes] = await Promise.all([
+            getTripSignups(activeTrip.id as number),
+            getTripSignupActivitiesAction(activeTrip.id as number)
         ]);
-    } catch (e: any) {
+        signups = (sRes as unknown as Record<string, unknown>[]) || [];
+        allSignupActivities = (saRes as unknown as Record<string, unknown>[]) || [];
+    } catch (e: unknown) {
         // Log or handle error
     }
 
     // Group activities by signupId
-    const activitiesMap: Record<number, any[]> = {};
+    const activitiesMap: Record<number, Record<string, unknown>[]> = {};
     (signups || []).forEach(s => {
-        activitiesMap[s.id] = [];
+        activitiesMap[s.id as number] = [];
     });
-
-    (allSignupActivities || []).forEach((sa: any) => {
-        const signupId = (sa.trip_signup_id && typeof sa.trip_signup_id === 'object') ? (sa.trip_signup_id as any).id : sa.trip_signup_id;
-        if (activitiesMap[signupId]) {
-            activitiesMap[signupId].push(sa);
+    (allSignupActivities || []).forEach((sa) => {
+        const signupId = (sa.trip_signup_id && typeof sa.trip_signup_id === 'object') ? (sa.trip_signup_id as Record<string, unknown>).id : sa.trip_signup_id;
+        if (activitiesMap[signupId as number]) {
+            activitiesMap[signupId as number].push(sa);
         }
     });
 
     const stats = {
-        total: signups.filter((s: any) => s.status !== 'cancelled').length,
-        confirmed: signups.filter((s: any) => s.status === 'confirmed').length,
-        waitlist: signups.filter((s: any) => s.status === 'waitlist').length,
-        depositPaid: signups.filter((s: any) => s.deposit_paid).length,
-        fullPaid: signups.filter((s: any) => s.full_payment_paid).length,
+        total: signups.filter((s) => s.status !== 'cancelled').length,
+        confirmed: signups.filter((s) => s.status === 'confirmed').length,
+        waitlist: signups.filter((s) => s.status === 'waitlist').length,
+        depositPaid: signups.filter((s) => s.deposit_paid).length,
+        fullPaid: signups.filter((s) => s.full_payment_paid).length,
     };
 
     return (
@@ -136,15 +138,15 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
         >
             <div className="min-h-screen pb-20">
                 <AdminReisSelectorIsland 
-                    trips={trips} 
+                    trips={trips as unknown as Trip[]} 
                     initialSettings={reisSettings}
                 />
 
                 <div className="container mx-auto px-4 py-8 max-w-7xl">
                     <AdminReisTableIsland
-                        initialSignups={(signups || []).map(s => ({ ...s, date_created: s.created_at })) as any}
-                        initialSignupActivities={activitiesMap}
-                        trip={activeTrip}
+                        initialSignups={(signups || []).map(s => ({ ...s, date_created: s.created_at })) as unknown as TripSignup[]}
+                        initialSignupActivities={activitiesMap as unknown as Record<number, TripSignupActivity[]>}
+                        trip={activeTrip as unknown as Trip}
                         stats={stats}
                     />
                 </div>

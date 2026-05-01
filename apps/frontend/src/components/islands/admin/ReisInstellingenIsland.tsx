@@ -192,9 +192,9 @@ export default function ReisInstellingenIsland({ initialTrips }: ReisInstellinge
                                 />
                                 
                                 <div className="p-6 bg-[var(--bg-main)]/50 rounded-3xl border border-[var(--border-color)]/20 space-y-4">
-                                    <ToggleField label="Inschrijving nu Open" name="registration_open" defaultChecked={editingTrip?.registration_open} />
-                                    <ToggleField label="Restbetalingen toestaan" name="allow_final_payments" defaultChecked={editingTrip?.allow_final_payments} />
-                                    <ToggleField label="Busreis (Vraag rijbewijs)" name="is_bus_trip" defaultChecked={editingTrip?.is_bus_trip} />
+                                    <ToggleField label="Inschrijving nu Open" name="registration_open" defaultChecked={!!editingTrip?.registration_open} />
+                                    <ToggleField label="Restbetalingen toestaan" name="allow_final_payments" defaultChecked={!!editingTrip?.allow_final_payments} />
+                                    <ToggleField label="Busreis (Vraag rijbewijs)" name="is_bus_trip" defaultChecked={!!editingTrip?.is_bus_trip} />
                                 </div>
                                 
                                 <div className="space-y-2">
@@ -256,7 +256,7 @@ export default function ReisInstellingenIsland({ initialTrips }: ReisInstellinge
     );
 }
 
-function TripCard({ trip, onEdit, onDelete, isDeleting }: any) {
+function TripCard({ trip, onEdit, onDelete, isDeleting }: { trip: Trip, onEdit: () => void, onDelete: () => void, isDeleting: boolean }) {
     const sd = trip.start_date;
     const ed = trip.end_date;
     
@@ -339,7 +339,25 @@ function TripCard({ trip, onEdit, onDelete, isDeleting }: any) {
     );
 }
 
-function InputField({ label, name, type = 'text', defaultValue, placeholder, required, step, description }: any) {
+function InputField({ 
+    label, 
+    name, 
+    type = 'text', 
+    defaultValue, 
+    placeholder, 
+    required, 
+    step, 
+    description 
+}: { 
+    label: string, 
+    name: string, 
+    type?: string, 
+    defaultValue?: string | number | null, 
+    placeholder?: string, 
+    required?: boolean, 
+    step?: string, 
+    description?: string 
+}) {
     return (
         <div className="space-y-2">
             <div className="flex flex-col">
@@ -352,7 +370,7 @@ function InputField({ label, name, type = 'text', defaultValue, placeholder, req
                 type={type} 
                 name={name}
                 step={step}
-                defaultValue={defaultValue}
+                defaultValue={defaultValue ?? undefined}
                 placeholder={placeholder}
                 required={required}
                 className="w-full px-6 py-4 bg-[var(--bg-main)]/50 border-0 ring-1 ring-[var(--beheer-border)]/50 rounded-2xl text-sm text-[var(--beheer-text)] transition-all font-semibold focus:ring-2 focus:ring-[var(--beheer-accent)]"
@@ -412,7 +430,7 @@ function ReisImageUpload({ defaultValue, name }: { defaultValue?: string | null,
     );
 }
 
-function ToggleField({ label, name, defaultChecked }: any) {
+function ToggleField({ label, name, defaultChecked }: { label: string, name: string, defaultChecked?: boolean }) {
     return (
         <label className="flex items-center justify-between cursor-pointer group">
             <span className="text-xs font-bold text-[var(--beheer-text)] group-hover:text-[var(--beheer-accent)] transition-colors">{label}</span>

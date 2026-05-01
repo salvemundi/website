@@ -12,7 +12,7 @@ import {
     updateItem,
     readUsers
 } from "@directus/sdk";
-import { USER_BASIC_FIELDS } from "@salvemundi/validations";
+import { USER_BASIC_FIELDS, type UserBasic } from "@salvemundi/validations";
 import { createEventSignupDb, updateEventSignupDb, deleteEventSignupDb } from "./event-db.utils";
 import { logAdminAction } from "./audit.actions";
 
@@ -102,28 +102,36 @@ export async function searchMembersAction(query: string) {
                 fields: [...USER_BASIC_FIELDS]
             })
         );
-        return { success: true, data: (users || []) as any[] };
+        return { success: true, data: (users || []) as unknown as UserBasic[] };
     } catch (error) {
         
-        return { success: false, error: "Search failed", data: [] };
+        return { success: false, error: "Search failed", data: [] as UserBasic[] };
     }
 }
 
-export async function createManualSignupAction(eventId: number, eventName: string, signupType: 'member' | 'guest', guestData?: any, memberData?: any) {
+export async function createManualSignupAction(
+    eventId: number, 
+    eventName: string, 
+    signupType: 'member' | 'guest', 
+    guestData?: { name: string; email: string; phone?: string }, 
+    memberData?: UserBasic
+) {
     const session = await checkAdminAccess();
     if (!session) return { success: false, error: "Unauthorized" };
 
     try {
-        const payload: any = {
+        const payload: Record<string, unknown> = {
             event_id: eventId,
             payment_status: 'paid'
         };
 
         if (signupType === 'member') {
+            if (!memberData) throw new Error('Lid gegevens ontbreken');
             payload.directus_relations = memberData.id;
             payload.participant_name = `${memberData.first_name} ${memberData.last_name || ''}`.trim();
             payload.participant_email = memberData.email;
         } else {
+            if (!guestData) throw new Error('Gast gegevens ontbreken');
             payload.participant_name = guestData.name;
             payload.participant_email = guestData.email;
             payload.participant_phone = guestData.phone || null;
@@ -147,9 +155,8 @@ export async function createManualSignupAction(eventId: number, eventName: strin
         revalidatePath(`/beheer/activiteiten/${eventId}/aanmeldingen`);
         revalidatePath('/beheer/activiteiten');
         return { success: true };
-    } catch (error: any) {
-        
-        const errMessage = error?.errors?.[0]?.message || "";
+    } catch (error: unknown) {
+        const errMessage = error instanceof Error ? error.message : String(error);
         if (errMessage.includes('UNIQUE') || errMessage.includes('duplicate')) {
             return { success: false, error: "This person is already signed up." };
         }

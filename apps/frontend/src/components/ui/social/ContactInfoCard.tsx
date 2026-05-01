@@ -5,6 +5,7 @@ import DocumentenLijst from '@/components/ui/social/DocumentenLijst';
 import SafeHavenButton from '@/components/islands/social/SafeHavenButton';
 import WhatsAppLink from '@/components/islands/social/WhatsAppLink';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
+import type { Document as WebsiteDocument } from '@salvemundi/validations/schema/website.zod';
 
 
 
@@ -12,7 +13,7 @@ import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
  * Statische kaart met verenigingsinformatie, adres, KvK en documenten.
  * De documentenlijst is asynchroon (Suspense) voor optimale Performance.
  */
-function InformatieKaart({ documenten }: { documenten: any[] }) {
+function InformatieKaart({ documenten }: { documenten: WebsiteDocument[] }) {
     return (
         <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl shadow-lg p-8">
             <h2 className="text-3xl font-bold text-[var(--text-main)] mb-6">
@@ -130,7 +131,7 @@ function ContactKaart({ isLoggedIn }: { isLoggedIn: boolean }) {
  * Hoofdcomponent: 2-koloms grid van Informatie- en Contactkaart.
  * Geëxporteerd voor gebruik in de contactpagina.
  */
-export default function ContactInfoCard({ documenten, isLoggedIn }: { documenten: any[], isLoggedIn: boolean }) {
+export default function ContactInfoCard({ documenten, isLoggedIn }: { documenten: WebsiteDocument[], isLoggedIn: boolean }) {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <InformatieKaart documenten={documenten} />

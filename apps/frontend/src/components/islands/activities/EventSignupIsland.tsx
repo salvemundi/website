@@ -12,6 +12,8 @@ import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { Loader2, CheckCircle2, AlertCircle, CreditCard, Send, Users, Ticket, Info } from 'lucide-react';
 import QRDisplay from '@/shared/ui/QRDisplay';
 import { formatPhoneNumber } from '@/lib/utils/phone-utils';
+import { type EnrichedUser } from '@/types/auth';
+
 interface EventSignupIslandProps {
     id?: number | string;
     isPast?: boolean;
@@ -20,7 +22,7 @@ interface EventSignupIslandProps {
     eventDate?: string;
     description?: string;
     eventName?: string;
-    initialUser?: any;
+    initialUser?: EnrichedUser | null;
     verifiedPaymentStatus?: 'paid' | 'open' | 'failed' | 'canceled' | null;
     initialQrToken?: string;
     initialIsSignedUp?: boolean;
@@ -49,7 +51,7 @@ export default function EventSignupIsland({
         qrToken?: string;
     }>({ 
         isSignedUp: initialIsSignedUp || verifiedPaymentStatus === 'paid' || verifiedPaymentStatus === 'open',
-        paymentStatus: (verifiedPaymentStatus as any) || undefined,
+        paymentStatus: verifiedPaymentStatus || undefined,
         qrToken: initialQrToken
     });
 
@@ -66,9 +68,9 @@ export default function EventSignupIsland({
         resolver: zodResolver(eventSignupFormSchema),
         defaultValues: {
             event_id: eventId,
-            name: user?.name || (user as any)?.first_name ? `${(user as any).first_name} ${(user as any).last_name || ''}`.trim() : '',
+            name: user?.name || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : ''),
             email: user?.email || '',
-            phoneNumber: formatPhoneNumber((user as any)?.phone_number),
+            phoneNumber: formatPhoneNumber(user?.phone_number || ''),
             website: '',
         }
     });
@@ -86,9 +88,9 @@ export default function EventSignupIsland({
             if (result.success) {
                 if (result.checkoutUrl) {
                     window.location.href = result.checkoutUrl;
-                } else if ((result as any).signupId && (result as any).qrToken) {
+                } else if ('signupId' in result && result.signupId && 'qrToken' in result && result.qrToken) {
                     // Voor gratis events: ga naar de bevestigingspagina zodat men de QR-code ziet
-                    window.location.href = `/activiteiten/bevestiging?id=${(result as any).signupId}&transactionId=${(result as any).qrToken}`;
+                    window.location.href = `/activiteiten/bevestiging?id=${result.signupId}&transactionId=${result.qrToken}`;
                 } else {
                     setSuccess(result.message || 'Aanmelding geslaagd!');
                     setSignupStatus({ isSignedUp: true, paymentStatus: isPaid ? 'open' : 'paid' });

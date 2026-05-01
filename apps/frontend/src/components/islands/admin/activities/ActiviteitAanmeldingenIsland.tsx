@@ -14,7 +14,7 @@ import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import { Users, UserCheck, UserMinus, DollarSign } from 'lucide-react';
 
-interface Signup {
+export interface Signup {
     id: number;
     participant_name: string;
     participant_email: string;
@@ -33,7 +33,7 @@ interface Signup {
     } | null;
 }
 
-interface AdminEvent {
+export interface AdminEvent {
     id: number | string;
     name: string;
     price_members?: number | null;
