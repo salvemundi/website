@@ -4,18 +4,20 @@ import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag, revalidatePath, unstable_noStore as noStore } from "next/cache";
 import { isSuperAdmin } from "@/lib/auth";
+import { type Committee } from "@/shared/lib/permissions";
 import { query } from '@/lib/database';
 import { 
     getPendingSignupsInternal, 
     getSystemLogsInternal, 
-    insertSystemLogInternal 
+    insertSystemLogInternal,
+    type SystemLog
 } from "@/server/queries/audit.queries";
 import { type PendingSignup } from "@salvemundi/validations/schema/audit.zod";
 
 type ActionResponse<T> = { success: true; data: T } | { success: false; error: string };
-type LogsResponse = { success: true; data: any[]; totalCount: number } | { success: false; error: string };
+type LogsResponse = { success: true; data: SystemLog[]; totalCount: number } | { success: false; error: string };
 
-export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' | 'INFO', payload?: any) {
+export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' | 'INFO', payload?: unknown) {
     try {
         const session = await auth.api.getSession({ headers: await headers() });
         if (!session || !session.user) {
@@ -23,7 +25,7 @@ export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' |
             return;
         }
 
-        const user = session.user as any;
+        const user = session.user as { id: string, first_name?: string, last_name?: string };
         
         // Prevent VULN-008 (Payload Bloat)
         const payloadStr = JSON.stringify(payload || {});
@@ -36,7 +38,7 @@ export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' |
             type,
             status,
             payload: {
-                ...payload,
+                ...(payload as Record<string, unknown>),
                 admin_id: user?.id || null,
                 admin_name: user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : 'Systeem',
                 timestamp: new Date().toISOString()
@@ -53,7 +55,7 @@ async function checkAuditAccess() {
     });
     if (!session || !session.user) return null;
     
-    const user = session.user as any;
+    const user = session.user as { committees?: Committee[] };
     const isAdmin = isSuperAdmin(user.committees);
 
     if (!isAdmin) return null;
@@ -98,8 +100,8 @@ export async function approveSignupAction(id: string, type: string) {
 
         revalidatePath('/beheer/logging');
         return { success: true };
-    } catch (err) {
-        
+    } catch (err: unknown) {
+        console.error(`[AuditActions] Failed to approve signup ${id}:`, err);
         return { success: false, error: "Goedkeuren mislukt." };
     }
 }

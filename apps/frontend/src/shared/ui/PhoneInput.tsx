@@ -7,12 +7,16 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, InputProps>(({
     className = '',
     ...props
 }, ref) => {
+    const { value, ...rest } = props;
+    const stringValue = (typeof value === 'number' ? String(value) : (Array.isArray(value) ? value.join('') : value)) as string | undefined;
+
     return (
         <IMaskInput
-            {...(props as any)}
+            {...rest}
+            value={stringValue}
             inputRef={(el: HTMLInputElement | null) => {
                 if (typeof ref === 'function') ref(el);
-                else if (ref) (ref as any).current = el;
+                else if (ref) (ref as React.MutableRefObject<HTMLInputElement | null>).current = el;
             }}
             mask="00 00000000"
             lazy={true}
@@ -21,7 +25,7 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, InputProps>(({
             type="tel"
             inputMode="tel"
             autoComplete="off"
-            onInput={(e: any) => {
+            onInput={(e: React.FormEvent<HTMLInputElement>) => {
                 const input = e.target as HTMLInputElement;
                 let val = input.value;
                 if (val.startsWith('+31')) {
@@ -31,7 +35,7 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, InputProps>(({
                 }
             }}
             onAccept={(value: string) => {
-                props.onChange?.({ target: { value, name: props.name } } as any);
+                props.onChange?.({ target: { value, name: props.name || '' } } as unknown as React.ChangeEvent<HTMLInputElement>);
             }}
             suppressHydrationWarning={true}
         />

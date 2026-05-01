@@ -4,6 +4,7 @@ import AuditLogIsland from '@/components/islands/admin/AuditLogIsland';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
+import { type Committee } from '@/shared/lib/permissions';
 
 async function checkAuditAccess() {
     const session = await auth.api.getSession({
@@ -11,9 +12,9 @@ async function checkAuditAccess() {
     });
     if (!session || !session.user) return false;
     
-    const user = session.user as any;
+    const user = session.user as { committees?: Committee[] };
     const memberships = user.committees || [];
-    return memberships.some((c: any) => {
+    return memberships.some((c) => {
         const name = (c?.name || '').toString().toLowerCase();
         return name.includes('bestuur') || name.includes('ict') || name.includes('kas') || name.includes('kandi');
     });

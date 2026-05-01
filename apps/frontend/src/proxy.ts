@@ -43,10 +43,11 @@ async function proxy(request: NextRequest) {
         const isMutation = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method);
         const isPrefetch = request.headers.get('x-next-prefetch') === '1' || request.headers.get('purpose') === 'prefetch';
         const isDataRequest = pathname.includes('/_next/data/');
+        const isRscRequest = request.headers.has('x-next-rsc');
 
-        // If it's a mutation or prefetch, we avoid cloning the request headers via NextResponse.next({request})
-        // because it triggers an internal 'request.clone()' which fails on the stream controller.
-        if (isMutation || isPrefetch || isDataRequest) {
+        // If it's a mutation, prefetch, or RSC request, we avoid cloning the request headers via NextResponse.next({request})
+        // because it triggers an internal 'request.clone()' which fails on the stream controller in Node.js 22.
+        if (isMutation || isPrefetch || isDataRequest || isRscRequest) {
             return withSecurity(NextResponse.next());
         }
 
@@ -150,4 +151,4 @@ export const config = {
     matcher: ['/((?!_next/static|_next/image|fonts|img|favicon.ico|robots.txt|.well-known|sw.js|manifest.json|manifest.webmanifest|workbox-|logo.svg|icons/|api/assets).*)'],
 };
 
-export default proxy;
+export { proxy };

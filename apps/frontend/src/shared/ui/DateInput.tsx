@@ -7,7 +7,7 @@ import { Input, InputProps } from './Input';
 export interface DateInputProps extends Omit<InputProps, 'onChange' | 'value'> {
     value?: string; // Expected in yyyy-mm-dd (DB format)
     onChange?: (value: string) => void;
-    InputComponent?: React.ComponentType<any>;
+    InputComponent?: React.ComponentType<InputProps>;
 }
 
 /**
@@ -45,10 +45,10 @@ export const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(({
 
     return (
         <IMaskInput
-            {...(props as any)}
+            {...props}
             inputRef={(el: HTMLInputElement | null) => {
                 if (typeof ref === 'function') ref(el);
-                else if (ref) (ref as any).current = el;
+                else if (ref) (ref as React.MutableRefObject<HTMLInputElement | null>).current = el;
             }}
             mask="00-00-0000"
             lazy={true}

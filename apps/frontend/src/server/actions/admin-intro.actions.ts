@@ -92,7 +92,7 @@ export async function getIntroBlogs() {
     return getIntroBlogsInternal();
 }
 
-export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ success: boolean; data?: IntroBlog; error?: string; fieldErrors?: any }> {
+export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ success: boolean; data?: IntroBlog; error?: string; fieldErrors?: Record<string, string[] | undefined> }> {
     const session = await checkIntroAdminAccess();
 
     // Sanitize: Directus returns null for empty fields, but Zod .optional() expects undefined.
@@ -130,7 +130,7 @@ export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ succe
             id: Number(result.id),
             title: result.title || '',
             content: result.content || '',
-            blog_type: (result.blog_type || 'update') as any,
+            blog_type: (result.blog_type || 'update') as IntroBlog['blog_type'],
             is_published: !!result.is_published
         } as IntroBlog };
     } catch (e) {
@@ -157,7 +157,7 @@ export async function getIntroPlanning() {
     return getIntroPlanningInternal();
 }
 
-export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Promise<{ success: boolean; data?: IntroPlanningItem; error?: string; fieldErrors?: any }> {
+export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Promise<{ success: boolean; data?: IntroPlanningItem; error?: string; fieldErrors?: Record<string, string[] | undefined> }> {
     const session = await checkIntroAdminAccess();
 
     // Sanitize: Directus returns null for empty fields, but Zod .optional() expects undefined.
@@ -214,8 +214,10 @@ export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Pro
             title: result.title || '',
             description: result.description || ''
         } as IntroPlanningItem };
-    } catch (e: any) {
-        return { success: false, error: `Opslaan mislukt: ${e.message || 'Onbekende fout'}` };
+    } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : 'Onbekende fout';
+        console.error('[AdminIntro] Failed to upsert planning:', e);
+        return { success: false, error: `Opslaan mislukt: ${message}` };
     }
 }
 
@@ -231,7 +233,7 @@ export async function deleteIntroPlanning(id: number): Promise<{ success: boolea
     }
 }
 
-export async function updateIntroSignup(id: number, data: any): Promise<{ success: boolean; error?: string }> {
+export async function updateIntroSignup(id: number, data: Partial<Record<string, unknown>>): Promise<{ success: boolean; error?: string }> {
     await checkIntroAdminAccess();
     try {
         await getSystemDirectus().request(updateItem('intro_signups', id, data));
@@ -242,7 +244,7 @@ export async function updateIntroSignup(id: number, data: any): Promise<{ succes
     }
 }
 
-export async function updateIntroParentSignup(id: number, data: any): Promise<{ success: boolean; error?: string }> {
+export async function updateIntroParentSignup(id: number, data: Partial<Record<string, unknown>>): Promise<{ success: boolean; error?: string }> {
     await checkIntroAdminAccess();
     try {
         await getSystemDirectus().request(updateItem('intro_parent_signups', id, data));

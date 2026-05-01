@@ -15,15 +15,15 @@ export async function getMailSettings() {
         
         return {
             success: true,
-            settings: rows.map((r: any) => ({
+            settings: rows.map((r: { route_match: string, name: string, is_active: boolean, message?: string }) => ({
                 id: r.route_match,
                 name: r.name,
                 isActive: r.is_active,
-                description: r.message
+                description: r.message || ''
             }))
         };
-    } catch (e) {
-        
+    } catch (e: unknown) {
+        console.error('[AdminMail] Failed to fetch settings:', e);
         return { success: false, error: 'Ophalen mail instellingen mislukt' };
     }
 }

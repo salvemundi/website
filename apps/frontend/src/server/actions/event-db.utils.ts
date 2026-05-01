@@ -54,8 +54,8 @@ export async function createEventDb(data: Partial<DbEvent>): Promise<number | nu
 
         const { rows } = await query(sql, params);
         return rows[0]?.id || null;
-    } catch (error) {
-        
+    } catch (error: unknown) {
+        console.error('[EventDb] Failed to create event:', error);
         return null;
     }
 }
@@ -85,8 +85,8 @@ export async function updateEventDb(id: number, data: Partial<DbEvent>): Promise
         
         const { rows } = await query(sql, params);
         return rows.length > 0;
-    } catch (error) {
-        
+    } catch (error: unknown) {
+        console.error(`[EventDb] Failed to update event ${id}:`, error);
         return false;
     }
 }
@@ -95,8 +95,8 @@ export async function deleteEventDb(id: number): Promise<boolean> {
     try {
         const { rowCount } = await query(`DELETE FROM events WHERE id = $1`, [id]);
         return (rowCount ?? 0) > 0;
-    } catch (error) {
-        
+    } catch (error: unknown) {
+        console.error(`[EventDb] Failed to update event ${id}:`, error);
         return false;
     }
 }
@@ -116,7 +116,7 @@ export async function createEventSignupDb(data: Partial<DbEventSignup>): Promise
             ) RETURNING id
         `;
         
-        const params = [
+        const params: (string | number | boolean | null | undefined | object)[] = [
             data.event_id,
             data.participant_name || null,
             data.participant_email || null,
@@ -130,8 +130,8 @@ export async function createEventSignupDb(data: Partial<DbEventSignup>): Promise
 
         const { rows } = await query(sql, params);
         return rows[0]?.id || null;
-    } catch (error) {
-        
+    } catch (error: unknown) {
+        console.error('[EventDb] Failed to create event:', error);
         return null;
     }
 }
@@ -157,8 +157,8 @@ export async function updateEventSignupDb(id: number, data: Partial<DbEventSignu
         
         const { rows } = await query(sql, params);
         return rows.length > 0;
-    } catch (error) {
-        
+    } catch (error: unknown) {
+        console.error(`[EventDb] Failed to update event ${id}:`, error);
         return false;
     }
 }
@@ -167,8 +167,8 @@ export async function deleteEventSignupDb(id: number): Promise<boolean> {
     try {
         const { rowCount } = await query(`DELETE FROM event_signups WHERE id = $1`, [id]);
         return (rowCount ?? 0) > 0;
-    } catch (error) {
-        
+    } catch (error: unknown) {
+        console.error(`[EventDb] Failed to update event ${id}:`, error);
         return false;
     }
 }
@@ -197,8 +197,8 @@ export async function fetchUserEventSignupsDb(email: string): Promise<EnrichedEv
                 contact: row.contact
             }
         }));
-    } catch (error) {
-        
+    } catch (error: unknown) {
+        console.error('[EventDb] Failed to fetch user signups:', error);
         return [];
     }
 }
@@ -230,8 +230,8 @@ export async function fetchEventSignupByIdDb(id: number): Promise<EnrichedEventS
                 contact: row.contact
             }
         };
-    } catch (error) {
-        
+    } catch (error: unknown) {
+        console.error('[EventDb] Failed to create event:', error);
         return null;
     }
 }

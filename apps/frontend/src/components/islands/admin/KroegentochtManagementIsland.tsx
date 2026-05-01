@@ -61,8 +61,7 @@ export default function KroegentochtManagementIsland({
             try {
                 const data = await getPubCrawlSignups(Number(eventId));
                 if (!data || data.length === 0) {
-                    // Check if it's really empty or an error occurred silently
-                    console.log('[Kroegentocht] No signups found for event', eventId);
+                    // No signups found
                 }
                 setSignups(data);
             } catch (err) {

@@ -35,22 +35,22 @@ export async function getCommittees(): Promise<Committee[]> {
             return [];
         }
 
-        const committeeIds = committeesData.map((c: any) => c.id);
+        const committeeIds = (committeesData as any[]).map((c: { id: string | number }) => c.id);
         const allMembers = await getSystemDirectus().request(readItems('committee_members', {
             fields: [
                 ...COMMITTEE_MEMBER_FIELDS, 
-                { user_id: ['id', 'first_name', 'last_name', 'avatar', 'title'] } as any
+                { user_id: ['id', 'first_name', 'last_name', 'avatar', 'title'] } as unknown as any
             ],
             filter: { 
-                committee_id: { _in: committeeIds as any },
+                committee_id: { _in: committeeIds as (string | number)[] },
                 is_visible: { _eq: true }
             },
             limit: 500
         }));
 
-        const committeesWithMembers = committeesData.map((committee: any) => ({
+        const committeesWithMembers = committeesData.map((committee: Record<string, unknown>) => ({
             ...committee,
-            members: allMembers.filter((m: any) => (typeof m.committee_id === 'object' ? m.committee_id.id : m.committee_id) === committee.id)
+            members: (allMembers as any[]).filter((m: { committee_id: string | number | { id: string | number } }) => (typeof m.committee_id === 'object' ? m.committee_id.id : m.committee_id) === committee.id)
         }));
 
         const parsed = committeesSchema.safeParse(committeesWithMembers);
@@ -68,8 +68,8 @@ export async function getCommittees(): Promise<Committee[]> {
         }
 
         return parsed.data;
-    } catch (err) {
-        
+    } catch (err: unknown) {
+        console.error('[Committees] Failed to fetch committees:', err);
         return [];
     }
 }

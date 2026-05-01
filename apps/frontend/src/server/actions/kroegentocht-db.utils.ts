@@ -144,7 +144,8 @@ export async function fetchPubCrawlSignupByIdDb(signupId: number): Promise<Enric
             },
             tickets
         };
-    } catch (error) {
+    } catch (error: unknown) {
+        console.error(`[PubCrawlDb] Failed to fetch signup ${signupId}:`, error);
         return null;
     }
 }
@@ -256,7 +257,7 @@ export async function createPubCrawlTicketsDb(signupId: number, tickets: { name:
     if (tickets.length === 0) return;
 
     try {
-        const values: any[] = [];
+        const values: (string | number | boolean | null | undefined)[] = [];
         const placeHolders = tickets.map((t, i) => {
             const offset = i * 4;
             values.push(signupId, t.name, t.initial, t.qr_token);
