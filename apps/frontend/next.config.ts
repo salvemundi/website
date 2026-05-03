@@ -5,12 +5,12 @@ import withBundleAnalyzer from '@next/bundle-analyzer';
 const nextConfig: NextConfig = {
     output: 'standalone',
     poweredByHeader: false,
-    // Uitgeschakeld vanwege instabiliteit op Acceptance (Eternal Skeletons)
-    // cacheComponents: true,
+    cacheComponents: true,
     productionBrowserSourceMaps: false,
     serverExternalPackages: ['isomorphic-dompurify', 'jsdom'],
     experimental: {
-        ppr: false,
+        ppr: true,
+        dynamicIO: true,
         serverSourceMaps: true,
         webpackBuildWorker: true,
         workerThreads: true,
@@ -113,6 +113,7 @@ const nextConfig: NextConfig = {
 const withSerwist = withSerwistInit({
     swSrc: 'src/sw.ts',
     swDest: 'public/sw.js',
+    disable: process.env.NODE_ENV !== 'production',
 });
 
 const withAnalyzer = withBundleAnalyzer({ enabled: process.env.ANALYZE === 'true', openAnalyzer: true });

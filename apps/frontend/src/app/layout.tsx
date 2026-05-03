@@ -78,24 +78,12 @@ const poppins = Poppins({
 export default async function RootLayout({
     children,
 }: Readonly<{ children: React.ReactNode }>) {
-    const nonce = (await headers()).get('x-nonce') || undefined;
-
     return (
         <html lang="nl" className="dark" suppressHydrationWarning>
             <head>
-                <script
-                    nonce={nonce}
-                    suppressHydrationWarning
-                    dangerouslySetInnerHTML={{
-                        __html: `
-                            try {
-                                if (localStorage.theme === 'light') {
-                                    document.documentElement.classList.remove('dark');
-                                }
-                            } catch (_) {}
-                        `,
-                    }}
-                />
+                <Suspense fallback={null}>
+                    <ThemeScript />
+                </Suspense>
                 <link rel="preload" as="image" href="/img/newlogo.png" />
                 <Suspense fallback={null}>
                     <HeadPreloads />
@@ -139,6 +127,25 @@ async function HeadPreloads() {
                 <link key={`preload-img-${idx}`} rel="preload" as="image" href={src!} />
             ))}
         </>
+    );
+}
+
+async function ThemeScript() {
+    const nonce = (await headers()).get('x-nonce') || undefined;
+    return (
+        <script
+            nonce={nonce}
+            suppressHydrationWarning
+            dangerouslySetInnerHTML={{
+                __html: `
+                    try {
+                        if (localStorage.theme === 'light') {
+                            document.documentElement.classList.remove('dark');
+                        }
+                    } catch (_) {}
+                `,
+            }}
+        />
     );
 }
 

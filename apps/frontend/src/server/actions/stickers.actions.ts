@@ -10,7 +10,11 @@ import { STICKER_FIELDS } from "@salvemundi/validations";
 
 import { query } from '@/lib/database';
 
+import { cacheLife } from 'next/cache';
+
 export async function getPublicStickers() {
+    'use cache';
+    cacheLife('minutes');
     try {
         const sql = `
             SELECT 

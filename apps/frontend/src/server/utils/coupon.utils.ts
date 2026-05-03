@@ -1,3 +1,4 @@
+import 'server-only';
 import { query } from '@/lib/database/db';
 
 export interface CouponData {

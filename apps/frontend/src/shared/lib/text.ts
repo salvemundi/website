@@ -1,4 +1,5 @@
-// MISSING SOURCE REQUIREMENT: Stubbed to satisfy compiler
+import DOMPurify from 'isomorphic-dompurify';
+
 export function stripHtml(html: string): string {
-    return html ? html.replace(/<[^>]*>?/gm, '') : '';
+    return html ? DOMPurify.sanitize(html, { ALLOWED_TAGS: [] }) : '';
 }

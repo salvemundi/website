@@ -17,6 +17,11 @@ import { createEventSignupDb, updateEventSignupDb, deleteEventSignupDb } from ".
 import { logAdminAction } from "./audit.actions";
 import { query as dbQuery } from "@/lib/database";
 import { COMMITTEES } from "@/shared/lib/permissions-config";
+import { 
+    deleteSignupSchema,
+    createManualSignupSchema,
+    toggleCheckInSchema 
+} from "@salvemundi/validations";
 
 
 const getNotificationUrl = () => process.env.INTERNAL_NOTIFICATION_API_URL || process.env.NEXT_PUBLIC_NOTIFICATION_API_URL;
@@ -58,6 +63,10 @@ async function sendCancellationEmail(email: string, eventName: string) {
 }
 
 export async function deleteSignupAction(signupId: number, eventId: string | number, participantEmail?: string, eventName?: string) {
+    const validated = deleteSignupSchema.safeParse({ signupId, eventId, participantEmail, eventName });
+    if (!validated.success) {
+        return { success: false, error: "Ongeldige invoer" };
+    }
     const session = await checkAdminAccess();
     if (!session) return { success: false, error: "Unauthorized" };
     const { user } = session;
@@ -129,6 +138,10 @@ export async function createManualSignupAction(
     guestData?: { name: string; email: string; phone?: string }, 
     memberData?: UserBasic
 ) {
+    const validated = createManualSignupSchema.safeParse({ eventId, eventName, signupType, guestData, memberData });
+    if (!validated.success) {
+        return { success: false, error: "Ongeldige invoer" };
+    }
     const session = await checkAdminAccess();
     if (!session) return { success: false, error: "Unauthorized" };
     const { user } = session;
@@ -195,6 +208,10 @@ export async function createManualSignupAction(
 }
 
 export async function toggleCheckInAction(signupId: number, eventId: number, checkedIn: boolean) {
+    const validated = toggleCheckInSchema.safeParse({ signupId, eventId, checkedIn });
+    if (!validated.success) {
+        return { success: false, error: "Ongeldige invoer" };
+    }
     const session = await checkAdminAccess();
     if (!session) return { success: false, error: "Unauthorized" };
     const { user } = session;

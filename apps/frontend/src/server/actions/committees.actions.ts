@@ -1,29 +1,18 @@
 'use server';
 
 import { committeesSchema, type Committee } from '@salvemundi/validations/schema/committees.zod';
-import { getSystemDirectus } from '@/lib/directus';
 import { query } from '@/lib/database';
-import { getRedis } from '@/server/auth/redis-client';
 
 const COMMITTEES_CACHE_KEY = 'cache:committees:all';
 const COMMITTEES_TTL = 3600; // 1 hour
 
-export async function getCommittees(): Promise<Committee[]> {
-    try {
-        try {
-            const redis = await getRedis();
-            const cached = await redis.get(COMMITTEES_CACHE_KEY);
-            if (cached) {
-                const data = JSON.parse(cached);
-                const parsed = committeesSchema.safeParse(data);
-                if (parsed.success) {
-                    return parsed.data;
-                }
-            }
-        } catch (cacheErr) {
-            
-        }
+import { cacheLife } from 'next/cache';
 
+export async function getCommittees(): Promise<Committee[]> {
+    'use cache';
+    cacheLife('hours');
+    
+    try {
         const sql = `
             SELECT 
                 c.*,
@@ -55,15 +44,8 @@ export async function getCommittees(): Promise<Committee[]> {
         const parsed = committeesSchema.safeParse(committeesWithMembers);
 
         if (!parsed.success) {
-            
+            console.error('[Validation Error] getCommittees:', parsed.error);
             return [];
-        }
-
-        try {
-            const redis = await getRedis();
-            await redis.setex(COMMITTEES_CACHE_KEY, COMMITTEES_TTL, JSON.stringify(parsed.data));
-        } catch (cacheStoreErr) {
-            
         }
 
         return parsed.data;

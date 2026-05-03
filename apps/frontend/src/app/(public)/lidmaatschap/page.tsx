@@ -11,9 +11,28 @@ export const metadata = {
     description: 'Beheer je lidmaatschap bij Salve Mundi.',
 };
 
-export const dynamic = 'force-dynamic';
+
+import { connection } from 'next/server';
+import { Suspense } from 'react';
 
 export default async function MembershipPage() {
+    return (
+        <Suspense fallback={<MembershipSkeleton />}>
+            <MembershipContent />
+        </Suspense>
+    );
+}
+
+function MembershipSkeleton() {
+    return (
+        <div className="mx-auto max-w-app px-4 py-8 sm:py-10 md:py-12 animate-pulse">
+            <div className="h-96 bg-[var(--bg-card)] rounded-[2rem]" />
+        </div>
+    );
+}
+
+async function MembershipContent() {
+    await connection();
     // NUCLEAR SSR: Fetch all data before flushing any part of the page content
     const session = await auth.api.getSession({ headers: await headers() });
     const user = session?.user as MembershipUserData | undefined;

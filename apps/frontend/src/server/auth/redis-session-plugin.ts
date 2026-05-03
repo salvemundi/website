@@ -4,6 +4,7 @@ import { getRedis } from "./redis-client";
 import { getPermissions, type UserPermissions, type Committee } from "@/shared/lib/permissions";
 import { getSystemDirectus } from "@/lib/directus";
 import { readMe } from "@directus/sdk";
+import { connection } from "next/server";
 
 interface ExtendedUser extends User, Omit<UserPermissions, 'isICT'> {
     first_name?: string;
@@ -63,11 +64,18 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                 {
                     matcher: (ctx) => !!ctx?.path?.includes("get-session"),
                     handler: async (ctx: AuthContext) => {
+                        await connection();
                         try {
                             const headersSource = ctx?.headers || ctx?.request?.headers || {};
                             const requestHeaders = new Headers(headersSource);
                             const token = requestHeaders.get("authorization")?.split(" ")[1] ||
                                 requestHeaders.get("cookie")?.split("better-auth.session-token=")[1]?.split(";")[0];
+
+                            // Bypass cache if impersonation cookie is present
+                            const cookies = requestHeaders.get("cookie");
+                            if (cookies?.includes("directus_test_token=")) {
+                                return {}; 
+                            }
 
                             if (token) {
                                 const redis = await getRedis();
@@ -228,8 +236,8 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                     }
                                 }
 
-                                // 3. Cache the final enriched session
-                                if (token) {
+                                // 3. Cache the final enriched session (SKIP IF IMPERSONATING)
+                                if (token && !sessionWithUser.impersonatedBy) {
                                     try {
                                         const redis = await getRedis();
                                         await redis.set(`session:${token}`, JSON.stringify(session), 'EX', 300);

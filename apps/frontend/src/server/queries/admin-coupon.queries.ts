@@ -1,3 +1,4 @@
+import 'server-only';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 import { COUPON_FIELDS } from '@salvemundi/validations/directus/fields';

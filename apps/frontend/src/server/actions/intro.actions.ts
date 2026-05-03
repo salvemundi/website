@@ -16,7 +16,7 @@ import { headers } from 'next/headers';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems, createItem } from '@directus/sdk';
 import { query } from '@/lib/database';
-import { revalidateTag, revalidatePath, unstable_noStore as noStore } from 'next/cache';
+import { cacheLife, revalidateTag, revalidatePath, unstable_noStore as noStore } from 'next/cache';
 import { normalizeDate } from '@/lib/utils/date-utils';
 
 const getMailUrl = () => process.env.MAIL_SERVICE_URL;
@@ -31,7 +31,8 @@ const getServiceHeaders = (): HeadersInit => {
 };
 
 export async function getIntroSettings() {
-    noStore();
+    'use cache';
+    cacheLife('minutes');
     try {
         const { rows } = await query('SELECT is_active, message FROM feature_flags WHERE route_match = $1 LIMIT 1', ['/intro']);
         const data = rows?.[0];
@@ -115,7 +116,8 @@ export async function submitIntroSignup(data: IntroSignupForm): Promise<{ succes
 }
 
 export async function getIntroBlogsPublic() {
-    noStore();
+    'use cache';
+    cacheLife('minutes');
     try {
         const sql = 'SELECT * FROM intro_blogs WHERE is_published = true ORDER BY id DESC LIMIT 6';
         const { rows } = await query(sql);
@@ -126,7 +128,8 @@ export async function getIntroBlogsPublic() {
 }
 
 export async function getAllIntroBlogsPublic() {
-    noStore();
+    'use cache';
+    cacheLife('minutes');
     try {
         const sql = 'SELECT * FROM intro_blogs WHERE is_published = true ORDER BY id DESC';
         const { rows } = await query(sql);
@@ -137,7 +140,8 @@ export async function getAllIntroBlogsPublic() {
 }
 
 export async function getIntroBlogBySlug(slug: string) {
-    noStore();
+    'use cache';
+    cacheLife('minutes');
     try {
         const sql = 'SELECT * FROM intro_blogs WHERE slug = $1 AND is_published = true LIMIT 1';
         const { rows } = await query(sql, [slug]);

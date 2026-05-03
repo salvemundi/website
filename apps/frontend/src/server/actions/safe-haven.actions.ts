@@ -6,7 +6,11 @@ import { headers } from 'next/headers';
 
 import { query } from '@/lib/database';
 
+import { cacheLife } from 'next/cache';
+
 async function fetchSafeHavensFromDirectus(isAuthenticated: boolean): Promise<SafeHaven[]> {
+    'use cache';
+    cacheLife('hours');
     try {
         const queryText = isAuthenticated
             ? 'SELECT id, contact_name, email, phone_number, image FROM safe_havens LIMIT 10'

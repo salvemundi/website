@@ -1,3 +1,4 @@
+import 'server-only';
 import { getRedis } from '../auth/redis-client';
 import { headers } from 'next/headers';
 
@@ -8,7 +9,11 @@ import { headers } from 'next/headers';
 async function getClientIp(): Promise<string> {
     const h = await headers();
     
-    // 1. Cloudflare (often configured in public sites)
+    // 0. Trusted IP from our Proxy Boundary (v16 proxy.ts)
+    const trusted = h.get('x-trusted-ip');
+    if (trusted && trusted !== 'unknown') return trusted;
+
+    // 1. Cloudflare (trust only if behind Cloudflare)
     const cf = h.get('cf-connecting-ip');
     if (cf) return cf;
 

@@ -1,4 +1,4 @@
-export const revalidate = 3600;
+
 import type { Metadata } from 'next';
 import ContactInfoCard from '@/components/ui/social/ContactInfoCard';
 import { getDocumenten } from '@/server/actions/website.actions';
@@ -22,7 +22,27 @@ export const metadata: Metadata = {
  * Islands (WhatsApp, Safe Havens) worden client-side gehydrateerd.
  * NUCLEAR SSR: Alle data (documenten) wordt op de server opgehaald voordat de pagina geflushd wordt.
  */
+import { connection } from 'next/server';
+import { Suspense } from 'react';
+
 export default async function ContactPage() {
+    return (
+        <Suspense fallback={<ContactSkeleton />}>
+            <ContactContent />
+        </Suspense>
+    );
+}
+
+function ContactSkeleton() {
+    return (
+        <div className="mx-auto max-w-7xl px-4 pt-8 pb-8 sm:py-10 md:py-12 animate-pulse">
+            <div className="max-w-6xl mx-auto h-96 bg-[var(--bg-card)] rounded-3xl" />
+        </div>
+    );
+}
+
+async function ContactContent() {
+    await connection();
     // Haal alle benodigde data op voor de hele pagina (Nuclear SSR)
     const [documenten, session] = await Promise.all([
         getDocumenten(),

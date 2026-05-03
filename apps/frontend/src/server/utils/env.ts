@@ -1,3 +1,4 @@
+import 'server-only';
 /**
  * Utility for robust environment variable management.
  * Handles manual ${VAR} expansion which sometimes fails in certain Windows environments/Next.js versions.

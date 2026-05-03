@@ -1,3 +1,4 @@
+import 'server-only';
 import { query } from '@/lib/database';
 import { activitiesSchema, type Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { type DbEventSignup } from '@salvemundi/validations/directus/schema';
