@@ -3,10 +3,11 @@
 import { query } from '@/lib/database';
 import { checkAdminAccess } from './admin.actions';
 import { revalidatePath } from 'next/cache';
+import { isSuperAdmin } from '@/lib/auth/auth-utils';
 
 export async function getMailSettings() {
-    const { isAuthorized } = await checkAdminAccess();
-    if (!isAuthorized) throw new Error('Geen toegang');
+    const { isAuthorized, user } = await checkAdminAccess();
+    if (!isAuthorized || !isSuperAdmin(user?.committees)) throw new Error('Geen toegang: Alleen voor ICT en Bestuur.');
 
     try {
         const { rows } = await query(
@@ -29,8 +30,8 @@ export async function getMailSettings() {
 }
 
 export async function toggleMailSetting(key: string) {
-    const { isAuthorized } = await checkAdminAccess();
-    if (!isAuthorized) throw new Error('Geen toegang');
+    const { isAuthorized, user } = await checkAdminAccess();
+    if (!isAuthorized || !isSuperAdmin(user?.committees)) throw new Error('Geen toegang: Alleen voor ICT en Bestuur.');
 
     try {
         await query(

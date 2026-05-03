@@ -15,6 +15,8 @@ import {
 import { logAdminAction } from "../audit.actions";
 import { createEventDb, updateEventDb, deleteEventDb } from "../event-db.utils";
 import { ensureActivitiesEdit } from "./auth-check";
+import { query as dbQuery } from "@/lib/database";
+import { COMMITTEES } from "@/shared/lib/permissions-config";
 
 /**
  * WRITE ACTIONS: Create, Update, Delete.
@@ -22,7 +24,17 @@ import { ensureActivitiesEdit } from "./auth-check";
  */
 
 export async function deleteActivity(eventId: number) {
-    await ensureActivitiesEdit();
+    const user = await ensureActivitiesEdit();
+
+    // BOLA Check: Only ICT, Bestuur or the owning committee leader can delete
+    const activityRes = await dbQuery("SELECT committee_id FROM events WHERE id = $1", [eventId]);
+    const activityCommitteeId = activityRes.rows[0]?.committee_id;
+    const isSuperAdmin = user.isICT || user.committees?.some(c => c.azure_group_id === COMMITTEES.BESTUUR);
+    const userCommitteeIds = user.committees?.map(c => Number(c.id)) || [];
+
+    if (!isSuperAdmin && !userCommitteeIds.includes(Number(activityCommitteeId))) {
+        return { success: false, error: "Unauthorized: Je mag alleen activiteiten van je eigen commissie verwijderen." };
+    }
 
     try {
         const success = await deleteEventDb(eventId);
@@ -57,6 +69,14 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
     let imageId: string | null = null;
     
     if (imageFile && imageFile.size > 0 && imageFile.name !== 'undefined') {
+        // Validation: Max 5MB and image only
+        if (imageFile.size > 5 * 1024 * 1024) {
+            return { success: false, error: "Afbeelding is te groot (max 5MB)." };
+        }
+        if (!imageFile.type.startsWith('image/')) {
+            return { success: false, error: "Alleen afbeeldingen zijn toegestaan." };
+        }
+
         const fileData = new FormData();
         fileData.append('file', imageFile);
         try {
@@ -128,7 +148,17 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
 }
 
 export async function updateActivityAction(eventId: number, prevState: unknown, formData: FormData) {
-    await ensureActivitiesEdit();
+    const user = await ensureActivitiesEdit();
+
+    // BOLA Check: Only ICT, Bestuur or the owning committee leader can update
+    const activityRes = await dbQuery("SELECT committee_id FROM events WHERE id = $1", [eventId]);
+    const activityCommitteeId = activityRes.rows[0]?.committee_id;
+    const isSuperAdmin = user.isICT || user.committees?.some(c => c.azure_group_id === COMMITTEES.BESTUUR);
+    const userCommitteeIds = user.committees?.map(c => Number(c.id)) || [];
+
+    if (!isSuperAdmin && !userCommitteeIds.includes(Number(activityCommitteeId))) {
+        return { success: false, error: "Unauthorized: Je mag alleen activiteiten van je eigen commissie bewerken." };
+    }
 
     try {
         const existing = await getSystemDirectus().request(readItems('events', {
@@ -145,6 +175,14 @@ export async function updateActivityAction(eventId: number, prevState: unknown, 
         const removeImage = formData.get('removeImage') === 'true';
 
         if (imageFile && imageFile.size > 0 && imageFile.name !== 'undefined') {
+            // Validation: Max 5MB and image only
+            if (imageFile.size > 5 * 1024 * 1024) {
+                return { success: false, error: "Afbeelding is te groot (max 5MB)." };
+            }
+            if (!imageFile.type.startsWith('image/')) {
+                return { success: false, error: "Alleen afbeeldingen zijn toegestaan." };
+            }
+
             const fileData = new FormData();
             fileData.append('file', imageFile);
             const res = await getSystemDirectus().request(uploadFiles(fileData));

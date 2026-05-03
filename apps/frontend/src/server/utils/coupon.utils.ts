@@ -78,7 +78,7 @@ export async function getValidCoupon(code: string): Promise<CouponValidationResu
             }
         };
     } catch (error) {
-        // Log internally, but return generic error
+        console.error('[CouponUtils] Database error during validation:', error);
         return { valid: false, error: 'Fout bij raadplegen van de database' };
     }
 }

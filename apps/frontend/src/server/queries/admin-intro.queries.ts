@@ -31,7 +31,7 @@ export async function getIntroStatsInternal() {
             planning: Number(stats?.planning ?? 0),
         };
     } catch (e) {
-        
+        console.error('[AdminIntroQueries] getIntroStatsInternal failed:', e);
         return { signups: 0, parents: 0, blogs: 0, planning: 0 };
     }
 }
@@ -42,7 +42,7 @@ export async function getIntroSignupsInternal() {
         const { rows } = await query(sql);
         return rows;
     } catch (e) {
-        
+        console.error('[AdminIntroQueries] getIntroSignupsInternal failed:', e);
         throw new Error('Kon aanmeldingen niet ophalen');
     }
 }
@@ -53,7 +53,7 @@ export async function getIntroParentSignupsInternal() {
         const { rows } = await query(sql);
         return rows;
     } catch (e) {
-        
+        console.error('[AdminIntroQueries] getIntroParentSignupsInternal failed:', e);
         throw new Error('Kon ouder-aanmeldingen niet ophalen');
     }
 }
@@ -79,7 +79,7 @@ export async function getIntroBlogsInternal(): Promise<IntroBlog[]> {
         }
         return parsed.data;
     } catch (e) {
-        
+        console.error('[AdminIntroQueries] getIntroBlogsInternal failed:', e);
         throw new Error('Kon blogs niet ophalen');
     }
 }
@@ -105,7 +105,7 @@ export async function getIntroPlanningInternal(): Promise<IntroPlanningItem[]> {
         }
         return parsed.data;
     } catch (e) {
-        
+        console.error('[AdminIntroQueries] getIntroPlanningInternal failed:', e);
         throw new Error('Kon planning niet ophalen');
     }
 }
