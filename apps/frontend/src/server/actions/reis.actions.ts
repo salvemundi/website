@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { cacheLife, revalidatePath } from 'next/cache';
 import {
     reisSiteSettingsSchema,
     reisTripSchema,
@@ -56,6 +56,8 @@ const getServiceHeaders = (): HeadersInit => {
 };
 
 export async function getReisSiteSettings(): Promise<ReisSiteSettings | null> {
+    'use cache';
+    cacheLife('minutes');
     const { rows } = await query('SELECT is_active, message FROM feature_flags WHERE name = $1 LIMIT 1', ['trip_registration']);
     const flag = rows?.[0];
 
@@ -90,6 +92,8 @@ export async function getCurrentUserProfileAction(): Promise<{ success: boolean;
 }
 
 export async function getUpcomingTrips(): Promise<ReisTrip[]> {
+    'use cache';
+    cacheLife('minutes');
     // 1. Direct SQL for speed and bypass cache
     const data = await fetchPublicTripsDb();
 
@@ -120,6 +124,8 @@ export async function getUpcomingTrips(): Promise<ReisTrip[]> {
 }
 
 export async function getTripParticipantsCount(tripId: number): Promise<number> {
+    'use cache';
+    cacheLife('seconds'); // Very short cache for live-ish feel
     try {
         const { rows } = await query(
             `SELECT COUNT(*)::int as count FROM trip_signups 

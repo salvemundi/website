@@ -43,6 +43,8 @@ async function proxy(request: NextRequest) {
         
         return res;
     };
+    const forwardedFor = request.headers.get('x-forwarded-for');
+    const clientIp = forwardedFor ? forwardedFor.split(',')[0].trim() : (request.headers.get('x-real-ip') || 'unknown');
 
     const nextWithNonce = () => {
         // DETECT STREAMING CONFLICTS:
@@ -53,14 +55,18 @@ async function proxy(request: NextRequest) {
         const isDataRequest = pathname.includes('/_next/data/');
         const isRscRequest = request.headers.has('x-next-rsc');
 
+        // Security: Always ensure downstream services get a trusted IP
+        // We set it in requestHeaders if we can clone, otherwise we rely on fallbacks
+        const requestHeaders = new Headers(request.headers);
+        requestHeaders.delete('x-trusted-ip'); // Strip spoofed headers from client
+        requestHeaders.set('x-trusted-ip', clientIp);
+        requestHeaders.set('x-nonce', nonce);
+
         // If it's a mutation, prefetch, or RSC request, we avoid cloning the request headers via NextResponse.next({request})
         // because it triggers an internal 'request.clone()' which fails on the stream controller in Node.js 22.
         if (isMutation || isPrefetch || isDataRequest || isRscRequest) {
             return withSecurity(NextResponse.next());
         }
-
-        const requestHeaders = new Headers(request.headers);
-        requestHeaders.set('x-nonce', nonce);
         
         try {
             return withSecurity(NextResponse.next({
@@ -76,9 +82,12 @@ async function proxy(request: NextRequest) {
 
     const internalToken = process.env.INTERNAL_SERVICE_TOKEN;
     if (internalToken && request.headers.get('authorization') === `Bearer ${internalToken}`) {
-        // Only allow internal token from internal network or specific headers if behind a trusted proxy
-        // For now, we trust the token if it matches, but we should be careful.
-        // VULN-002: Ensure we don't leak this token to clients.
+        /**
+         * SECURITY BOUNDARY: Internal Service Token
+         * This token allows bypassing authentication for inter-service calls.
+         * REQUIREMENT: This header MUST be stripped by the edge proxy (Nginx/Cloudflare) 
+         * for all requests originating from the public internet.
+         */
         return nextWithNonce();
     }
     if (pathname === '/api/finance/webhook/mollie' || pathname.startsWith('/api/auth/')) {

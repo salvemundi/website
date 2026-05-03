@@ -1,4 +1,6 @@
+import 'server-only';
 import { query } from '@/lib/database';
+import { cacheLife } from 'next/cache';
 
 /**
  * PURE QUERIES: No 'use server' and No headers() calls.
@@ -24,6 +26,9 @@ export type CommitteeMember = {
 };
 
 export async function getCommittees(): Promise<Committee[]> {
+    'use cache';
+    cacheLife('minutes');
+    
     try {
         const { rows } = await query('SELECT * FROM committees ORDER BY name ASC');
         return rows.map(i => ({
@@ -66,6 +71,9 @@ export async function getCommitteeMembers(committeeId: string): Promise<Committe
 }
 
 export async function countUniqueCommitteeMembers(): Promise<number> {
+    'use cache';
+    cacheLife('hours');
+    
     try {
         const { rows } = await query('SELECT COUNT(DISTINCT user_id) as count FROM committee_members WHERE user_id IS NOT NULL');
         return Number(rows?.[0]?.count || 0);

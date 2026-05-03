@@ -5,17 +5,17 @@ import {
     sponsorsSchema,
     type HeroBanner,
     type Sponsor
-} from '@salvemundi/validations/schema/home.zod';
+} from '@salvemundi/validations';
 import {
     activitiesSchema,
     type Activiteit
-} from '@salvemundi/validations/schema/activity.zod';
+} from '@salvemundi/validations';
 import { 
     HERO_BANNER_FIELDS, 
     EVENT_FIELDS, 
     PUB_CRAWL_EVENT_FIELDS, 
     SPONSOR_FIELDS 
-} from '@salvemundi/validations/directus/fields';
+} from '@salvemundi/validations';
 
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
@@ -24,11 +24,12 @@ import {
     type DbTrip,
     type DbHeroBanner,
     type DbSponsor 
-} from '@salvemundi/validations/directus/schema';
-
-
+} from '@salvemundi/validations';
+import { cacheLife } from 'next/cache';
 
 export async function getHeroBanners(): Promise<HeroBanner[]> {
+    'use cache';
+    cacheLife('minutes');
     const rawData = await getSystemDirectus().request(readItems('hero_banners', {
         fields: [...HERO_BANNER_FIELDS],
         limit: 10
@@ -59,10 +60,12 @@ import {
 import { 
     getUpcomingTrips 
 } from "@/server/actions/reis.actions";
-import { unstable_noStore as noStore } from "next/cache";
+import { connection } from "next/server";
 
 export async function getUpcomingActiviteiten(limit = 4): Promise<Activiteit[]> {
-    noStore();
+    'use cache';
+    cacheLife('minutes');
+    await connection();
     const client = getSystemDirectus();
     const now = new Date();
     const today = now.toISOString().split('T')[0];
@@ -149,6 +152,8 @@ export async function getUpcomingActiviteiten(limit = 4): Promise<Activiteit[]> 
 
 
 export async function getSponsors(): Promise<Sponsor[]> {
+    'use cache';
+    cacheLife('hours');
     const rawData = await getSystemDirectus().request(readItems('sponsors', {
         fields: [...SPONSOR_FIELDS],
         sort: ['sponsor_id'],

@@ -11,7 +11,10 @@ type SessionUser = {
     email?: string | null;
 };
 
+import { connection } from 'next/server';
+
 export default async function BeheerLayout({ children }: BeheerLayoutProps) {
+    await connection();
     const session = await auth.api.getSession({
         headers: await headers()
     });

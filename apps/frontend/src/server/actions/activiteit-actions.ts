@@ -19,8 +19,7 @@ import {
 import { auth } from '@/server/auth/auth';
 import { type EnrichedUser } from '@/types/auth';
 import { headers } from 'next/headers';
-import { revalidateTag, unstable_noStore as noStore } from 'next/cache';
-import { cache } from 'react';
+import { cacheLife, revalidateTag, unstable_noStore as noStore } from 'next/cache';
 import { type EnrichedPubCrawlSignup } from './kroegentocht-db.utils';
 
 import { getSystemDirectus } from '@/lib/directus';
@@ -55,7 +54,9 @@ import { query } from '@/lib/database';
  * Fetches all published activities directly from the database (SQL-first).
  * Enriches each activity with 'is_signed_up' status if userId is provided.
  */
-export const getActivities = cache(async (email?: string): Promise<(Activiteit & { is_signed_up?: boolean })[]> => {
+export async function getActivities(email?: string): Promise<(Activiteit & { is_signed_up?: boolean })[]> {
+    'use cache';
+    cacheLife('minutes');
     const activities = await getActivitiesInternal(true);
     
     if (!email) return activities;
@@ -78,24 +79,28 @@ export const getActivities = cache(async (email?: string): Promise<(Activiteit &
         console.error('[Error] Failed to fetch user signups for activities:', error);
         return activities;
     }
-});
+}
 
 /**
  * Fetches a single activity by ID directly from the database (SQL-first).
  */
-export const getActivityById = cache(async (id: string): Promise<Activiteit | null> => {
+export async function getActivityById(id: string): Promise<Activiteit | null> {
+    'use cache';
+    cacheLife('minutes');
     // If ID is in format "841-website-launch", extract the numeric part
     const cleanId = id.includes('-') ? id.split('-')[0] : id;
     if (!/^\d+$/.test(cleanId)) return null;
     return await getActivityByIdInternal(cleanId);
-});
+}
 
 /**
  * Fetches a single activity by custom URL slug or numeric ID.
  */
-export const getActivityBySlug = cache(async (slug: string): Promise<Activiteit | null> => {
+export async function getActivityBySlug(slug: string): Promise<Activiteit | null> {
+    'use cache';
+    cacheLife('minutes');
     return await getActivityBySlugInternal(slug);
-});
+}
 
 /**
  * Checks if a user is already signed up for an activity (By email).

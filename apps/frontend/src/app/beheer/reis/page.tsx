@@ -11,9 +11,9 @@ import { getReisSiteSettings } from '@/server/actions/reis.actions';
 import { checkAdminAccess } from '@/server/actions/admin.actions';
 import { getAdminTrips, getAdminTripById } from '@/server/actions/reis-admin-core.actions';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
-import type { Trip, TripSignup, TripSignupActivity } from '@salvemundi/validations/schema/admin-reis.zod';
+import type { Trip, TripSignup, TripSignupActivity } from '@salvemundi/validations';
 
-export const dynamic = 'force-dynamic';
+
 
 interface AdminReisPageProps {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;

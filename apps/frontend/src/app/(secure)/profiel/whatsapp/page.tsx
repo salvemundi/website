@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 import type { Metadata } from 'next';
 import { getWhatsAppGroups } from '@/server/actions/profiel.actions';
 import { WhatsAppGroupsIsland } from '@/components/islands/social/WhatsAppGroupsIsland';

@@ -9,7 +9,33 @@ export const metadata = {
     title: 'Sticker Kaart | Salve Mundi',
 };
 
+import { connection } from 'next/server';
+
 export default async function StickersPage() {
+    return (
+        <PublicPageShell
+            title="STICKER KAART"
+            description="Bekijk waar Salve Mundi stikkers zijn geplakt over de hele wereld. Heb je er zelf een geplakt? Log in en voeg hem toe!"
+            backgroundImage="/img/backgrounds/stickers-banner.jpg" 
+        >
+            <Suspense fallback={<StickersSkeleton />}>
+                <StickersContent />
+            </Suspense>
+        </PublicPageShell>
+    );
+}
+
+function StickersSkeleton() {
+    return (
+        <div className="container mx-auto px-4 py-12 max-w-7xl animate-pulse">
+            <div className="h-24 bg-[var(--bg-card)] rounded-3xl mb-8" />
+            <div className="h-[600px] bg-[var(--bg-card)] rounded-3xl" />
+        </div>
+    );
+}
+
+async function StickersContent() {
+    await connection();
     // NUCLEAR SSR: Fetch all data before flushing any part of the page content
     const stickersPromise = getPublicStickers();
     const sessionPromise = auth.api.getSession({
@@ -22,29 +48,23 @@ export default async function StickersPage() {
     ]);
 
     return (
-        <PublicPageShell
-            title="STICKER KAART"
-            description="Bekijk waar Salve Mundi stikkers zijn geplakt over de hele wereld. Heb je er zelf een geplakt? Log in en voeg hem toe!"
-            backgroundImage="/img/backgrounds/stickers-banner.jpg" 
-        >
-            <div className="container mx-auto px-4 py-12 max-w-7xl">
-                <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-                    <div className="flex justify-between items-center mb-8 bg-[var(--bg-card)] border border-[var(--beheer-border)] p-6 rounded-3xl shadow-sm">
-                        <div className="space-y-1">
-                            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Totaal Geplakt</p>
-                            <p className="text-3xl font-black text-[var(--theme-purple)] tracking-tighter">{stickers.length}+</p>
-                        </div>
-                        <div className="p-3 bg-[var(--theme-purple)]/10 rounded-2xl">
-                            <span className="text-2xl">📍</span>
-                        </div>
+        <div className="container mx-auto px-4 py-12 max-w-7xl">
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="flex justify-between items-center mb-8 bg-[var(--bg-card)] border border-[var(--beheer-border)] p-6 rounded-3xl shadow-sm">
+                    <div className="space-y-1">
+                        <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Totaal Geplakt</p>
+                        <p className="text-3xl font-black text-[var(--theme-purple)] tracking-tighter">{stickers.length}+</p>
                     </div>
-                    
-                    <div className="rounded-3xl border border-[var(--beheer-border)] overflow-hidden shadow-2xl">
-                        <StickerMapIsland initialStickers={stickers} user={session?.user || null} />
+                    <div className="p-3 bg-[var(--theme-purple)]/10 rounded-2xl">
+                        <span className="text-2xl">📍</span>
                     </div>
                 </div>
+                
+                <div className="rounded-3xl border border-[var(--beheer-border)] overflow-hidden shadow-2xl">
+                    <StickerMapIsland initialStickers={stickers} user={session?.user || null} />
+                </div>
             </div>
-        </PublicPageShell>
+        </div>
     );
 }
 

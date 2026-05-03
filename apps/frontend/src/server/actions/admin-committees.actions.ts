@@ -17,6 +17,12 @@ import {
     getCommitteeMembers as getCommitteeMembersQuery, 
     countUniqueCommitteeMembers as getUniqueCommitteeMembersCountQuery,
 } from '@/server/queries/admin-commissies.queries';
+import { 
+    updateCommitteeDetailsSchema,
+    addCommitteeMemberSchema,
+    toggleCommitteeLeaderSchema,
+    removeCommitteeMemberSchema
+} from '@salvemundi/validations';
 import { triggerUserSyncAction } from './azure-sync/sync-tasks.actions';
 
 const getAzureManagementUrl = () => process.env.AZURE_MANAGEMENT_SERVICE_URL;
@@ -66,10 +72,14 @@ export async function updateCommitteeDetails(
     committeeId: string,
     payload: { short_description?: string; description?: string; image?: string }
 ): Promise<{ success: boolean; error?: string }> {
+    const validated = updateCommitteeDetailsSchema.safeParse({ committeeId, payload });
+    if (!validated.success) {
+        return { success: false, error: 'Ongeldige invoer' };
+    }
     await checkAccess();
     
     try {
-        await getSystemDirectus().request(updateItem('committees', committeeId, payload));
+        await getSystemDirectus().request(updateItem('committees', committeeId, validated.data.payload));
         revalidatePath(`/beheer/commissies/${committeeId}`);
         revalidatePath('/beheer/commissies');
         return { success: true };
@@ -84,6 +94,10 @@ export async function addCommitteeMember(
     committeeId: string,
     userEmail: string
 ): Promise<{ success: boolean; error?: string }> {
+    const validated = addCommitteeMemberSchema.safeParse({ azureGroupId, committeeId, userEmail });
+    if (!validated.success) {
+        return { success: false, error: 'Ongeldige invoer' };
+    }
     await checkAccess();
 
     const users = await getSystemDirectus().request(readUsers({
@@ -116,6 +130,10 @@ export async function removeCommitteeMember(
     azureGroupId: string,
     entraId: string
 ): Promise<{ success: boolean; error?: string }> {
+    const validated = removeCommitteeMemberSchema.safeParse({ azureGroupId, entraId });
+    if (!validated.success) {
+        return { success: false, error: 'Ongeldige invoer' };
+    }
     await checkAccess();
     const azRes = await fetch(`${getAzureManagementUrl()}/api/groups/${encodeURIComponent(azureGroupId)}/members/${encodeURIComponent(entraId)}`, {
         method: 'DELETE',
@@ -138,6 +156,10 @@ export async function toggleCommitteeLeader(
     azureGroupId: string | null | undefined,
     entraId: string
 ): Promise<{ success: boolean; error?: string }> {
+    const validated = toggleCommitteeLeaderSchema.safeParse({ membershipId, currentIsLeader, azureGroupId, entraId });
+    if (!validated.success) {
+        return { success: false, error: 'Ongeldige invoer' };
+    }
     await checkAccess();
 
     try {

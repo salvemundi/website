@@ -1,3 +1,4 @@
+import 'server-only';
 import { query } from '@/lib/database';
 import { type PendingSignup } from '@salvemundi/validations/schema/audit.zod';
 

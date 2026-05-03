@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { phoneNumberSchema } from './shared.zod.js';
+import { userBasicSchema } from './members.zod.js';
 
 export const activitySchema = z.object({
     id: z.union([z.string(), z.number()]),
@@ -88,3 +89,31 @@ export const activityAdminSchema = z.object({
 });
 
 export type ActivityAdmin = z.infer<typeof activityAdminSchema>;
+
+/**
+ * SERVER ACTION INPUT SCHEMAS
+ */
+export const deleteSignupSchema = z.object({
+    signupId: z.number(),
+    eventId: z.union([z.string(), z.number()]),
+    participantEmail: z.string().email().optional(),
+    eventName: z.string().optional(),
+});
+
+export const createManualSignupSchema = z.object({
+    eventId: z.number(),
+    eventName: z.string(),
+    signupType: z.enum(['member', 'guest']),
+    guestData: z.object({
+        name: z.string().min(1),
+        email: z.string().email(),
+        phone: z.string().optional().nullable(),
+    }).optional(),
+    memberData: userBasicSchema.optional(),
+});
+
+export const toggleCheckInSchema = z.object({
+    signupId: z.number(),
+    eventId: z.number(),
+    checkedIn: z.boolean(),
+});

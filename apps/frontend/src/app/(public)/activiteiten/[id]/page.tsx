@@ -1,3 +1,4 @@
+import React, { Suspense } from 'react';
 import { auth } from '@/server/auth/auth';
 import { type DbEventSignup } from '@salvemundi/validations/directus/schema';
 import { headers } from 'next/headers';
@@ -10,15 +11,36 @@ import { type EnrichedUser } from '@/types/auth';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import BackButton from '@/components/ui/navigation/BackButton';
 
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+
 
 interface PageProps {
     params: Promise<{ id: string }>;
     searchParams: Promise<{ status?: string; token?: string }>;
 }
 
+import { connection } from 'next/server';
+
 export default async function PageActivityId({ params, searchParams }: PageProps) {
+    await connection();
+    return (
+        <PublicPageShell>
+            <Suspense fallback={<ActivitySkeleton />}>
+                <ActivityContent params={params} searchParams={searchParams} />
+            </Suspense>
+        </PublicPageShell>
+    );
+}
+
+function ActivitySkeleton() {
+    return (
+        <div className="container mx-auto px-4 max-w-7xl pt-8 pb-4 animate-pulse">
+            <div className="h-8 w-48 bg-[var(--bg-card)] rounded mb-8" />
+            <div className="h-[600px] bg-[var(--bg-card)] rounded-[2rem]" />
+        </div>
+    );
+}
+
+async function ActivityContent({ params, searchParams }: PageProps) {
     const { id: rawId } = await params;
     const sParams = await searchParams;
 
@@ -65,7 +87,7 @@ export default async function PageActivityId({ params, searchParams }: PageProps
     }
 
     return (
-        <PublicPageShell>
+        <>
             <div className="container mx-auto px-4 max-w-7xl pt-8 pb-4">
                 <BackButton href="/activiteiten" title="Terug naar activiteiten" />
             </div>
@@ -84,6 +106,6 @@ export default async function PageActivityId({ params, searchParams }: PageProps
                     initialIsSignedUp={isSignedUp}
                 />
             </ActivityDetailIsland>
-        </PublicPageShell>
+        </>
     );
 }
