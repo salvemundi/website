@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
     serverExternalPackages: ['isomorphic-dompurify', 'jsdom'],
     experimental: {
         ppr: true,
+        // @ts-ignore - dynamicIO is required for 'use cache' in Next.js 16 but missing from types
         dynamicIO: true,
         serverSourceMaps: true,
         webpackBuildWorker: true,
