@@ -111,23 +111,28 @@ export default async function RootLayout({
  * This runs in parallel with the Page fetch.
  */
 async function HeadPreloads() {
-    const [banners, activities] = await Promise.all([
-        getHeroBanners().catch(() => []),
-        getUpcomingActiviteiten(4).catch(() => [])
-    ]);
+    await connection();
+    try {
+        const [banners, activities] = await Promise.all([
+            getHeroBanners(),
+            getUpcomingActiviteiten(4)
+        ]);
 
-    const criticalImages = [
-        ...(banners[0]?.afbeelding_id ? [getImageUrl(banners[0].afbeelding_id, { width: 1200, height: 800, fit: 'cover' })] : []),
-        ...activities.slice(0, 2).map((a: any) => a.afbeelding_id ? getImageUrl(a.afbeelding_id, { width: 400, height: 300, fit: 'cover' }) : null).filter(Boolean)
-    ];
+        const criticalImages = [
+            ...(banners[0]?.afbeelding_id ? [getImageUrl(banners[0].afbeelding_id, { width: 1200, height: 800, fit: 'cover' })] : []),
+            ...activities.slice(0, 2).map((a: any) => a.afbeelding_id ? getImageUrl(a.afbeelding_id, { width: 400, height: 300, fit: 'cover' }) : null).filter(Boolean)
+        ];
 
-    return (
-        <>
-            {criticalImages.map((src, idx) => (
-                <link key={`preload-img-${idx}`} rel="preload" as="image" href={src!} />
-            ))}
-        </>
-    );
+        return (
+            <>
+                {criticalImages.map((src, idx) => (
+                    <link key={`preload-img-${idx}`} rel="preload" as="image" href={src!} />
+                ))}
+            </>
+        );
+    } catch (e) {
+        return null;
+    }
 }
 
 async function ThemeScript() {
