@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useOptimistic, useTransition } from 'react';
-import { Search, Download, Mail, Phone, CheckCircle, XCircle, Clock, Trash2, UserPlus, CheckCircle2, Circle, Loader2 } from 'lucide-react';
+import { Search, Download, Mail, Phone, CheckCircle, XCircle, Clock, Trash2, UserPlus, CheckCircle2, Circle, Loader2, User, CreditCard } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { downloadCSV } from '@/lib/utils/export';
@@ -126,21 +126,41 @@ export default function ActiviteitAanmeldingenIsland({
         return signup.participant_phone || signup.directus_relations?.phone_number || '-';
     }
 
-    function getMemberBadge(isMember: boolean) {
-        if (isMember) {
+    function getMemberBadge(signup: Signup) {
+        if (signup.is_member || signup.directus_relations) {
             return (
-                <span className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 text-emerald-500 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-[9px] font-semibold  tracking-wider border border-emerald-500/20">
                     <CheckCircle className="h-3 w-3" />
-                    Lid
-                </span>
+                    <span>Lid</span>
+                </div>
             );
         }
         return (
-            <span className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 text-amber-500 rounded-full text-[10px] font-black uppercase tracking-widest border border-amber-500/20">
-                <Clock className="h-3 w-3" />
-                Niet lid
-            </span>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] text-[9px] font-semibold  tracking-wider border border-[var(--beheer-border)]">
+                <User className="h-3 w-3 opacity-50" />
+                <span>Gast</span>
+            </div>
         );
+    }
+
+    function getPaymentBadge(status: string) {
+        if (status === 'paid') {
+            return (
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] text-[9px] font-semibold  tracking-wider border border-[var(--beheer-accent)]/20">
+                    <CheckCircle2 className="h-3 w-3" />
+                    <span>Betaald</span>
+                </div>
+            );
+        }
+        if (status === 'open') {
+            return (
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 text-[9px] font-semibold  tracking-wider border border-amber-500/20 animate-pulse">
+                    <CreditCard className="h-3 w-3" />
+                    <span>Open</span>
+                </div>
+            );
+        }
+        return null;
     }
 
     const exportToCSV = () => {
@@ -212,7 +232,7 @@ export default function ActiviteitAanmeldingenIsland({
                         <button
                             onClick={exportToCSV}
                             disabled={filteredSignups.length === 0}
-                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-xs font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50"
+                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-xs font-semibold  tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50"
                         >
                             <Download className="h-4 w-4" />
                             Exporteer
@@ -220,7 +240,7 @@ export default function ActiviteitAanmeldingenIsland({
                         {canAccessEdit && (
                             <button
                                 onClick={() => setIsManualModalOpen(true)}
-                                className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
+                                className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-semibold text-xs  tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
                             >
                                 <UserPlus className="h-4 w-4" />
                                 Handmatig
@@ -245,7 +265,7 @@ export default function ActiviteitAanmeldingenIsland({
                         onChange={(e) => setSearchQuery(e.target.value)}
                         autoComplete="off"
                         suppressHydrationWarning
-                        className="w-full pl-11 pr-5 py-3 rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] placeholder:text-[var(--beheer-text-muted)] focus:ring-2 focus:ring-[var(--beheer-accent)]/20 focus:border-[var(--beheer-accent)] outline-none transition-all shadow-sm font-bold uppercase tracking-widest text-[10px]"
+                        className="w-full pl-11 pr-5 py-3 rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] placeholder:text-[var(--beheer-text-muted)] focus:ring-2 focus:ring-[var(--beheer-accent)]/20 focus:border-[var(--beheer-accent)] outline-none transition-all shadow-sm font-bold  tracking-widest text-[10px]"
                     />
                 </div>
 
@@ -264,8 +284,8 @@ export default function ActiviteitAanmeldingenIsland({
                             <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[var(--beheer-card-soft)] mb-6">
                                 <Search className="h-10 w-10 text-[var(--beheer-text-muted)] opacity-20" />
                             </div>
-                            <h3 className="text-xl font-black text-[var(--beheer-text)] mb-2 uppercase tracking-tighter">Geen resultaten</h3>
-                            <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-[10px] max-w-xs mx-auto">
+                            <h3 className="text-xl font-semibold text-[var(--beheer-text)] mb-2  tracking-tighter">Geen resultaten</h3>
+                            <p className="text-[var(--beheer-text-muted)] font-semibold  tracking-widest text-[10px] max-w-xs mx-auto">
                                 {searchQuery ? "We konden niemand vinden die voldoet aan je zoekopdracht." : "Er zijn nog geen aanmeldingen voor deze activiteit."}
                             </p>
                         </div>
@@ -273,7 +293,7 @@ export default function ActiviteitAanmeldingenIsland({
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse min-w-[800px]">
                                 <thead>
-                                    <tr className="border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[10px] uppercase font-black tracking-widest text-[var(--beheer-text-muted)]">
+                                    <tr className="border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[10px]  font-semibold tracking-widest text-[var(--beheer-text-muted)]">
                                         <th className="px-6 py-4">Inchecken</th>
                                         <th className="px-6 py-4">Deelnemer</th>
                                         <th className="px-6 py-4">Contact</th>
@@ -295,7 +315,7 @@ export default function ActiviteitAanmeldingenIsland({
                                                     <button
                                                         onClick={() => handleToggleCheckIn(signup.id, !!signup.checked_in)}
                                                         disabled={!canAccessEdit}
-                                                        className={`flex items-center gap-2 self-start px-3 py-2 rounded-xl transition-all font-black text-[10px] uppercase tracking-wider border shadow-sm active:scale-95 ${
+                                                        className={`flex items-center gap-2 self-start px-3 py-2 rounded-xl transition-all font-semibold text-[10px]  tracking-wider border shadow-sm active:scale-95 ${
                                                             signup.checked_in 
                                                             ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30' 
                                                             : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] border-[var(--beheer-border)] hover:border-emerald-500/50 hover:text-emerald-500'
@@ -314,7 +334,7 @@ export default function ActiviteitAanmeldingenIsland({
                                                         )}
                                                     </button>
                                                     {signup.checked_in && signup.checked_in_at && (
-                                                        <div className="flex items-center gap-1 text-[9px] text-[var(--beheer-text-muted)] opacity-60 font-black tracking-tight ml-1">
+                                                        <div className="flex items-center gap-1 text-[9px] text-[var(--beheer-text-muted)] opacity-60 font-semibold tracking-tight ml-1">
                                                             <Clock className="h-3 w-3" />
                                                             {format(new Date(signup.checked_in_at), 'HH:mm')}
                                                         </div>
@@ -322,25 +342,26 @@ export default function ActiviteitAanmeldingenIsland({
                                                 </div>
                                             </td>
                                             <td className="px-6 py-5">
-                                                <div className="font-black text-[var(--beheer-text)] text-sm uppercase tracking-tight mb-1">{name}</div>
+                                                <div className="font-semibold text-[var(--beheer-text)] text-sm  tracking-tight mb-1">{name}</div>
                                             </td>
                                             <td className="px-6 py-5 space-y-1.5">
-                                                <div className="flex items-center gap-2 text-xs text-[var(--beheer-text-muted)] font-black uppercase tracking-tight">
+                                                <div className="flex items-center gap-2 text-xs text-[var(--beheer-text-muted)] font-semibold  tracking-tight">
                                                     <Mail className="h-3.5 w-3.5 opacity-50" />
                                                     <a href={`mailto:${email}`} className="hover:text-[var(--beheer-accent)] transition-colors">{email}</a>
                                                 </div>
                                                 {phone && phone !== '-' && (
-                                                    <div className="flex items-center gap-2 text-xs text-[var(--beheer-text-muted)] font-black uppercase tracking-tight">
+                                                    <div className="flex items-center gap-2 text-xs text-[var(--beheer-text-muted)] font-semibold  tracking-tight">
                                                         <Phone className="h-3.5 w-3.5 opacity-50" />
                                                         <a href={`tel:${phone}`} className="hover:text-[var(--beheer-accent)] transition-colors">{phone}</a>
                                                     </div>
                                                 )}
                                             </td>
                                             <td className="px-6 py-5">
-                                                <div className="mb-2">
-                                                    {getMemberBadge(!!signup.is_member)}
+                                                <div className="flex flex-wrap gap-2 mb-2">
+                                                    {getMemberBadge(signup)}
+                                                    {getPaymentBadge(signup.payment_status || 'open')}
                                                 </div>
-                                                <div className="text-[10px] text-[var(--beheer-text-muted)] font-bold uppercase tracking-widest">
+                                                <div className="text-[10px] text-[var(--beheer-text-muted)] font-bold  tracking-widest">
                                                     {signup.created_at && !isNaN(new Date(signup.created_at).getTime()) 
                                                         ? format(new Date(signup.created_at), 'dd MMM yyyy, HH:mm', { locale: nl }) 
                                                         : 'Datum onbekend'}

@@ -24,21 +24,11 @@ export default async function PageActivityId({ params, searchParams }: PageProps
     await connection();
     return (
         <PublicPageShell>
-            <Suspense fallback={<ActivitySkeleton />}>
-                <ActivityContent params={params} searchParams={searchParams} />
-            </Suspense>
+            <ActivityContent params={params} searchParams={searchParams} />
         </PublicPageShell>
     );
 }
 
-function ActivitySkeleton() {
-    return (
-        <div className="container mx-auto px-4 max-w-7xl pt-8 pb-4 animate-pulse">
-            <div className="h-8 w-48 bg-[var(--bg-card)] rounded mb-8" />
-            <div className="h-[600px] bg-[var(--bg-card)] rounded-[2rem]" />
-        </div>
-    );
-}
 
 async function ActivityContent({ params, searchParams }: PageProps) {
     const { id: rawId } = await params;
@@ -67,12 +57,14 @@ async function ActivityContent({ params, searchParams }: PageProps) {
     let qrToken: string | undefined = undefined;
     let isSignedUp = false;
 
+    let signupId: number | undefined = undefined;
     if (user?.email) {
-        const signupStatus = await checkUserSignupStatus(Number(activity.id), user.email);
+        const signupStatus = await checkUserSignupStatus(Number(activity.id), user.email, user.id);
         if (signupStatus.isSignedUp) {
             isSignedUp = true;
             qrToken = signupStatus.qrToken;
             verifiedPaymentStatus = signupStatus.paymentStatus as 'paid' | 'open' | 'failed' | 'canceled' | null;
+            signupId = signupStatus.id;
         }
     }
 
@@ -104,6 +96,7 @@ async function ActivityContent({ params, searchParams }: PageProps) {
                     verifiedPaymentStatus={verifiedPaymentStatus}
                     initialQrToken={qrToken}
                     initialIsSignedUp={isSignedUp}
+                    id={signupId}
                 />
             </ActivityDetailIsland>
         </>

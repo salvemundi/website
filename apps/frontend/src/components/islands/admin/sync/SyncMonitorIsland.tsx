@@ -32,8 +32,8 @@ export default function SyncMonitorIsland() {
                         <Activity className={`h-6 w-6 ${isRunning ? 'animate-pulse' : ''}`} />
                     </div>
                     <div>
-                        <h3 className="text-xl font-black text-[var(--beheer-text)] uppercase tracking-tight">Sync Monitor</h3>
-                        <p className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mt-1">
+                        <h3 className="text-xl font-semibold text-[var(--beheer-text)]  tracking-tight">Sync Monitor</h3>
+                        <p className="text-[10px] font-semibold text-[var(--beheer-text-muted)]  tracking-widest mt-1">
                             {lastUpdated && mounted ? `Laatste update: ${lastUpdated.toLocaleTimeString()}` : 'Real-time status & logs'}
                         </p>
                     </div>
@@ -44,7 +44,7 @@ export default function SyncMonitorIsland() {
                         <button
                             key={filter}
                             onClick={() => setResultFilter?.(filter)}
-                            className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${resultFilter === filter ? 'bg-[var(--beheer-accent)] text-white shadow-lg shadow-[var(--beheer-accent)]/20' : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] hover:bg-[var(--beheer-border)]/50 hover:text-[var(--beheer-text)]'}`}
+                            className={`px-4 py-2 rounded-xl text-[9px] font-semibold  tracking-widest transition-all ${resultFilter === filter ? 'bg-[var(--beheer-accent)] text-white shadow-lg shadow-[var(--beheer-accent)]/20' : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] hover:bg-[var(--beheer-border)]/50 hover:text-[var(--beheer-text)]'}`}
                         >
                             {filter}
                         </button>
@@ -59,8 +59,8 @@ export default function SyncMonitorIsland() {
                             <AlertCircle className="h-5 w-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-black text-[var(--theme-error)] uppercase tracking-tight">Kritieke Fout Gedetecteerd</h4>
-                            <p className="text-xs font-black text-[var(--beheer-text)]/80 uppercase tracking-widest mt-1">
+                            <h4 className="text-sm font-semibold text-[var(--theme-error)]  tracking-tight">Kritieke Fout Gedetecteerd</h4>
+                            <p className="text-xs font-semibold text-[var(--beheer-text)]/80  tracking-widest mt-1">
                                 {status.fatalError.message}
                             </p>
                             
@@ -68,7 +68,7 @@ export default function SyncMonitorIsland() {
                                 <div className="mt-4">
                                     <button 
                                         onClick={() => setShowStack(!showStack)}
-                                        className="text-[9px] font-black uppercase tracking-widest text-[var(--theme-error)] hover:underline transition-colors flex items-center gap-1"
+                                        className="text-[9px] font-semibold  tracking-widest text-[var(--theme-error)] hover:underline transition-colors flex items-center gap-1"
                                     >
                                         {showStack ? 'Verberg details' : 'Bekijk technische details (Stack Trace)'}
                                     </button>
@@ -90,8 +90,8 @@ export default function SyncMonitorIsland() {
             <div className="space-y-6">
                 <div>
                     <div className="flex justify-between items-end mb-2">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">Voortgang ({processed} / {total})</span>
-                        <span className="text-xs font-black text-[var(--beheer-accent)]">{Math.round(progress || 0)}%</span>
+                        <span className="text-[10px] font-semibold  tracking-widest text-[var(--beheer-text-muted)]">Voortgang ({processed} / {total})</span>
+                        <span className="text-xs font-semibold text-[var(--beheer-accent)]">{Math.round(progress || 0)}%</span>
                     </div>
                     <div className="h-3 w-full bg-[var(--beheer-card-soft)] rounded-full overflow-hidden border border-[var(--beheer-border)]/20">
                         <div 

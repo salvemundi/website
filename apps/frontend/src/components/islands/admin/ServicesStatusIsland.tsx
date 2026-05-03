@@ -91,7 +91,7 @@ export default function ServicesStatusIsland({
                 <button
                     onClick={fetchStatus}
                     disabled={isRefreshing}
-                    className="flex items-center justify-center gap-2 px-8 py-2 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-[10px] font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
+                    className="flex items-center justify-center gap-2 px-8 py-2 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-[10px] font-semibold  tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
                 >
                     <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
                     Refresh
@@ -103,7 +103,7 @@ export default function ServicesStatusIsland({
             {statuses.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 bg-[var(--beheer-card-bg)] rounded-[2.5rem] border border-[var(--beheer-border)] border-dashed">
                     <AlertCircle className="h-12 w-12 text-[var(--beheer-text-muted)] opacity-20 mb-4" />
-                    <p className="text-sm font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Geen status data beschikbaar</p>
+                    <p className="text-sm font-semibold text-[var(--beheer-text-muted)]  tracking-widest">Geen status data beschikbaar</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
@@ -116,7 +116,7 @@ export default function ServicesStatusIsland({
                                 <div className="p-4 bg-[var(--beheer-card-soft)] rounded-2xl text-[var(--beheer-accent)] group-hover:scale-110 transition-transform">
                                     <Zap className="h-6 w-6" />
                                 </div>
-                                <div className={`flex items-center gap-2 px-4 py-2 rounded-full border text-[10px] font-black uppercase tracking-widest ${getStatusColor(service.status)}`}>
+                                <div className={`flex items-center gap-2 px-4 py-2 rounded-full border text-[10px] font-semibold  tracking-widest ${getStatusColor(service.status)}`}>
                                     {getStatusIcon(service.status)}
                                     {service.status}
                                 </div>
@@ -124,14 +124,14 @@ export default function ServicesStatusIsland({
 
                             <div className="space-y-4">
                                 <div>
-                                    <h3 className="text-lg font-black text-[var(--beheer-text)] uppercase tracking-widest">{service.name}</h3>
+                                    <h3 className="text-lg font-semibold text-[var(--beheer-text)]  tracking-widest">{service.name}</h3>
                                     <div className="flex items-center gap-4 mt-2">
-                                        <div className="flex items-center gap-1.5 text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">
+                                        <div className="flex items-center gap-1.5 text-[10px] font-semibold text-[var(--beheer-text-muted)]  tracking-widest">
                                             <Clock className="h-3.5 w-3.5" />
                                             {service.latency ? `${service.latency}ms` : 'N/A'}
                                         </div>
                                         <div className="h-3 w-[1px] bg-[var(--beheer-border)]"></div>
-                                        <div className="flex items-center gap-1.5 text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">
+                                        <div className="flex items-center gap-1.5 text-[10px] font-semibold text-[var(--beheer-text-muted)]  tracking-widest">
                                             <Activity className="h-3.5 w-3.5" />
                                             SSL beveiligd
                                         </div>
@@ -140,7 +140,7 @@ export default function ServicesStatusIsland({
 
                                 {service.error && (
                                     <div className="p-4 bg-red-500/5 border border-red-500/10 rounded-2xl">
-                                        <p className="text-[10px] font-black text-red-500 uppercase tracking-widest">Error Detail</p>
+                                        <p className="text-[10px] font-semibold text-red-500  tracking-widest">Error Detail</p>
                                         <p className="text-xs font-bold text-red-400/80 mt-1">{service.error}</p>
                                     </div>
                                 )}
@@ -156,7 +156,7 @@ export default function ServicesStatusIsland({
             )}
 
             {lastUpdated && (
-                <p className="mt-8 text-center text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">
+                <p className="mt-8 text-center text-[10px] font-semibold text-[var(--beheer-text-muted)]  tracking-widest">
                     {`Laatst gecontroleerd: ${formatDate(lastUpdated!, true)}`}
                 </p>
             )}

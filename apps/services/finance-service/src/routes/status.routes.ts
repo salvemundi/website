@@ -22,7 +22,7 @@ export default async function statusRoutes(fastify: FastifyInstance) {
         }
 
         try {
-            const query = 'SELECT mollie_id, payment_status, amount, product_type, created_at, updated_at FROM transactions WHERE access_token = $1 LIMIT 1';
+            const query = 'SELECT mollie_id, payment_status, amount, product_type, registration, trip_signup, pub_crawl_signup, created_at, updated_at FROM transactions WHERE access_token = $1 LIMIT 1';
 
             const result = await fastify.db.query(query, [id]);
 
@@ -45,6 +45,47 @@ export default async function statusRoutes(fastify: FastifyInstance) {
                             'UPDATE transactions SET payment_status = $1, updated_at = NOW() WHERE mollie_id = $2',
                             [livePayment.status, transaction.mollie_id]
                         );
+
+                        // If it transitioned to paid, trigger the same logic as the webhook
+                        if (livePayment.status === 'paid') {
+                            const metadata = livePayment.metadata as any;
+                            const registrationId = transaction.registration || metadata?.registrationId;
+                            const registrationType = metadata?.registrationType;
+
+                            const eventData = {
+                                event: 'PAYMENT_SUCCESS',
+                                userId: transaction.user_id,
+                                paymentId: transaction.mollie_id,
+                                email: transaction.email || metadata?.email,
+                                registrationId: registrationId,
+                                registrationType: registrationType,
+                                isContribution: transaction.product_type === 'membership',
+                                isNewMember: !transaction.user_id && transaction.product_type === 'membership',
+                                accessToken: transaction.access_token,
+                                firstName: transaction.first_name || metadata?.firstName,
+                                lastName: transaction.last_name || metadata?.lastName,
+                                phoneNumber: metadata?.phoneNumber,
+                                dateOfBirth: metadata?.dateOfBirth,
+                                timestamp: new Date().toISOString()
+                            };
+
+                            await fastify.redis.xadd('v7:events', '*', 'payload', JSON.stringify(eventData));
+                            fastify.log.info(`[STATUS] Published PAYMENT_SUCCESS event for ${transaction.mollie_id} via status check fallback`);
+
+                            // Update registration tables via DirectusRetryService (if applicable)
+                            if (registrationId && registrationType) {
+                                const { DirectusRetryService } = await import('../services/directus-retry.service.js');
+                                const collectionMap: Record<string, string> = {
+                                    'event_signup': 'event_signups',
+                                    'pub_crawl_signup': 'pub_crawl_signups',
+                                    'trip_signup': 'trip_signups'
+                                };
+                                const targetCollection = collectionMap[registrationType];
+                                if (targetCollection) {
+                                    await DirectusRetryService.queueUpdate(fastify.redis, targetCollection, registrationId, { payment_status: 'paid' });
+                                }
+                            }
+                        }
                         
                         transaction.payment_status = livePayment.status;
                         transaction.updated_at = new Date();
@@ -54,7 +95,10 @@ export default async function statusRoutes(fastify: FastifyInstance) {
                 }
             }
 
-            return transaction;
+            return {
+                ...transaction,
+                signup_id: transaction.registration || transaction.trip_signup || transaction.pub_crawl_signup
+            };
         } catch (err) {
             fastify.log.error(err, `[STATUS] Error fetching status for ${id}`);
             return reply.status(500).send({ error: 'Internal server error' });

@@ -157,7 +157,6 @@ export async function createManualSignupAction(
     const activityCommitteeId = activityRes.rows[0]?.committee_id;
     const isSuperAdmin = user.isICT || user.committees?.some(c => c.azure_group_id === COMMITTEES.BESTUUR);
     const userCommitteeIds = user.committees?.map(c => Number(c.id)) || [];
-
     if (!isSuperAdmin && !userCommitteeIds.includes(Number(activityCommitteeId))) {
         return { success: false, error: "Unauthorized: Je mag alleen aanmeldingen van je eigen commissie beheren." };
     }
@@ -173,31 +172,38 @@ export async function createManualSignupAction(
             payload.directus_relations = memberData.id;
             payload.participant_name = `${memberData.first_name} ${memberData.last_name || ''}`.trim();
             payload.participant_email = memberData.email;
+            payload.is_member = true;
         } else {
             if (!guestData) throw new Error('Gast gegevens ontbreken');
             payload.participant_name = guestData.name;
             payload.participant_email = guestData.email;
             payload.participant_phone = guestData.phone || null;
+            payload.is_member = false;
         }
 
-        const newId = await createEventSignupDb(payload);
-        if (!newId) throw new Error('Toevoegen aan database mislukt');
-
-        // Sync to Directus - now awaited
         try {
-            await getSystemDirectus().request(createItem('event_signups', { ...payload, id: newId }));
-        } catch (err) {
+            // Directus SDK will handle the database insertion and trigger internal logic (activity logs, etc.)
+            // Since they share the same database, we don't need the redundant createEventSignupDb call here which causes ID conflicts.
+            const newItem = await getSystemDirectus().request(createItem('event_signups', payload)) as unknown as { id: number };
             
-            // Cleanup DB if sync fails
-            await deleteEventSignupDb(newId);
-            await logAdminAction('event_signup_manual_rollback', 'ERROR', { id: newId, error: String(err), action: 'rollback_delete' });
+            if (!newItem || !newItem.id) {
+                throw new Error('Geen ID teruggekregen van het CMS');
+            }
+
+            await logAdminAction('event_signup_manual_created', 'SUCCESS', { id: newItem.id, data: payload });
+
+            revalidateTag(`event_signups_${eventId}`, 'max');
+            revalidatePath(`/beheer/activiteiten/${eventId}/aanmeldingen`);
+            revalidatePath('/beheer/activiteiten');
+            return { success: true };
+        } catch (err) {
+            console.error('[CMS Sync] Directus createItem failed (signup):', err);
+            await logAdminAction('activity_signup_failed', 'ERROR', { 
+                error: err instanceof Error ? err.message : JSON.stringify(err), 
+                payload: payload
+            });
             return { success: false, error: 'Synchronisatie met CMS mislukt. Aanmelding niet opgeslagen.' };
         }
-
-        revalidateTag(`event_signups_${eventId}`, 'max');
-        revalidatePath(`/beheer/activiteiten/${eventId}/aanmeldingen`);
-        revalidatePath('/beheer/activiteiten');
-        return { success: true };
     } catch (error: unknown) {
         const errMessage = error instanceof Error ? error.message : String(error);
         if (errMessage.includes('UNIQUE') || errMessage.includes('duplicate')) {

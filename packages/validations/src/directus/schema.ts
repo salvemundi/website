@@ -159,6 +159,7 @@ export interface DbEvent {
     status?: string | null;
     publish_date?: string | null;
     event_date_end?: string | null;
+    custom_url?: string | null;
     attendance_officers?: any | null;
     signups?: any | null;
 }

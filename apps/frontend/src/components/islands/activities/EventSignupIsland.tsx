@@ -37,7 +37,8 @@ export default function EventSignupIsland({
     initialUser,
     verifiedPaymentStatus,
     initialQrToken,
-    initialIsSignedUp = false
+    initialIsSignedUp = false,
+    id
 }: EventSignupIslandProps) {
     const user = initialUser;
 
@@ -49,10 +50,12 @@ export default function EventSignupIsland({
         isSignedUp: boolean;
         paymentStatus?: 'paid' | 'open' | 'failed' | 'canceled';
         qrToken?: string;
+        signupId?: number;
     }>({ 
         isSignedUp: initialIsSignedUp || verifiedPaymentStatus === 'paid' || verifiedPaymentStatus === 'open',
         paymentStatus: verifiedPaymentStatus || undefined,
-        qrToken: initialQrToken
+        qrToken: initialQrToken,
+        signupId: typeof id === 'number' ? id : (id && !isNaN(Number(id)) ? Number(id) : undefined)
     });
 
     const isPaid = price > 0;
@@ -75,8 +78,6 @@ export default function EventSignupIsland({
         }
     });
 
-    // REIS_FORM_V7.6_SSR: reset() useEffect VERWIJDERD om autofill-locks te voorkomen.
-    // Gegevens worden nu direct via defaultValues geladen.
 
 
     const onSubmit = async (data: EventSignupForm) => {
@@ -93,7 +94,11 @@ export default function EventSignupIsland({
                     window.location.href = `/activiteiten/bevestiging?id=${result.signupId}&transactionId=${result.qrToken}`;
                 } else {
                     setSuccess(result.message || 'Aanmelding geslaagd!');
-                    setSignupStatus({ isSignedUp: true, paymentStatus: isPaid ? 'open' : 'paid' });
+                    setSignupStatus({ 
+                        isSignedUp: true, 
+                        paymentStatus: isPaid ? 'open' : 'paid',
+                        signupId: 'signupId' in result ? Number(result.signupId) : undefined
+                    });
                 }
             } else {
                 setServerError(result.error || 'Er is iets misgegaan.');
@@ -106,30 +111,95 @@ export default function EventSignupIsland({
 
 
     if (signupStatus.isSignedUp && (signupStatus.paymentStatus === 'paid' || signupStatus.paymentStatus === 'open')) {
+        const isPaidStatus = signupStatus.paymentStatus === 'paid';
+        
+        const onRetry = async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const signupId = signupStatus.signupId || Number(urlParams.get('id'));
+            
+            if (!signupId || isNaN(signupId)) {
+                setServerError("Kon aanmeldings-ID niet vinden voor herbetaling.");
+                return;
+            }
+
+            try {
+                const { retryActivityPayment } = await import('@/server/actions/activiteit-actions');
+                const result = await retryActivityPayment(signupId);
+                if (result.success && result.checkoutUrl) {
+                    window.location.href = result.checkoutUrl;
+                } else {
+                    setServerError(result.error || "Herbetaling mislukt.");
+                }
+            } catch (err) {
+                setServerError("Er is een fout opgetreden bij het herstarten van de betaling.");
+            }
+        };
+
         return (
-            <div className="h-full flex flex-col justify-center space-y-8 p-8 rounded-[2rem] bg-[var(--bg-card)] border border-[var(--color-success)]/30 shadow-2xl">
+            <div className={`h-full flex flex-col justify-center space-y-8 p-8 rounded-[2rem] bg-[var(--bg-card)] border ${isPaidStatus ? 'border-[var(--color-success)]/30' : 'border-amber-500/30'} shadow-2xl transition-all duration-500`}>
                 <div className="text-center space-y-4">
-                    <div className="w-20 h-20 bg-[var(--color-success)]/10 rounded-full flex items-center justify-center mx-auto shadow-inner">
-                        <CheckCircle2 className="h-10 w-10 text-[var(--color-success)]" />
+                    <div className={`w-20 h-20 ${isPaidStatus ? 'bg-[var(--color-success)]/10' : 'bg-amber-500/10'} rounded-full flex items-center justify-center mx-auto shadow-inner`}>
+                        {isPaidStatus ? (
+                            <CheckCircle2 className="h-10 w-10 text-[var(--color-success)]" />
+                        ) : (
+                            <CreditCard className="h-10 w-10 text-amber-500 animate-pulse" />
+                        )}
                     </div>
-                    <h3 className="text-3xl font-black text-[var(--text-main)] leading-tight">🎉 Aanmelding Definitief!</h3>
+                    <h3 className="text-3xl font-semibold text-[var(--text-main)] leading-tight">
+                        {isPaidStatus ? '🎉 Aanmelding Definitief!' : '💳 Betaling Gestart'}
+                    </h3>
                     <p className="text-[var(--text-muted)] font-medium">
-                        Je bent succesvol aangemeld voor <span className="text-[var(--theme-purple)] font-black">{eventName}</span>.
+                        {isPaidStatus 
+                            ? <>Je bent succesvol aangemeld voor <span className="text-[var(--theme-purple)] font-semibold">{eventName}</span>.</>
+                            : <>Je aanmelding voor <span className="text-[var(--theme-purple)] font-semibold">{eventName}</span> is in afwachting van betaling.</>
+                        }
                     </p>
-                    {signupStatus.paymentStatus === 'open' && (
-                        <p className="text-[10px] uppercase font-black text-amber-500 tracking-widest bg-amber-500/10 px-4 py-2 rounded-xl border border-amber-500/20">
-                            Betaling wordt verwerkt
-                        </p>
+                    {!isPaidStatus && (
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <p className="text-[10px]  font-semibold text-amber-600 tracking-widest bg-amber-500/10 px-4 py-2.5 rounded-xl border border-amber-500/20 inline-block">
+                                    Wachten op bevestiging van betaling...
+                                </p>
+                                <p className="text-[11px] font-bold text-[var(--text-muted)] opacity-70 max-w-xs mx-auto">
+                                    Zodra de betaling is afgerond verschijnt hier je digitale ticket. Dit kan enkele minuten duren.
+                                </p>
+                            </div>
+                            
+                            <button
+                                onClick={onRetry}
+                                className="w-full h-14 bg-amber-500 text-white font-semibold rounded-2xl shadow-lg shadow-amber-500/20 hover:shadow-xl hover:shadow-amber-500/40 hover:-translate-y-0.5 active:scale-95 transition-all flex items-center justify-center gap-3  text-[10px] tracking-widest"
+                            >
+                                <CreditCard className="h-4 w-4" />
+                                <span>Betaal Nu</span>
+                            </button>
+
+                            {serverError && (
+                                <div className="p-4 rounded-2xl bg-red-50 border border-red-100 flex items-start gap-3 mt-4">
+                                    <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+                                    <p className="text-xs text-red-700 font-bold italic">{serverError}</p>
+                                </div>
+                            )}
+                        </div>
                     )}
                 </div>
-                <div className="relative group p-8 bg-[var(--bg-soft)] rounded-[2.5rem] border border-[var(--border-color)]/60 flex flex-col items-center transition-all hover:bg-[var(--bg-card)]">
-                    <div className="p-3 bg-white rounded-3xl shadow-xl ring-1 ring-black/5">
-                        <QRDisplay qrToken={signupStatus.qrToken || 'PENDING_VERIFICATION'} size={240} />
+
+                {isPaidStatus ? (
+                    <div className="relative group p-8 bg-[var(--bg-soft)] rounded-[2.5rem] border border-[var(--border-color)]/60 flex flex-col items-center transition-all hover:bg-[var(--bg-card)] animate-in fade-in zoom-in duration-700">
+                        <div className="p-3 bg-white rounded-3xl shadow-xl ring-1 ring-black/5">
+                            <QRDisplay qrToken={signupStatus.qrToken || 'PENDING_VERIFICATION'} size={240} />
+                        </div>
+                        <div className="mt-6 flex items-center gap-2 text-[10px]  font-semibold text-[var(--text-muted)] opacity-60 tracking-[0.2em]">
+                            <Ticket className="h-3 w-3" /> Toon bij de ingang
+                        </div>
                     </div>
-                    <div className="mt-6 flex items-center gap-2 text-[10px] uppercase font-black text-[var(--text-muted)] opacity-60 tracking-[0.2em]">
-                        <Ticket className="h-3 w-3" /> Toon bij de ingang
+                ) : (
+                    <div className="p-8 bg-[var(--bg-soft)]/50 rounded-[2.5rem] border border-dashed border-[var(--border-color)] flex flex-col items-center justify-center space-y-4 opacity-60">
+                        <div className="w-48 h-48 bg-white/5 rounded-3xl flex items-center justify-center border border-[var(--border-color)]/30">
+                            <Ticket className="h-16 w-16 text-[var(--text-muted)] opacity-20" />
+                        </div>
+                        <p className="text-[10px] font-semibold  tracking-widest text-[var(--text-muted)]">Ticket wordt gegenereerd na betaling</p>
                     </div>
-                </div>
+                )}
             </div>
         );
     }
@@ -139,8 +209,8 @@ export default function EventSignupIsland({
             <div className="h-full flex flex-col justify-center items-center p-12 rounded-[2.5rem] bg-[var(--bg-soft)]/50 border border-dashed border-[var(--border-color)] text-center space-y-4">
                 <AlertCircle className="h-12 w-12 text-[var(--text-muted)] opacity-20" />
                 <div>
-                    <h3 className="text-xl font-black text-[var(--text-muted)] opacity-40 uppercase tracking-widest italic">Activiteit Afgelopen</h3>
-                    <p className="text-xs text-[var(--text-muted)] opacity-30 font-bold uppercase tracking-tight max-w-[200px] mx-auto mt-2">Helaas kun je je voor deze activiteit niet meer aanmelden.</p>
+                    <h3 className="text-xl font-semibold text-[var(--text-muted)] opacity-40  tracking-widest italic">Activiteit Afgelopen</h3>
+                    <p className="text-xs text-[var(--text-muted)] opacity-30 font-bold  tracking-tight max-w-[200px] mx-auto mt-2">Helaas kun je je voor deze activiteit niet meer aanmelden.</p>
                 </div>
             </div>
         );
@@ -150,14 +220,14 @@ export default function EventSignupIsland({
         <div className={`h-full flex flex-col p-8 rounded-[2rem] bg-[var(--bg-card)] border border-[var(--border-color)] shadow-2xl group transition-all duration-500 hover:shadow-[var(--theme-purple)]/10`}>
             <div className="flex justify-between items-start mb-8">
                 <div>
-                    <h3 className="text-2xl font-black text-[var(--theme-purple)] flex items-center gap-3">
+                    <h3 className="text-2xl font-semibold text-[var(--theme-purple)] flex items-center gap-3">
                         <Users className="h-6 w-6" /> Aanmelden
                     </h3>
-                    <p className="text-[10px] uppercase font-black text-[var(--text-muted)] tracking-[0.2em] mt-1 ml-9">Activiteit Tickets</p>
+                    <p className="text-[10px]  font-semibold text-[var(--text-muted)] tracking-[0.2em] mt-1 ml-9">Activiteit Tickets</p>
                 </div>
                 <div className="text-right">
-                    <span className="block text-[10px] uppercase font-black text-[var(--text-muted)] tracking-[0.2em] mb-1">Prijs</span>
-                    <span className="text-2xl font-black text-[var(--theme-purple)]">€{price.toFixed(2)}</span>
+                    <span className="block text-[10px]  font-semibold text-[var(--text-muted)] tracking-[0.2em] mb-1">Prijs</span>
+                    <span className="text-2xl font-semibold text-[var(--theme-purple)]">€{price.toFixed(2)}</span>
                 </div>
             </div>
 
@@ -169,7 +239,7 @@ export default function EventSignupIsland({
                         label="Naam" 
                         required 
                         error={errors.name?.message}
-                        labelClassName="text-[10px] uppercase font-black text-[var(--theme-purple)]/50 ml-3 tracking-widest"
+                        labelClassName="text-[10px]  font-semibold text-[var(--theme-purple)]/50 ml-3 tracking-widest"
                     >
                         <Input
                             {...register('name')}
@@ -184,7 +254,7 @@ export default function EventSignupIsland({
                         label="Email" 
                         required 
                         error={errors.email?.message}
-                        labelClassName="text-[10px] uppercase font-black text-[var(--theme-purple)]/50 ml-3 tracking-widest"
+                        labelClassName="text-[10px]  font-semibold text-[var(--theme-purple)]/50 ml-3 tracking-widest"
                     >
                         <Input
                             {...register('email')}
@@ -200,7 +270,7 @@ export default function EventSignupIsland({
                         label="Telefoonnummer" 
                         required 
                         error={errors.phoneNumber?.message}
-                        labelClassName="text-[10px] uppercase font-black text-[var(--theme-purple)]/50 ml-3 tracking-widest"
+                        labelClassName="text-[10px]  font-semibold text-[var(--theme-purple)]/50 ml-3 tracking-widest"
                     >
                         <Controller
                             name="phoneNumber"
