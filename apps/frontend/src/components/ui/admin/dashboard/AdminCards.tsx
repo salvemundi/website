@@ -64,11 +64,11 @@ export function ActionCard({
 
             {/* Middle: Text hierarchy */}
             <div className="text-left flex-1 min-w-0 pr-2">
-                <p className="text-sm font-black tracking-tight text-[var(--beheer-text)] group-hover:text-[var(--beheer-accent)] transition-colors leading-tight mb-1 truncate">
+                <p className="text-base font-black tracking-tight text-[var(--beheer-text)] group-hover:text-[var(--beheer-accent)] transition-colors leading-tight mb-1 truncate">
                     {title}
                 </p>
                 {subtitle && (
-                    <p className="font-bold text-[10px] text-[var(--beheer-text-muted)] tracking-widest truncate leading-tight opacity-60">
+                    <p className="font-bold text-base text-[var(--beheer-text-muted)] tracking-widest truncate leading-tight opacity-60">
                         {subtitle}
                     </p>
                 )}
@@ -114,7 +114,7 @@ export function ListCard({
                     <div className="bg-[var(--beheer-accent)]/10 p-2.5 rounded-xl text-[var(--beheer-accent)]">
                         {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any>, { className: 'h-5 w-5' }) : icon}
                     </div>
-                    <h3 className="text-sm font-black text-[var(--beheer-text)] tracking-widest leading-tight">
+                    <h3 className="text-base font-black text-[var(--beheer-text)] tracking-widest leading-tight">
                         {title}
                     </h3>
                 </div>

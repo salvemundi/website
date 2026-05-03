@@ -23,7 +23,7 @@ export default function AdminVisibilityToggle({
 }: AdminVisibilityToggleProps) {
     return (
         <div className={`flex items-center gap-3 px-4 py-2 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] shadow-sm ${disabled ? 'opacity-50 pointer-events-none' : ''}`}>
-            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">
+            <span className="text-base font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">
                 {label}
             </span>
             <button

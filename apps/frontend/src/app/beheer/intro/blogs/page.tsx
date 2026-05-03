@@ -23,16 +23,16 @@ export default function BlogsPage() {
                         Blogs Editor
                     </h1>
                     
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--beheer-text-muted)] mb-10">
+                    <p className="text-base font-black uppercase tracking-[0.3em] text-[var(--beheer-text-muted)] mb-10">
                         Module onder constructie
                     </p>
                     
                     <div className="flex items-center gap-3 bg-[var(--bg-main)] px-8 py-4 rounded-2xl border border-[var(--beheer-border)] text-amber-500 shadow-sm">
                         <Construction className="h-5 w-5 animate-bounce" />
-                        <span className="text-xs font-black uppercase tracking-widest leading-none">Binnenkort Beschikbaar</span>
+                        <span className="text-base font-black uppercase tracking-widest leading-none">Binnenkort Beschikbaar</span>
                     </div>
                     
-                    <div className="mt-12 text-[var(--beheer-text-muted)] text-[10px] font-medium opacity-40 uppercase tracking-widest leading-relaxed max-w-sm">
+                    <div className="mt-12 text-[var(--beheer-text-muted)] text-base font-medium opacity-40 uppercase tracking-widest leading-relaxed max-w-sm">
                         Deze module wordt momenteel ontwikkeld om directe bewerking van de introductie-blogs mogelijk te maken via Directus.
                     </div>
                 </div>

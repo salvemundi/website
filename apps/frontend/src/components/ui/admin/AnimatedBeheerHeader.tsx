@@ -31,7 +31,7 @@ export default function AnimatedBeheerHeader({
                         <div className="h-8 w-8 rounded-lg bg-[var(--beheer-border)]/20 flex items-center justify-center group-hover:bg-[var(--beheer-accent)]/10 transition-colors">
                             <ChevronLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
                         </div>
-                        <span className="text-[10px] font-black uppercase tracking-widest">Terug</span>
+                        <span className="text-base font-black uppercase tracking-widest">Terug</span>
                     </Link>
                 )}
 

@@ -38,7 +38,7 @@ export default function AdminStatsBar({ stats = [] }: AdminStatsBarProps) {
                     )}
                 >
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-black text-[var(--beheer-text-muted)] uppercase tracking-[0.2em] leading-tight pr-2">
+                        <span className="text-base font-black text-[var(--beheer-text-muted)] uppercase tracking-[0.2em] leading-tight pr-2">
                             {stat.label}
                         </span>
                         {stat.icon && (
@@ -53,7 +53,7 @@ export default function AdminStatsBar({ stats = [] }: AdminStatsBarProps) {
                             {stat.value}
                         </span>
                         {stat.trend && (
-                            <div className="text-[9px] font-black text-[var(--beheer-active)] uppercase tracking-widest bg-[var(--beheer-active)]/10 px-1.5 py-0.5 rounded">
+                            <div className="text-base font-black text-[var(--beheer-active)] uppercase tracking-widest bg-[var(--beheer-active)]/10 px-1.5 py-0.5 rounded">
                                 {stat.trend}
                             </div>
                         )}
