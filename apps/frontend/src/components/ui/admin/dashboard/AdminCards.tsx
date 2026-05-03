@@ -104,15 +104,14 @@ export function ListCard({
         <div 
             className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] shadow-sm p-6 overflow-hidden h-full flex flex-col"
         >
-            <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                    <div className="bg-[var(--beheer-accent)]/10 p-2.5 rounded-xl text-[var(--beheer-accent)]">
-                        {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any>, { className: 'h-5 w-5' }) : icon}
-                    </div>
-                    <h3 className="text-base font-semibold text-[var(--beheer-text)] tracking-wider leading-tight">
-                        {title}
-                    </h3>
+            <div className="flex items-center gap-3 mb-6 px-1">
+                <div className="bg-[var(--beheer-accent)]/10 p-2 rounded-xl text-[var(--beheer-accent)]">
+                    {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any>, { className: 'h-4 w-4' }) : icon}
                 </div>
+                <h3 className="text-base font-semibold text-[var(--beheer-text)] tracking-wider leading-tight whitespace-nowrap">
+                    {title}
+                </h3>
+                <div className="h-px flex-1 bg-gradient-to-r from-[var(--beheer-border)] to-transparent" />
             </div>
             <div className="space-y-1 flex-1 overflow-auto">
                 {children}
