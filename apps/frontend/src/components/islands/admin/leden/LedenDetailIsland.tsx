@@ -78,8 +78,19 @@ export default function LedenDetailIsland({
 
     const isMembershipActive = useMemo(() => {
         if (!localMember.membership_expiry) return false;
-        const todayStr = new Date().toISOString().substring(0, 10);
-        return localMember.membership_expiry.substring(0, 10) >= todayStr;
+        try {
+            const expiryDate = new Date(localMember.membership_expiry);
+            if (isNaN(expiryDate.getTime())) return false;
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const expiryComp = new Date(expiryDate);
+            expiryComp.setHours(0, 0, 0, 0);
+            
+            return expiryComp >= today;
+        } catch (e) {
+            return false;
+        }
     }, [localMember.membership_expiry]);
 
     const handleUpdateProfile = async (data: Partial<AdminMember>) => {

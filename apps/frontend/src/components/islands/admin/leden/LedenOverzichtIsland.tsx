@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { downloadCSV } from '@/lib/utils/export';
 import { sendMembershipReminderAction } from '@/server/actions/leden.actions';
-import { format } from 'date-fns';
+import { format, startOfDay } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import LedenFilters from './LedenFilters';
@@ -20,15 +20,9 @@ import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import { cn } from '@/lib/utils/cn';
 import LedenTable from './LedenTable';
+import { type AdminMember } from '@salvemundi/validations';
 
-export interface Member {
-    id: string;
-    first_name: string;
-    last_name: string;
-    email: string;
-    membership_expiry: string | null;
-    status: string;
-}
+export type Member = AdminMember;
 
 interface LedenOverzichtIslandProps {
     initialMembers?: Member[];
@@ -47,8 +41,16 @@ export default function LedenOverzichtIsland({
 
     const isMembershipActive = (m: Member) => {
         if (!m.membership_expiry) return false;
-        const todayStr = new Date().toISOString().substring(0, 10);
-        return m.membership_expiry.substring(0, 10) >= todayStr;
+        try {
+            // Robust check: handle both string and Date objects
+            const expiryDate = new Date(m.membership_expiry);
+            if (isNaN(expiryDate.getTime())) return false;
+            
+            const today = startOfDay(new Date());
+            return startOfDay(expiryDate) >= today;
+        } catch (e) {
+            return false;
+        }
     };
 
     const members = initialMembers;
@@ -69,7 +71,7 @@ export default function LedenOverzichtIsland({
         });
     }, [members, activeTab, searchQuery]);
 
-    const formatDate = (dateString: string | null) => {
+    const formatDate = (dateString: string | null | undefined) => {
         if (!dateString) return 'Onbekend';
         try {
             return format(new Date(dateString), 'dd-MM-yyyy', { locale: nl });
