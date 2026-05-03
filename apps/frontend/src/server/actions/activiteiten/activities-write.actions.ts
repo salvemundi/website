@@ -89,7 +89,7 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
     formData.forEach((value, key) => {
         if (key !== 'imageFile') rawData[key] = value;
     });
-    
+
     const validated = activityAdminSchema.safeParse(rawData);
     if (!validated.success) {
         return { 
@@ -119,31 +119,36 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
     const directusPayload: Record<string, unknown> = {
         ...data,
         status: data.status === 'scheduled' ? 'published' : data.status,
+        price_members: data.price_members ?? 0,
+        price_non_members: data.price_non_members ?? 0,
     };
     
     if (imageId) directusPayload.image = imageId;
 
     try {
-        const newId = await createEventDb(directusPayload);
-        if (!newId) throw new Error('No ID returned from database');
-
-        await logAdminAction('activity_created', 'SUCCESS', { id: newId, data: directusPayload });
-
-        try {
-            await getSystemDirectus().request(createItem('events', { ...directusPayload, id: newId }));
-        } catch (err) {
-            await deleteEventDb(newId);
-            await logAdminAction('activity_create_rollback', 'ERROR', { id: newId, error: String(err), action: 'rollback_delete' });
-            return { success: false, error: 'Synchronisatie met CMS mislukt. Activiteit is niet aangemaakt.', initialData: rawData };
+        // Directus SDK will handle the database insertion and trigger internal logic (activity logs, etc.)
+        // Since they share the same database, we don't need the redundant createEventDb call here which causes ID conflicts.
+        const newItem = await getSystemDirectus().request(createItem('events', directusPayload)) as unknown as { id: number };
+        
+        if (!newItem || !newItem.id) {
+            throw new Error('Geen ID teruggekregen van het CMS');
         }
+
+        await logAdminAction('activity_created', 'SUCCESS', { id: newItem.id, data: directusPayload });
 
         revalidateTag('events', 'max');
         revalidatePath('/beheer/activiteiten');
+        revalidatePath(`/beheer/activiteiten/${newItem.id}/bewerken`);
         revalidatePath('/beheer');
-
-        return { success: true, id: newId };
-    } catch (error) {
-        return { error: 'Fout bij opslaan in de database', success: false, initialData: rawData };
+        
+        return { success: true, id: newItem.id };
+    } catch (err) {
+        console.error('[CMS Sync] Directus createItem failed:', err);
+        await logAdminAction('activity_create_failed', 'ERROR', { 
+            error: err instanceof Error ? err.message : JSON.stringify(err), 
+            payload: directusPayload
+        });
+        return { success: false, error: 'Synchronisatie met CMS mislukt. Activiteit is niet aangemaakt.', initialData: rawData };
     }
 }
 
@@ -231,26 +236,26 @@ export async function updateActivityAction(eventId: number, prevState: unknown, 
         
         if (imageId !== undefined) directusPayload.image = imageId;
 
-        const updated = await updateEventDb(eventId, directusPayload);
-        if (!updated) throw new Error('Database update failed');
-
         try {
             await getSystemDirectus().request(updateItem('events', eventId, directusPayload));
+            
+            await logAdminAction('activity_updated', 'SUCCESS', { id: eventId, data: directusPayload });
+
+            revalidateTag('events', 'max');
+            revalidateTag(`event_${eventId}`, 'max');
+            revalidatePath('/beheer/activiteiten');
+            revalidatePath(`/beheer/activiteiten/${eventId}/bewerken`);
+            revalidatePath('/beheer');
+            
+            return { success: true };
         } catch (err) {
-            await updateEventDb(eventId, oldData);
-            await logAdminAction('activity_update_rollback', 'ERROR', { id: eventId, error: String(err), action: 'rollback_restore' });
-            return { success: false, error: 'Synchronisatie met CMS mislukt. Wijzigingen niet opgeslagen.' };
+            console.error('[CMS Sync] Directus updateItem failed:', err);
+            await logAdminAction('activity_update_failed', 'ERROR', { 
+                id: eventId, 
+                error: err instanceof Error ? err.message : JSON.stringify(err) 
+            });
+            return { success: false, error: 'Synchronisatie met CMS mislukt. Wijzigingen zijn niet opgeslagen.' };
         }
-
-        await logAdminAction('activity_updated', 'SUCCESS', { id: eventId, data: directusPayload });
-
-        revalidateTag('events', 'max');
-        revalidateTag(`event_${eventId}`, 'max');
-        revalidatePath('/beheer/activiteiten');
-        revalidatePath(`/beheer/activiteiten/${eventId}/bewerken`);
-        revalidatePath('/beheer');
-        
-        return { success: true };
     } catch (error) {
         return { error: 'Internal server error', success: false };
     }

@@ -134,7 +134,7 @@ export async function getActivitySignupsInternal(eventId: string): Promise<DbEve
         FROM event_signups es
         LEFT JOIN directus_users u ON es.participant_email = u.email
         WHERE es.event_id = $1 
-        AND es.payment_status = 'paid'
+        AND es.payment_status IN ('paid', 'open')
         ORDER BY calculated_is_member DESC, es.created_at DESC
     `;
     const { rows } = await query(sql, [eventId]);

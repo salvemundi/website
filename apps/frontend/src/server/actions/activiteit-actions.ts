@@ -105,20 +105,35 @@ export async function getActivityBySlug(slug: string): Promise<Activiteit | null
 /**
  * Checks if a user is already signed up for an activity (By email).
  */
-export async function checkUserSignupStatus(eventId: number, email: string) {
+export async function checkUserSignupStatus(eventId: number, email: string, userId?: string | null) {
     try {
         const { query } = await import('@/lib/database');
+        const { z } = await import('zod');
+        
         const res = await query(
             `SELECT id, qr_token, payment_status FROM event_signups 
-             WHERE event_id = $1 AND participant_email = $2 
-             AND payment_status != 'failed' LIMIT 1`,
-            [eventId, email]
+             WHERE event_id = $1 
+             AND (LOWER(participant_email) = LOWER($2) OR (directus_relations IS NOT NULL AND directus_relations = $3))
+             AND payment_status != 'failed' 
+             ORDER BY created_at DESC LIMIT 1`,
+            [eventId, email, userId || null]
         );
+
         if (res.rows.length > 0) {
+            const row = res.rows[0];
+            const schema = z.object({
+                id: z.number(),
+                qr_token: z.string(),
+                payment_status: z.string()
+            });
+
+            const parsed = schema.parse(row);
+            
             return { 
                 isSignedUp: true, 
-                qrToken: res.rows[0].qr_token, 
-                paymentStatus: res.rows[0].payment_status 
+                id: parsed.id,
+                qrToken: parsed.qr_token, 
+                paymentStatus: parsed.payment_status 
             };
         }
         return { isSignedUp: false };
@@ -205,6 +220,7 @@ export async function signupForActivity(data: EventSignupForm) {
             payment_status: (price ?? 0) > 0 ? 'open' : 'paid',
             qr_token: qrToken,
             directus_relations: userId || null,
+            is_member: isMember,
         };
 
         const signupId = await createEventSignupDb(payload);
@@ -226,6 +242,8 @@ export async function signupForActivity(data: EventSignupForm) {
                     registrationType: 'event_signup',
                     email: parsed.data.email,
                     firstName: parsed.data.name,
+                    phoneNumber: parsed.data.phoneNumber,
+                    userId: userId,
                     isContribution: false,
                     redirectUrl: `${process.env.PUBLIC_URL}/activiteiten/bevestiging?id=${signupId}`
                 })
@@ -362,6 +380,27 @@ export async function getSignupStatus(
 
         // Broad transaction lookup using tokens or unique identifiers
         if (financeId) {
+            // Live status check from finance service (handles Mollie sync if open)
+            const financeUrl = `${getFinanceServiceUrl()}/api/finance/status/${financeId}`;
+            try {
+                const financeRes = await fetchWithTimeout(financeUrl, {
+                    headers: getInternalHeaders()
+                });
+                
+                if (financeRes.ok) {
+                    const trans = await financeRes.json();
+                    return { 
+                        status: trans.payment_status as PaymentStatus, 
+                        isMembership: trans.product_type === 'membership',
+                        signup: { id: trans.signup_id || trans.registration || trans.trip_signup || trans.pub_crawl_signup }
+                    };
+                }
+            } catch (err) {
+                // Fallback to local DB if finance service is unreachable
+                console.error('[SignupStatus] Finance service live check failed:', err);
+            }
+
+            // Local fallback
             const transRes = await query(
                 `SELECT payment_status, product_type, registration 
                  FROM transactions 
@@ -374,10 +413,10 @@ export async function getSignupStatus(
             
             if (transRes.rows.length > 0) {
                 const trans = transRes.rows[0];
-                const status = trans.payment_status !== 'open' ? trans.payment_status : paymentStatus;
                 return { 
-                    status: status as PaymentStatus, 
-                    isMembership: trans.product_type === 'membership' 
+                    status: trans.payment_status as PaymentStatus, 
+                    isMembership: trans.product_type === 'membership',
+                    signup: { id: trans.registration || trans.trip_signup || trans.pub_crawl_signup }
                 };
             }
         }
@@ -501,5 +540,78 @@ export async function getMyTickets() {
     } catch (error) {
         
         return [];
+    }
+}
+
+/**
+ * Re-initiates the payment process for an existing signup.
+ */
+export async function retryActivityPayment(signupId: number) {
+    try {
+        const session = await auth.api.getSession({
+            headers: await headers()
+        });
+        const currentUser = session?.user as unknown as EnrichedUser;
+        
+        const signupRes = await query(
+            `SELECT es.*, e.name as event_name, e.price_members, e.price_non_members 
+             FROM event_signups es 
+             JOIN events e ON es.event_id = e.id 
+             WHERE es.id = $1`, 
+            [signupId]
+        );
+
+        if (signupRes.rows.length === 0) {
+            return { success: false, error: "Aanmelding niet gevonden." };
+        }
+
+        const signup = signupRes.rows[0];
+
+        const isAdmin = currentUser?.isAdmin || currentUser?.isICT;
+        const isParticipant = currentUser?.email === signup.participant_email;
+        
+        if (!isAdmin && !isParticipant) {
+            return { success: false, error: "Unauthorized" };
+        }
+
+        if (signup.payment_status === 'paid') {
+            return { success: false, error: "Deze aanmelding is al betaald." };
+        }
+        
+        const isMember = currentUser?.membership_status === 'active';
+        const price = (isMember ? signup.price_members : signup.price_non_members) ?? 0;
+
+        if (price <= 0) {
+            return { success: false, error: "Deze activiteit is gratis." };
+        }
+
+        const financeUrl = `${getFinanceServiceUrl()}/api/payments/create`;
+        const paymentRes = await fetchWithTimeout(financeUrl, {
+            method: 'POST',
+            headers: getInternalHeaders(),
+            body: JSON.stringify({
+                amount: price,
+                description: `Retry Signup: ${signup.event_name}`,
+                registrationId: signup.id,
+                registrationType: 'event_signup',
+                email: signup.participant_email,
+                firstName: signup.participant_name,
+                phoneNumber: signup.participant_phone,
+                userId: currentUser?.id,
+                isContribution: false,
+                redirectUrl: `${process.env.PUBLIC_URL}/activiteiten/bevestiging?id=${signup.id}`
+            })
+        });
+
+        const paymentData = await paymentRes.json();
+        if (paymentRes.ok && paymentData.checkoutUrl) {
+            return { success: true, checkoutUrl: paymentData.checkoutUrl };
+        }
+
+        return { success: false, error: "Kon geen nieuwe betaling aanmaken. Probeer het later opnieuw." };
+
+    } catch (err) {
+        console.error("[Retry Payment Error]", err);
+        return { success: false, error: "Er is een serverfout opgetreden." };
     }
 }

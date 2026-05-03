@@ -25,9 +25,9 @@ export async function createEventDb(data: Partial<DbEvent>): Promise<number | nu
                 name, description, location, max_sign_ups, price_members, price_non_members,
                 only_members, registration_deadline, contact, image, committee_id,
                 event_date, event_time, event_date_end, event_time_end, status, publish_date,
-                description_logged_in
+                description_logged_in, custom_url
             ) VALUES (
-                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
             ) RETURNING id
         `;
         
@@ -50,6 +50,7 @@ export async function createEventDb(data: Partial<DbEvent>): Promise<number | nu
             data.status || 'draft',
             data.publish_date || null,
             data.description_logged_in || null,
+            data.custom_url || null,
         ];
 
         const { rows } = await query(sql, params);
@@ -71,7 +72,7 @@ export async function updateEventDb(id: number, data: Partial<DbEvent>): Promise
             if (['name', 'description', 'location', 'max_sign_ups', 'price_members', 'price_non_members',
                  'only_members', 'registration_deadline', 'contact', 'image', 'committee_id',
                  'event_date', 'event_time', 'event_date_end', 'event_time_end', 'status', 'publish_date',
-                 'description_logged_in'].includes(key)) {
+                 'description_logged_in', 'custom_url'].includes(key)) {
                 fields.push(`${key} = $${paramIndex}`);
                 params.push(value);
                 paramIndex++;
@@ -110,9 +111,10 @@ export async function createEventSignupDb(data: Partial<DbEventSignup>): Promise
         const sql = `
             INSERT INTO event_signups (
                 event_id, participant_name, participant_email, participant_phone,
-                payment_status, qr_token, directus_relations, checked_in, checked_in_at
+                payment_status, qr_token, directus_relations, checked_in, checked_in_at,
+                is_member
             ) VALUES (
-                $1, $2, $3, $4, $5, $6, $7, $8, $9
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
             ) RETURNING id
         `;
         
@@ -125,7 +127,8 @@ export async function createEventSignupDb(data: Partial<DbEventSignup>): Promise
             data.qr_token || null,
             data.directus_relations || null,
             data.checked_in ? true : false,
-            data.checked_in_at || null
+            data.checked_in_at || null,
+            data.is_member ? true : false
         ];
 
         const { rows } = await query(sql, params);
@@ -143,7 +146,7 @@ export async function updateEventSignupDb(id: number, data: Partial<DbEventSignu
         let paramIndex = 1;
 
         for (const [key, value] of Object.entries(data)) {
-            if (['payment_status', 'checked_in', 'checked_in_at', 'participant_name', 'participant_email', 'participant_phone'].includes(key)) {
+            if (['payment_status', 'checked_in', 'checked_in_at', 'participant_name', 'participant_email', 'participant_phone', 'is_member'].includes(key)) {
                 fields.push(`${key} = $${paramIndex}`);
                 params.push(value);
                 paramIndex++;

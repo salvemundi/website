@@ -13,7 +13,8 @@ import {
     UserPlus,
     Save,
     RefreshCw,
-    Home
+    Home,
+    CreditCard
 } from 'lucide-react';
 import BackButton from '@/components/ui/navigation/BackButton';
 import { toPng } from 'html-to-image';
@@ -48,7 +49,6 @@ export default function ConfirmationIsland({
     const [isTrip, setIsTrip] = useState(false);
     const [retryCount, setRetryCount] = useState(0);
 
-    // NUCLEAR SSR: If we already have a definitive status, we don't need to poll immediately
     useEffect(() => {
         if (status === 'paid' || status === 'failed') return;
         
@@ -134,7 +134,7 @@ export default function ConfirmationIsland({
                         <Loader2 className="h-12 w-12 text-[var(--theme-purple)] animate-spin" />
                     </div>
                     <div className="space-y-2">
-                        <h2 className="text-4xl font-black text-[var(--text-main)] uppercase tracking-tighter italic">
+                        <h2 className="text-4xl font-semibold text-[var(--text-main)]  tracking-tighter italic">
                             Betaling <span className="text-[var(--theme-purple)]">Verifiëren</span>
                         </h2>
                         <p className="text-[var(--text-muted)] text-lg font-medium max-w-sm mx-auto">
@@ -153,7 +153,7 @@ export default function ConfirmationIsland({
                             <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center mx-auto ring-1 ring-green-500/20">
                                 <UserPlus className="h-12 w-12 text-green-500" />
                             </div>
-                            <h1 className="text-4xl md:text-6xl font-black text-[var(--text-main)] uppercase tracking-tighter italic leading-none">
+                            <h1 className="text-4xl md:text-6xl font-semibold text-[var(--text-main)]  tracking-tighter italic leading-none">
                                 Welkom <span className="text-green-500">Lid!</span>
                             </h1>
                             <p className="text-[var(--text-muted)] text-lg font-medium max-w-md mx-auto">
@@ -166,7 +166,7 @@ export default function ConfirmationIsland({
                                 Je hebt zojuist een bevestigingsmail ontvangen met alle details. 
                                 Je kunt nu inloggen op de website om gebruik te maken van je ledenvoordelen.
                             </p>
-                            <a href="/profiel" className="w-full h-14 rounded-2xl bg-[var(--theme-purple)] text-white font-black flex items-center justify-center gap-2 hover:scale-105 transition-all shadow-xl shadow-[var(--theme-purple)]/20 uppercase tracking-widest">
+                            <a href="/profiel" className="w-full h-14 rounded-2xl bg-[var(--theme-purple)] text-white font-semibold flex items-center justify-center gap-2 hover:scale-105 transition-all shadow-xl shadow-[var(--theme-purple)]/20  tracking-widest">
                                 Naar Mijn Profiel
                             </a>
                         </div>
@@ -183,14 +183,14 @@ export default function ConfirmationIsland({
                         <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center mx-auto ring-1 ring-green-500/20">
                             <CheckCircle2 className="h-12 w-12 text-green-500" />
                         </div>
-                        <h1 className="text-4xl md:text-6xl font-black text-[var(--text-main)] uppercase tracking-tighter italic leading-none">
+                        <h1 className="text-4xl md:text-6xl font-semibold text-[var(--text-main)]  tracking-tighter italic leading-none">
                             Aanmelding <span className="text-green-500">Geslaagd!</span>
                         </h1>
                         <p className="text-[var(--text-muted)] text-lg font-medium max-w-md mx-auto">
                             Bedankt! Je ticket{amount > 1 ? 's' : ''} {amount > 1 ? 'zijn' : 'is'} nu beschikbaar.
                         </p>
                         {((signupData as Record<string, any>)?.event_id?.custom_url || (signupData as Record<string, any>)?.custom_url) && (
-                            <p className="text-[10px] uppercase font-black text-[var(--theme-purple)] mt-2 tracking-widest animate-pulse">
+                            <p className="text-[10px]  font-semibold text-[var(--theme-purple)] mt-2 tracking-widest animate-pulse">
                                 Je wordt zo automatisch doorgestuurd...
                             </p>
                         )}
@@ -204,13 +204,13 @@ export default function ConfirmationIsland({
                                 className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] min-w-[300px] max-w-[380px] p-8 rounded-[3rem] bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xl space-y-6 relative overflow-hidden"
                             >
                                 <div className="flex flex-col items-center gap-4">
-                                    <p className="text-[10px] font-black text-[var(--theme-purple)] uppercase tracking-[0.2em]">TICKET {i + 1} / {amount}</p>
+                                    <p className="text-[10px] font-semibold text-[var(--theme-purple)]  tracking-[0.2em]">TICKET {i + 1} / {amount}</p>
                                     <div className="p-4 bg-white rounded-3xl shadow-lg ring-1 ring-black/5">
                                         <QRDisplay qrToken={signupData?.tickets?.[i]?.qr_token || `${signupData?.qr_token || ''}${amount > 1 ? `#${i}` : ''}`} size={180} />
                                     </div>
                                     <div className="text-center">
-                                        <h3 className="font-black text-[var(--text-main)] uppercase tracking-tight">{eventName}</h3>
-                                        <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest opacity-60">
+                                        <h3 className="font-semibold text-[var(--text-main)]  tracking-tight">{eventName}</h3>
+                                        <p className="text-[10px] font-bold text-[var(--text-muted)]  tracking-widest opacity-60">
                                             #{signupData?.id}{amount > 1 ? `-${i+1}` : ''}
                                         </p>
                                     </div>
@@ -231,14 +231,14 @@ export default function ConfirmationIsland({
                         <BackButton 
                             href="/activiteiten" 
                             text="TERUG NAAR OVERZICHT" 
-                            className="h-14 px-10 rounded-2xl bg-[var(--theme-purple)] text-white shadow-xl shadow-[var(--theme-purple)]/20 uppercase tracking-widest"
+                            className="h-14 px-10 rounded-2xl bg-[var(--theme-purple)] text-white shadow-xl shadow-[var(--theme-purple)]/20  tracking-widest"
                         />
                         {isLoggedIn && (
                             <BackButton 
                                 href="/profiel/tickets" 
                                 text="ALLE TICKETS" 
                                 icon={QrCode}
-                                className="h-14 px-10 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] uppercase tracking-widest"
+                                className="h-14 px-10 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)]  tracking-widest"
                             />
                         )}
                     </div>
@@ -256,7 +256,7 @@ export default function ConfirmationIsland({
                         <XCircle className="h-12 w-12 text-red-500" />
                     </div>
                     <div className="space-y-2">
-                        <h2 className="text-4xl font-black text-[var(--text-main)] uppercase tracking-tighter italic">
+                        <h2 className="text-4xl font-semibold text-[var(--text-main)]  tracking-tighter italic">
                             Betaling <span className="text-red-500">{isCanceled ? 'Gecanceld' : isExpired ? 'Verlopen' : 'Mislukt'}</span>
                         </h2>
                         <p className="text-[var(--text-muted)] text-lg font-medium max-w-md mx-auto">
@@ -276,13 +276,13 @@ export default function ConfirmationIsland({
                             }
                             text="Opnieuw Proberen"
                             icon={RefreshCw}
-                            className="h-14 px-10 rounded-2xl bg-[var(--theme-purple)] text-white shadow-xl shadow-[var(--theme-purple)]/20 uppercase tracking-widest"
+                            className="h-14 px-10 rounded-2xl bg-[var(--theme-purple)] text-white shadow-xl shadow-[var(--theme-purple)]/20  tracking-widest"
                         />
                         <BackButton 
                             href="/" 
                             text="Terug naar Home" 
                             icon={Home}
-                            className="h-14 px-10 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] uppercase tracking-widest"
+                            className="h-14 px-10 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)]  tracking-widest"
                         />
                     </div>
                 </div>
@@ -297,7 +297,7 @@ export default function ConfirmationIsland({
                     {isTimeout ? <RefreshCw className="h-12 w-12 text-orange-500 animate-spin-slow" /> : <Loader2 className="h-12 w-12 text-orange-500 animate-spin" />}
                 </div>
                 <div className="space-y-2">
-                    <h2 className="text-4xl font-black text-[var(--text-main)] uppercase tracking-tighter italic">
+                    <h2 className="text-4xl font-semibold text-[var(--text-main)]  tracking-tighter italic">
                         {isTimeout ? 'Status' : 'Betaling'} <span className="text-orange-500">{isTimeout ? 'Onduidelijk' : 'Open'}</span>
                     </h2>
                     <p className="text-[var(--text-muted)] text-lg font-medium max-w-md mx-auto">
@@ -309,12 +309,37 @@ export default function ConfirmationIsland({
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <button 
                         onClick={() => window.location.reload()}
-                        className="inline-flex h-14 px-10 rounded-2xl bg-[var(--theme-purple)] text-white font-black items-center justify-center gap-2 hover:scale-105 transition-all shadow-xl shadow-[var(--theme-purple)]/20 uppercase tracking-widest"
+                        className="inline-flex h-14 px-10 rounded-2xl bg-[var(--bg-soft)] border border-[var(--border-color)] text-[var(--text-main)] font-semibold items-center justify-center gap-2 hover:bg-[var(--bg-soft)]/80 transition-all  tracking-widest"
                     >
+                        <RefreshCw className="h-4 w-4" />
                         Check Opnieuw
                     </button>
+                    <button
+                        onClick={async () => {
+                            try {
+                                const signupId = signupData?.id || initialId;
+                                if (!signupId) {
+                                    alert("Geen aanmeldings-ID gevonden.");
+                                    return;
+                                }
+                                const { retryActivityPayment } = await import('@/server/actions/activiteit-actions');
+                                const result = await retryActivityPayment(Number(signupId));
+                                if (result.success && result.checkoutUrl) {
+                                    window.location.href = result.checkoutUrl;
+                                } else {
+                                    alert(result.error || "Herbetaling mislukt.");
+                                }
+                            } catch (err) {
+                                alert("Er is een fout opgetreden bij het herstarten van de betaling.");
+                            }
+                        }}
+                        className="inline-flex h-14 px-10 rounded-2xl bg-[var(--theme-purple)] text-white font-semibold items-center justify-center gap-2 hover:scale-105 transition-all shadow-xl shadow-[var(--theme-purple)]/20  tracking-widest"
+                    >
+                        <CreditCard className="h-4 w-4" />
+                        Betaal Nu
+                    </button>
                     {isLoggedIn && (
-                        <a href="/profiel/tickets" className="inline-flex h-14 px-10 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] font-black items-center justify-center gap-2 hover:bg-[var(--bg-soft)] transition-all uppercase tracking-widest">
+                        <a href="/profiel/tickets" className="inline-flex h-14 px-10 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] font-semibold items-center justify-center gap-2 hover:bg-[var(--bg-soft)] transition-all  tracking-widest">
                             Mijn Tickets
                         </a>
                     )}

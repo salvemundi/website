@@ -70,14 +70,15 @@ export const activityAdminSchema = z.object({
         return typeof v === 'string' ? parseInt(v) : v;
     }),
     price_members: z.union([z.string(), z.number()]).nullable().optional().transform(v => {
-        if (v === '' || v === undefined) return null;
+        if (v === '' || v === undefined || v === null) return 0;
         return typeof v === 'string' ? parseFloat(v) : v;
     }),
     price_non_members: z.union([z.string(), z.number()]).nullable().optional().transform(v => {
-        if (v === '' || v === undefined) return null;
+        if (v === '' || v === undefined || v === null) return 0;
         return typeof v === 'string' ? parseFloat(v) : v;
     }),
     registration_deadline: z.string().nullable().optional().transform(v => v === '' ? null : v),
+    custom_url: z.string().nullable().optional().transform(v => v === '' ? null : v),
     committee_id: z.union([z.string(), z.number()]).nullable().optional().transform(v => {
         if (v === '' || v === undefined) return null;
         return typeof v === 'string' ? parseInt(v) : v;

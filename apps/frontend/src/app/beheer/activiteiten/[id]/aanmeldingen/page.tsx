@@ -51,6 +51,7 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
             id: eventData.id!,
             name: eventData.titel,
             price_members: eventData.price_members,
+            max_sign_ups: eventData.max_sign_ups,
         };
 
         // Fetch Signups using high-performance SQL query (filters out failed payments)
