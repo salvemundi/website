@@ -15,6 +15,8 @@ import {
 import { USER_BASIC_FIELDS, type UserBasic } from "@salvemundi/validations";
 import { createEventSignupDb, updateEventSignupDb, deleteEventSignupDb } from "./event-db.utils";
 import { logAdminAction } from "./audit.actions";
+import { query as dbQuery } from "@/lib/database";
+import { COMMITTEES } from "@/shared/lib/permissions-config";
 
 
 const getNotificationUrl = () => process.env.INTERNAL_NOTIFICATION_API_URL || process.env.NEXT_PUBLIC_NOTIFICATION_API_URL;
@@ -58,6 +60,17 @@ async function sendCancellationEmail(email: string, eventName: string) {
 export async function deleteSignupAction(signupId: number, eventId: string | number, participantEmail?: string, eventName?: string) {
     const session = await checkAdminAccess();
     if (!session) return { success: false, error: "Unauthorized" };
+    const { user } = session;
+
+    // BOLA Check: Only ICT, Bestuur or the owning committee leader can delete
+    const activityRes = await dbQuery("SELECT committee_id FROM events WHERE id = $1", [eventId]);
+    const activityCommitteeId = activityRes.rows[0]?.committee_id;
+    const isSuperAdmin = user.isICT || user.committees?.some(c => c.azure_group_id === COMMITTEES.BESTUUR);
+    const userCommitteeIds = user.committees?.map(c => Number(c.id)) || [];
+
+    if (!isSuperAdmin && !userCommitteeIds.includes(Number(activityCommitteeId))) {
+        return { success: false, error: "Unauthorized: Je mag alleen aanmeldingen van je eigen commissie beheren." };
+    }
 
     try {
         const success = await deleteEventSignupDb(signupId);
@@ -118,6 +131,23 @@ export async function createManualSignupAction(
 ) {
     const session = await checkAdminAccess();
     if (!session) return { success: false, error: "Unauthorized" };
+    const { user } = session;
+
+    const { rateLimit } = await import('../utils/ratelimit');
+    const { success } = await rateLimit(`manual-signup:${user.id}`, 20, 60);
+    if (!success) {
+        return { success: false, error: "Te veel aanmeldingen achter elkaar. Wacht even." };
+    }
+
+    // BOLA Check
+    const activityRes = await dbQuery("SELECT committee_id FROM events WHERE id = $1", [eventId]);
+    const activityCommitteeId = activityRes.rows[0]?.committee_id;
+    const isSuperAdmin = user.isICT || user.committees?.some(c => c.azure_group_id === COMMITTEES.BESTUUR);
+    const userCommitteeIds = user.committees?.map(c => Number(c.id)) || [];
+
+    if (!isSuperAdmin && !userCommitteeIds.includes(Number(activityCommitteeId))) {
+        return { success: false, error: "Unauthorized: Je mag alleen aanmeldingen van je eigen commissie beheren." };
+    }
 
     try {
         const payload: Record<string, unknown> = {
@@ -167,6 +197,17 @@ export async function createManualSignupAction(
 export async function toggleCheckInAction(signupId: number, eventId: number, checkedIn: boolean) {
     const session = await checkAdminAccess();
     if (!session) return { success: false, error: "Unauthorized" };
+    const { user } = session;
+
+    // BOLA Check
+    const activityRes = await dbQuery("SELECT committee_id FROM events WHERE id = $1", [eventId]);
+    const activityCommitteeId = activityRes.rows[0]?.committee_id;
+    const isSuperAdmin = user.isICT || user.committees?.some(c => c.azure_group_id === COMMITTEES.BESTUUR);
+    const userCommitteeIds = user.committees?.map(c => Number(c.id)) || [];
+
+    if (!isSuperAdmin && !userCommitteeIds.includes(Number(activityCommitteeId))) {
+        return { success: false, error: "Unauthorized: Je mag alleen aanmeldingen van je eigen commissie beheren." };
+    }
 
     try {
         const payload = {

@@ -15,8 +15,8 @@ import { AdminResource } from '@/shared/lib/permissions-config';
 export function isSuperAdmin(committees: Committee[] | null | undefined): boolean {
     if (!committees || !Array.isArray(committees)) return false;
     
-    // We use the Intro resource as a general "SuperAdmin" check
-    return hasPermission(committees, AdminResource.Intro);
+    // We use the Committees resource as a general "SuperAdmin" check (ICT & Bestuur only)
+    return hasPermission(committees, AdminResource.Committees);
 }
 
 /**

@@ -43,6 +43,7 @@ import { getRedis } from "@/server/auth/redis-client";
 import { getComputedCouponStatus } from "@/lib/coupons";
 import { fetchUserMetadataDb, fetchUserCommitteesDb } from "./user-db.utils";
 import { type EnrichedUser, type ImpersonationInfo } from "@/types/auth";
+import { isSuperAdmin } from "@/lib/auth/auth-utils";
 
 const pool = new Pool({
     user: process.env.DB_USER,
@@ -256,8 +257,8 @@ export async function getTopStickers(): Promise<TopSticker[]> {
 }
 
 export async function setImpersonateToken(token: string) {
-    const { isAuthorized } = await checkAdminAccess();
-    if (!isAuthorized) throw new Error("Geen toegang");
+    const { isAuthorized, user } = await checkAdminAccess();
+    if (!isAuthorized || !isSuperAdmin(user?.committees)) throw new Error("Geen toegang: Alleen voor ICT en Bestuur.");
     try {
         const directusUrl = process.env.DIRECTUS_SERVICE_URL;
         if (!directusUrl) {
@@ -350,9 +351,9 @@ export async function clearImpersonateToken() {
 
     // We verify that the current session is indeed being impersonated.
     // This ensures a 'random' user without an active impersonation can't trigger this logic.
-    const { impersonation } = await checkAdminAccess();
-    if (!impersonation) {
-        return { success: false, error: "Je bent niet in test modus." };
+    const { impersonation, user } = await checkAdminAccess();
+    if (!impersonation || !isSuperAdmin(user?.committees)) {
+        return { success: false, error: "Je bent niet in test modus of hebt onvoldoende rechten." };
     }
 
     cookieStore.delete(TEST_TOKEN_COOKIE);

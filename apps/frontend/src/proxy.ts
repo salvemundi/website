@@ -33,6 +33,14 @@ async function proxy(request: NextRequest) {
 
         res.headers.set('Content-Security-Policy', cspHeader);
         res.headers.set('x-nonce', nonce);
+        res.headers.set('X-Content-Type-Options', 'nosniff');
+        res.headers.set('X-Frame-Options', 'DENY');
+        res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+        
+        if (!origin.includes('localhost')) {
+            res.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+        }
+        
         return res;
     };
 

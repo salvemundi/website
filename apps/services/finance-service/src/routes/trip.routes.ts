@@ -66,6 +66,13 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                 return reply.status(403).send({ error: 'Restbetalingen zijn nog niet geopend voor deze reis.' });
             }
 
+            // [VULN-006 Fix] Waitlist protection: Only confirmed signups can pay
+            if (signup.status !== 'confirmed' && signup.role !== 'admin') {
+                return reply.status(403).send({ 
+                    error: 'Je staat nog op de wachtlijst of je aanmelding is nog niet goedgekeurd. Je kunt pas betalen als je status op "bevestigd" staat.' 
+                });
+            }
+
             // 4. Calculate Total Price (Robustly include sub-options)
             const basePrice = Number(trip.base_price || 0);
             const crewDiscount = (signup.role === 'crew' ? Number(trip.crew_discount || 0) : 0);
@@ -211,10 +218,10 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                 signupId,
                 tripId
             }, '[TRIP] Error in payment flow');
+            
             return reply.status(500).send({ 
-                error: 'Internal server error', 
-                message: err.message,
-                details: err.response?.data?.errors || err.details || err.message 
+                error: 'Interne serverfout bij het verwerken van de betaling.', 
+                message: 'Er is een fout opgetreden bij de betaalservice. Probeer het later opnieuw of neem contact op met de administratie.'
             });
         }
     });

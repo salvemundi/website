@@ -2,12 +2,11 @@
 
 import React from 'react';
 import { IMaskInput } from 'react-imask';
-import { Input, InputProps } from './Input';
+import { type InputProps } from './Input';
 
 export interface DateInputProps extends Omit<InputProps, 'onChange' | 'value'> {
     value?: string; // Expected in yyyy-mm-dd (DB format)
     onChange?: (value: string) => void;
-    InputComponent?: React.ComponentType<InputProps>;
 }
 
 /**
@@ -19,7 +18,6 @@ export const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(({
     value = '',
     onChange,
     placeholder = 'dd-mm-jjjj',
-    InputComponent = Input,
     error,
     ...props
 }, ref) => {

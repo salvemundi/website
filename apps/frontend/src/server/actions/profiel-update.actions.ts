@@ -105,6 +105,12 @@ export async function uploadUserAvatar(formData: FormData) {
         return { success: false, error: 'Not authenticated' };
     }
 
+    const { rateLimit } = await import('../utils/ratelimit');
+    const { success } = await rateLimit(`avatar-upload:${user.id}`, 5, 600);
+    if (!success) {
+        return { success: false, error: 'Te veel uploads. Probeer het over 10 minuten opnieuw.' };
+    }
+
     const file = formData.get('file') as File;
     if (!file) {
         return { success: false, error: 'Geen bestand geselecteerd.' };

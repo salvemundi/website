@@ -1,8 +1,6 @@
 import { query } from '@/lib/database';
 import { activitiesSchema, type Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { type DbEventSignup } from '@salvemundi/validations/directus/schema';
-import { EVENT_SIGNUP_FIELDS } from '@salvemundi/validations/directus/fields';
-import { z } from 'zod';
 
 /**
  * Pure database queries for event management.

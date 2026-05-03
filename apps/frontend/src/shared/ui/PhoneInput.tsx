@@ -1,6 +1,6 @@
 import React from 'react';
 import { IMaskInput } from 'react-imask';
-import { Input, InputProps } from './Input';
+import { type InputProps } from './Input';
 
 export const PhoneInput = React.forwardRef<HTMLInputElement, InputProps>(({
     error,
@@ -27,7 +27,7 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, InputProps>(({
             autoComplete="off"
             onInput={(e: React.FormEvent<HTMLInputElement>) => {
                 const input = e.target as HTMLInputElement;
-                let val = input.value;
+                const val = input.value;
                 if (val.startsWith('+31')) {
                     input.value = '0' + val.substring(3).replace(/\D/g, '');
                 } else if (val.startsWith('31')) {
