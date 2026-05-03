@@ -40,11 +40,6 @@ export default function AdminToolbar({
                             <h1 className="text-xl md:text-2xl font-bold text-[var(--beheer-text)] tracking-tight leading-tight uppercase">
                                 {title}
                             </h1>
-                            {subtitle && (
-                                <p className="text-base font-medium text-[var(--beheer-text-muted)] tracking-wider uppercase mt-0.5 opacity-50">
-                                    {subtitle}
-                                </p>
-                            )}
                         </div>
                     </div>
 
