@@ -65,7 +65,6 @@ import { connection } from "next/server";
 export async function getUpcomingActiviteiten(limit = 4): Promise<Activiteit[]> {
     'use cache';
     cacheLife('minutes');
-    await connection();
     const client = getSystemDirectus();
     const now = new Date();
     const today = now.toISOString().split('T')[0];
