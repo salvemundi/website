@@ -67,6 +67,11 @@ export function ActionCard({
                 <p className="text-base font-semibold tracking-normal text-[var(--beheer-text)] group-hover:text-[var(--beheer-accent)] transition-colors leading-tight mb-1 truncate">
                     {title}
                 </p>
+                {subtitle && (
+                    <p className="font-medium text-base text-[var(--beheer-text-muted)] tracking-wide truncate leading-tight opacity-60">
+                        {subtitle}
+                    </p>
+                )}
             </div>
 
             {/* Right: Optional value/stat */}

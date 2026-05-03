@@ -120,6 +120,7 @@ export function DashboardHub({
  * Modernized: Pure data rendering, no manual loading states.
  */
 export function BirthdaysList({ data }: { data: Birthday[] }) {
+    if (data.length === 0) return null;
     return (
         <div className="space-y-4">
             <div className="flex items-center gap-3 px-1">
@@ -129,30 +130,18 @@ export function BirthdaysList({ data }: { data: Birthday[] }) {
                 <h3 className="text-base font-semibold text-[var(--beheer-text)] tracking-wider">Aankomende Jarigen</h3>
                 <div className="h-px flex-1 bg-gradient-to-r from-[var(--beheer-border)] to-transparent" />
             </div>
-            <ListCard>
+            <div className="grid grid-cols-1 gap-3">
                 {data.map((person) => (
-                    <div key={person.id} 
-                        className={`flex items-center justify-between p-3.5 rounded-xl transition-all hover:bg-[var(--beheer-accent)]/5 group ${person?.isToday ? 'bg-amber-500/5 border border-amber-500/20' : ''}`}
-                    >
-                        <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-base font-semibold shadow-sm ${person?.isToday ? 'bg-amber-500 text-white shadow-amber-500/20' : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)]'}`}>
-                                {person.first_name?.[0]}
-                            </div>
-                            <div>
-                                <p className={`text-base font-semibold tracking-normal ${person?.isToday ? 'text-amber-600' : 'text-[var(--beheer-text)]'}`}>
-                                    {`${person.first_name} ${person.last_name}`}
-                                </p>
-                                <p className="text-base font-medium tracking-wide text-[var(--beheer-text-muted)] opacity-60">
-                                    {person.isToday ? '🎉 Vandaag!' : formatDate(person.birthday)}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+                    <ActionCard 
+                        key={person.id}
+                        title={`${person.first_name} ${person.last_name}`}
+                        subtitle={person.isToday ? '🎉 Vandaag!' : formatDate(person.birthday)}
+                        value={person.isToday ? '🎈' : undefined}
+                        icon={<span>{person.first_name?.[0]}</span>}
+                        colorClass={person?.isToday ? 'amber' : 'purple'}
+                    />
                 ))}
-                {data.length === 0 && (
-                    <p className="text-[var(--beheer-text-muted)] text-base font-semibold tracking-wide text-center py-8 italic opacity-40">Geen jarigen</p>
-                )}
-            </ListCard>
+            </div>
         </div>
     );
 }
@@ -161,6 +150,7 @@ export function BirthdaysList({ data }: { data: Birthday[] }) {
  * Top sticker collectors rankings.
  */
 export function TopStickersList({ data }: { data: TopSticker[] }) {
+    if (data.length === 0) return null;
     return (
         <div className="space-y-4">
             <div className="flex items-center gap-3 px-1">
@@ -170,27 +160,17 @@ export function TopStickersList({ data }: { data: TopSticker[] }) {
                 <h3 className="text-base font-semibold text-[var(--beheer-text)] tracking-wider">Top Sticker Verzamelaars</h3>
                 <div className="h-px flex-1 bg-gradient-to-r from-[var(--beheer-border)] to-transparent" />
             </div>
-            <ListCard>
+            <div className="grid grid-cols-1 gap-3">
                 {data.map((person, i) => (
-                    <div key={person.id} className="flex items-center justify-between p-3.5 hover:bg-[var(--beheer-accent)]/5 rounded-xl transition-all group">
-                        <div className="flex items-center gap-3">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-base font-semibold ${i === 0 ? 'bg-amber-500 text-white shadow-lg' : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)]'}`}>
-                                {i + 1}
-                            </div>
-                            <p className="text-base font-semibold tracking-normal text-[var(--beheer-text)] truncate">
-                                {`${person.first_name} ${person.last_name}`}
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-1.5 grayscale group-hover:grayscale-0 transition-all">
-                            <span className="text-lg font-semibold text-[var(--beheer-text)] tracking-normal">{person.count}</span>
-                            <MapPin className="h-3 w-3 text-[var(--beheer-accent)]" />
-                        </div>
-                    </div>
+                    <ActionCard 
+                        key={person.id}
+                        title={`${person.first_name} ${person.last_name}`}
+                        value={person.count}
+                        icon={<MapPin />}
+                        colorClass={i === 0 ? 'amber' : 'purple'}
+                    />
                 ))}
-                {data.length === 0 && (
-                    <p className="text-[var(--beheer-text-muted)] text-base font-semibold tracking-wide text-center py-8 italic opacity-40">Geen data</p>
-                )}
-            </ListCard>
+            </div>
         </div>
     );
 }
@@ -199,6 +179,7 @@ export function TopStickersList({ data }: { data: TopSticker[] }) {
  * Activity signups overview.
  */
 export function ActivitySignupsList({ data }: { data: RecentActivity[] }) {
+    if (data.length === 0) return null;
     return (
         <div className="space-y-4">
             <div className="flex items-center gap-3 px-1">
@@ -208,27 +189,19 @@ export function ActivitySignupsList({ data }: { data: RecentActivity[] }) {
                 <h3 className="text-base font-semibold text-[var(--beheer-text)] tracking-wider">Activiteiten aanmeldingen</h3>
                 <div className="h-px flex-1 bg-gradient-to-r from-[var(--beheer-border)] to-transparent" />
             </div>
-            <ListCard>
+            <div className="grid grid-cols-1 gap-3">
                 {data.map((ev) => (
-                    <div key={ev.id} className="w-full flex items-center justify-between p-3.5 rounded-xl transition-all group">
-                        <div className="flex-1 min-w-0 pr-2">
-                            <p className="text-base font-semibold tracking-normal text-[var(--beheer-text)] truncate">
-                                {ev.name}
-                            </p>
-                            <p className="text-base font-medium text-[var(--beheer-text-muted)] tracking-wide opacity-60">
-                                {ev.event_date ? formatDate(ev.event_date) : ''}
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-1">
-                            <span className="text-lg font-semibold tracking-normal">{ev.signups}</span>
-                            <Users className="h-3 w-3 text-[var(--beheer-text-muted)] opacity-40" />
-                        </div>
-                    </div>
+                    <ActionCard 
+                        key={ev.id}
+                        title={ev.name}
+                        subtitle={ev.event_date ? formatDate(ev.event_date) : undefined}
+                        value={ev.signups}
+                        icon={<Activity />}
+                        href={`/beheer/activiteiten/${ev.id}/aanmeldingen`}
+                        colorClass="purple"
+                    />
                 ))}
-                {data.length === 0 && (
-                    <p className="text-[var(--beheer-text-muted)] text-base font-semibold tracking-wide text-center py-8 italic opacity-40">Geen aanmeldingen</p>
-                )}
-            </ListCard>
+            </div>
         </div>
     );
 }
