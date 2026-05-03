@@ -5,13 +5,14 @@ import withBundleAnalyzer from '@next/bundle-analyzer';
 const nextConfig: NextConfig = {
     output: 'standalone',
     poweredByHeader: false,
-    cacheComponents: true,
     productionBrowserSourceMaps: false,
     serverExternalPackages: ['isomorphic-dompurify', 'jsdom'],
     experimental: {
         ppr: true,
-        // @ts-ignore - dynamicIO is required for 'use cache' in Next.js 16 but missing from types
+        // @ts-ignore - experimental properties missing from NextConfig type
         dynamicIO: true,
+        // @ts-ignore - cacheComponents belongs in experimental
+        cacheComponents: true,
         serverSourceMaps: true,
         webpackBuildWorker: true,
         workerThreads: true,
