@@ -33,6 +33,13 @@ interface ReisDeelnemerDetailIslandProps {
     initialSelectedActivities: number[];
 }
 
+interface ActionState {
+    success: boolean;
+    error?: string;
+    fieldErrors?: Record<string, string[]>;
+    initialData?: Record<string, any>;
+}
+
 export default function ReisDeelnemerDetailIsland({ 
     initialSignup, 
     trips,
@@ -42,7 +49,7 @@ export default function ReisDeelnemerDetailIsland({
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
     const [isPending, startTransition] = useTransition();
-    const [state, formAction, isSaving] = useActionState(updateTripSignup, null);
+    const [state, formAction, isSaving] = useActionState<ActionState | null, FormData>(updateTripSignup, null);
     const [selectedActivities, setSelectedActivities] = useState<number[]>(initialSelectedActivities);
     const [isUpdatingActivities, setIsUpdatingActivities] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -127,7 +134,11 @@ export default function ReisDeelnemerDetailIsland({
                 <form action={formAction} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <input type="hidden" name="id" value={initialSignup.id} />
                     <div className="lg:col-span-2 space-y-8">
-                        <SignupForm key={`${initialSignup.id}-${initialSignup.role}`} signup={initialSignup} />
+                        <SignupForm 
+                            key={`${initialSignup.id}-${initialSignup.role}`} 
+                            signup={initialSignup} 
+                            initialData={state?.initialData} 
+                        />
                     </div>
 
                     <div className="space-y-8">

@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useRef, useOptimistic, useActionState } from 'react';
+import { useState, useRef, useOptimistic, useActionState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Save, Upload, X, Loader2, Trash2, Info, Calendar as CalendarIcon, MapPin, Users, Euro, Link as LinkIcon, Eye } from 'lucide-react';
+import { ArrowLeft, Save, Upload, X, Loader2, Trash2, Info, Calendar as CalendarIcon, MapPin, Users, Euro, Link as LinkIcon, Eye, Check } from 'lucide-react';
 import { updateActivityAction, deleteActivity } from '@/server/actions/activiteiten/activities-write.actions';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
@@ -13,6 +13,13 @@ import { AdminActivity, Committee } from '@salvemundi/validations';
 // Clean committee names (removed || SV Salve Mundi and other suffixes)
 function cleanCommitteeName(name: string): string {
     return name?.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim() || '';
+}
+
+interface ActionState {
+    success: boolean;
+    error?: string;
+    fieldErrors?: Record<string, string[]>;
+    initialData?: Record<string, any>;
 }
 
 interface ActiviteitBewerkenIslandProps {
@@ -45,7 +52,7 @@ export default function ActiviteitBewerkenIsland({
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // React 19 useActionState
-    const [state, formAction, isPending] = useActionState(async (prevState: Record<string, unknown>, formData: FormData) => {
+    const [state, formAction, isPending] = useActionState<ActionState, FormData>(async (prevState: ActionState, formData: FormData) => {
         if (imageFile) formData.append('imageFile', imageFile);
         if (removeExistingImage) formData.append('removeImage', 'true');
         formData.set('status', status);
@@ -60,6 +67,17 @@ export default function ActiviteitBewerkenIsland({
         }
         return res;
     }, { success: false });
+
+    // Sync controlled fields if initialData returns after failure
+    useEffect(() => {
+        if (state?.initialData) {
+            if (state.initialData.status) setStatus(state.initialData.status);
+            if (state.initialData.only_members !== undefined) {
+                setOnlyMembers(state.initialData.only_members === 'on' || state.initialData.only_members === true);
+            }
+            if (state.initialData.contact) setContactEmail(state.initialData.contact);
+        }
+    }, [state?.initialData]);
 
     // Optimistic UI for the saving state
     const [optimisticSaving, setOptimisticSaving] = useOptimistic(isPending);
@@ -156,174 +174,124 @@ export default function ActiviteitBewerkenIsland({
                 title="Bewerk Activiteit"
                 subtitle={`Wijzig de gegevens van "${event.name}"`}
                 backHref="/beheer/activiteiten"
-                actions={
-                    <button
-                        type="button"
-                        onClick={handleDelete}
-                        disabled={isDeleting || optimisticSaving}
-                        className="flex items-center gap-2 px-6 py-3 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-[var(--beheer-radius)] transition-all font-black text-[10px] uppercase tracking-widest disabled:opacity-50 cursor-pointer active:scale-95 group shadow-sm border border-red-500/20"
-                    >
-                        {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4 group-hover:scale-110 transition-transform" />}
-                        Verwijderen
-                    </button>
-                }
             />
-            <div className="container mx-auto px-4 py-12 max-w-5xl">
-                <form action={formAction} className="space-y-8">
-                    {/* Section 1: Algemene Informatie */}
-                    <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-2xl border border-[var(--beheer-border)] overflow-hidden">
-                        <div className="px-8 py-6 border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 flex items-center gap-3">
-                            <Info className="h-5 w-5 text-[var(--beheer-accent)]" />
-                            <h2 className="text-sm font-black uppercase tracking-widest text-[var(--beheer-text)]">Algemene Informatie</h2>
-                        </div>
-                        <div className="p-8 space-y-8">
-                            <div className="relative z-10">
-                                <label htmlFor="name" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Naam van de activiteit *</label>
-                                <input
-                                    type="text"
-                                    id="name"
-                                    name="name"
-                                    defaultValue={event.name || ''}
-                                    autoComplete="off"
-                                    className={`beheer-input ${formErrors.name ? 'border-red-500 ring-4 ring-red-500/10' : ''}`}
-                                    placeholder="Bijv. Borrel: Back to School"
-                                />
-                                {formErrors.name && <p className="text-red-500 text-[10px] font-black uppercase tracking-widest mt-2">{formErrors.name[0]}</p>}
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="space-y-8">
-                                    <div>
-                                        <label htmlFor="description" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Publieke Beschrijving *</label>
-                                        <textarea id="description" name="description" rows={8} defaultValue={event.description || ''} className={`beheer-input ${formErrors.description ? 'border-red-500 ring-4 ring-red-500/10' : ''}`} placeholder="Wat gaan we doen?" />
-                                        {formErrors.description && <p className="text-red-500 text-[10px] font-black uppercase tracking-widest mt-2">{formErrors.description[0]}</p>}
+            <div className="container mx-auto px-4 py-8 max-w-6xl">
+                <form action={formAction}>
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                        {/* Main Content Area */}
+                        <div className="lg:col-span-8 space-y-6">
+                            {/* Section 1: Algemene Informatie */}
+                            <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] overflow-hidden">
+                                <div className="px-6 py-4 border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 flex items-center gap-3">
+                                    <Info className="h-4 w-4 text-[var(--beheer-accent)]" />
+                                    <h2 className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text)]">Algemene Informatie</h2>
+                                </div>
+                                <div className="p-6 space-y-6">
+                                    <div className="relative z-10">
+                                        <label htmlFor="name" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Naam van de activiteit *</label>
+                                        <input
+                                            type="text"
+                                            id="name"
+                                            name="name"
+                                            defaultValue={state.initialData?.name || event.name || ''}
+                                            autoComplete="off"
+                                            className={`beheer-input ${formErrors.name ? 'border-red-500 ring-4 ring-red-500/10' : ''}`}
+                                            placeholder="Bijv. Borrel: Back to School"
+                                        />
+                                        {formErrors.name && <p className="text-red-500 text-[10px] font-black uppercase tracking-widest mt-2">{formErrors.name[0]}</p>}
                                     </div>
-                                    <div>
-                                        <label htmlFor="description_logged_in" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Extra Informatie (alleen ingelogd)</label>
-                                        <textarea id="description_logged_in" name="description_logged_in" rows={4} defaultValue={event.description_logged_in || ''} className="beheer-input" placeholder="Bijv. verzamelplek, wat mee te nemen..." />
+                                    <div className="grid grid-cols-1 gap-6">
+                                        <div>
+                                            <label htmlFor="description" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Publieke Beschrijving *</label>
+                                            <textarea id="description" name="description" rows={4} defaultValue={state.initialData?.description || event.description || ''} className={`beheer-input ${formErrors.description ? 'border-red-500 ring-4 ring-red-500/10' : ''}`} placeholder="Wat gaan we doen?" />
+                                            {formErrors.description && <p className="text-red-500 text-[10px] font-black uppercase tracking-widest mt-2">{formErrors.description[0]}</p>}
+                                        </div>
+                                        <div>
+                                            <label htmlFor="description_logged_in" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Extra Informatie (alleen ingelogd)</label>
+                                            <textarea id="description_logged_in" name="description_logged_in" rows={2} defaultValue={state.initialData?.description_logged_in || event.description_logged_in || ''} className="beheer-input" placeholder="Bijv. verzamelplek, wat mee te nemen..." />
+                                        </div>
                                     </div>
                                 </div>
+                            </div>
 
-                                <div className="space-y-4">
-                                    <label className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Banner</label>
-                                    {!imagePreview ? (
-                                        <div onClick={() => fileInputRef.current?.click()} className="flex flex-col items-center justify-center w-full min-h-[340px] border-2 border-dashed border-[var(--beheer-border)] rounded-[var(--beheer-radius)] cursor-pointer hover:border-[var(--beheer-accent)] hover:bg-[var(--beheer-accent)]/5 transition-all bg-[var(--beheer-card-soft)] group">
-                                            <Upload className="h-8 w-8 mb-3 text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)] transition-colors" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)] text-center px-8">Klik om een banner te uploaden</span>
-                                            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                            {/* Section 2: Planning & Locatie */}
+                            <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] overflow-hidden">
+                                <div className="px-6 py-4 border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 flex items-center gap-3">
+                                    <CalendarIcon className="h-4 w-4 text-[var(--beheer-accent)]" />
+                                    <h2 className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text)]">Planning & Locatie</h2>
+                                </div>
+                                <div className="p-6 space-y-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                        <div>
+                                            <label htmlFor="event_date" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Startdatum *</label>
+                                            <input type="date" id="event_date" name="event_date" defaultValue={state.initialData?.event_date || formatDate(event.event_date)} suppressHydrationWarning className={`beheer-input ${formErrors.event_date ? 'border-red-500' : ''}`} />
+                                            {formErrors.event_date && <p className="text-red-500 text-[10px] font-black uppercase tracking-widest mt-2">{formErrors.event_date[0]}</p>}
                                         </div>
-                                    ) : (
-                                        <div className="relative group overflow-hidden rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 h-[340px] p-4 flex items-center justify-center">
-                                            {(typeof event.image === 'object' && event.image?.type?.startsWith('video/')) || imageFile?.type?.startsWith('video/') ? (
-                                                <video 
-                                                    src={imagePreview!} 
-                                                    className="w-full h-full object-contain transition-transform duration-700 drop-shadow-lg" 
-                                                    autoPlay 
-                                                    loop 
-                                                    muted 
-                                                    playsInline
-                                                />
-                                            ) : (
-                                                <img src={imagePreview!} alt="Preview" className="w-full h-full object-contain transition-transform duration-700 drop-shadow-lg" />
-                                            )}
-                                            
-                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
-                                                <button type="button" onClick={() => fileInputRef.current?.click()} className="bg-white text-slate-900 p-4 rounded-2xl hover:scale-110 transition shadow-xl cursor-pointer">
-                                                    <Upload className="h-5 w-5" />
-                                                </button>
-                                                <button type="button" onClick={handleRemoveImage} className="bg-red-500 text-white p-4 rounded-2xl hover:scale-110 transition shadow-xl cursor-pointer">
-                                                    <X className="h-5 w-5" />
-                                                </button>
-                                            </div>
-                                            <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={handleImageChange} className="hidden" />
+                                        <div>
+                                            <label htmlFor="event_time" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Tijd</label>
+                                            <input type="time" id="event_time" name="event_time" defaultValue={state.initialData?.event_time || formatTime(event.event_time)} suppressHydrationWarning className="beheer-input" />
                                         </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                                        <div>
+                                            <label htmlFor="event_date_end" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Einddatum</label>
+                                            <input type="date" id="event_date_end" name="event_date_end" defaultValue={state.initialData?.event_date_end || formatDate(event.event_date_end)} suppressHydrationWarning className="beheer-input" />
+                                        </div>
+                                        <div>
+                                            <label htmlFor="event_time_end" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Eindtijd</label>
+                                            <input type="time" id="event_time_end" name="event_time_end" defaultValue={state.initialData?.event_time_end || formatTime(event.event_time_end)} suppressHydrationWarning className="beheer-input" />
+                                        </div>
+                                    </div>
 
-                    {/* Section 2: Planning & Locatie */}
-                    <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-2xl border border-[var(--beheer-border)] overflow-hidden">
-                        <div className="px-8 py-6 border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 flex items-center gap-3">
-                            <CalendarIcon className="h-5 w-5 text-[var(--beheer-accent)]" />
-                            <h2 className="text-sm font-black uppercase tracking-widest text-[var(--beheer-text)]">Planning & Locatie</h2>
-                        </div>
-                        <div className="p-8 space-y-8">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                <div className="lg:col-span-2">
-                                    <label htmlFor="event_date" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Startdatum *</label>
-                                    <input type="date" id="event_date" name="event_date" defaultValue={formatDate(event.event_date)} suppressHydrationWarning className={`beheer-input ${formErrors.event_date ? 'border-red-500' : ''}`} />
-                                    {formErrors.event_date && <p className="text-red-500 text-[10px] font-black uppercase tracking-widest mt-2">{formErrors.event_date[0]}</p>}
-                                </div>
-                                <div className="lg:col-span-2">
-                                    <label htmlFor="event_time" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Starttijd</label>
-                                    <input type="time" id="event_time" name="event_time" defaultValue={formatTime(event.event_time)} suppressHydrationWarning className="beheer-input" />
-                                </div>
-                                <div className="lg:col-span-2">
-                                    <label htmlFor="event_date_end" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Einddatum</label>
-                                    <input type="date" id="event_date_end" name="event_date_end" defaultValue={formatDate(event.event_date_end)} suppressHydrationWarning className="beheer-input" />
-                                </div>
-                                <div className="lg:col-span-2">
-                                    <label htmlFor="event_time_end" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Eindtijd</label>
-                                    <input type="time" id="event_time_end" name="event_time_end" defaultValue={formatTime(event.event_time_end)} suppressHydrationWarning className="beheer-input" />
-                                </div>
-                            </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label htmlFor="location" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2 flex items-center gap-2">
+                                                <MapPin className="h-3 w-3" /> Locatie
+                                            </label>
+                                            <input type="text" id="location" name="location" defaultValue={state.initialData?.location || event.location || ''} className="beheer-input" placeholder="Bijv. Fontys R10" />
+                                        </div>
+                                        <div>
+                                            <label htmlFor="registration_deadline" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Inschrijfdeadline</label>
+                                            <input type="datetime-local" id="registration_deadline" name="registration_deadline" defaultValue={state.initialData?.registration_deadline || formatDateTime(event.registration_deadline)} suppressHydrationWarning className="beheer-input" />
+                                        </div>
+                                    </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label htmlFor="location" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2 flex items-center gap-2">
-                                        <MapPin className="h-3 w-3" /> Locatie
-                                    </label>
-                                    <input type="text" id="location" name="location" defaultValue={event.location || ''} className="beheer-input" placeholder="Bijv. Fontys R10" />
-                                </div>
-                                <div>
-                                    <label htmlFor="registration_deadline" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Inschrijfdeadline</label>
-                                    <input type="datetime-local" id="registration_deadline" name="registration_deadline" defaultValue={formatDateTime(event.registration_deadline)} suppressHydrationWarning className="beheer-input" />
+                                    <div className="pt-4 border-t border-[var(--beheer-border)]/50">
+                                        <label htmlFor="custom_url" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2 flex items-center gap-2">
+                                            <LinkIcon className="h-3 w-3" /> Custom Redirect URL (optioneel)
+                                        </label>
+                                        <input type="text" id="custom_url" name="custom_url" defaultValue={state.initialData?.custom_url || event.custom_url || ''} className="beheer-input" placeholder="bijv. https://forms.gle/..." />
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="pt-4 border-t border-[var(--beheer-border)]">
-                                <div>
-                                    <label htmlFor="custom_url" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2 flex items-center gap-2">
-                                        <LinkIcon className="h-3 w-3" /> Custom Slug / Redirect URL (optioneel)
-                                    </label>
-                                    <input type="text" id="custom_url" name="custom_url" defaultValue={event.custom_url || ''} className="beheer-input" placeholder="bijv. https://forms.gle/..." />
+                            {/* Section 3: Kosten & Capaciteit */}
+                            <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] overflow-hidden">
+                                <div className="px-6 py-4 border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 flex items-center gap-3">
+                                    <Euro className="h-4 w-4 text-[var(--beheer-accent)]" />
+                                    <h2 className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text)]">Kosten & Capaciteit</h2>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Section 3: Registratie & Kosten */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div className="lg:col-span-2 space-y-8">
-                            <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-2xl border border-[var(--beheer-border)] overflow-hidden">
-                                <div className="px-8 py-6 border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 flex items-center gap-3">
-                                    <Euro className="h-5 w-5 text-[var(--beheer-accent)]" />
-                                    <h2 className="text-sm font-black uppercase tracking-widest text-[var(--beheer-text)]">Kosten & Capaciteit</h2>
-                                </div>
-                                <div className="p-8 space-y-8">
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div className="p-6 space-y-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div>
                                             <label htmlFor="max_sign_ups" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Max. Deelnemers</label>
-                                            <input type="number" id="max_sign_ups" name="max_sign_ups" defaultValue={event.max_sign_ups || ''} min="0" className="beheer-input" placeholder="Onbeperkt" />
+                                            <input type="number" id="max_sign_ups" name="max_sign_ups" defaultValue={state.initialData?.max_sign_ups || event.max_sign_ups || ''} min="0" className="beheer-input" placeholder="Onbeperkt" />
                                         </div>
                                         <div>
                                             <label htmlFor="price_members" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Leden (€)</label>
-                                            <input type="number" id="price_members" name="price_members" defaultValue={event.price_members !== null ? event.price_members : ''} min="0" step="0.01" className="beheer-input" placeholder="0.00" />
+                                            <input type="number" id="price_members" name="price_members" defaultValue={state.initialData?.price_members || (event.price_members !== null ? event.price_members : '')} min="0" step="0.01" className="beheer-input" placeholder="0.00" />
                                         </div>
                                         <div>
                                             <label htmlFor="price_non_members" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Niet-leden (€)</label>
-                                            <input type="number" id="price_non_members" name="price_non_members" defaultValue={event.price_non_members !== null ? event.price_non_members : ''} min="0" step="0.01" className="beheer-input" placeholder="0.00" />
+                                            <input type="number" id="price_non_members" name="price_non_members" defaultValue={state.initialData?.price_non_members || (event.price_non_members !== null ? event.price_non_members : '')} min="0" step="0.01" className="beheer-input" placeholder="0.00" />
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-[var(--beheer-border)] pt-8">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-[var(--beheer-border)]/50 pt-6">
                                         <div>
                                             <label htmlFor="committee_id" className="block text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest mb-2">Organiserende Commissie</label>
                                             <select 
                                                 id="committee_id" 
                                                 name="committee_id" 
-                                                defaultValue={event.committee_id || ''} 
+                                                defaultValue={state.initialData?.committee_id || event.committee_id || ''} 
                                                 onChange={handleCommitteeChange}
                                                 className="beheer-select"
                                             >
@@ -346,77 +314,123 @@ export default function ActiviteitBewerkenIsland({
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-4 bg-[var(--beheer-card-soft)] p-4 rounded-2xl border border-[var(--beheer-border)]">
+                                    <label className="relative flex items-center gap-4 bg-[var(--beheer-card-soft)]/50 p-4 rounded-2xl border border-[var(--beheer-border)]/50 cursor-pointer group z-10">
                                         <div className="relative flex items-center justify-center">
                                             <input type="checkbox" id="only_members" checked={onlyMembers} onChange={(e) => setOnlyMembers(e.target.checked)} className="peer sr-only" />
-                                            <div className="w-6 h-6 border-2 border-[var(--beheer-border)] rounded peer-checked:border-[var(--beheer-accent)] peer-checked:bg-[var(--beheer-accent)] transition-all"></div>
-                                            <X className="absolute h-4 w-4 text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
+                                            <div className="w-5 h-5 border-2 border-[var(--beheer-border)] rounded peer-checked:border-[var(--beheer-accent)] peer-checked:bg-[var(--beheer-accent)] transition-all"></div>
+                                            <Check className="absolute h-3 w-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
                                         </div>
-                                        <label htmlFor="only_members" className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest cursor-pointer hover:text-[var(--beheer-text)] transition-colors">Alleen toegankelijk voor leden</label>
-                                    </div>
+                                        <span className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest group-hover:text-[var(--beheer-text)] transition-colors">Alleen toegankelijk voor leden</span>
+                                    </label>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="space-y-8">
-                            <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-2xl border border-[var(--beheer-border)] overflow-hidden">
-                                <div className="px-8 py-6 border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 flex items-center gap-3">
-                                    <Eye className="h-5 w-5 text-[var(--beheer-accent)]" />
-                                    <h2 className="text-sm font-black uppercase tracking-widest text-[var(--beheer-text)]">Status</h2>
+                        {/* Sidebar */}
+                        <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-8">
+                            {/* Banner Section */}
+                            <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] overflow-hidden">
+                                <div className="px-6 py-4 border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 flex items-center gap-3">
+                                    <Upload className="h-4 w-4 text-[var(--beheer-accent)]" />
+                                    <h2 className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text)]">Banner</h2>
                                 </div>
-                                <div className="p-8 space-y-6">
-                                    <div className="space-y-4">
-                                        <label className="flex items-center gap-4 cursor-pointer group">
-                                            <div className="relative flex items-center justify-center">
-                                                <input type="radio" value="published" checked={status === 'published'} onChange={() => setStatus('published')} className="peer sr-only" />
-                                                <div className="w-6 h-6 border-2 border-[var(--beheer-border)] rounded-full peer-checked:border-[var(--beheer-accent)] peer-checked:bg-[var(--beheer-accent)] transition-all"></div>
-                                                <div className="absolute w-2 h-2 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                                <div className="p-4">
+                                    {!imagePreview ? (
+                                        <div onClick={() => fileInputRef.current?.click()} className="flex flex-col items-center justify-center w-full min-h-[160px] border-2 border-dashed border-[var(--beheer-border)] rounded-xl cursor-pointer hover:border-[var(--beheer-accent)] hover:bg-[var(--beheer-accent)]/5 transition-all bg-[var(--beheer-card-soft)] group">
+                                            <Upload className="h-6 w-6 mb-2 text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)] transition-colors" />
+                                            <span className="text-[9px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)] text-center px-4">Upload banner</span>
+                                            <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={handleImageChange} className="hidden" />
+                                        </div>
+                                    ) : (
+                                        <div className="relative group overflow-hidden rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 h-[160px] flex items-center justify-center">
+                                            {(typeof event.image === 'object' && event.image?.type?.startsWith('video/')) || imageFile?.type?.startsWith('video/') ? (
+                                                <video src={imagePreview!} className="w-full h-full object-contain transition-transform duration-700" autoPlay loop muted playsInline />
+                                            ) : (
+                                                <img src={imagePreview!} alt="Preview" className="w-full h-full object-contain transition-transform duration-700" />
+                                            )}
+                                            
+                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                                                <button type="button" onClick={() => fileInputRef.current?.click()} className="bg-white text-slate-900 p-2.5 rounded-xl hover:scale-110 transition shadow-xl cursor-pointer"><Upload className="h-4 w-4" /></button>
+                                                <button type="button" onClick={handleRemoveImage} className="bg-red-500 text-white p-2.5 rounded-xl hover:scale-110 transition shadow-xl cursor-pointer"><X className="h-4 w-4" /></button>
                                             </div>
-                                            <span className="text-[10px] font-black text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-text)] uppercase tracking-widest transition-colors">Direct publiceren</span>
-                                        </label>
-                                        <label className="flex items-center gap-4 cursor-pointer group">
-                                            <div className="relative flex items-center justify-center">
-                                                <input type="radio" value="draft" checked={status === 'draft'} onChange={() => setStatus('draft')} className="peer sr-only" />
-                                                <div className="w-6 h-6 border-2 border-[var(--beheer-border)] rounded-full peer-checked:border-[var(--beheer-accent)] peer-checked:bg-[var(--beheer-accent)] transition-all"></div>
-                                                <div className="absolute w-2 h-2 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
-                                            </div>
-                                            <span className="text-[10px] font-black text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-text)] uppercase tracking-widest transition-colors">Concept opslaan</span>
-                                        </label>
-                                        <label className="flex items-start gap-4 cursor-pointer group">
-                                            <div className="relative flex items-center justify-center mt-1">
-                                                <input type="radio" value="scheduled" checked={status === 'scheduled'} onChange={() => setStatus('scheduled')} className="peer sr-only" />
-                                                <div className="w-6 h-6 border-2 border-[var(--beheer-border)] rounded-full peer-checked:border-[var(--beheer-accent)] peer-checked:bg-[var(--beheer-accent)] transition-all"></div>
-                                                <div className="absolute w-2 h-2 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
-                                            </div>
-                                            <div className="flex-1">
-                                                <span className="text-[10px] font-black text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-text)] uppercase tracking-widest transition-colors">Inplannen</span>
-                                                {status === 'scheduled' && (
-                                                    <div className="mt-4 animate-in slide-in-from-top-2 duration-300">
-                                                        <input type="datetime-local" name="publish_date" defaultValue={formatDateTime(event.publish_date)} suppressHydrationWarning className="beheer-input bg-[var(--beheer-card-soft)]" />
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </label>
-                                    </div>
+                                            <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={handleImageChange} className="hidden" />
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
-                            <button 
-                                type="submit" 
-                                disabled={optimisticSaving} 
-                                className="w-full bg-[var(--beheer-accent)] text-white px-10 py-6 rounded-2xl font-black uppercase tracking-widest text-xs shadow-[var(--shadow-glow)] hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-3 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed group border border-white/10"
-                            >
-                                {optimisticSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5 group-hover:scale-110 transition-transform" />}
-                                <span>{optimisticSaving ? 'Opslaan...' : 'Wijzigingen Opslaan'}</span>
-                            </button>
-                            
-                            <button 
-                                type="button" 
-                                onClick={() => router.back()} 
-                                className="w-full px-10 py-6 rounded-2xl font-black uppercase tracking-widest text-xs border border-[var(--beheer-border)] text-[var(--beheer-text)] hover:bg-[var(--beheer-card-soft)] transition-all cursor-pointer"
-                            >
-                                Annuleren
-                            </button>
+                            {/* Status Section */}
+                            <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] overflow-hidden">
+                                <div className="px-6 py-4 border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 flex items-center gap-3">
+                                    <Eye className="h-4 w-4 text-[var(--beheer-accent)]" />
+                                    <h2 className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text)]">Status</h2>
+                                </div>
+                                <div className="p-6 space-y-4">
+                                    <label className="relative flex items-center gap-4 cursor-pointer group z-10">
+                                        <div className="relative flex items-center justify-center">
+                                            <input type="radio" value="published" checked={status === 'published'} onChange={() => setStatus('published')} className="peer sr-only" />
+                                            <div className="w-5 h-5 border-2 border-[var(--beheer-border)] rounded-full peer-checked:border-[var(--beheer-accent)] peer-checked:bg-[var(--beheer-accent)] transition-all"></div>
+                                            <div className="absolute w-1.5 h-1.5 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                                        </div>
+                                        <span className="text-[10px] font-black text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-text)] uppercase tracking-widest transition-colors">Gepubliceerd</span>
+                                    </label>
+                                    <label className="relative flex items-center gap-4 cursor-pointer group z-10">
+                                        <div className="relative flex items-center justify-center">
+                                            <input type="radio" value="draft" checked={status === 'draft'} onChange={() => setStatus('draft')} className="peer sr-only" />
+                                            <div className="w-5 h-5 border-2 border-[var(--beheer-border)] rounded-full peer-checked:border-[var(--beheer-accent)] peer-checked:bg-[var(--beheer-accent)] transition-all"></div>
+                                            <div className="absolute w-1.5 h-1.5 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                                        </div>
+                                        <span className="text-[10px] font-black text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-text)] uppercase tracking-widest transition-colors">Concept</span>
+                                    </label>
+                                    <label className="relative flex items-start gap-4 cursor-pointer group z-10">
+                                        <div className="relative flex items-center justify-center mt-0.5">
+                                            <input type="radio" value="scheduled" checked={status === 'scheduled'} onChange={() => setStatus('scheduled')} className="peer sr-only" />
+                                            <div className="w-5 h-5 border-2 border-[var(--beheer-border)] rounded-full peer-checked:border-[var(--beheer-accent)] peer-checked:bg-[var(--beheer-accent)] transition-all"></div>
+                                            <div className="absolute w-1.5 h-1.5 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                                        </div>
+                                        <div className="flex-1">
+                                            <span className="text-[10px] font-black text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-text)] uppercase tracking-widest transition-colors">Inplannen</span>
+                                            {status === 'scheduled' && (
+                                                <div className="mt-2 animate-in slide-in-from-top-2 duration-300">
+                                                    <input type="datetime-local" name="publish_date" defaultValue={state.initialData?.publish_date || formatDateTime(event.publish_date)} suppressHydrationWarning className="beheer-input text-[10px] py-2" />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="space-y-3">
+                                <button 
+                                    type="submit" 
+                                    disabled={optimisticSaving} 
+                                    className="w-full bg-[var(--beheer-accent)] text-white px-8 py-4 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 group border border-white/10"
+                                >
+                                    {optimisticSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 group-hover:scale-110 transition-transform" />}
+                                    <span>{optimisticSaving ? 'Opslaan...' : 'Wijzigingen Opslaan'}</span>
+                                </button>
+                                
+                                <button 
+                                    type="button" 
+                                    onClick={() => router.back()} 
+                                    className="w-full px-8 py-4 rounded-xl font-black uppercase tracking-widest text-[10px] border border-[var(--beheer-border)] text-[var(--beheer-text)] hover:bg-[var(--beheer-card-soft)] transition-all cursor-pointer"
+                                >
+                                    Annuleren
+                                </button>
+
+                                <div className="pt-4 border-t border-[var(--beheer-border)]/30">
+                                    <button
+                                        type="button"
+                                        onClick={handleDelete}
+                                        disabled={isDeleting || optimisticSaving}
+                                        className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all font-black text-[10px] uppercase tracking-widest disabled:opacity-50 cursor-pointer active:scale-95 group border border-red-500/20"
+                                    >
+                                        {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4 group-hover:scale-110 transition-transform" />}
+                                        Activiteit Verwijderen
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </form>

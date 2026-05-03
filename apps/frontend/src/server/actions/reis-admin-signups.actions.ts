@@ -153,7 +153,7 @@ export async function updateTripSignup(prevState: unknown, formData: FormData) {
 
     const validated = tripSignupSchema.partial().safeParse(data);
     if (!validated.success) {
-        return { success: false, error: 'Validatie mislukt', fieldErrors: validated.error.flatten().fieldErrors };
+        return { success: false, error: 'Sommige velden zijn niet correct ingevuld. Controleer het formulier.', fieldErrors: validated.error.flatten().fieldErrors, initialData: rawData };
     }
 
     try {

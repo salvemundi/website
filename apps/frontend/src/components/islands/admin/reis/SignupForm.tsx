@@ -14,90 +14,89 @@ import { DateInput } from '@/shared/ui/DateInput';
 
 interface SignupFormProps {
     signup: TripSignup;
+    initialData?: any;
 }
 
-export default function SignupForm({ signup }: SignupFormProps) {
+export default function SignupForm({ signup, initialData }: SignupFormProps) {
     return (
         <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] divide-y divide-[var(--beheer-border)]/30">
             {/* Personal Details */}
-            <div className="p-8">
-                <div className="flex items-center gap-3 mb-8">
-                    <div className="h-10 w-10 bg-[var(--beheer-accent)]/10 rounded-2xl flex items-center justify-center text-[var(--beheer-accent)]">
-                        <FileText className="h-5 w-5" />
+            <div className="p-6">
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="h-9 w-9 bg-[var(--beheer-accent)]/10 rounded-xl flex items-center justify-center text-[var(--beheer-accent)]">
+                        <FileText className="h-4.5 w-4.5" />
                     </div>
-                    <h2 className="text-xl font-black text-[var(--beheer-text)] uppercase tracking-tight">Persoonsgegevens</h2>
+                    <h2 className="text-lg font-black text-[var(--beheer-text)] uppercase tracking-tight">Persoonsgegevens</h2>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Input label="Voornaam" name="first_name" defaultValue={signup.first_name} required />
-                    <Input label="Achternaam" name="last_name" defaultValue={signup.last_name} required />
-                    <Input label="Email" name="email" type="email" defaultValue={signup.email} required className="md:col-span-2" />
-                    <Input label="Telefoon" name="phone_number" defaultValue={signup.phone_number || ''} />
-                    <DateAndLabel label="Geboortedatum" name="date_of_birth" defaultValue={signup.date_of_birth ? format(new Date(signup.date_of_birth), 'yyyy-MM-dd') : ''} />
-                    <Select label="ID Type" name="id_document" defaultValue={signup.id_document || ''}>
+                    <Input label="Voornaam" name="first_name" defaultValue={initialData?.first_name || signup.first_name} required />
+                    <Input label="Achternaam" name="last_name" defaultValue={initialData?.last_name || signup.last_name} required />
+                    <Input label="Email" name="email" type="email" defaultValue={initialData?.email || signup.email} required className="md:col-span-2" />
+                    <Input label="Telefoon" name="phone_number" defaultValue={initialData?.phone_number || signup.phone_number || ''} />
+                    <DateAndLabel label="Geboortedatum" name="date_of_birth" defaultValue={initialData?.date_of_birth || (signup.date_of_birth ? format(new Date(signup.date_of_birth), 'yyyy-MM-dd') : '')} />
+                    <Select label="ID Type" name="id_document" defaultValue={initialData?.id_document || signup.id_document || ''}>
                         <option value="">Niet opgegeven</option>
                         <option value="passport">Paspoort</option>
                         <option value="id_card">ID Kaart</option>
                     </Select>
-                    <Input label="Document Nr" name="document_number" defaultValue={signup.document_number || ''} />
+                    <Input label="Document Nr" name="document_number" defaultValue={initialData?.document_number || signup.document_number || ''} />
                 </div>
 
-                <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Textarea label="Allergieën / Dieetwensen" name="allergies" defaultValue={signup.allergies || ''} />
-                    <Textarea label="Bijzonderheden / Opmerkingen" name="special_notes" defaultValue={signup.special_notes || ''} />
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <Textarea label="Allergieën / Dieet" name="allergies" defaultValue={initialData?.allergies || signup.allergies || ''} />
+                    <Textarea label="Bijzonderheden" name="special_notes" defaultValue={initialData?.special_notes || signup.special_notes || ''} />
                 </div>
 
-                <div className="mt-6">
-                    <Checkbox label="Willing to drive" name="willing_to_drive" defaultChecked={signup.willing_to_drive || false} />
+                <div className="mt-5">
+                    <Checkbox label="Willing to drive" name="willing_to_drive" defaultChecked={initialData ? (initialData.willing_to_drive === 'on' || initialData.willing_to_drive === 'true' || initialData.willing_to_drive === true) : (signup.willing_to_drive || false)} />
                 </div>
             </div>
 
             {/* Status & Payment */}
-            <div className="p-8">
-                <div className="flex items-center gap-3 mb-8">
-                    <div className="h-10 w-10 bg-[var(--beheer-accent)]/10 rounded-2xl flex items-center justify-center text-[var(--beheer-accent)]">
-                        <CreditCard className="h-5 w-5" />
+            <div className="p-6">
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="h-9 w-9 bg-[var(--beheer-accent)]/10 rounded-xl flex items-center justify-center text-[var(--beheer-accent)]">
+                        <CreditCard className="h-4.5 w-4.5" />
                     </div>
-                    <h2 className="text-xl font-black text-[var(--beheer-text)] uppercase tracking-tight">Beheer & Betaling</h2>
+                    <h2 className="text-lg font-black text-[var(--beheer-text)] uppercase tracking-tight">Beheer & Betaling</h2>
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="space-y-6">
-                        <Select label="Registratie Status" name="status" defaultValue={signup.status ?? undefined}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                        <Select label="Status" name="status" defaultValue={initialData?.status || signup.status || undefined}>
                             <option value="registered">Geregistreerd</option>
                             <option value="confirmed">Bevestigd</option>
                             <option value="waitlist">Wachtlijst</option>
                             <option value="cancelled">Geannuleerd</option>
                         </Select>
-
-                        <Select label="Gebruikersrol" name="role" defaultValue={signup.role ?? undefined}>
+                        <Select label="Rol" name="role" defaultValue={initialData?.role || signup.role || undefined}>
                             <option value="participant">Reiziger</option>
                             <option value="crew">Crew / Organisatie</option>
                         </Select>
                     </div>
 
-                    <div className="space-y-6">
-                        <div className="p-6 bg-[var(--bg-main)]/50 rounded-2xl border border-[var(--beheer-border)]/50 space-y-5">
+                    <div className="space-y-4">
+                        <div className="p-5 bg-[var(--bg-main)]/50 rounded-xl border border-[var(--beheer-border)]/50 space-y-4">
                             <div className="flex items-center justify-between">
-                                <Checkbox label="Aanbetaling voldaan" name="deposit_paid" defaultChecked={!!signup.deposit_paid} />
+                                <Checkbox label="Aanbetaling OK" name="deposit_paid" defaultChecked={initialData ? (initialData.deposit_paid === 'on' || initialData.deposit_paid === 'true' || initialData.deposit_paid === true) : !!signup.deposit_paid} />
                                 {signup.deposit_paid_at && (
-                                    <span className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest opacity-80">
+                                    <span className="text-[9px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest opacity-80">
                                         {format(new Date(signup.deposit_paid_at), 'd MMM yyyy', { locale: nl })}
                                     </span>
                                 )}
                             </div>
                             <div className="flex items-center justify-between">
-                                <Checkbox label="Restbetaling voldaan" name="full_payment_paid" defaultChecked={!!signup.full_payment_paid} />
+                                <Checkbox label="Restbetaling OK" name="full_payment_paid" defaultChecked={initialData ? (initialData.full_payment_paid === 'on' || initialData.full_payment_paid === 'true' || initialData.full_payment_paid === true) : !!signup.full_payment_paid} />
                                 {signup.full_payment_paid_at && (
-                                    <span className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest opacity-80">
+                                    <span className="text-[9px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest opacity-80">
                                         {format(new Date(signup.full_payment_paid_at), 'd MMM yyyy', { locale: nl })}
                                     </span>
                                 )}
                             </div>
                         </div>
-                        <div className="flex items-start gap-2 px-2 text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest italic leading-relaxed">
-                            <AlertCircle className="h-3 w-3 shrink-0 text-[var(--beheer-accent)]" />
-                            <span>Wijzigingen in betalingsstatus sturen geen automatische emails.</span>
+                        <div className="flex items-start gap-2 px-1 text-[9px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest italic leading-tight">
+                            <AlertCircle className="h-2.5 w-2.5 shrink-0 text-[var(--beheer-accent)]" />
+                            <span>Betalingsstatus updates sturen geen e-mails.</span>
                         </div>
                     </div>
                 </div>
@@ -161,11 +160,11 @@ function Select({ label, children, ...props }: FieldProps & { children: React.Re
 
 function Textarea({ label, ...props }: FieldProps) {
     return (
-        <div className="space-y-2 group/field">
+        <div className="space-y-1.5 group/field">
             <label className="block text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] group-focus-within/field:text-[var(--beheer-accent)] transition-colors px-1">{label}</label>
             <textarea 
                 {...props} 
-                className="w-full px-4 py-3 bg-[var(--bg-main)]/40 dark:bg-black/20 backdrop-blur-sm border-0 ring-1 ring-[var(--beheer-border)]/40 rounded-xl text-sm text-[var(--beheer-text)] focus:ring-2 focus:ring-[var(--beheer-accent)] focus:bg-[var(--bg-main)]/80 transition-all resize-none min-h-[100px] font-semibold outline-none shadow-inner"
+                className="w-full px-4 py-3 bg-[var(--bg-main)]/40 dark:bg-black/20 backdrop-blur-sm border-0 ring-1 ring-[var(--beheer-border)]/40 rounded-xl text-sm text-[var(--beheer-text)] focus:ring-2 focus:ring-[var(--beheer-accent)] focus:bg-[var(--bg-main)]/80 transition-all resize-none min-h-[80px] font-semibold outline-none shadow-inner"
             />
         </div>
     );

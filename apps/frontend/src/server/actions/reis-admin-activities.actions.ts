@@ -42,9 +42,10 @@ export async function createTripActivity(prevState: any, formData: FormData) {
     const validated = tripActivitySchema.omit({ id: true }).safeParse(rawData);
     if (!validated.success) {
         return { 
-            error: "Validatie mislukt", 
+            error: "Sommige velden zijn niet correct ingevuld. Controleer het formulier.", 
             fieldErrors: validated.error.flatten().fieldErrors,
-            success: false 
+            success: false,
+            initialData: rawData
         };
     }
 
@@ -92,9 +93,10 @@ export async function updateTripActivity(prevState: any, formData: FormData) {
     const validated = tripActivitySchema.omit({ id: true }).partial().safeParse(rawData);
     if (!validated.success) {
         return { 
-            error: "Validatie mislukt", 
+            error: "Sommige velden zijn niet correct ingevuld. Controleer het formulier.", 
             fieldErrors: validated.error.flatten().fieldErrors,
-            success: false 
+            success: false,
+            initialData: rawData
         };
     }
 

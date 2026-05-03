@@ -48,7 +48,7 @@ export async function deleteActivity(eventId: number) {
 
 export type CreateActivityResult = 
     | { success: true; id: number }
-    | { success: false; error: string; fieldErrors?: Record<string, string[]> };
+    | { success: false; error: string; fieldErrors?: Record<string, string[]>; initialData?: Record<string, any> };
 
 export async function createActivityAction(prevState: unknown, formData: FormData): Promise<CreateActivityResult> {
     await ensureActivitiesEdit();
@@ -73,9 +73,10 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
     const validated = activityAdminSchema.safeParse(rawData);
     if (!validated.success) {
         return { 
-            error: "Validation failed", 
+            error: "Sommige velden zijn niet correct ingevuld. Controleer het formulier.", 
             fieldErrors: validated.error.flatten().fieldErrors,
-            success: false 
+            success: false,
+            initialData: rawData
         };
     }
 
@@ -90,7 +91,8 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
     if (nameCheck.rows.length > 0) {
         return { 
             success: false, 
-            error: `Er bestaat al een activiteit met de naam "${data.name}". Kies een unieke naam.` 
+            error: `Er bestaat al een activiteit met de naam "${data.name}". Kies een unieke naam.`,
+            initialData: rawData
         };
     }
 
@@ -112,7 +114,7 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
         } catch (err) {
             await deleteEventDb(newId);
             await logAdminAction('activity_create_rollback', 'ERROR', { id: newId, error: String(err), action: 'rollback_delete' });
-            return { success: false, error: 'Synchronisatie met CMS mislukt. Activiteit is niet aangemaakt.' };
+            return { success: false, error: 'Synchronisatie met CMS mislukt. Activiteit is niet aangemaakt.', initialData: rawData };
         }
 
         revalidateTag('events', 'max');
@@ -121,7 +123,7 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
 
         return { success: true, id: newId };
     } catch (error) {
-        return { error: 'Fout bij opslaan in de database', success: false };
+        return { error: 'Fout bij opslaan in de database', success: false, initialData: rawData };
     }
 }
 
@@ -159,9 +161,10 @@ export async function updateActivityAction(eventId: number, prevState: unknown, 
         const validated = activityAdminSchema.safeParse(rawData);
         if (!validated.success) {
             return { 
-                error: "Validation failed", 
+                error: "Sommige velden zijn niet correct ingevuld. Controleer het formulier.", 
                 fieldErrors: validated.error.flatten().fieldErrors,
-                success: false 
+                success: false,
+                initialData: rawData
             };
         }
 
