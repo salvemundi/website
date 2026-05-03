@@ -48,7 +48,7 @@ export default async function AdminReisTripsFetcher({ searchParams }: AdminReisT
                         className="inline-flex items-center gap-2 px-8 py-4 bg-[var(--theme-purple)] text-white rounded-2xl font-bold shadow-xl shadow-[var(--theme-purple)]/20 transition-all hover:scale-[1.02] active:scale-95 group"
                     >
                         <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform" />
-                        <span className="italic uppercase tracking-wider text-base">Nieuwe reis aanmaken</span>
+                        <span className="italic tracking-wider text-base">Nieuwe reis aanmaken</span>
                     </Link>
                 </div>
             </div>

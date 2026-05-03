@@ -27,7 +27,7 @@ export default async function ReisMailPage({ searchParams }: PageProps) {
     if (!trips || trips.length === 0) {
         return (
             <div className="container mx-auto px-4 py-20 text-center">
-                <p className="text-slate-500 font-bold italic uppercase tracking-widest">Geen reizen gevonden.</p>
+                <p className="text-slate-500 font-bold italic tracking-widest">Geen reizen gevonden.</p>
             </div>
         );
     }

@@ -48,7 +48,7 @@ export default function AdminUnauthorized({
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
                 <Link
                     href="/"
-                    className="flex items-center gap-2 rounded-full bg-[var(--color-purple-500)] text-white px-8 py-3.5 font-bold shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:-translate-y-0.5 transition-all text-base uppercase tracking-widest"
+                    className="flex items-center gap-2 rounded-full bg-[var(--color-purple-500)] text-white px-8 py-3.5 font-bold shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:-translate-y-0.5 transition-all text-base tracking-widest"
                 >
                     <Home className="h-4 w-4" />
                     Terug naar Home
@@ -56,7 +56,7 @@ export default function AdminUnauthorized({
 
                 <button
                     onClick={() => window.history.back()}
-                    className="flex items-center gap-2 rounded-full px-8 py-3.5 font-bold text-[var(--text-main)] bg-[var(--bg-card)] border border-[var(--border-color)]/20 hover:bg-[var(--border-color)]/5 transition-all text-base uppercase tracking-widest"
+                    className="flex items-center gap-2 rounded-full px-8 py-3.5 font-bold text-[var(--text-main)] bg-[var(--bg-card)] border border-[var(--border-color)]/20 hover:bg-[var(--border-color)]/5 transition-all text-base tracking-widest"
                 >
                     <ArrowLeft className="h-4 w-4" />
                     Vorige Pagina
