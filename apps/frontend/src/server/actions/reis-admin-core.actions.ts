@@ -92,7 +92,7 @@ export async function createTrip(prevState: any, formData: FormData) {
 
         const validated = tripSchema.omit({ id: true }).safeParse(data);
         if (!validated.success) {
-            return { success: false, error: 'Validatie mislukt', fieldErrors: validated.error.flatten().fieldErrors };
+            return { success: false, error: 'Sommige velden zijn niet correct ingevuld. Controleer het formulier.', fieldErrors: validated.error.flatten().fieldErrors, initialData: rawData };
         }
 
         const newId = await createTripDb(validated.data);
@@ -141,7 +141,7 @@ export async function updateTrip(prevState: any, formData: FormData) {
 
         const validated = tripSchema.omit({ id: true }).partial().safeParse(data);
         if (!validated.success) {
-            return { success: false, error: 'Validatie mislukt', fieldErrors: validated.error.flatten().fieldErrors };
+            return { success: false, error: 'Sommige velden zijn niet correct ingevuld. Controleer het formulier.', fieldErrors: validated.error.flatten().fieldErrors, initialData: rawData };
         }
 
         const success = await updateTripDb(id, validated.data);

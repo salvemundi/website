@@ -75,6 +75,9 @@ export default function ReisActiviteitenIsland({
             router.refresh();
         } else {
             showToast(res.error || 'Fout bij opslaan', 'error');
+            if (res.initialData) {
+                setEditingActivity(res.initialData);
+            }
         }
     };
 

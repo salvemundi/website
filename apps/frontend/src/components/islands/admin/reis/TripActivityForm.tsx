@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
     Plus, 
     Save, 
@@ -28,6 +28,16 @@ export default function TripActivityForm({ activity, onSave, onCancel, pending }
         price: opt.price || 0
     }));
     const [options, setOptions] = useState<{ name: string; price: number }[]>(initialOptions);
+    
+    // Sync options if activity prop changes (e.g. after failed submission with initialData)
+    useEffect(() => {
+        if (activity?.options) {
+            setOptions(activity.options.map((opt: any) => ({
+                name: opt.name || '',
+                price: opt.price || 0
+            })));
+        }
+    }, [activity?.options]);
 
     const addOption = () => setOptions([...options, { name: '', price: 0 }]);
     const removeOption = (idx: number) => setOptions(options.filter((_, i) => i !== idx));
@@ -44,26 +54,26 @@ export default function TripActivityForm({ activity, onSave, onCancel, pending }
     };
 
     return (
-        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] p-8 mb-10 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-500">
-            <div className="flex items-center justify-between mb-8">
-                <h2 className="text-xl font-black text-[var(--beheer-text)] uppercase tracking-tight flex items-center gap-3">
-                    <div className="p-2 bg-[var(--beheer-accent)]/10 rounded-xl text-[var(--beheer-accent)]">
-                        {activity?.id ? <Save className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
+        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] p-6 mb-8 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-black text-[var(--beheer-text)] uppercase tracking-tight flex items-center gap-3">
+                    <div className="p-1.5 bg-[var(--beheer-accent)]/10 rounded-lg text-[var(--beheer-accent)]">
+                        {activity?.id ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                     </div>
-                    {activity?.id ? 'Activiteit Bewerken' : 'Nieuwe Reisactiviteit'}
+                    {activity?.id ? 'Bewerken' : 'Nieuwe Activiteit'}
                 </h2>
-                <button onClick={onCancel} className="p-2 text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] transition-colors"><X className="h-5 w-5" /></button>
+                <button onClick={onCancel} className="p-2 text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] transition-colors"><X className="h-4 w-4" /></button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-8">
+            <form onSubmit={handleSubmit} className="space-y-6">
                 {activity?.id && <input type="hidden" name="id" value={activity.id} />}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
                         <Field label="Naam *">
-                            <input type="text" name="name" defaultValue={activity?.name || ''} required className={inputClass} placeholder="Bijv. Skiën in de middag" />
+                            <input type="text" name="name" defaultValue={activity?.name || ''} required className={inputClass} placeholder="Bijv. Skiën" />
                         </Field>
                         <Field label="Beschrijving">
-                            <textarea name="description" rows={4} defaultValue={activity?.description || ''} className={inputClass} placeholder="Wat houdt deze activiteit in?" />
+                            <textarea name="description" rows={3} defaultValue={activity?.description || ''} className={inputClass} placeholder="Wat houdt dit in?" />
                         </Field>
                     </div>
 
@@ -94,44 +104,42 @@ export default function TripActivityForm({ activity, onSave, onCancel, pending }
                 </div>
 
                 {/* Options Management */}
-                <div className="bg-[var(--beheer-card-soft)]/30 rounded-[var(--beheer-radius)] p-8 border border-[var(--beheer-border)]/50 space-y-8">
+                <div className="bg-[var(--beheer-card-soft)]/30 rounded-[var(--beheer-radius)] p-6 border border-[var(--beheer-border)]/50 space-y-6">
                     <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-black text-[var(--beheer-text)] uppercase tracking-widest flex items-center gap-2">
-                            <List className="h-4 w-4 text-[var(--beheer-accent)]" /> Sub-opties Configuratie
+                        <h3 className="text-[10px] font-black text-[var(--beheer-text)] uppercase tracking-widest flex items-center gap-2">
+                            <List className="h-3.5 w-3.5 text-[var(--beheer-accent)]" /> Sub-opties
                         </h3>
-                        <button type="button" onClick={addOption} className="text-[var(--beheer-accent)] font-black uppercase tracking-widest text-[10px] flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-[var(--beheer-accent)]/10 transition-all border border-transparent hover:border-[var(--beheer-accent)]/20">
-                            <Plus className="h-3.5 w-3.5" /> Optie toevoegen
+                        <button type="button" onClick={addOption} className="text-[var(--beheer-accent)] font-black uppercase tracking-widest text-[9px] flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-[var(--beheer-accent)]/10 transition-all border border-transparent hover:border-[var(--beheer-accent)]/20">
+                            <Plus className="h-3 w-3" /> Toevoegen
                         </button>
                     </div>
 
-                    <div className="flex flex-wrap gap-10 border-b border-[var(--beheer-border)]/30 pb-8">
-                        <label className="flex items-start gap-4 cursor-pointer group select-none">
-                            <div className="relative flex items-center h-5">
+                    <div className="flex flex-wrap gap-8 border-b border-[var(--beheer-border)]/30 pb-6">
+                        <label className="flex items-start gap-3 cursor-pointer group select-none">
+                            <div className="relative flex items-center h-4">
                                 <input type="radio" name="max_selections" value="" defaultChecked={activity?.max_selections === null} className="sr-only peer" />
-                                <div className="h-5 w-5 rounded-full border-2 border-[var(--beheer-border)]/50 peer-checked:border-[var(--beheer-accent)] peer-checked:bg-[var(--beheer-accent)] transition-all flex items-center justify-center">
-                                    <div className="h-2 w-2 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity" />
+                                <div className="h-4 w-4 rounded-full border-2 border-[var(--beheer-border)]/50 peer-checked:border-[var(--beheer-accent)] peer-checked:bg-[var(--beheer-accent)] transition-all flex items-center justify-center">
+                                    <div className="h-1.5 w-1.5 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity" />
                                 </div>
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text)] group-hover:text-[var(--beheer-accent)] transition-colors">Checkbox Modus</span>
-                                <span className="text-[9px] text-[var(--beheer-text-muted)] uppercase tracking-widest opacity-60">Meerdere extra's selecteren</span>
+                                <span className="text-[9px] font-black uppercase tracking-widest text-[var(--beheer-text)] group-hover:text-[var(--beheer-accent)] transition-colors">Checkbox</span>
                             </div>
                         </label>
-                        <label className="flex items-start gap-4 cursor-pointer group select-none">
-                            <div className="relative flex items-center h-5">
+                        <label className="flex items-start gap-3 cursor-pointer group select-none">
+                            <div className="relative flex items-center h-4">
                                 <input type="radio" name="max_selections" value="1" defaultChecked={activity?.max_selections === 1} className="sr-only peer" />
-                                <div className="h-5 w-5 rounded-full border-2 border-[var(--beheer-border)]/50 peer-checked:border-[var(--beheer-accent)] peer-checked:bg-[var(--beheer-accent)] transition-all flex items-center justify-center">
-                                    <div className="h-2 w-2 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity" />
+                                <div className="h-4 w-4 rounded-full border-2 border-[var(--beheer-border)]/50 peer-checked:border-[var(--beheer-accent)] peer-checked:bg-[var(--beheer-accent)] transition-all flex items-center justify-center">
+                                    <div className="h-1.5 w-1.5 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity" />
                                 </div>
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text)] group-hover:text-[var(--beheer-accent)] transition-colors">Radio Button Modus</span>
-                                <span className="text-[9px] text-[var(--beheer-text-muted)] uppercase tracking-widest opacity-60">Slechts één extra kiestbaar</span>
+                                <span className="text-[9px] font-black uppercase tracking-widest text-[var(--beheer-text)] group-hover:text-[var(--beheer-accent)] transition-colors">Radio</span>
                             </div>
                         </label>
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                         {options.map((opt, idx) => (
                             <div key={idx} className="flex gap-4 items-center animate-in slide-in-from-left-4 duration-300">
                                 <div className="flex-1">
@@ -164,11 +172,11 @@ export default function TripActivityForm({ activity, onSave, onCancel, pending }
                     </div>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-end gap-3 pt-6">
-                    <button type="button" onClick={onCancel} className="px-10 py-4 rounded-xl font-black text-xs uppercase tracking-widest text-[var(--beheer-text-muted)] hover:bg-[var(--beheer-card-soft)] transition-all border border-transparent hover:border-[var(--beheer-border)]">Annuleren</button>
-                    <button type="submit" disabled={pending} className="px-12 py-4 bg-[var(--beheer-accent)] text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-[var(--shadow-glow)] hover:opacity-90 active:scale-95 transition-all flex items-center gap-3 disabled:opacity-50">
-                        {pending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
-                        {activity?.id ? 'Wijzigingen Opslaan' : 'Activiteit Opslaan'}
+                <div className="flex flex-wrap items-center justify-end gap-3 pt-4">
+                    <button type="button" onClick={onCancel} className="px-6 py-3 rounded-lg font-black text-[10px] uppercase tracking-widest text-[var(--beheer-text-muted)] hover:bg-[var(--beheer-card-soft)] transition-all border border-transparent hover:border-[var(--beheer-border)]">Annuleren</button>
+                    <button type="submit" disabled={pending} className="px-8 py-3 bg-[var(--beheer-accent)] text-white rounded-lg font-black text-[10px] uppercase tracking-widest shadow-lg hover:opacity-90 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50">
+                        {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                        <span>Opslaan</span>
                     </button>
                 </div>
             </form>
