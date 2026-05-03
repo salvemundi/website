@@ -272,7 +272,7 @@ export default function ConfirmationIsland({
                             href={
                                 isMembership ? '/lidmaatschap' : 
                                 isTrip ? '/reis' : 
-                                (signupData?.event_id?.id ? `/activiteiten/${signupData.event_id.id}-${slugify(signupData.event_id.name || '')}` : '/activiteiten')
+                                (signupData?.event_id?.name ? `/activiteiten/${slugify(signupData.event_id.name)}` : '/activiteiten')
                             }
                             text="Opnieuw Proberen"
                             icon={RefreshCw}

@@ -6,6 +6,7 @@ import { Calendar, ChevronRight, CreditCard } from 'lucide-react';
 import { format, isBefore, startOfDay } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { Tile } from './ProfielUI';
+import { slugify } from '@/shared/lib/utils/slug';
 
 interface ProfielSignupsProps {
     filteredSignups?: any[];
@@ -52,7 +53,7 @@ export default function ProfielSignups({
                         const isEvent = signup._type === 'event';
                         const eventData = isEvent ? signup.event_id : signup.pub_crawl_event_id;
                         const eventDateStr = isEvent ? eventData?.event_date : eventData?.date;
-                        const detailHref = isEvent ? `/activiteiten/${eventData.id}` : `/kroegentocht`;
+                        const detailHref = isEvent ? `/activiteiten/${slugify(eventData.name)}` : `/kroegentocht`;
                         const icon = isEvent ? <Calendar className="h-7 w-7" /> : <CreditCard className="h-7 w-7" />;
 
                         if (!eventData) return null;

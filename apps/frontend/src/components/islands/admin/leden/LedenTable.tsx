@@ -8,18 +8,13 @@ import {
     ChevronRight
 } from 'lucide-react';
 
-interface Member {
-    id: string;
-    first_name: string;
-    last_name: string;
-    email: string;
-    membership_expiry: string | null;
-    status: string;
-}
+import { type AdminMember } from '@salvemundi/validations';
+
+export type Member = AdminMember;
 
 interface LedenTableProps {
     members: Member[];
-    formatDate: (date: string | null) => string;
+    formatDate: (date: string | null | undefined) => string;
     isMembershipActive: (member: Member) => boolean;
 }
 
