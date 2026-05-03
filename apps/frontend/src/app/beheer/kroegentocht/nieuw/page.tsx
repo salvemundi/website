@@ -14,7 +14,7 @@ export default function NewKroegentochtPage() {
                         <div className="p-3 rounded-[var(--radius-xl)] bg-[var(--theme-purple)]/10 text-[var(--theme-purple)]">
                             <Beer className="h-6 w-6" />
                         </div>
-                        <h1 className="text-3xl font-black text-[var(--text-main)] tracking-widest uppercase">
+                        <h1 className="text-3xl font-black text-[var(--text-main)] tracking-widest">
                             Nieuw <span className="text-[var(--theme-purple)]">Event</span>
                         </h1>
                     </div>

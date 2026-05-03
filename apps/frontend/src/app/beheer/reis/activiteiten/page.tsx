@@ -43,7 +43,7 @@ export default async function ReisActiviteitenPage({ searchParams }: PageProps) 
     if (!trips || trips.length === 0) {
         return (
             <div className="container mx-auto px-4 py-20 text-center">
-                <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-base">Geen reizen gevonden.</p>
+                <p className="text-[var(--beheer-text-muted)] font-black tracking-widest text-base">Geen reizen gevonden.</p>
             </div>
         );
     }

@@ -31,7 +31,7 @@ export default function AnimatedBeheerHeader({
                         <div className="h-8 w-8 rounded-lg bg-[var(--beheer-border)]/20 flex items-center justify-center group-hover:bg-[var(--beheer-accent)]/10 transition-colors">
                             <ChevronLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
                         </div>
-                        <span className="text-base font-semibold uppercase tracking-wider">Terug</span>
+                        <span className="text-base font-semibold tracking-wider">Terug</span>
                     </Link>
                 )}
 
@@ -47,7 +47,7 @@ export default function AnimatedBeheerHeader({
                     
                     <div className="space-y-3">
                         <div className="flex items-center gap-3 animate-in slide-in-from-left-8 duration-700">
-                            <h1 className="text-5xl md:text-6xl font-bold text-[var(--beheer-text)] tracking-tight uppercase leading-none">
+                            <h1 className="text-5xl md:text-6xl font-bold text-[var(--beheer-text)] tracking-tight leading-none">
                                 {title.split(' ').map((word, i) => (
                                     <span key={i} className={i === title.split(' ').length - 1 ? 'text-[var(--beheer-accent)]' : ''}>
                                         {word}{' '}
