@@ -119,7 +119,22 @@
     }
 }
 
+@keyframes pulse-subtle {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.85;
+        transform: scale(1.005);
+    }
+}
+
 /* De utility MOET buiten @layer utilities staan in Tailwind 4 */
+@utility animate-pulse-subtle {
+    animation: pulse-subtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
 @utility ghost-item {
     @apply relative overflow-hidden pointer-events-none select-none;
     background-color: var(--beheer-card-soft, rgba(164, 83, 155, 0.05)) !important;

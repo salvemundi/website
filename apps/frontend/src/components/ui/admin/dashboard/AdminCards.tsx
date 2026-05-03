@@ -34,6 +34,7 @@ export function ActionCard({
     value,
     icon,
     href,
+    pulse = false,
     colorClass = 'purple',
     disabled = false,
     isExternal = false
@@ -41,6 +42,7 @@ export function ActionCard({
     subtitle?: string;
     value?: string | number;
     icon?: React.ReactNode;
+    pulse?: boolean;
 }) {
     const isLink = !disabled && href;
     const isInternal = isLink && !isExternal;
@@ -53,14 +55,17 @@ export function ActionCard({
                 href, 
                 ...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {}) 
             } : {})}
-            className={`w-full flex items-center gap-4 p-4 rounded-[var(--beheer-radius)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] shadow-sm 
+            className={`w-full flex items-center gap-4 p-4 rounded-[var(--beheer-radius)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] shadow-sm relative overflow-hidden
                 ${disabled ? 'opacity-50 cursor-not-allowed shadow-none' : ''} 
-                ${!disabled && href ? 'hover:border-[var(--beheer-accent)]/30 hover:shadow-md transition-all cursor-pointer active:scale-[0.98] group' : ''}`}
+                ${!disabled && href ? 'hover:border-[var(--beheer-accent)]/40 hover:bg-[var(--beheer-accent)]/[0.02] hover:shadow-md transition-all cursor-pointer active:scale-[0.98] group' : ''}
+                ${pulse ? 'animate-pulse-subtle border-amber-500/30 shadow-amber-500/5' : ''}`}
         >
-            {/* Left: Icon */}
-            <div className={`p-3 rounded-xl transition-colors ${colorStyle} group-hover:bg-opacity-20 shrink-0`}>
-                {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any>, { className: 'h-6 w-6' }) : icon}
-            </div>
+            {/* Left: Icon (Optional) */}
+            {icon && (
+                <div className={`p-3 rounded-xl transition-colors ${colorStyle} group-hover:bg-opacity-20 shrink-0`}>
+                    {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any>, { className: 'h-6 w-6' }) : icon}
+                </div>
+            )}
 
             {/* Middle: Text hierarchy */}
             <div className="text-left flex-1 min-w-0 pr-2">
@@ -83,9 +88,9 @@ export function ActionCard({
                 </div>
             )}
             
-            {/* Indicator arrow if link and NO value */}
-            {isLink && (value === undefined || value === null) && (
-                <div className="text-[var(--beheer-accent)] opacity-30 group-hover:opacity-100 group-hover:translate-x-1 transition-all pr-2">
+            {/* Indicator arrow if link */}
+            {isLink && (
+                <div className="text-[var(--beheer-accent)] opacity-20 group-hover:opacity-100 group-hover:translate-x-1 transition-all pr-1">
                     <ChevronRight className="h-5 w-5" />
                 </div>
             )}
