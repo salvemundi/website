@@ -56,7 +56,7 @@ export default function AdminToast({ toast, onClose }: AdminToastProps) {
                         </div>
 
                         <div className="flex flex-col min-w-0">
-                            <span className="text-base font-black uppercase tracking-[0.2em] text-[var(--beheer-text-muted)] mb-1 opacity-50">
+                            <span className="text-base font-semibold uppercase tracking-wider text-[var(--beheer-text-muted)] mb-1 opacity-50">
                                 {toast.type === 'success' ? 'Succes' : 
                                  toast.type === 'error' ? 'Foutmelding' : 
                                  toast.type === 'loading' ? 'Bezig...' : 'Informatie'}

@@ -33,11 +33,11 @@ export default function AdminUnauthorized({
                 
                 {/* Faded 403 text behind the icon */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 select-none">
-                    <span className="text-9xl font-black tracking-tighter text-[var(--color-purple-500)]/5">403</span>
+                    <span className="text-9xl font-bold tracking-normal text-[var(--color-purple-500)]/5">403</span>
                 </div>
             </div>
 
-            <h2 className="text-4xl font-black text-[var(--text-main)] mb-3 tracking-tight">
+            <h2 className="text-4xl font-bold text-[var(--text-main)] mb-3 tracking-tight">
                 {title}
             </h2>
             
