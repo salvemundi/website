@@ -134,11 +134,11 @@ export function BirthdaysList({ data }: { data: Birthday[] }) {
                 {data.map((person) => (
                     <ActionCard 
                         key={person.id}
-                        title={`${person.first_name} ${person.last_name}`}
-                        subtitle={person.isToday ? '🎉 Vandaag!' : formatDate(person.birthday)}
+                        title={`${person.first_name} ${person.last_name}${person.isToday ? ' 🎂' : ''}`}
+                        subtitle={person.isToday ? '🎉 Vandaag!' : formatDate(person.birthday, 'd MMMM')}
                         value={person.isToday ? '🎈' : undefined}
-                        icon={<span>{person.first_name?.[0]}</span>}
                         colorClass={person?.isToday ? 'amber' : 'purple'}
+                        pulse={person?.isToday}
                     />
                 ))}
             </div>
@@ -166,7 +166,6 @@ export function TopStickersList({ data }: { data: TopSticker[] }) {
                         key={person.id}
                         title={`${person.first_name} ${person.last_name}`}
                         value={person.count}
-                        icon={<MapPin />}
                         colorClass={i === 0 ? 'amber' : 'purple'}
                     />
                 ))}
@@ -194,9 +193,8 @@ export function ActivitySignupsList({ data }: { data: RecentActivity[] }) {
                     <ActionCard 
                         key={ev.id}
                         title={ev.name}
-                        subtitle={ev.event_date ? formatDate(ev.event_date) : undefined}
+                        subtitle={ev.event_date ? formatDate(ev.event_date, 'd MMMM yyyy') : undefined}
                         value={ev.signups}
-                        icon={<Activity />}
                         href={`/beheer/activiteiten/${ev.id}/aanmeldingen`}
                         colorClass="purple"
                     />
