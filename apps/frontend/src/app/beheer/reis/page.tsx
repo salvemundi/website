@@ -165,11 +165,11 @@ function NoTripsView() {
                     <Plane className="h-10 w-10 rotate-45" />
                 </div>
                 <h2 className="text-3xl font-black text-[var(--beheer-text)] uppercase tracking-tighter mb-2">Geen reizen gevonden</h2>
-                <p className="text-[var(--beheer-text-muted)] font-bold uppercase tracking-widest text-xs mb-8">Er zijn momenteel geen actieve of geplande reizen in het systeem.</p>
+                <p className="text-[var(--beheer-text-muted)] font-bold uppercase tracking-widest text-base mb-8">Er zijn momenteel geen actieve of geplande reizen in het systeem.</p>
                 
                 <Link 
                     href="/beheer/reis/instellingen"
-                    className="inline-flex items-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white rounded-[var(--beheer-radius)] font-black uppercase tracking-widest text-xs shadow-[var(--shadow-glow)] transition-all hover:scale-[1.02] active:scale-95 group"
+                    className="inline-flex items-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white rounded-[var(--beheer-radius)] font-black uppercase tracking-widest text-base shadow-[var(--shadow-glow)] transition-all hover:scale-[1.02] active:scale-95 group"
                 >
                     <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform" />
                     <span>Nieuwe reis aanmaken</span>

@@ -41,7 +41,7 @@ export default function AdminToolbar({
                                 {title}
                             </h1>
                             {subtitle && (
-                                <p className="text-[10px] font-bold text-[var(--beheer-text-muted)] tracking-widest uppercase mt-0.5 opacity-50">
+                                <p className="text-base font-bold text-[var(--beheer-text-muted)] tracking-widest uppercase mt-0.5 opacity-50">
                                     {subtitle}
                                 </p>
                             )}

@@ -28,13 +28,13 @@ export default function ImpersonationBanner({ targetName, adminName, committees,
                         <div className="flex-shrink-0 bg-white/20 p-1.5 rounded-lg">
                             <Shield className="w-4 h-4" />
                         </div>
-                        <div className="flex items-center gap-2 text-sm font-medium truncate">
+                        <div className="flex items-center gap-2 text-base font-medium truncate">
                             <span className="opacity-80 hidden sm:inline">Test Modus Actief:</span>
                             <span className="font-bold flex items-center gap-1.5 bg-black/30 px-2 py-0.5 rounded-md">
                                 <User className="w-3 h-3" />
                                 {targetName}
                             </span>
-                            <span className="hidden lg:inline opacity-60 text-xs italic">
+                            <span className="hidden lg:inline opacity-60 text-base italic">
                                 (Geïmiteerd door {adminName})
                             </span>
                             {committees.length > 0 && (
@@ -46,7 +46,7 @@ export default function ImpersonationBanner({ targetName, adminName, committees,
                     <button
                         onClick={handleStop}
                         disabled={isPending}
-                        className="flex-shrink-0 flex items-center gap-1.5 bg-white text-orange-700 px-3 py-1 rounded-full text-xs font-bold hover:bg-orange-50 transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+                        className="flex-shrink-0 flex items-center gap-1.5 bg-white text-orange-700 px-3 py-1 rounded-full text-base font-bold hover:bg-orange-50 transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
                     >
                         {isPending ? 'Bezig...' : (
                             <>
