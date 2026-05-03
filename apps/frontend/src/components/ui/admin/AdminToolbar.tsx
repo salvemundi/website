@@ -37,11 +37,11 @@ export default function AdminToolbar({
                             </Link>
                         )}
                         <div className="flex flex-col">
-                            <h1 className="text-xl md:text-2xl font-black text-[var(--beheer-text)] tracking-tighter leading-tight uppercase">
+                            <h1 className="text-xl md:text-2xl font-bold text-[var(--beheer-text)] tracking-tight leading-tight uppercase">
                                 {title}
                             </h1>
                             {subtitle && (
-                                <p className="text-base font-bold text-[var(--beheer-text-muted)] tracking-widest uppercase mt-0.5 opacity-50">
+                                <p className="text-base font-medium text-[var(--beheer-text-muted)] tracking-wider uppercase mt-0.5 opacity-50">
                                     {subtitle}
                                 </p>
                             )}
