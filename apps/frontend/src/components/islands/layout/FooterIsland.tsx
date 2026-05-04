@@ -57,7 +57,8 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
         { label: 'Activiteiten', href: ROUTES.ACTIVITIES },
         { label: 'Commissies', href: ROUTES.COMMITTEES },
         { label: 'Contact', href: ROUTES.CONTACT },
-        { label: 'Safe Havens', href: ROUTES.STICKERS },
+        { label: 'Sticker Kaart', href: ROUTES.STICKERS },
+        { label: 'Safe Havens', href: ROUTES.SAFE_HAVENS },
         { label: 'Lidmaatschap', href: ROUTES.MEMBERSHIP },
         { label: 'Kroegentocht', href: ROUTES.PUB_CRAWL },
         { label: 'Reis', href: ROUTES.TRIP },
@@ -199,7 +200,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
 
                             <li>
                                 <Link
-                                    href={ROUTES.STICKERS}
+                                    href={ROUTES.SAFE_HAVENS}
                                     className={
                                         'inline-flex items-center gap-1 rounded-full px-2 py-1 font-semibold transition ' +
                                         'bg-[var(--color-purple-500)]/20 text-[var(--color-purple-700)] ' +

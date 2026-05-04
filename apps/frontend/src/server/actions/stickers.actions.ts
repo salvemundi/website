@@ -25,6 +25,7 @@ export async function getPublicStickers() {
                 u.avatar
             FROM "Stickers" s
             LEFT JOIN directus_users u ON s.user_created = u.id
+            WHERE s.status = 'published'
             ORDER BY s.date_created DESC
         `;
         const { rows } = await query(sql);

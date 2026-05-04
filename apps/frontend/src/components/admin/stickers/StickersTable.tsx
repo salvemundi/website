@@ -10,7 +10,9 @@ import {
     Globe, 
     Image as ImageIcon,
     Loader2,
-    X
+    X,
+    CheckCircle,
+    Clock
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
@@ -18,11 +20,12 @@ import { nl } from 'date-fns/locale';
 interface StickersTableProps {
     stickers: any[];
     onDelete: (id: number) => void;
+    onApprove: (id: number) => void;
 }
 
 const ASSET_URL = '/api/assets';
 
-export default function StickersTable({ stickers, onDelete }: StickersTableProps) {
+export default function StickersTable({ stickers, onDelete, onApprove }: StickersTableProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
@@ -71,9 +74,20 @@ export default function StickersTable({ stickers, onDelete }: StickersTableProps
                                 <tr key={sticker.id} className="hover:bg-[var(--bg-main)]/30 transition-colors group">
                                     <td className="px-6 py-4">
                                         <div className="flex flex-col gap-1">
-                                            <span className="font-black text-[var(--beheer-text)] group-hover:text-[var(--beheer-accent)] transition-colors uppercase tracking-tight">
-                                                {sticker.location_name === 'Imported' ? (sticker.city || sticker.address || 'Imported') : (sticker.location_name || 'Naamloze locatie')}
-                                            </span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-black text-[var(--beheer-text)] group-hover:text-[var(--beheer-accent)] transition-colors uppercase tracking-tight">
+                                                    {sticker.location_name === 'Imported' ? (sticker.city || sticker.address || 'Imported') : (sticker.location_name || 'Naamloze locatie')}
+                                                </span>
+                                                {sticker.status === 'published' ? (
+                                                    <span className="px-1.5 py-0.5 rounded-md bg-green-500/10 text-green-500 text-[8px] font-black uppercase tracking-widest border border-green-500/20">
+                                                        Live
+                                                    </span>
+                                                ) : (
+                                                    <span className="px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-500 text-[8px] font-black uppercase tracking-widest border border-amber-500/20">
+                                                        Draft
+                                                    </span>
+                                                )}
+                                            </div>
                                             <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">
                                                 <User className="h-3 w-3" />
                                                 {`${sticker.user_created?.first_name} ${sticker.user_created?.last_name}`}
@@ -115,6 +129,15 @@ export default function StickersTable({ stickers, onDelete }: StickersTableProps
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex justify-end gap-2">
+                                            {sticker.status !== 'published' && (
+                                                <button 
+                                                    onClick={() => onApprove(sticker.id)}
+                                                    className="p-2 bg-green-500/10 text-green-500 rounded-lg hover:bg-green-500 hover:text-white transition-all shadow-sm"
+                                                    title="Publiceren"
+                                                >
+                                                    <CheckCircle className="h-4 w-4" />
+                                                </button>
+                                            )}
                                             <button 
                                                 onClick={() => onDelete(sticker.id)}
                                                 className="p-2 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all shadow-sm"

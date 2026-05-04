@@ -46,9 +46,11 @@ export async function query(text: string, params?: (string | number | boolean | 
                 continue;
             }
             console.error('[DB-Query Error]', {
-                message: e instanceof Error ? e.message : 'Unknown error',
+                message: errorMessage,
+                code: errorCode,
                 text,
-                // params removed for security
+                detail: (e as any)?.detail,
+                hint: (e as any)?.hint
             });
             throw e;
         }
