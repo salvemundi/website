@@ -61,4 +61,5 @@ export const toggleCommitteeLeaderSchema = z.object({
 export const removeCommitteeMemberSchema = z.object({
     azureGroupId: z.string().uuid(),
     entraId: z.string().uuid(),
+    isLeader: z.boolean().optional(),
 });
