@@ -38,19 +38,19 @@ export default function ReisTable({
             {filteredSignups.length === 0 ? (
                 <div className="text-center py-20 px-4">
                     <AlertCircle className="h-12 w-12 text-[var(--beheer-text-muted)] mx-auto mb-4 opacity-20" />
-                    <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-[10px]">Geen aanmeldingen gevonden</p>
+                    <p className="text-[var(--beheer-text-muted)] font-semibold tracking-widest text-[10px]">Geen aanmeldingen gevonden</p>
                 </div>
             ) : (
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead className="bg-[var(--bg-main)]/50 border-b border-[var(--beheer-border)]">
                             <tr>
-                                <th className="px-3 sm:px-6 py-5 text-left text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Naam</th>
-                                <th className="px-3 sm:px-6 py-5 text-left text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest hidden sm:table-cell">Geboortedatum</th>
-                                <th className="px-3 sm:px-6 py-5 text-left text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest hidden md:table-cell">Rol</th>
-                                <th className="px-3 sm:px-6 py-5 text-left text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Status</th>
-                                <th className="px-3 sm:px-6 py-5 text-left text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest hidden sm:table-cell">Betaling</th>
-                                <th className="px-2 sm:px-6 py-5 text-right text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Acties</th>
+                                <th className="px-3 sm:px-6 py-5 text-left text-[10px] font-semibold text-[var(--beheer-text-muted)] uppercase tracking-widest">Naam</th>
+                                <th className="px-3 sm:px-6 py-5 text-left text-[10px] font-semibold text-[var(--beheer-text-muted)] uppercase tracking-widest hidden sm:table-cell">Geboortedatum</th>
+                                <th className="px-3 sm:px-6 py-5 text-left text-[10px] font-semibold text-[var(--beheer-text-muted)] uppercase tracking-widest hidden md:table-cell">Rol</th>
+                                <th className="px-3 sm:px-6 py-5 text-left text-[10px] font-semibold text-[var(--beheer-text-muted)] uppercase tracking-widest">Status</th>
+                                <th className="px-3 sm:px-6 py-5 text-left text-[10px] font-semibold text-[var(--beheer-text-muted)] uppercase tracking-widest hidden sm:table-cell">Betaling</th>
+                                <th className="px-2 sm:px-6 py-5 text-right text-[10px] font-semibold text-[var(--beheer-text-muted)] uppercase tracking-widest">Acties</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[var(--beheer-border)]/10">

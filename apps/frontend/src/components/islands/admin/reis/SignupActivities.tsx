@@ -20,43 +20,50 @@ export default function SignupActivities({
     isUpdating 
 }: SignupActivitiesProps) {
     return (
-        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] p-8">
+        <div className="bg-[var(--beheer-card-bg)] rounded-3xl shadow-xl border border-[var(--beheer-border)] p-8">
             <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 bg-[var(--beheer-accent)]/10 rounded-2xl flex items-center justify-center text-[var(--beheer-accent)]">
+                <div className="flex items-center gap-4">
+                    <div className="h-10 w-10 bg-[var(--beheer-accent)]/10 rounded-xl flex items-center justify-center text-[var(--beheer-accent)] shadow-sm">
                         <Utensils className="h-5 w-5" />
                     </div>
-                    <h2 className="text-xl font-black text-[var(--beheer-text)] uppercase tracking-tight">Activiteiten</h2>
+                    <div className="space-y-0.5">
+                        <h2 className="text-xl font-bold text-[var(--beheer-text)] tracking-tight">Activiteiten</h2>
+                        <p className="text-[10px] font-semibold text-[var(--beheer-text-muted)] uppercase tracking-widest opacity-60">Gekozen voor deze reis</p>
+                    </div>
                 </div>
             </div>
 
-            <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="space-y-3 max-h-[450px] overflow-y-auto pr-2 custom-scrollbar">
                 {allActivities.length === 0 ? (
-                    <p className="text-xs font-black uppercase tracking-widest text-[var(--beheer-text-muted)] text-center py-12">Geen activiteiten geconfigureerd.</p>
+                    <div className="text-center py-16 bg-[var(--bg-main)]/30 rounded-2xl border border-dashed border-[var(--beheer-border)]/50">
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--beheer-text-muted)] opacity-60">Geen activiteiten beschikbaar</p>
+                    </div>
                 ) : allActivities.map(activity => (
                     <label 
                         key={activity.id}
-                        className={`flex items-center justify-between p-5 rounded-2xl cursor-pointer transition-all border-2 ${
+                        className={`group flex items-center justify-between p-5 rounded-2xl cursor-pointer transition-all border ${
                             selectedActivities.includes(activity.id) 
-                                ? 'bg-[var(--beheer-accent)] border-[var(--beheer-accent)] shadow-lg shadow-[var(--beheer-accent)]/20 text-white' 
-                                : 'bg-[var(--bg-main)]/50 border-[var(--beheer-border)]/50 hover:border-[var(--beheer-accent)]/50'
+                                ? 'bg-[var(--beheer-accent)] border-[var(--beheer-accent)] shadow-xl shadow-[var(--beheer-accent)]/10 text-white' 
+                                : 'bg-[var(--bg-main)]/50 border-[var(--beheer-border)]/50 hover:border-[var(--beheer-accent)]/30'
                         }`}
                     >
                         <div className="flex items-center gap-4">
-                            <div className={`h-5 w-5 rounded-lg flex items-center justify-center transition-all ${
-                                selectedActivities.includes(activity.id) ? 'bg-white text-[var(--beheer-accent)]' : 'bg-[var(--beheer-border)]/20 text-transparent'
+                            <div className={`h-6 w-6 rounded-lg flex items-center justify-center transition-all ${
+                                selectedActivities.includes(activity.id) 
+                                    ? 'bg-white/20 text-white' 
+                                    : 'bg-[var(--beheer-border)]/10 text-transparent group-hover:bg-[var(--beheer-accent)]/5'
                             }`}>
-                                <Check className="h-3.5 w-3.5" />
+                                <Check className={`h-4 w-4 ${selectedActivities.includes(activity.id) ? 'opacity-100' : 'opacity-0'}`} />
                             </div>
-                            <span className={`text-sm font-black uppercase tracking-tight transition-all ${
+                            <span className={`text-sm font-semibold tracking-tight transition-all ${
                                 selectedActivities.includes(activity.id) ? 'text-white' : 'text-[var(--beheer-text)]'
                             }`}>
                                 {activity.name}
                             </span>
                         </div>
                         <div className="flex items-center gap-4">
-                            <span className={`text-[10px] font-black uppercase tracking-widest ${
-                                selectedActivities.includes(activity.id) ? 'text-white/80' : 'text-[var(--beheer-accent)]'
+                            <span className={`text-[10px] font-semibold tracking-widest uppercase ${
+                                selectedActivities.includes(activity.id) ? 'text-white/80' : 'text-[var(--beheer-accent)] opacity-70'
                             }`}>
                                 €{Number(activity.price || 0).toFixed(2)}
                             </span>
@@ -75,10 +82,10 @@ export default function SignupActivities({
                 type="button"
                 onClick={onUpdate}
                 disabled={isUpdating}
-                className="mt-6 w-full py-4 bg-[var(--bg-main)] hover:bg-[var(--beheer-accent)]/10 text-[var(--beheer-text)] hover:text-[var(--beheer-accent)] rounded-[var(--beheer-radius)] font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-3 border border-[var(--beheer-border)] hover:border-[var(--beheer-accent)]/30"
+                className="mt-8 w-full py-4 bg-[var(--beheer-accent)]/5 hover:bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] rounded-2xl font-semibold text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-3 border border-[var(--beheer-accent)]/10 hover:border-[var(--beheer-accent)]/30 active:scale-95"
             >
-                {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                Activiteiten Bijwerken
+                {isUpdating ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
+                <span>Activiteiten Opslaan</span>
             </button>
         </div>
     );

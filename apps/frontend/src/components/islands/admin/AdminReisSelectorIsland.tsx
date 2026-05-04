@@ -71,7 +71,7 @@ export default function AdminReisSelectorIsland({
                                     : format(new Date(displayStartDate), 'd MMM yyyy', { locale: nl });
 
                                 return (
-                                    <option key={trip.id} value={trip.id} className="text-sm font-black uppercase tracking-widest bg-[var(--beheer-card-bg)] text-[var(--beheer-text)]">
+                                    <option key={trip.id} value={trip.id} className="text-sm font-semibold bg-[var(--beheer-card-bg)] text-[var(--beheer-text)]">
                                         {trip.name} ({dateDisplay})
                                     </option>
                                 );
@@ -91,15 +91,15 @@ export default function AdminReisSelectorIsland({
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => router.push('/beheer/reis/mail')}
-                            className="flex items-center justify-center gap-2 px-8 py-2 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-[10px] font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50"
+                            className="flex items-center justify-center gap-2 px-6 py-2 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-xl text-[10px] font-semibold tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50"
                         >
                             <Plane className="h-4 w-4 rotate-45 text-[var(--beheer-accent)]" />
-                            Email
+                            Email Tool
                         </button>
 
                         <button
                             onClick={() => router.push('/beheer/reis/activiteiten')}
-                            className="flex items-center justify-center gap-2 px-8 py-2 bg-[var(--beheer-accent)] text-white font-black text-[10px] uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 disabled:opacity-50"
+                            className="flex items-center justify-center gap-2 px-6 py-2 bg-[var(--beheer-accent)] text-white font-semibold text-[10px] tracking-widest rounded-xl shadow-lg hover:opacity-90 transition-all active:scale-95 disabled:opacity-50 border border-white/10"
                         >
                             <Plane className="h-4 w-4" />
                             Activiteiten
@@ -107,7 +107,7 @@ export default function AdminReisSelectorIsland({
                         
                         <button
                             onClick={() => router.push('/beheer/reis/instellingen')}
-                            className="flex items-center justify-center gap-2 px-8 py-2 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-[10px] font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50"
+                            className="flex items-center justify-center gap-2 px-6 py-2 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-xl text-[10px] font-semibold tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50"
                         >
                             <Edit2 className="h-4 w-4" />
                             Instellingen

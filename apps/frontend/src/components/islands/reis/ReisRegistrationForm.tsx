@@ -175,13 +175,12 @@ export function ReisRegistrationForm({
                                 />
                             )}
                         />
-                        <div className="mt-2 p-3 rounded-xl bg-theme-purple/5 border border-theme-purple/10 flex items-center gap-3">
-                            <div className="flex items-center gap-1">
-                                <span className="text-theme-purple animate-pulse font-bold">→</span>
-                                <AlertCircle className="w-4 h-4 text-theme-purple shrink-0" />
+                        <div className="mt-2 p-4 rounded-2xl bg-theme-purple/5 border border-theme-purple/10 flex items-start gap-3">
+                            <div className="flex items-center gap-1 mt-0.5">
+                                <AlertCircle className="w-4 h-4 text-theme-purple shrink-0 opacity-60" />
                             </div>
-                            <p className="text-[10px] leading-tight text-[var(--text-muted)] font-bold uppercase tracking-wider">
-                                <span className="text-theme-purple">LET OP:</span> Gebruik je volledige voornaam zoals op je paspoort/ID. Dit is essentieel voor je ticket!
+                            <p className="text-[10px] leading-relaxed text-[var(--text-muted)] font-semibold uppercase tracking-wider opacity-70">
+                                <span className="text-theme-purple font-bold">LET OP:</span> Gebruik je volledige voornaam zoals op je paspoort/ID. Dit is essentieel voor je ticket!
                             </p>
                         </div>
                     </FormField>
@@ -268,7 +267,7 @@ export function ReisRegistrationForm({
                         </a>
                     </span>
                 </label>
-                {errors.terms_accepted && <p className="text-xs text-red-500 font-bold">{errors.terms_accepted.message}</p>}
+                {errors.terms_accepted && <p className="text-xs text-red-500 font-semibold">{errors.terms_accepted.message}</p>}
 
                 {/* Honeypot at bottom to avoid breaking browser autofill sections */}
                 <input {...register('website')} type="text" className="hidden" tabIndex={-1} autoComplete="off" suppressHydrationWarning />

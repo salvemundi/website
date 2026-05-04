@@ -1,11 +1,14 @@
 'use client';
 
-import { Plus, Edit2, X, Loader2, Save } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Plus, Edit2, X, Info, Calendar as CalendarIcon, MapPin, Users, Euro, Link as LinkIcon, Eye, Check } from 'lucide-react';
 import type { Trip } from '@salvemundi/validations/schema/admin-reis.zod';
-import { InputField, ReisImageUpload, ToggleField } from './TripFormFields';
+import { getImageUrl } from '@/lib/utils/image-utils';
+import TripFormSidebar from './TripFormSidebar';
 
 interface ActionState {
     success: boolean;
+    id?: number;
     error?: string;
     fieldErrors?: Record<string, string[]>;
     initialData?: Record<string, any>;
@@ -30,110 +33,167 @@ export default function TripForm({
     createAction, 
     updateAction 
 }: TripFormProps) {
-    return (
-        <div className="mb-12 bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] overflow-hidden animate-in slide-in-from-bottom-8 duration-500">
-            <div className="p-6 border-b border-[var(--beheer-border)]/50 bg-[var(--bg-main)]/30 backdrop-blur-sm flex justify-between items-center">
-                <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-xl bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] flex items-center justify-center shadow-inner">
-                        {isAdding ? <Plus className="h-5 w-5" /> : <Edit2 className="h-5 w-5" />}
-                    </div>
-                    <div>
-                        <h2 className="text-lg font-black text-[var(--beheer-text)] uppercase tracking-tight">
-                            {isAdding ? 'Nieuwe Reis' : `${editingTrip?.name} Bewerken`}
-                        </h2>
-                        <p className="text-[10px] font-bold text-[var(--beheer-text-muted)] uppercase tracking-widest">Vul alle velden in</p>
-                    </div>
-                </div>
-                <button 
-                    onClick={onCancel}
-                    className="p-2 hover:bg-[var(--beheer-border)]/10 rounded-lg transition-colors text-[var(--beheer-text-muted)]"
-                >
-                    <X className="h-5 w-5" />
-                </button>
-            </div>
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [registrationOpen, setRegistrationOpen] = useState(false);
+    const [allowFinalPayments, setAllowFinalPayments] = useState(false);
+    const [isBusTrip, setIsBusTrip] = useState(false);
 
-            <form action={editingTrip ? updateAction : createAction} className="p-6">
+    useEffect(() => {
+        if (editingTrip) {
+            if (editingTrip.image) setImagePreview(getImageUrl(editingTrip.image, { width: 400, height: 200, fit: 'cover' }));
+            setRegistrationOpen(!!editingTrip.registration_open);
+            setAllowFinalPayments(!!editingTrip.allow_final_payments);
+            setIsBusTrip(!!editingTrip.is_bus_trip);
+        }
+        
+        if (state?.initialData) {
+            const d = state.initialData;
+            setRegistrationOpen(d.registration_open === 'on' || d.registration_open === 'true' || d.registration_open === true);
+            setAllowFinalPayments(d.allow_final_payments === 'on' || d.allow_final_payments === 'true' || d.allow_final_payments === true);
+            setIsBusTrip(d.is_bus_trip === 'on' || d.is_bus_trip === 'true' || d.is_bus_trip === true);
+        }
+    }, [editingTrip, state]);
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => setImagePreview(reader.result as string);
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleRemoveImage = () => {
+        setImagePreview(null);
+    };
+
+    const formErrors = state?.fieldErrors || {};
+
+    return (
+        <div className="mb-12 animate-in slide-in-from-bottom-8 duration-500">
+            <form action={editingTrip ? updateAction : createAction}>
                 {editingTrip && <input type="hidden" name="id" value={editingTrip.id} />}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    {/* Left Column: Basic Info */}
-                    <div className="lg:col-span-7 space-y-5">
-                        <InputField 
-                            label="Naam van de reis" 
-                            name="name" 
-                            defaultValue={state?.initialData?.name || editingTrip?.name} 
-                            placeholder="Bijv. Skiereis 2025" 
-                            required 
-                        />
-                        <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] ml-0.5">Beschrijving</label>
-                            <textarea 
-                                name="description"
-                                defaultValue={state?.initialData?.description || editingTrip?.description || ''}
-                                rows={3}
-                                className="w-full px-4 py-3 bg-[var(--bg-main)]/50 border-0 ring-1 ring-[var(--border-color)]/30 rounded-xl text-sm text-[var(--text-main)] transition-all resize-none font-semibold focus:ring-2 focus:ring-[var(--theme-purple)]"
-                                placeholder="Korte omschrijving..."
-                            />
+                {/* Hidden fields for controlled state toggles */}
+                <input type="hidden" name="registration_open" value={registrationOpen ? 'on' : 'off'} />
+                <input type="hidden" name="allow_final_payments" value={allowFinalPayments ? 'on' : 'off'} />
+                <input type="hidden" name="is_bus_trip" value={isBusTrip ? 'on' : 'off'} />
+                
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    {/* Main Content Area */}
+                    <div className="lg:col-span-8 space-y-6">
+                        {/* Section 1: Algemene Informatie */}
+                        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] overflow-hidden">
+                            <div className="px-6 py-4 border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 flex items-center gap-3">
+                                <Info className="h-4 w-4 text-[var(--beheer-accent)]" />
+                                <h2 className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text)]">Algemene Informatie</h2>
+                            </div>
+                            <div className="p-6 space-y-6">
+                                <div>
+                                    <label htmlFor="name" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest mb-2">Naam van de reis *</label>
+                                    <input
+                                        type="text"
+                                        id="name"
+                                        name="name"
+                                        autoComplete="off"
+                                        className={`beheer-input ${formErrors.name ? 'border-red-500 ring-4 ring-red-500/10' : ''}`}
+                                        placeholder="Bijv. Skiereis 2025"
+                                        defaultValue={state?.initialData?.name || editingTrip?.name}
+                                    />
+                                    {formErrors.name && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.name[0]}</p>}
+                                </div>
+
+                                <div>
+                                    <label htmlFor="description" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest mb-2">Beschrijving</label>
+                                    <textarea 
+                                        id="description" 
+                                        name="description" 
+                                        rows={4} 
+                                        className={`beheer-input ${formErrors.description ? 'border-red-500 ring-4 ring-red-500/10' : ''}`} 
+                                        placeholder="Wat gaan we beleven op deze reis?" 
+                                        defaultValue={state?.initialData?.description || editingTrip?.description || ''} 
+                                    />
+                                    {formErrors.description && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.description[0]}</p>}
+                                </div>
+                            </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <InputField label="Start Datum" name="start_date" type="date" defaultValue={state?.initialData?.start_date || editingTrip?.start_date?.split('T')[0]} required />
-                            <InputField label="Eind Datum" name="end_date" type="date" defaultValue={state?.initialData?.end_date || editingTrip?.end_date?.split('T')[0]} />
+
+                        {/* Section 2: Planning & Capaciteit */}
+                        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] overflow-hidden">
+                            <div className="px-6 py-4 border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 flex items-center gap-3">
+                                <CalendarIcon className="h-4 w-4 text-[var(--beheer-accent)]" />
+                                <h2 className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text)]">Planning & Capaciteit</h2>
+                            </div>
+                            <div className="p-6 space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label htmlFor="start_date" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest mb-2">Startdatum *</label>
+                                        <input type="date" id="start_date" name="start_date" className={`beheer-input ${formErrors.start_date ? 'border-red-500' : ''}`} defaultValue={state?.initialData?.start_date || editingTrip?.start_date?.split('T')[0]} />
+                                        {formErrors.start_date && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.start_date[0]}</p>}
+                                    </div>
+                                    <div>
+                                        <label htmlFor="end_date" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest mb-2">Einddatum</label>
+                                        <input type="date" id="end_date" name="end_date" className="beheer-input" defaultValue={state?.initialData?.end_date || editingTrip?.end_date?.split('T')[0]} />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-[var(--beheer-border)]/30">
+                                    <div>
+                                        <label htmlFor="max_participants" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest mb-2">Max. Deelnemers *</label>
+                                        <input type="number" id="max_participants" name="max_participants" min="0" className={`beheer-input ${formErrors.max_participants ? 'border-red-500' : ''}`} placeholder="Bijv. 50" defaultValue={state?.initialData?.max_participants || editingTrip?.max_participants} />
+                                        {formErrors.max_participants && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.max_participants[0]}</p>}
+                                    </div>
+                                    <div>
+                                        <label htmlFor="registration_start_date" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest mb-2">Auto-open Datum</label>
+                                        <input 
+                                            type="datetime-local" 
+                                            id="registration_start_date" 
+                                            name="registration_start_date" 
+                                            className="beheer-input" 
+                                            defaultValue={state?.initialData?.registration_start_date || (editingTrip?.registration_start_date ? new Date(editingTrip.registration_start_date).toISOString().slice(0, 16) : '')} 
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
-                             <InputField 
-                                label="Capaciteit" 
-                                name="max_participants" 
-                                type="number" 
-                                defaultValue={state?.initialData?.max_participants || editingTrip?.max_participants} 
-                                required 
-                            />
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] ml-0.5">Auto-open Datum</label>
-                                <input 
-                                    type="datetime-local" 
-                                    name="registration_start_date"
-                                    defaultValue={state?.initialData?.registration_start_date || (editingTrip?.registration_start_date ? new Date(editingTrip.registration_start_date).toISOString().slice(0,16) : '')}
-                                    className="w-full px-4 py-3 bg-[var(--bg-main)]/50 border-0 ring-1 ring-[var(--border-color)]/30 rounded-xl text-sm text-[var(--text-main)] transition-all font-semibold focus:ring-2 focus:ring-[var(--theme-purple)]"
-                                />
+
+                        {/* Section 3: Financiën */}
+                        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] overflow-hidden">
+                            <div className="px-6 py-4 border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 flex items-center gap-3">
+                                <Euro className="h-4 w-4 text-[var(--beheer-accent)]" />
+                                <h2 className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text)]">Financiën</h2>
+                            </div>
+                            <div className="p-6 space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label htmlFor="base_price" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest mb-2">Totale Prijs (€) *</label>
+                                        <input type="number" id="base_price" name="base_price" step="0.01" min="0" className={`beheer-input ${formErrors.base_price ? 'border-red-500' : ''}`} placeholder="0.00" defaultValue={state?.initialData?.base_price || editingTrip?.base_price} />
+                                        {formErrors.base_price && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.base_price[0]}</p>}
+                                    </div>
+                                    <div>
+                                        <label htmlFor="deposit_amount" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest mb-2">Aanbetaling (€) *</label>
+                                        <input type="number" id="deposit_amount" name="deposit_amount" step="0.01" min="0" className={`beheer-input ${formErrors.deposit_amount ? 'border-red-500' : ''}`} placeholder="0.00" defaultValue={state?.initialData?.deposit_amount || editingTrip?.deposit_amount} />
+                                        {formErrors.deposit_amount && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.deposit_amount[0]}</p>}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Right Column: Pricing & Logistics */}
-                    <div className="lg:col-span-5 space-y-5">
-                        <div className="grid grid-cols-2 gap-4">
-                            <InputField label="Prijs (€)" name="base_price" type="number" step="0.01" defaultValue={state?.initialData?.base_price || editingTrip?.base_price} required />
-                            <InputField label="Aanbetaling (€)" name="deposit_amount" type="number" step="0.01" defaultValue={state?.initialData?.deposit_amount || editingTrip?.deposit_amount} required />
-                        </div>
-                        
-                        <ReisImageUpload 
-                            defaultValue={editingTrip?.image} 
-                            name="image"
-                        />
-                        
-                        <div className="p-4 bg-[var(--bg-main)]/50 rounded-2xl border border-[var(--border-color)]/20 space-y-3">
-                            <ToggleField label="Inschrijving nu Open" name="registration_open" defaultChecked={state?.initialData ? (state.initialData.registration_open === 'on' || state.initialData.registration_open === 'true' || state.initialData.registration_open === true) : !!editingTrip?.registration_open} />
-                            <ToggleField label="Restbetalingen" name="allow_final_payments" defaultChecked={state?.initialData ? (state.initialData.allow_final_payments === 'on' || state.initialData.allow_final_payments === 'true' || state.initialData.allow_final_payments === true) : !!editingTrip?.allow_final_payments} />
-                            <ToggleField label="Busreis (Vraag rijbewijs)" name="is_bus_trip" defaultChecked={state?.initialData ? (state.initialData.is_bus_trip === 'on' || state.initialData.is_bus_trip === 'true' || state.initialData.is_bus_trip === true) : !!editingTrip?.is_bus_trip} />
-                        </div>
-                    </div>
-                </div>
-
-                <div className="mt-6 pt-6 border-t border-[var(--beheer-border)]/30 flex justify-end gap-3">
-                    <button
-                        type="button"
-                        onClick={onCancel}
-                        className="px-6 py-3 text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] font-black uppercase tracking-widest text-[10px] transition-colors"
-                    >
-                        Annuleren
-                    </button>
-                    <button
-                        type="submit"
-                        disabled={pending}
-                        className="px-8 py-3 bg-[var(--beheer-accent)] hover:opacity-95 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
-                    >
-                        {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                        <span>Opslaan</span>
-                    </button>
+                    {/* Sidebar */}
+                    <TripFormSidebar 
+                        isAdding={isAdding}
+                        pending={pending}
+                        imagePreview={imagePreview}
+                        onImageChange={handleImageChange}
+                        onRemoveImage={handleRemoveImage}
+                        onCancel={onCancel}
+                        registrationOpen={registrationOpen}
+                        setRegistrationOpen={setRegistrationOpen}
+                        allowFinalPayments={allowFinalPayments}
+                        setAllowFinalPayments={setAllowFinalPayments}
+                        isBusTrip={isBusTrip}
+                        setIsBusTrip={setIsBusTrip}
+                    />
                 </div>
             </form>
         </div>

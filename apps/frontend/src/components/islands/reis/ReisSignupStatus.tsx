@@ -45,7 +45,7 @@ export function ReisSignupStatus({ userSignup, nextTrip, error }: ReisSignupStat
                 <p className="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">Huidige status</p>
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <div>
-                        <p className="text-2xl sm:text-3xl font-black text-theme-purple dark:text-theme-white break-words">
+                        <p className="text-2xl sm:text-3xl font-bold text-theme-purple dark:text-theme-white tracking-tight break-words">
                             {getSignupStatusDisplay(userSignup)}
                         </p>
                         {userSignup.status === 'registered' && (
@@ -54,7 +54,7 @@ export function ReisSignupStatus({ userSignup, nextTrip, error }: ReisSignupStat
                             </p>
                         )}
                     </div>
-                    <div className="px-3 py-1 bg-theme-purple/10 rounded-full text-xs font-bold text-theme-purple uppercase shrink-0">
+                    <div className="px-4 py-1.5 bg-theme-purple/10 rounded-full text-[10px] font-semibold text-theme-purple uppercase tracking-widest shrink-0">
                         {userSignup.status}
                     </div>
                 </div>

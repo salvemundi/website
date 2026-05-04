@@ -1,12 +1,11 @@
-import React, { Suspense } from 'react';
-import { getReisSiteSettings, getUpcomingTrips, getUserTripSignup, getTripParticipantsCount } from '@/server/actions/reis.actions';
+import React from 'react';
+import { getReisSiteSettings, getUpcomingTrips, getUserTripSignup, getTripParticipantsCount, getCurrentUserProfileAction } from '@/server/actions/reis.actions';
 import { ReisFormIsland } from '@/components/islands/reis/ReisFormIsland';
 import { ReisInfoIsland } from '@/components/islands/reis/ReisInfoIsland';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
-import { getCurrentUserProfileAction } from '@/server/actions/reis.actions';
 import { connection } from 'next/server';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 
@@ -15,30 +14,14 @@ export const metadata = {
     description: 'Schrijf je in voor de jaarlijkse reis van Salve Mundi! Een onvergetelijke ervaring.',
 };
 
+/**
+ * ReisPage: Pure Nuclear SSR implementation.
+ * No Suspense, no skeletons. All data is fetched on the server side
+ * before any HTML is sent to the client to ensure a fast, flicker-free experience.
+ */
 export default async function ReisPage() {
     await connection();
-    return (
-        <PublicPageShell>
-            <h1 className="sr-only">Reis</h1>
-            <Suspense fallback={<ReisSkeleton />}>
-                <ReisContent />
-            </Suspense>
-        </PublicPageShell>
-    );
-}
-
-function ReisSkeleton() {
-    return (
-        <div className="mx-auto max-w-app px-4 pt-8 pb-8 sm:py-10 md:py-12 animate-pulse">
-            <div className="flex flex-col lg:flex-row gap-8 items-start">
-                <div className="w-full lg:w-2/3 h-[600px] bg-[var(--bg-card)] rounded-[2rem]" />
-                <div className="w-full lg:w-1/3 h-[400px] bg-[var(--bg-card)] rounded-[2rem]" />
-            </div>
-        </div>
-    );
-}
-
-async function ReisContent() {
+    
     // NUCLEAR SSR: Fetch all data before flushing any part of the page content
     const [trips, siteSettings, session] = await Promise.all([
         getUpcomingTrips(),
@@ -85,18 +68,21 @@ async function ReisContent() {
                 : 'Inschrijving tijdelijk niet beschikbaar'));
 
     return (
-        <div className="mx-auto max-w-app px-4 pt-8 pb-8 sm:py-10 md:py-12">
-            <div className="flex flex-col lg:flex-row gap-8 items-start">
-                <ReisFormIsland
-                    nextTrip={nextTrip}
-                    userSignup={userSignup}
-                    canSignUp={canSignUp}
-                    registrationStartText={registrationStartText}
-                    participantsCount={participantsCount}
-                    initialUser={currentUserProfile}
-                />
-                <ReisInfoIsland nextTrip={nextTrip} />
+        <PublicPageShell>
+            <h1 className="sr-only">Reis</h1>
+            <div className="mx-auto max-w-app px-4 pt-8 pb-8 sm:py-10 md:py-12 animate-in fade-in duration-700">
+                <div className="flex flex-col lg:flex-row gap-8 items-start">
+                    <ReisFormIsland
+                        nextTrip={nextTrip}
+                        userSignup={userSignup}
+                        canSignUp={canSignUp}
+                        registrationStartText={registrationStartText}
+                        participantsCount={participantsCount}
+                        initialUser={currentUserProfile}
+                    />
+                    <ReisInfoIsland nextTrip={nextTrip} />
+                </div>
             </div>
-        </div>
+        </PublicPageShell>
     );
 }

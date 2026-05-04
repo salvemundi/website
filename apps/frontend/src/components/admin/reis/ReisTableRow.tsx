@@ -44,16 +44,16 @@ export default function ReisTableRow({
         <Fragment>
             <tr onClick={() => onToggleExpand(signup)} className="hover:bg-[var(--beheer-accent)]/[0.02] cursor-pointer transition-colors group">
                 <td className="px-3 sm:px-6 py-4">
-                    <div className="text-sm font-black text-[var(--beheer-text)] uppercase tracking-tight group-hover:text-[var(--beheer-accent)] transition-colors">
+                    <div className="text-sm font-semibold text-[var(--beheer-text)] tracking-tight group-hover:text-[var(--beheer-accent)] transition-colors">
                         {signup.first_name} {signup.last_name}
                     </div>
-                    <div className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">{signup.email}</div>
+                    <div className="text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest">{signup.email}</div>
                 </td>
-                <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-xs font-black text-[var(--beheer-text)] uppercase tracking-widest hidden sm:table-cell">
+                <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-xs font-semibold text-[var(--beheer-text)] tracking-widest hidden sm:table-cell">
                     {signup.date_of_birth ? format(new Date(signup.date_of_birth), 'dd-MM-yyyy') : '-'}
                 </td>
                 <td className="px-3 sm:px-6 py-4 whitespace-nowrap hidden md:table-cell">
-                    <span className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full ${signup.role === 'crew' ? 'bg-[var(--beheer-accent)] text-white shadow-sm shadow-[var(--beheer-accent)]/20' : 'bg-[var(--bg-main)] text-[var(--beheer-text-muted)] border border-[var(--beheer-border)]/50'}`}>
+                    <span className={`px-3 py-1 text-[10px] font-semibold tracking-widest rounded-full ${signup.role === 'crew' ? 'bg-[var(--beheer-accent)] text-white shadow-sm' : 'bg-[var(--bg-main)] text-[var(--beheer-text-muted)] border border-[var(--beheer-border)]/50'}`}>
                         {signup.role === 'crew' ? 'Crew' : 'Deelnemer'}
                     </span>
                 </td>
@@ -68,7 +68,7 @@ export default function ReisTableRow({
                                 value={signup.status || 'registered'}
                                 onClick={(e) => e.stopPropagation()}
                                 onChange={(e) => onStatusChange(signup.id, e.target.value)}
-                                className={`beheer-status-select status-${signup.status}`}>
+                                className={`beheer-status-select status-${signup.status} text-[10px] font-semibold`}>
                                 <option value="registered" className="bg-[var(--beheer-card-bg)] text-[var(--beheer-text)]">Geregistreerd</option>
                                 <option value="confirmed" className="bg-[var(--beheer-card-bg)] text-[var(--beheer-text)]">Bevestigd</option>
                                 <option value="waitlist" className="bg-[var(--beheer-card-bg)] text-[var(--beheer-text)]">Wachtlijst</option>
@@ -79,7 +79,7 @@ export default function ReisTableRow({
                     )}
                 </td>
                 <td className="px-3 sm:px-6 py-4 whitespace-nowrap hidden sm:table-cell">
-                    <span className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full ${paymentStatus.color}`}>
+                    <span className={`px-3 py-1 text-[10px] font-semibold tracking-widest rounded-full ${paymentStatus.color}`}>
                         {paymentStatus.label}
                     </span>
                 </td>
@@ -87,7 +87,7 @@ export default function ReisTableRow({
                     <div className="flex justify-end gap-3">
                         <button 
                             onClick={(e) => { e.stopPropagation(); router.push(`/beheer/reis/deelnemer/${signup.id}`); }}
-                            className="text-[var(--beheer-accent)] hover:opacity-70 transition-all active:scale-90 p-2 bg-[var(--beheer-accent)]/5 rounded-xl border border-[var(--beheer-accent)]/10" 
+                            className="text-[var(--beheer-accent)] hover:bg-[var(--beheer-accent)]/10 transition-all active:scale-90 p-2 bg-[var(--beheer-accent)]/5 rounded-xl border border-[var(--beheer-accent)]/10" 
                             title="Bewerken"
                         >
                             <Edit className="h-4 w-4" />
@@ -95,7 +95,7 @@ export default function ReisTableRow({
                         <button
                             onClick={(e) => { e.stopPropagation(); onDelete(signup.id); }}
                             disabled={isDeleteLoading}
-                            className="text-[var(--beheer-inactive)] hover:opacity-70 disabled:opacity-50 transition-all active:scale-90 p-2 bg-[var(--beheer-inactive)]/5 rounded-xl border border-[var(--beheer-inactive)]/10"
+                            className="text-[var(--beheer-inactive)] hover:bg-[var(--beheer-inactive)]/10 disabled:opacity-50 transition-all active:scale-90 p-2 bg-[var(--beheer-inactive)]/5 rounded-xl border border-[var(--beheer-inactive)]/10"
                             title="Verwijderen"
                         >
                             {isDeleteLoading ? (
@@ -111,33 +111,35 @@ export default function ReisTableRow({
                 </td>
             </tr>
             {isExpanded && (
-                <tr className="bg-[var(--bg-main)]/30">
-                    <td colSpan={6} className="px-8 py-6">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
-                            <div className="space-y-3">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-accent)]">Contact Gegevens</p>
-                                <div className="space-y-1">
-                                    <p className="text-xs font-black text-[var(--beheer-text)] uppercase tracking-tight">{signup.email}</p>
-                                    <p className="text-xs font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">{signup.phone_number || 'Geen telefoon'}</p>
+                <tr className="bg-[var(--bg-main)]/30 border-b border-[var(--beheer-border)]/10">
+                    <td colSpan={6} className="px-8 py-8 animate-in slide-in-from-top-2 duration-300">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-8">
+                            <div className="space-y-4">
+                                <p className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[var(--beheer-accent)]">Contact Gegevens</p>
+                                <div className="space-y-2">
+                                    <p className="text-xs font-semibold text-[var(--beheer-text)]">{signup.email}</p>
+                                    <p className="text-xs font-semibold text-[var(--beheer-text-muted)]">{signup.phone_number || 'Geen telefoon'}</p>
                                 </div>
-                                <div className="pt-2">
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">Document: <span className="text-[var(--beheer-text)]">{signup.id_document === 'passport' ? 'Paspoort' : signup.id_document === 'id_card' ? 'ID Kaart' : (signup.id_document || '-')}</span></p>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">Nummer: <span className="text-[var(--beheer-text)]">{signup.document_number || '-'}</span></p>
-                                </div>
-                            </div>
-                            <div className="space-y-3">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-accent)]">Medisch & Info</p>
-                                <div>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] mb-1">Allergieën</p>
-                                    <p className="text-xs font-semibold text-[var(--beheer-text)]">{signup.allergies || 'Geen'}</p>
-                                </div>
-                                <div>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] mb-1">Bijzonderheden</p>
-                                    <p className="text-xs font-semibold text-[var(--beheer-text)]">{signup.special_notes || 'Geen'}</p>
+                                <div className="pt-2 space-y-1">
+                                    <p className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text-muted)]">Document: <span className="text-[var(--beheer-text)]">{signup.id_document === 'passport' ? 'Paspoort' : signup.id_document === 'id_card' ? 'ID Kaart' : (signup.id_document || '-')}</span></p>
+                                    <p className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text-muted)]">Nummer: <span className="text-[var(--beheer-text)]">{signup.document_number || '-'}</span></p>
                                 </div>
                             </div>
-                            <div className="space-y-3">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-accent)]">Activiteiten</p>
+                            <div className="space-y-4">
+                                <p className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[var(--beheer-accent)]">Medisch & Info</p>
+                                <div className="bg-[var(--beheer-card-bg)]/50 p-4 rounded-2xl border border-[var(--beheer-border)]/5 space-y-3">
+                                    <div>
+                                        <p className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text-muted)] mb-1">Allergieën</p>
+                                        <p className="text-xs font-semibold text-[var(--beheer-text)]">{signup.allergies || 'Geen'}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text-muted)] mb-1">Bijzonderheden</p>
+                                        <p className="text-xs font-semibold text-[var(--beheer-text)]">{signup.special_notes || 'Geen'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="space-y-4">
+                                <p className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[var(--beheer-accent)]">Activiteiten</p>
                                 <div className="space-y-3">
                                     {activities ? (
                                         activities.length > 0 ? (
@@ -153,23 +155,22 @@ export default function ReisTableRow({
                                                 const rawOptions = parseSelectedOptions(activity.selected_options);
                                                 const metaOptions = parseActivityOptions(activity.activity_options || activity.trip_activity_id?.options);
                                                 
-                                                // Map IDs to names using the shared utility
                                                 const selectedNames = Object.keys(rawOptions)
                                                     .map(optId => mapActivityOptionIdToName(optId, metaOptions))
                                                     .filter(Boolean);
 
                                                 return (
-                                                    <div key={a.id} className="space-y-1">
+                                                    <div key={a.id} className="space-y-1.5">
                                                         <div className="flex items-center gap-2">
-                                                            <div className="h-1.5 w-1.5 rounded-full bg-[var(--beheer-accent)]"></div>
-                                                            <span className="text-xs font-black uppercase tracking-tight text-[var(--beheer-text)]">
+                                                            <div className="h-1.5 w-1.5 rounded-full bg-[var(--beheer-accent)] shadow-[0_0_8px_var(--beheer-accent)]"></div>
+                                                            <span className="text-xs font-semibold text-[var(--beheer-text)]">
                                                                 {name}
                                                             </span>
                                                         </div>
                                                         {selectedNames.length > 0 && (
-                                                            <div className="ml-3.5 flex flex-wrap gap-1">
+                                                            <div className="ml-3.5 flex flex-wrap gap-1.5">
                                                                 {selectedNames.map((optName, idx) => (
-                                                                    <span key={idx} className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-[var(--beheer-accent)]/5 text-[var(--beheer-text-muted)] border border-[var(--beheer-border)]/30 uppercase tracking-tighter">
+                                                                    <span key={idx} className="text-[9px] font-semibold px-2 py-0.5 rounded-lg bg-[var(--beheer-accent)]/5 text-[var(--beheer-text-muted)] border border-[var(--beheer-border)]/30 tracking-tight">
                                                                         {optName}
                                                                     </span>
                                                                 ))}
@@ -188,13 +189,13 @@ export default function ReisTableRow({
                             </div>
                         </div>
 
-                        <div className="border-t border-[var(--beheer-border)]/50 pt-6 mt-6">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] mb-4">Betaalverzoek Handmatig Versturen</p>
+                        <div className="border-t border-[var(--beheer-border)]/50 pt-8 mt-6">
+                            <p className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[var(--beheer-text-muted)] mb-5">Betaalverzoek Handmatig Versturen</p>
                             <div className="flex flex-wrap gap-3">
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onResendEmail(signup.id, 'deposit'); }}
                                     disabled={sendingEmailType === 'deposit'}
-                                    className={`flex items-center justify-center gap-3 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${signup.deposit_email_sent ? 'bg-[var(--beheer-card-bg)] text-[var(--beheer-text-muted)] border border-[var(--beheer-border)]' : 'bg-yellow-500/10 text-yellow-600 border border-yellow-500/20 hover:bg-yellow-500/20'}`}
+                                    className={`flex items-center justify-center gap-3 px-6 py-3 rounded-xl text-[10px] font-semibold tracking-widest transition-all shadow-sm ${signup.deposit_email_sent ? 'bg-[var(--beheer-card-bg)] text-[var(--beheer-text-muted)] border border-[var(--beheer-border)]' : 'bg-yellow-500/10 text-yellow-600 border border-yellow-500/20 hover:bg-yellow-500/20 active:scale-95'}`}
                                 >
                                     {sendingEmailType === 'deposit' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                                     Aanbetaling {signup.deposit_email_sent && <span className="opacity-60">(OK)</span>}
@@ -202,14 +203,14 @@ export default function ReisTableRow({
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onResendEmail(signup.id, 'final'); }}
                                     disabled={sendingEmailType === 'final' || !allowFinalPayments}
-                                    className={`flex items-center justify-center gap-3 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${signup.final_email_sent ? 'bg-[var(--beheer-card-bg)] text-[var(--beheer-text-muted)] border border-[var(--beheer-border)]' : 'bg-[var(--beheer-active)]/10 text-[var(--beheer-active)] border border-[var(--beheer-active)]/20 hover:bg-[var(--beheer-active)]/20'}`}
+                                    className={`flex items-center justify-center gap-3 px-6 py-3 rounded-xl text-[10px] font-semibold tracking-widest transition-all shadow-sm ${signup.final_email_sent ? 'bg-[var(--beheer-card-bg)] text-[var(--beheer-text-muted)] border border-[var(--beheer-border)]' : 'bg-[var(--beheer-active)]/10 text-[var(--beheer-active)] border border-[var(--beheer-active)]/20 hover:bg-[var(--beheer-active)]/20 active:scale-95'}`}
                                 >
                                     {sendingEmailType === 'final' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                                     Restbetaling {signup.final_email_sent && <span className="opacity-60">(OK)</span>}
                                 </button>
                                 {!allowFinalPayments && (
-                                    <div className="flex items-center gap-2 text-[10px] font-black text-red-500/70 uppercase tracking-widest bg-red-500/5 px-4 py-2 rounded-lg border border-red-500/10">
-                                        <AlertCircle className="h-3 w-3" />
+                                    <div className="flex items-center gap-2 text-[10px] font-semibold text-red-500/70 tracking-widest bg-red-500/5 px-4 py-2 rounded-xl border border-red-500/10">
+                                        <AlertCircle className="h-3.5 w-3.5" />
                                         Restbetalingen Gesloten
                                     </div>
                                 )}

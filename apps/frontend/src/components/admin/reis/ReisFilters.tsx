@@ -71,14 +71,14 @@ export default function ReisFilters({
                 <button
                     onClick={onDownloadExcel}
                     disabled={!hasResults}
-                    className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-active)] text-white rounded-[var(--beheer-radius)] font-black uppercase tracking-widest text-xs shadow-[var(--shadow-glow)] hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                    className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[var(--beheer-active)] text-white rounded-xl font-semibold tracking-widest text-[10px] shadow-lg hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto border border-white/10"
                 >
                     <Download className="h-4 w-4" />
                     Export naar Excel
                 </button>
                 <button
                     onClick={() => router.push('/beheer/reis/instellingen')}
-                    className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white rounded-[var(--beheer-radius)] font-black uppercase tracking-widest text-xs shadow-[var(--shadow-glow)] hover:opacity-90 transition w-full sm:w-auto"
+                    className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[var(--beheer-accent)] text-white rounded-xl font-semibold tracking-widest text-[10px] shadow-lg hover:opacity-90 transition w-full sm:w-auto border border-white/10"
                 >
                     <Edit className="h-4 w-4" />
                     Reis Instellingen
