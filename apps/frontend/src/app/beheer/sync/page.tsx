@@ -38,13 +38,19 @@ export default async function AzureSyncPage() {
     const hasAccess = await checkSyncAccess();
     if (!hasAccess) redirect('/beheer');
 
+    // NUCLEAR SSR: Pre-fetch sync status to avoid flickering and empty states
+    const statusData = await getSyncStatusAction();
+    const initialStatus = statusData && !('success' in statusData && statusData.success === false) 
+        ? statusData 
+        : null;
+
     return (
         <AdminPageShell
             title="Azure Sync Monitor"
             subtitle="Beheer de synchronisatie tussen Salve Mundi en Azure AD / Microsoft 365."
             backHref="/beheer"
         >
-            <SyncProvider initialStatus={null}>
+            <SyncProvider initialStatus={initialStatus}>
                 <div className="container mx-auto px-4 py-8 max-w-7xl relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
                     <div className="flex flex-col gap-10">
                         <SyncStatsIsland />

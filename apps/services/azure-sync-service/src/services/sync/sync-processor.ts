@@ -118,6 +118,9 @@ export class SyncProcessor {
             const azureMemberships = ctx.membershipMap.get(aUser.id) || new Map<number, boolean>();
 
             for (const [committeeId, isLeader] of azureMemberships) {
+                const committee = ctx.committeeByIdCache?.get(Number(committeeId));
+                const committeeName = committee?.name || `ID ${committeeId}`;
+
                 const existing = currentMemberships.find((m: any) => {
                     const mCommId = (typeof m.committee_id === 'object' && m.committee_id !== null) ? m.committee_id.id : m.committee_id;
                     return Number(mCommId) === Number(committeeId);
@@ -125,17 +128,20 @@ export class SyncProcessor {
 
                 if (!existing) {
                     await DirectusService.addMemberToCommittee(currentUser.id, committeeId, isLeader);
-                    changes.push({ field: 'Commissie', old: 'Geen', new: `Toegevoegd aan ID ${committeeId}${isLeader ? ' (Leider)' : ''}` });
+                    changes.push({ field: 'Commissie', old: 'Geen', new: `Toegevoegd aan ${committeeName}${isLeader ? ' (Leider)' : ''}` });
                 } else if (existing.is_leader !== isLeader) {
                     await DirectusService.updateCommitteeMember(existing.id, { is_leader: isLeader });
-                    changes.push({ field: `Commissie ${committeeId} status`, old: 'Lid', new: 'Leider' });
+                    changes.push({ field: `${committeeName} status`, old: 'Lid', new: 'Leider' });
                 }
             }
 
             for (const current of currentMemberships) {
                 if (!azureMemberships.has(current.committee_id)) {
+                    const committee = ctx.committeeByIdCache?.get(Number(current.committee_id));
+                    const committeeName = committee?.name || `ID ${current.committee_id}`;
+
                     await DirectusService.removeMemberFromCommittee(current.id);
-                    changes.push({ field: 'Commissie', old: `ID ${current.committee_id}`, new: 'Verwijderd' });
+                    changes.push({ field: 'Commissie', old: committeeName, new: 'Verwijderd' });
                 }
             }
         }

@@ -41,6 +41,7 @@ export interface SyncContext {
     options: SyncOptions;
     token: string;
     committeeCache: Map<string, Committee>; // azure_group_id -> committee
+    committeeByIdCache?: Map<number, Committee>; // id -> committee
     ownerCache: Map<string, string[]>; // azure_group_id -> owner_ids[]
     userCacheByEntra: Map<string, DirectusUser>;
     membershipCache: Map<string, CommitteeMember[]>; // user_id -> membership[]
