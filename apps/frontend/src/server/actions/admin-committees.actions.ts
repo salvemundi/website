@@ -128,17 +128,29 @@ export async function addCommitteeMember(
 
 export async function removeCommitteeMember(
     azureGroupId: string,
-    entraId: string
+    entraId: string,
+    isLeader?: boolean
 ): Promise<{ success: boolean; error?: string }> {
-    const validated = removeCommitteeMemberSchema.safeParse({ azureGroupId, entraId });
+    const validated = removeCommitteeMemberSchema.safeParse({ azureGroupId, entraId, isLeader });
     if (!validated.success) {
         return { success: false, error: 'Ongeldige invoer' };
     }
     await checkAccess();
+
+    // 1. Remove from Owners if they were a leader
+    if (isLeader) {
+        await fetch(`${getAzureManagementUrl()}/api/groups/${encodeURIComponent(azureGroupId)}/owners/${encodeURIComponent(entraId)}`, {
+            method: 'DELETE',
+            headers: serviceHeaders(false),
+        }).catch(() => {});
+    }
+
+    // 2. Remove from Members
     const azRes = await fetch(`${getAzureManagementUrl()}/api/groups/${encodeURIComponent(azureGroupId)}/members/${encodeURIComponent(entraId)}`, {
         method: 'DELETE',
         headers: serviceHeaders(false),
     });
+    
     if (!azRes.ok) {
         const err = await azRes.json().catch(() => ({}));
         

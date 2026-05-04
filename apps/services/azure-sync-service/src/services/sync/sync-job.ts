@@ -82,10 +82,20 @@ export class SyncJob {
                 const dComm = committeeCache.get(groupId);
                 if (!dComm) continue;
 
+                // 1. Process explicit members
                 for (const memberId of details.members) {
                     const userMap = membershipMap.get(memberId) || new Map<number, boolean>();
                     userMap.set(dComm.id, details.owners.includes(memberId));
                     membershipMap.set(memberId, userMap);
+                }
+
+                // 2. Process owners (ensure they are treated as members and leaders)
+                for (const ownerId of details.owners) {
+                    const userMap = membershipMap.get(ownerId) || new Map<number, boolean>();
+                    if (!userMap.has(dComm.id)) {
+                        userMap.set(dComm.id, true);
+                        membershipMap.set(ownerId, userMap);
+                    }
                 }
             }
 
@@ -228,10 +238,23 @@ export class SyncJob {
         for (const group of userGroups) {
             const dComm = committeeCache.get(group.id);
             if (!dComm) continue;
-            // Note: Parallelizing this could help if there are many groups
+            
             const owners = await GraphService.getGroupOwners(group.id, token);
-            userMap.set(dComm.id, owners.includes(aUser.id));
+            const isOwner = owners.includes(aUser.id);
+            userMap.set(dComm.id, isOwner);
         }
+
+        // Safety check: Is the user an owner of any other committee groups they aren't a "member" of?
+        // This handles "Ghost Owners" who are owners but not members.
+        for (const [azureGroupId, committee] of committeeCache.entries()) {
+            if (userMap.has(committee.id)) continue; // Already processed as member
+
+            const owners = await GraphService.getGroupOwners(azureGroupId, token);
+            if (owners.includes(aUser.id)) {
+                userMap.set(committee.id, true);
+            }
+        }
+
         membershipMap.set(aUser.id, userMap);
 
         const status: SyncStatus = { 

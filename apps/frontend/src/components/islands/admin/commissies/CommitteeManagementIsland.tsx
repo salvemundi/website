@@ -124,7 +124,7 @@ export default function CommitteeManagementIsland({ initialCommittees, totalUniq
         if (!selected?.azure_group_id) return;
         if (!confirm(`Weet je zeker dat je ${member.displayName} wilt verwijderen?`)) return;
         setActionLoading(`remove-${member.entraId}`);
-        const res = await removeCommitteeMember(selected.azure_group_id, member.entraId);
+        const res = await removeCommitteeMember(selected.azure_group_id, member.entraId, member.isLeader);
         if (res.success) {
             setMembers(prev => prev.filter(m => m.entraId !== member.entraId));
             showToast('Lid succesvol verwijderd uit de commissie', 'success');
