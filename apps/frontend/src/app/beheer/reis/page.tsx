@@ -51,7 +51,7 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
     const tripIdParam = typeof resolvedSearchParams.tripId === 'string' ? resolvedSearchParams.tripId : undefined;
 
     // Fetch initial trips and settings concurrently
-    let trips: Record<string, unknown>[] = [];
+    let trips: Trip[] = [];
     let reisSettings = { show: true };
     let errorMsg: string | null = null;
     
@@ -61,7 +61,7 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
             getReisSiteSettings()
         ]);
         
-        trips = (tripsRes as unknown as Record<string, unknown>[]) || [];
+        trips = (tripsRes as unknown as Trip[]) || [];
         reisSettings = settingsRes || { show: true };
     } catch (e: unknown) {
         errorMsg = (e instanceof Error) ? e.message : 'Interne serverfout';
@@ -88,7 +88,7 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
         );
     }
 
-    const activeTripId = tripIdParam ? Number(tripIdParam) : trips[0].id;
+    const activeTripId = tripIdParam ? Number(tripIdParam) : trips[0]?.id;
     const activeTrip = trips.find((t) => t.id === activeTripId);
 
     if (!activeTrip) {
@@ -96,22 +96,22 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
     }
 
     // Now fetch signups and activities for the active trip concurrently
-    let signups: Record<string, unknown>[] = [];
-    let allSignupActivities: Record<string, unknown>[] = [];
+    let signups: TripSignup[] = [];
+    let allSignupActivities: TripSignupActivity[] = [];
     
     try {
         const [sRes, saRes] = await Promise.all([
             getTripSignups(activeTrip.id as number),
             getTripSignupActivitiesAction(activeTrip.id as number)
         ]);
-        signups = (sRes as unknown as Record<string, unknown>[]) || [];
-        allSignupActivities = (saRes as unknown as Record<string, unknown>[]) || [];
+        signups = (sRes as unknown as TripSignup[]) || [];
+        allSignupActivities = (saRes as unknown as TripSignupActivity[]) || [];
     } catch (e: unknown) {
         // Log or handle error
     }
 
     // Group activities by signupId
-    const activitiesMap: Record<number, Record<string, unknown>[]> = {};
+    const activitiesMap: Record<number, TripSignupActivity[]> = {};
     (signups || []).forEach(s => {
         activitiesMap[s.id as number] = [];
     });
@@ -136,17 +136,34 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
             subtitle="Beheer aanmeldingen, betalingen en activiteiten voor de studiereis"
             backHref="/beheer"
         >
-            <div className="min-h-screen pb-20">
+            <div className="pb-20 space-y-8 animate-in fade-in duration-700">
                 <AdminReisSelectorIsland 
-                    trips={trips as unknown as Trip[]} 
+                    trips={trips} 
                     initialSettings={reisSettings}
                 />
 
-                <div className="container mx-auto px-4 py-8 max-w-7xl">
+                <div className="container mx-auto px-4 max-w-7xl">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                        <div className="space-y-1">
+                            <h2 className="text-2xl font-bold text-[var(--beheer-text)] tracking-tight">
+                                {activeTrip.name}
+                            </h2>
+                            <p className="text-xs font-semibold text-[var(--beheer-text-muted)] tracking-widest uppercase opacity-70">
+                                Overzicht van alle aanmeldingen
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-2 px-4 py-2 bg-[var(--beheer-card-bg)] rounded-xl border border-[var(--beheer-border)] shadow-sm">
+                            <div className="h-2 w-2 rounded-full bg-[var(--beheer-active)] animate-pulse" />
+                            <span className="text-[10px] font-bold text-[var(--beheer-text-muted)] tracking-widest uppercase">
+                                Live Data
+                            </span>
+                        </div>
+                    </div>
+
                     <AdminReisTableIsland
-                        initialSignups={(signups || []).map(s => ({ ...s, date_created: s.created_at })) as unknown as TripSignup[]}
-                        initialSignupActivities={activitiesMap as unknown as Record<number, TripSignupActivity[]>}
-                        trip={activeTrip as unknown as Trip}
+                        initialSignups={signups}
+                        initialSignupActivities={activitiesMap}
+                        trip={activeTrip as Trip}
                         stats={stats}
                     />
                 </div>
@@ -164,12 +181,12 @@ function NoTripsView() {
                 <div className="h-20 w-20 rounded-full bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] flex items-center justify-center mx-auto mb-6 shadow-glow">
                     <Plane className="h-10 w-10 rotate-45" />
                 </div>
-                <h2 className="text-3xl font-black text-[var(--beheer-text)] tracking-tighter mb-2">Geen reizen gevonden</h2>
-                <p className="text-[var(--beheer-text-muted)] font-bold tracking-widest text-base mb-8">Er zijn momenteel geen actieve of geplande reizen in het systeem.</p>
+                <h2 className="text-3xl font-bold text-[var(--beheer-text)] tracking-tight mb-2">Geen reizen gevonden</h2>
+                <p className="text-[var(--beheer-text-muted)] font-medium text-base mb-8">Er zijn momenteel geen actieve of geplande reizen in het systeem.</p>
                 
                 <Link 
                     href="/beheer/reis/instellingen"
-                    className="inline-flex items-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white rounded-[var(--beheer-radius)] font-black tracking-widest text-base shadow-[var(--shadow-glow)] transition-all hover:scale-[1.02] active:scale-95 group"
+                    className="inline-flex items-center gap-2 px-8 py-3 bg-[var(--beheer-accent)] text-white rounded-xl font-semibold tracking-widest text-base shadow-lg transition-all hover:scale-[1.02] active:scale-95 group"
                 >
                     <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform" />
                     <span>Nieuwe reis aanmaken</span>

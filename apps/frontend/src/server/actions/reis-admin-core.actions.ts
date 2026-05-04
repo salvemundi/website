@@ -81,9 +81,11 @@ export async function createTrip(prevState: any, formData: FormData) {
             is_bus_trip: rawData.is_bus_trip === 'on' || rawData.is_bus_trip === 'true',
             allow_final_payments: rawData.allow_final_payments === 'on' || rawData.allow_final_payments === 'true',
             max_participants: parseInt(rawData.max_participants as string) || 0,
+            max_crew: parseInt(rawData.max_crew as string) || null,
             base_price: parseFloat(rawData.base_price as string) || 0,
             crew_discount: parseFloat(rawData.crew_discount as string) || 0,
             deposit_amount: parseFloat(rawData.deposit_amount as string) || 0,
+            start_date: rawData.start_date || null,
             registration_start_date: rawData.registration_start_date || null,
             image: newImageId || (rawData.image as string) || null,
             end_date: (rawData.end_date as string) || null,
@@ -107,10 +109,14 @@ export async function createTrip(prevState: any, formData: FormData) {
         revalidatePath('/beheer/reis/activiteiten');
         revalidatePath('/reis');
         
-        return { success: true };
+        return { success: true, id: newId };
     } catch (error) {
-        
-        return { success: false, error: error instanceof Error ? error.message : 'Internal server error' };
+        const rawData = Object.fromEntries(formData.entries());
+        return { 
+            success: false, 
+            error: error instanceof Error ? error.message : 'Internal server error',
+            initialData: rawData
+        };
     }
 }
 
@@ -131,9 +137,11 @@ export async function updateTrip(prevState: any, formData: FormData) {
             is_bus_trip: rawData.is_bus_trip === 'on' || rawData.is_bus_trip === 'true',
             allow_final_payments: rawData.allow_final_payments === 'on' || rawData.allow_final_payments === 'true',
             max_participants: parseInt(rawData.max_participants as string) || 0,
+            max_crew: parseInt(rawData.max_crew as string) || null,
             base_price: parseFloat(rawData.base_price as string) || 0,
             crew_discount: parseFloat(rawData.crew_discount as string) || 0,
             deposit_amount: parseFloat(rawData.deposit_amount as string) || 0,
+            start_date: rawData.start_date || null,
             registration_start_date: rawData.registration_start_date || null,
             image: newImageId || (rawData.image as string) || null,
             end_date: (rawData.end_date as string) || null,
@@ -158,8 +166,12 @@ export async function updateTrip(prevState: any, formData: FormData) {
         
         return { success: true };
     } catch (error) {
-        
-        return { success: false, error: error instanceof Error ? error.message : 'Internal server error' };
+        const rawData = Object.fromEntries(formData.entries());
+        return { 
+            success: false, 
+            error: error instanceof Error ? error.message : 'Internal server error',
+            initialData: rawData
+        };
     }
 }
 
@@ -172,7 +184,6 @@ export async function deleteTrip(id: number) {
         revalidatePath('/beheer/reis/activiteiten');
         return { success: true };
     } catch (error) {
-        
         return { success: false, error: error instanceof Error ? error.message : 'Internal server error' };
     }
 }

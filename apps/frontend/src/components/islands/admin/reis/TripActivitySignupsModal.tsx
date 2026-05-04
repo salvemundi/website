@@ -32,48 +32,50 @@ export default function TripActivitySignupsModal({ activityName, options, signup
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-500">
             <div className="bg-[var(--beheer-card-bg)]/90 backdrop-blur-xl w-full max-w-4xl rounded-[2rem] shadow-[0_40px_100px_rgba(0,0,0,0.5)] overflow-hidden border border-[var(--beheer-border)]/50 flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-500">
                 <div className="p-8 border-b border-[var(--beheer-border)] flex items-center justify-between">
-                    <div className="space-y-2">
-                        <h2 className="text-xl font-black text-[var(--beheer-text)] uppercase tracking-tight flex items-center gap-3">
-                            <div className="p-2 bg-[var(--beheer-accent)]/10 rounded-xl text-[var(--beheer-accent)]">
+                    <div className="space-y-1">
+                        <h2 className="text-xl font-bold text-[var(--beheer-text)] tracking-tight flex items-center gap-3">
+                            <div className="p-2.5 bg-[var(--beheer-accent)]/10 rounded-xl text-[var(--beheer-accent)]">
                                 <Users className="h-6 w-6" />
                             </div>
                             Inschrijvingen
                         </h2>
-                        <p className="text-[10px] font-black uppercase text-[var(--beheer-text-muted)] tracking-[0.2em] opacity-60 ml-12">{activityName}</p>
+                        <p className="text-[10px] font-semibold uppercase text-[var(--beheer-text-muted)] tracking-widest opacity-60 ml-14">{activityName}</p>
                     </div>
-                    <button onClick={onClose} className="p-4 hover:bg-[var(--beheer-card-soft)] rounded-[var(--beheer-radius)] transition-all group">
-                        <X className="h-6 w-6 text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-text)] transition-colors" />
+                    <button onClick={onClose} className="p-4 bg-[var(--beheer-card-soft)] hover:bg-[var(--beheer-card-soft)]/80 text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] transition-all rounded-2xl active:scale-90 group">
+                        <X className="h-6 w-6" />
                     </button>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-8">
                     {loading ? (
-                        <div className="flex flex-col items-center justify-center py-20">
-                            <Loader2 className="animate-spin h-12 w-12 text-[var(--beheer-accent)] mb-4" />
-                            <p className="text-[10px] font-black tracking-widest uppercase text-[var(--beheer-text-muted)]">Data laden...</p>
+                        <div className="flex flex-col items-center justify-center py-24">
+                            <Loader2 className="animate-spin h-12 w-12 text-[var(--beheer-accent)] mb-4 opacity-50" />
+                            <p className="text-[10px] font-semibold tracking-widest uppercase text-[var(--beheer-text-muted)]">Data laden...</p>
                         </div>
                     ) : signups.length === 0 ? (
-                        <div className="text-center py-24">
+                        <div className="text-center py-24 bg-[var(--bg-main)]/30 rounded-3xl border-2 border-dashed border-[var(--beheer-border)]/20">
                             <div className="h-20 w-20 bg-[var(--beheer-card-soft)]/50 rounded-full flex items-center justify-center mx-auto mb-6">
                                 <Users className="h-10 w-10 text-[var(--beheer-text-muted)] opacity-20" />
                             </div>
-                            <p className="text-xs font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">Nog geen inschrijvingen voor deze activiteit.</p>
+                            <p className="text-sm font-semibold tracking-tight text-[var(--beheer-text-muted)]">Nog geen inschrijvingen voor deze activiteit.</p>
                         </div>
                     ) : (
-                        <div className="border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] overflow-hidden">
+                        <div className="border border-[var(--beheer-border)]/50 rounded-3xl overflow-hidden shadow-sm">
                             <table className="w-full text-left">
                                 <thead className="bg-[var(--beheer-card-soft)]/50 border-b border-[var(--beheer-border)]">
-                                    <tr className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">
+                                    <tr className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--beheer-text-muted)]">
                                         <th className="px-8 py-5">Reiziger</th>
-                                        <th className="px-8 py-5">Email</th>
+                                        <th className="px-8 py-5">Contact</th>
                                         <th className="px-8 py-5">Gekozen Opties</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-[var(--beheer-border)]">
+                                <tbody className="divide-y divide-[var(--beheer-border)]/10">
                                     {signups.map((s) => (
-                                        <tr key={s.id} className="hover:bg-[var(--beheer-card-soft)]/30 transition-colors">
-                                            <td className="px-8 py-6 font-black text-xs uppercase tracking-tight text-[var(--beheer-text)]">
-                                                {s.trip_signup_id ? `${s.trip_signup_id.first_name} ${s.trip_signup_id.last_name}` : 'Onbekend'}
+                                        <tr key={s.id} className="hover:bg-[var(--beheer-accent)]/[0.02] transition-colors">
+                                            <td className="px-8 py-6">
+                                                <div className="text-sm font-semibold text-[var(--beheer-text)] tracking-tight">
+                                                    {s.trip_signup_id ? `${s.trip_signup_id.first_name} ${s.trip_signup_id.last_name}` : 'Onbekend'}
+                                                </div>
                                             </td>
                                             <td className="px-8 py-6 text-xs text-[var(--beheer-text-muted)] font-medium lowercase">{s.trip_signup_id?.email || '-'}</td>
                                             <td className="px-8 py-6">
@@ -83,13 +85,13 @@ export default function TripActivitySignupsModal({ activityName, options, signup
                                                     const selectedIds = Object.keys(rawSelected).filter(id => rawSelected[id]);
                                                     
                                                     if (selectedIds.length === 0) {
-                                                        return <span className="text-[var(--beheer-text-muted)] italic text-xs opacity-40">Geen opties</span>;
+                                                        return <span className="text-[var(--beheer-text-muted)] italic text-[10px] opacity-40">Geen opties</span>;
                                                     }
 
                                                     return (
                                                         <div className="flex flex-wrap gap-2">
                                                             {selectedIds.map((optId, i) => (
-                                                                <span key={i} className="px-3 py-1 bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] text-[9px] font-black uppercase tracking-tighter rounded-lg border border-[var(--beheer-accent)]/10">
+                                                                <span key={i} className="px-3 py-1 bg-[var(--beheer-accent)]/5 text-[var(--beheer-accent)] text-[9px] font-semibold tracking-tight rounded-lg border border-[var(--beheer-accent)]/10">
                                                                     {mapActivityOptionIdToName(optId, metaOptions)}
                                                                 </span>
                                                             ))}
@@ -100,9 +102,9 @@ export default function TripActivitySignupsModal({ activityName, options, signup
                                         </tr>
                                     ))}
                                 </tbody>
-                                <tfoot className="bg-[var(--beheer-card-soft)]/30 border-t border-[var(--beheer-border)]">
+                                <tfoot className="bg-[var(--beheer-card-soft)]/20 border-t border-[var(--beheer-border)]/50">
                                     <tr>
-                                        <td colSpan={3} className="px-8 py-5 text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-[0.2em] opacity-40">
+                                        <td colSpan={3} className="px-8 py-5 text-[10px] font-semibold text-[var(--beheer-text-muted)] uppercase tracking-widest opacity-60">
                                             Totaal: {signups.length} {signups.length === 1 ? 'aanmelding' : 'aanmeldingen'}
                                         </td>
                                     </tr>
@@ -112,12 +114,12 @@ export default function TripActivitySignupsModal({ activityName, options, signup
                     )}
                 </div>
 
-                <div className="p-8 border-t border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/20 flex justify-end">
+                <div className="p-8 border-t border-[var(--beheer-border)]/50 bg-[var(--beheer-card-soft)]/20 flex justify-end">
                     <button
                         onClick={onClose}
-                        className="px-12 py-4 bg-[var(--beheer-text)] text-[var(--beheer-card-bg)] rounded-xl font-black text-xs uppercase tracking-widest shadow-xl transition-all hover:opacity-90 active:scale-95"
+                        className="px-10 py-4 bg-[var(--beheer-accent)] text-white rounded-xl font-semibold text-[10px] uppercase tracking-widest shadow-xl transition-all hover:opacity-90 active:scale-95 border border-white/10"
                     >
-                        Sluiten
+                        Venster Sluiten
                     </button>
                 </div>
             </div>

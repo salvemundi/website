@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Calendar } from 'lucide-react';
+import { Calendar, Info, ShieldCheck, Mail, MapPin, ExternalLink, Camera } from 'lucide-react';
 import { getImageUrl } from '@/lib/utils/image-utils';
- // Keeping legacy getImageUrl logic, assuming it returns directus URL
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import type { ReisTrip } from '@salvemundi/validations/schema/reis.zod';
@@ -38,107 +37,126 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
         return () => window.removeEventListener('keydown', onKey);
     }, [lightboxOpen]);
 
-    const nextTripStartDate = nextTrip?.start_date
-        ? new Date(nextTrip.start_date)
+    const nextTripStartDate = nextTrip?.start_date ? new Date(nextTrip.start_date) : null;
+    const nextTripEndDate = nextTrip?.end_date ? new Date(nextTrip.end_date) : null;
+
+    const formattedFromDate = nextTripStartDate && !isNaN(nextTripStartDate.getTime())
+        ? format(nextTripStartDate, 'd MMMM yyyy', { locale: nl })
         : null;
 
-    const nextTripEndDate = nextTrip?.end_date
-        ? new Date(nextTrip.end_date)
+    const formattedUntilDate = nextTripEndDate && !isNaN(nextTripEndDate.getTime())
+        ? format(nextTripEndDate, 'd MMMM yyyy', { locale: nl })
         : null;
-
-    const formattedFromDate =
-        nextTripStartDate && !isNaN(nextTripStartDate.getTime())
-            ? format(nextTripStartDate, 'd MMMM yyyy', { locale: nl })
-            : null;
-
-    const formattedUntilDate =
-        nextTripEndDate && !isNaN(nextTripEndDate.getTime())
-            ? format(nextTripEndDate, 'd MMMM yyyy', { locale: nl })
-            : null;
 
     return (
-        <div className={`w-full lg:w-1/2 flex flex-col gap-8`}>
-            {/* Image + Date Card */}
+        <div className="w-full lg:w-1/2 flex flex-col gap-8">
+            {/* Image + Date Hero Card */}
             {nextTrip && (
-                <div className="bg-surface dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-card">
-                    {nextTrip.image && (
-                        <button
-                            type="button"
-                            onClick={() => openLightbox(getImageUrl(nextTrip.image) ?? '')}
-                            className="w-full rounded-xl sm:rounded-2xl overflow-hidden focus:outline-none group relative"
-                        >
-                            <div className="relative w-full max-h-64 sm:max-h-80 md:max-h-96 h-[240px] sm:h-[320px] md:h-[380px]">
-                                <Image
-                                    src={imageError ? '/img/placeholder.svg' : (getImageUrl(nextTrip.image) ?? '/img/placeholder.svg')}
-                                    alt={nextTrip.name}
-                                    fill
-                                    sizes="(max-width: 768px) 100vw, 50vw"
-                                    className="object-contain rounded-xl sm:rounded-2xl transition-transform duration-500 group-hover:scale-105"
-                                    unoptimized
-                                    onError={() => setImageError(true)}
-                                />
+                <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl overflow-hidden shadow-2xl group relative">
+                    {nextTrip.image ? (
+                        <div className="relative w-full h-[300px] sm:h-[400px] overflow-hidden">
+                            <Image
+                                src={imageError ? '/img/placeholder.svg' : (getImageUrl(nextTrip.image) ?? '/img/placeholder.svg')}
+                                alt={nextTrip.name}
+                                fill
+                                className="object-cover transition-transform duration-1000 group-hover:scale-110"
+                                unoptimized
+                                onError={() => setImageError(true)}
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                            
+                            {/* Overlay Title */}
+                            <div className="absolute bottom-6 left-6 right-6">
+                                <h2 className="text-2xl sm:text-4xl font-bold text-white tracking-tight drop-shadow-lg">
+                                    {nextTrip.name}
+                                </h2>
+                                <div className="flex items-center gap-2 text-white/80 mt-2 font-medium">
+                                    <MapPin className="h-4 w-4 text-theme-purple" />
+                                    <span>Bestemming volgt</span>
+                                </div>
                             </div>
-                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <span className="text-white bg-black/40 px-4 py-2 rounded-full backdrop-blur-md text-sm sm:text-base">Bekijk afbeelding</span>
-                            </div>
-                        </button>
+
+                            <button
+                                type="button"
+                                onClick={() => openLightbox(getImageUrl(nextTrip.image) ?? '')}
+                                className="absolute top-4 right-4 bg-white/10 backdrop-blur-md border border-white/20 p-3 rounded-2xl text-white hover:bg-white/20 transition-all active:scale-90"
+                            >
+                                <Camera className="h-5 w-5" />
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="h-24 bg-theme-purple/10" />
                     )}
 
-                    <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 bg-theme-white-soft dark:bg-white/5 rounded-xl sm:rounded-2xl border border-theme-purple/10 dark:border-white/5">
-                        <div className="flex items-center gap-3 sm:gap-4">
-                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-theme-purple/10 flex items-center justify-center flex-shrink-0">
-                                <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-theme-purple" />
-                            </div>
-                            <div>
-                                <p className="text-theme-text-muted text-xs font-semibold uppercase tracking-wider">Datum Reis</p>
-                                <p className="text-base sm:text-lg md:text-xl font-bold text-theme-purple dark:text-theme-white mt-0.5 break-words">
-                                    {formattedFromDate && formattedUntilDate ? (
-                                        formattedFromDate === formattedUntilDate ? formattedFromDate : `${formattedFromDate} — ${formattedUntilDate}`
-                                    ) : (
-                                        'Nog te bepalen'
-                                    )}
-                                </p>
+                    <div className="p-6 sm:p-8">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                            <div className="flex items-center gap-4">
+                                <div className="w-14 h-14 rounded-2xl bg-theme-purple/10 flex items-center justify-center flex-shrink-0 border border-theme-purple/20">
+                                    <Calendar className="h-7 w-7 text-theme-purple" />
+                                </div>
+                                <div>
+                                    <p className="text-[var(--text-muted)] text-[10px] font-bold uppercase tracking-widest">Wanneer gaan we?</p>
+                                    <p className="text-xl sm:text-2xl font-bold text-theme-purple dark:text-theme-white mt-1">
+                                        {formattedFromDate && formattedUntilDate ? (
+                                            formattedFromDate === formattedUntilDate ? formattedFromDate : `${formattedFromDate} — ${formattedUntilDate}`
+                                        ) : (
+                                            'Wordt aangekondigd'
+                                        )}
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Description */}
+            {/* Description Card */}
             {nextTrip?.description && (
-                <div className="bg-surface dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-card">
-                    <h2 className="text-xl sm:text-2xl font-bold text-theme-purple dark:text-theme-white mb-4 sm:mb-6 flex items-center gap-2">
-                        <span>✈️</span> Over de Reis
-                    </h2>
-                    <SafeHtml
-                        className="text-theme-text-muted dark:text-theme-text-muted space-y-4 prose prose-sm sm:prose prose-purple dark:prose-invert max-w-none prose-p:leading-relaxed"
-                        html={nextTrip.description}
-                    />
+                <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">
+                    <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-theme-purple/5 rounded-full blur-3xl" />
+                    <div className="relative z-10">
+                        <h3 className="text-xl sm:text-2xl font-bold text-theme-purple dark:text-theme-white mb-6 flex items-center gap-3">
+                            <div className="h-8 w-1 bg-theme-purple rounded-full" />
+                            Over de Reis
+                        </h3>
+                        <SafeHtml
+                            className="text-[var(--text-muted)] dark:text-[var(--text-muted)] space-y-4 prose prose-sm sm:prose prose-purple dark:prose-invert max-w-none prose-p:leading-relaxed font-medium"
+                            html={nextTrip.description}
+                        />
+                    </div>
                 </div>
             )}
 
-            {/* Important Info */}
-            <div className="bg-surface dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-card">
-                <h2 className="text-xl sm:text-2xl font-bold text-theme-purple dark:text-theme-white mb-4 sm:mb-6 flex items-center gap-2">
-                    <span>ℹ️</span> Belangrijke Informatie
-                </h2>
-                <ul className="space-y-3 sm:space-y-4">
-                    {[
-                        { icon: '👥', text: 'Je hoeft <strong>geen lid</strong> te zijn om deel te nemen' },
-                        { icon: '📧', text: 'Je ontvangt een bevestigingsmail na inschrijving' },
-                        { icon: '🔞', text: 'Minimumleeftijd: 18 jaar' },
-                        { icon: '🪪', text: 'Gebruik je volledige naam zoals op je paspoort/ID' },
-                        { icon: '📞', text: 'Bij vragen? Neem contact op via ', email: 'reis@salvemundi.nl' },
-                    ].map((item, i) => (
-                        <li key={i} className="flex items-start gap-3 sm:gap-4">
-                            <span className="text-lg sm:text-xl flex-shrink-0">{item.icon}</span>
-                            <div className="text-sm sm:text-base text-theme-text-muted leading-snug flex flex-wrap items-center">
-                                {item.text && <SafeHtml as="span" html={item.text} className={item.email ? "mr-1" : ""} />}
-                                {item.email && <ObfuscatedEmail email={item.email} className="text-theme-purple font-semibold underline" showIcon={false} />}
+            {/* Important Info Card */}
+            <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-8 opacity-5">
+                    <ShieldCheck className="h-32 w-32 text-theme-purple" />
+                </div>
+                <div className="relative z-10">
+                    <h3 className="text-xl sm:text-2xl font-bold text-theme-purple dark:text-theme-white mb-8 flex items-center gap-3">
+                        <div className="h-8 w-1 bg-theme-purple rounded-full" />
+                        Goed om te weten
+                    </h3>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        {[
+                            { icon: <ShieldCheck className="h-5 w-5" />, title: 'Lidmaatschap', text: 'Je hoeft <strong>geen lid</strong> te zijn om mee te gaan.' },
+                            { icon: <Mail className="h-5 w-5" />, title: 'Bevestiging', text: 'Je krijgt direct een mail na je inschrijving.' },
+                            { icon: <Info className="h-5 w-5" />, title: 'Leeftijd', text: 'Minimumleeftijd voor deelname is 18 jaar.' },
+                            { icon: <ExternalLink className="h-5 w-5" />, title: 'Vragen?', text: 'Mail ons op <a href="mailto:reis@salvemundi.nl" class="text-theme-purple font-bold">reis@salvemundi.nl</a>' },
+                        ].map((item, i) => (
+                            <div key={i} className="flex gap-4 group">
+                                <div className="h-10 w-10 rounded-xl bg-theme-purple/5 text-theme-purple flex items-center justify-center flex-shrink-0 group-hover:bg-theme-purple/10 transition-colors border border-theme-purple/10">
+                                    {item.icon}
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">{item.title}</p>
+                                    <SafeHtml as="div" className="text-sm text-[var(--text-main)] font-medium leading-relaxed" html={item.text} />
+                                </div>
                             </div>
-                        </li>
-                    ))}
-                </ul>
+                        ))}
+                    </div>
+                </div>
             </div>
 
             {/* Lightbox Modal */}
@@ -146,26 +164,25 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
                 <div
                     role="dialog"
                     aria-modal="true"
-                    className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/70 backdrop-blur-sm"
+                    className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/90 backdrop-blur-lg animate-in fade-in duration-300"
                     onClick={closeLightbox}
                 >
                     <button
                         onClick={closeLightbox}
                         aria-label="Sluiten"
-                        className="absolute top-6 right-6 text-white text-4xl leading-none hover:scale-110 transition-transform"
+                        className="absolute top-8 right-8 text-white hover:scale-110 transition-transform bg-white/10 p-4 rounded-2xl border border-white/20"
                     >
-                        ×
+                        <ExternalLink className="h-6 w-6 rotate-45" />
                     </button>
                     <div
-                        className="relative w-full max-w-5xl h-[80vh] sm:h-[90vh]"
+                        className="relative w-full max-w-6xl h-[85vh]"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <Image
                             src={lightboxSrc}
                             alt={nextTrip?.name || 'Reis afbeelding'}
                             fill
-                            sizes="(max-width: 1024px) 90vw, 1024px"
-                            className="object-contain rounded-2xl shadow-2xl animate-fade-in"
+                            className="object-contain rounded-3xl shadow-2xl animate-in zoom-in-95 duration-500"
                             unoptimized
                         />
                     </div>

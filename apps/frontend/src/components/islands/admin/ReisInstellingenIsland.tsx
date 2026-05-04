@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useActionState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
     Plus, 
     Info 
@@ -25,12 +26,14 @@ interface ReisInstellingenIslandProps {
 
 interface ActionState {
     success: boolean;
+    id?: number;
     error?: string;
     fieldErrors?: Record<string, string[]>;
     initialData?: Record<string, any>;
 }
 
 export default function ReisInstellingenIsland({ initialTrips }: ReisInstellingenIslandProps) {
+    const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
     const [trips, setTrips] = useState<Trip[]>(initialTrips);
     const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
@@ -64,6 +67,7 @@ export default function ReisInstellingenIsland({ initialTrips }: ReisInstellinge
             if (res.success) {
                 setTrips(prev => prev.filter(t => t.id !== id));
                 showToast('Reis succesvol verwijderd', 'success');
+                router.refresh();
             } else {
                 showToast(res.error || 'Verwijderen mislukt', 'error');
             }
@@ -77,15 +81,16 @@ export default function ReisInstellingenIsland({ initialTrips }: ReisInstellinge
     const state = editingTrip ? updateState : createState;
     const pending = editingTrip ? isUpdating : isCreating;
 
-    if (state?.success && (isAdding || editingTrip)) {
-        window.location.reload();
-    }
-
     useEffect(() => {
-        if (state?.error && !pending) {
+        if (state?.success && (isAdding || editingTrip)) {
+            showToast(editingTrip ? 'Reis succesvol bijgewerkt' : 'Reis succesvol aangemaakt', 'success');
+            setEditingTrip(null);
+            setIsAdding(false);
+            router.refresh();
+        } else if (state?.error && !pending) {
             showToast(state.error, 'error');
         }
-    }, [state, pending, showToast]);
+    }, [state, pending, showToast, router, editingTrip, isAdding]);
 
     return (
         <>
@@ -96,10 +101,10 @@ export default function ReisInstellingenIsland({ initialTrips }: ReisInstellinge
                 actions={
                     <button
                         onClick={handleAdd}
-                        className="px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] hover:opacity-90 text-white rounded-[var(--beheer-radius)] font-black uppercase tracking-widest text-xs shadow-[var(--shadow-glow)] transition-all active:scale-95 flex items-center gap-2 group"
+                        className="px-6 py-2.5 bg-[var(--beheer-accent)] hover:opacity-90 text-white rounded-xl font-semibold tracking-widest text-[10px] shadow-lg transition-all active:scale-95 flex items-center gap-2 group border border-white/10"
                     >
                         <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform" />
-                        <span>Nieuw</span>
+                        <span>Nieuwe Reis</span>
                     </button>
                 }
             />
@@ -132,8 +137,8 @@ export default function ReisInstellingenIsland({ initialTrips }: ReisInstellinge
                         ))}
                         {trips.length === 0 && (
                             <div className="col-span-full py-20 text-center">
-                                <Info className="h-12 w-12 text-[var(--text-muted)] mx-auto mb-4 opacity-20" />
-                                <p className="text-[var(--text-muted)] font-bold italic">Nog geen reizen gepland...</p>
+                                <Info className="h-12 w-12 text-[var(--beheer-text-muted)] mx-auto mb-4 opacity-20" />
+                                <p className="text-[var(--beheer-text-muted)] font-semibold italic">Nog geen reizen gepland...</p>
                             </div>
                         )}
                     </div>

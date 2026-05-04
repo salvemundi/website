@@ -114,10 +114,10 @@ export default function ReisActiviteitenIsland({
                                 <select
                                     value={selectedTripId}
                                     onChange={handleTripChange}
-                                    className="w-full pl-4 pr-10 py-3 bg-[var(--bg-main)]/40 dark:bg-black/20 backdrop-blur-sm border-0 ring-1 ring-[var(--beheer-border)]/40 text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-[10px] font-black uppercase tracking-[0.2em] focus:ring-2 focus:ring-[var(--beheer-accent)] focus:bg-[var(--bg-main)]/80 transition-all appearance-none cursor-pointer shadow-inner outline-none"
+                                    className="w-full pl-4 pr-10 py-3 bg-[var(--bg-main)]/40 dark:bg-black/20 backdrop-blur-sm border-0 ring-1 ring-[var(--beheer-border)]/40 text-[var(--beheer-text)] rounded-xl text-sm font-semibold tracking-tight focus:ring-2 focus:ring-[var(--beheer-accent)] focus:bg-[var(--bg-main)]/80 transition-all appearance-none cursor-pointer shadow-inner outline-none"
                                 >
                                     {initialTrips.map(trip => (
-                                        <option key={trip.id} value={trip.id} className="bg-[var(--beheer-card-bg)] text-base font-bold uppercase">{trip.name}</option>
+                                        <option key={trip.id} value={trip.id} className="bg-[var(--beheer-card-bg)] text-base font-semibold">{trip.name}</option>
                                     ))}
                                 </select>
                                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)] transition-colors">
@@ -127,10 +127,10 @@ export default function ReisActiviteitenIsland({
 
                             <button
                                 onClick={() => setEditingActivity({})}
-                                className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
+                                className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[var(--beheer-accent)] text-white font-semibold text-[10px] tracking-widest rounded-xl shadow-lg hover:opacity-90 transition-all active:scale-95 border border-white/10"
                             >
                                 <Plus className="h-4 w-4" />
-                                Nieuw
+                                Nieuwe Activiteit
                             </button>
                         </>
                     }
@@ -151,9 +151,9 @@ export default function ReisActiviteitenIsland({
 
                 {/* List View */}
                 {activities.length === 0 && !editingActivity ? (
-                    <div className="py-24 text-center bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border-2 border-dashed border-[var(--beheer-border)]">
-                        <Layers className="h-12 w-12 text-[var(--beheer-text-muted)] mx-auto mb-4 opacity-20" />
-                        <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-[10px] opacity-60">Nog geen activiteiten voor deze reis</p>
+                    <div className="py-24 text-center bg-[var(--beheer-card-bg)] rounded-3xl border-2 border-dashed border-[var(--beheer-border)]/20 animate-in fade-in duration-500">
+                        <Layers className="h-12 w-12 text-[var(--beheer-text-muted)] mx-auto mb-4 opacity-10" />
+                        <p className="text-[var(--beheer-text-muted)] font-semibold tracking-widest text-[10px] uppercase opacity-60">Nog geen activiteiten voor deze reis</p>
                     </div>
                 ) : (
                     !editingActivity && (

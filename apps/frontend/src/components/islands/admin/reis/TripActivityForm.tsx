@@ -54,128 +54,131 @@ export default function TripActivityForm({ activity, onSave, onCancel, pending }
     };
 
     return (
-        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] p-6 mb-8 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-500">
-            <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-black text-[var(--beheer-text)] uppercase tracking-tight flex items-center gap-3">
-                    <div className="p-1.5 bg-[var(--beheer-accent)]/10 rounded-lg text-[var(--beheer-accent)]">
-                        {activity?.id ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+        <div className="bg-[var(--beheer-card-bg)] rounded-3xl border border-[var(--beheer-border)] p-8 mb-10 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-500 overflow-hidden relative group/form">
+            <div className="absolute -top-24 -right-24 w-48 h-48 bg-[var(--beheer-accent)]/5 rounded-full blur-3xl group-hover/form:bg-[var(--beheer-accent)]/10 transition-colors duration-700" />
+            
+            <div className="flex items-center justify-between mb-8 relative z-10">
+                <h2 className="text-xl font-bold text-[var(--beheer-text)] tracking-tight flex items-center gap-3">
+                    <div className="p-2.5 bg-[var(--beheer-accent)]/10 rounded-xl text-[var(--beheer-accent)] shadow-sm">
+                        {activity?.id ? <Save className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
                     </div>
                     {activity?.id ? 'Bewerken' : 'Nieuwe Activiteit'}
                 </h2>
-                <button onClick={onCancel} className="p-2 text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] transition-colors"><X className="h-4 w-4" /></button>
+                <button onClick={onCancel} className="p-3 bg-[var(--beheer-card-soft)] hover:bg-[var(--beheer-card-soft)]/80 text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] transition-all rounded-xl active:scale-90"><X className="h-5 w-5" /></button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-10 relative z-10">
                 {activity?.id && <input type="hidden" name="id" value={activity.id} />}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                    <div className="lg:col-span-7 space-y-6">
                         <Field label="Naam *">
                             <input type="text" name="name" defaultValue={activity?.name || ''} required className={inputClass} placeholder="Bijv. Skiën" />
                         </Field>
                         <Field label="Beschrijving">
-                            <textarea name="description" rows={3} defaultValue={activity?.description || ''} className={inputClass} placeholder="Wat houdt dit in?" />
+                            <textarea name="description" rows={5} defaultValue={activity?.description || ''} className={`${inputClass} resize-none`} placeholder="Wat houdt deze activiteit precies in?" />
                         </Field>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <Field label="Basisprijs (€) *">
-                            <div className="relative">
-                                <Euro className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--beheer-text-muted)] opacity-40" />
-                                <input type="number" step="0.01" name="price" defaultValue={activity?.price || 0} required className={`${inputClass} pl-12`} />
-                            </div>
-                        </Field>
+                    <div className="lg:col-span-5 grid grid-cols-2 gap-6">
+                        <div className="col-span-2">
+                            <Field label="Basisprijs (€) *">
+                                <div className="relative">
+                                    <Euro className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--beheer-text-muted)] opacity-40" />
+                                    <input type="number" step="0.01" name="price" defaultValue={activity?.price || 0} required className={`${inputClass} pl-12`} />
+                                </div>
+                            </Field>
+                        </div>
                         <Field label="Max Reizigers">
                             <input type="number" name="max_participants" defaultValue={activity?.max_participants || ''} placeholder="Onbeperkt" className={inputClass} />
                         </Field>
-                        <Field label="Weergave Volgorde">
+                        <Field label="Sorteer Volgorde">
                             <input type="number" name="display_order" defaultValue={activity?.display_order || 0} className={inputClass} />
                         </Field>
-                        <div className="flex items-end pb-4">
-                            <label className="flex items-center gap-4 cursor-pointer group select-none">
+                        <div className="col-span-2 flex items-center pt-2">
+                            <label className="flex items-center gap-4 cursor-pointer group select-none bg-[var(--beheer-card-soft)]/50 px-6 py-4 rounded-2xl border border-[var(--beheer-border)]/20 hover:border-[var(--beheer-accent)]/30 transition-all">
                                 <div className="relative">
                                     <input type="checkbox" name="is_active" className="sr-only peer" defaultChecked={activity?.is_active ?? true} />
-                                    <div className="h-6 w-11 bg-[var(--beheer-border)]/20 dark:bg-white/5 backdrop-blur-md rounded-full peer-checked:bg-[var(--beheer-accent)] transition-all border border-[var(--beheer-border)]/30 group-hover:border-[var(--beheer-accent)]/50 shadow-inner" />
+                                    <div className="h-6 w-11 bg-[var(--beheer-border)]/20 dark:bg-white/5 backdrop-blur-md rounded-full peer-checked:bg-[var(--beheer-accent)] transition-all border border-[var(--beheer-border)]/30 shadow-inner" />
                                     <div className="absolute left-1 top-1 h-4 w-4 bg-white rounded-full transition-all peer-checked:left-6 shadow-lg transform peer-active:scale-90" />
                                 </div>
-                                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-text)] transition-colors">Zichtbaar</span>
+                                <span className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text-muted)] uppercase opacity-70 group-hover:text-[var(--beheer-text)] transition-colors">Activiteit is zichtbaar</span>
                             </label>
                         </div>
                     </div>
                 </div>
 
                 {/* Options Management */}
-                <div className="bg-[var(--beheer-card-soft)]/30 rounded-[var(--beheer-radius)] p-6 border border-[var(--beheer-border)]/50 space-y-6">
-                    <div className="flex items-center justify-between">
-                        <h3 className="text-[10px] font-black text-[var(--beheer-text)] uppercase tracking-widest flex items-center gap-2">
-                            <List className="h-3.5 w-3.5 text-[var(--beheer-accent)]" /> Sub-opties
-                        </h3>
-                        <button type="button" onClick={addOption} className="text-[var(--beheer-accent)] font-black uppercase tracking-widest text-[9px] flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-[var(--beheer-accent)]/10 transition-all border border-transparent hover:border-[var(--beheer-accent)]/20">
-                            <Plus className="h-3 w-3" /> Toevoegen
+                <div className="bg-[var(--beheer-card-soft)]/30 rounded-3xl p-8 border border-[var(--beheer-border)]/30 space-y-8">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="space-y-1">
+                            <h3 className="text-sm font-bold text-[var(--beheer-text)] flex items-center gap-3">
+                                <List className="h-4 w-4 text-[var(--beheer-accent)]" /> Sub-opties
+                            </h3>
+                            <p className="text-[10px] font-semibold text-[var(--beheer-text-muted)] uppercase tracking-widest opacity-60">Optionele keuzes voor deze activiteit</p>
+                        </div>
+                        <button type="button" onClick={addOption} className="text-[var(--beheer-accent)] font-semibold uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[var(--beheer-accent)]/5 hover:bg-[var(--beheer-accent)]/10 transition-all border border-[var(--beheer-accent)]/20 active:scale-95">
+                            <Plus className="h-4 w-4" /> Optie toevoegen
                         </button>
                     </div>
 
-                    <div className="flex flex-wrap gap-8 border-b border-[var(--beheer-border)]/30 pb-6">
-                        <label className="flex items-start gap-3 cursor-pointer group select-none">
-                            <div className="relative flex items-center h-4">
+                    <div className="flex flex-wrap gap-8 bg-[var(--beheer-card-bg)]/50 p-6 rounded-2xl border border-[var(--beheer-border)]/10 shadow-inner">
+                        <label className="flex items-center gap-3 cursor-pointer group select-none">
+                            <div className="relative flex items-center h-5">
                                 <input type="radio" name="max_selections" value="" defaultChecked={activity?.max_selections === null} className="sr-only peer" />
-                                <div className="h-4 w-4 rounded-full border-2 border-[var(--beheer-border)]/50 peer-checked:border-[var(--beheer-accent)] peer-checked:bg-[var(--beheer-accent)] transition-all flex items-center justify-center">
-                                    <div className="h-1.5 w-1.5 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity" />
+                                <div className="h-5 w-5 rounded-lg border-2 border-[var(--beheer-border)]/50 peer-checked:border-[var(--beheer-accent)] peer-checked:bg-[var(--beheer-accent)] transition-all flex items-center justify-center shadow-sm">
+                                    <div className="h-2 w-2 bg-white rounded-sm opacity-0 peer-checked:opacity-100 transition-opacity" />
                                 </div>
                             </div>
-                            <div className="flex flex-col">
-                                <span className="text-[9px] font-black uppercase tracking-widest text-[var(--beheer-text)] group-hover:text-[var(--beheer-accent)] transition-colors">Checkbox</span>
-                            </div>
+                            <span className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text-muted)] uppercase group-hover:text-[var(--beheer-accent)] transition-colors">Checkbox (Meerdere)</span>
                         </label>
-                        <label className="flex items-start gap-3 cursor-pointer group select-none">
-                            <div className="relative flex items-center h-4">
+                        <label className="flex items-center gap-3 cursor-pointer group select-none">
+                            <div className="relative flex items-center h-5">
                                 <input type="radio" name="max_selections" value="1" defaultChecked={activity?.max_selections === 1} className="sr-only peer" />
-                                <div className="h-4 w-4 rounded-full border-2 border-[var(--beheer-border)]/50 peer-checked:border-[var(--beheer-accent)] peer-checked:bg-[var(--beheer-accent)] transition-all flex items-center justify-center">
-                                    <div className="h-1.5 w-1.5 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity" />
+                                <div className="h-5 w-5 rounded-full border-2 border-[var(--beheer-border)]/50 peer-checked:border-[var(--beheer-accent)] peer-checked:bg-[var(--beheer-accent)] transition-all flex items-center justify-center shadow-sm">
+                                    <div className="h-2 w-2 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity" />
                                 </div>
                             </div>
-                            <div className="flex flex-col">
-                                <span className="text-[9px] font-black uppercase tracking-widest text-[var(--beheer-text)] group-hover:text-[var(--beheer-accent)] transition-colors">Radio</span>
-                            </div>
+                            <span className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text-muted)] uppercase group-hover:text-[var(--beheer-accent)] transition-colors">Radio (Eén keuze)</span>
                         </label>
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                         {options.map((opt, idx) => (
-                            <div key={idx} className="flex gap-4 items-center animate-in slide-in-from-left-4 duration-300">
+                            <div key={idx} className="flex gap-4 items-center animate-in slide-in-from-bottom-2 duration-300">
                                 <div className="flex-1">
                                     <input
                                         type="text" value={opt.name}
                                         onChange={(e) => updateOption(idx, 'name', e.target.value)}
                                         placeholder="Bijv. Inclusief lunch..."
-                                        className={`${inputClass} py-3 text-xs`}
+                                        className={`${inputClass} py-4 text-xs`}
                                     />
                                 </div>
-                                <div className="w-36 relative">
-                                    <Euro className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--beheer-text-muted)] opacity-40" />
+                                <div className="w-40 relative">
+                                    <Euro className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--beheer-text-muted)] opacity-40" />
                                     <input
                                         type="number" step="0.01" value={opt.price}
                                         onChange={(e) => updateOption(idx, 'price', e.target.value)}
-                                        className={`${inputClass} py-3 pl-9 text-xs`}
-                                        placeholder="Extra"
+                                        className={`${inputClass} py-4 pl-12 text-xs`}
+                                        placeholder="Meerprijs"
                                     />
                                 </div>
-                                <button type="button" onClick={() => removeOption(idx)} className="p-3 text-red-500 hover:bg-red-500/10 rounded-xl transition-all">
+                                <button type="button" onClick={() => removeOption(idx)} className="p-4 text-[var(--beheer-inactive)] hover:bg-red-500/10 hover:text-red-500 rounded-2xl transition-all active:scale-90 bg-[var(--beheer-card-soft)]">
                                     <Trash2 className="h-5 w-5" />
                                 </button>
                             </div>
                         ))}
                         {options.length === 0 && (
-                            <div className="py-12 text-center border border-dashed border-[var(--beheer-border)] rounded-2xl text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] opacity-40">
-                                Geen extra opties geconfigureerd
+                            <div className="py-16 text-center bg-[var(--beheer-card-bg)]/20 border border-dashed border-[var(--beheer-border)]/30 rounded-2xl text-[10px] font-semibold tracking-widest text-[var(--beheer-text-muted)] uppercase opacity-40">
+                                Geen sub-opties geconfigureerd voor deze activiteit
                             </div>
                         )}
                     </div>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-end gap-3 pt-4">
-                    <button type="button" onClick={onCancel} className="px-6 py-3 rounded-lg font-black text-[10px] uppercase tracking-widest text-[var(--beheer-text-muted)] hover:bg-[var(--beheer-card-soft)] transition-all border border-transparent hover:border-[var(--beheer-border)]">Annuleren</button>
-                    <button type="submit" disabled={pending} className="px-8 py-3 bg-[var(--beheer-accent)] text-white rounded-lg font-black text-[10px] uppercase tracking-widest shadow-lg hover:opacity-90 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50">
-                        {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                <div className="flex flex-wrap items-center justify-end gap-4 pt-4 border-t border-[var(--beheer-border)]/10">
+                    <button type="button" onClick={onCancel} className="px-8 py-4 rounded-xl font-semibold text-[10px] tracking-widest text-[var(--beheer-text-muted)] hover:bg-[var(--beheer-card-soft)] transition-all border border-transparent hover:border-[var(--beheer-border)] uppercase active:scale-95">Annuleren</button>
+                    <button type="submit" disabled={pending} className="px-10 py-4 bg-[var(--beheer-accent)] text-white rounded-xl font-semibold text-[10px] tracking-widest shadow-xl hover:opacity-90 active:scale-95 transition-all flex items-center gap-3 disabled:opacity-50 border border-white/10 uppercase">
+                        {pending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
                         <span>Opslaan</span>
                     </button>
                 </div>
