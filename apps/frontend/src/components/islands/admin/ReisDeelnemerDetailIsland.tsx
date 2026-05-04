@@ -139,6 +139,7 @@ export default function ReisDeelnemerDetailIsland({
                             key={`${initialSignup.id}-${initialSignup.role}`} 
                             signup={initialSignup} 
                             initialData={state?.initialData} 
+                            isBusTrip={!!selectedTrip?.is_bus_trip}
                         />
                     </div>
 

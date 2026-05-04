@@ -5,7 +5,9 @@ import {
     FileText, 
     CreditCard, 
     AlertCircle,
-    ChevronRight
+    ChevronRight,
+    Bus,
+    Briefcase
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
@@ -15,9 +17,10 @@ import { DateInput } from '@/shared/ui/DateInput';
 interface SignupFormProps {
     signup: TripSignup;
     initialData?: any;
+    isBusTrip?: boolean;
 }
 
-export default function SignupForm({ signup, initialData }: SignupFormProps) {
+export default function SignupForm({ signup, initialData, isBusTrip }: SignupFormProps) {
     return (
         <div className="bg-[var(--beheer-card-bg)] rounded-3xl shadow-xl border border-[var(--beheer-border)] divide-y divide-[var(--beheer-border)]/20 overflow-hidden">
             {/* Personal Details */}
@@ -38,12 +41,16 @@ export default function SignupForm({ signup, initialData }: SignupFormProps) {
                     <Input label="Email Adres" name="email" type="email" defaultValue={initialData?.email || signup.email} required className="md:col-span-2" placeholder="jan@voorbeeld.nl" />
                     <Input label="Telefoonnummer" name="phone_number" defaultValue={initialData?.phone_number || signup.phone_number || ''} placeholder="+31 6 12345678" />
                     <DateAndLabel label="Geboortedatum" name="date_of_birth" defaultValue={initialData?.date_of_birth || (signup.date_of_birth ? format(new Date(signup.date_of_birth), 'yyyy-MM-dd') : '')} />
-                    <Select label="Type ID Bewijs" name="id_document" defaultValue={initialData?.id_document || signup.id_document || ''}>
-                        <option value="">Niet opgegeven</option>
-                        <option value="passport">Paspoort</option>
-                        <option value="id_card">Identiteitskaart (ID)</option>
-                    </Select>
-                    <Input label="Document Nummer" name="document_number" defaultValue={initialData?.document_number || signup.document_number || ''} placeholder="ID of Paspoort nr" />
+                    {!isBusTrip && (
+                        <>
+                            <Select label="Type ID Bewijs" name="id_document" defaultValue={initialData?.id_document || signup.id_document || ''}>
+                                <option value="">Niet opgegeven</option>
+                                <option value="passport">Paspoort</option>
+                                <option value="id_card">Identiteitskaart (ID)</option>
+                            </Select>
+                            <Input label="Document Nummer" name="document_number" defaultValue={initialData?.document_number || signup.document_number || ''} placeholder="ID of Paspoort nr" />
+                        </>
+                    )}
                 </div>
 
                 <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -51,8 +58,24 @@ export default function SignupForm({ signup, initialData }: SignupFormProps) {
                     <Textarea label="Bijzonderheden" name="special_notes" defaultValue={initialData?.special_notes || signup.special_notes || ''} placeholder="Andere belangrijke informatie..." />
                 </div>
 
+                {!isBusTrip && (
+                    <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <DateAndLabel label="Vervaldatum Document" name="document_expiry_date" defaultValue={initialData?.document_expiry_date || (signup.document_expiry_date ? format(new Date(signup.document_expiry_date), 'yyyy-MM-dd') : '')} />
+                        <div className="flex items-center pt-8">
+                            <Checkbox label="Extra Koffer" name="extra_luggage" defaultChecked={initialData ? (initialData.extra_luggage === 'on' || initialData.extra_luggage === 'true' || initialData.extra_luggage === true) : (signup.extra_luggage || false)} />
+                        </div>
+                    </div>
+                )}
+
                 <div className="mt-6">
-                    <Checkbox label="Beschikbaar als chauffeur" name="willing_to_drive" defaultChecked={initialData ? (initialData.willing_to_drive === 'on' || initialData.willing_to_drive === 'true' || initialData.willing_to_drive === true) : (signup.willing_to_drive || false)} />
+                    {isBusTrip ? (
+                        <Checkbox label="Beschikbaar als chauffeur" name="willing_to_drive" defaultChecked={initialData ? (initialData.willing_to_drive === 'on' || initialData.willing_to_drive === 'true' || initialData.willing_to_drive === true) : (signup.willing_to_drive || false)} />
+                    ) : (
+                         <div className="flex items-center gap-3 px-4 py-3 bg-[var(--bg-main)]/30 rounded-2xl border border-[var(--beheer-border)]/20 text-[10px] font-semibold text-[var(--beheer-text-muted)] uppercase tracking-widest opacity-60">
+                             <Bus className="h-4 w-4 text-[var(--beheer-accent)] opacity-50" />
+                             <span>Geen chauffeur informatie nodig voor vliegreizen</span>
+                         </div>
+                    )}
                 </div>
             </div>
 

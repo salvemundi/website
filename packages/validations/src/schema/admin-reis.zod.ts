@@ -28,6 +28,8 @@ export const tripSignupSchema = z.object({
     date_of_birth: z.string().nullable().optional(),
     id_document: z.string().nullable().optional(),
     document_number: z.string().nullable().optional(),
+    document_expiry_date: z.string().nullable().optional(),
+    extra_luggage: z.boolean().nullable().optional(),
     allergies: z.string().nullable().optional(),
     special_notes: z.string().nullable().optional(),
     willing_to_drive: z.boolean().nullable().optional(),

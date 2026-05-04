@@ -266,6 +266,7 @@ export default function AdminReisTableIsland({
                 onResendEmail={handleResendPaymentEmail}
                 signupActivitiesMap={signupActivitiesMap}
                 allowFinalPayments={!!trip?.allow_final_payments}
+                isBusTrip={!!trip?.is_bus_trip}
             />
             <AdminToast toast={toast} onClose={hideToast} />
         </div>

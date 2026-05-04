@@ -2,7 +2,7 @@
 
 import { Fragment } from 'react';
 import { format } from 'date-fns';
-import { Loader2, Edit, Trash2, Send, AlertCircle, ChevronDown } from 'lucide-react';
+import { Loader2, Edit, Trash2, Send, AlertCircle, ChevronDown, Bus, Briefcase } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { TripSignup, TripSignupActivity } from '@salvemundi/validations/schema/admin-reis.zod';
 import { mapActivityOptionIdToName, parseActivityOptions, parseSelectedOptions } from '@/lib/reis';
@@ -21,6 +21,7 @@ interface ReisTableRowProps {
     onResendEmail: (id: number, type: 'deposit' | 'final') => void;
     activities: TripSignupActivity[];
     allowFinalPayments: boolean;
+    isBusTrip?: boolean;
 }
 
 export default function ReisTableRow({
@@ -36,7 +37,8 @@ export default function ReisTableRow({
     onDelete,
     onResendEmail,
     activities,
-    allowFinalPayments
+    allowFinalPayments,
+    isBusTrip = false
 }: ReisTableRowProps) {
     const router = useRouter();
 
@@ -120,10 +122,26 @@ export default function ReisTableRow({
                                     <p className="text-xs font-semibold text-[var(--beheer-text)]">{signup.email}</p>
                                     <p className="text-xs font-semibold text-[var(--beheer-text-muted)]">{signup.phone_number || 'Geen telefoon'}</p>
                                 </div>
-                                <div className="pt-2 space-y-1">
-                                    <p className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text-muted)]">Document: <span className="text-[var(--beheer-text)]">{signup.id_document === 'passport' ? 'Paspoort' : signup.id_document === 'id_card' ? 'ID Kaart' : (signup.id_document || '-')}</span></p>
-                                    <p className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text-muted)]">Nummer: <span className="text-[var(--beheer-text)]">{signup.document_number || '-'}</span></p>
+                                <div className="pt-2">
+                                    {isBusTrip ? (
+                                        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase ${signup.willing_to_drive ? 'bg-[var(--beheer-active)]/10 text-[var(--beheer-active)] border border-[var(--beheer-active)]/20' : 'bg-[var(--bg-main)] text-[var(--beheer-text-muted)] border border-[var(--beheer-border)]/50 opacity-60'}`}>
+                                            <div className={`h-1.5 w-1.5 rounded-full ${signup.willing_to_drive ? 'bg-[var(--beheer-active)] animate-pulse' : 'bg-[var(--beheer-text-muted)]'}`} />
+                                            {signup.willing_to_drive ? 'Chauffeur' : 'Geen chauffeur'}
+                                        </div>
+                                    ) : (
+                                        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase ${signup.extra_luggage ? 'bg-[var(--beheer-active)]/10 text-[var(--beheer-active)] border border-[var(--beheer-active)]/20' : 'bg-[var(--bg-main)] text-[var(--beheer-text-muted)] border border-[var(--beheer-border)]/50 opacity-60'}`}>
+                                            <div className={`h-1.5 w-1.5 rounded-full ${signup.extra_luggage ? 'bg-[var(--beheer-active)] animate-pulse' : 'bg-[var(--beheer-text-muted)]'}`} />
+                                            {signup.extra_luggage ? 'Extra Koffer' : 'Geen extra koffer'}
+                                        </div>
+                                    )}
                                 </div>
+                                {!isBusTrip && (
+                                    <div className="pt-2 space-y-1">
+                                        <p className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text-muted)]">Document: <span className="text-[var(--beheer-text)]">{signup.id_document === 'passport' ? 'Paspoort' : signup.id_document === 'id_card' ? 'ID Kaart' : (signup.id_document || '-')}</span></p>
+                                        <p className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text-muted)]">Nummer: <span className="text-[var(--beheer-text)]">{signup.document_number || '-'}</span></p>
+                                        <p className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text-muted)]">Geldig tot: <span className="text-[var(--beheer-text)]">{signup.document_expiry_date ? format(new Date(signup.document_expiry_date), 'dd-MM-yyyy') : '-'}</span></p>
+                                    </div>
+                                )}
                             </div>
                             <div className="space-y-4">
                                 <p className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[var(--beheer-accent)]">Medisch & Info</p>
