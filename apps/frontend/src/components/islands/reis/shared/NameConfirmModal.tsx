@@ -27,42 +27,44 @@ export function NameConfirmModal({ isOpen, name, onConfirm, onCancel }: NameConf
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        className="relative w-full max-w-md bg-[var(--bg-main)] rounded-3xl p-8 shadow-2xl border border-white/10 overflow-hidden"
+                        className="relative w-full max-w-4xl bg-[var(--bg-card)] rounded-[40px] p-12 shadow-2xl border border-white/10 overflow-hidden backdrop-blur-2xl"
                     >
                         {/* Background Decoration */}
-                        <div className="absolute -top-24 -right-24 w-48 h-48 bg-theme-purple/10 rounded-full blur-3xl" />
+                        <div className="absolute -top-48 -right-48 w-96 h-96 bg-theme-purple/20 rounded-full blur-[120px]" />
+                        <div className="absolute -bottom-48 -left-48 w-96 h-96 bg-theme-purple/10 rounded-full blur-[120px]" />
                         
                         <div className="relative flex flex-col items-center text-center">
-                            <div className="w-20 h-20 bg-theme-purple/10 rounded-full flex items-center justify-center mb-6">
-                                <AlertCircle className="w-10 h-10 text-theme-purple animate-pulse" />
+                            <div className="w-24 h-24 bg-theme-purple/10 rounded-full flex items-center justify-center mb-8">
+                                <AlertCircle className="w-12 h-12 text-theme-purple animate-pulse" />
                             </div>
                             
-                            <h3 className="text-2xl font-black text-[var(--text-main)] mb-4">
+                            <h3 className="text-4xl md:text-6xl font-black text-[var(--text-main)] mb-6 uppercase italic tracking-tighter leading-none">
                                 Klopt je voornaam?
                             </h3>
                             
-                            <p className="text-[var(--text-muted)] mb-8 leading-relaxed">
-                                Je hebt <span className="text-theme-purple font-bold px-2 py-1 bg-theme-purple/5 rounded-lg">"{name}"</span> ingevuld.<br/>
-                                Komt dit <span className="text-[var(--text-main)] font-bold">exact</span> overeen met de naam op je paspoort of ID-kaart?
+                            <p className="text-xl md:text-2xl text-[var(--text-muted)] mb-10 leading-relaxed max-w-2xl">
+                                Je hebt <span className="text-theme-purple font-black px-3 py-1 bg-theme-purple/10 rounded-xl">"{name}"</span> ingevuld.
+                                <br className="hidden md:block" />
+                                Komt dit <span className="text-white font-black italic">exact</span> overeen met de naam op je paspoort of ID-kaart?
                             </p>
 
-                            <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 mb-8 text-sm text-amber-500 font-medium">
-                                Let op: Een kleine typefout kan leiden tot problemen bij het inchecken op het vliegveld!
+                            <div className="p-6 rounded-3xl bg-amber-500/10 border border-amber-500/20 mb-12 text-lg text-amber-500 font-bold uppercase tracking-wider">
+                                <span className="animate-pulse mr-2">⚠️</span> Let op: Een typefout kan leiden tot weigering bij de gate!
                             </div>
 
-                            <div className="flex flex-col w-full gap-3">
+                            <div className="flex flex-col md:flex-row w-full gap-4">
                                 <button
                                     onClick={onConfirm}
-                                    className="w-full py-4 bg-theme-purple hover:bg-theme-purple-dark text-white rounded-2xl font-black transition-all flex items-center justify-center gap-2 group"
+                                    className="flex-1 py-6 bg-theme-purple hover:bg-theme-purple-dark text-white rounded-[24px] font-black text-xl uppercase italic tracking-tighter transition-all flex items-center justify-center gap-3 group shadow-lg shadow-theme-purple/20"
                                 >
-                                    <CheckCircle2 className="w-5 h-5" />
+                                    <CheckCircle2 className="w-6 h-6" />
                                     Ja, dit klopt exact
                                 </button>
                                 <button
                                     onClick={onCancel}
-                                    className="w-full py-4 text-[var(--text-muted)] hover:text-[var(--text-main)] font-bold transition-all"
+                                    className="flex-1 py-6 bg-white/5 hover:bg-white/10 text-[var(--text-muted)] hover:text-white rounded-[24px] font-black text-xl uppercase italic tracking-tighter transition-all"
                                 >
-                                    Nee, ik wil het aanpassen
+                                    Nee, aanpassen
                                 </button>
                             </div>
                         </div>
