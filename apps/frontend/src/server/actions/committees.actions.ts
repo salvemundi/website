@@ -40,7 +40,6 @@ export async function getCommittees(): Promise<Committee[]> {
             GROUP BY c.id
         `;
         const { rows: committeesWithMembers } = await query(sql);
-        console.error(`[DEBUG] getCommittees: fetched ${committeesWithMembers.length} rows`);
         
         const parsed = committeesSchema.safeParse(committeesWithMembers);
 
@@ -58,24 +57,15 @@ export async function getCommittees(): Promise<Committee[]> {
 
 export async function getCommitteeBySlug(slug: string): Promise<Committee | null> {
     const committees = await getCommittees();
-    console.error(`[DEBUG] getCommitteeBySlug: searching for "${slug}" in ${committees.length} committees`);
     
     const found = committees.find(c => {
-        const cleaned = c.name.replace(/\s*(\|\||[-–—])?\s*SALVE MUNDI\s*$/gi, '').trim();
-        const nameSlug = slugify(cleaned);
-        const tokenMatch = c.commissie_token === slug;
-        const slugMatch = nameSlug === slug;
+        // 1. Try matching by commissie_token (most reliable)
+        if (c.commissie_token === slug) return true;
         
-        if (tokenMatch || slugMatch) {
-            console.error(`[DEBUG] Found match! name="${c.name}", token="${c.commissie_token}", nameSlug="${nameSlug}"`);
-            return true;
-        }
-        return false;
+        // 2. Fallback: match by slugified name
+        const cleaned = c.name.replace(/\s*(\|\||[-–—])?\s*SALVE MUNDI\s*$/gi, '').trim();
+        return slugify(cleaned) === slug;
     });
-
-    if (!found) {
-        console.error(`[DEBUG] No committee found for slug "${slug}". Available:`, committees.map(c => `[name="${c.name}", token="${c.commissie_token}"]`).join(', '));
-    }
 
     return found || null;
 }

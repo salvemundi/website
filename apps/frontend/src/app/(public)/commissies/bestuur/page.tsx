@@ -4,8 +4,7 @@ import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import { getCommitteeBySlug } from '@/server/actions/committees.actions';
 import { BoardDetail } from '@/components/ui/committees/BoardDetail';
 import BackButton from '@/components/ui/navigation/BackButton';
-
-export const dynamic = 'force-dynamic';
+import { connection } from 'next/server';
 
 export const metadata: Metadata = {
     title: 'Bestuur | SV Salve Mundi',
@@ -13,6 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function BestuurPage() {
+    await connection();
     const committee = await getCommitteeBySlug('bestuur');
 
     if (!committee) {
