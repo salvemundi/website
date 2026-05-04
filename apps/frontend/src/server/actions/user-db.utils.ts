@@ -1,5 +1,6 @@
 import { query } from '@/lib/database';
 import { z } from 'zod';
+import { toLocalISOString } from '@/lib/utils/date-utils';
 
 export const userProfileSchema = z.object({
     id: z.string().uuid(),
@@ -53,8 +54,8 @@ export async function fetchUserProfileByEmailDb(email: string): Promise<UserProf
     const raw = rows[0];
     const parsed = userProfileSchema.safeParse({
         ...raw,
-        date_of_birth: raw.date_of_birth instanceof Date ? raw.date_of_birth.toISOString() : raw.date_of_birth,
-        membership_expiry: raw.membership_expiry instanceof Date ? raw.membership_expiry.toISOString() : raw.membership_expiry,
+        date_of_birth: toLocalISOString(raw.date_of_birth),
+        membership_expiry: toLocalISOString(raw.membership_expiry),
     });
 
     if (!parsed.success) {

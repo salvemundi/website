@@ -21,10 +21,9 @@ export async function getActivitiesInternal(onlyPublished = true): Promise<Activ
     const { rows } = await query(sql);
 
     const mappedData = rows.map((item) => {
-        const safeISO = (d: string | Date | null | undefined) => {
-            if (!d) return null;
-            const date = d instanceof Date ? d : new Date(d);
-            return isNaN(date.getTime()) ? null : date.toISOString();
+        const { toLocalISOString } = require('@/lib/utils/date-utils');
+        const safeISO = (d: string | Date | null | undefined, includeTime = false) => {
+            return toLocalISOString(d, includeTime);
         };
         
         return {
@@ -32,7 +31,7 @@ export async function getActivitiesInternal(onlyPublished = true): Promise<Activ
             titel: item.name ?? '',
             beschrijving: item.description ?? null,
             locatie: item.location ?? null,
-            datum_start: safeISO(item.event_date) || new Date().toISOString(),
+            datum_start: safeISO(item.event_date) || toLocalISOString(new Date()),
             datum_eind: safeISO(item.event_date_end),
             afbeelding_id: item.image ? { id: item.image, type: item.image_type } : null,
             status: item.status ?? undefined,
@@ -75,18 +74,17 @@ export async function getActivityByIdInternal(id: string): Promise<Activiteit | 
     const item = rows?.[0];
     if (!item) return null;
 
-    const safeISO = (d: string | Date | null | undefined) => {
-        if (!d) return null;
-        const date = d instanceof Date ? d : new Date(d);
-        return isNaN(date.getTime()) ? null : date.toISOString();
-    };
+        const { toLocalISOString } = require('@/lib/utils/date-utils');
+        const safeISO = (d: string | Date | null | undefined, includeTime = false) => {
+            return toLocalISOString(d, includeTime);
+        };
 
     const mapped = {
         id: String(item.id ?? ''),
         titel: item.name ?? '',
         beschrijving: item.description ?? null,
         locatie: item.location ?? null,
-        datum_start: safeISO(item.event_date) || new Date().toISOString(),
+        datum_start: safeISO(item.event_date) || toLocalISOString(new Date()),
         datum_eind: safeISO(item.event_date_end),
         afbeelding_id: item.image ? { id: item.image, type: item.image_type } : null,
         status: item.status ?? undefined,
@@ -180,14 +178,15 @@ export async function getActivitiesWithSignupCountsInternal(search?: string, fil
     
     const { rows } = await query(sql, params);
     
+    const { toLocalISOString } = await import('@/lib/utils/date-utils');
     return rows.map(r => ({
         ...r,
         id: Number(r.id),
-        event_date: r.event_date instanceof Date ? r.event_date.toISOString() : r.event_date,
-        event_date_end: r.event_date_end instanceof Date ? r.event_date_end.toISOString() : r.event_date_end,
-        registration_deadline: r.registration_deadline instanceof Date ? r.registration_deadline.toISOString() : r.registration_deadline,
-        created_at: r.created_at instanceof Date ? r.created_at.toISOString() : r.created_at,
-        updated_at: r.updated_at instanceof Date ? r.updated_at.toISOString() : r.updated_at,
+        event_date: toLocalISOString(r.event_date),
+        event_date_end: toLocalISOString(r.event_date_end),
+        registration_deadline: toLocalISOString(r.registration_deadline, true),
+        created_at: toLocalISOString(r.created_at, true),
+        updated_at: toLocalISOString(r.updated_at, true),
         price_members: r.price_members ? Number(r.price_members) : 0,
         price_non_members: r.price_non_members ? Number(r.price_non_members) : 0,
         max_sign_ups: r.max_sign_ups ? Number(r.max_sign_ups) : null,

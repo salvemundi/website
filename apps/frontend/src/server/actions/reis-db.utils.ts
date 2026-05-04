@@ -7,6 +7,7 @@ import {
     type ReisTripSignup, 
 } from '@salvemundi/validations/schema/reis.zod';
 import { z } from 'zod';
+import { toLocalISOString } from '@/lib/utils/date-utils';
 import { DbTripSignup as TripSignup, DbTrip as Trip, DbTripActivitie as TripActivity, DbTripSignupActivitie as TripSignupActivity } from '@salvemundi/validations/directus/schema';
 
 /**
@@ -205,9 +206,9 @@ export async function fetchFullTripsDb(): Promise<Trip[]> {
             registration_open: !!t.registration_open,
             is_bus_trip: !!t.is_bus_trip,
             allow_final_payments: !!t.allow_final_payments,
-            start_date: t.start_date instanceof Date ? t.start_date.toISOString() : t.start_date,
-            end_date: t.end_date instanceof Date ? t.end_date.toISOString() : t.end_date,
-            registration_start_date: t.registration_start_date instanceof Date ? t.registration_start_date.toISOString() : t.registration_start_date
+            start_date: toLocalISOString(t.start_date),
+            end_date: toLocalISOString(t.end_date),
+            registration_start_date: toLocalISOString(t.registration_start_date, true)
         }));
     } catch (error) {
         
@@ -293,9 +294,9 @@ export async function fetchTripByIdDb(tripId: number): Promise<Trip | null> {
             registration_open: !!t.registration_open,
             is_bus_trip: !!t.is_bus_trip,
             allow_final_payments: !!t.allow_final_payments,
-            start_date: t.start_date instanceof Date ? t.start_date.toISOString() : t.start_date,
-            end_date: t.end_date instanceof Date ? t.end_date.toISOString() : t.end_date,
-            registration_start_date: t.registration_start_date instanceof Date ? t.registration_start_date.toISOString() : t.registration_start_date
+            start_date: toLocalISOString(t.start_date),
+            end_date: toLocalISOString(t.end_date),
+            registration_start_date: toLocalISOString(t.registration_start_date, true)
         };
     } catch (error) {
         
@@ -402,18 +403,24 @@ export async function fetchPublicTripsDb(): Promise<Trip[]> {
     try {
         const res = await query(
             `SELECT * FROM trips 
-             WHERE status = 'published' OR status IS NULL
+             WHERE (status = 'published' OR status IS NULL)
+             AND (end_date >= CURRENT_DATE OR end_date IS NULL)
              ORDER BY start_date ASC`,
             []
         );
         return (res.rows || []).map(t => ({
             ...t,
+            max_participants: t.max_participants !== null ? Number(t.max_participants) : 0,
+            max_crew: t.max_crew !== null ? Number(t.max_crew) : 0,
+            base_price: t.base_price !== null ? Number(t.base_price) : 0,
+            crew_discount: t.crew_discount !== null ? Number(t.crew_discount) : 0,
+            deposit_amount: t.deposit_amount !== null ? Number(t.deposit_amount) : 0,
             registration_open: !!t.registration_open,
             is_bus_trip: !!t.is_bus_trip,
             allow_final_payments: !!t.allow_final_payments,
-            start_date: t.start_date instanceof Date ? t.start_date.toISOString() : t.start_date,
-            end_date: t.end_date instanceof Date ? t.end_date.toISOString() : t.end_date,
-            registration_start_date: t.registration_start_date instanceof Date ? t.registration_start_date.toISOString() : t.registration_start_date
+            start_date: toLocalISOString(t.start_date),
+            end_date: toLocalISOString(t.end_date),
+            registration_start_date: toLocalISOString(t.registration_start_date, true)
         }));
     } catch (error) {
         

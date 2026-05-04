@@ -37,6 +37,7 @@ import { AdminResource } from '@/shared/lib/permissions-config';
 import { getRedis } from '@/server/auth/redis-client';
 import { FLAGS_CACHE_KEY } from '@/lib/config/feature-flags';
 import { query } from '@/lib/database';
+import { toLocalISOString } from '@/lib/utils/date-utils';
 
 import { requireAdminResource } from '@/server/auth/auth-utils';
 
@@ -116,7 +117,7 @@ export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ succe
         let rows: any[];
         const sanitizedPayload = {
             ...payload,
-            created_at: payload.created_at instanceof Date ? payload.created_at.toISOString() : payload.created_at
+            created_at: toLocalISOString(payload.created_at, true)
         };
         
         if (id) {
@@ -152,7 +153,7 @@ export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ succe
             content: row.content || '',
             blog_type: (row.blog_type || 'update') as IntroBlog['blog_type'],
             is_published: !!row.is_published,
-            created_at: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
+            created_at: toLocalISOString(row.created_at, true) ?? undefined,
             slug: row.slug || '',
             excerpt: row.excerpt || ''
         } };

@@ -134,31 +134,9 @@ export default function ActiviteitBewerkenIsland({
         }
     };
 
-    const formatDate = (dateStr?: string | null) => {
-        if (!dateStr) return '';
-        try { 
-            const d = new Date(dateStr);
-            if (isNaN(d.getTime())) return '';
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        } catch { return ''; }
-    };
-    
-    const formatDateTime = (dateStr?: string | null) => {
-        if (!dateStr) return '';
-        try { 
-            const d = new Date(dateStr);
-            if (isNaN(d.getTime())) return '';
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            const hours = String(d.getHours()).padStart(2, '0');
-            const minutes = String(d.getMinutes()).padStart(2, '0');
-            return `${year}-${month}-${day}T${hours}:${minutes}`;
-        } catch { return ''; }
-    };
+    const { toLocalISOString } = require('@/lib/utils/date-utils');
+    const formatDate = (dateStr?: string | null) => toLocalISOString(dateStr) || '';
+    const formatDateTime = (dateStr?: string | null) => toLocalISOString(dateStr, true)?.slice(0, 16) || '';
 
     const formatTime = (timeStr?: string | null) => {
         if (!timeStr) return '';

@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useActionState } from 'react';
 import { Plus, Edit2, X, Info, Calendar as CalendarIcon, MapPin, Users, Euro, Link as LinkIcon, Eye, Check } from 'lucide-react';
 import type { Trip } from '@salvemundi/validations/schema/admin-reis.zod';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import TripFormSidebar from './TripFormSidebar';
+import { createTrip, updateTrip } from '@/server/actions/reis-admin-core.actions';
 
 interface ActionState {
     success: boolean;
@@ -18,21 +19,26 @@ interface TripFormProps {
     editingTrip: Trip | null;
     isAdding: boolean;
     onCancel: () => void;
-    state: ActionState | null;
-    pending: boolean;
-    createAction: (formData: FormData) => void;
-    updateAction: (formData: FormData) => void;
+    onSuccess: (message: string) => void;
 }
 
 export default function TripForm({ 
     editingTrip, 
     isAdding, 
     onCancel, 
-    state, 
-    pending, 
-    createAction, 
-    updateAction 
+    onSuccess,
 }: TripFormProps) {
+    const [createState, createAction, isCreating] = useActionState<ActionState | null, FormData>(createTrip, null);
+    const [updateState, updateAction, isUpdating] = useActionState<ActionState | null, FormData>(updateTrip, null);
+
+    const state = editingTrip ? updateState : createState;
+    const pending = editingTrip ? isUpdating : isCreating;
+
+    useEffect(() => {
+        if (state?.success) {
+            onSuccess(editingTrip ? 'Reis succesvol bijgewerkt' : 'Reis succesvol aangemaakt');
+        }
+    }, [state, editingTrip, onSuccess]);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [registrationOpen, setRegistrationOpen] = useState(false);
     const [allowFinalPayments, setAllowFinalPayments] = useState(false);
@@ -68,6 +74,20 @@ export default function TripForm({
     };
 
     const formErrors = state?.fieldErrors || {};
+
+    const toLocalISO = (d: string | Date | null | undefined) => {
+        if (!d) return '';
+        const date = new Date(d);
+        if (isNaN(date.getTime())) return '';
+        
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
 
     return (
         <div className="mb-12 animate-in slide-in-from-bottom-8 duration-500">
@@ -149,7 +169,7 @@ export default function TripForm({
                                             id="registration_start_date" 
                                             name="registration_start_date" 
                                             className="beheer-input" 
-                                            defaultValue={state?.initialData?.registration_start_date || (editingTrip?.registration_start_date ? new Date(editingTrip.registration_start_date).toISOString().slice(0, 16) : '')} 
+                                            defaultValue={state?.initialData?.registration_start_date || toLocalISO(editingTrip?.registration_start_date)} 
                                         />
                                     </div>
                                 </div>
@@ -193,6 +213,7 @@ export default function TripForm({
                         setAllowFinalPayments={setAllowFinalPayments}
                         isBusTrip={isBusTrip}
                         setIsBusTrip={setIsBusTrip}
+                        registrationStartDate={editingTrip?.registration_start_date}
                     />
                 </div>
             </form>

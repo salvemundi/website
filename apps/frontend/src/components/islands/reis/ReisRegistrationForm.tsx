@@ -42,14 +42,8 @@ export function ReisRegistrationForm({
 
     const formatDateForInput = (dateStr?: string | null) => {
         if (!dateStr) return '';
-        try {
-            if (typeof dateStr === 'string' && dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) return dateStr;
-            const date = new Date(dateStr!);
-            if (isNaN(date.getTime())) return '';
-            return date.toISOString().split('T')[0];
-        } catch {
-            return '';
-        }
+        const { toLocalISOString } = require('@/lib/utils/date-utils');
+        return toLocalISOString(dateStr) || '';
     };
 
     const {

@@ -67,7 +67,8 @@ async function fetchWithTimeout(url: string, options: RequestInit & { timeout?: 
 export const getKroegentochtEvent = cache(async (): Promise<PubCrawlEvent | null> => {
     return await cacheTag(
         async () => {
-            const today = new Date().toISOString().split('T')[0];
+            const { toLocalISOString } = await import('@/lib/utils/date-utils');
+            const today = toLocalISOString(new Date()) as string;
 
             try {
                 const events = await fetchPubCrawlEventsDb();

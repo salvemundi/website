@@ -56,16 +56,20 @@ export default async function ReisPage() {
 
     const registrationStartDate = nextTrip?.registration_start_date ? new Date(nextTrip.registration_start_date) : null;
     const now = new Date();
-    const isRegistrationDateReached = registrationStartDate ? now >= registrationStartDate : true;
-    const canSignUp = Boolean(isReisEnabled && nextTrip && nextTrip.registration_open && isRegistrationDateReached);
+    
+    // registrationDateReached is true if a date was set and we passed it.
+    const registrationDateReached = Boolean(registrationStartDate && now >= registrationStartDate);
+    
+    // canSignUp is true if the feature flag is on AND EITHER (manual toggle is on) OR (date has been reached)
+    const canSignUp = Boolean(isReisEnabled && nextTrip && (nextTrip.registration_open || registrationDateReached));
 
     const registrationStartText = !isReisEnabled 
         ? reisDisabledMessage 
-        : (!nextTrip?.registration_open 
-            ? 'De inschrijvingen voor deze reis zijn momenteel gesloten.'
-            : (registrationStartDate && now < registrationStartDate
+        : (!canSignUp
+            ? (registrationStartDate && now < registrationStartDate
                 ? `Inschrijving opent op ${format(registrationStartDate!, 'd MMMM yyyy HH:mm', { locale: nl })}`
-                : 'Inschrijving tijdelijk niet beschikbaar'));
+                : 'De inschrijvingen voor deze reis zijn momenteel gesloten.')
+            : 'Inschrijving geopend!');
 
     return (
         <PublicPageShell>

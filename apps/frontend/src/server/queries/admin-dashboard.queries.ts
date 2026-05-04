@@ -11,9 +11,10 @@ import { EXCLUDED_EMAILS } from '@/shared/lib/constants/admin.constants';
 
 export async function getDashboardStatsInternal(): Promise<DashboardStats> {
     try {
+        const { toLocalISOString } = await import('@/lib/utils/date-utils');
         const now = new Date();
-        const today = now.toISOString().split('T')[0];
-        const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+        const today = toLocalISOString(now) as string;
+        const lastWeek = toLocalISOString(new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000), true) as string;
 
         // 1. Basic counts in a single multi-query
         // Filter signups by successful/open payment status
