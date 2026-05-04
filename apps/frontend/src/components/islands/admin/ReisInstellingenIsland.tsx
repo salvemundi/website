@@ -40,6 +40,11 @@ export default function ReisInstellingenIsland({ initialTrips }: ReisInstellinge
     const [isAdding, setIsAdding] = useState(false);
     const [isDeleting, setIsDeleting] = useState<number | null>(null);
 
+    // Sync trips state with server data after revalidation
+    useEffect(() => {
+        setTrips(initialTrips);
+    }, [initialTrips]);
+
     const [createState, createAction, isCreating] = useActionState<ActionState | null, FormData>(createTrip, null);
     const [updateState, updateAction, isUpdating] = useActionState<ActionState | null, FormData>(updateTrip, null);
 

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
+export const dynamic = 'force-dynamic';
 
 // V7 Specifics
 import AdminReisSelectorIsland from '@/components/islands/admin/AdminReisSelectorIsland';
