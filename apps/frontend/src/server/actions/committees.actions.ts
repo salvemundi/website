@@ -59,7 +59,11 @@ export async function getCommitteeBySlug(slug: string): Promise<Committee | null
     const committees = await getCommittees();
     
     const found = committees.find(c => {
-        const cleaned = c.name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim();
+        // 1. Try matching by commissie_token (most reliable)
+        if (c.commissie_token === slug) return true;
+        
+        // 2. Fallback: match by slugified name
+        const cleaned = c.name.replace(/\s*(\|\||[-–—])?\s*SALVE MUNDI\s*$/gi, '').trim();
         return slugify(cleaned) === slug;
     });
 
