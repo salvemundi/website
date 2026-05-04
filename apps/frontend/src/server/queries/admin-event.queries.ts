@@ -1,5 +1,6 @@
 import 'server-only';
 import { query } from '@/lib/database';
+import { toLocalISOString } from '@/lib/utils/date-utils';
 import { activitiesSchema, type Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { type DbEventSignup } from '@salvemundi/validations/directus/schema';
 
@@ -21,7 +22,6 @@ export async function getActivitiesInternal(onlyPublished = true): Promise<Activ
     const { rows } = await query(sql);
 
     const mappedData = rows.map((item) => {
-        const { toLocalISOString } = require('@/lib/utils/date-utils');
         const safeISO = (d: string | Date | null | undefined, includeTime = false) => {
             return toLocalISOString(d, includeTime);
         };
@@ -74,7 +74,6 @@ export async function getActivityByIdInternal(id: string): Promise<Activiteit | 
     const item = rows?.[0];
     if (!item) return null;
 
-        const { toLocalISOString } = require('@/lib/utils/date-utils');
         const safeISO = (d: string | Date | null | undefined, includeTime = false) => {
             return toLocalISOString(d, includeTime);
         };

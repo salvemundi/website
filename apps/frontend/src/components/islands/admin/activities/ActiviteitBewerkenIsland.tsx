@@ -8,6 +8,7 @@ import { getImageUrl } from '@/lib/utils/image-utils';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
+import { toLocalISOString } from '@/lib/utils/date-utils';
 import { AdminActivity, Committee } from '@salvemundi/validations';
 
 // Clean committee names (removed || SV Salve Mundi and other suffixes)
@@ -134,7 +135,6 @@ export default function ActiviteitBewerkenIsland({
         }
     };
 
-    const { toLocalISOString } = require('@/lib/utils/date-utils');
     const formatDate = (dateStr?: string | null) => toLocalISOString(dateStr) || '';
     const formatDateTime = (dateStr?: string | null) => toLocalISOString(dateStr, true)?.slice(0, 16) || '';
 

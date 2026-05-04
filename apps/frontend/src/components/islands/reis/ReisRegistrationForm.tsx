@@ -12,6 +12,7 @@ import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { formatPhoneNumber } from '@/lib/utils/phone-utils';
+import { toLocalISOString } from '@/lib/utils/date-utils';
 import { AlertCircle } from 'lucide-react';
 import { NameConfirmModal } from './shared/NameConfirmModal';
 
@@ -42,7 +43,6 @@ export function ReisRegistrationForm({
 
     const formatDateForInput = (dateStr?: string | null) => {
         if (!dateStr) return '';
-        const { toLocalISOString } = require('@/lib/utils/date-utils');
         return toLocalISOString(dateStr) || '';
     };
 
