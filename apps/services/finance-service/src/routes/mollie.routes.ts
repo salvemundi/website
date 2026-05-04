@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { timingSafeCompare, PaymentSuccessEventSchema } from '@salvemundi/validations';
 import { DirectusRetryService } from '../services/directus-retry.service.js';
 import { AzureRetryService } from '../services/azure-retry.service.js';
+import { RegistrationService } from '../services/registration.service.js';
 
 export default async function mollieRoutes(fastify: FastifyInstance) {
     /**
@@ -90,20 +91,43 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
             );
 
             // 4. Publish Event & Processing (Only if approved or NOT a membership)
-            if (payment.status === 'paid' && (approvalStatus === 'approved')) {
+            if (payment.status === 'paid' && approvalStatus === 'approved') {
                 const registrationType = metadata?.registrationType;
 
-                // Fetch qr_token if it's an event signup
+                // 4a. Update Registration status (SQL + Directus Shadow Write)
+                if (registrationId && registrationType) {
+                    try {
+                        await RegistrationService.updateStatus(
+                            fastify.db,
+                            fastify.redis,
+                            {
+                                registrationId,
+                                registrationType,
+                                paymentType: metadata?.paymentType
+                            },
+                            fastify.log
+                        );
+                    } catch (regErr) {
+                        fastify.log.error(regErr, `[FINANCE] Failed to update registration for ${id}`);
+                    }
+                }
+
+                // 4b. Fetch qr_token if it's an event signup
                 let qrToken: string | undefined = undefined;
                 if (registrationId && registrationType === 'event_signup') {
-                    const qrResult = await fastify.db.query(
-                        `SELECT qr_token FROM event_signups WHERE id = $1`,
-                        [registrationId]
-                    );
-                    qrToken = qrResult.rows[0]?.qr_token;
+                    try {
+                        const qrResult = await fastify.db.query(
+                            'SELECT qr_token FROM event_signups WHERE id = $1',
+                            [registrationId]
+                        );
+                        qrToken = qrResult.rows[0]?.qr_token;
+                    } catch (qrErr) {
+                        fastify.log.error(qrErr, `[FINANCE] Failed to fetch QR token for registration ${registrationId}`);
+                    }
                 }
-                const email = (payment as any).consumerEmail || metadata?.email;
 
+                // 5. Publish Event for async processing (Mail, Azure, etc.)
+                const email = (payment as any).consumerEmail || metadata?.email;
                 const eventData = {
                     event: 'PAYMENT_SUCCESS',
                     userId: userId,
@@ -122,12 +146,14 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
                     timestamp: new Date().toISOString()
                 };
 
-                // Validate payload with Zod
-                const validatedEvent = PaymentSuccessEventSchema.parse(eventData);
-
-                await fastify.redis.xadd('v7:events', '*', 'payload', JSON.stringify(validatedEvent));
-
-                fastify.log.info(`[FINANCE] Published PAYMENT_SUCCESS event for payment ${id}`);
+                try {
+                    // Validate payload with Zod
+                    const validatedEvent = PaymentSuccessEventSchema.parse(eventData);
+                    await fastify.redis.xadd('v7:events', '*', 'payload', JSON.stringify(validatedEvent));
+                    fastify.log.info(`[FINANCE] Published PAYMENT_SUCCESS event for payment ${id}`);
+                } catch (eventErr) {
+                    fastify.log.error(eventErr, `[FINANCE] Failed to publish event for payment ${id} (Update was still processed)`);
+                }
 
                 // Handle Membership (isContribution)
                 const isContribution = metadata?.isContribution;
@@ -157,41 +183,6 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
                     }
                 }
 
-                // Handle regular registrations (Pub Crawl, Events, Trips)
-                if (registrationId && registrationType) {
-                    const collectionMap: Record<string, string> = {
-                        'event_signup': 'event_signups',
-                        'pub_crawl_signup': 'pub_crawl_signups',
-                        'trip_signup': 'trip_signups'
-                    };
-
-                    const targetCollection = collectionMap[registrationType];
-
-                    if (targetCollection) {
-                        let updateData: any = { payment_status: 'paid' };
-
-                        if (registrationType === 'trip_signup' && metadata?.paymentType) {
-                            if (metadata.paymentType === 'deposit') {
-                                updateData = { 
-                                    deposit_paid: true, 
-                                    deposit_paid_at: new Date().toISOString() 
-                                };
-                            } else if (metadata.paymentType === 'final') {
-                                updateData = { 
-                                    full_payment_paid: true, 
-                                    full_payment_paid_at: new Date().toISOString() 
-                                };
-                            }
-                        }
-
-                        try {
-                            await DirectusRetryService.queueUpdate(fastify.redis, targetCollection, registrationId, updateData);
-                            fastify.log.info(`[FINANCE] Queued Directus update for ${targetCollection} ${registrationId}`);
-                        } catch (qErr: any) {
-                            fastify.log.error(`[FINANCE] Failed to queue Directus update for ${registrationId}:`, qErr);
-                        }
-                    }
-                }
             } else if (payment.status === 'paid' && approvalStatus === 'pending') {
                 fastify.log.info(`[FINANCE] Payment ${id} is PAID but pending manual approval.`);
             } else if (['failed', 'canceled', 'expired'].includes(payment.status)) {

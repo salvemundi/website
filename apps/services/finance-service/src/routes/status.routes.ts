@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { getMollieClient } from '../services/mollie.service.js';
+import { RegistrationService } from '../services/registration.service.js';
 
 export default async function statusRoutes(fastify: FastifyInstance) {
     /**
@@ -72,17 +73,21 @@ export default async function statusRoutes(fastify: FastifyInstance) {
                             await fastify.redis.xadd('v7:events', '*', 'payload', JSON.stringify(eventData));
                             fastify.log.info(`[STATUS] Published PAYMENT_SUCCESS event for ${transaction.mollie_id} via status check fallback`);
 
-                            // Update registration tables via DirectusRetryService (if applicable)
+                            // Update registration tables via RegistrationService
                             if (registrationId && registrationType) {
-                                const { DirectusRetryService } = await import('../services/directus-retry.service.js');
-                                const collectionMap: Record<string, string> = {
-                                    'event_signup': 'event_signups',
-                                    'pub_crawl_signup': 'pub_crawl_signups',
-                                    'trip_signup': 'trip_signups'
-                                };
-                                const targetCollection = collectionMap[registrationType];
-                                if (targetCollection) {
-                                    await DirectusRetryService.queueUpdate(fastify.redis, targetCollection, registrationId, { payment_status: 'paid' });
+                                try {
+                                    await RegistrationService.updateStatus(
+                                        fastify.db,
+                                        fastify.redis,
+                                        {
+                                            registrationId,
+                                            registrationType,
+                                            paymentType: metadata?.paymentType
+                                        },
+                                        fastify.log
+                                    );
+                                } catch (regErr) {
+                                    fastify.log.error(regErr, `[STATUS] Failed to update registration for ${id}`);
                                 }
                             }
                         }
