@@ -5,6 +5,8 @@ import { getCommitteeBySlug } from '@/server/actions/committees.actions';
 import { BoardDetail } from '@/components/ui/committees/BoardDetail';
 import BackButton from '@/components/ui/navigation/BackButton';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
     title: 'Bestuur | SV Salve Mundi',
     description: 'Het bestuur van SV Salve Mundi',
