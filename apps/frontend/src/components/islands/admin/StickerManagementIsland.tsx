@@ -6,7 +6,6 @@ import {
     ChevronLeft, 
     RefreshCcw,
     AlertCircle,
-    Globe,
     Clock,
     UserCircle,
     CheckCircle
@@ -52,12 +51,10 @@ export default function StickerManagementIsland({
 
     const publishedCount = stickers.filter(s => s.status === 'published').length;
     const draftCount = stickers.filter(s => s.status === 'draft' || !s.status).length;
-    const countryCount = new Set(stickers.map(s => s.country).filter(Boolean)).size;
 
     const adminStats = [
         { label: 'Stickers', value: stickers.length, icon: MapPin, trend: 'Totaal' },
         { label: 'Gepubliceerd', value: publishedCount, icon: CheckCircle, trend: 'Live' },
-        { label: 'Landen', value: countryCount, icon: Globe, trend: 'Wereldwijd' },
         { label: 'Afwachting', value: draftCount, icon: Clock, trend: 'Moderatie' },
     ];
 
