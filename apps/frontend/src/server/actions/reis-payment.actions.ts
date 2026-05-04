@@ -127,8 +127,11 @@ export async function updateSignupDetails(signupId: number, data: ReisPaymentEnr
             return { success: false, error: 'Vul alle verplichte velden correct in.', fieldErrors: validated.error.flatten().fieldErrors };
         }
 
-        const fields = Object.keys(validated.data);
-        const values = Object.values(validated.data);
+        // Strip is_bus_trip as it's not a column in trip_signups
+        const { is_bus_trip, ...dbData } = validated.data;
+
+        const fields = Object.keys(dbData);
+        const values = Object.values(dbData);
         const setClause = fields.map((f, i) => `${f} = $${i + 2}`).join(', ');
 
         await query(`UPDATE trip_signups SET ${setClause} WHERE id = $1`, [signupId, ...values]);
@@ -136,7 +139,7 @@ export async function updateSignupDetails(signupId: number, data: ReisPaymentEnr
         // Shadow Write (Directus)
         const { getSystemDirectus } = await import('@/lib/directus');
         const { updateItem } = await import('@directus/sdk');
-        getSystemDirectus().request(updateItem('trip_signups', signupId, validated.data)).catch(err => {
+        getSystemDirectus().request(updateItem('trip_signups', signupId, dbData)).catch(err => {
             
         });
 

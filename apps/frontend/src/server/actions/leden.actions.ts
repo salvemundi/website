@@ -210,7 +210,8 @@ export async function renewMembershipAction(
 
         const newExpiry = new Date(baseDate);
         newExpiry.setMonth(newExpiry.getMonth() + months);
-        const newExpiryStr = newExpiry.toISOString().substring(0, 10);
+        const { toLocalISOString } = await import("@/lib/utils/date-utils");
+        const newExpiryStr = toLocalISOString(newExpiry) as string;
 
         await getSystemDirectus().request(updateUser(directusUserId, { membership_expiry: newExpiryStr }));
 

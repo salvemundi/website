@@ -19,6 +19,7 @@ import {
 
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
+import { toLocalISOString } from '@/lib/utils/date-utils';
 import { 
     type DbPubCrawlEvent,
     type DbTrip,
@@ -27,7 +28,7 @@ import {
 } from '@salvemundi/validations';
 import { cacheLife } from 'next/cache';
 
-export async function getHeroBanners(): Promise<HeroBanner[]> {
+export const getHeroBanners = async (): Promise<HeroBanner[]> => {
     'use cache';
     cacheLife('minutes');
     const rawData = await getSystemDirectus().request(readItems('hero_banners', {
@@ -62,12 +63,12 @@ import {
 } from "@/server/actions/reis.actions";
 import { connection } from "next/server";
 
-export async function getUpcomingActiviteiten(limit = 4): Promise<Activiteit[]> {
+export const getUpcomingActiviteiten = async (limit = 4): Promise<Activiteit[]> => {
     'use cache';
     cacheLife('minutes');
     const client = getSystemDirectus();
     const now = new Date();
-    const today = now.toISOString().split('T')[0];
+    const today = toLocalISOString(now) as string;
     
     const [regularEvents, pubCrawlEvents, tripEvents] = await Promise.all([
         getActivitiesInternal(true),
@@ -94,7 +95,7 @@ export async function getUpcomingActiviteiten(limit = 4): Promise<Activiteit[]> 
         titel: item.name ?? '',
         beschrijving: item.description ?? null,
         locatie: 'Diverse locaties',
-        datum_start: item.date ? new Date(item.date).toISOString() : now.toISOString(),
+        datum_start: toLocalISOString(item.date, true) || toLocalISOString(now, true)!,
         datum_eind: null,
         afbeelding_id: item.image ?? null,
         status: 'published',
@@ -115,8 +116,8 @@ export async function getUpcomingActiviteiten(limit = 4): Promise<Activiteit[]> 
         titel: item.name ?? '',
         beschrijving: item.description ?? null,
         locatie: 'Studiereis',
-        datum_start: item.start_date ? new Date(item.start_date).toISOString() : now.toISOString(),
-        datum_eind: item.end_date ? new Date(item.end_date).toISOString() : null,
+        datum_start: toLocalISOString(item.start_date, true) || toLocalISOString(now, true)!,
+        datum_eind: toLocalISOString(item.end_date, true),
         afbeelding_id: item.image ?? null,
         status: 'published',
         price_members: item.base_price ?? 0,
@@ -150,7 +151,7 @@ export async function getUpcomingActiviteiten(limit = 4): Promise<Activiteit[]> 
 }
 
 
-export async function getSponsors(): Promise<Sponsor[]> {
+export const getSponsors = async (): Promise<Sponsor[]> => {
     'use cache';
     cacheLife('hours');
     const rawData = await getSystemDirectus().request(readItems('sponsors', {

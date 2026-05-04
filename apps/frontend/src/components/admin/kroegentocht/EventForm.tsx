@@ -18,6 +18,7 @@ import { upsertPubCrawlEvent, uploadPubCrawlImage } from '@/server/actions/admin
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import { getImageUrl } from '@/lib/utils/image-utils';
+import { toLocalISOString } from '@/lib/utils/date-utils';
 
 interface EventFormProps {
     event?: any;
@@ -30,7 +31,7 @@ export default function EventForm({ event }: EventFormProps) {
     const [formData, setFormData] = useState({
         name: event?.name || '',
         description: event?.description || '',
-        date: event?.date ? new Date(event.date).toISOString().split('T')[0] : '',
+        date: toLocalISOString(event?.date) || '',
         email: event?.email || 'intro@salvemundi.nl',
         image: event?.image || null,
     });

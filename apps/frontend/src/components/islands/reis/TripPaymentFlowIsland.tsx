@@ -59,7 +59,7 @@ export default function TripPaymentFlowIsland({
     // Dynamic schema extension to include trip-specific end date validation
     const enrichmentSchema = useMemo(() => {
         return reisPaymentEnrichmentSchema.superRefine((data, ctx) => {
-            if (data.document_expiry_date && trip.end_date) {
+            if (!trip.is_bus_trip && data.document_expiry_date && trip.end_date) {
                 const expiry = new Date(data.document_expiry_date);
                 const tripEnd = new Date(trip.end_date);
                 
@@ -84,7 +84,7 @@ export default function TripPaymentFlowIsland({
                 }
             }
         });
-    }, [trip.end_date]);
+    }, [trip.end_date, trip.is_bus_trip]);
 
     // Form setup with React Hook Form
     const methods = useForm<ReisPaymentEnrichment>({
@@ -101,8 +101,10 @@ export default function TripPaymentFlowIsland({
             allergies: localSignup.allergies || '',
             special_notes: localSignup.special_notes || '',
             willing_to_drive: localSignup.willing_to_drive || false,
+            is_bus_trip: trip.is_bus_trip ?? false,
         },
-        mode: 'onChange'
+        mode: 'onChange',
+        shouldUnregister: true
     });
 
     const { handleSubmit, watch, getValues, trigger, formState: { isValid } } = methods;

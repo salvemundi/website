@@ -17,7 +17,7 @@ export const reisTripSchema = z.object({
     registration_open: z.boolean(),
     registration_start_date: z.string().nullable().optional(),
     max_participants: z.number().int(),
-    max_crew: z.number().int().optional(),
+    max_crew: z.coerce.number().int().nullable().optional(),
     base_price: z.coerce.number().optional(),
     crew_discount: z.coerce.number().optional(),
     deposit_amount: z.coerce.number().optional(),
@@ -79,66 +79,76 @@ export const reisPaymentEnrichmentSchema = z.object({
     last_name: z.string().min(1, 'Achternaam is verplicht'),
     phone_number: phoneNumberSchema,
     date_of_birth: reisDateOfBirthSchema,
-    id_document: z.string().refine(val => val !== 'none', {
-        message: 'Maak een keuze voor het ID-document.'
-    }),
+    id_document: z.string().optional().nullable(),
     document_number: z.string().nullable().optional(),
     document_expiry_date: z.string().nullable().optional(),
     extra_luggage: z.boolean().optional().nullable(),
     allergies: z.string().optional().nullable(),
     special_notes: z.string().optional().nullable(),
     willing_to_drive: z.boolean().optional().nullable(),
+    is_bus_trip: z.boolean().optional().nullable(),
 }).superRefine((data, ctx) => {
+    // Skip document checks if it's a bus trip
+    if (data.is_bus_trip) return;
+
+    // Enforce document selection if not a bus trip
+    if (!data.id_document || data.id_document === 'none') {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Maak een keuze voor het ID-document.',
+            path: ['id_document']
+        });
+        return;
+    }
+
     // Identity checks
-    if (data.id_document && data.id_document !== 'none') {
-        const docNum = data.document_number?.trim() || '';
-        
-        // 1. Required check
-        if (docNum.length === 0) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: 'Documentnummer is verplicht.',
-                path: ['document_number']
-            });
-            return;
-        }
+    const docNum = data.document_number?.trim() || '';
+    
+    // 1. Required check
+    if (docNum.length === 0) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Documentnummer is verplicht.',
+            path: ['document_number']
+        });
+        return;
+    }
 
-        // 2. Format check: 6-12 alphanumeric, must have both letters and digits
-        const formatRegex = /^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]{6,12}$/;
-        if (!formatRegex.test(docNum)) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: 'Ongeldig formaat (6-12 tekens, letters én cijfers verplicht).',
-                path: ['document_number']
-            });
-        }
+    // 2. Format check: 6-12 alphanumeric, must have both letters and digits
+    const formatRegex = /^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]{6,12}$/;
+    if (!formatRegex.test(docNum)) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Ongeldig formaat (6-12 tekens, letters én cijfers verplicht).',
+            path: ['document_number']
+        });
+    }
 
-        // 3. BSN check: 9 digits only
-        if (docNum.length === 9 && /^\d+$/.test(docNum)) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: 'Dit lijkt op een BSN (9 cijfers). Gebruik je Paspoort of ID nummer.',
-                path: ['document_number']
-            });
-        }
+    // 3. BSN check: 9 digits only
+    if (docNum.length === 9 && /^\d+$/.test(docNum)) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Dit lijkt op een BSN (9 cijfers). Gebruik je Paspoort of ID nummer.',
+            path: ['document_number']
+        });
+    }
 
-        // 4. Repeating chars check
-        if (/^(.)\1+$/.test(docNum)) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: 'Herhalende tekens zijn niet toegestaan.',
-                path: ['document_number']
-            });
-        }
+    // 4. Repeating chars check
+    if (/^(.)\1+$/.test(docNum)) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Herhalende tekens zijn niet toegestaan.',
+            path: ['document_number']
+        });
+    }
 
-        // 5. Expiry Date check
-        if (!data.document_expiry_date || data.document_expiry_date.trim().length === 0) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: 'Vervaldatum is verplicht.',
-                path: ['document_expiry_date']
-            });
-        }
+    // 5. Expiry Date check
+    if (!data.document_expiry_date || data.document_expiry_date.trim().length === 0) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Vervaldatum is verplicht.',
+            path: ['document_expiry_date']
+        });
     }
 });
 

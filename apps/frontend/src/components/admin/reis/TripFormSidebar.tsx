@@ -16,6 +16,7 @@ interface TripFormSidebarProps {
     setAllowFinalPayments: (allow: boolean) => void;
     isBusTrip: boolean;
     setIsBusTrip: (isBus: boolean) => void;
+    registrationStartDate?: string | null;
 }
 
 export default function TripFormSidebar({
@@ -30,9 +31,11 @@ export default function TripFormSidebar({
     allowFinalPayments,
     setAllowFinalPayments,
     isBusTrip,
-    setIsBusTrip
+    setIsBusTrip,
+    registrationStartDate
 }: TripFormSidebarProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const isAutoOpen = !registrationOpen && registrationStartDate && new Date(registrationStartDate) <= new Date();
 
     return (
         <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-8">
@@ -76,6 +79,11 @@ export default function TripFormSidebar({
                             <Check className="absolute h-3 w-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
                         </div>
                         <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest group-hover:text-[var(--beheer-text)] transition-colors">Inschrijving Open</span>
+                        {isAutoOpen && (
+                            <div className="ml-auto px-2 py-0.5 bg-emerald-500/10 text-emerald-500 rounded-md text-[8px] font-black uppercase tracking-tighter animate-pulse border border-emerald-500/20">
+                                Auto-Open Actief
+                            </div>
+                        )}
                     </label>
 
                     <label className="relative flex items-center gap-4 bg-[var(--beheer-card-soft)]/30 p-3 rounded-xl border border-[var(--beheer-border)]/30 cursor-pointer group transition-all hover:bg-[var(--beheer-card-soft)]/50">

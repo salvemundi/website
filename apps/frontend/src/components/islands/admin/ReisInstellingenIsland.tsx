@@ -45,8 +45,17 @@ export default function ReisInstellingenIsland({ initialTrips }: ReisInstellinge
         setTrips(initialTrips);
     }, [initialTrips]);
 
-    const [createState, createAction, isCreating] = useActionState<ActionState | null, FormData>(createTrip, null);
-    const [updateState, updateAction, isUpdating] = useActionState<ActionState | null, FormData>(updateTrip, null);
+    const handleCancel = () => {
+        setEditingTrip(null);
+        setIsAdding(false);
+    };
+
+    const handleSuccess = (message: string) => {
+        showToast(message, 'success');
+        setEditingTrip(null);
+        setIsAdding(false);
+        router.refresh();
+    };
 
     const handleEdit = (trip: Trip) => {
         setEditingTrip(trip);
@@ -56,11 +65,6 @@ export default function ReisInstellingenIsland({ initialTrips }: ReisInstellinge
     const handleAdd = () => {
         setEditingTrip(null);
         setIsAdding(true);
-    };
-
-    const handleCancel = () => {
-        setEditingTrip(null);
-        setIsAdding(false);
     };
 
     const handleDelete = async (id: number) => {
@@ -82,20 +86,6 @@ export default function ReisInstellingenIsland({ initialTrips }: ReisInstellinge
             setIsDeleting(null);
         }
     };
-
-    const state = editingTrip ? updateState : createState;
-    const pending = editingTrip ? isUpdating : isCreating;
-
-    useEffect(() => {
-        if (state?.success && (isAdding || editingTrip)) {
-            showToast(editingTrip ? 'Reis succesvol bijgewerkt' : 'Reis succesvol aangemaakt', 'success');
-            setEditingTrip(null);
-            setIsAdding(false);
-            router.refresh();
-        } else if (state?.error && !pending) {
-            showToast(state.error, 'error');
-        }
-    }, [state, pending, showToast, router, editingTrip, isAdding]);
 
     return (
         <>
@@ -121,10 +111,7 @@ export default function ReisInstellingenIsland({ initialTrips }: ReisInstellinge
                         editingTrip={editingTrip}
                         isAdding={isAdding}
                         onCancel={handleCancel}
-                        state={state}
-                        pending={pending}
-                        createAction={createAction}
-                        updateAction={updateAction}
+                        onSuccess={handleSuccess}
                     />
                 )}
 

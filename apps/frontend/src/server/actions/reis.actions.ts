@@ -91,7 +91,7 @@ export async function getCurrentUserProfileAction(): Promise<{ success: boolean;
     }
 }
 
-export async function getUpcomingTrips(): Promise<ReisTrip[]> {
+export const getUpcomingTrips = async (): Promise<ReisTrip[]> => {
     'use cache';
     cacheLife('minutes');
     // 1. Direct SQL for speed and bypass cache
@@ -217,17 +217,18 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
         return { success: false, message: 'Reis niet gevonden.' };
     }
 
-    const registrationStartDate = targetTrip.registration_start_date ? new Date(targetTrip.registration_start_date) : null;
     const now = new Date();
+    const registrationStartDate = targetTrip.registration_start_date ? new Date(targetTrip.registration_start_date) : null;
+
+    // isRegistrationDateReached is true if a date was set and we passed it.
+    const isRegistrationDateReached = Boolean(registrationStartDate && now >= registrationStartDate);
     
-    // Default to true if no date is set, so the toggle works immediately
-    const isRegistrationDateReached = registrationStartDate ? now >= registrationStartDate : true;
-    
-    // canSignUp is true ONLY if both the trip switch (registration_open) AND the start date are satisfied.
-    const canSignUp = Boolean(targetTrip.registration_open && isRegistrationDateReached);
+    // canSignUp is true if EITHER the manual override is ON OR the scheduled date has been reached.
+    const canSignUp = targetTrip.registration_open || isRegistrationDateReached;
 
     if (!canSignUp) {
-        return { success: false, message: 'De inschrijving voor deze reis is momenteel niet geopend.' };
+        const dateText = registrationStartDate ? ` op ${registrationStartDate.toLocaleString('nl-NL')}` : '';
+        return { success: false, message: `De inschrijving voor deze reis is nog niet geopend${dateText}.` };
     }
 
     const participantsCount = existingSignups.filter(s => s.status === 'confirmed' || s.status === 'registered').length;
@@ -279,10 +280,14 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
             return { success: false, message: 'Reis niet gevonden.' };
         }
 
-        const registrationStartDate = targetTrip.registration_start_date ? new Date(targetTrip.registration_start_date) : null;
         const now = new Date();
-        const isRegistrationDateReached = registrationStartDate ? now >= registrationStartDate : true;
-        const canSignUp = Boolean(targetTrip.registration_open && isRegistrationDateReached);
+        const registrationStartDate = targetTrip.registration_start_date ? new Date(targetTrip.registration_start_date) : null;
+        
+        // registrationDateReached is true if a date was set and we passed it.
+        const registrationDateReached = Boolean(registrationStartDate && now >= registrationStartDate);
+        
+        // canSignUp is true if EITHER the manual override is ON OR the scheduled date has been reached.
+        const canSignUp = targetTrip.registration_open || registrationDateReached;
 
         if (!canSignUp) {
             return { success: false, message: 'De inschrijving voor deze reis is momenteel niet geopend.' };

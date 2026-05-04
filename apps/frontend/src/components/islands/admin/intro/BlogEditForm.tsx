@@ -4,6 +4,7 @@ import React from 'react';
 import { Save, X, Eye } from 'lucide-react';
 import type { IntroBlog } from '@salvemundi/validations/schema/intro.zod';
 import { Button, Field, inputClass } from './IntroTabComponents';
+import { toLocalISOString } from '@/lib/utils/date-utils';
 
 interface Props {
     blog: Partial<IntroBlog>;
@@ -92,7 +93,7 @@ export default function BlogEditForm({ blog, data, onChange, onSave, onCancel, s
                     <Field label="Datum (Publicatie)">
                         <input 
                             type="datetime-local" 
-                            value={data.created_at ? new Date(new Date(data.created_at).getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().slice(0, 16) : ''} 
+                            value={toLocalISOString(data.created_at, true)?.slice(0, 16) || ''} 
                             onChange={e => onChange({ ...data, created_at: e.target.value })} 
                             className={inputClass} 
                         />
