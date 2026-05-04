@@ -99,7 +99,7 @@ export const TRIP_SIGNUP_ACTIVITY_FIELDS = [
 ] as const;
 
 export const STICKER_FIELDS = [
-    'id', 'location_name', 'date_created', 'latitude', 'longitude', 'city', 'country', 'address', 'image'
+    'id', 'location_name', 'date_created', 'latitude', 'longitude', 'city', 'country', 'address', 'image', 'status'
 ] as const;
 
 export const USER_ID_FIELDS = ['id', 'entra_id'] as const;

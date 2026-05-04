@@ -14,7 +14,7 @@ import {
 import Link from 'next/link';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
-import { deleteSticker } from '@/server/actions/admin-stickers.actions';
+import { deleteSticker, updateSticker } from '@/server/actions/admin-stickers.actions';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import StickersTable from '@/components/admin/stickers/StickersTable';
@@ -37,6 +37,16 @@ export default function StickerManagementIsland({
             showToast('Sticker succesvol verwijderd', 'success');
         } catch (err) {
             showToast('Fout bij verwijderen: ' + err, 'error');
+        }
+    };
+
+    const handleApprove = async (id: number) => {
+        try {
+            await updateSticker(id, { status: 'published' });
+            setStickers(prev => prev.map(s => s.id === id ? { ...s, status: 'published' } : s));
+            showToast('Sticker succesvol gepubliceerd', 'success');
+        } catch (err) {
+            showToast('Fout bij publiceren: ' + err, 'error');
         }
     };
 
@@ -67,6 +77,7 @@ export default function StickerManagementIsland({
                     <StickersTable 
                         stickers={stickers} 
                         onDelete={handleDelete} 
+                        onApprove={handleApprove}
                     />
                 ) : (
                     <div className="text-center py-32 bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-dashed border-[var(--beheer-border)]">
