@@ -17,6 +17,7 @@ interface ReisTableProps {
     onResendEmail: (id: number, type: 'deposit' | 'final') => void;
     signupActivitiesMap: Record<number, TripSignupActivity[]>;
     allowFinalPayments: boolean;
+    isBusTrip?: boolean;
 }
 
 export default function ReisTable({
@@ -31,7 +32,8 @@ export default function ReisTable({
     onDelete = () => {},
     onResendEmail = () => {},
     signupActivitiesMap = {},
-    allowFinalPayments = false
+    allowFinalPayments = false,
+    isBusTrip = false
 }: ReisTableProps) {
     return (
         <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] overflow-hidden">
@@ -70,6 +72,7 @@ export default function ReisTable({
                                     onResendEmail={onResendEmail}
                                     activities={signupActivitiesMap[signup.id]}
                                     allowFinalPayments={allowFinalPayments}
+                                    isBusTrip={isBusTrip}
                                 />
                             ))}
                         </tbody>
