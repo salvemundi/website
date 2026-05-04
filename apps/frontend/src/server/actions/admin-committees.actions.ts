@@ -142,7 +142,18 @@ export async function removeCommitteeMember(
         await fetch(`${getAzureManagementUrl()}/api/groups/${encodeURIComponent(azureGroupId)}/owners/${encodeURIComponent(entraId)}`, {
             method: 'DELETE',
             headers: serviceHeaders(false),
-        }).catch(() => {});
+        }).then(async (r) => {
+            if (!r.ok) {
+                const body = await r.json().catch(() => ({}));
+                if (body.details?.includes('at least one owner')) {
+                    console.warn(`[Azure] Could not remove last owner ${entraId} from ${azureGroupId}. This is expected if they are the only leader left.`);
+                } else {
+                    console.error(`[Azure] Failed to remove owner ${entraId} from ${azureGroupId}:`, body);
+                }
+            }
+        }).catch((err) => {
+            console.error(`[Azure] Fetch error removing owner ${entraId}:`, err);
+        });
     }
 
     // 2. Remove from Members
@@ -189,8 +200,17 @@ export async function toggleCommitteeLeader(
         const method = currentIsLeader ? 'DELETE' : 'POST';
         await fetch(path, {
             method,
-            headers: serviceHeaders(!currentIsLeader),
+            headers: serviceHeaders(method === 'POST'),
             body: currentIsLeader ? undefined : JSON.stringify({ userId: entraId }),
+        }).then(async (r) => {
+            if (!r.ok) {
+                const body = await r.json().catch(() => ({}));
+                if (body.details?.includes('at least one owner')) {
+                    console.warn(`[Azure] Could not remove last owner ${entraId} from ${azureGroupId}.`);
+                } else {
+                    console.error(`[Azure] Failed to toggle leader in Azure for ${entraId}:`, body);
+                }
+            }
         }).catch(() => {});
     }
 

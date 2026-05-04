@@ -25,7 +25,7 @@ export const CommitteeCard: React.FC<CommitteeCardProps> = ({
 }) => {
     const cleanedName = cleanCommitteeName(committee.name || '');
     const isBestuur = cleanedName.toLowerCase().includes('bestuur');
-    const slug = slugify(cleanedName);
+    const slug = committee.commissie_token || slugify(cleanedName);
     
     const members = committee.members
         ?.filter(m => m.is_visible && m.user_id?.avatar)
