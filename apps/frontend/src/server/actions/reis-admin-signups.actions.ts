@@ -17,7 +17,8 @@ import {
     updateTripSignupDb,
     deleteTripSignupDb,
     fetchSignupsByActivityIdDb,
-    fetchSelectedSignupActivitiesDb
+    fetchSelectedSignupActivitiesDb,
+    fetchTripByIdDb
 } from './reis-db.utils';
 import { getSystemDirectus } from '@/lib/directus';
 import { 
@@ -74,6 +75,23 @@ export async function updateSignupStatus(signupId: number, status: string) {
             const token = process.env.INTERNAL_SERVICE_TOKEN;
 
             if (mailUrl && token) {
+                // Fetch trip name for a better email experience
+                let tripName = 'de reis';
+                try {
+                    const trip = await fetchTripByIdDb(signup.trip_id);
+                    if (trip?.name) {
+                        tripName = trip.name;
+                    }
+                } catch (e) {
+                    // Fallback to default
+                }
+
+                const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://salvemundi.nl';
+                const isGuest = !signup.directus_relations;
+                const dashboardUrl = isGuest 
+                    ? `${siteUrl}/reis/betalen/aanbetaling?id=${signupId}&t=${signup.access_token}`
+                    : `${siteUrl}/reis`;
+
                 fetch(`${mailUrl}/api/mail/send`, {
                     method: 'POST',
                     headers: {
@@ -85,10 +103,14 @@ export async function updateSignupStatus(signupId: number, status: string) {
                         templateId: 'trip_status_update',
                         data: {
                             firstName: signup.first_name,
-                            tripName: 'de reis' // Flat result from DB doesn't have trip name, simplified for now
+                            tripName: tripName,
+                            isWaitlistPromotion: oldStatus === 'waitlist',
+                            dashboardUrl: dashboardUrl,
+                            isGuest: isGuest
                         }
                     })
-                }).catch(() => {}); }
+                }).catch(() => {}); 
+            }
         }
 
         const { revalidatePath, revalidateTag } = await import('next/cache');
