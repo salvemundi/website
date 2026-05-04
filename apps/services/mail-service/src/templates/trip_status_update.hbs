@@ -1,10 +1,16 @@
-{{#> layout headerTitle="YOU'RE IN!"}}
+{{#> layout headerTitle="JE GAAT MEE!"}}
     <div class="status-badge success">Status Update</div>
     <p>Beste {{firstName}},</p>
     
+    {{#if isWaitlistPromotion}}
     <p>Geweldig nieuws! Er is een plekje vrijgekomen voor de reis naar <strong>{{tripName}}</strong> en jij bent de gelukkige!</p>
     
     <p>Je status is zojuist aangepast van <strong>Wachtlijst</strong> naar <strong>Bevestigd</strong>. We zijn ontzettend blij dat je alsnog met ons mee kunt op avontuur.</p>
+    {{else}}
+    <p>Goed nieuws! Je inschrijving voor de reis naar <strong>{{tripName}}</strong> is zojuist <strong>Bevestigd</strong> door de commissie!</p>
+    
+    <p>We zijn ontzettend blij dat je met ons mee gaat op avontuur.</p>
+    {{/if}}
     
     <div class="details">
         <p style="text-align: center; margin-bottom: 10px; font-weight: 800; color: #a4539b; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Reis Details</p>
@@ -12,10 +18,10 @@
         <p style="text-align: center; font-weight: 700; margin: 5px 0;">Nieuwe Status: Bevestigd</p>
     </div>
 
-    <p>Om je deelname definitief te maken, vragen we je om de aanbetaling (indien van toepassing) zo snel mogelijk te voldoen via je dashboard. Je vindt alle informatie op de website:</p>
+    <p>Om je deelname definitief te maken, vragen we je om de aanbetaling (indien van toepassing) zo snel mogelijk te voldoen via {{#if isGuest}}je persoonlijke betaallink{{else}}je dashboard{{/if}}. Je vindt alle informatie op de website:</p>
     
     <p style="text-align: center;">
-        <a href="https://salvemundi.nl/reis" class="button">Naar Mijn Reis Dashboard</a>
+        <a href="{{dashboardUrl}}" class="button">{{#if isGuest}}Mijn Inschrijving & Betaling{{else}}Naar Mijn Reis Dashboard{{/if}}</a>
     </p>
 
     <p>Heb je vragen over de reis of de betaling? Stuur dan gerust een mailtje naar de Reiscommissie via <a href="mailto:reis@salvemundi.nl">reis@salvemundi.nl</a>.</p>
