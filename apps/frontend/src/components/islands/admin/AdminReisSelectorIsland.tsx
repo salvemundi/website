@@ -5,7 +5,7 @@ import { Plane, Loader2, Edit2, ChevronDown } from 'lucide-react';
 import type { Trip } from '@salvemundi/validations/schema/admin-reis.zod';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { toggleReisVisibility } from '@/server/actions/reis-admin-core.actions';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminVisibilityToggle from '@/components/ui/admin/AdminVisibilityToggle';
@@ -26,6 +26,11 @@ export default function AdminReisSelectorIsland({
     const searchParams = useSearchParams();
     const [isPending, startTransition] = useTransition();
     const [settings, setSettings] = useState(initialSettings);
+
+    // Sync settings state with server data after revalidation
+    useEffect(() => {
+        setSettings(initialSettings);
+    }, [initialSettings]);
 
     const currentTripId = searchParams.get('tripId');
     const selectedId = currentTripId ? Number(currentTripId) : (trips.length > 0 ? trips[0].id : '');

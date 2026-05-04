@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import ReisInstellingenIsland from '@/components/islands/admin/ReisInstellingenIsland';
 import { getTrips } from '@/server/queries/admin-reis.queries';
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
     title: 'Reis Instellingen | SV Salve Mundi',
