@@ -44,7 +44,7 @@ export async function getCommittees(): Promise<Committee[]> {
         const parsed = committeesSchema.safeParse(committeesWithMembers);
 
         if (!parsed.success) {
-            console.error('[Validation Error] getCommittees:', parsed.error);
+            console.error('[Validation Error] getCommittees:', JSON.stringify(parsed.error.format(), null, 2));
             return [];
         }
 

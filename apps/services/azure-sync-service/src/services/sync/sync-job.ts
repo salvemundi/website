@@ -66,8 +66,10 @@ export class SyncJob {
             }
 
             const committeeCache = new Map<string, Committee>();
+            const committeeByIdCache = new Map<number, Committee>();
             const relevantAzureGroupIds: string[] = [];
             for (const c of committees) {
+                committeeByIdCache.set(Number(c.id), c);
                 if (c.azure_group_id) {
                     committeeCache.set(c.azure_group_id, c);
                     relevantAzureGroupIds.push(c.azure_group_id);
@@ -121,6 +123,7 @@ export class SyncJob {
 
             const ctx: SyncContext & { membershipMap: Map<string, Map<number, boolean>> } = {
                 redis, status, options, token: initialToken, committeeCache,
+                committeeByIdCache,
                 ownerCache: new Map(), userCacheByEntra, membershipCache,
                 membershipMap, mainMembershipState
             };
@@ -213,7 +216,11 @@ export class SyncJob {
         console.log(`[SYNC] [single-${entraId}] Pre-fetched Directus data in ${Date.now() - startTime}ms`);
 
         const committeeCache = new Map<string, Committee>();
-        for (const c of committees) if (c.azure_group_id) committeeCache.set(c.azure_group_id, c as Committee);
+        const committeeByIdCache = new Map<number, Committee>();
+        for (const c of committees) {
+            committeeByIdCache.set(Number(c.id), c as Committee);
+            if (c.azure_group_id) committeeCache.set(c.azure_group_id, c as Committee);
+        }
 
         const userCacheByEntra = new Map<string, DirectusUser>();
         for (const u of allLeden) if (u.entra_id) userCacheByEntra.set(u.entra_id, u as DirectusUser);
@@ -276,7 +283,7 @@ export class SyncJob {
 
         const ctx: SyncContext & { membershipMap: Map<string, Map<number, boolean>> } = {
             redis, status, options,
-            token, committeeCache, ownerCache: new Map(), userCacheByEntra, membershipCache, membershipMap, mainMembershipState
+            token, committeeCache, committeeByIdCache, ownerCache: new Map(), userCacheByEntra, membershipCache, membershipMap, mainMembershipState
         };
 
         await persistSyncStatus(redis, status, true);
