@@ -77,10 +77,10 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
         headers: await headers()
     });
 
-    const user = session?.user as unknown as EnrichedUser;
+    const user = session?.user as EnrichedUser | undefined;
     const isExpired = user && user.membership_status !== 'active';
 
-    // Fetch committees for pricing (Active members pay €10 for renewal)
+    // Active members pay a reduced renewal fee (€10) if they are in a committee
     const { fetchUserCommitteesDb } = await import('./user-db.utils');
     const committees = user ? await fetchUserCommitteesDb(user.id) : [];
     const isCommitteeMember = committees.length > 0;
@@ -88,7 +88,7 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
     const baseAmount = (isCommitteeMember && isExpired) ? 10.00 : 20.00;
     let finalAmount = baseAmount;
 
-    // Server-side Price Re-calculation & Coupon Re-validation (Pentest/IDOR Mitigation)
+    // Pentest/IDOR Mitigation: Re-calculate price server-side to prevent client-side manipulation
     if (parsed.data.coupon) {
         const result = await getValidCoupon(parsed.data.coupon);
         if (result.valid && result.coupon) {
@@ -97,7 +97,7 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
                 ? (baseAmount * coupon.discount_value / 100) 
                 : coupon.discount_value;
             
-            // Strictly enforce bounds: Min €0.01 (Mollie), Max baseAmount
+            // Mollie minimum charge is €0.01
             finalAmount = Math.max(0.01, Math.min(baseAmount, baseAmount - discountValue));
         }
     }
@@ -125,16 +125,15 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
             }),
         });
 
-        const data = await response.json();
+        const data = await response.json() as { checkoutUrl?: string };
 
         if (response.ok && data.checkoutUrl) {
             return { success: true, checkoutUrl: data.checkoutUrl };
         }
- 
-        
+  
         return { success: false, error: 'Er is een fout opgetreden bij het aanmaken van de betaling.' };
     } catch (error) {
-        
+        console.error('[MembershipActions] Payment initiation failed:', error);
         return { success: false, error: 'Kan geen verbinding maken met betaalservice' };
     }
 }
@@ -147,6 +146,7 @@ export async function getTransactionStatusAction(transactionId: string) {
     }
 
     try {
+        // SQL-First: Fetch status directly for Zero-Drift consistency
         const { rows } = await query(
             `SELECT payment_status, user_id FROM transactions 
              WHERE id::text = $1 
@@ -157,10 +157,10 @@ export async function getTransactionStatusAction(transactionId: string) {
         );
 
         if (!rows || rows.length === 0) return { status: 'error' };
-        const transaction = rows[0];
+        const transaction = rows[0] as { payment_status: string; user_id: string | null };
 
         if (transaction.payment_status === 'paid') {
-            // Revalidate user data if payment was successful
+            // Ensure session data is fresh after payment
             if (transaction.user_id) {
                 revalidateTag(`user-${transaction.user_id}`, 'max');
             }
@@ -171,7 +171,7 @@ export async function getTransactionStatusAction(transactionId: string) {
 
         return { status: 'open', user_id: transaction.user_id };
     } catch (error) {
-        
+        console.error('[MembershipActions] Status check failed:', error);
         return { status: 'error', user_id: null };
     }
 }

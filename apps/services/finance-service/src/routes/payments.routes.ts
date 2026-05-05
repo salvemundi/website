@@ -21,7 +21,8 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
             isContribution,
             isNewMember,
             userId,
-            redirectUrl
+            redirectUrl,
+            couponCode
         } = request.body;
 
         if (!amount || !description || !redirectUrl) {
@@ -62,7 +63,8 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                     phoneNumber,
                     dateOfBirth,
                     isContribution,
-                    isNewMember
+                    isNewMember,
+                    couponCode
                 }
             });
 
@@ -88,7 +90,7 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
             // 2. Build SQL dynamically to avoid parameter count mismatches
             const columns = [
                 'mollie_id', 'amount', 'payment_status', 'product_name', 'product_type',
-                'user_id', 'email', 'first_name', 'last_name', 'access_token'
+                'user_id', 'email', 'first_name', 'last_name', 'access_token', 'coupon_code'
             ];
             const params = [
                 payment.id,
@@ -100,7 +102,8 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 email || null,
                 firstName || null,
                 lastName || null,
-                accessToken
+                accessToken,
+                couponCode || null
             ];
 
             if (registrationType === 'event_signup' || registrationType === 'membership') {

@@ -57,6 +57,7 @@ services:
       - DIRECTUS_SERVICE_URL=${INTERNAL_DIRECTUS_URL}
       - REDIS_URL=${REDIS_URL}
       - PUBLIC_URL=${PUBLIC_URL}
+      - MOLLIE_WEBHOOK_SECRET=${MOLLIE_WEBHOOK_SECRET}
       - MAIL_SERVICE_URL=http://mail-service:3003
       - AZURE_MANAGEMENT_SERVICE_URL=http://management-service:3004
       - AZURE_SYNC_SERVICE_URL=http://sync-service:3002
