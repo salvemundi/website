@@ -30,20 +30,7 @@ async function checkAccess() {
     return session;
 }
 
-export type Coupon = {
-    id: number;
-    coupon_code: string;
-    discount_type: 'fixed' | 'percentage';
-    discount_value: number;
-    usage_count: number;
-    usage_limit: number | null;
-    valid_from: string | null;
-    valid_until: string | null;
-    is_active: boolean;
-    date_created?: string;
-};
-
-export type CouponStatus = 'active' | 'expired' | 'maxed' | 'inactive' | 'pending';
+import { type Coupon, type CouponStatus } from '@/components/islands/admin/coupons/coupon-types';
 
 export async function getCoupons(): Promise<Coupon[]> {
     await checkAccess();
@@ -72,7 +59,7 @@ export async function getCoupons(): Promise<Coupon[]> {
     }
 }
 
-export async function createCoupon(formData: FormData): Promise<{ success: boolean; error?: string; fieldErrors?: Record<string, string[]> }> {
+export async function createCoupon(formData: FormData): Promise<{ success: boolean; data?: Coupon; error?: string; fieldErrors?: Record<string, string[]> }> {
     await checkAccess();
 
     const code = formData.get('coupon_code') as string;
@@ -118,13 +105,27 @@ export async function createCoupon(formData: FormData): Promise<{ success: boole
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session) throw new Error('Unauthorized');
     try {
-        await getSystemDirectus().request(createItem('coupons', payload));
+        const item = await getSystemDirectus().request(createItem('coupons', payload));
         revalidatePath('/beheer/coupons');
-        return { success: true };
-    } catch (e) {
         
+        const newCoupon: Coupon = {
+            ...item,
+            id: Number(item.id),
+            coupon_code: item.coupon_code || '',
+            discount_type: (item.discount_type || 'percentage') as 'fixed' | 'percentage',
+            discount_value: Number(item.discount_value),
+            usage_count: Number(item.usage_count),
+            usage_limit: item.usage_limit ? Number(item.usage_limit) : null,
+            valid_from: item.valid_from || null,
+            valid_until: item.valid_until || null,
+            is_active: !!item.is_active,
+            date_created: item.date_created || undefined
+        };
+
+        return { success: true, data: newCoupon };
+    } catch (e) {
         // Directus SDK errors might contain more info, but for simplicity:
-        return { success: false, error: 'Aanmaken mislukt (controleer op unieke code)' };
+        return { success: false, error: 'Aanmaken mislukt (controleer op unieke code of velden)' };
     }
 }
 

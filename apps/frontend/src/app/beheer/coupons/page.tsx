@@ -23,9 +23,8 @@ export default async function BeheerCouponsPage() {
     return (
         <AdminPageShell
             title="Coupons Beheer"
-            subtitle="Beheer kortingscodes en acties"
+            subtitle="Beheer kortingscodes en acties voor het lidmaatschap"
             backHref="/beheer"
-            hideToolbar={true}
         >
             <CouponDataLoader />
         </AdminPageShell>
