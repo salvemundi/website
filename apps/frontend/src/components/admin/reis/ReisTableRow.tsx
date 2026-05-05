@@ -58,7 +58,7 @@ export default function ReisTableRow({
                 {/* Header: Name & Actions */}
                 <div className="flex justify-between items-start mb-3">
                     <div className="min-w-0 pr-2">
-                        <div className="text-xs font-black uppercase tracking-widest text-[var(--beheer-accent)] mb-0.5 opacity-70">
+                        <div className="text-xs font-semibold text-[var(--beheer-accent)] mb-0.5 opacity-70">
                             {signup.role === 'crew' ? 'Crew' : 'Deelnemer'}
                         </div>
                         <div className="text-lg font-bold text-[var(--beheer-text)] tracking-tight leading-tight group-hover:text-[var(--beheer-accent)] transition-colors line-clamp-2 min-h-[2.8rem] flex items-center">
@@ -103,13 +103,13 @@ export default function ReisTableRow({
                         {/* Special Indicators */}
                         <div className="flex items-center gap-2">
                             {isBusTrip && signup.willing_to_drive && (
-                                <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-tighter text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded-md border border-emerald-500/20" title="Chauffeur">
+                                <div className="flex items-center gap-1 text-[9px] font-semibold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded-md border border-emerald-500/20" title="Chauffeur">
                                     <Bus className="h-2.5 w-2.5" />
                                     <span>Chauffeur</span>
                                 </div>
                             )}
                             {!isBusTrip && signup.extra_luggage && (
-                                <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-tighter text-blue-500 bg-blue-500/10 px-1.5 py-0.5 rounded-md border border-blue-500/20" title="Extra Koffer">
+                                <div className="flex items-center gap-1 text-[9px] font-semibold text-blue-500 bg-blue-500/10 px-1.5 py-0.5 rounded-md border border-blue-500/20" title="Extra Koffer">
                                     <Briefcase className="h-2.5 w-2.5" />
                                     <span>+1 Koffer</span>
                                 </div>
@@ -134,7 +134,7 @@ export default function ReisTableRow({
                     </div>
 
                     <div className="shrink-0 flex items-center justify-end ml-auto">
-                        <span className={`px-2 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-xl border-2 shadow-sm whitespace-nowrap ${paymentStatus.color}`}>
+                        <span className={`px-2 py-1 text-[10px] font-semibold rounded-lg border-2 shadow-sm whitespace-nowrap ${paymentStatus.color}`}>
                             {paymentStatus.label}
                         </span>
                     </div>
@@ -181,7 +181,7 @@ function StatusDropdown({ currentStatus, onChange }: { currentStatus: string, on
             >
                 <div className="flex items-center gap-2">
                     <current.icon className={`h-3 w-3 ${current.color.split(' ')[0]}`} />
-                    <span className="text-[10px] font-black uppercase tracking-[0.1em] text-[var(--beheer-text)]">
+                    <span className="text-[10px] font-semibold text-[var(--beheer-text)]">
                         {current.label}
                     </span>
                 </div>
@@ -214,7 +214,7 @@ function StatusDropdown({ currentStatus, onChange }: { currentStatus: string, on
                                     `}
                                 >
                                     <s.icon className={`h-3.5 w-3.5 ${currentStatus === s.value ? 'text-[var(--beheer-accent)]' : s.color.split(' ')[0]}`} />
-                                    <span className="text-[10px] font-bold uppercase tracking-widest">{s.label}</span>
+                                    <span className="text-[11px] font-semibold">{s.label}</span>
                                 </button>
                             ))}
                         </div>
