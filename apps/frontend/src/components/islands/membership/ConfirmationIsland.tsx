@@ -56,7 +56,7 @@ export default function ConfirmationIsland({ transactionId, type, initialStatus,
                         <div className="w-24 h-24 bg-green-500/20 dark:bg-green-500/30 rounded-full flex items-center justify-center mx-auto mb-6 shadow-glow shadow-green-500/20 dark:shadow-green-500/40 animate-in zoom-in duration-500">
                             <CheckCircle className="w-14 h-14 text-green-500 dark:text-green-400" />
                         </div>
-                        <h1 className="text-4xl font-black text-theme-purple dark:text-purple-400 mb-4 tracking-tight">GESLAAGD!</h1>
+                        <h1 className="text-4xl font-semibold text-theme-purple dark:text-purple-400 mb-4 tracking-tight">GESLAAGD!</h1>
                         <p className="text-lg opacity-80 dark:text-white/80 mb-8 max-w-lg mx-auto leading-relaxed">
                             {type === 'renewal'
                                 ? 'Welkom terug! Je lidmaatschap is succesvol verlengd. Je hebt weer volledige toegang tot alle activiteiten.'

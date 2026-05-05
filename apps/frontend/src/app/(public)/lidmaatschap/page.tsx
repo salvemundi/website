@@ -5,6 +5,7 @@ import MembershipStatusIsland, { type MembershipUserData } from '@/components/is
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { fetchUserCommitteesDb, type Committee } from '@/server/actions/user-db.utils';
+import { connection } from 'next/server';
 
 export const metadata = {
     title: 'Word Lid | Salve Mundi',
@@ -12,28 +13,11 @@ export const metadata = {
 };
 
 
-import { connection } from 'next/server';
-import { Suspense } from 'react';
-
 export default async function MembershipPage() {
-    return (
-        <Suspense fallback={<MembershipSkeleton />}>
-            <MembershipContent />
-        </Suspense>
-    );
-}
-
-function MembershipSkeleton() {
-    return (
-        <div className="mx-auto max-w-app px-4 py-8 sm:py-10 md:py-12 animate-pulse">
-            <div className="h-96 bg-[var(--bg-card)] rounded-[2rem]" />
-        </div>
-    );
-}
-
-async function MembershipContent() {
     await connection();
-    // NUCLEAR SSR: Fetch all data before flushing any part of the page content
+    
+    // NUCLEAR SSR: Fetch all data server-side to prevent layout shifts and flickering.
+    // This follows the Zero-Skeleton standard for a premium, instant feel.
     const session = await auth.api.getSession({ headers: await headers() });
     const user = session?.user as MembershipUserData | undefined;
     const isGuest = !user;
@@ -44,7 +28,7 @@ async function MembershipContent() {
             committees = await fetchUserCommitteesDb(user.id);
         } catch (error) {
             console.error('[Membership] Error fetching committees:', error);
-            throw new Error('Er is een fout opgetreden. Probeer het later opnieuw.');
+            // Non-blocking error for UI, but logged
         }
     }
 
@@ -60,7 +44,7 @@ async function MembershipContent() {
             <div className="max-w-app mx-auto">
                 <div className="flex flex-col sm:flex-row gap-6 px-6 py-8 sm:py-10 md:py-12">
                     <section className={`bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-[2rem] shadow-xl p-6 sm:p-10 ${isGuest ? 'w-full sm:w-1/2' : 'w-full max-w-2xl mx-auto'}`}>
-                        <h1 className="text-4xl font-black text-theme-purple dark:text-purple-400 mb-8 tracking-tight">
+                        <h1 className="text-4xl font-semibold text-theme-purple dark:text-purple-400 mb-8 tracking-tight">
                             {isGuest ? 'INSCHRIJVEN' : (user?.membership_status === 'active' ? 'STATUS' : 'VERLENGEN')}
                         </h1>
 
@@ -74,7 +58,7 @@ async function MembershipContent() {
                     {isGuest && (
                         <aside className="w-full sm:w-1/2 flex flex-col gap-6">
                             <div className="w-full text-center bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-[2rem] p-8 shadow-lg">
-                                <h2 className="text-3xl font-black text-theme-purple dark:text-purple-400 mb-4 tracking-tight">
+                                <h2 className="text-3xl font-semibold text-theme-purple dark:text-purple-400 mb-4 tracking-tight">
                                     WAAROM WORDEN LID?
                                 </h2>
                                 <p className="text-lg opacity-80 leading-relaxed font-medium">
