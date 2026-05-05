@@ -241,15 +241,19 @@ export async function fetchTripActivitiesByTripIdDb(tripId: number): Promise<Tri
 /**
  * Fetches all trips directly from the database for the admin selector (summary version).
  */
-export async function fetchAllTripsDb(): Promise<Pick<Trip, 'id' | 'name' | 'start_date' | 'end_date' | 'allow_final_payments'>[]> {
+export async function fetchAllTripsDb(): Promise<Pick<Trip, 'id' | 'name' | 'start_date' | 'end_date' | 'allow_final_payments' | 'is_bus_trip'>[]> {
     try {
         const res = await query(
-            `SELECT id, name, start_date, end_date, allow_final_payments 
+            `SELECT id, name, start_date, end_date, allow_final_payments, is_bus_trip 
              FROM trips 
              ORDER BY start_date DESC`,
             []
         );
-        return res.rows || [];
+        return (res.rows || []).map(t => ({
+            ...t,
+            is_bus_trip: !!t.is_bus_trip,
+            allow_final_payments: !!t.allow_final_payments
+        }));
     } catch (error) {
         
         return [];

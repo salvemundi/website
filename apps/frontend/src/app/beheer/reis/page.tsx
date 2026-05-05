@@ -3,16 +3,17 @@ import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 
 
 // V7 Specifics
-import AdminReisSelectorIsland from '@/components/islands/admin/AdminReisSelectorIsland';
 import AdminReisTableIsland from '@/components/islands/admin/AdminReisTableIsland';
-import { Plane, Plus } from 'lucide-react';
+import { Ticket, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getReisSiteSettings } from '@/server/actions/reis.actions';
 import { checkAdminAccess } from '@/server/actions/admin.actions';
 import { getAdminTrips, getAdminTripById } from '@/server/actions/reis-admin-core.actions';
+import { getTripSignups, getTripSignupActivitiesAction } from '@/server/actions/reis-admin-signups.actions';
+import { getTripActivities } from '@/server/queries/admin-reis.queries';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
-import type { Trip, TripSignup, TripSignupActivity } from '@salvemundi/validations';
+import type { Trip, TripSignup, TripSignupActivity, TripActivity } from '@salvemundi/validations';
 
 
 
@@ -81,7 +82,6 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
         return (
             <AdminPageShell
                 title="Reis Beheer"
-                subtitle="Beheer aanmeldingen, betalingen en activiteiten voor de studiereis"
                 backHref="/beheer"
             >
                 <NoTripsView />
@@ -98,15 +98,18 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
 
     // Now fetch signups and activities for the active trip concurrently
     let signups: TripSignup[] = [];
-    let allSignupActivities: TripSignupActivity[] = [];
+    let allSignupSelections: TripSignupActivity[] = [];
+    let allTripActivities: TripActivity[] = [];
     
     try {
-        const [sRes, saRes] = await Promise.all([
+        const [sRes, saRes, activitiesRes] = await Promise.all([
             getTripSignups(activeTrip.id as number),
-            getTripSignupActivitiesAction(activeTrip.id as number)
+            getTripSignupActivitiesAction(activeTrip.id as number),
+            getTripActivities(activeTrip.id as number)
         ]);
         signups = (sRes as unknown as TripSignup[]) || [];
-        allSignupActivities = (saRes as unknown as TripSignupActivity[]) || [];
+        allSignupSelections = (saRes as unknown as TripSignupActivity[]) || [];
+        allTripActivities = (activitiesRes as unknown as TripActivity[]) || [];
     } catch (e: unknown) {
         // Log or handle error
     }
@@ -116,7 +119,7 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
     (signups || []).forEach(s => {
         activitiesMap[s.id as number] = [];
     });
-    (allSignupActivities || []).forEach((sa) => {
+    (allSignupSelections || []).forEach((sa) => {
         const signupId = (sa.trip_signup_id && typeof sa.trip_signup_id === 'object') ? (sa.trip_signup_id as Record<string, unknown>).id : sa.trip_signup_id;
         if (activitiesMap[signupId as number]) {
             activitiesMap[signupId as number].push(sa);
@@ -133,54 +136,32 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
 
     return (
         <AdminPageShell
-            title="Reis Beheer"
-            subtitle="Beheer aanmeldingen, betalingen en activiteiten voor de studiereis"
+            title={`Reis Beheer — ${activeTrip.name}`}
             backHref="/beheer"
+            hideToolbar={true}
         >
-            <div className="pb-20 space-y-8 animate-in fade-in duration-700">
-                <AdminReisSelectorIsland 
-                    trips={trips} 
-                    initialSettings={reisSettings}
+            <div className="pb-8 space-y-2 animate-in fade-in duration-700">
+                <AdminReisTableIsland
+                    title={`Reis Beheer — ${activeTrip.name}`}
+                    backHref="/beheer"
+                    initialSignups={signups}
+                    initialSignupActivities={activitiesMap}
+                    allTripActivities={allTripActivities}
+                    trip={activeTrip as Trip}
+                    trips={trips}
+                    stats={stats}
                 />
-
-                <div className="container mx-auto px-4 max-w-7xl">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                        <div className="space-y-1">
-                            <h2 className="text-2xl font-bold text-[var(--beheer-text)] tracking-tight">
-                                {activeTrip.name}
-                            </h2>
-                            <p className="text-xs font-semibold text-[var(--beheer-text-muted)] tracking-widest uppercase opacity-70">
-                                Overzicht van alle aanmeldingen
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-2 px-4 py-2 bg-[var(--beheer-card-bg)] rounded-xl border border-[var(--beheer-border)] shadow-sm">
-                            <div className="h-2 w-2 rounded-full bg-[var(--beheer-active)] animate-pulse" />
-                            <span className="text-[10px] font-bold text-[var(--beheer-text-muted)] tracking-widest uppercase">
-                                Live Data
-                            </span>
-                        </div>
-                    </div>
-
-                    <AdminReisTableIsland
-                        initialSignups={signups}
-                        initialSignupActivities={activitiesMap}
-                        trip={activeTrip as Trip}
-                        stats={stats}
-                    />
-                </div>
             </div>
         </AdminPageShell>
     );
 }
-
-import { getTripSignups, getTripSignupActivitiesAction } from '@/server/actions/reis-admin-signups.actions';
 
 function NoTripsView() {
     return (
         <div className="container mx-auto px-4 py-20 max-w-2xl text-center">
             <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] p-12 shadow-xl border border-[var(--beheer-border)] animate-in fade-in zoom-in duration-500">
                 <div className="h-20 w-20 rounded-full bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] flex items-center justify-center mx-auto mb-6 shadow-glow">
-                    <Plane className="h-10 w-10 rotate-45" />
+                    <Ticket className="h-10 w-10" />
                 </div>
                 <h2 className="text-3xl font-bold text-[var(--beheer-text)] tracking-tight mb-2">Geen reizen gevonden</h2>
                 <p className="text-[var(--beheer-text-muted)] font-medium text-base mb-8">Er zijn momenteel geen actieve of geplande reizen in het systeem.</p>

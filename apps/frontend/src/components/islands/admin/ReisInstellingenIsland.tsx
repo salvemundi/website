@@ -2,6 +2,7 @@
 
 import { useState, useActionState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTransition } from 'react';
 import { 
     Plus, 
     Info 
@@ -9,8 +10,10 @@ import {
 import { 
     createTrip, 
     updateTrip, 
-    deleteTrip 
+    deleteTrip,
+    toggleReisVisibility
 } from '@/server/actions/reis-admin-core.actions';
+import AdminVisibilityToggle from '@/components/ui/admin/AdminVisibilityToggle';
 import type { Trip } from '@salvemundi/validations/schema/admin-reis.zod';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminToast from '@/components/ui/admin/AdminToast';
@@ -22,6 +25,7 @@ import TripForm from '@/components/admin/reis/TripForm';
 
 interface ReisInstellingenIslandProps {
     initialTrips: Trip[];
+    initialSettings: { show: boolean };
 }
 
 interface ActionState {
@@ -32,18 +36,21 @@ interface ActionState {
     initialData?: Record<string, any>;
 }
 
-export default function ReisInstellingenIsland({ initialTrips }: ReisInstellingenIslandProps) {
+export default function ReisInstellingenIsland({ initialTrips, initialSettings }: ReisInstellingenIslandProps) {
     const router = useRouter();
+    const [isPending, startTransition] = useTransition();
     const { toast, showToast, hideToast } = useAdminToast();
     const [trips, setTrips] = useState<Trip[]>(initialTrips);
+    const [settings, setSettings] = useState(initialSettings);
     const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
     const [isAdding, setIsAdding] = useState(false);
     const [isDeleting, setIsDeleting] = useState<number | null>(null);
 
-    // Sync trips state with server data after revalidation
+    // Sync state with server data after revalidation
     useEffect(() => {
         setTrips(initialTrips);
-    }, [initialTrips]);
+        setSettings(initialSettings);
+    }, [initialTrips, initialSettings.show]);
 
     const handleCancel = () => {
         setEditingTrip(null);
@@ -65,6 +72,23 @@ export default function ReisInstellingenIsland({ initialTrips }: ReisInstellinge
     const handleAdd = () => {
         setEditingTrip(null);
         setIsAdding(true);
+    };
+
+    const handleToggleVisibility = () => {
+        startTransition(async () => {
+            try {
+                const result = await toggleReisVisibility();
+                if (result.success) {
+                    setSettings({ show: result.show ?? false });
+                    showToast(`Reis is nu ${result.show ? 'zichtbaar' : 'verborgen'}`, 'success');
+                    router.refresh();
+                } else {
+                    showToast(result.error || 'Fout bij bijwerken zichtbaarheid', 'error');
+                }
+            } catch (err) {
+                showToast('Er is een onverwachte fout opgetreden', 'error');
+            }
+        });
     };
 
     const handleDelete = async (id: number) => {
@@ -94,13 +118,21 @@ export default function ReisInstellingenIsland({ initialTrips }: ReisInstellinge
                 subtitle="Configureer reis details, prijzen en algemene instellingen"
                 backHref="/beheer/reis"
                 actions={
-                    <button
-                        onClick={handleAdd}
-                        className="px-6 py-2.5 bg-[var(--beheer-accent)] hover:opacity-90 text-white rounded-xl font-semibold tracking-widest text-[10px] shadow-lg transition-all active:scale-95 flex items-center gap-2 group border border-white/10"
-                    >
-                        <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform" />
-                        <span>Nieuwe Reis</span>
-                    </button>
+                    <div className="flex items-center gap-4">
+                        <AdminVisibilityToggle 
+                            isVisible={settings.show}
+                            onToggle={handleToggleVisibility}
+                            isPending={isPending}
+                            label="Globale Zichtbaarheid"
+                        />
+                        <button
+                            onClick={handleAdd}
+                            className="px-6 py-2.5 bg-[var(--beheer-accent)] hover:opacity-90 text-white rounded-xl font-semibold tracking-widest text-[10px] shadow-lg transition-all active:scale-95 flex items-center gap-2 group border border-white/10"
+                        >
+                            <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform" />
+                            <span>Nieuwe Reis</span>
+                        </button>
+                    </div>
                 }
             />
 

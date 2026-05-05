@@ -59,8 +59,12 @@ async function handleImageUpload(formData: FormData): Promise<string | null> {
  export async function getAdminTripById(id: number) {
      await requireReisAdmin();
      try {
-         const { rows } = await query('SELECT id, name FROM trips WHERE id = $1 LIMIT 1', [id]);
-         return rows?.[0] || null;
+         const { rows } = await query('SELECT id, name, is_bus_trip FROM trips WHERE id = $1 LIMIT 1', [id]);
+         if (!rows?.[0]) return null;
+         return {
+             ...rows[0],
+             is_bus_trip: !!rows[0].is_bus_trip
+         };
      } catch (error) {
          
          return null;

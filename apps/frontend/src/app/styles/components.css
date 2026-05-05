@@ -229,6 +229,22 @@
     @apply pointer-events-none! select-none! relative overflow-hidden;
     border-radius: var(--radius-xl, 0.75rem);
 }
+/* ── Squircle Design (Apple Style) ────────────────────────────────────────── */
+.squircle {
+    border-radius: 1.5rem;
+    /* Progressive Enhancement for Chrome/Edge 121+ */
+    @supports (corner-shape: squircle) {
+        corner-shape: squircle;
+    }
+}
+
+.squircle-lg {
+    border-radius: 2.2rem;
+    @supports (corner-shape: squircle) {
+        corner-shape: squircle;
+    }
+}
+
 /* ── Beheer Dropdowns & Selects ────────────────────────────────────────── */
 .beheer-select {
     appearance: none;
@@ -244,6 +260,9 @@
     letter-spacing: 0.05em;
     cursor: pointer;
     transition: all 0.2s ease;
+    @supports (corner-shape: squircle) {
+        corner-shape: squircle;
+    }
 }
 
 .beheer-select:focus {
@@ -262,6 +281,9 @@
     font-size: 14px;
     font-weight: 700;
     transition: all 0.2s ease;
+    @supports (corner-shape: squircle) {
+        corner-shape: squircle;
+    }
 }
 
 .beheer-input:focus {

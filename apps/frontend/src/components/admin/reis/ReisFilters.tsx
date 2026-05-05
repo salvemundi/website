@@ -20,30 +20,29 @@ export default function ReisFilters({
     statusFilter,
     onStatusChange,
     roleFilter,
-    onRoleChange,
-    onDownloadExcel,
-    hasResults
-}: ReisFiltersProps) {
-    const router = useRouter();
-
+    onRoleChange
+}: Omit<ReisFiltersProps, 'onDownloadExcel' | 'hasResults'>) {
     return (
-        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm p-4 sm:p-6 mb-6 border border-[var(--beheer-border)]">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4">
-                <div className="md:col-span-2 relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--beheer-text-muted)] h-5 w-5" />
-                    <input
-                        type="text"
-                        placeholder="Zoek op naam of e-mailadres..."
-                        value={searchQuery}
-                        onChange={(e) => onSearchChange(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] focus:ring-2 focus:ring-[var(--beheer-accent)] focus:border-transparent transition-all"
-                    />
-                </div>
-                <div className="relative group">
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 p-3 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)]/60 rounded-[2rem] squircle-lg shadow-sm">
+            {/* Search */}
+            <div className="relative flex-1 group">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--beheer-text-muted)] opacity-40 group-focus-within:text-[var(--beheer-accent)] group-focus-within:opacity-100 transition-all" />
+                <input
+                    type="text"
+                    placeholder="Zoek deelnemers..."
+                    value={searchQuery}
+                    onChange={(e) => onSearchChange(e.target.value)}
+                    className="beheer-input w-full pl-11! pr-4 py-2"
+                />
+            </div>
+
+            {/* Selects Group */}
+            <div className="flex flex-col sm:flex-row items-center gap-2">
+                <div className="relative group w-full sm:w-[160px]">
                     <select
                         value={statusFilter}
                         onChange={(e) => onStatusChange(e.target.value)}
-                        className="beheer-select"
+                        className="beheer-select w-full pr-10 text-xs font-semibold"
                     >
                         <option value="all">Alle statussen</option>
                         <option value="registered">Geregistreerd</option>
@@ -51,38 +50,21 @@ export default function ReisFilters({
                         <option value="waitlist">Wachtlijst</option>
                         <option value="cancelled">Geannuleerd</option>
                     </select>
-                    <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--beheer-text-muted)] opacity-40 group-hover:text-[var(--beheer-accent)] transition-colors pointer-events-none" />
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--beheer-text-muted)] opacity-40 group-hover:text-[var(--beheer-accent)] pointer-events-none transition-colors" />
                 </div>
-                <div className="relative group">
+
+                <div className="relative group w-full sm:w-[140px]">
                     <select
                         value={roleFilter}
                         onChange={(e) => onRoleChange(e.target.value)}
-                        className="beheer-select"
+                        className="beheer-select w-full pr-10 text-xs font-semibold"
                     >
                         <option value="all">Alle rollen</option>
                         <option value="participant">Deelnemer</option>
                         <option value="crew">Crew</option>
                     </select>
-                    <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--beheer-text-muted)] opacity-40 group-hover:text-[var(--beheer-accent)] transition-colors pointer-events-none" />
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--beheer-text-muted)] opacity-40 group-hover:text-[var(--beheer-accent)] pointer-events-none transition-colors" />
                 </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mt-6">
-                <button
-                    onClick={onDownloadExcel}
-                    disabled={!hasResults}
-                    className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[var(--beheer-active)] text-white rounded-xl font-semibold tracking-widest text-[10px] shadow-lg hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto border border-white/10"
-                >
-                    <Download className="h-4 w-4" />
-                    Export naar Excel
-                </button>
-                <button
-                    onClick={() => router.push('/beheer/reis/instellingen')}
-                    className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[var(--beheer-accent)] text-white rounded-xl font-semibold tracking-widest text-[10px] shadow-lg hover:opacity-90 transition w-full sm:w-auto border border-white/10"
-                >
-                    <Edit className="h-4 w-4" />
-                    Reis Instellingen
-                </button>
             </div>
         </div>
     );

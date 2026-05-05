@@ -56,7 +56,7 @@
     /* Layout & Buttons */
     --beheer-btn-px: 1.5rem;         /* 24px (px-6) */
     --beheer-btn-py: 0.75rem;        /* 12px (py-3) */
-    --beheer-radius: var(--radius-xl);
+    --beheer-radius: 1.5rem;         /* Modern Squircle-like base radius */
 
     /* Legacy aliases — kept for old components, do not use in new code */
     --color-primary: var(--theme-purple);
