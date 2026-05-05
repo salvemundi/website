@@ -41,7 +41,7 @@ export default function SignupForm({
                     <div className="space-y-3">
                         <div className="flex items-center gap-2 mb-2 opacity-50">
                             <FileText className="h-3 w-3 text-[var(--beheer-accent)]" />
-                            <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--beheer-text)]">INFORMATIE</h3>
+                            <h3 className="text-[11px] font-semibold text-[var(--beheer-text)]">Informatie</h3>
                         </div>
                         <div className="grid grid-cols-1 gap-y-1">
                             <HorizontalInput label="Voornaam" name="first_name" defaultValue={initialData?.first_name || signup.first_name} required />
@@ -59,7 +59,7 @@ export default function SignupForm({
                         {section === 'personal_extended' && (
                             <div className="flex items-center gap-2 mb-2 opacity-50">
                                 <FileText className="h-3 w-3 text-[var(--beheer-accent)]" />
-                                <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--beheer-text)]">DOCUMENTEN & EXTRA</h3>
+                                <h3 className="text-[11px] font-semibold text-[var(--beheer-text)]">Documenten & Extra</h3>
                             </div>
                         )}
                         <div className="grid grid-cols-1 gap-y-1">
@@ -91,7 +91,7 @@ export default function SignupForm({
                     <div className="space-y-3">
                         <div className="flex items-center gap-2 mb-2 opacity-50">
                             <CreditCard className="h-3 w-3 text-[var(--beheer-accent)]" />
-                            <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--beheer-text)]">BEHEER</h3>
+                            <h3 className="text-[11px] font-semibold text-[var(--beheer-text)]">Beheer</h3>
                         </div>
                         <div className="grid grid-cols-1 gap-y-1">
                             <HorizontalSelect label="Status" name="status" defaultValue={initialData?.status || signup.status || undefined}>
@@ -132,7 +132,7 @@ export default function SignupForm({
                         </div>
                         <div className="space-y-0.5">
                             <h2 className={`${compact ? 'text-lg' : 'text-xl'} font-bold text-[var(--beheer-text)] tracking-tight`}>Persoonsgegevens</h2>
-                            <p className="text-[10px] font-semibold text-[var(--beheer-text-muted)] uppercase tracking-widest opacity-60">Basis informatie over de reiziger</p>
+                            <p className="text-[10px] font-semibold text-[var(--beheer-text-muted)] opacity-60">Basis informatie over de reiziger</p>
                         </div>
                     </div>
 
@@ -178,7 +178,7 @@ export default function SignupForm({
                                 {isBusTrip ? (
                                     <Checkbox label="Beschikbaar als chauffeur" name="willing_to_drive" defaultChecked={initialData ? (initialData.willing_to_drive === 'on' || initialData.willing_to_drive === 'true' || initialData.willing_to_drive === true) : (signup.willing_to_drive || false)} />
                                 ) : (
-                                    <div className="flex items-center gap-3 px-3 py-2 bg-[var(--bg-main)]/30 rounded-xl border border-[var(--beheer-border)]/20 text-[10px] font-semibold text-[var(--beheer-text-muted)] uppercase tracking-widest opacity-60">
+                                    <div className="flex items-center gap-3 px-3 py-2 bg-[var(--bg-main)]/30 rounded-xl border border-[var(--beheer-border)]/20 text-[10px] font-semibold text-[var(--beheer-text-muted)] opacity-60">
                                         <Bus className="h-4 w-4 text-[var(--beheer-accent)] opacity-50" />
                                         <span>Geen chauffeur informatie nodig voor vliegreizen</span>
                                     </div>
@@ -198,7 +198,7 @@ export default function SignupForm({
                         </div>
                         <div className="space-y-0.5">
                             <h2 className={`${compact ? 'text-lg' : 'text-xl'} font-bold text-[var(--beheer-text)] tracking-tight`}>Beheer & Betaling</h2>
-                            <p className="text-[10px] font-semibold text-[var(--beheer-text-muted)] uppercase tracking-widest opacity-60">Status en administratieve afhandeling</p>
+                            <p className="text-[10px] font-semibold text-[var(--beheer-text-muted)] opacity-60">Status en administratieve afhandeling</p>
                         </div>
                     </div>
                     <div className={`grid grid-cols-1 md:grid-cols-2 ${compact ? 'gap-6' : 'gap-10'}`}>
@@ -220,7 +220,7 @@ export default function SignupForm({
                                 <div className="flex items-center justify-between gap-4">
                                     <Checkbox label="Aanbetaling OK" name="deposit_paid" defaultChecked={initialData ? (initialData.deposit_paid === 'on' || initialData.deposit_paid === 'true' || initialData.deposit_paid === true) : !!signup.deposit_paid} />
                                     {signup.deposit_paid_at && (
-                                        <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] uppercase tracking-widest opacity-60 shrink-0">
+                                        <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] opacity-60 shrink-0">
                                             {format(new Date(signup.deposit_paid_at), 'd MMM yyyy', { locale: nl })}
                                         </span>
                                     )}
@@ -228,13 +228,13 @@ export default function SignupForm({
                                 <div className="flex items-center justify-between gap-4">
                                     <Checkbox label="Restbetaling OK" name="full_payment_paid" defaultChecked={initialData ? (initialData.full_payment_paid === 'on' || initialData.full_payment_paid === 'true' || initialData.full_payment_paid === true) : !!signup.full_payment_paid} />
                                     {signup.full_payment_paid_at && (
-                                        <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] uppercase tracking-widest opacity-60 shrink-0">
+                                        <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] opacity-60 shrink-0">
                                             {format(new Date(signup.full_payment_paid_at), 'd MMM yyyy', { locale: nl })}
                                         </span>
                                     )}
                                 </div>
                             </div>
-                            <div className="flex items-start gap-3 px-2 text-[10px] font-semibold text-[var(--beheer-text-muted)] uppercase tracking-widest opacity-50 italic leading-relaxed">
+                            <div className="flex items-start gap-3 px-2 text-[10px] font-semibold text-[var(--beheer-text-muted)] opacity-50 italic leading-relaxed">
                                 <AlertCircle className="h-3.5 w-3.5 shrink-0 text-[var(--beheer-accent)] opacity-50" />
                                 <span>Betalingsstatus updates triggeren geen e-mails.</span>
                             </div>
@@ -251,7 +251,7 @@ function HorizontalInput({ label, name, ...props }: React.InputHTMLAttributes<HT
     const id = React.useId();
     return (
         <div className="flex items-center gap-3 py-0.5 group">
-            <label htmlFor={id} className="w-28 shrink-0 text-[9px] font-bold uppercase tracking-widest text-[var(--beheer-text-muted)] opacity-50 group-hover:opacity-100 group-focus-within:text-[var(--beheer-accent)] group-focus-within:opacity-100 transition-all cursor-pointer">{label}</label>
+            <label htmlFor={id} className="w-28 shrink-0 text-[10px] font-semibold text-[var(--beheer-text-muted)] opacity-50 group-hover:opacity-100 group-focus-within:text-[var(--beheer-accent)] group-focus-within:opacity-100 transition-all cursor-pointer">{label}</label>
             <div className="flex-1 bg-slate-500/5 dark:bg-black/40 rounded-lg px-3 border border-[var(--beheer-border)]/5 group-focus-within:border-[var(--beheer-accent)]/20 transition-all">
                 <input 
                     {...props} 
@@ -269,7 +269,7 @@ function HorizontalDate({ label, name, defaultValue }: { label: string; name: st
     const id = React.useId();
     return (
         <div className="flex items-center gap-3 py-0.5 group">
-            <label htmlFor={id} className="w-28 shrink-0 text-[9px] font-bold uppercase tracking-widest text-[var(--beheer-text-muted)] opacity-50 group-hover:opacity-100 group-focus-within:text-[var(--beheer-accent)] group-focus-within:opacity-100 transition-all cursor-pointer">{label}</label>
+            <label htmlFor={id} className="w-28 shrink-0 text-[10px] font-semibold text-[var(--beheer-text-muted)] opacity-50 group-hover:opacity-100 group-focus-within:text-[var(--beheer-accent)] group-focus-within:opacity-100 transition-all cursor-pointer">{label}</label>
             <div className="flex-1 bg-slate-500/5 dark:bg-black/40 rounded-lg px-3 border border-[var(--beheer-border)]/5 group-focus-within:border-[var(--beheer-accent)]/20 transition-all">
                 <DateInput 
                     id={id}
@@ -308,7 +308,7 @@ function HorizontalTextarea({ label, name, ...props }: React.TextareaHTMLAttribu
     const id = React.useId();
     return (
         <div className="flex flex-col gap-1 py-1 group">
-            <label htmlFor={id} className="text-[9px] font-bold uppercase tracking-widest text-[var(--beheer-text-muted)] opacity-50 group-hover:opacity-100 group-focus-within:text-[var(--beheer-accent)] group-focus-within:opacity-100 transition-all cursor-pointer">{label}</label>
+            <label htmlFor={id} className="text-[10px] font-semibold text-[var(--beheer-text-muted)] opacity-50 group-hover:opacity-100 group-focus-within:text-[var(--beheer-accent)] group-focus-within:opacity-100 transition-all cursor-pointer">{label}</label>
             <textarea 
                 {...props} 
                 id={id}
@@ -327,7 +327,7 @@ function HorizontalCheckbox({ label, ...props }: React.InputHTMLAttributes<HTMLI
                 <div className="h-4 w-7 bg-[var(--beheer-text-muted)]/10 rounded-full peer-checked:bg-[var(--beheer-accent)] transition-all" />
                 <div className="absolute left-0.5 top-0.5 h-3 w-3 bg-white rounded-full transition-all peer-checked:left-3.5 shadow-sm" />
             </div>
-            <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--beheer-text-muted)] opacity-50 group-hover:opacity-100 transition-all">{label}</span>
+            <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] opacity-50 group-hover:opacity-100 transition-all">{label}</span>
         </label>
     );
 }
@@ -341,7 +341,7 @@ function DateAndLabel({ label, defaultValue, name }: { label: string; defaultVal
     const [val, setVal] = React.useState(defaultValue);
     return (
         <div className="space-y-1.5 group/field">
-            <label className="block text-[10px] font-bold uppercase tracking-widest text-[var(--beheer-text-muted)] group-focus-within/field:text-[var(--beheer-accent)] transition-colors px-1 opacity-70">{label}</label>
+            <label className="block text-[11px] font-semibold text-[var(--beheer-text-muted)] group-focus-within/field:text-[var(--beheer-accent)] transition-colors px-1 opacity-70">{label}</label>
             <div className="relative">
                 <DateInput 
                     name={name} 
@@ -358,7 +358,7 @@ function DateAndLabel({ label, defaultValue, name }: { label: string; defaultVal
 function Input({ label, ...props }: FieldProps) {
     return (
         <div className="space-y-1.5 group/field">
-            <label className="block text-[10px] font-bold uppercase tracking-widest text-[var(--beheer-text-muted)] group-focus-within/field:text-[var(--beheer-accent)] transition-colors px-1 opacity-70">{label}</label>
+            <label className="block text-[11px] font-semibold text-[var(--beheer-text-muted)] group-focus-within/field:text-[var(--beheer-accent)] transition-colors px-1 opacity-70">{label}</label>
             <input 
                 {...props} 
                 className={`w-full px-4 py-2.5 bg-[var(--bg-main)]/40 dark:bg-black/20 backdrop-blur-sm border border-[var(--beheer-border)]/40 rounded-xl text-sm text-[var(--beheer-text)] focus:ring-2 focus:ring-[var(--beheer-accent)] focus:bg-[var(--bg-main)]/80 transition-all font-semibold outline-none shadow-inner placeholder:opacity-30 ${props.className || ''}`}
@@ -370,7 +370,7 @@ function Input({ label, ...props }: FieldProps) {
 function Select({ label, children, ...props }: FieldProps & { children: React.ReactNode }) {
     return (
         <div className="space-y-1.5 group/field">
-            <label className="block text-[10px] font-bold uppercase tracking-widest text-[var(--beheer-text-muted)] group-focus-within/field:text-[var(--beheer-accent)] transition-colors px-1 opacity-70">{label}</label>
+            <label className="block text-[11px] font-semibold text-[var(--beheer-text-muted)] group-focus-within/field:text-[var(--beheer-accent)] transition-colors px-1 opacity-70">{label}</label>
             <div className="relative group">
                 <select 
                     {...props} 
