@@ -7,7 +7,7 @@ import { query } from '../../plugins/db.js';
 import { 
     SyncStatus, SyncOptions, SyncContext, 
     SYNC_REDIS_KEY, SYNC_ABORT_KEY, GROUP_ACTIVE_LID, GROUP_EXPIRED_LID,
-    DEFAULT_SYNC_STATUS 
+    getInitialStatus
 } from './sync-types.js';
 import { getSyncStatus, persistSyncStatus, shouldExcludeUser } from './sync-helpers.js';
 import { SyncProcessor } from './sync-processor.js';
@@ -112,7 +112,7 @@ export class SyncJob {
             }
 
             const status: SyncStatus = {
-                ...DEFAULT_SYNC_STATUS,
+                ...getInitialStatus(),
                 jobId,
                 active: true,
                 status: 'running',
@@ -131,7 +131,7 @@ export class SyncJob {
             await redis.set(SYNC_REDIS_KEY, JSON.stringify(status), 'EX', 86400 * 7);
 
             // 3. PARALLEL CHUNK PROCESSING
-            const CHUNK_SIZE = 20;
+            const CHUNK_SIZE = 50;
             for (let i = 0; i < azureUsers.length; i += CHUNK_SIZE) {
                 const abort = await redis.get(SYNC_ABORT_KEY);
                 if (abort) {

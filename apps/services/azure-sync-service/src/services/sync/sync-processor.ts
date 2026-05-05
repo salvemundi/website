@@ -14,6 +14,20 @@ export class SyncProcessor {
         const changes: { field: string; old: any; new: any }[] = [];
         
         let dUser = ctx.userCacheByEntra.get(aUser.id);
+        
+        // OPTIMIZATION: If not found by Entra ID, try to link by email if forceLink is enabled
+        if (!dUser && ctx.options.forceLink) {
+            // Find in pre-cached users by email
+            const existingByEmail = Array.from(ctx.userCacheByEntra.values()).find(u => u.email?.toLowerCase() === email);
+            
+            if (existingByEmail) {
+                console.log(`[SYNC] Linking existing user ${email} to Entra ID ${aUser.id}`);
+                await DirectusService.updateUser(existingByEmail.id, { entra_id: aUser.id });
+                dUser = { ...existingByEmail, entra_id: aUser.id };
+                ctx.userCacheByEntra.set(aUser.id, dUser); // Update cache for subsequent lookups
+                changes.push({ field: 'User Link', old: 'Geen Entra ID', new: `Gekoppeld aan ${aUser.id}` });
+            }
+        }
 
         if (!dUser) {
             const csa = aUser.customSecurityAttributes?.SalveMundiLidmaatschap;
@@ -38,23 +52,28 @@ export class SyncProcessor {
                 paidDate = parseAzureDate(pDate) || undefined;
             }
 
-            dUser = await DirectusService.createUser({
-                first_name: aUser.givenName || '',
-                last_name: aUser.surname || '',
-                email: email,
-                entra_id: aUser.id,
-                status: 'active',
-                text_direction: 'auto',
-                admin_access: false,
-                phone_number: phone,
-                date_of_birth: dob,
-                membership_expiry: expiry,
-                originele_betaaldatum: paidDate,
-                membership_status: 'none'
-            }) as DirectusUser;
-            ctx.status.createdCount++;
-            changes.push({ field: 'User', old: 'Bestaat niet', new: 'Nieuw lid aangemaakt' });
-            ctx.status.createdUsers.push({ email, changes });
+            try {
+                dUser = await DirectusService.createUser({
+                    first_name: aUser.givenName || '',
+                    last_name: aUser.surname || '',
+                    email: email,
+                    entra_id: aUser.id,
+                    status: 'active',
+                    text_direction: 'auto',
+                    admin_access: false,
+                    phone_number: phone,
+                    date_of_birth: dob,
+                    membership_expiry: expiry,
+                    originele_betaaldatum: paidDate,
+                    membership_status: 'none'
+                }) as DirectusUser;
+                ctx.status.createdCount++;
+                changes.push({ field: 'User', old: 'Bestaat niet', new: 'Nieuw lid aangemaakt' });
+                ctx.status.createdUsers.push({ email, changes: [...changes] });
+            } catch (err: any) {
+                // If creation fails due to email already existing (and forceLink was false), log it as an error
+                throw new Error(`Kon gebruiker ${email} niet aanmaken. Bestaat waarschijnlijk al zonder Entra ID. Gebruik 'Forceer Entra Link' om ze te koppelen.`);
+            }
         }
 
         // Ensure dUser is seen as defined by TypeScript

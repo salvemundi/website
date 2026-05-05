@@ -2,6 +2,16 @@
 
 import React, { useState } from 'react';
 import { CheckCircle, AlertTriangle, X, Info, Users } from 'lucide-react';
+import { SyncStatus } from '@/components/islands/admin/sync/SyncContext';
+
+interface LogItem {
+    email: string;
+    message?: string;
+    timestamp?: string;
+    stack?: string;
+    changes?: { field: string; old: unknown; new: unknown }[];
+    reason?: string;
+}
 
 interface ResultRowProps {
     email: string;
@@ -9,7 +19,7 @@ interface ResultRowProps {
     type: 'success' | 'warning' | 'error' | 'info' | 'excluded';
     timestamp?: string;
     stack?: string;
-    changes?: { field: string; old: any; new: any }[];
+    changes?: { field: string; old: unknown; new: unknown }[];
 }
 
 function ResultRow({ email, message, type, timestamp, stack, changes }: ResultRowProps) {
@@ -31,11 +41,11 @@ function ResultRow({ email, message, type, timestamp, stack, changes }: ResultRo
             <div className="p-4 flex items-start gap-4 transition-colors">
                 <div className="mt-0.5">{icons[type]}</div>
                 <div className="min-w-0 flex-1">
-                    <div className="text-[10px] font-black text-[var(--beheer-text)] uppercase tracking-tight truncate">{email}</div>
-                    {message && <div className="text-[10px] text-[var(--beheer-text-muted)] font-black uppercase tracking-widest mt-1">{message}</div>}
+                    <div className="text-xs font-semibold text-[var(--beheer-text)] uppercase tracking-tight truncate">{email}</div>
+                    {message && <div className="text-[10px] text-[var(--beheer-text-muted)] font-semibold uppercase tracking-widest mt-1">{message}</div>}
                 </div>
                 <div className="ml-auto flex items-center gap-3">
-                    <div className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]/50">
+                    <div className="text-[10px] font-semibold uppercase tracking-widest text-[var(--beheer-text-muted)]/50">
                         {type}
                     </div>
                     {hasDetails && (
@@ -53,31 +63,31 @@ function ResultRow({ email, message, type, timestamp, stack, changes }: ResultRo
                     <div className="p-4 bg-[var(--beheer-card-soft)] rounded-2xl border border-[var(--beheer-border)]/30 space-y-3">
                         {timestamp && (
                             <div className="flex items-center gap-2">
-                                <span className="text-[8px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">Tijdstip:</span>
-                                <span className="text-[9px] font-black text-[var(--beheer-text)] uppercase">{new Date(timestamp).toLocaleString()}</span>
+                                <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--beheer-text-muted)]">Tijdstip:</span>
+                                <span className="text-xs font-semibold text-[var(--beheer-text)]">{new Date(timestamp).toLocaleString()}</span>
                             </div>
                         )}
                         {stack && (
                             <div className="space-y-1.5">
-                                <span className="text-[8px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">Stack Trace:</span>
-                                <pre className="text-[9px] text-[var(--theme-error)]/70 font-mono leading-relaxed overflow-x-auto p-3 bg-[var(--theme-error)]/5 rounded-xl border border-[var(--theme-error)]/10 custom-scrollbar">
+                                <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--beheer-text-muted)]">Stack Trace:</span>
+                                <pre className="text-xs text-[var(--theme-error)]/70 font-mono leading-relaxed overflow-x-auto p-3 bg-[var(--theme-error)]/5 rounded-xl border border-[var(--theme-error)]/10 custom-scrollbar">
                                     {stack}
                                 </pre>
                             </div>
                         )}
                         {changes && changes.length > 0 && (
                             <div className="space-y-2">
-                                <span className="text-[8px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">Wijzigingen:</span>
+                                <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--beheer-text-muted)]">Wijzigingen:</span>
                                 <div className="space-y-1">
                                     {changes.map((change, idx) => (
                                         <div key={idx} className="flex flex-col gap-0.5 p-2 bg-[var(--beheer-card-bg)] rounded-xl border border-[var(--beheer-border)]/20">
-                                            <span className="text-[9px] font-black text-[var(--beheer-text)] uppercase">{change.field}</span>
+                                            <span className="text-xs font-semibold text-[var(--beheer-text)] uppercase">{change.field}</span>
                                             <div className="flex items-center gap-2">
-                                                <span className="text-[8px] text-[var(--beheer-text-muted)] truncate max-w-[100px]">{String(change.old ?? 'leeg')}</span>
+                                                <span className="text-[10px] text-[var(--beheer-text-muted)] truncate max-w-[150px]">{String(change.old ?? 'leeg')}</span>
                                                 <svg className="h-2 w-2 text-[var(--beheer-text-muted)]/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
                                                 </svg>
-                                                <span className="text-[8px] font-black text-[var(--beheer-active)] truncate max-w-[100px]">{String(change.new ?? 'leeg')}</span>
+                                                <span className="text-[10px] font-semibold text-[var(--beheer-active)] truncate max-w-[150px]">{String(change.new ?? 'leeg')}</span>
                                             </div>
                                         </div>
                                     ))}
@@ -91,49 +101,20 @@ function ResultRow({ email, message, type, timestamp, stack, changes }: ResultRo
     );
 }
 
-interface FilterTabProps {
-    active: boolean;
-    label: string;
-    count: number;
-    onClick: () => void;
-    color?: string;
-}
-
-function FilterTab({ active, label, count, onClick, color = 'indigo' }: FilterTabProps) {
-    const colorVariants: Record<string, string> = {
-        indigo: 'bg-[var(--beheer-accent)] text-white shadow-[var(--shadow-glow)]',
-        green: 'bg-[var(--beheer-active)] text-white shadow-lg shadow-[var(--beheer-active)]/20',
-        amber: 'bg-[var(--theme-warning)] text-white shadow-lg shadow-[var(--theme-warning)]/20',
-        blue: 'bg-[var(--theme-info)] text-white shadow-lg shadow-[var(--theme-info)]/20',
-        red: 'bg-[var(--beheer-inactive)] text-white shadow-lg shadow-[var(--beheer-inactive)]/20',
-        slate: 'bg-[var(--beheer-text-muted)] text-white shadow-lg shadow-[var(--beheer-text-muted)]/20',
-        purple: 'bg-[var(--beheer-accent)] text-white shadow-[var(--shadow-glow)]',
-    };
-
-    return (
-        <button
-            onClick={onClick}
-            className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap flex items-center gap-2 ${
-                active 
-                    ? `${colorVariants[color]} shadow-[var(--shadow-glow)]` 
-                    : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] hover:bg-[var(--beheer-card-soft)]'
-            }`}
-        >
-            {label}
-            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${active ? 'bg-white/20' : 'bg-[var(--beheer-card-soft)]'}`}>
-                {count}
-            </span>
-        </button>
-    );
-}
-
 interface SyncLogsProps {
     resultFilter: string;
-    setResultFilter: (value: any) => void;
-    status: any;
+    setResultFilter: (value: string) => void;
+    status: SyncStatus & { 
+        errors?: LogItem[];
+        createdUsers?: LogItem[];
+        successfulUsers?: LogItem[];
+        warnings?: LogItem[];
+        missingData?: LogItem[];
+        excludedUsers?: LogItem[];
+    };
 }
 
-export default function SyncLogs({ resultFilter, setResultFilter, status }: SyncLogsProps) {
+export default function SyncLogs({ resultFilter, status }: SyncLogsProps) {
     const itemMap = new Map<string, React.ReactNode>();
 
     // Helper to add/merge items into the map for deduplication
@@ -150,7 +131,7 @@ export default function SyncLogs({ resultFilter, setResultFilter, status }: Sync
     };
 
     if (resultFilter === 'all' || resultFilter === 'errors') {
-        (status.errors || []).forEach((e: any, i: number) => {
+        (status.errors || []).forEach((e, i) => {
             addItem(e.email, (
                 <ResultRow 
                     key={`e-${i}`} 
@@ -165,7 +146,7 @@ export default function SyncLogs({ resultFilter, setResultFilter, status }: Sync
     }
 
     if (resultFilter === 'all' || resultFilter === 'created') {
-        (status.createdUsers || []).forEach((u: any, i: number) => {
+        (status.createdUsers || []).forEach((u, i) => {
             addItem(u.email, (
                 <ResultRow 
                     key={`c-${i}`} 
@@ -179,7 +160,7 @@ export default function SyncLogs({ resultFilter, setResultFilter, status }: Sync
     }
 
     if (resultFilter === 'all' || resultFilter === 'success') {
-        (status.successfulUsers || []).forEach((u: any, i: number) => {
+        (status.successfulUsers || []).forEach((u, i) => {
             // In 'all' view, don't overwrite 'created' status with generic 'success'
             if (resultFilter === 'all' && itemMap.has(u.email)) return;
 
@@ -195,21 +176,21 @@ export default function SyncLogs({ resultFilter, setResultFilter, status }: Sync
     }
 
     if (resultFilter === 'all' || resultFilter === 'warnings') {
-        (status.warnings || []).forEach((w: any, i: number) => {
+        (status.warnings || []).forEach((w, i) => {
             if (resultFilter === 'all' && itemMap.has(w.email)) return;
             addItem(w.email, <ResultRow key={`w-${i}`} email={w.email} message={w.message} type="warning" />, 'warnings');
         });
     }
 
     if (resultFilter === 'all' || resultFilter === 'missing') {
-        (status.missingData || []).forEach((m: any, i: number) => {
+        (status.missingData || []).forEach((m, i) => {
             if (resultFilter === 'all' && itemMap.has(m.email)) return;
             addItem(m.email, <ResultRow key={`m-${i}`} email={m.email} message={m.reason} type="info" />, 'missing');
         });
     }
 
     if (resultFilter === 'all' || resultFilter === 'excluded') {
-        (status.excludedUsers || []).forEach((u: any, i: number) => {
+        (status.excludedUsers || []).forEach((u, i) => {
             if (resultFilter === 'all' && itemMap.has(u.email)) return;
             addItem(u.email, <ResultRow key={`ex-${i}`} email={u.email} type="excluded" />, 'excluded');
         });
@@ -218,28 +199,16 @@ export default function SyncLogs({ resultFilter, setResultFilter, status }: Sync
     const items = Array.from(itemMap.values());
 
     return (
-        <div className="space-y-6">
-            <div className="flex bg-[var(--beheer-card-soft)] p-2 rounded-2xl overflow-x-auto gap-1 border border-[var(--beheer-border)]">
-                <FilterTab active={resultFilter === 'all'} label="Alles" count={status.processed} onClick={() => setResultFilter('all')} />
-                <FilterTab active={resultFilter === 'success'} label="Success" count={status.successCount} onClick={() => setResultFilter('success')} color="green" />
-                <FilterTab active={resultFilter === 'created'} label="Nieuw" count={status.createdCount || 0} onClick={() => setResultFilter('created')} color="purple" />
-                <FilterTab active={resultFilter === 'warnings'} label="Warnings" count={status.warningCount} onClick={() => setResultFilter('warnings')} color="amber" />
-                <FilterTab active={resultFilter === 'missing'} label="Missend" count={status.missingDataCount} onClick={() => setResultFilter('missing')} color="blue" />
-                <FilterTab active={resultFilter === 'errors'} label="Errors" count={status.errorCount} onClick={() => setResultFilter('errors')} color="red" />
-                <FilterTab active={resultFilter === 'excluded'} label="Excluded" count={status.excludedCount} onClick={() => setResultFilter('excluded')} color="slate" />
-            </div>
-
-            <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] overflow-hidden shadow-sm">
-                <div className="max-h-[30rem] overflow-y-auto custom-scrollbar">
-                    {items.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center p-20 text-[var(--beheer-text-muted)]">
-                            <Users className="h-12 w-12 mb-4 opacity-20" />
-                            <p className="text-[10px] font-black uppercase tracking-widest text-center">Geen resultaten gevonden voor dit filter.</p>
-                        </div>
-                    ) : (
-                        <div className="divide-y divide-[var(--beheer-border)]/10">{items}</div>
-                    )}
-                </div>
+        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] overflow-hidden shadow-sm">
+            <div className="max-h-[30rem] overflow-y-auto custom-scrollbar">
+                {items.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center p-20 text-[var(--beheer-text-muted)]">
+                        <Users className="h-12 w-12 mb-4 opacity-20" />
+                        <p className="text-xs font-semibold uppercase tracking-widest text-center">Geen resultaten gevonden voor dit filter.</p>
+                    </div>
+                ) : (
+                    <div className="divide-y divide-[var(--beheer-border)]/10">{items}</div>
+                )}
             </div>
         </div>
     );

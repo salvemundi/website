@@ -30,11 +30,11 @@ export function shouldExcludeUser(email?: string): boolean {
 
 export async function getSyncStatus(redis: Redis): Promise<SyncStatus> {
     const data = await redis.get(SYNC_REDIS_KEY);
-    if (!data) return DEFAULT_SYNC_STATUS;
+    if (!data) return getInitialStatus();
     try {
         return JSON.parse(data);
     } catch {
-        return DEFAULT_SYNC_STATUS;
+        return getInitialStatus();
     }
 }
 

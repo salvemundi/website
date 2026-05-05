@@ -58,7 +58,7 @@ export const SYNC_ABORT_KEY = 'v7:sync:abort';
 export const GROUP_ACTIVE_LID = process.env.AZURE_ACTIVE_LID_GROUP_ID || '2e17c12a-28d6-49ae-981a-8b5b8d88db8a';
 export const GROUP_EXPIRED_LID = process.env.AZURE_EXPIRED_LID_GROUP_ID || '98c1d807-613a-4a23-9618-3f8821d35fe9';
 
-export const DEFAULT_SYNC_STATUS: SyncStatus = {
+export const getInitialStatus = (): SyncStatus => ({
     active: false,
     status: 'idle',
     total: 0,
@@ -79,4 +79,6 @@ export const DEFAULT_SYNC_STATUS: SyncStatus = {
     movedExpiredCount: 0,
     lastHeartbeat: new Date().toISOString(),
     abortRequested: false
-};
+});
+
+export const DEFAULT_SYNC_STATUS = getInitialStatus();
