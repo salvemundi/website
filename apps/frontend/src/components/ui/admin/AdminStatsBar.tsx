@@ -41,7 +41,7 @@ export default function AdminStatsBar({ stats = [] }: AdminStatsBarProps) {
                         <span className="text-sm font-semibold text-[var(--beheer-text-muted)] tracking-wider">
                             {stat.label}
                         </span>
-                        <span className="text-2xl font-bold text-[var(--beheer-text)] tracking-tight">
+                        <span className="text-2xl font-semibold text-[var(--beheer-text)] tracking-tight">
                             {stat.value}
                         </span>
                     </div>

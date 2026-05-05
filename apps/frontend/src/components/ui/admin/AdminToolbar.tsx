@@ -37,7 +37,7 @@ export default function AdminToolbar({
                             </Link>
                         )}
                         <div className="flex flex-col">
-                            <h1 className="text-xl md:text-2xl font-bold text-[var(--beheer-text)] tracking-tight leading-tight">
+                            <h1 className="text-xl md:text-2xl font-semibold text-[var(--beheer-text)] tracking-tight leading-tight">
                                 {title}
                             </h1>
                         </div>

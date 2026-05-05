@@ -30,8 +30,9 @@ export async function getSyncStatusAction() {
         }
 
         return await res.json();
-    } catch (err: any) {
-        console.error(`[SYNC-ACTION] Connection error to ${AZURE_SYNC_URL}/api/sync/status:`, err.message);
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Kon status niet ophalen.';
+        console.error(`[SYNC-ACTION] Connection error to ${AZURE_SYNC_URL}/api/sync/status:`, message);
         return { success: false, error: "Kon status niet ophalen." };
     }
 }
@@ -56,9 +57,10 @@ export async function stopSyncAction() {
             }
         }
         return { success: true };
-    } catch (error: any) {
-        console.error("[SYNC-ACTION] Stop sync failed:", error.message);
-        return { success: false, error: error.message };
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Onbekende fout';
+        console.error("[SYNC-ACTION] Stop sync failed:", message);
+        return { success: false, error: message };
     }
 }
 
@@ -79,8 +81,9 @@ export async function resetSyncStatusAction() {
         if (!res.ok) return { success: false, error: "Reset mislukt" };
 
         return { success: true };
-    } catch (error: any) {
-        console.error("[SYNC-ACTION] Reset sync failed:", error.message);
-        return { success: false, error: error.message };
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Onbekende fout';
+        console.error("[SYNC-ACTION] Reset sync failed:", message);
+        return { success: false, error: message };
     }
 }

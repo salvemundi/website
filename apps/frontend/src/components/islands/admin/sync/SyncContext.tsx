@@ -15,6 +15,7 @@ export interface SyncStatus {
     createdCount?: number;
     missingDataCount?: number;
     movedExpiredCount?: number;
+    excludedCount?: number;
     processed?: number;
     total?: number;
     fatalError?: { message: string; stack?: string };
@@ -86,7 +87,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
                     setLastUpdated(new Date());
                 }
             }
-        } catch (err) {
+        } catch (err: unknown) {
             // Background errors remain silent to avoid interrupting the user, 
             // but the status object will contain error details if the action fails.
         }
@@ -107,7 +108,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
         const poll = async () => {
             if (!shouldPoll) return;
             await fetchStatus();
-            timeout = setTimeout(poll, 2000); 
+            timeout = setTimeout(poll, 5000); 
         };
 
         if (shouldPoll) {
@@ -131,7 +132,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
                 showToast('Azure synchronisatie gestart', 'success');
                 fetchStatus();
             }
-        } catch (err) {
+        } catch (err: unknown) {
             showToast('Netwerkfout bij het starten van de sync.', 'error');
         } finally {
             setIsStartingSync(false);
@@ -148,7 +149,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
                 showToast('Synchronisatie afgebroken', 'info');
                 fetchStatus();
             }
-        } catch (err) {
+        } catch (err: unknown) {
             showToast('Netwerkfout bij het stoppen van de sync.', 'error');
         } finally {
             setIsStopping(false);
@@ -165,7 +166,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
                 showToast('Synchronisatie status gereset naar Idle', 'success');
                 fetchStatus();
             }
-        } catch (err) {
+        } catch (err: unknown) {
             showToast('Netwerkfout bij het resetten van de sync.', 'error');
         } finally {
             setIsResetting(false);
@@ -185,7 +186,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
                 setUserId('');
                 fetchStatus();
             }
-        } catch (err) {
+        } catch (err: unknown) {
             showToast('Netwerkfout bij het synchroniseren van de gebruiker.', 'error');
         } finally {
             setIsUserSyncLoading(false);
