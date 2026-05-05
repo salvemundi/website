@@ -8,7 +8,6 @@ import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import type { Trip, TripSignup, TripSignupActivity, TripActivity } from '@salvemundi/validations/schema/admin-reis.zod';
 import { updateSignupStatus, deleteTripSignup, sendPaymentEmail, updateTripSignup, updateSignupActivities } from '@/server/actions/reis-admin-signups.actions';
-import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import { Users, UserCheck, UserX, CreditCard, Banknote, Download, Mail, Ticket, Edit2, ChevronDown, Send, X, CheckCircle, Save, Loader2, Trash2 } from 'lucide-react';
 import ReisManagementHeader from '@/components/admin/reis/ReisManagementHeader';
 import ReisFilters from '@/components/admin/reis/ReisFilters';
@@ -379,8 +378,6 @@ export default function AdminReisTableIsland({
             />
 
             <div className="px-6 sm:px-12 py-8 flex flex-col gap-8">
-                <AdminStatsBar stats={displayStats} />
-
                 <ReisFilters 
                     searchQuery={searchQuery}
                     onSearchChange={setSearchQuery}
@@ -388,6 +385,7 @@ export default function AdminReisTableIsland({
                     onStatusChange={setStatusFilter}
                     roleFilter={roleFilter}
                     onRoleChange={setRoleFilter}
+                    stats={displayStats}
                 />
 
                 <ReisTable 
