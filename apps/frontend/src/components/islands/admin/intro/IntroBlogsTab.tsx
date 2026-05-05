@@ -75,8 +75,8 @@ export default function IntroBlogsTab({ blogs, onSave, onDelete, saving, deletin
         <div className="animate-in fade-in duration-500">
             <div className="flex justify-between items-center mb-8">
                 <div className="flex flex-col">
-                    <h2 className="text-xl font-black text-[var(--beheer-text)] uppercase tracking-tight">Blogs</h2>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] opacity-50">Beheer introductie updates en nieuws</p>
+                    <h2 className="text-xl font-semibold text-[var(--beheer-text)] tracking-tight">Blogs</h2>
+                    <p className="text-xs font-medium text-[var(--beheer-text-muted)] opacity-50">Beheer introductie updates en nieuws</p>
                 </div>
                 <Button onClick={startNew} icon={Plus}>Nieuwe Blog</Button>
             </div>
@@ -85,11 +85,11 @@ export default function IntroBlogsTab({ blogs, onSave, onDelete, saving, deletin
                 <table className="w-full text-sm">
                     <thead className="bg-[var(--beheer-card-soft)] border-b border-[var(--beheer-border)]">
                         <tr>
-                            <th className="px-8 py-5 text-left text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest w-20">Status</th>
-                            <th className="px-8 py-5 text-left text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Titel</th>
-                            <th className="px-8 py-5 text-left text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest hidden lg:table-cell w-32">Datum</th>
-                            <th className="px-8 py-5 text-left text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest hidden md:table-cell w-32">Type</th>
-                            <th className="px-8 py-5 text-right text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest w-48">Acties</th>
+                            <th className="px-8 py-5 text-left text-xs font-semibold text-[var(--beheer-text-muted)] tracking-tight w-20">Status</th>
+                            <th className="px-8 py-5 text-left text-xs font-semibold text-[var(--beheer-text-muted)] tracking-tight">Titel</th>
+                            <th className="px-8 py-5 text-left text-xs font-semibold text-[var(--beheer-text-muted)] tracking-tight hidden lg:table-cell w-32">Datum</th>
+                            <th className="px-8 py-5 text-left text-xs font-semibold text-[var(--beheer-text-muted)] tracking-tight hidden md:table-cell w-32">Type</th>
+                            <th className="px-8 py-5 text-right text-xs font-semibold text-[var(--beheer-text-muted)] tracking-tight w-48">Acties</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-[var(--beheer-border)]/10">
@@ -126,23 +126,23 @@ export default function IntroBlogsTab({ blogs, onSave, onDelete, saving, deletin
                                         </td>
                                         <td className="px-8 py-5">
                                             <div className="flex items-center gap-3">
-                                                <div className="text-sm font-black text-[var(--beheer-text)] uppercase tracking-tight group-hover:text-[var(--beheer-accent)] transition-colors truncate max-w-md">
+                                                <div className="text-sm font-semibold text-[var(--beheer-text)] group-hover:text-[var(--beheer-accent)] transition-colors truncate max-w-md">
                                                     {blog.title}
                                                 </div>
                                                 {!blog.is_published && (
-                                                    <span className="bg-amber-500/10 text-amber-500 text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full border border-amber-500/20">
+                                                    <span className="bg-amber-500/10 text-amber-500 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-amber-500/20">
                                                         Concept
                                                     </span>
                                                 )}
                                             </div>
                                         </td>
                                         <td className="px-8 py-5 hidden lg:table-cell">
-                                            <span className="text-[10px] font-bold text-[var(--beheer-text-muted)] uppercase tracking-tighter">
+                                            <span className="text-xs font-medium text-[var(--beheer-text-muted)]">
                                                 {date ? new Date(date).toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-'}
                                             </span>
                                         </td>
                                         <td className="px-8 py-5 hidden md:table-cell">
-                                            <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded bg-${typeInfo.color}-500/10 text-${typeInfo.color}-500 border border-${typeInfo.color}-500/20`}>
+                                            <span className={`text-[10px] font-semibold px-2 py-1 rounded bg-${typeInfo.color}-500/10 text-${typeInfo.color}-500 border border-${typeInfo.color}-500/20`}>
                                                 {typeInfo.label}
                                             </span>
                                         </td>
@@ -179,10 +179,10 @@ export default function IntroBlogsTab({ blogs, onSave, onDelete, saving, deletin
                                                         saving={saving}
                                                     />
                                                 ) : (
-                                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 text-[11px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">
+                                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 text-sm font-medium text-[var(--beheer-text-muted)]">
                                                         <div className="lg:col-span-2 space-y-8">
                                                                  <div className="flex items-center justify-between">
-                                                                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--beheer-accent)]">Inhoud</p>
+                                                                     <p className="text-xs font-semibold tracking-tight text-[var(--beheer-accent)]">Inhoud</p>
                                                                      <Button onClick={() => startEdit({ stopPropagation: () => {} } as unknown as React.MouseEvent, blog)} variant="ghost" icon={Edit}>
                                                                          Bewerken
                                                                      </Button>
@@ -190,15 +190,15 @@ export default function IntroBlogsTab({ blogs, onSave, onDelete, saving, deletin
                                                             <div className="space-y-6">
                                                                 {blog.excerpt && (
                                                                     <div className="space-y-2">
-                                                                        <span className="opacity-50 text-[9px] uppercase tracking-[0.1em]">Samenvatting</span>
+                                                                        <span className="opacity-50 text-[10px] font-semibold tracking-tight">Samenvatting</span>
                                                                         <p className="text-xs font-semibold text-[var(--beheer-text)] leading-relaxed italic normal-case bg-white/5 p-4 rounded-xl border border-[var(--beheer-border)]/10">
                                                                             {blog.excerpt}
                                                                         </p>
                                                                     </div>
                                                                 )}
                                                                 <div className="space-y-2">
-                                                                    <span className="opacity-50 text-[9px] uppercase tracking-[0.1em]">Inhoud</span>
-                                                                    <div className="text-xs font-medium text-[var(--beheer-text)] leading-relaxed normal-case whitespace-pre-wrap">
+                                                                    <span className="opacity-50 text-[10px] font-semibold tracking-tight">Inhoud</span>
+                                                                    <div className="text-sm font-medium text-[var(--beheer-text)] leading-relaxed normal-case whitespace-pre-wrap">
                                                                         {blog.content}
                                                                     </div>
                                                                 </div>
@@ -206,19 +206,19 @@ export default function IntroBlogsTab({ blogs, onSave, onDelete, saving, deletin
                                                         </div>
                                                         <div className="space-y-8 lg:border-l lg:border-[var(--beheer-border)]/10 lg:pl-12">
                                                             <div className="space-y-4">
-                                                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--beheer-accent)]">Details</p>
+                                                                <p className="text-xs font-semibold tracking-tight text-[var(--beheer-accent)]">Details</p>
                                                                 <div className="grid gap-4">
                                                                     <div className="flex flex-col gap-1">
                                                                         <span className="opacity-50">Type</span>
-                                                                        <span className="text-[var(--beheer-text)] text-sm font-bold uppercase tracking-tight">{typeInfo.label}</span>
+                                                                        <span className="text-[var(--beheer-text)] text-sm font-semibold">{typeInfo.label}</span>
                                                                     </div>
                                                                     <div className="flex flex-col gap-1">
                                                                         <span className="opacity-50">Link-naam (Slug)</span>
-                                                                        <span className="text-[var(--beheer-text)] text-[10px] font-black tracking-widest">{blog.slug || '-'}</span>
+                                                                        <span className="text-[var(--beheer-text)] text-xs font-semibold">{blog.slug || '-'}</span>
                                                                     </div>
                                                                     <div className="flex flex-col gap-1">
                                                                         <span className="opacity-50">Datum</span>
-                                                                        <span className="text-[var(--beheer-text)] text-[10px] font-black tracking-widest">
+                                                                        <span className="text-[var(--beheer-text)] text-xs font-semibold">
                                                                             {date ? new Date(date).toLocaleString('nl-NL', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-'}
                                                                         </span>
                                                                     </div>
