@@ -40,57 +40,16 @@ export default async function statusRoutes(fastify: FastifyInstance) {
                     const livePayment = await mollie.payments.get(transaction.mollie_id);
                     
                     if (livePayment.status !== transaction.payment_status) {
-                        fastify.log.info(`[STATUS] Live status mismatch for ${transaction.mollie_id}: DB=${transaction.payment_status}, Mollie=${livePayment.status}. Updating DB.`);
+                        fastify.log.info(`[STATUS] Live status mismatch for ${transaction.mollie_id}: DB=${transaction.payment_status}, Mollie=${livePayment.status}. Triggering finalization.`);
                         
-                        await fastify.db.query(
-                            'UPDATE transactions SET payment_status = $1, updated_at = NOW() WHERE mollie_id = $2',
-                            [livePayment.status, transaction.mollie_id]
+                        const { PaymentService } = await import('../services/payment.service.js');
+                        await PaymentService.finalizePayment(
+                            fastify,
+                            transaction.mollie_id,
+                            livePayment.status,
+                            livePayment.metadata,
+                            transaction.access_token
                         );
-
-                        // If it transitioned to paid, trigger the same logic as the webhook
-                        if (livePayment.status === 'paid') {
-                            const metadata = livePayment.metadata as any;
-                            const registrationId = transaction.registration || metadata?.registrationId;
-                            const registrationType = metadata?.registrationType;
-
-                            const eventData = {
-                                event: 'PAYMENT_SUCCESS',
-                                userId: transaction.user_id,
-                                paymentId: transaction.mollie_id,
-                                email: transaction.email || metadata?.email,
-                                registrationId: registrationId,
-                                registrationType: registrationType,
-                                isContribution: transaction.product_type === 'membership',
-                                isNewMember: !transaction.user_id && transaction.product_type === 'membership',
-                                accessToken: transaction.access_token,
-                                firstName: transaction.first_name || metadata?.firstName,
-                                lastName: transaction.last_name || metadata?.lastName,
-                                phoneNumber: metadata?.phoneNumber,
-                                dateOfBirth: metadata?.dateOfBirth,
-                                timestamp: new Date().toISOString()
-                            };
-
-                            await fastify.redis.xadd('v7:events', '*', 'payload', JSON.stringify(eventData));
-                            fastify.log.info(`[STATUS] Published PAYMENT_SUCCESS event for ${transaction.mollie_id} via status check fallback`);
-
-                            // Update registration tables via RegistrationService
-                            if (registrationId && registrationType) {
-                                try {
-                                    await RegistrationService.updateStatus(
-                                        fastify.db,
-                                        fastify.redis,
-                                        {
-                                            registrationId,
-                                            registrationType,
-                                            paymentType: metadata?.paymentType
-                                        },
-                                        fastify.log
-                                    );
-                                } catch (regErr) {
-                                    fastify.log.error(regErr, `[STATUS] Failed to update registration for ${id}`);
-                                }
-                            }
-                        }
                         
                         transaction.payment_status = livePayment.status;
                         transaction.updated_at = new Date();
