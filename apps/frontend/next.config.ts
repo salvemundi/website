@@ -11,8 +11,8 @@ const nextConfig: NextConfig = {
     serverExternalPackages: ['isomorphic-dompurify', 'jsdom'],
     experimental: {
         serverSourceMaps: true,
-        webpackBuildWorker: true,
-        workerThreads: true,
+        // webpackBuildWorker: true,
+        // workerThreads: true,
         optimizePackageImports: ['lucide-react', 'date-fns', 'framer-motion']
     },
     staticPageGenerationTimeout: 60,

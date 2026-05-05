@@ -6,12 +6,11 @@ import {
 import {
     Ticket, Plus, CheckCircle, X, Clock, ToggleLeft, ToggleRight
 } from 'lucide-react';
-import type { Coupon } from '@/server/actions/admin-coupons.actions';
+import { type Coupon } from './coupon-types';
 import { getComputedCouponStatus } from '@/lib/coupons';
 import { createCoupon, deleteCoupon, toggleCouponActive, getCoupons } from '@/server/actions/admin-coupons.actions';
-import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
-
+import AdminModal from '@/components/ui/admin/AdminModal';
 import CouponRow from './CouponRow';
 import CouponForm from './CouponForm';
 import AdminToast from '@/components/ui/admin/AdminToast';
@@ -26,7 +25,7 @@ export default function CouponManagementIsland({
 }: Props) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [coupons, setCoupons] = useState<Coupon[]>(initialCoupons);
-    const [showForm, setShowForm] = useState(false);
+    const [isAdding, setIsAdding] = useState(false);
     const [formError, setFormError] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
     const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -39,8 +38,8 @@ export default function CouponManagementIsland({
         
         coupons.forEach(c => {
             const status = getComputedCouponStatus(c);
-            // Only 'active' and 'pending' are shown in the top section
-            if (status.type === 'active' || status.type === 'pending') {
+            // Non-expired coupons (active, pending, inactive, maxed) go in the top section
+            if (status.type !== 'expired') {
                 valid.push(c);
             } else {
                 inactive.push(c);
@@ -54,15 +53,44 @@ export default function CouponManagementIsland({
         setFormError(null);
         formData.set('discount_type', discountType);
 
+        // Optimistic values
+        const code = (formData.get('coupon_code') as string || '').toUpperCase();
+        const value = Number(formData.get('discount_value'));
+        const isActive = formData.get('is_active') === 'on';
+        
+        // 1. Optimistic Update
+        const tempId = -Math.floor(Math.random() * 1000000);
+        const tempCoupon: Coupon = {
+            id: tempId,
+            coupon_code: code,
+            discount_type: discountType,
+            discount_value: value,
+            usage_count: 0,
+            usage_limit: formData.get('usage_limit') ? Number(formData.get('usage_limit')) : null,
+            valid_from: (formData.get('valid_from') as string) || null,
+            valid_until: (formData.get('valid_until') as string) || null,
+            is_active: isActive,
+            isOptimistic: true // Custom flag for UI
+        };
+
+        setCoupons(prev => [tempCoupon, ...prev]);
+        setIsAdding(false);
+
         startTransition(async () => {
-            const res = await createCoupon(formData);
+            const res = await createCoupon(formData) as any;
+            
             if (!res.success) {
                 setFormError(res.error ?? 'Aanmaken mislukt');
+                // Rollback
+                setCoupons(prev => prev.filter(c => c.id !== tempId));
+                setIsAdding(true); // Open modal again
                 return;
             }
-            const fresh = await getCoupons();
-            setCoupons(fresh);
-            setShowForm(false);
+
+            // 2. Replace optimistic with real data
+            if (res.data) {
+                setCoupons(prev => prev.map(c => c.id === tempId ? res.data : c));
+            }
         });
     };
 
@@ -100,43 +128,53 @@ export default function CouponManagementIsland({
 
     return (
         <>
-            <AdminToolbar 
-                title="Coupons Beheer"
-                subtitle="Beheer kortingscodes en acties voor het lidmaatschap"
-                backHref="/beheer"
-                actions={
-                    <button
-                            onClick={() => { setShowForm(!showForm); setFormError(null); }}
-                            className={`flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] rounded-[var(--beheer-radius)] font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 cursor-pointer ${
-                                showForm 
-                                ? 'bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text-muted)] hover:border-[var(--beheer-accent)]/50' 
-                                : 'bg-[var(--beheer-accent)] text-white shadow-[var(--shadow-glow)] hover:opacity-90'
-                            }`}
-                        >
-                            {showForm ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                            {showForm ? 'Annuleren' : 'Nieuwe Coupon'}
-                        </button>
-                    }
-                />
-
             <div className={`container mx-auto px-4 py-8 max-w-7xl`}>
-                <AdminStatsBar stats={adminStats} />
-
-                {showForm && (
+                
+                <AdminModal
+                    isOpen={isAdding}
+                    onClose={() => setIsAdding(false)}
+                    title="Nieuwe Coupon Aanmaken"
+                    subtitle="Voeg een nieuwe kortingscode toe aan het systeem"
+                    maxWidth="3xl"
+                >
                     <CouponForm 
                         onSave={handleCreate}
-                        onCancel={() => setShowForm(false)}
+                        onCancel={() => setIsAdding(false)}
                         isPending={isPending}
                         error={formError}
                     />
-                )}
+                </AdminModal>
+
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10">
+                    <div className="space-y-1">
+                        <h2 className="text-2xl font-bold text-[var(--beheer-text)] tracking-tight flex items-center gap-3">
+                            <div className="p-2.5 bg-[var(--beheer-accent)]/10 rounded-xl text-[var(--beheer-accent)]">
+                                <Ticket className="h-6 w-6" />
+                            </div>
+                            Coupon Beheer
+                        </h2>
+                        <p className="text-xs font-semibold text-[var(--beheer-text-muted)] tracking-widest uppercase opacity-60 ml-14">
+                            Beheer kortingscodes en acties
+                        </p>
+                    </div>
+                    
+                    <button
+                        onClick={() => setIsAdding(true)}
+                        className="flex items-center justify-center gap-3 px-8 py-4 bg-[var(--beheer-accent)] text-white font-semibold text-sm rounded-xl shadow-lg hover:opacity-90 transition-all active:scale-95 border border-white/10 group self-start sm:self-center"
+                    >
+                        <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform" />
+                        <span>Nieuwe Coupon</span>
+                    </button>
+                </div>
+
+                <AdminStatsBar stats={adminStats} />
 
                 {/* Main Table */}
                 <div className="space-y-4">
                     <div className="flex items-center justify-between border-l-4 border-[var(--beheer-active)] pl-4 py-1">
-                        <h2 className="text-[10px] font-black text-[var(--beheer-text)] flex items-center gap-3 uppercase tracking-widest">
-                            Geldige Coupons
-                            <span className="px-3 py-1 rounded-full bg-[var(--beheer-active)]/20 text-[var(--beheer-active)] text-[9px] shadow-sm border border-[var(--beheer-active)]/20">
+                        <h2 className="text-sm font-semibold text-[var(--beheer-text)] flex items-center gap-3">
+                            Coupons
+                            <span className="px-2.5 py-0.5 rounded-full bg-[var(--beheer-active)]/10 text-[var(--beheer-active)] text-xs font-bold border border-[var(--beheer-active)]/20">
                                 {validCoupons.length}
                             </span>
                         </h2>
@@ -148,19 +186,19 @@ export default function CouponManagementIsland({
                         {validCoupons.length === 0 ? (
                             <div className="py-24 text-center">
                                 <Ticket className="h-12 w-12 text-[var(--beheer-text-muted)] mx-auto mb-4 opacity-10" />
-                                <p className="font-black uppercase tracking-widest text-[10px] text-[var(--beheer-text-muted)]">Geen geldige coupons gevonden</p>
+                                <p className="font-semibold text-sm text-[var(--beheer-text-muted)]">Geen coupons gevonden</p>
                             </div>
                         ) : (
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left">
                                     <thead className="bg-[var(--beheer-card-soft)] border-b border-[var(--beheer-border)]">
                                         <tr>
-                                            <th className="px-8 py-5 text-[9px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Code</th>
-                                            <th className="px-8 py-5 text-[9px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Korting</th>
-                                            <th className="px-8 py-5 text-[9px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest hidden sm:table-cell">Gebruik</th>
-                                            <th className="px-8 py-5 text-[9px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest hidden lg:table-cell">Geldigheid</th>
-                                            <th className="px-8 py-5 text-center text-[9px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Status</th>
-                                            <th className="px-8 py-5 text-right text-[9px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Acties</th>
+                                            <th className="px-8 py-5 text-xs font-semibold text-[var(--beheer-text-muted)] uppercase tracking-wider">Code</th>
+                                            <th className="px-8 py-5 text-xs font-semibold text-[var(--beheer-text-muted)] uppercase tracking-wider">Korting</th>
+                                            <th className="px-8 py-5 text-xs font-semibold text-[var(--beheer-text-muted)] uppercase tracking-wider hidden sm:table-cell">Gebruik</th>
+                                            <th className="px-8 py-5 text-xs font-semibold text-[var(--beheer-text-muted)] uppercase tracking-wider hidden lg:table-cell">Geldigheid</th>
+                                            <th className="px-8 py-5 text-center text-xs font-semibold text-[var(--beheer-text-muted)] uppercase tracking-wider">Status</th>
+                                            <th className="px-8 py-5 text-right text-xs font-semibold text-[var(--beheer-text-muted)] uppercase tracking-wider">Acties</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-[var(--beheer-border)]">
@@ -187,10 +225,10 @@ export default function CouponManagementIsland({
                         onClick={() => setShowExpired(!showExpired)}
                         className="flex items-center gap-4 text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] transition-all group cursor-pointer border-l-4 border-slate-500 pl-4 py-1"
                     >
-                        <h2 className="text-[10px] font-black flex items-center gap-3 uppercase tracking-widest">
+                        <h2 className="text-sm font-semibold flex items-center gap-3">
                             {showExpired ? <ToggleRight className="h-5 w-5 text-[var(--beheer-accent)]" /> : <ToggleLeft className="h-5 w-5" />}
-                            Inactief of Verlopen
-                            <span className="px-3 py-1 rounded-full bg-slate-500/20 text-slate-500 text-[9px] border border-slate-500/20">
+                            Verlopen Coupons
+                            <span className="px-2.5 py-0.5 rounded-full bg-slate-500/10 text-slate-500 text-xs font-bold border border-slate-500/20">
                                 {inactiveCoupons.length}
                             </span>
                         </h2>
@@ -199,7 +237,7 @@ export default function CouponManagementIsland({
                     {showExpired && (
                         <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] overflow-hidden opacity-80 shadow-lg transition-all animate-in fade-in slide-in-from-top-4">
                             {inactiveCoupons.length === 0 ? (
-                                <div className="py-12 text-center text-[var(--beheer-text-muted)] italic opacity-40 font-bold uppercase tracking-widest text-[9px]">
+                                <div className="py-12 text-center text-[var(--beheer-text-muted)] italic text-xs font-semibold">
                                     Niets gevonden
                                 </div>
                             ) : (

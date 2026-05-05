@@ -33,36 +33,28 @@ export async function GET(
     const { search } = new URL(request.url);
     const url = `${directusUrl}/assets/${id}${search}`;
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
-
     try {
-        // console.log(`[AssetProxy] Fetching: ${url}`);
         const res = await fetchWithRetry(url, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
-            signal: controller.signal,
             cache: 'no-store',
         });
 
         if (!res.ok) {
             console.error(`Directus error for asset ${id}: ${res.status}`);
-            return new NextResponse(null, { status: res.status });
+            return new Response(null, { status: res.status });
         }
 
         const contentType = res.headers.get('content-type') || 'application/octet-stream';
-        
-        // Use arrayBuffer() instead of streaming body to resolve Node.js TransformStream bug
-        // (TypeError: controller[kState].transformAlgorithm is not a function)
         const arrayBuffer = await res.arrayBuffer();
 
         if (arrayBuffer.byteLength === 0) {
             console.warn(`Empty buffer for asset ${id}`);
-            return new NextResponse(null, { status: 404 });
+            return new Response(null, { status: 404 });
         }
 
-        return new NextResponse(Buffer.from(arrayBuffer), {
+        return new Response(arrayBuffer, {
             status: 200,
             headers: {
                 'Content-Type': contentType,
@@ -71,8 +63,6 @@ export async function GET(
         });
     } catch (error: any) {
         console.error(`Critical error fetching asset ${id}:`, error.message);
-        return new NextResponse(null, { status: 500 });
-    } finally {
-        clearTimeout(timeoutId);
+        return new Response(null, { status: 500 });
     }
 }
