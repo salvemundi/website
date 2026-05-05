@@ -7,7 +7,7 @@ import { query } from '../../plugins/db.js';
 import { 
     SyncStatus, SyncOptions, SyncContext, 
     SYNC_REDIS_KEY, SYNC_ABORT_KEY, GROUP_ACTIVE_LID, GROUP_EXPIRED_LID,
-    getInitialStatus
+    getInitialStatus, DEFAULT_SYNC_STATUS
 } from './sync-types.js';
 import { getSyncStatus, persistSyncStatus, shouldExcludeUser } from './sync-helpers.js';
 import { SyncProcessor } from './sync-processor.js';
@@ -265,7 +265,7 @@ export class SyncJob {
         membershipMap.set(aUser.id, userMap);
 
         const status: SyncStatus = { 
-            ...DEFAULT_SYNC_STATUS, active: true, status: 'running', total: 1, 
+            ...getInitialStatus(), active: true, status: 'running', total: 1, 
             jobId: `single-${entraId}`, startTime: new Date().toISOString()
         };
 

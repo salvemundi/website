@@ -1,5 +1,5 @@
 import { Redis } from 'ioredis';
-import { SyncStatus, SYNC_REDIS_KEY, DEFAULT_SYNC_STATUS } from './sync-types.js';
+import { SyncStatus, SYNC_REDIS_KEY, DEFAULT_SYNC_STATUS, getInitialStatus } from './sync-types.js';
 
 export function parseAzureDate(dateStr?: string): string | null {
     if (!dateStr || dateStr.length !== 8) return null;
