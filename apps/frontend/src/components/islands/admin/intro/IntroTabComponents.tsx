@@ -6,7 +6,7 @@ export const inputClass = 'w-full px-5 py-4 rounded-xl bg-[var(--bg-main)]/40 da
 export function Field({ label, children, className = '' }: { label: string; children: React.ReactNode; className?: string }) {
     return (
         <div className={`space-y-2 group/field ${className}`}>
-            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] group-focus-within/field:text-[var(--beheer-accent)] transition-colors px-1">{label}</label>
+            <label className="text-xs font-semibold tracking-tight text-[var(--beheer-text-muted)] group-focus-within/field:text-[var(--beheer-accent)] transition-colors px-1">{label}</label>
             <div className="relative">
                 {children}
             </div>
@@ -43,9 +43,9 @@ export function Button({
         <button
             onClick={onClick}
             disabled={disabled || loading}
-            className={`flex items-center justify-center gap-2 px-6 py-3.5 rounded-[var(--beheer-radius)] text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50 ${variants[variant]} ${className}`}
+            className={`flex items-center justify-center gap-2 px-6 py-3 rounded-[var(--beheer-radius)] text-sm font-semibold transition-all active:scale-95 disabled:opacity-50 ${variants[variant]} ${className}`}
         >
-            {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : Icon && <Icon className="h-3.5 w-3.5" />}
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : Icon && <Icon className="h-4 w-4" />}
             {children}
         </button>
     );
@@ -90,7 +90,8 @@ export function EmptyState({ icon: Icon, text }: { icon: LucideIcon; text: strin
             <div className="p-8 bg-[var(--beheer-card-soft)]/50 rounded-full w-fit mx-auto mb-8 ring-1 ring-[var(--beheer-border)]/20 shadow-inner">
                 <Icon className="h-12 w-12 opacity-20 text-[var(--beheer-accent)]" />
             </div>
-            <p className="font-black uppercase tracking-[0.2em] text-[10px] opacity-40">{text}</p>
+            <p className="font-semibold text-sm opacity-60">{text}</p>
         </div>
     );
 }
+

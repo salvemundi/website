@@ -16,24 +16,13 @@ import {
     X,
     Loader2
 } from 'lucide-react';
+import { ActionButton, EmptyState, Button } from './IntroTabComponents';
+import { type IntroSignupRow } from './intro-types';
 import { formatDate } from '@/shared/lib/utils/date';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { formatPhoneNumber } from '@/lib/utils/phone-utils';
-import { ActionButton, EmptyState, Button } from './IntroTabComponents';
 
-interface IntroSignupRow {
-    id: number;
-    first_name: string;
-    last_name: string;
-    email: string;
-    phone_number: string;
-    date_of_birth?: string;
-    favorite_gif?: string;
-    date_created?: string;
-    created_at?: string;
-    status?: string;
-    approved?: boolean;
-}
+
 
 interface Props {
     signups: IntroSignupRow[];
@@ -111,11 +100,11 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, onExport,
                     <table className="w-full text-sm">
                         <thead className="bg-[var(--beheer-card-soft)] border-b border-[var(--beheer-border)]">
                             <tr>
-                                <th className="px-8 py-5 text-left text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest w-20">Status</th>
-                                <th className="px-8 py-5 text-left text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest w-1/4">Naam</th>
-                                <th className="px-8 py-5 text-left text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest hidden sm:table-cell">Email</th>
-                                <th className="px-8 py-5 text-left text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest hidden md:table-cell w-48">Telefoon</th>
-                                <th className="px-8 py-5 text-right text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest w-48">Acties</th>
+                                <th className="px-8 py-5 text-left text-xs font-semibold text-[var(--beheer-text-muted)] tracking-tight w-20">Status</th>
+                                <th className="px-8 py-5 text-left text-xs font-semibold text-[var(--beheer-text-muted)] tracking-tight w-1/4">Naam</th>
+                                <th className="px-8 py-5 text-left text-xs font-semibold text-[var(--beheer-text-muted)] tracking-tight hidden sm:table-cell">Email</th>
+                                <th className="px-8 py-5 text-left text-xs font-semibold text-[var(--beheer-text-muted)] tracking-tight hidden md:table-cell w-48">Telefoon</th>
+                                <th className="px-8 py-5 text-right text-xs font-semibold text-[var(--beheer-text-muted)] tracking-tight w-48">Acties</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[var(--beheer-border)]/10">
@@ -132,25 +121,25 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, onExport,
                                             </td>
                                             <td className="px-8 py-5">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="text-sm font-black text-[var(--beheer-text)] uppercase tracking-tight group-hover:text-[var(--beheer-accent)] transition-colors">
+                                                    <div className="text-sm font-semibold text-[var(--beheer-text)] group-hover:text-[var(--beheer-accent)] transition-colors">
                                                         {s.first_name} {s.last_name}
                                                     </div>
                                                     {s.approved && (
-                                                        <span className="bg-emerald-500/10 text-emerald-500 text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full border border-emerald-500/20">
+                                                        <span className="bg-emerald-500/10 text-emerald-500 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-emerald-500/20">
                                                             Goedgekeurd
                                                         </span>
                                                     )}
                                                     {s.status === 'approved' && !s.approved && (
-                                                        <span className="bg-green-500/10 text-green-500 text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full border border-green-500/20">
+                                                        <span className="bg-green-500/10 text-green-500 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-green-500/20">
                                                             Lid
                                                         </span>
                                                     )}
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-5 text-[var(--beheer-text-muted)] font-black text-[10px] uppercase tracking-widest hidden sm:table-cell lowercase opacity-60">
+                                            <td className="px-8 py-5 text-[var(--beheer-text-muted)] text-xs font-medium hidden sm:table-cell opacity-60">
                                                 {s.email}
                                             </td>
-                                            <td className="px-8 py-5 text-[var(--beheer-text-muted)] font-black text-[10px] uppercase tracking-widest hidden md:table-cell">
+                                            <td className="px-8 py-5 text-[var(--beheer-text-muted)] text-xs font-medium hidden md:table-cell">
                                                 {formatPhoneNumber(s.phone_number)}
                                             </td>
                                             <td className="px-12 py-5 text-right">
@@ -176,12 +165,12 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, onExport,
                                         {isExpanded && (
                                             <tr className="bg-[var(--beheer-card-soft)]/30">
                                                 <td colSpan={5} className="px-12 py-10 animate-in slide-in-from-top-2 duration-300">
-                                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 text-[11px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">
+                                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 text-sm font-medium text-[var(--beheer-text-muted)]">
                                                         <div className="lg:col-span-2 space-y-8">
                                                         {editingId === s.id ? (
                                                             <div className="space-y-6">
                                                                 <div className="flex items-center justify-between">
-                                                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--beheer-accent)]">Deelnemer Bewerken</p>
+                                                                    <p className="text-xs font-semibold tracking-tight text-[var(--beheer-accent)]">Deelnemer Bewerken</p>
                                                                     <div className="flex gap-2">
                                                                         <Button onClick={() => handleSaveEdit(s.id)} variant="success" icon={Save}>Opslaan</Button>
                                                                         <Button onClick={() => setEditingId(null)} variant="ghost" icon={X}>Annuleren</Button>
@@ -213,7 +202,7 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, onExport,
                                                         ) : (
                                                             <div className="space-y-4">
                                                                 <div className="flex items-center justify-between">
-                                                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--beheer-accent)]">Extra Informatie</p>
+                                                                    <p className="text-xs font-semibold tracking-tight text-[var(--beheer-accent)]">Extra Informatie</p>
                                                                     <Button onClick={() => startEdit({ stopPropagation: () => {} } as React.MouseEvent, s)} variant="ghost" icon={Edit}>
                                                                         Bewerken
                                                                     </Button>
@@ -231,7 +220,7 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, onExport,
                                                                     </div>
                                                                     <div className="flex flex-col gap-1">
                                                                         <span className="opacity-50">Status</span>
-                                                                        <span className="text-[var(--beheer-text)] text-sm font-bold uppercase tracking-tight">
+                                                                        <span className="text-[var(--beheer-text)] text-sm font-semibold">
                                                                             {s.status === 'approved' ? 'Goedgekeurd' : 'Geregistreerd'}
                                                                         </span>
                                                                     </div>
@@ -240,7 +229,7 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, onExport,
                                                         )}
                                                             </div>
                                                         <div className="space-y-6 lg:border-l lg:border-[var(--beheer-border)]/10 lg:pl-12">
-                                                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--beheer-accent)]">Beheer Acties</p>
+                                                            <p className="text-xs font-semibold tracking-tight text-[var(--beheer-accent)]">Beheer Acties</p>
                                                             <div className="flex flex-col gap-3">
                                                                 <Button 
                                                                     onClick={() => onUpdate(s.id, { approved: !s.approved, status: !s.approved ? 'approved' : 'registered' })}

@@ -24,6 +24,7 @@ import {
     upsertIntroPlanning,
     deleteIntroPlanning,
 } from '@/server/actions/admin-intro.actions';
+import { type IntroSignupRow, type IntroParentRow } from './intro/intro-types';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
@@ -35,33 +36,6 @@ import IntroBlogsTab from './intro/IntroBlogsTab';
 import IntroPlanningTab from './intro/IntroPlanningTab';
 
 type TabType = 'signups' | 'parents' | 'blogs' | 'planning';
-
-type IntroSignupRow = {
-    id: number;
-    first_name: string;
-    last_name: string;
-    email: string;
-    phone_number: string;
-    date_of_birth?: string;
-    favorite_gif?: string;
-    date_created?: string;
-    created_at?: string;
-    status?: string;
-    approved?: boolean;
-};
-
-type IntroParentRow = {
-    id: number;
-    first_name?: string;
-    last_name?: string;
-    email?: string;
-    phone_number?: string;
-    motivation?: string;
-    date_created?: string;
-    created_at?: string;
-    status?: string;
-    approved?: boolean;
-};
 
 interface Props {
     initialSignups: IntroSignupRow[];
@@ -240,12 +214,10 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
 
     return (
         <>
+            <AdminStatsBar stats={adminStats} />
 
-            <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <AdminStatsBar stats={adminStats} />
-
-                {/* Tabs - Tokenized */}
-                <div className="flex flex-wrap gap-2 mb-10 bg-[var(--beheer-card-bg)]/50 backdrop-blur-md p-1.5 rounded-[2rem] border border-[var(--beheer-border)]/50 w-fit">
+            {/* Tabs - Tokenized */}
+            <div className="flex flex-wrap gap-2 mb-10 bg-[var(--beheer-card-bg)]/50 backdrop-blur-md p-1.5 rounded-[2rem] border border-[var(--beheer-border)]/50 w-fit">
                     {[
                         { id: 'signups', label: 'Aanmeldingen', count: signups.length, icon: Users },
                         { id: 'parents', label: 'Ouders', count: parents.length, icon: Heart },
@@ -255,7 +227,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                         <button 
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as TabType)} 
-                            className={`flex items-center gap-3 px-6 py-3.5 font-black text-[10px] uppercase tracking-[0.15em] transition-all rounded-[1.5rem] ${
+                            className={`flex items-center gap-3 px-6 py-3.5 font-semibold text-sm transition-all rounded-[1.5rem] ${
                                 activeTab === tab.id 
                                     ? 'bg-[var(--beheer-accent)] text-white shadow-[var(--shadow-glow)]' 
                                     : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] hover:bg-[var(--beheer-card-soft)]/50'
@@ -308,7 +280,6 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                     />
                 )}
 
-            </div>
             <AdminToast toast={toast} onClose={hideToast} />
         </>
     );
