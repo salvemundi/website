@@ -92,10 +92,10 @@ export default function CouponManagementIsland({
     };
 
     const adminStats = [
-        { label: 'Totaal', value: coupons.length, icon: Ticket, trend: 'Coupons' },
-        { label: 'Nu Actief', value: coupons.filter(c => getComputedCouponStatus(c).type === 'active').length, icon: CheckCircle, trend: 'Valid' },
-        { label: 'Verlopen', value: coupons.filter(c => getComputedCouponStatus(c).type === 'expired').length, icon: Clock, trend: 'Action' },
-        { label: 'Gebruikt', value: coupons.reduce((sum, c) => sum + (c.usage_count || 0), 0), icon: Ticket, trend: 'Usage' },
+        { label: 'Totaal', value: coupons.length, icon: Ticket },
+        { label: 'Nu Actief', value: coupons.filter(c => getComputedCouponStatus(c).type === 'active').length, icon: CheckCircle },
+        { label: 'Verlopen', value: coupons.filter(c => getComputedCouponStatus(c).type === 'expired').length, icon: Clock },
+        { label: 'Gebruikt', value: coupons.reduce((sum, c) => sum + (c.usage_count || 0), 0), icon: Ticket },
     ];
 
     return (

@@ -33,31 +33,24 @@ export default function AdminStatsBar({ stats = [] }: AdminStatsBarProps) {
                 <div 
                     key={i}
                     className={cn(
-                        "bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] p-6 shadow-sm flex flex-col justify-between min-h-[120px] transition-all group",
+                        "bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] p-4 shadow-sm flex items-center justify-between transition-all group",
                         "hover:border-[var(--beheer-accent)]/30"
                     )}
                 >
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-base font-semibold text-[var(--beheer-text-muted)] tracking-wider leading-tight pr-2">
+                    <div className="flex items-center gap-4">
+                        <span className="text-sm font-semibold text-[var(--beheer-text-muted)] tracking-wider">
                             {stat.label}
                         </span>
-                        {stat.icon && (
-                            <div className="p-2 rounded-lg bg-[var(--beheer-accent)]/5 text-[var(--beheer-accent)] group-hover:bg-[var(--beheer-accent)] group-hover:text-white transition-all duration-300">
-                                <stat.icon className="h-4 w-4" />
-                            </div>
-                        )}
-                    </div>
-                    
-                    <div className="flex items-baseline gap-2">
-                        <span className="text-2xl font-bold text-[var(--beheer-text)] tracking-tight leading-none">
+                        <span className="text-2xl font-bold text-[var(--beheer-text)] tracking-tight">
                             {stat.value}
                         </span>
-                        {stat.trend && (
-                            <div className="text-base font-semibold text-[var(--beheer-active)] tracking-wider bg-[var(--beheer-active)]/10 px-1.5 py-0.5 rounded">
-                                {stat.trend}
-                            </div>
-                        )}
                     </div>
+
+                    {stat.icon && (
+                        <div className="p-2.5 rounded-xl bg-[var(--beheer-accent)]/5 text-[var(--beheer-accent)] group-hover:bg-[var(--beheer-accent)] group-hover:text-white transition-all duration-300">
+                            <stat.icon className="h-5 w-5" />
+                        </div>
+                    )}
                 </div>
             ))}
         </div>
