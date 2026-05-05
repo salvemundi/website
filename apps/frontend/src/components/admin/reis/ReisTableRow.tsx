@@ -2,15 +2,18 @@
 
 import { Fragment } from 'react';
 import { format } from 'date-fns';
-import { Loader2, Edit, Trash2, Send, AlertCircle, ChevronDown, Bus, Briefcase } from 'lucide-react';
+import { nl } from 'date-fns/locale';
+import { Loader2, Edit, Trash2, Send, AlertCircle, ChevronDown, Bus, Briefcase, CheckCircle2, Clock, XCircle, List } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { TripSignup, TripSignupActivity } from '@salvemundi/validations/schema/admin-reis.zod';
 import { mapActivityOptionIdToName, parseActivityOptions, parseSelectedOptions } from '@/lib/reis';
 
 interface ReisTableRowProps {
     signup: TripSignup;
-    isExpanded: boolean;
-    onToggleExpand: (signup: TripSignup) => void;
+    isSelected: boolean;
+    onSelect: (signup: TripSignup, edit?: boolean) => void;
     statusBadge: { label: string; color: string };
     paymentStatus: { label: string; color: string };
     isStatusLoading: boolean;
@@ -26,8 +29,8 @@ interface ReisTableRowProps {
 
 export default function ReisTableRow({
     signup,
-    isExpanded,
-    onToggleExpand,
+    isSelected,
+    onSelect,
     statusBadge,
     paymentStatus,
     isStatusLoading,
@@ -43,61 +46,39 @@ export default function ReisTableRow({
     const router = useRouter();
 
     return (
-        <Fragment>
-            <tr onClick={() => onToggleExpand(signup)} className="hover:bg-[var(--beheer-accent)]/[0.02] cursor-pointer transition-colors group">
-                <td className="px-3 sm:px-6 py-4">
-                    <div className="text-sm font-semibold text-[var(--beheer-text)] tracking-tight group-hover:text-[var(--beheer-accent)] transition-colors">
-                        {signup.first_name} {signup.last_name}
+        <div 
+            onClick={() => onSelect(signup)} 
+            className={`
+                relative bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)]/60 rounded-[2rem] squircle-lg transition-all duration-300 cursor-pointer group flex flex-col
+                ${isSelected ? 'shadow-2xl border-[var(--beheer-accent)] ring-2 ring-[var(--beheer-accent)]/20' : 'hover:shadow-lg hover:border-[var(--beheer-accent)]/20 shadow-sm'}
+            `}
+        >
+            {/* Card Content */}
+            <div className="p-4 flex flex-col h-full">
+                {/* Header: Name & Actions */}
+                <div className="flex justify-between items-start mb-3">
+                    <div className="min-w-0 pr-2">
+                        <div className="text-xs font-black uppercase tracking-widest text-[var(--beheer-accent)] mb-0.5 opacity-70">
+                            {signup.role === 'crew' ? 'Crew' : 'Deelnemer'}
+                        </div>
+                        <div className="text-lg font-bold text-[var(--beheer-text)] tracking-tight leading-tight group-hover:text-[var(--beheer-accent)] transition-colors line-clamp-2 min-h-[2.8rem] flex items-center">
+                            {signup.first_name} {signup.last_name}
+                        </div>
                     </div>
-                    <div className="text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest">{signup.email}</div>
-                </td>
-                <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-xs font-semibold text-[var(--beheer-text)] tracking-widest hidden sm:table-cell">
-                    {signup.date_of_birth ? format(new Date(signup.date_of_birth), 'dd-MM-yyyy') : '-'}
-                </td>
-                <td className="px-3 sm:px-6 py-4 whitespace-nowrap hidden md:table-cell">
-                    <span className={`px-3 py-1 text-[10px] font-semibold tracking-widest rounded-full ${signup.role === 'crew' ? 'bg-[var(--beheer-accent)] text-white shadow-sm' : 'bg-[var(--bg-main)] text-[var(--beheer-text-muted)] border border-[var(--beheer-border)]/50'}`}>
-                        {signup.role === 'crew' ? 'Crew' : 'Deelnemer'}
-                    </span>
-                </td>
-                <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                    {isStatusLoading ? (
-                        <div className="flex justify-center">
-                            <Loader2 className="h-5 w-5 animate-spin text-[var(--beheer-accent)]" />
-                        </div>
-                    ) : (
-                        <div className="relative group min-w-[120px]">
-                            <select
-                                value={signup.status || 'registered'}
-                                onClick={(e) => e.stopPropagation()}
-                                onChange={(e) => onStatusChange(signup.id, e.target.value)}
-                                className={`beheer-status-select status-${signup.status} text-[10px] font-semibold`}>
-                                <option value="registered" className="bg-[var(--beheer-card-bg)] text-[var(--beheer-text)]">Geregistreerd</option>
-                                <option value="confirmed" className="bg-[var(--beheer-card-bg)] text-[var(--beheer-text)]">Bevestigd</option>
-                                <option value="waitlist" className="bg-[var(--beheer-card-bg)] text-[var(--beheer-text)]">Wachtlijst</option>
-                                <option value="cancelled" className="bg-[var(--beheer-card-bg)] text-[var(--beheer-text)]">Geannuleerd</option>
-                            </select>
-                            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3 w-3 opacity-50 pointer-events-none group-hover:opacity-100 transition-opacity" />
-                        </div>
-                    )}
-                </td>
-                <td className="px-3 sm:px-6 py-4 whitespace-nowrap hidden sm:table-cell">
-                    <span className={`px-3 py-1 text-[10px] font-semibold tracking-widest rounded-full ${paymentStatus.color}`}>
-                        {paymentStatus.label}
-                    </span>
-                </td>
-                <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-right">
-                    <div className="flex justify-end gap-3">
+
+                    <div className="flex items-center bg-[var(--bg-main)]/50 p-1 rounded-xl border border-[var(--beheer-border)]/20 shadow-inner shrink-0">
                         <button 
-                            onClick={(e) => { e.stopPropagation(); router.push(`/beheer/reis/deelnemer/${signup.id}`); }}
-                            className="text-[var(--beheer-accent)] hover:bg-[var(--beheer-accent)]/10 transition-all active:scale-90 p-2 bg-[var(--beheer-accent)]/5 rounded-xl border border-[var(--beheer-accent)]/10" 
+                            onClick={(e) => { e.stopPropagation(); onSelect(signup, true); }}
+                            className="p-2 text-[var(--beheer-text-muted)] hover:text-[var(--beheer-accent)] hover:bg-white/5 rounded-lg transition-all" 
                             title="Bewerken"
                         >
                             <Edit className="h-4 w-4" />
                         </button>
+                        <div className="w-[1px] h-4 bg-[var(--beheer-border)]/20 mx-0.5" />
                         <button
                             onClick={(e) => { e.stopPropagation(); onDelete(signup.id); }}
                             disabled={isDeleteLoading}
-                            className="text-[var(--beheer-inactive)] hover:bg-[var(--beheer-inactive)]/10 disabled:opacity-50 transition-all active:scale-90 p-2 bg-[var(--beheer-inactive)]/5 rounded-xl border border-[var(--beheer-inactive)]/10"
+                            className="p-2 text-[var(--beheer-text-muted)] hover:text-red-400 hover:bg-red-400/5 rounded-lg transition-all disabled:opacity-50"
                             title="Verwijderen"
                         >
                             {isDeleteLoading ? (
@@ -106,137 +87,140 @@ export default function ReisTableRow({
                                 <Trash2 className="h-4 w-4" />
                             )}
                         </button>
-                        <div className="text-[var(--beheer-text-muted)] p-2 group-hover:text-[var(--beheer-accent)] transition-colors">
-                            <ChevronDown className="h-4 w-4 transition-transform duration-300" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+                    </div>
+                </div>
+
+                {/* Info Stack */}
+                <div className="space-y-1.5 mb-4 px-1">
+                    <div className="text-[11px] font-medium text-[var(--beheer-text-muted)] truncate opacity-80">
+                        {signup.email}
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <div className="text-[10px] font-bold text-[var(--beheer-text-muted)] tabular-nums opacity-60">
+                            {signup.date_of_birth ? format(new Date(signup.date_of_birth), 'd MMM yyyy', { locale: nl }) : '-'}
+                        </div>
+                        
+                        {/* Special Indicators */}
+                        <div className="flex items-center gap-2">
+                            {isBusTrip && signup.willing_to_drive && (
+                                <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-tighter text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded-md border border-emerald-500/20" title="Chauffeur">
+                                    <Bus className="h-2.5 w-2.5" />
+                                    <span>Chauffeur</span>
+                                </div>
+                            )}
+                            {!isBusTrip && signup.extra_luggage && (
+                                <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-tighter text-blue-500 bg-blue-500/10 px-1.5 py-0.5 rounded-md border border-blue-500/20" title="Extra Koffer">
+                                    <Briefcase className="h-2.5 w-2.5" />
+                                    <span>+1 Koffer</span>
+                                </div>
+                            )}
                         </div>
                     </div>
-                </td>
-            </tr>
-            {isExpanded && (
-                <tr className="bg-[var(--bg-main)]/30 border-b border-[var(--beheer-border)]/10">
-                    <td colSpan={6} className="px-8 py-8 animate-in slide-in-from-top-2 duration-300">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-8">
-                            <div className="space-y-4">
-                                <p className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[var(--beheer-accent)]">Contact Gegevens</p>
-                                <div className="space-y-2">
-                                    <p className="text-xs font-semibold text-[var(--beheer-text)]">{signup.email}</p>
-                                    <p className="text-xs font-semibold text-[var(--beheer-text-muted)]">{signup.phone_number || 'Geen telefoon'}</p>
-                                </div>
-                                <div className="pt-2">
-                                    {isBusTrip ? (
-                                        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase ${signup.willing_to_drive ? 'bg-[var(--beheer-active)]/10 text-[var(--beheer-active)] border border-[var(--beheer-active)]/20' : 'bg-[var(--bg-main)] text-[var(--beheer-text-muted)] border border-[var(--beheer-border)]/50 opacity-60'}`}>
-                                            <div className={`h-1.5 w-1.5 rounded-full ${signup.willing_to_drive ? 'bg-[var(--beheer-active)] animate-pulse' : 'bg-[var(--beheer-text-muted)]'}`} />
-                                            {signup.willing_to_drive ? 'Chauffeur' : 'Geen chauffeur'}
-                                        </div>
-                                    ) : (
-                                        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase ${signup.extra_luggage ? 'bg-[var(--beheer-active)]/10 text-[var(--beheer-active)] border border-[var(--beheer-active)]/20' : 'bg-[var(--bg-main)] text-[var(--beheer-text-muted)] border border-[var(--beheer-border)]/50 opacity-60'}`}>
-                                            <div className={`h-1.5 w-1.5 rounded-full ${signup.extra_luggage ? 'bg-[var(--beheer-active)] animate-pulse' : 'bg-[var(--beheer-text-muted)]'}`} />
-                                            {signup.extra_luggage ? 'Extra Koffer' : 'Geen extra koffer'}
-                                        </div>
-                                    )}
-                                </div>
-                                {!isBusTrip && (
-                                    <div className="pt-2 space-y-1">
-                                        <p className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text-muted)]">Document: <span className="text-[var(--beheer-text)]">{signup.id_document === 'passport' ? 'Paspoort' : signup.id_document === 'id_card' ? 'ID Kaart' : (signup.id_document || '-')}</span></p>
-                                        <p className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text-muted)]">Nummer: <span className="text-[var(--beheer-text)]">{signup.document_number || '-'}</span></p>
-                                        <p className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text-muted)]">Geldig tot: <span className="text-[var(--beheer-text)]">{signup.document_expiry_date ? format(new Date(signup.document_expiry_date), 'dd-MM-yyyy') : '-'}</span></p>
-                                    </div>
-                                )}
-                            </div>
-                            <div className="space-y-4">
-                                <p className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[var(--beheer-accent)]">Medisch & Info</p>
-                                <div className="bg-[var(--beheer-card-bg)]/50 p-4 rounded-2xl border border-[var(--beheer-border)]/5 space-y-3">
-                                    <div>
-                                        <p className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text-muted)] mb-1">Allergieën</p>
-                                        <p className="text-xs font-semibold text-[var(--beheer-text)]">{signup.allergies || 'Geen'}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text-muted)] mb-1">Bijzonderheden</p>
-                                        <p className="text-xs font-semibold text-[var(--beheer-text)]">{signup.special_notes || 'Geen'}</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="space-y-4">
-                                <p className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[var(--beheer-accent)]">Activiteiten</p>
-                                <div className="space-y-3">
-                                    {activities ? (
-                                        activities.length > 0 ? (
-                                            activities.map(a => {
-                                                interface ExpandedTripSignupActivity {
-                                                    activity_name?: string;
-                                                    trip_activity_id?: { name?: string; options?: any };
-                                                    selected_options?: any;
-                                                    activity_options?: any;
-                                                }
-                                                const activity = a as unknown as ExpandedTripSignupActivity;
-                                                const name = activity.activity_name || activity.trip_activity_id?.name || 'Activiteit';
-                                                const rawOptions = parseSelectedOptions(activity.selected_options);
-                                                const metaOptions = parseActivityOptions(activity.activity_options || activity.trip_activity_id?.options);
-                                                
-                                                const selectedNames = Object.keys(rawOptions)
-                                                    .map(optId => mapActivityOptionIdToName(optId, metaOptions))
-                                                    .filter(Boolean);
+                </div>
 
-                                                return (
-                                                    <div key={a.id} className="space-y-1.5">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="h-1.5 w-1.5 rounded-full bg-[var(--beheer-accent)] shadow-[0_0_8px_var(--beheer-accent)]"></div>
-                                                            <span className="text-xs font-semibold text-[var(--beheer-text)]">
-                                                                {name}
-                                                            </span>
-                                                        </div>
-                                                        {selectedNames.length > 0 && (
-                                                            <div className="ml-3.5 flex flex-wrap gap-1.5">
-                                                                {selectedNames.map((optName, idx) => (
-                                                                    <span key={idx} className="text-[9px] font-semibold px-2 py-0.5 rounded-lg bg-[var(--beheer-accent)]/5 text-[var(--beheer-text-muted)] border border-[var(--beheer-border)]/30 tracking-tight">
-                                                                        {optName}
-                                                                    </span>
-                                                                ))}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                );
-                                            })
-                                        ) : (
-                                            <p className="text-xs text-[var(--beheer-text-muted)] italic">Geen selectie</p>
-                                        )
-                                    ) : (
-                                        <p className="text-xs text-[var(--beheer-text-muted)] italic">Laden...</p>
-                                    )}
-                                </div>
+                {/* Bottom Row: Status & Payment */}
+                <div className="mt-auto pt-3 border-t border-[var(--beheer-border)]/10 flex flex-wrap items-center justify-between gap-y-2 gap-x-3">
+                    <div className="flex-1 min-w-[120px]">
+                        {isStatusLoading ? (
+                            <div className="flex items-center justify-center py-2">
+                                <Loader2 className="h-5 w-5 animate-spin text-[var(--beheer-accent)]" />
                             </div>
-                        </div>
+                        ) : (
+                            <StatusDropdown 
+                                currentStatus={signup.status || 'registered'} 
+                                onChange={(val) => onStatusChange(signup.id, val)}
+                            />
+                        )}
+                    </div>
 
-                        <div className="border-t border-[var(--beheer-border)]/50 pt-8 mt-6">
-                            <p className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[var(--beheer-text-muted)] mb-5">Betaalverzoek Handmatig Versturen</p>
-                            <div className="flex flex-wrap gap-3">
+                    <div className="shrink-0 flex items-center justify-end ml-auto">
+                        <span className={`px-2 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-xl border-2 shadow-sm whitespace-nowrap ${paymentStatus.color}`}>
+                            {paymentStatus.label}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/* --- Premium Status Dropdown Component --- */
+function StatusDropdown({ currentStatus, onChange }: { currentStatus: string, onChange: (val: string) => void }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    const statuses = [
+        { value: 'registered', label: 'Geregistreerd', icon: Clock, color: 'text-blue-400 bg-blue-400/10' },
+        { value: 'confirmed', label: 'Bevestigd', icon: CheckCircle2, color: 'text-emerald-400 bg-emerald-400/10' },
+        { value: 'waitlist', label: 'Wachtlijst', icon: List, color: 'text-orange-400 bg-orange-400/10' },
+        { value: 'cancelled', label: 'Geannuleerd', icon: XCircle, color: 'text-red-400 bg-red-400/10' }
+    ];
+
+    const current = statuses.find(s => s.value === currentStatus) || statuses[0];
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        if (isOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isOpen]);
+
+    return (
+        <div className="relative" ref={dropdownRef}>
+            <button
+                onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }}
+                className={`
+                    w-full flex items-center justify-between px-3 py-2 rounded-xl border-2 transition-all duration-300
+                    ${isOpen ? 'border-[var(--beheer-accent)] shadow-lg scale-[1.02] bg-[var(--beheer-card-bg)]' : 'border-[var(--beheer-border)]/40 hover:border-[var(--beheer-accent)]/30'}
+                `}
+            >
+                <div className="flex items-center gap-2">
+                    <current.icon className={`h-3 w-3 ${current.color.split(' ')[0]}`} />
+                    <span className="text-[10px] font-black uppercase tracking-[0.1em] text-[var(--beheer-text)]">
+                        {current.label}
+                    </span>
+                </div>
+                <ChevronDown className={`h-3 w-3 text-[var(--beheer-text-muted)] transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 4, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 4, scale: 0.95 }}
+                        transition={{ duration: 0.15, ease: "easeOut" }}
+                        className="absolute bottom-full left-0 mb-2 w-full min-w-[160px] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)]/60 rounded-2xl shadow-2xl z-[100] overflow-hidden backdrop-blur-md"
+                    >
+                        <div className="p-1.5 space-y-0.5">
+                            {statuses.map((s) => (
                                 <button
-                                    onClick={(e) => { e.stopPropagation(); onResendEmail(signup.id, 'deposit'); }}
-                                    disabled={sendingEmailType === 'deposit'}
-                                    className={`flex items-center justify-center gap-3 px-6 py-3 rounded-xl text-[10px] font-semibold tracking-widest transition-all shadow-sm ${signup.deposit_email_sent ? 'bg-[var(--beheer-card-bg)] text-[var(--beheer-text-muted)] border border-[var(--beheer-border)]' : 'bg-yellow-500/10 text-yellow-600 border border-yellow-500/20 hover:bg-yellow-500/20 active:scale-95'}`}
+                                    key={s.value}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onChange(s.value);
+                                        setIsOpen(false);
+                                    }}
+                                    className={`
+                                        w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all text-left
+                                        ${currentStatus === s.value 
+                                            ? 'bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)]' 
+                                            : 'hover:bg-white/5 text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)]'}
+                                    `}
                                 >
-                                    {sendingEmailType === 'deposit' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                                    Aanbetaling {signup.deposit_email_sent && <span className="opacity-60">(OK)</span>}
+                                    <s.icon className={`h-3.5 w-3.5 ${currentStatus === s.value ? 'text-[var(--beheer-accent)]' : s.color.split(' ')[0]}`} />
+                                    <span className="text-[10px] font-bold uppercase tracking-widest">{s.label}</span>
                                 </button>
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); onResendEmail(signup.id, 'final'); }}
-                                    disabled={sendingEmailType === 'final' || !allowFinalPayments}
-                                    className={`flex items-center justify-center gap-3 px-6 py-3 rounded-xl text-[10px] font-semibold tracking-widest transition-all shadow-sm ${signup.final_email_sent ? 'bg-[var(--beheer-card-bg)] text-[var(--beheer-text-muted)] border border-[var(--beheer-border)]' : 'bg-[var(--beheer-active)]/10 text-[var(--beheer-active)] border border-[var(--beheer-active)]/20 hover:bg-[var(--beheer-active)]/20 active:scale-95'}`}
-                                >
-                                    {sendingEmailType === 'final' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                                    Restbetaling {signup.final_email_sent && <span className="opacity-60">(OK)</span>}
-                                </button>
-                                {!allowFinalPayments && (
-                                    <div className="flex items-center gap-2 text-[10px] font-semibold text-red-500/70 tracking-widest bg-red-500/5 px-4 py-2 rounded-xl border border-red-500/10">
-                                        <AlertCircle className="h-3.5 w-3.5" />
-                                        Restbetalingen Gesloten
-                                    </div>
-                                )}
-                            </div>
+                            ))}
                         </div>
-                    </td>
-                </tr>
-            )}
-        </Fragment>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
     );
 }
