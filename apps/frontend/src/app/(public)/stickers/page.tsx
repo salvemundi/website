@@ -4,6 +4,7 @@ import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import StickerMapIsland from '@/components/islands/stickers/StickerMapIsland';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
+import { type EnrichedUser } from '@/types/auth';
 
 export const metadata = {
     title: 'Sticker Kaart | Salve Mundi',
@@ -61,7 +62,7 @@ async function StickersContent() {
                 </div>
                 
                 <div className="rounded-3xl border border-[var(--beheer-border)] overflow-hidden shadow-2xl">
-                    <StickerMapIsland initialStickers={stickers} user={session?.user || null} />
+                    <StickerMapIsland initialStickers={stickers} user={(session?.user as unknown as EnrichedUser) || null} />
                 </div>
             </div>
         </div>

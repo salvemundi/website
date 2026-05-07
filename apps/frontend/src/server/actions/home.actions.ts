@@ -36,7 +36,7 @@ export const getHeroBanners = async (): Promise<HeroBanner[]> => {
         limit: 10
     }));
 
-    const mappedData = rawData.map((item: any) => ({
+    const mappedData = rawData.map((item: DbHeroBanner) => ({
         id: item.id ?? '',
         title: item.title ?? '',
         subtitle: null,

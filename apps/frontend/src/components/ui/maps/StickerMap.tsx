@@ -13,9 +13,30 @@ import { formatDate } from '@/shared/lib/utils/date';
 // All assets are now loaded through our local proxy to keep infrastructure private.
 const ASSET_PROXY_URL = '/api/assets';
 
+import { type EnrichedUser } from '@/types/auth';
+
+interface Sticker {
+    id: number;
+    latitude: number;
+    longitude: number;
+    location_name: string;
+    description: string | null;
+    city: string | null;
+    country: string | null;
+    image: string | null;
+    date_created?: string;
+    address?: string;
+    user_created: {
+        id: string;
+        first_name: string | null;
+        last_name: string | null;
+        avatar: string | null;
+    } | string | null;
+}
+
 interface StickerMapProps {
-    stickers?: any[];
-    user?: any;
+    stickers?: Sticker[];
+    user?: EnrichedUser | null;
     selectedLocation?: { lat: number; lng: number } | null;
     filterCountry?: string;
     filterCity?: string;
@@ -38,7 +59,7 @@ export default function StickerMap({
     zoom = 2,
     center = [52.1326, 5.2913] // Netherlands default
 }: StickerMapProps) {
-    const [popupInfo, setPopupInfo] = useState<any | null>(null);
+    const [popupInfo, setPopupInfo] = useState<Sticker | null>(null);
     const [isDark, setIsDark] = useState<boolean>(false);
     const [showImage, setShowImage] = useState<boolean>(false);
 

@@ -8,15 +8,18 @@ import { authClient } from '@/lib/auth';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { ROUTES } from '@/lib/config/routes';
 
+import { type Session } from 'better-auth';
+import { type EnrichedUser } from '@/types/auth';
+
 interface NavUserSectionProps {
-    initialSession: any;
+    initialSession: Session | null | undefined;
     canAccessAdmin: boolean;
 }
 
 export function NavUserSection({ initialSession, canAccessAdmin }: NavUserSectionProps) {
     const { data: sessionData } = authClient.useSession();
     const session = sessionData || initialSession;
-    const user = session?.user;
+    const user = (session?.user as unknown as EnrichedUser) ?? null;
     const isAuthenticated = !!user;
 
     return (
