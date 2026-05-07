@@ -6,9 +6,10 @@ import { usePathname, useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth';
 import type { IconName } from '@/lib/utils/icons';
 import MobileMenu from './MobileMenu';
+import { type EnrichedUser } from '@/types/auth';
 
 interface MobileNavProps {
-    user: any;
+    user: EnrichedUser | null;
     isAuthenticated: boolean;
     navItems: { name: string; href: string; icon: IconName }[];
     canAccessAdmin: boolean;
@@ -47,7 +48,7 @@ export function MobileNav({ user, isAuthenticated, navItems, canAccessAdmin }: O
         <>
             <button
                 type="button"
-                className="relative z-[210] inline-flex items-center justify-center rounded-full p-2 text-[var(--text-main)] shadow-sm transition hover:bg-[var(--color-purple-100)] lg:hidden"
+                className="relative z-[210] inline-flex items-center justify-center rounded-full p-2 text-[var(--text-main)] shadow-sm transition hover:bg-[var(--color-purple-100)] xl:hidden"
                 style={{ backgroundColor: 'color-mix(in srgb, var(--bg-card) 80%, transparent)' }}
                 onClick={() => setMenuOpen(!menuOpen)}
                 aria-label={menuOpen ? "Sluit menu" : "Open menu"}

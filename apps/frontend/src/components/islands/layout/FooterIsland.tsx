@@ -5,6 +5,7 @@ import { ROUTES } from '@/lib/config/routes';
 import type { Committee } from '@salvemundi/validations/schema/committees.zod';
 import type { Document } from '@salvemundi/validations/schema/website.zod';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
+import { type Session } from 'better-auth';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 // Alle data wordt server-side opgehaald en als props doorgegeven.
@@ -13,7 +14,7 @@ interface FooterIslandProps {
     documents: Document[];
     disabledRoutes?: string[];
     committees: Committee[];
-    initialSession?: any;
+    initialSession?: Session | null;
 }
 
 // Zorgt voor een eenduidige presentatie van commissienamen door redundante achtervoegsels te verwijderen.

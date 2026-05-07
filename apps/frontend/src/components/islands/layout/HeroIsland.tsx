@@ -8,10 +8,12 @@ import { formatDate } from '@/shared/lib/utils/date';
 import { HeroCarousel } from './HeroCarousel';
 import { slugify } from '@/shared/lib/utils/slug';
 
+import { type Session } from 'better-auth';
+
 interface HeroIslandProps {
     banners?: HeroBanner[];
     activiteiten?: Activiteit[];
-    initialSession?: any;
+    initialSession?: Session | null;
 }
 
 /**
@@ -67,7 +69,7 @@ export async function HeroIsland({ banners = [], activiteiten = [], initialSessi
                             </div>
 
                             <div className="w-full max-w-full">
-                                <div className="flex flex-wrap gap-3 sm:gap-4 h-[116px]">
+                                <div className="flex flex-wrap gap-3 sm:gap-4 min-h-[116px] h-auto">
                                     {showMembershipLink ? (
                                          <Link href="/lidmaatschap" className="block w-full transition-transform hover:scale-[1.02] group/lid">
                                              <div className="w-full max-w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-3 sm:p-4 md:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-3 sm:gap-4 h-full">

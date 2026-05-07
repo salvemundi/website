@@ -44,7 +44,7 @@ export default function MobileMenu({
 }: MobileMenuProps) {
     return (
         <div
-            className={`lg:hidden ${isOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
+            className={`xl:hidden ${isOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
                 } transition-opacity duration-200`}
         >
             {/* Backdrop */}

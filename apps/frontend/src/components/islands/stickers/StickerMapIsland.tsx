@@ -24,9 +24,28 @@ const StickerMap = dynamic(() => import('@/components/ui/maps/StickerMap'), {
     ),
 });
 
+import { type EnrichedUser } from '@/types/auth';
+
+interface Sticker {
+    id: number;
+    latitude: number;
+    longitude: number;
+    location_name: string;
+    description: string | null;
+    city: string | null;
+    country: string | null;
+    image: string | null;
+    user_created: {
+        id: string;
+        first_name: string | null;
+        last_name: string | null;
+        avatar: string | null;
+    } | null;
+}
+
 interface StickerMapIslandProps {
-    initialStickers: any[];
-    user: any | null;
+    initialStickers: Sticker[];
+    user: EnrichedUser | null;
 }
 
 // No client-side Directus URL needed anymore.
@@ -148,7 +167,7 @@ export default function StickerMapIsland({
                     image: imageId
                 });
 
-                setStickers((prev: any[]) => [newSticker, ...prev]);
+                setStickers((prev: Sticker[]) => [newSticker as unknown as Sticker, ...prev]);
                 setShowAddModal(false);
                 setSelectedLocation(null);
                 setFormData({ location_name: '', description: '', city: '', country: '', image: null });
@@ -165,8 +184,8 @@ export default function StickerMapIsland({
             {/* Stats Header Area */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <StatCard label="Totaal" value={stickers.length} icon={MapIcon} color="text-purple-500" />
-                <StatCard label="Landen" value={new Set(stickers.map((s: any) => s.country?.toLowerCase()).filter(Boolean)).size} icon={Globe} color="text-blue-500" />
-                <StatCard label="Steden" value={new Set(stickers.map((s: any) => s.city?.toLowerCase()).filter(Boolean)).size} icon={Award} color="text-green-500" />
+                <StatCard label="Landen" value={new Set(stickers.map((s: Sticker) => s.country?.toLowerCase()).filter(Boolean)).size} icon={Globe} color="text-blue-500" />
+                <StatCard label="Steden" value={new Set(stickers.map((s: Sticker) => s.city?.toLowerCase()).filter(Boolean)).size} icon={Award} color="text-green-500" />
                 <StatCard label="Top Land" value="NL" icon={TrendingUp} color="text-orange-500" />
             </div>
 
@@ -347,7 +366,7 @@ export default function StickerMapIsland({
     );
 }
 
-function StatCard({ label, value, icon: Icon, color }: any) {
+function StatCard({ label, value, icon: Icon, color }: { label: string; value: number | string; icon: any; color: string }) {
     return (
         <div className="bg-[var(--bg-card)] rounded-2xl p-4 shadow-xl border border-white/5 flex items-center justify-between">
             <div>

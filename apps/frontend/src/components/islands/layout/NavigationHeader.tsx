@@ -7,11 +7,13 @@ import type { IconName } from '@/lib/utils/icons';
 import { HeaderShell } from './navigation/HeaderShell';
 import { NavUserSection } from './navigation/NavUserSection';
 import { MobileNav } from './navigation/MobileNav';
+import { type EnrichedUser, type ImpersonationInfo } from '@/types/auth';
+import { type Session } from 'better-auth';
 
 interface NavigationHeaderProps {
     disabledRoutes?: string[];
-    initialSession?: any;
-    impersonation?: any;
+    initialSession?: Session | null;
+    impersonation?: ImpersonationInfo | null;
     isAdmin?: boolean;
 }
 
@@ -26,11 +28,11 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
     impersonation,
     isAdmin: initialIsAdmin
 }) => {
-    const user = initialSession?.user ?? null;
+    const user = (initialSession?.user as unknown as EnrichedUser) ?? null;
     const isAuthenticated = !!user;
     
     // Prioritize the passed isAdmin flag from checkAdminAccess (database source of truth)
-    const canAccessAdmin = !!(initialIsAdmin || user?.isAdmin || user?.isICT);
+    const canAccessAdmin = !!(initialIsAdmin || user?.isAdmin || user?.isICT || user?.canAccessIntro);
 
     const navItems = ([
         { name: 'Home', href: ROUTES.HOME, icon: 'Home' },
@@ -71,7 +73,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
                     </div>
 
                     {/* Desktop Navigation */}
-                    <nav className="hidden items-center justify-center gap-5 lg:flex whitespace-nowrap">
+                    <nav className="hidden items-center justify-center gap-5 xl:flex whitespace-nowrap">
                         {navItems.map((link) => (
                             <Link
                                 key={link.href}
