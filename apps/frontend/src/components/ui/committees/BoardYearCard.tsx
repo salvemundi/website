@@ -10,13 +10,13 @@ interface BoardYearCardProps {
 
 export const BoardYearCard: React.FC<BoardYearCardProps> = ({ board }) => {
     return (
-        <div className="group relative overflow-hidden rounded-[2.5rem] bg-[var(--bg-card)] p-8 shadow-2xl transition-all duration-500 hover:shadow-purple-500/10 dark:border dark:border-white/10 dark:hover:border-purple-500/30">
+        <div className="group relative overflow-hidden squircle-xl bg-[var(--bg-card)] p-8 shadow-2xl transition-all duration-500 hover:shadow-purple-500/10 dark:border dark:border-white/10 dark:hover:border-purple-500/30">
             {/* Background Glow */}
             <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[var(--color-purple-500)]/5 blur-3xl transition-opacity duration-700 group-hover:opacity-100 opacity-0" />
 
             <div className="flex flex-col lg:flex-row gap-10">
                 {/* Left: Image Container */}
-                <div className="relative w-full lg:w-[400px] aspect-[4/3] rounded-3xl overflow-hidden shadow-lg ring-1 ring-black/5 dark:ring-white/5">
+                <div className="relative w-full lg:w-[400px] aspect-[4/3] squircle-xl overflow-hidden shadow-lg ring-1 ring-black/5 dark:ring-white/5">
                     <Image
                         src={board.image ? (getImageUrl(board.image) ?? '/img/newlogo.svg') : '/img/newlogo.svg'}
                         alt={board.naam || 'Bestuur'}

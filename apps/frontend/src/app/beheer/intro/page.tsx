@@ -28,8 +28,7 @@ export default async function BeheerIntroPage() {
     
     if (!session?.user) redirect('/login');
 
-    const user = session.user as unknown as EnrichedUser;
-    const userCommittees = await fetchUserCommitteesDb(user.id).catch(() => []);
+    const userCommittees = await fetchUserCommitteesDb(session.user.id).catch(() => []);
     const permissions = getPermissions(userCommittees || []);
 
     if (!permissions.canAccessIntro) {

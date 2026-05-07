@@ -4,11 +4,8 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 const IMAGES = [
-    { src: '/img/backgrounds/homepage-banner.jpg', alt: 'polonaise' },
-    { src: '/img/Intro-2-2025.jpg', alt: 'polonaise' },
-    { src: '/img/Intro-3-2025.jpg', alt: 'lasergame' },
-    { src: '/img/Intro-4-2025.jpg', alt: 'Groep' },
-    { src: '/img/Intro2025.jpg', alt: 'Groep' },
+    { src: '/img/backgrounds/Kroto2025.jpg', alt: 'Introductie Sfeer' },
+    { src: '/img/newlogo.svg', alt: 'Salve Mundi Logo' },
 ];
 
 export const IntroLightboxIsland = () => {

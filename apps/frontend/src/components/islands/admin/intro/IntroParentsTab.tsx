@@ -15,7 +15,7 @@ import {
     Loader2
 } from 'lucide-react';
 import { ActionButton, EmptyState, Button } from './IntroTabComponents';
-import { type IntroParentRow } from './intro-types';
+import { type DbIntroParentSignup as IntroParentRow } from '@salvemundi/validations/directus/schema';
 import { formatDate } from '@/shared/lib/utils/date';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { formatPhoneNumber } from '@/lib/utils/phone-utils';
@@ -205,7 +205,7 @@ export default function IntroParentsTab({ parents, onDelete, onUpdate, onExport,
                                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                                     <div className="flex flex-col gap-1">
                                                                         <span className="opacity-50">Aangemeld op</span>
-                                                                        <span className="text-[var(--beheer-text)] text-sm font-bold">{p.date_created ? formatDate(p.date_created) : p.created_at ? formatDate(p.created_at) : '-'}</span>
+                                                                        <span className="text-[var(--beheer-text)] text-sm font-bold">{p.created_at ? formatDate(p.created_at) : '-'}</span>
                                                                     </div>
                                                                         <div className="flex flex-col gap-1">
                                                                             <span className="opacity-50">Status</span>

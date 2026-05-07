@@ -82,14 +82,14 @@ export default async function BlogDetailPage({ params }: Props) {
                 </div>
 
                 <footer className="mt-20 pt-10 border-t border-[var(--beheer-border)]/10">
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-8 bg-[var(--beheer-accent)]/5 p-8 lg:p-12 rounded-[2rem] border border-[var(--beheer-accent)]/10">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-8 bg-[var(--beheer-accent)]/5 p-8 lg:p-12 squircle-lg border border-[var(--beheer-accent)]/10">
                         <div className="space-y-2 text-center sm:text-left">
                             <h4 className="text-xl font-black uppercase tracking-tight text-theme dark:text-white">Wil je niets missen?</h4>
                             <p className="text-sm text-[var(--beheer-text-muted)]">Houd deze pagina en onze socials in de gaten voor meer updates.</p>
                         </div>
                         <Link 
                             href="/intro" 
-                            className="px-8 py-4 bg-[var(--beheer-accent)] text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:scale-105 active:scale-95 transition-all shadow-lg shadow-[var(--beheer-accent)]/20"
+                            className="px-8 py-4 bg-[var(--beheer-accent)] text-white squircle font-black uppercase tracking-widest text-xs hover:scale-105 active:scale-95 transition-all shadow-lg shadow-[var(--beheer-accent)]/20"
                         >
                             Naar de Introductie
                         </Link>

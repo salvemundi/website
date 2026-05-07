@@ -56,7 +56,7 @@ export const IntroParentIsland = ({ userName, userEmail, initialPhone }: IntroPa
 
     if (submitted) {
         return (
-            <div className="bg-gradient-theme rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg text-center">
+            <div className="bg-gradient-theme squircle-lg p-6 lg:p-8 shadow-lg text-center">
                 <h3 className="text-xl lg:text-2xl font-bold text-white mb-4">Je hebt je aangemeld als Intro Ouder</h3>
                 <p className="text-theme-text-muted dark:text-theme-text-muted">
                     Bedankt! Je inschrijving is ontvangen. Als je iets wilt aanpassen, neem contact op met de intro commissie.
@@ -66,7 +66,7 @@ export const IntroParentIsland = ({ userName, userEmail, initialPhone }: IntroPa
     }
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg space-y-4" autoComplete="off">
+        <form onSubmit={handleSubmit(onSubmit)} className="bg-[var(--bg-card)] dark:border dark:border-white/10 squircle-lg p-6 lg:p-8 shadow-lg space-y-4" autoComplete="off">
             <div className="flex items-center gap-2 mb-4">
                 <Heart className="w-5 h-5 lg:w-6 lg:h-6 text-theme-purple" />
                 <h3 className="text-xl lg:text-2xl font-bold text-theme-purple">Word Intro Ouder!</h3>

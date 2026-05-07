@@ -18,10 +18,10 @@ export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
 
     return (
         <div 
-            className="flex flex-col rounded-2xl bg-[var(--bg-main)]/30 border border-[var(--border-color)] p-5 sm:p-6 transition-all duration-300 hover:border-[var(--color-purple-300)] dark:hover:border-white/20 shadow-sm hover:shadow-md h-full"
+            className="flex flex-col squircle-lg bg-[var(--bg-main)]/30 border border-[var(--border-color)] p-5 sm:p-6 transition-all duration-300 hover:border-[var(--color-purple-300)] dark:hover:border-white/20 shadow-sm hover:shadow-md h-full"
         >
             <div className="flex items-center gap-4">
-                <div className="relative h-16 w-16 sm:h-20 sm:w-20 overflow-hidden rounded-2xl shadow-md shrink-0 bg-[var(--bg-main)]">
+                <div className="relative h-16 w-16 sm:h-20 sm:w-20 overflow-hidden squircle shadow-md shrink-0 bg-[var(--bg-main)]">
                     <Image
                         src={imageUrl}
                         alt={safeHaven?.naam || 'Safe Haven'}

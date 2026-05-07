@@ -17,7 +17,7 @@ import {
     Loader2
 } from 'lucide-react';
 import { ActionButton, EmptyState, Button } from './IntroTabComponents';
-import { type IntroSignupRow } from './intro-types';
+import { type DbIntroSignup as IntroSignupRow } from '@salvemundi/validations/directus/schema';
 import { formatDate } from '@/shared/lib/utils/date';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { formatPhoneNumber } from '@/lib/utils/phone-utils';
@@ -41,8 +41,8 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, onExport,
     const filtered = signups.filter(s => {
         if (!search) return true;
         const q = search.toLowerCase();
-        return `${s.first_name} ${s.last_name}`.toLowerCase().includes(q) ||
-            s.email.toLowerCase().includes(q) || (s.phone_number || '').includes(q);
+        return `${s.first_name || ''} ${s.last_name || ''}`.toLowerCase().includes(q) ||
+            (s.email || '').toLowerCase().includes(q) || (s.phone_number || '').includes(q);
     });
 
     const toggleExpand = (id: number) => {
@@ -66,7 +66,7 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, onExport,
     };
 
     const handleMailBcc = () => {
-        const emails = signups.map(s => s.email).join(',');
+        const emails = signups.map(s => s.email).filter(Boolean).join(',');
         window.location.href = `mailto:?bcc=${emails}&subject=Intro${encodeURIComponent(' Aanmeldingen')}`;
     };
 
@@ -137,10 +137,10 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, onExport,
                                                 </div>
                                             </td>
                                             <td className="px-8 py-5 text-[var(--beheer-text-muted)] text-xs font-medium hidden sm:table-cell opacity-60">
-                                                {s.email}
+                                                {s.email || '-'}
                                             </td>
                                             <td className="px-8 py-5 text-[var(--beheer-text-muted)] text-xs font-medium hidden md:table-cell">
-                                                {formatPhoneNumber(s.phone_number)}
+                                                {formatPhoneNumber(s.phone_number) || '-'}
                                             </td>
                                             <td className="px-12 py-5 text-right">
                                                 <div className="flex justify-end items-center gap-3">
@@ -216,7 +216,7 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, onExport,
                                                                     )}
                                                                     <div className="flex flex-col gap-1">
                                                                         <span className="opacity-50">Aangemeld op</span>
-                                                                        <span className="text-[var(--beheer-text)] text-sm font-bold">{s.date_created || s.created_at ? formatDate(s.date_created || s.created_at) : '-'}</span>
+                                                                        <span className="text-[var(--beheer-text)] text-sm font-bold">{s.created_at ? formatDate(s.created_at) : '-'}</span>
                                                                     </div>
                                                                     <div className="flex flex-col gap-1">
                                                                         <span className="opacity-50">Status</span>
@@ -242,7 +242,7 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, onExport,
                                                                 
                                                                 {s.favorite_gif && (
                                                                     <Button 
-                                                                        onClick={() => window.open(s.favorite_gif, '_blank')} 
+                                                                        onClick={() => window.open(s.favorite_gif!, '_blank')} 
                                                                         variant="secondary"
                                                                         icon={Eye}
                                                                         className="w-full"

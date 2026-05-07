@@ -114,50 +114,31 @@ export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ succe
     const { id, ...payload } = validated.data;
     
     try {
-        let rows: any[];
+        let result;
         const sanitizedPayload = {
             ...payload,
             created_at: toLocalISOString(payload.created_at, true)
         };
         
         if (id) {
-            const sql = `
-                UPDATE intro_blogs 
-                SET title = $1, content = $2, blog_type = $3, is_published = $4, slug = $5, excerpt = $6, created_at = $7
-                WHERE id = $8 RETURNING *
-            `;
-            const result = await query(sql, [
-                sanitizedPayload.title, sanitizedPayload.content, sanitizedPayload.blog_type, 
-                sanitizedPayload.is_published, sanitizedPayload.slug, sanitizedPayload.excerpt, 
-                sanitizedPayload.created_at, id
-            ]);
-            rows = result.rows;
+            result = await getSystemDirectus().request(updateItem('intro_blogs', id, sanitizedPayload));
         } else {
-            const sql = `
-                INSERT INTO intro_blogs (title, content, blog_type, is_published, slug, excerpt, created_at)
-                VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *
-            `;
-            const result = await query(sql, [
-                sanitizedPayload.title, sanitizedPayload.content, sanitizedPayload.blog_type, 
-                sanitizedPayload.is_published, sanitizedPayload.slug, sanitizedPayload.excerpt, 
-                sanitizedPayload.created_at
-            ]);
-            rows = result.rows;
+            result = await getSystemDirectus().request(createItem('intro_blogs', sanitizedPayload));
         }
         revalidatePath('/beheer/intro');
         
-        const row = rows[0];
         return { success: true, data: { 
-            id: Number(row.id),
-            title: row.title || '',
-            content: row.content || '',
-            blog_type: (row.blog_type || 'update') as IntroBlog['blog_type'],
-            is_published: !!row.is_published,
-            created_at: toLocalISOString(row.created_at, true) ?? undefined,
-            slug: row.slug || '',
-            excerpt: row.excerpt || ''
+            id: Number(result.id),
+            title: result.title || '',
+            content: result.content || '',
+            blog_type: (result.blog_type || 'update') as IntroBlog['blog_type'],
+            is_published: !!result.is_published,
+            created_at: result.created_at ? toLocalISOString(result.created_at, true) ?? undefined : undefined,
+            slug: result.slug || '',
+            excerpt: result.excerpt || ''
         } };
     } catch (e) {
+        console.error('[AdminIntro] Failed to upsert blog:', e);
         return { success: false, error: 'Opslaan mislukt' };
     }
 }

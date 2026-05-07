@@ -232,7 +232,6 @@
 /* ── Squircle Design (Apple Style) ────────────────────────────────────────── */
 .squircle {
     border-radius: 1.5rem;
-    /* Progressive Enhancement for Chrome/Edge 121+ */
     @supports (corner-shape: squircle) {
         corner-shape: squircle;
     }
@@ -240,6 +239,13 @@
 
 .squircle-lg {
     border-radius: 2.2rem;
+    @supports (corner-shape: squircle) {
+        corner-shape: squircle;
+    }
+}
+
+.squircle-xl {
+    border-radius: 3rem;
     @supports (corner-shape: squircle) {
         corner-shape: squircle;
     }

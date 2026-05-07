@@ -55,9 +55,27 @@ export async function hasParentSignup(): Promise<boolean> {
     if (!session?.user) return false;
 
     try {
-        const { rows } = await query('SELECT 1 FROM intro_parent_signups WHERE user_id = $1 LIMIT 1', [session.user.id]);
-        return rows.length > 0;
-    } catch {
+        const signups = await getSystemDirectus().request(
+            readItems('intro_parent_signups', {
+                filter: {
+                    _or: [
+                        { user_id: { _eq: session.user.id } },
+                        { email: { _eq: session.user.email } }
+                    ]
+                },
+                fields: ['id', 'user_id', 'email'],
+                limit: 1
+            })
+        );
+        
+        const exists = signups.length > 0;
+        console.log(`[hasParentSignup] User ${session.user.id} / ${session.user.email} exists in Directus:`, exists);
+        if (exists) {
+            console.log('[hasParentSignup] Found record:', signups[0]);
+        }
+        return exists;
+    } catch (e) {
+        console.error('[hasParentSignup] Directus check failed:', e);
         return false;
     }
 }
@@ -160,6 +178,12 @@ export async function submitIntroParentSignup(data: IntroParentSignupForm): Prom
         return { success: false, error: 'Je moet ingelogd zijn als lid om je aan te melden als Intro Ouder' };
     }
 
+    // Prevents unique constraint error by checking existence first
+    const alreadySignedUp = await hasParentSignup();
+    if (alreadySignedUp) {
+        return { success: true };
+    }
+
     const { rateLimit } = await import('../utils/ratelimit');
     const { success } = await rateLimit('intro-parent-signup', 3, 300);
     if (!success) {
@@ -181,12 +205,19 @@ export async function submitIntroParentSignup(data: IntroParentSignupForm): Prom
     };
 
     try {
-        await getSystemDirectus().request(createItem('intro_parent_signups', payload));
+        console.log('[IntroParentSignup] Payload:', JSON.stringify(payload, null, 2));
+        const result = await getSystemDirectus().request(createItem('intro_parent_signups', payload));
+        console.log('[IntroParentSignup] Success:', result);
         revalidatePath('/beheer/intro');
         return { success: true };
-    } catch (e) {
-        
-        throw new Error('Er is een fout opgetreden tijdens de intro-ouder inschrijving');
+    } catch (e: any) {
+        console.error('[IntroParentSignup] Error details:', {
+            message: e.message,
+            status: e.status,
+            code: e.code,
+            response: e.response?.data || e.response
+        });
+        throw new Error(`Er is een fout opgetreden tijdens de intro-ouder inschrijving: ${e.message || 'Onbekende fout'}`);
     }
 }
 

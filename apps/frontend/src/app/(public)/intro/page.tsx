@@ -1,14 +1,13 @@
-import React from 'react';
-import { hasParentSignup } from '@/server/actions/intro.actions';
-import { auth } from '@/server/auth/auth';
+import * as nextServer from 'next/server';
 import { headers } from 'next/headers';
+import { auth } from '@/server/auth/auth';
+import { hasParentSignup, getIntroBlogsPublic } from '@/server/actions/intro.actions';
 
 import { IntroStudentIsland } from '@/components/islands/intro/IntroStudentIsland';
 import { IntroParentIsland } from '@/components/islands/intro/IntroParentIsland';
 import { IntroLightboxIsland } from '@/components/islands/intro/IntroLightboxIsland';
 import { IntroBlogsIsland } from '@/components/islands/intro/IntroBlogsIsland';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
-import { getIntroBlogsPublic } from '@/server/actions/intro.actions';
 
 export const metadata = {
     title: 'Introductie | Salve Mundi',
@@ -72,33 +71,8 @@ const IntroInfoParent = () => (
     </div>
 );
 
-import { connection } from 'next/server';
-import { Suspense } from 'react';
-
 export default async function IntroPage() {
-    return (
-        <PublicPageShell>
-            <h1 className="sr-only">Introductie</h1>
-            <Suspense fallback={<IntroSkeleton />}>
-                <IntroContent />
-            </Suspense>
-        </PublicPageShell>
-    );
-}
-
-function IntroSkeleton() {
-    return (
-        <div className="mx-auto max-w-app px-4 py-8 lg:py-10 animate-pulse">
-            <div className="flex flex-col lg:flex-row gap-10 max-w-7xl mx-auto w-full">
-                <div className="flex-1 h-96 bg-[var(--bg-card)] rounded-3xl" />
-                <div className="flex-1 h-96 bg-[var(--bg-card)] rounded-3xl" />
-            </div>
-        </div>
-    );
-}
-
-async function IntroContent() {
-    await connection();
+    await nextServer.connection();
     // NUCLEAR SSR: Fetch all data before flushing any part of the page content
     const session = await auth.api.getSession({ headers: await headers() });
     const isAlreadyParent = session ? await hasParentSignup() : false;
@@ -106,38 +80,42 @@ async function IntroContent() {
     const blogs = await getIntroBlogsPublic();
 
     return (
-        <section className="px-4 sm:px-6 lg:px-10 pt-8 pb-8 lg:py-10">
-            <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 max-w-7xl mx-auto w-full">
-                <div className="flex-1">
-                    {isAuthenticated ? <IntroInfoParent /> : <IntroInfoStudent />}
-                    {!isAuthenticated && <IntroLightboxIsland />}
-                </div>
+        <PublicPageShell>
+            <h1 className="sr-only">Introductie</h1>
+            
+            <section className="px-4 sm:px-6 lg:px-10 pt-8 pb-8 lg:py-10">
+                <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 max-w-7xl mx-auto w-full">
+                    <div className="flex-1">
+                        {isAuthenticated ? <IntroInfoParent /> : <IntroInfoStudent />}
+                        {!isAuthenticated && <IntroLightboxIsland />}
+                    </div>
 
-                <div className="flex-1 w-full flex flex-col justify-start">
-                    {isAuthenticated ? (
-                        isAlreadyParent ? (
-                            <div className="bg-gradient-theme rounded-2xl lg:rounded-3xl p-6 lg:p-8 shadow-lg text-center animate-in zoom-in duration-500">
-                                <h3 className="text-xl lg:text-2xl font-bold text-white mb-4">Je hebt je al aangemeld als Intro Ouder</h3>
-                                <p className="text-white/70">
-                                    Bedankt! Je inschrijving is ontvangen. Als je iets wilt aanpassen, neem contact op met de intro commissie.
-                                </p>
-                            </div>
+                    <div className="flex-1 w-full flex flex-col justify-start">
+                        {isAuthenticated ? (
+                            isAlreadyParent ? (
+                                <div className="bg-gradient-theme squircle-lg p-6 lg:p-8 shadow-lg text-center animate-in zoom-in duration-500">
+                                    <h3 className="text-xl lg:text-2xl font-bold text-white mb-4">Je hebt je al aangemeld als Intro Ouder</h3>
+                                    <p className="text-white/70">
+                                        Bedankt! Je inschrijving is ontvangen. Als je iets wilt aanpassen, neem contact op met de intro commissie.
+                                    </p>
+                                </div>
+                            ) : (
+                                <IntroParentIsland
+                                    userName={session.user.name}
+                                    userEmail={session.user.email}
+                                    initialPhone={session.user.phone_number || ''}
+                                />
+                            )
                         ) : (
-                            <IntroParentIsland
-                                userName={session.user.name}
-                                userEmail={session.user.email}
-                                initialPhone={session.user.phone_number || ''}
-                            />
-                        )
-                    ) : (
-                        <IntroStudentIsland />
-                    )}
+                            <IntroStudentIsland />
+                        )}
+                    </div>
                 </div>
-            </div>
 
-            <div className="max-w-7xl mx-auto w-full">
-                <IntroBlogsIsland blogs={blogs} />
-            </div>
-        </section>
+                <div className="max-w-7xl mx-auto w-full">
+                    <IntroBlogsIsland blogs={blogs} />
+                </div>
+            </section>
+        </PublicPageShell>
     );
 }
