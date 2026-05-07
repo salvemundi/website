@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
-import CommitteeDetailDisplay from '@/components/islands/committees/CommitteeDetailDisplay';
+import { CommitteeDetail } from '@/components/ui/committees/CommitteeDetail';
 import { getCommitteeBySlug } from '@/server/actions/committees.actions';
 import BackButton from '@/components/ui/navigation/BackButton';
 
@@ -19,15 +19,13 @@ export default async function CommitteePage(props: { params: Promise<{ slug: str
         notFound();
     }
 
-    const cleanedName = committee.name?.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim() || 'Commissie';
-
     return (
         <PublicPageShell>
             <div className="container mx-auto px-4 max-w-7xl pt-8 pb-4">
                 <BackButton href="/commissies" title="Terug naar overzicht" />
             </div>
             <main className="mx-auto max-w-app px-4 pb-24 sm:px-6 lg:px-8">
-                <CommitteeDetailDisplay committee={committee} />
+                <CommitteeDetail committee={committee} />
             </main>
         </PublicPageShell>
     );

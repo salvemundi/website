@@ -56,18 +56,59 @@ export async function getCommittees(): Promise<Committee[]> {
 }
 
 export async function getCommitteeBySlug(slug: string): Promise<Committee | null> {
-    const committees = await getCommittees();
-    
-    const found = committees.find(c => {
-        // 1. Try matching by commissie_token (most reliable)
-        if (c.commissie_token === slug) return true;
-        
-        // 2. Fallback: match by slugified name
-        const cleaned = c.name.replace(/\s*(\|\||[-–—])?\s*SALVE MUNDI\s*$/gi, '').trim();
-        return slugify(cleaned) === slug;
-    });
+    'use cache';
+    cacheLife('hours');
 
-    return found || null;
+    try {
+        const sql = `
+            SELECT 
+                c.*,
+                COALESCE(
+                    json_agg(
+                        json_build_object(
+                            'id', cm.id,
+                            'is_visible', cm.is_visible,
+                            'is_leader', cm.is_leader,
+                            'user_id', json_build_object(
+                                'id', u.id,
+                                'first_name', u.first_name,
+                                'last_name', u.last_name,
+                                'avatar', u.avatar,
+                                'title', u.title
+                            )
+                        )
+                    ) FILTER (WHERE cm.id IS NOT NULL), 
+                    '[]'
+                ) as members
+            FROM committees c
+            LEFT JOIN committee_members cm ON c.id = cm.committee_id AND cm.is_visible = true
+            LEFT JOIN directus_users u ON cm.user_id = u.id
+            WHERE c.is_visible = true 
+              AND (c.commissie_token = $1 OR LOWER(REGEXP_REPLACE(c.name, '\\s*(\\|\\||[-–—])\\s*SALVE MUNDI\\s*$', '', 'gi')) = LOWER($1))
+            GROUP BY c.id
+            LIMIT 1
+        `;
+        
+        // Note: The second part of the WHERE clause handles the "slugified name" fallback in SQL
+        // We also use a more robust regex replacement in PostgreSQL
+        
+        const { rows } = await query(sql, [slug]);
+        
+        if (!rows || rows.length === 0) {
+            // Last resort: fetch all and filter if SQL regex was too strict
+            const all = await getCommittees();
+            return all.find(c => {
+                const cleaned = c.name.replace(/\s*(\|\||[-–—])?\s*SALVE MUNDI\s*$/gi, '').trim();
+                return slugify(cleaned) === slug || c.commissie_token === slug;
+            }) || null;
+        }
+
+        const parsed = committeesSchema.element.safeParse(rows[0]);
+        return parsed.success ? parsed.data : null;
+    } catch (err: unknown) {
+        console.error('[Committees] Failed to fetch committee by slug:', err);
+        return null;
+    }
 }
 
 function slugify(text: string): string {

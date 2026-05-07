@@ -20,7 +20,7 @@ export function NavUserSection({ initialSession, canAccessAdmin }: NavUserSectio
     const isAuthenticated = !!user;
 
     return (
-        <div className="flex items-center justify-end gap-3 shrink-0 min-w-[200px] flex-nowrap">
+        <div className="flex items-center justify-end gap-2 sm:gap-3 shrink-0 flex-nowrap">
             {canAccessAdmin && (
                 <Link
                     href={ROUTES.ADMIN}

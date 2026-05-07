@@ -47,9 +47,11 @@ export function MobileNav({ user, isAuthenticated, navItems, canAccessAdmin }: O
         <>
             <button
                 type="button"
-                className="inline-flex items-center justify-center rounded-full p-2 text-[var(--text-main)] shadow-sm transition hover:bg-[var(--color-purple-100)] lg:hidden"
+                className="relative z-[210] inline-flex items-center justify-center rounded-full p-2 text-[var(--text-main)] shadow-sm transition hover:bg-[var(--color-purple-100)] lg:hidden"
                 style={{ backgroundColor: 'color-mix(in srgb, var(--bg-card) 80%, transparent)' }}
                 onClick={() => setMenuOpen(!menuOpen)}
+                aria-label={menuOpen ? "Sluit menu" : "Open menu"}
+                aria-expanded={menuOpen}
             >
                 {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
