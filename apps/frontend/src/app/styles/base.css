@@ -134,4 +134,18 @@
                 var(--bg-main);
         }
     }
+
+    /* ── Global Design System Enhancements ─────────────────────────────────── */
+    /* Automatically apply squircle (Apple-style) corners to all rounded elements
+       that have a significant radius. This ensures a premium feel site-wide.    */
+    [class*="rounded-xl"],
+    [class*="rounded-2xl"],
+    [class*="rounded-3xl"],
+    [class*="rounded-[2"],
+    [class*="rounded-[3"],
+    [class*="rounded-[var(--beheer-radius)"] {
+        @supports (corner-shape: squircle) {
+            corner-shape: squircle;
+        }
+    }
 }

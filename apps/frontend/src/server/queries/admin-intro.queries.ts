@@ -4,7 +4,9 @@ import {
     type IntroBlog, 
     type IntroPlanningItem,
     introBlogSchema,
-    introPlanningSchema
+    introPlanningSchema,
+    introSignupDbSchema,
+    introParentSignupDbSchema
 } from '@salvemundi/validations/schema/intro.zod';
 import { z } from 'zod';
 
@@ -41,7 +43,13 @@ export async function getIntroSignupsInternal() {
     try {
         const sql = 'SELECT * FROM intro_signups ORDER BY id DESC LIMIT 1000';
         const { rows } = await query(sql);
-        return rows;
+        
+        const parsed = z.array(introSignupDbSchema).safeParse(rows);
+        if (!parsed.success) {
+            console.error('[AdminIntroQueries] getIntroSignupsInternal validation failed:', parsed.error);
+            return rows; // Fallback to raw rows for now, but logged
+        }
+        return parsed.data;
     } catch (e) {
         console.error('[AdminIntroQueries] getIntroSignupsInternal failed:', e);
         throw new Error('Kon aanmeldingen niet ophalen');
@@ -52,7 +60,13 @@ export async function getIntroParentSignupsInternal() {
     try {
         const sql = 'SELECT * FROM intro_parent_signups ORDER BY id DESC LIMIT 1000';
         const { rows } = await query(sql);
-        return rows;
+
+        const parsed = z.array(introParentSignupDbSchema).safeParse(rows);
+        if (!parsed.success) {
+            console.error('[AdminIntroQueries] getIntroParentSignupsInternal validation failed:', parsed.error);
+            return rows;
+        }
+        return parsed.data;
     } catch (e) {
         console.error('[AdminIntroQueries] getIntroParentSignupsInternal failed:', e);
         throw new Error('Kon ouder-aanmeldingen niet ophalen');

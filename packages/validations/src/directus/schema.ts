@@ -242,16 +242,16 @@ export interface DbIntroBlog {
 }
 
 export interface DbIntroParentSignup {
-    id: number | null;
+    id: number;
     status?: string | null;
     user_created?: string | null;
     user_updated?: string | null;
     user_id?: string | null;
-    first_name?: string | null;
-    last_name?: string | null;
-    email?: string | null;
-    phone_number?: string | null;
-    motivation?: string | null;
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone_number: string;
+    motivation: string;
     previous_experience?: string | null;
     availability?: any | null;
     approved?: boolean | null;
@@ -299,15 +299,17 @@ export interface DbIntroPlanningSignup {
 }
 
 export interface DbIntroSignup {
-    id: number | null;
-    first_name?: string | null;
+    id: number;
+    first_name: string;
     middle_name?: string | null;
-    last_name?: string | null;
+    last_name: string;
     date_of_birth?: string | null;
-    email?: string | null;
+    email: string;
     phone_number?: string | null;
     favorite_gif?: string | null;
     created_at?: string | null;
+    status?: string | null;
+    approved?: boolean | null;
 }
 
 export interface DbJob {

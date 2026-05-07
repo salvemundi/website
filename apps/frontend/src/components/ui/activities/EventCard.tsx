@@ -39,7 +39,7 @@ export const EventCard: React.FC<EventCardProps> = ({
         <Link
             href={href}
             className={cn(
-                "flex flex-col gap-4 rounded-[2rem] bg-white/95 dark:bg-black/40 backdrop-blur-md p-6 shadow-sm border border-[var(--border-color)]/20 transition group h-full ",
+                "flex flex-col gap-4 squircle-lg bg-white/95 dark:bg-black/40 backdrop-blur-md p-6 shadow-sm border border-[var(--border-color)]/20 transition group h-full ",
                 "hover:-translate-y-1.5 hover:shadow-xl hover:border-[var(--color-purple-500)]/30"
             )}
         >

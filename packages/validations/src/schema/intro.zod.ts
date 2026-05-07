@@ -21,26 +21,37 @@ export const introParentSignupFormSchema = z.object({
 
 export type IntroParentSignupForm = z.infer<typeof introParentSignupFormSchema>;
 
-// --- Admin Schemas ---
+// --- Admin Schemas (Direct DB Mapping) ---
 
-export const introSignupSchema = introSignupFormSchema.extend({
+export const introSignupDbSchema = z.object({
     id: z.number(),
-    created_at: z.string().or(z.date()).optional(),
+    first_name: z.string(),
+    middle_name: z.string().nullable().optional(),
+    last_name: z.string(),
+    date_of_birth: z.string().nullable().optional(),
+    email: z.string().email(),
+    phone_number: z.string().nullable().optional(),
+    favorite_gif: z.string().nullable().optional(),
+    created_at: z.string().or(z.date()).nullable().optional(),
+    status: z.string().nullable().optional().default('registered'),
+    approved: z.boolean().nullable().optional().default(false),
 });
 
-export type IntroSignup = z.infer<typeof introSignupSchema>;
+export type IntroSignupDb = z.infer<typeof introSignupDbSchema>;
 
-export const introParentSignupSchema = z.object({
-    id: z.number().optional(),
-    first_name: z.string().optional(),
-    last_name: z.string().optional(),
-    email: z.string().email().optional(),
-    telefoonnummer: z.string().optional(),
-    motivation: z.string().optional(),
-    created_at: z.string().or(z.date()).optional(),
+export const introParentSignupDbSchema = z.object({
+    id: z.number(),
+    status: z.string().nullable().optional(),
+    first_name: z.string(),
+    last_name: z.string(),
+    email: z.string().email(),
+    phone_number: z.string(),
+    motivation: z.string(),
+    approved: z.boolean().nullable().optional(),
+    created_at: z.string().or(z.date()).nullable().optional(),
 });
 
-export type IntroParentSignup = z.infer<typeof introParentSignupSchema>;
+export type IntroParentSignupDb = z.infer<typeof introParentSignupDbSchema>;
 
 export const introBlogSchema = z.object({
     id: z.number().optional(),

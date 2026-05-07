@@ -24,7 +24,7 @@ import {
     upsertIntroPlanning,
     deleteIntroPlanning,
 } from '@/server/actions/admin-intro.actions';
-import { type IntroSignupRow, type IntroParentRow } from './intro/intro-types';
+import { type DbIntroSignup as IntroSignupRow, type DbIntroParentSignup as IntroParentRow } from '@salvemundi/validations/directus/schema';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';

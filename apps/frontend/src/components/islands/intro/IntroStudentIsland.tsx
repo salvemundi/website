@@ -62,7 +62,7 @@ export const IntroStudentIsland = () => {
 
     if (submitted) {
         return (
-            <div className="bg-gradient-theme rounded-2xl lg:rounded-3xl p-6 lg:p-8 text-center shadow-lg">
+            <div className="bg-gradient-theme squircle-lg p-6 lg:p-8 text-center shadow-lg">
                 <CheckCircle2 className="w-12 h-12 lg:w-16 lg:h-16 text-white mx-auto mb-4" />
                 <h2 className="text-2xl lg:text-3xl font-bold text-theme-purple-lighter mb-4">Bedankt!</h2>
                 <p className="text-theme-white text-base lg:text-lg">We hebben je inschrijving ontvangen.</p>

@@ -3,7 +3,8 @@
 import React from 'react';
 import { ArrowRight, Newspaper } from 'lucide-react';
 import Link from 'next/link';
-import { IntroBlogGrid, type Blog } from './IntroBlogGrid';
+import { IntroBlogGrid } from './IntroBlogGrid';
+import type { IntroBlog as Blog } from '@salvemundi/validations/schema/intro.zod';
 
 interface Props {
     blogs: Blog[];
@@ -18,15 +19,15 @@ export function IntroBlogsIsland({ blogs }: Props) {
                 <div className="space-y-2">
                     <div className="flex items-center gap-2 text-[var(--beheer-accent)]">
                         <Newspaper className="h-5 w-5" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em]">Nieuws & Updates</span>
+                        <span className="text-[11px] font-semibold tracking-wide">Nieuws & Updates</span>
                     </div>
-                    <h2 className="text-3xl lg:text-4xl font-black uppercase tracking-tight text-theme dark:text-white">
-                        Laatste Nieuws
+                    <h2 className="text-3xl lg:text-4xl font-semibold tracking-tight text-theme dark:text-white">
+                        Laatste nieuws
                     </h2>
                 </div>
                 <Link 
                     href="/intro/blogs" 
-                    className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] hover:text-[var(--beheer-accent)] transition-colors group"
+                    className="flex items-center gap-2 text-[11px] font-semibold text-[var(--beheer-text-muted)] hover:text-[var(--beheer-accent)] transition-colors group"
                 >
                     Alle berichten bekijken
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />

@@ -52,11 +52,11 @@ export const COUPON_FIELDS = [
 ] as const;
 
 export const INTRO_SIGNUP_FIELDS = [
-    'id', 'first_name', 'last_name', 'email', 'phone_number', 'date_of_birth', 'favorite_gif', 'date_created', 'status', 'approved'
+    'id', 'first_name', 'last_name', 'email', 'phone_number', 'date_of_birth', 'favorite_gif', 'created_at', 'status', 'approved'
 ] as const;
 
 export const INTRO_PARENT_SIGNUP_FIELDS = [
-    'id', 'first_name', 'last_name', 'email', 'phone_number', 'motivation', 'date_created', 'status', 'approved'
+    'id', 'first_name', 'last_name', 'email', 'phone_number', 'motivation', 'created_at', 'status', 'approved'
 ] as const;
 
 export const INTRO_BLOG_FIELDS = [

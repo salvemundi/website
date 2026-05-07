@@ -43,7 +43,7 @@ export const CommitteeCard: React.FC<CommitteeCardProps> = ({
         <div className={`${isBestuur ? 'md:col-span-2' : ''}`}>
             <NextLink
                 href={`/commissies/${slug}`}
-                className={`group flex h-full flex-col overflow-hidden rounded-[2rem] bg-[var(--bg-card)] dark:border dark:border-white/10 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl 
+                className={`group flex h-full flex-col overflow-hidden squircle-lg bg-[var(--bg-card)] dark:border dark:border-white/10 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl 
                     ${isBestuur ? 'ring-4 ring-[var(--color-purple-500)]/20 shadow-purple-500/10' : ''}`}
             >
                 {/* Image Header */}

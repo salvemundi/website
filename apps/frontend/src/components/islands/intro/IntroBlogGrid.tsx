@@ -4,17 +4,10 @@ import React from 'react';
 import { Calendar, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
-export interface Blog {
-    id: number;
-    title: string;
-    slug: string;
-    excerpt: string;
-    blog_type: string;
-    created_at?: string;
-}
+import type { IntroBlog } from '@salvemundi/validations/schema/intro.zod';
 
 interface Props {
-    blogs: Blog[];
+    blogs: IntroBlog[];
 }
 
 const typeConfig: Record<string, { label: string; color: string }> = {
@@ -43,12 +36,12 @@ export function IntroBlogGrid({ blogs }: Props) {
                     <Link 
                         key={blog.id} 
                         href={`/intro/blogs/${blog.slug || blog.id}`}
-                        className="group relative flex flex-col bg-white dark:bg-white/5 rounded-3xl border border-[var(--beheer-border)]/40 hover:border-[var(--beheer-accent)]/50 transition-all duration-500 shadow-sm hover:shadow-2xl hover:-translate-y-2 overflow-hidden"
+                        className="group relative flex flex-col bg-white dark:bg-white/5 squircle-lg border border-[var(--beheer-border)]/40 hover:border-[var(--beheer-accent)]/50 transition-all duration-500 shadow-sm hover:shadow-2xl hover:-translate-y-2 overflow-hidden"
                         style={{ animationDelay: `${idx * 100}ms` }}
                     >
                         <div className="p-8 flex flex-col h-full">
                             <div className="flex items-center justify-between mb-6">
-                                <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-${config.color}-500/10 text-${config.color}-500 border border-${config.color}-500/20`}>
+                                <span className={`text-[10px] font-semibold px-3 py-1 rounded-full bg-${config.color}-500/10 text-${config.color}-500 border border-${config.color}-500/20`}>
                                     {config.label}
                                 </span>
                                 {date && (
@@ -61,7 +54,7 @@ export function IntroBlogGrid({ blogs }: Props) {
                                 )}
                             </div>
 
-                            <h3 className="text-xl font-black uppercase tracking-tight text-theme dark:text-white mb-4 line-clamp-2 group-hover:text-[var(--beheer-accent)] transition-colors">
+                            <h3 className="text-xl font-semibold tracking-tight text-theme dark:text-white mb-4 line-clamp-2 group-hover:text-[var(--beheer-accent)] transition-colors">
                                 {blog.title}
                             </h3>
 
@@ -70,7 +63,7 @@ export function IntroBlogGrid({ blogs }: Props) {
                             </p>
 
                             <div className="mt-auto pt-6 border-t border-[var(--beheer-border)]/10 flex items-center justify-between">
-                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--beheer-accent)]">Lees meer</span>
+                                <span className="text-[10px] font-semibold text-[var(--beheer-accent)]">Lees meer</span>
                                 <div className="h-8 w-8 rounded-full bg-[var(--beheer-accent)]/5 flex items-center justify-center group-hover:bg-[var(--beheer-accent)] transition-colors">
                                     <ArrowRight className="h-4 w-4 text-[var(--beheer-accent)] group-hover:text-white transition-colors" />
                                 </div>

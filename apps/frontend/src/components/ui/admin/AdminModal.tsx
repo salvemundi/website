@@ -53,7 +53,7 @@ export default function AdminModal({
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-500">
             <div 
-                className={`bg-[var(--beheer-card-bg)]/90 backdrop-blur-xl w-full ${maxWidthClasses[maxWidth]} rounded-[2rem] shadow-[0_40px_100px_rgba(0,0,0,0.5)] overflow-hidden border border-[var(--beheer-border)]/50 flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-500`}
+                className={`bg-[var(--beheer-card-bg)]/90 backdrop-blur-xl w-full ${maxWidthClasses[maxWidth]} squircle-lg shadow-[0_40px_100px_rgba(0,0,0,0.5)] overflow-hidden border border-[var(--beheer-border)]/50 flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-500`}
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
@@ -70,7 +70,7 @@ export default function AdminModal({
                     </div>
                     <button 
                         onClick={onClose} 
-                        className="p-4 bg-[var(--beheer-card-soft)] hover:bg-[var(--beheer-card-soft)]/80 text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] transition-all rounded-2xl active:scale-90 group"
+                        className="p-4 bg-[var(--beheer-card-soft)] hover:bg-[var(--beheer-card-soft)]/80 text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] transition-all squircle active:scale-90 group"
                     >
                         <X className="h-6 w-6" />
                     </button>
