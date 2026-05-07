@@ -81,7 +81,7 @@ export default function StickerMap({
                 
                 if (filterUser) {
                     const u = sticker.user_created;
-                    const searchText = typeof u === 'object' ? `${u.first_name || ''} ${u.last_name || ''} ${u.email || ''}`.toLowerCase() : '';
+                    const searchText = (u && typeof u === 'object') ? `${u.first_name || ''} ${u.last_name || ''} ${u.email || ''}`.toLowerCase() : '';
                     if (!searchText.includes(filterUser.toLowerCase())) return false;
                 }
                 return true;
@@ -116,9 +116,9 @@ export default function StickerMap({
 
                 {filteredStickers.map((sticker) => {
                     const userObj = sticker.user_created;
-                    const ownerId = typeof userObj === 'object' ? userObj.id : userObj;
+                    const ownerId = (userObj && typeof userObj === 'object') ? userObj.id : userObj;
                     const isMine = Boolean(user && ownerId && String(user.id) === String(ownerId));
-                    const avatarUrl = (typeof userObj === 'object' && userObj?.avatar) 
+                    const avatarUrl = (userObj && typeof userObj === 'object' && userObj?.avatar) 
                         ? `${ASSET_PROXY_URL}/${userObj.avatar}?width=100&height=100&fit=cover` 
                         : '/img/Logo.png';
 
@@ -173,7 +173,7 @@ export default function StickerMap({
 
                             <div className="flex gap-4 items-center mb-4 pr-6">
                                 <img 
-                                    src={typeof popupInfo.user_created === 'object' && popupInfo.user_created.avatar 
+                                    src={popupInfo.user_created && typeof popupInfo.user_created === 'object' && popupInfo.user_created.avatar 
                                         ? `${ASSET_PROXY_URL}/${popupInfo.user_created.avatar}?width=80&height=80&fit=cover` 
                                         : '/img/Logo.png'} 
                                     alt="avatar" 
@@ -222,7 +222,7 @@ export default function StickerMap({
                                 <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest" suppressHydrationWarning>
                                     Toegevoegd op {formatDate(popupInfo.date_created)}
                                 </p>
-                                {typeof popupInfo.user_created === 'object' && (
+                                {popupInfo.user_created && typeof popupInfo.user_created === 'object' && (
                                     <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">
                                         Door: {popupInfo.user_created.first_name} {popupInfo.user_created.last_name}
                                     </p>
