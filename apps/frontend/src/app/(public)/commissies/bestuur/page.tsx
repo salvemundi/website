@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import { getCommitteeBySlug } from '@/server/actions/committees.actions';
-import { BoardDetail } from '@/components/ui/committees/BoardDetail';
+import { CommitteeDetail } from '@/components/ui/committees/CommitteeDetail';
 import BackButton from '@/components/ui/navigation/BackButton';
 import { connection } from 'next/server';
 
@@ -19,15 +19,13 @@ export default async function BestuurPage() {
         notFound();
     }
 
-    const cleanedName = committee.name?.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim() || 'Bestuur';
-
     return (
         <PublicPageShell>
             <div className="container mx-auto px-4 max-w-7xl pt-8 pb-4">
                 <BackButton href="/commissies" title="Terug naar overzicht" />
             </div>
             <main className="mx-auto max-w-app px-4 pb-24 sm:px-6 lg:px-8">
-                <BoardDetail committee={committee} />
+                <CommitteeDetail committee={committee} />
             </main>
         </PublicPageShell>
     );

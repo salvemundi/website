@@ -11,10 +11,20 @@ import { getImageUrl } from '@/lib/utils/image-utils';
 import { authClient } from '@/lib/auth';
 import { IconMap, type IconName } from '@/lib/utils/icons';
 
+interface User {
+    id: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+    avatar?: string | null;
+    isAdmin?: boolean;
+    isICT?: boolean;
+}
+
 interface MobileMenuProps {
     isOpen: boolean;
     onClose: () => void;
-    user: any;
+    user: User | null;
     isAuthenticated: boolean;
     navItems: { name: string; href: string; icon: IconName }[];
     canAccessAdmin: boolean;
@@ -64,7 +74,7 @@ export default function MobileMenu({
                         <span className="inline-flex relative h-10 w-10 items-center justify-center rounded-full bg-[var(--bg-card)] shadow-sm overflow-hidden">
                             {mounted && (user?.avatar || user?.image) ? (
                                 <Image
-                                    src={(user.avatar ? getImageUrl(user.avatar) : '') as string}
+                                    src={(user.avatar ? getImageUrl(user.avatar) : (user.image || '')) as string}
                                     alt={user.name || 'Profiel'}
                                     fill
                                     className="object-cover"
@@ -122,23 +132,29 @@ export default function MobileMenu({
                         </Link>
                     )}
 
-                    {navItems.map((link) => {
-                        const Icon = IconMap[link.icon];
-                        return (
-                            <Link
-                                key={link.href}
-                                href={link.href}
-                                onClick={onClose}
-                                className="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold text-[var(--text-main)] shadow-sm bg-[color-mix(in_srgb,var(--bg-card)_70%,transparent)] active:scale-[0.98] transition-all"
-                            >
-                                <span className="flex items-center gap-3 whitespace-nowrap">
-                                    {Icon && <Icon className="h-5 w-5 text-[var(--color-purple-500)]" aria-hidden="true" />}
-                                    <span>{link.name}</span>
-                                </span>
-                                <span aria-hidden="true" className="text-[var(--text-muted)]">›</span>
-                            </Link>
-                        );
-                    })}
+                    {navItems
+                        .filter(item => {
+                            // Verwijder redundant lidmaatschap link als we de "Word lid" knop tonen
+                            if (!isAuthenticated && item.href === ROUTES.MEMBERSHIP) return false;
+                            return true;
+                        })
+                        .map((link) => {
+                            const Icon = IconMap[link.icon];
+                            return (
+                                <Link
+                                    key={link.href}
+                                    href={link.href}
+                                    onClick={onClose}
+                                    className="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold text-[var(--text-main)] shadow-sm bg-[color-mix(in_srgb,var(--bg-card)_70%,transparent)] active:scale-[0.98] transition-all"
+                                >
+                                    <span className="flex items-center gap-3 whitespace-nowrap">
+                                        {Icon && <Icon className="h-5 w-5 text-[var(--color-purple-500)]" aria-hidden="true" />}
+                                        <span>{link.name}</span>
+                                    </span>
+                                    <span aria-hidden="true" className="text-[var(--text-muted)]">›</span>
+                                </Link>
+                            );
+                        })}
                 </div>
 
                 {/* Word-lid-knop (niet ingelogd) */}

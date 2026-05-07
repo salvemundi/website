@@ -47,7 +47,7 @@ export async function HeroIsland({ banners = [], activiteiten = [], initialSessi
     return (
         <section
             id="home"
-            className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full h-[480px] sm:h-[520px] md:h-[580px] lg:h-[640px] py-4 sm:py-8 lg:py-12 transition-colors duration-300"
+            className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full min-h-[480px] sm:h-[520px] md:h-[580px] lg:h-[640px] py-4 sm:py-8 lg:py-12 transition-colors duration-300"
         >
             <div className="mx-auto max-w-app px-4 sm:px-6 lg:px-8">
                 <div className="relative w-full px-0">

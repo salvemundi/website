@@ -51,12 +51,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
                 <div className="grid h-full grid-cols-[auto_1fr_auto] items-center gap-4 lg:gap-8">
                     {/* Logo Section */}
                     <div className="flex items-center gap-3">
-                        <MobileNav 
-                            user={user}
-                            isAuthenticated={isAuthenticated}
-                            navItems={navItems}
-                            canAccessAdmin={canAccessAdmin}
-                        />
+
 
                         <Link href="/" className="group flex items-center gap-3 shrink-0 transition-transform duration-300 hover:scale-[1.03] active:scale-95">
                             <div className="relative w-12 h-12 shrink-0">
@@ -97,8 +92,13 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
                         />
                         
                         <ThemeToggle />
-                        
-                        {/* Mobile trigger is inside MobileNav island */}
+
+                        <MobileNav 
+                            user={user}
+                            isAuthenticated={isAuthenticated}
+                            navItems={navItems}
+                            canAccessAdmin={canAccessAdmin}
+                        />
                     </div>
                 </div>
             </div>
