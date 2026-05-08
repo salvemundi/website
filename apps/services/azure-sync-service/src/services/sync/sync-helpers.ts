@@ -6,6 +6,11 @@ export function parseAzureDate(dateStr?: string): string | null {
     return `${dateStr.substring(0, 4)}-${dateStr.substring(4, 6)}-${dateStr.substring(6, 8)}`;
 }
 
+export function sanitizeAzureDate(date?: string | null): string | null {
+    if (!date || /^0001/.test(date) || date.includes('0001-01-01')) return null;
+    return date;
+}
+
 const EXCLUDED_EMAILS = [
     'youtube@salvemundi.nl',
     'github@salvemundi.nl',

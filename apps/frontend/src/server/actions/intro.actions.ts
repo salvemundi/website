@@ -16,6 +16,7 @@ import { headers } from 'next/headers';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems, createItem, updateItem } from '@directus/sdk';
 import { query } from '@/lib/database';
+import { insertSystemLogInternal } from '@/server/queries/audit.queries';
 import { cacheLife, revalidateTag, revalidatePath, unstable_noStore as noStore } from 'next/cache';
 import { normalizeDate } from '@/lib/utils/date-utils';
 
@@ -83,9 +84,15 @@ async function checkParentSignupInternal(): Promise<{ exists: boolean; record?: 
         );
 
         if (emailSignups.length > 0) {
-            const record = emailSignups[0] as any;
-            console.warn(`[hasParentSignup] ID Mismatch! Email ${session.user.email} matched ID ${record.user_id}, but session is ${session.user.id}.`);
-            return { exists: true, record };
+            await insertSystemLogInternal({
+                type: 'system_intro_id_mismatch',
+                status: 'WARNING',
+                payload: { 
+                    context: 'Parent Signup existence check detected email-only match (ID mismatch)',
+                    session_id_exists: !!session.user.id
+                }
+            });
+            return { exists: true, record: emailSignups[0] as any };
         }
 
         return { exists: false };
@@ -198,8 +205,15 @@ export async function submitIntroParentSignup(data: IntroParentSignupForm): Prom
     if (check.exists && check.record) {
         // If it matched by email but not ID, fix the integrity by updating the ID
         if (check.record.user_id !== session.user.id) {
-            console.log(`[IntroParentSignup] Fixing Data Integrity: Linking email ${session.user.email} to current User ID ${session.user.id}`);
             try {
+                await insertSystemLogInternal({
+                    type: 'system_intro_id_healed',
+                    status: 'SUCCESS',
+                    payload: { 
+                        context: 'Automatically linked legacy/email-only signup to current session ID',
+                        target_table: 'intro_parent_signups'
+                    }
+                });
                 await getSystemDirectus().request(updateItem('intro_parent_signups', check.record.id, {
                     user_id: session.user.id
                 }));

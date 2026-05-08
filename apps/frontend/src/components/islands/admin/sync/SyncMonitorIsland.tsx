@@ -27,14 +27,14 @@ function FilterTab({ active, label, count, onClick, color = 'indigo' }: FilterTa
     return (
         <button
             onClick={onClick}
-            className={`w-full px-4 py-3 rounded-2xl text-xs font-semibold transition-all whitespace-nowrap flex items-center justify-between border ${
+            className={`w-full px-3 py-2 rounded-xl text-[11px] font-semibold transition-all whitespace-nowrap flex items-center justify-between border ${
                 active 
-                    ? `${colorVariants[color]} border-transparent` 
-                    : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] border-[var(--beheer-border)]/50 hover:border-[var(--beheer-accent)]/50 hover:text-[var(--beheer-text)]'
+                    ? `${colorVariants[color]} border-transparent shadow-sm` 
+                    : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] border-[var(--beheer-border)]/50 hover:border-[var(--beheer-accent)]/30 hover:text-[var(--beheer-text)]'
             }`}
         >
             <span>{label}</span>
-            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${active ? 'bg-white/20' : 'bg-[var(--beheer-border)]/30'}`}>
+            <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-bold ${active ? 'bg-white/20' : 'bg-[var(--beheer-border)]/30'}`}>
                 {count}
             </span>
         </button>
@@ -61,15 +61,15 @@ export default function SyncMonitorIsland() {
     const progress = total > 0 ? (processed / total) * 100 : 0;
 
     return (
-        <div className="bg-[var(--beheer-card-bg)] p-8 rounded-[2rem] border border-[var(--beheer-border)] shadow-sm animate-in fade-in duration-1000">
+        <div className="bg-[var(--beheer-card-bg)] p-6 rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] shadow-sm">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
                 <div className="flex items-center gap-4">
-                    <div className="p-3 bg-[var(--theme-info)]/10 rounded-2xl text-[var(--theme-info)]">
-                        <Activity className={`h-6 w-6 ${isRunning ? 'animate-pulse' : ''}`} />
+                    <div className="p-2.5 bg-[var(--theme-info)]/10 rounded-xl text-[var(--theme-info)]">
+                        <Activity className={`h-5 w-5 ${isRunning ? 'animate-pulse' : ''}`} />
                     </div>
                     <div>
-                        <h3 className="text-xl font-semibold text-[var(--beheer-text)]  tracking-tight">Sync Monitor</h3>
-                        <p className="text-xs font-semibold text-[var(--beheer-text-muted)]  tracking-widest mt-1 uppercase">
+                        <h3 className="text-lg font-semibold text-[var(--beheer-text)] tracking-tight">Sync Monitor</h3>
+                        <p className="text-[11px] font-semibold text-[var(--beheer-text-muted)] mt-1">
                             {lastUpdated && mounted ? `Laatste update: ${lastUpdated.toLocaleTimeString()}` : 'Real-time status & logs'}
                         </p>
                     </div>
@@ -77,14 +77,14 @@ export default function SyncMonitorIsland() {
             </div>
             
             {status?.fatalError && (
-                <div className="mb-8 p-6 bg-[var(--theme-error)]/5 border border-[var(--theme-error)]/10 rounded-3xl animate-in slide-in-from-top duration-500">
+                <div className="mb-8 p-5 bg-[var(--theme-error)]/5 border border-[var(--theme-error)]/10 rounded-2xl">
                     <div className="flex items-start gap-4">
-                        <div className="p-2 bg-[var(--theme-error)]/10 rounded-xl text-[var(--theme-error)]">
+                        <div className="p-2 bg-[var(--theme-error)]/10 rounded-lg text-[var(--theme-error)]">
                             <AlertCircle className="h-5 w-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-semibold text-[var(--theme-error)]  tracking-tight">Kritieke Fout Gedetecteerd</h4>
-                            <p className="text-xs font-semibold text-[var(--beheer-text)]/80  tracking-widest mt-1">
+                            <h4 className="text-sm font-semibold text-[var(--theme-error)] tracking-tight">Kritieke Fout Gedetecteerd</h4>
+                            <p className="text-[11px] font-semibold text-[var(--beheer-text)]/80 mt-1">
                                 {status.fatalError.message}
                             </p>
                             
@@ -92,13 +92,13 @@ export default function SyncMonitorIsland() {
                                 <div className="mt-4">
                                     <button 
                                         onClick={() => setShowStack(!showStack)}
-                                        className="text-xs font-semibold  tracking-widest text-[var(--theme-error)] hover:underline transition-colors flex items-center gap-1 uppercase"
+                                        className="text-[11px] font-semibold text-[var(--theme-error)] hover:underline transition-colors flex items-center gap-1"
                                     >
                                         {showStack ? 'Verberg details' : 'Bekijk technische details (Stack Trace)'}
                                     </button>
                                     
                                     {showStack && (
-                                        <div className="mt-3 p-4 bg-black/5 dark:bg-white/5 rounded-2xl border border-[var(--beheer-border)] overflow-x-auto custom-scrollbar">
+                                        <div className="mt-3 p-4 bg-black/5 dark:bg-white/5 rounded-xl border border-[var(--beheer-border)] overflow-x-auto custom-scrollbar">
                                             <pre className="text-[10px] text-[var(--beheer-text-muted)] font-mono leading-relaxed">
                                                 {status.fatalError.stack}
                                             </pre>
@@ -111,14 +111,14 @@ export default function SyncMonitorIsland() {
                 </div>
             )}
 
-            <div className="space-y-10">
+            <div className="space-y-8">
                 {/* PROGRESS BAR */}
                 <div>
-                    <div className="flex justify-between items-end mb-4">
-                        <span className="text-xs font-semibold  tracking-widest text-[var(--beheer-text-muted)] uppercase">Voortgang ({processed} / {total})</span>
-                        <span className="text-xs font-semibold text-[var(--beheer-accent)]">{Math.round(progress || 0)}%</span>
+                    <div className="flex justify-between items-end mb-3">
+                        <span className="text-[11px] font-semibold text-[var(--beheer-text-muted)]">Voortgang ({processed} / {total})</span>
+                        <span className="text-[11px] font-semibold text-[var(--beheer-accent)]">{Math.round(progress || 0)}%</span>
                     </div>
-                    <div className="h-4 w-full bg-[var(--beheer-card-soft)] rounded-full overflow-hidden border border-[var(--beheer-border)]/20 shadow-inner">
+                    <div className="h-3 w-full bg-[var(--beheer-card-soft)] rounded-full overflow-hidden border border-[var(--beheer-border)]/20 shadow-inner">
                         <div 
                             className="h-full bg-gradient-to-r from-[var(--beheer-accent)] to-[var(--theme-info)] transition-all duration-500 relative"
                             style={{ width: `${progress}%` }}

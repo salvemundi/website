@@ -6,7 +6,6 @@ import { headers } from 'next/headers';
 import { getSyncStatusAction } from '@/server/actions/azure-sync/sync-monitoring.actions';
 
 // Modular Islands
-import SyncStatsIsland from '@/components/islands/admin/sync/SyncStatsIsland';
 import SyncControlIsland from '@/components/islands/admin/sync/SyncControlIsland';
 import SyncMonitorIsland from '@/components/islands/admin/sync/SyncMonitorIsland';
 import { SyncProvider } from '@/components/islands/admin/sync/SyncContext';
@@ -44,18 +43,46 @@ export default async function AzureSyncPage() {
         ? statusData 
         : null;
 
+    const issuesCount = (initialStatus?.errorCount || 0) + (initialStatus?.warningCount || 0) + (initialStatus?.missingDataCount || 0);
+    const updatedCount = Math.max(0, (initialStatus?.successCount || 0) - (initialStatus?.createdCount || 0)) + (initialStatus?.movedExpiredCount || 0);
+
     return (
         <AdminPageShell
             title="Azure Sync Monitor"
             subtitle="Beheer de synchronisatie tussen Salve Mundi en Azure AD / Microsoft 365."
             backHref="/beheer"
+            actions={
+                <div className="flex items-center gap-4 bg-[var(--beheer-card-soft)] px-4 py-2 rounded-2xl border border-[var(--beheer-border)]/50 shadow-sm">
+                    <div className="flex flex-col items-center px-2">
+                        <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1">Status</span>
+                        <span className={`text-sm font-bold leading-none ${initialStatus?.active ? 'text-[var(--beheer-active)]' : 'text-[var(--beheer-text)]'}`}>
+                            {initialStatus?.status || 'Idle'}
+                        </span>
+                    </div>
+                    <div className="w-px h-6 bg-[var(--beheer-border)]/20" />
+                    <div className="flex flex-col items-center px-2">
+                        <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1">Opgeslagen</span>
+                        <span className="text-sm font-bold text-[var(--beheer-text)] leading-none">{updatedCount}</span>
+                    </div>
+                    <div className="w-px h-6 bg-[var(--beheer-border)]/20" />
+                    <div className="flex flex-col items-center px-2">
+                        <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1">Issues</span>
+                        <span className={`text-sm font-bold leading-none ${issuesCount > 0 ? 'text-[var(--beheer-inactive)]' : 'text-[var(--beheer-text)]'}`}>
+                            {issuesCount}
+                        </span>
+                    </div>
+                    <div className="w-px h-6 bg-[var(--beheer-border)]/20" />
+                    <div className="flex flex-col items-center px-2">
+                        <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1">Nieuw</span>
+                        <span className="text-sm font-bold text-[var(--beheer-text)] leading-none">{initialStatus?.createdCount || 0}</span>
+                    </div>
+                </div>
+            }
         >
             <SyncProvider initialStatus={initialStatus}>
-                <div className="container mx-auto px-4 py-8 max-w-7xl relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-                    <div className="flex flex-col gap-10">
-                        <SyncStatsIsland />
-                        
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+                <div className="container mx-auto px-4 py-8 max-w-7xl relative z-10">
+                    <div className="flex flex-col gap-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                             <div className="lg:col-span-4 lg:sticky lg:top-8">
                                 <SyncControlIsland />
                             </div>

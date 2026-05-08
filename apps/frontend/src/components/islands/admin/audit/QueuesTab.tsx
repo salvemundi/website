@@ -18,15 +18,15 @@ export default function QueuesTab({ queueData }: QueuesTabProps) {
                     <div key={qKey} className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] shadow-xl overflow-hidden">
                         <div className="p-6 border-b border-[var(--beheer-border)]/50 flex justify-between items-center bg-[var(--beheer-card-soft)]/30">
                             <div>
-                                <h3 className="text-sm font-black text-[var(--beheer-text)] uppercase tracking-tight">
+                                <h3 className="text-sm font-semibold text-[var(--beheer-text)] tracking-tight">
                                     {qKey === 'new_users' ? 'Nieuwe Leden Wachtrij' : 'Sync Wachtrij'}
                                 </h3>
-                                <p className="text-[10px] font-bold text-[var(--beheer-text-muted)] uppercase tracking-widest mt-1">
+                                <p className="text-xs font-medium text-[var(--beheer-text-muted)] mt-1 opacity-50">
                                     Redis: {qKey === 'new_users' ? 'v7:queue:provision:new_user' : 'v7:queue:provision:sync_existing'}
                                 </p>
                             </div>
                             <div className="flex items-center gap-3">
-                                <span className="px-3 py-1 bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] rounded-full text-xs font-black">
+                                <span className="px-3 py-1 bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] rounded-full text-sm font-semibold">
                                     {q?.count || 0}
                                 </span>
                             </div>
@@ -35,12 +35,12 @@ export default function QueuesTab({ queueData }: QueuesTabProps) {
                             {!q?.samples || q.samples.length === 0 ? (
                                 <div className="p-12 text-center">
                                     <CheckCircle className="h-10 w-10 text-[var(--beheer-active)] mx-auto mb-4 opacity-20" />
-                                    <p className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Geen actieve taken</p>
+                                    <p className="text-xs font-medium text-[var(--beheer-text-muted)]">Geen actieve taken</p>
                                 </div>
                             ) : (
-                                <table className="w-full text-left text-[10px]">
+                                <table className="w-full text-left text-xs">
                                     <thead>
-                                        <tr className="bg-[var(--beheer-card-soft)]/50 border-b border-[var(--beheer-border)]/50 font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">
+                                        <tr className="bg-[var(--beheer-card-soft)]/50 border-b border-[var(--beheer-border)]/50 font-semibold text-[var(--beheer-text-muted)] tracking-tight">
                                             <th className="p-3">Target</th>
                                             <th className="p-3 text-center">Retries</th>
                                             <th className="p-3 text-right">Status</th>
@@ -52,12 +52,12 @@ export default function QueuesTab({ queueData }: QueuesTabProps) {
                                                 <td className="p-3 font-bold text-[var(--beheer-text)]">
                                                     {task.email || task.userId || 'Unknown'}
                                                 </td>
-                                                <td className="p-3 text-center font-black">
+                                                <td className="p-3 text-center font-semibold">
                                                     {task.retries} / {task.maxRetries}
                                                 </td>
                                                 <td className="p-3 text-right">
-                                                    <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20 uppercase font-black text-[8px]">
-                                                        Pending
+                                                    <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20 font-semibold text-[10px]">
+                                                        Wachtend
                                                     </span>
                                                 </td>
                                             </tr>

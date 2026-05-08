@@ -13,10 +13,39 @@ interface LogsTabProps {
 }
 
 export default function LogsTab({ logs, onRefresh, title = "Activiteitslogboek", actions }: LogsTabProps) {
+    const [statusFilter, setStatusFilter] = React.useState<'ALL' | 'SUCCESS' | 'ERROR' | 'WARNING'>('ALL');
+
+    const filteredLogs = logs.filter(log => {
+        if (statusFilter === 'ALL') return true;
+        return log.status === statusFilter;
+    });
+
     return (
         <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] shadow-xl overflow-hidden">
-            <div className="p-6 border-b border-[var(--beheer-border)]/50 flex justify-between items-center">
-                <h3 className="text-lg font-black text-[var(--beheer-text)] uppercase tracking-tight">{title}</h3>
+            <div className="p-6 border-b border-[var(--beheer-border)]/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h3 className="text-lg font-semibold text-[var(--beheer-text)] tracking-tight">{title}</h3>
+                    <div className="flex items-center gap-2 mt-2">
+                        {[
+                            { id: 'ALL', label: 'Alles' },
+                            { id: 'SUCCESS', label: 'Succes' },
+                            { id: 'ERROR', label: 'Fouten' },
+                            { id: 'WARNING', label: 'Waarschuwingen' }
+                        ].map(f => (
+                            <button
+                                key={f.id}
+                                onClick={() => setStatusFilter(f.id as typeof statusFilter)}
+                                className={`px-3 py-1 rounded-lg text-[11px] font-semibold transition-all border ${
+                                    statusFilter === f.id 
+                                        ? 'bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] border-[var(--beheer-accent)]/20' 
+                                        : 'text-[var(--beheer-text-muted)] border-transparent hover:bg-[var(--beheer-card-soft)]'
+                                }`}
+                            >
+                                {f.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
                 <div className="flex items-center gap-2">
                     {actions}
                     <button 
@@ -30,7 +59,7 @@ export default function LogsTab({ logs, onRefresh, title = "Activiteitslogboek",
             <div className="overflow-x-auto">
                 <table className="w-full text-left">
                     <thead>
-                        <tr className="bg-[var(--beheer-card-soft)]/50 border-b border-[var(--beheer-border)]/50 text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">
+                        <tr className="bg-[var(--beheer-card-soft)]/50 border-b border-[var(--beheer-border)]/50 text-xs font-semibold text-[var(--beheer-text-muted)] tracking-tight">
                             <th className="p-4">Datum</th>
                             <th className="p-4">Type</th>
                             <th className="p-4">Admin</th>
@@ -39,21 +68,21 @@ export default function LogsTab({ logs, onRefresh, title = "Activiteitslogboek",
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-[var(--beheer-border)]/10">
-                        {logs.map((log) => (
+                        {filteredLogs.map((log) => (
                             <tr key={log.id} className="hover:bg-[var(--beheer-accent)]/[0.02] transition-colors group">
-                                <td className="p-4 text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest whitespace-nowrap">
+                                <td className="p-4 text-xs font-medium text-[var(--beheer-text-muted)] tracking-tight whitespace-nowrap">
                                     {formatDate(log.created_at, true)}
                                 </td>
                                 <td className="p-4">
-                                    <span className="font-black text-[var(--beheer-text)] uppercase tracking-tight text-xs">
+                                    <span className="font-semibold text-[var(--beheer-text)] tracking-tight text-xs capitalize">
                                         {log.type}
                                     </span>
                                 </td>
-                                <td className="p-4 text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">
+                                <td className="p-4 text-xs font-semibold text-[var(--beheer-text-muted)]">
                                     {(log.payload && typeof log.payload === 'object' && 'admin_name' in log.payload) ? String(log.payload.admin_name) : 'Systeem'}
                                 </td>
                                 <td className="p-4">
-                                    <div className="text-[10px] font-bold text-[var(--beheer-text-muted)] uppercase tracking-widest max-w-md break-all">
+                                    <div className="text-xs font-medium text-[var(--beheer-text-muted)] tracking-tight max-w-md break-all">
                                         {log.payload && typeof log.payload === 'object' ? (
                                             <div className="space-y-1">
                                                 {Object.entries(log.payload)
@@ -71,15 +100,15 @@ export default function LogsTab({ logs, onRefresh, title = "Activiteitslogboek",
                                     </div>
                                 </td>
                                 <td className="p-4 text-center">
-                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${log?.status === 'SUCCESS' ? 'bg-[var(--beheer-active)]/10 text-[var(--beheer-active)] border-[var(--beheer-active)]/20' : 'bg-[var(--beheer-inactive)]/10 text-[var(--beheer-inactive)] border-[var(--beheer-inactive)]/20'}`}>
+                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold tracking-tight border ${log?.status === 'SUCCESS' ? 'bg-[var(--beheer-active)]/10 text-[var(--beheer-active)] border-[var(--beheer-active)]/20' : 'bg-[var(--beheer-inactive)]/10 text-[var(--beheer-inactive)] border-[var(--beheer-inactive)]/20'}`}>
                                         {log.status}
                                     </span>
                                 </td>
                             </tr>
                         ))}
-                        {logs.length === 0 && (
+                        {filteredLogs.length === 0 && (
                             <tr>
-                                <td colSpan={5} className="p-20 text-center text-slate-400 italic font-black uppercase tracking-widest text-[10px]">Geen logboekvermeldingen gevonden.</td>
+                                <td colSpan={5} className="p-20 text-center text-slate-400 italic font-medium text-sm">Geen logboekvermeldingen gevonden.</td>
                             </tr>
                         )}
                     </tbody>

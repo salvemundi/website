@@ -34,16 +34,6 @@ export class SyncLifecycle {
             // 1. Sync Directus Membership Status
             if (currentStatus !== desiredStatus) {
                 await query(`UPDATE directus_users SET membership_status = $1, status = 'active' WHERE id = $2`, [desiredStatus, dUser.id]);
-                await query(`INSERT INTO system_logs (type, status, payload, created_at) VALUES ($1, $2, $3, NOW())`, [
-                    'system_membership_status_update',
-                    'SUCCESS',
-                    JSON.stringify({
-                        email,
-                        old_status: currentStatus,
-                        new_status: desiredStatus,
-                        reason: isActive ? 'Expiry in future' : 'Expiry in past'
-                    })
-                ]);
                 changes.push({ field: 'membership_status', old: currentStatus, new: desiredStatus });
                 if (desiredStatus === 'active') ctx.status.movedActiveCount++;
                 else ctx.status.movedExpiredCount++;
@@ -53,39 +43,19 @@ export class SyncLifecycle {
             if (isActive) {
                 if (!userInActiveGroup) {
                     await ManagementService.addGroupMember(GROUP_ACTIVE_LID, aUser.id);
-                    await query(`INSERT INTO system_logs (type, status, payload, created_at) VALUES ($1, $2, $3, NOW())`, [
-                        'system_group_move',
-                        'SUCCESS',
-                        JSON.stringify({ email, action: 'added_to_active', group: 'Leden_Actief_Lidmaatschap' })
-                    ]);
                     changes.push({ field: 'Azure Group', old: 'Nee', new: 'Toevoegen aan Leden_Actief' });
                 }
                 if (userInExpiredGroup) {
                     await ManagementService.removeGroupMember(GROUP_EXPIRED_LID, aUser.id);
-                    await query(`INSERT INTO system_logs (type, status, payload, created_at) VALUES ($1, $2, $3, NOW())`, [
-                        'system_group_move',
-                        'SUCCESS',
-                        JSON.stringify({ email, action: 'removed_from_expired', group: 'Leden_Verlopen_Lidmaatschap' })
-                    ]);
                     changes.push({ field: 'Azure Group', old: 'Ja', new: 'Verwijderen uit Leden_Verlopen' });
                 }
             } else {
                 if (userInActiveGroup) {
                     await ManagementService.removeGroupMember(GROUP_ACTIVE_LID, aUser.id);
-                    await query(`INSERT INTO system_logs (type, status, payload, created_at) VALUES ($1, $2, $3, NOW())`, [
-                        'system_group_move',
-                        'SUCCESS',
-                        JSON.stringify({ email, action: 'removed_from_active', group: 'Leden_Actief_Lidmaatschap' })
-                    ]);
                     changes.push({ field: 'Azure Group', old: 'Ja', new: 'Verwijderen uit Leden_Actief' });
                 }
                 if (!userInExpiredGroup) {
                     await ManagementService.addGroupMember(GROUP_EXPIRED_LID, aUser.id);
-                    await query(`INSERT INTO system_logs (type, status, payload, created_at) VALUES ($1, $2, $3, NOW())`, [
-                        'system_group_move',
-                        'SUCCESS',
-                        JSON.stringify({ email, action: 'added_to_expired', group: 'Leden_Verlopen_Lidmaatschap' })
-                    ]);
                     changes.push({ field: 'Azure Group', old: 'Nee', new: 'Toevoegen aan Leden_Verlopen' });
                 }
             }

@@ -24,6 +24,11 @@ export class SyncJob {
      */
     static async run(redis: Redis, options: SyncOptions = { fields: [] }) {
         const jobId = Math.random().toString(36).substring(2, 11);
+        
+        // Ensure default fields are set if not provided
+        if (!options.fields || options.fields.length === 0) {
+            options.fields = ['status', 'membership_status', 'membership_expiry', 'committees', 'profile_photo', 'geboortedatum', 'phone_number', 'originele_betaaldatum'];
+        }
 
         // 1. Mutex: prevent duplicate runs
         const current = await getSyncStatus(redis);
@@ -183,6 +188,20 @@ export class SyncJob {
             status.active = false; status.status = 'completed'; status.endTime = new Date().toISOString();
             await persistSyncStatus(redis, status);
 
+            // Log aggregate summary to DB
+            await query(`INSERT INTO system_logs (type, status, payload, created_at) VALUES ($1, $2, $3, NOW())`, [
+                'system_sync_summary',
+                'SUCCESS',
+                JSON.stringify({
+                    job_id: jobId,
+                    processed: status.processed,
+                    moved_active: status.movedActiveCount,
+                    moved_expired: status.movedExpiredCount,
+                    errors: status.errorCount,
+                    duration_ms: status.startTime ? (Date.now() - new Date(status.startTime).getTime()) : null
+                })
+            ]);
+
             // 4. RETENTION CLEANUP
             try {
                 await query(`DELETE FROM system_logs WHERE created_at < NOW() - INTERVAL '90 days'`);
@@ -204,7 +223,12 @@ export class SyncJob {
     /**
      * Entry point for a single user synchronization.
      */
-    static async syncByEntraId(redis: Redis, entraId: string, token: string, options: SyncOptions = { fields: ['membership_expiry', 'geboortedatum', 'phone_number', 'committees', 'profile_photo', 'membership_status'] }) {
+    static async syncByEntraId(redis: Redis, entraId: string, token: string, options: SyncOptions = { fields: [] }) {
+        // Ensure default fields are set if not provided
+        if (!options.fields || options.fields.length === 0) {
+            options.fields = ['status', 'membership_status', 'membership_expiry', 'committees', 'profile_photo', 'geboortedatum', 'phone_number', 'originele_betaaldatum'];
+        }
+
         console.log(`[SYNC] [single-${entraId}] Starting single-user sync...`);
         const startTime = Date.now();
 
@@ -286,12 +310,27 @@ export class SyncJob {
             token, committeeCache, committeeByIdCache, ownerCache: new Map(), userCacheByEntra, membershipCache, membershipMap, mainMembershipState
         };
 
-        await persistSyncStatus(redis, status, true);
+        await persistSyncStatus(redis, status, false);
 
         try {
             await SyncProcessor.syncUserOptimized(ctx, aUser);
-            status.processed = 1; status.active = false; status.status = 'completed'; status.endTime = new Date().toISOString();
-            await persistSyncStatus(redis, status, true);
+            status.processed++; 
+            status.active = false; 
+            status.status = 'completed'; 
+            status.endTime = new Date().toISOString();
+            await persistSyncStatus(redis, status, false); // Use false to allow single-sync to update status even if jobId changed
+
+            // Log single user sync summary
+            await query(`INSERT INTO system_logs (type, status, payload, created_at) VALUES ($1, $2, $3, NOW())`, [
+                'system_sync_single_user',
+                'SUCCESS',
+                JSON.stringify({
+                    email: aUser.mail || aUser.userPrincipalName,
+                    status: 'completed',
+                    moved_active: status.movedActiveCount,
+                    moved_expired: status.movedExpiredCount
+                })
+            ]);
         } catch (error) {
             const err = error instanceof Error ? error : new Error(String(error));
             status.active = false; status.status = 'failed'; status.endTime = new Date().toISOString(); status.errorCount = 1;
@@ -302,7 +341,7 @@ export class SyncJob {
                 stack: err.stack 
             });
             status.fatalError = { message: err.message, stack: err.stack };
-            await persistSyncStatus(redis, status, true);
+            await persistSyncStatus(redis, status, false);
             throw err;
         }
     }

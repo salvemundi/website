@@ -57,11 +57,15 @@ export class GraphService {
         const client = this.getClient(token);
         
         const fetchWithRetry = async (url: string, selectFields?: string, top: number = 100, retries = 3): Promise<any> => {
+            const isFullUrl = url.startsWith('http');
             for (let i = 0; i < retries; i++) {
                 try {
                     let request = client.api(url);
-                    if (selectFields) request = request.select(selectFields);
-                    return await request.top(top).get();
+                    if (!isFullUrl) {
+                        if (selectFields) request = request.select(selectFields);
+                        request = request.top(top);
+                    }
+                    return await request.get();
                 } catch (err: any) {
                     if (i === retries - 1) throw err;
                     const delay = Math.pow(2, i) * 1000;

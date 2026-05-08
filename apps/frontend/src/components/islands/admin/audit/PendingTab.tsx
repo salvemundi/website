@@ -38,7 +38,7 @@ export default function PendingTab({
         <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] shadow-xl overflow-hidden">
             <div className="p-6 border-b border-[var(--beheer-border)]/50 flex flex-wrap items-center justify-between gap-4">
                 <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">Lidmaatschap Wachtrij</span>
+                    <span className="text-xs font-semibold text-[var(--beheer-text-muted)] tracking-tight">Lidmaatschap Wachtrij</span>
                 </div>
                 
                 <div className="flex items-center gap-3">
@@ -85,11 +85,11 @@ export default function PendingTab({
                                     {selectedIds.size > 0 && selectedIds.size === filteredSignups.length ? <CheckSquare className="h-5 w-5 text-[var(--beheer-accent)]" /> : <Square className="h-5 w-5" />}
                                 </button>
                             </th>
-                            <th className="p-4 text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Datum</th>
-                            <th className="p-4 text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Naam</th>
-                            <th className="p-4 text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest">Product</th>
-                            <th className="p-4 text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest text-center">Status</th>
-                            <th className="p-4 text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest text-right">Acties</th>
+                            <th className="p-4 text-xs font-semibold text-[var(--beheer-text-muted)] tracking-tight">Datum</th>
+                            <th className="p-4 text-xs font-semibold text-[var(--beheer-text-muted)] tracking-tight">Naam</th>
+                            <th className="p-4 text-xs font-semibold text-[var(--beheer-text-muted)] tracking-tight">Product</th>
+                            <th className="p-4 text-xs font-semibold text-[var(--beheer-text-muted)] tracking-tight text-center">Status</th>
+                            <th className="p-4 text-xs font-semibold text-[var(--beheer-text-muted)] tracking-tight text-right">Acties</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-[var(--beheer-border)]/10">
@@ -98,8 +98,8 @@ export default function PendingTab({
                                 <td colSpan={6} className="p-20 text-center">
                                     <div className="flex flex-col items-center">
                                         <CheckCircle className="h-12 w-12 text-[var(--beheer-active)] mb-4 opacity-20" />
-                                        <h4 className="text-[var(--beheer-text)] font-black uppercase tracking-tight">Alles bijgewerkt!</h4>
-                                        <p className="text-[var(--beheer-text-muted)] font-bold uppercase tracking-widest text-[10px] mt-2">Er zijn geen inschrijvingen die op goedkeuring wachten.</p>
+                                        <h4 className="text-[var(--beheer-text)] font-semibold text-lg tracking-tight">Alles bijgewerkt!</h4>
+                                        <p className="text-[var(--beheer-text-muted)] font-medium text-sm mt-2">Er zijn geen inschrijvingen die op goedkeuring wachten.</p>
                                     </div>
                                 </td>
                             </tr>
@@ -111,23 +111,23 @@ export default function PendingTab({
                                             {selectedIds.has(s.id) ? <CheckSquare className="h-5 w-5" /> : <Square className="h-5 w-5" />}
                                         </button>
                                     </td>
-                                    <td className="p-4 text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest whitespace-nowrap">
+                                    <td className="p-4 text-xs font-medium text-[var(--beheer-text-muted)] tracking-tight whitespace-nowrap">
                                         {formatDate(s.created_at, true)}
                                     </td>
                                     <td className="p-4">
                                         <div className="flex flex-col min-w-0">
-                                            <span className="font-black text-[var(--beheer-text)] uppercase tracking-tight group-hover:text-[var(--beheer-accent)] transition-colors truncate">{s.first_name} {s.last_name}</span>
-                                            <span className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest truncate">{s.email}</span>
+                                            <span className="font-semibold text-[var(--beheer-text)] tracking-tight group-hover:text-[var(--beheer-accent)] transition-colors truncate">{s.first_name} {s.last_name}</span>
+                                            <span className="text-xs font-medium text-[var(--beheer-text-muted)] truncate">{s.email}</span>
                                         </div>
                                     </td>
                                     <td className="p-4">
                                         <div className="flex items-center gap-2">
                                             <Tag className="h-3.5 w-3.5 text-[var(--beheer-text-muted)]" />
-                                            <span className="text-[10px] text-[var(--beheer-text)] font-black uppercase tracking-widest">{s.product_name}</span>
+                                            <span className="text-xs text-[var(--beheer-text)] font-semibold tracking-tight">{s.product_name}</span>
                                         </div>
                                     </td>
                                     <td className="p-4 text-center">
-                                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${s.payment_status === 'paid' ? 'bg-[var(--beheer-active)]/10 text-[var(--beheer-active)] border-[var(--beheer-active)]/20' : 'bg-amber-500/10 text-amber-500 border-amber-500/20'}`}>
+                                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold tracking-tight border ${s.payment_status === 'paid' ? 'bg-[var(--beheer-active)]/10 text-[var(--beheer-active)] border-[var(--beheer-active)]/20' : 'bg-amber-500/10 text-amber-500 border-amber-500/20'}`}>
                                             {s.payment_status}
                                         </span>
                                     </td>
