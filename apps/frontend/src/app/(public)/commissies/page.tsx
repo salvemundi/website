@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
-import CommitteesList from '@/components/islands/committees/CommitteesList';
+import CommitteesList from '@/components/ui/committees/CommitteesList';
 
 export const metadata: Metadata = {
     title: 'Commissies | SV Salve Mundi',

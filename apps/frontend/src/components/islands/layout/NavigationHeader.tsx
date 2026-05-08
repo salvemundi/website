@@ -49,8 +49,8 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
 
     return (
         <HeaderShell>
-            <div className="mx-auto max-w-app h-full px-4 sm:px-6 lg:px-8 z-10 relative">
-                <div className="grid h-full grid-cols-[auto_1fr_auto] items-center gap-4 lg:gap-8">
+            <div className="mx-auto max-w-app h-full px-4 lg:px-6 z-10 relative @container">
+                <div className="grid h-full grid-cols-[auto_1fr_auto] items-center gap-[clamp(0.75rem,1.5vw,2rem)]">
                     {/* Logo Section */}
                     <div className="flex items-center gap-3">
 
@@ -65,22 +65,22 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
                                     priority 
                                 />
                             </div>
-                            <div className="hidden text-left sm:block whitespace-nowrap shrink-0">
-                                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-purple-500)]">Salve Mundi</p>
-                                <p className="text-sm font-semibold text-[var(--text-main)]">Fontys ICT</p>
+                            <div className="hidden text-left @[1150px]:block whitespace-nowrap shrink-0 transition-all duration-300">
+                                <p className="text-[13px] font-bold text-[var(--color-purple-500)] leading-none">Salve Mundi</p>
+                                <p className="text-xs font-semibold text-[var(--text-main)] mt-0.5 @[1400px]:block hidden">Fontys ICT</p>
                             </div>
                         </Link>
                     </div>
 
                     {/* Desktop Navigation */}
-                    <nav className="hidden items-center justify-center gap-5 xl:flex whitespace-nowrap">
+                    <nav className="hidden items-center justify-center gap-[clamp(0.4rem,0.8vw,1.1rem)] lg:flex whitespace-nowrap">
                         {navItems.map((link) => (
                             <Link
                                 key={link.href}
                                 href={link.href}
                                 className="group relative inline-flex items-center gap-2 text-sm font-semibold transition-all duration-200 whitespace-nowrap text-[var(--text-main)] hover:text-[var(--color-purple-500)]"
                             >
-                                <span>{link.name}</span>
+                                <span className="text-[clamp(13px,1vw,15px)] font-semibold">{link.name}</span>
                                 <span className="absolute -bottom-2 left-0 h-0.5 w-full origin-left rounded-full bg-[var(--color-purple-50)] transition-transform duration-200 ease-out scale-x-0 group-hover:scale-x-100" />
                             </Link>
                         ))}

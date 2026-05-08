@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircle, Home, User, XCircle, Loader2, AlertTriangle, ArrowLeft } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { getTransactionStatusAction } from '@/server/actions/membership.actions';
 import BackButton from '@/components/ui/navigation/BackButton';
 
@@ -53,7 +52,7 @@ export default function ConfirmationIsland({ transactionId, type, initialStatus,
             case 'paid':
                 return (
                     <>
-                        <div className="w-24 h-24 bg-green-500/20 dark:bg-green-500/30 rounded-full flex items-center justify-center mx-auto mb-6 shadow-glow shadow-green-500/20 dark:shadow-green-500/40 animate-in zoom-in duration-500">
+                        <div className="w-24 h-24 bg-green-500/20 dark:bg-green-500/30 rounded-full flex items-center justify-center mx-auto mb-6 shadow-glow shadow-green-500/20 dark:shadow-green-500/40">
                             <CheckCircle className="w-14 h-14 text-green-500 dark:text-green-400" />
                         </div>
                         <h1 className="text-4xl font-semibold text-theme-purple dark:text-purple-400 mb-4 tracking-tight">GESLAAGD!</h1>
@@ -67,7 +66,7 @@ export default function ConfirmationIsland({ transactionId, type, initialStatus,
             case 'failed':
                 return (
                     <>
-                        <div className="w-24 h-24 bg-red-500/20 dark:bg-red-500/30 rounded-full flex items-center justify-center mx-auto mb-6 animate-in zoom-in duration-500">
+                        <div className="w-24 h-24 bg-red-500/20 dark:bg-red-500/30 rounded-full flex items-center justify-center mx-auto mb-6">
                             <XCircle className="w-14 h-14 text-theme-error dark:text-red-400" />
                         </div>
                         <h1 className="text-3xl font-bold text-theme-error dark:text-red-400 mb-4">Betaling Mislukt</h1>
@@ -98,9 +97,7 @@ export default function ConfirmationIsland({ transactionId, type, initialStatus,
     };
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+        <div
             className="w-full max-w-2xl bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-[2.5rem] shadow-2xl p-8 sm:p-12 text-center"
         >
             {renderContent()}
@@ -123,6 +120,6 @@ export default function ConfirmationIsland({ transactionId, type, initialStatus,
                     Terug naar Home
                 </button>
             </div>
-        </motion.div>
+        </div>
     );
 }

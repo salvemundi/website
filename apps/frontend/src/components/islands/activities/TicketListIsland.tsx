@@ -43,7 +43,7 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
     );
 
     return (
-        <div className="space-y-12 animate-in fade-in duration-700">
+        <div className="space-y-12">
             {/* Search & Stats Section */}
             <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
                 <div className="relative w-full md:w-96 group">

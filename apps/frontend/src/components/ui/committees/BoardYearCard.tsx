@@ -2,7 +2,7 @@ import React from 'react';
 import Image from 'next/image';
 import { type Board } from '@salvemundi/validations/schema/board.zod';
 import { getImageUrl } from '@/lib/utils/image-utils';
-import { User, Shield } from 'lucide-react';
+import { User, Medal } from 'lucide-react';
 
 interface BoardYearCardProps {
     board: Board;
@@ -58,7 +58,7 @@ export const BoardYearCard: React.FC<BoardYearCardProps> = ({ board }) => {
                                             />
                                         ) : (
                                             <div className="flex h-full w-full items-center justify-center bg-purple-500/5 text-purple-500">
-                                                {isLeader ? <Shield className="h-4 w-4" /> : <User className="h-4 w-4" />}
+                                                {isLeader ? <Medal className="h-4 w-4" /> : <User className="h-4 w-4" />}
                                             </div>
                                         )}
                                     </div>

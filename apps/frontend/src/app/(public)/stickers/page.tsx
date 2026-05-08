@@ -39,7 +39,7 @@ async function StickersContent() {
 
     return (
         <div className="container mx-auto px-4 py-12 max-w-7xl">
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div>
                 <div className="flex justify-between items-center mb-8 bg-[var(--bg-card)] border border-[var(--beheer-border)] p-6 rounded-3xl shadow-sm">
                     <div className="space-y-1">
                         <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Totaal Geplakt</p>
