@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import BackButton from '@/components/ui/navigation/BackButton';
 import { toPng } from 'html-to-image';
-import { getSignupStatus, type PaymentStatus } from '@/server/actions/activiteit-actions';
+import { getSignupStatus, type PaymentStatus } from '@/server/actions/public-activiteit-status.actions';
 import QRDisplay from '@/shared/ui/QRDisplay';
 import { slugify } from '@/shared/lib/utils/slug';
 interface ConfirmationIslandProps {
@@ -322,7 +322,7 @@ export default function ConfirmationIsland({
                                     alert("Geen aanmeldings-ID gevonden.");
                                     return;
                                 }
-                                const { retryActivityPayment } = await import('@/server/actions/activiteit-actions');
+                                const { retryActivityPayment } = await import('@/server/actions/public-activiteit-status.actions');
                                 const result = await retryActivityPayment(Number(signupId));
                                 if (result.success && result.checkoutUrl) {
                                     window.location.href = result.checkoutUrl;

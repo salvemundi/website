@@ -24,8 +24,8 @@ import {
     toggleKroegentochtVisibility,
     getPubCrawlSignups
 } from '@/server/actions/admin-kroegentocht.actions';
-import EventDropdown from '@/components/admin/kroegentocht/EventDropdown';
-import SignupList from '@/components/admin/kroegentocht/SignupList';
+import EventDropdown from '@/components/islands/admin/kroegentocht/EventDropdown';
+import SignupList from '@/components/islands/admin/kroegentocht/SignupList';
 import { type PubCrawlEvent, type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 
 interface ExtendedSignup extends PubCrawlSignup {
@@ -159,7 +159,7 @@ export default function KroegentochtManagementIsland({
 
                         <Link 
                             href="/beheer/kroegentocht/nieuw"
-                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-black text-xs uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
+                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-semibold text-xs tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
                         >
                             <Plus className="h-4 w-4" />
                             Nieuw Event
@@ -183,7 +183,7 @@ export default function KroegentochtManagementIsland({
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <Beer className="h-6 w-6 text-[var(--theme-purple)]" />
-                            <h2 className="text-2xl font-black text-[var(--text-main)] tracking-tight uppercase">
+                            <h2 className="text-2xl font-semibold text-[var(--text-main)] tracking-tight">
                                 {selectedEvent.name}
                             </h2>
                         </div>
@@ -211,7 +211,7 @@ export default function KroegentochtManagementIsland({
             ) : (
                 <div className="text-center py-20 bg-[var(--bg-card)]/40 rounded-[var(--radius-2xl)] border-2 border-dashed border-[var(--border-color)]/30">
                     <AlertCircle className="h-16 w-16 text-[var(--text-muted)] opacity-20 mx-auto mb-4" />
-                    <h2 className="text-xl font-black text-[var(--text-main)] uppercase tracking-tight">Geen Event Geselecteerd</h2>
+                    <h2 className="text-xl font-semibold text-[var(--text-main)] tracking-tight">Geen Event Geselecteerd</h2>
                     <p className="text-sm text-[var(--text-subtle)] mt-2">Kies een event hierboven om de data te bekijken.</p>
                 </div>
             )}

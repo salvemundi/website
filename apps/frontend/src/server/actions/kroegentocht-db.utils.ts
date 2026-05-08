@@ -28,134 +28,113 @@ export type EnrichedPubCrawlSignup = PubCrawlSignup & {
  * Fetches all pub crawl events.
  */
 export async function fetchPubCrawlEventsDb(): Promise<PubCrawlEvent[]> {
-    try {
-        const res = await query(
-            `SELECT * FROM pub_crawl_events ORDER BY date DESC LIMIT 100`,
-            []
-        );
+    const res = await query(
+        `SELECT * FROM pub_crawl_events ORDER BY date DESC LIMIT 100`,
+        []
+    );
 
-        const { toLocalISOString } = await import('@/lib/utils/date-utils');
-        const items = (res.rows || []).map((raw) => ({
-            ...raw,
-            date: toLocalISOString(raw.date),
-            price: 1,
-            max_tickets_per_person: 10,
-            show: raw.show !== false,
-        }));
-
-        const parsed = z.array(pubCrawlEventSchema).safeParse(items);
-        if (!parsed.success) return items as unknown as PubCrawlEvent[];
-
-        return parsed.data;
-    } catch (error) {
-        return [];
-    }
+    const { toLocalISOString } = await import('@/lib/utils/date-utils');
+    return res.rows.map((raw) => ({
+        ...raw,
+        date: toLocalISOString(raw.date),
+        price: 1,
+        max_tickets_per_person: 10,
+        show: raw.show !== false,
+    })) as PubCrawlEvent[];
 }
 
 /**
  * Fetches signups for a specific event.
  */
 export async function fetchPubCrawlSignupsDb(eventId: number): Promise<(PubCrawlSignup & { participants: { name: string, initial: string }[] })[]> {
-    try {
-        const signupRes = await query(
-            `SELECT * FROM pub_crawl_signups WHERE pub_crawl_event_id = $1 ORDER BY id DESC LIMIT 1000`,
-            [eventId]
-        );
+    const signupRes = await query(
+        `SELECT * FROM pub_crawl_signups WHERE pub_crawl_event_id = $1 ORDER BY id DESC LIMIT 1000`,
+        [eventId]
+    );
 
-        if (signupRes.rowCount === 0) return [];
-
-        return signupRes.rows.map(raw => {
-            let participants: { name: string, initial: string }[] = [];
-            
-            if (raw.name_initials) {
-                if (Array.isArray(raw.name_initials)) {
-                    participants = raw.name_initials;
-                } else if (typeof raw.name_initials === 'string') {
-                    try {
-                        const parsed = JSON.parse(raw.name_initials);
-                        participants = Array.isArray(parsed) ? parsed : [parsed];
-                    } catch (e) {
-                        // Silent fail
-                    }
+    return signupRes.rows.map(raw => {
+        let participants: { name: string, initial: string }[] = [];
+        
+        if (raw.name_initials) {
+            if (Array.isArray(raw.name_initials)) {
+                participants = raw.name_initials;
+            } else if (typeof raw.name_initials === 'string') {
+                try {
+                    const parsed = JSON.parse(raw.name_initials);
+                    participants = Array.isArray(parsed) ? parsed : [parsed];
+                } catch (e) {
+                    // Silent fail for JSON parse is okay as it's data-level
                 }
             }
+        }
 
-            return {
-                ...raw,
-                participants
-            };
-        }) as (PubCrawlSignup & { participants: { name: string, initial: string }[] })[];
-    } catch (error) {
-        return [];
-    }
+        return {
+            ...raw,
+            participants
+        };
+    }) as (PubCrawlSignup & { participants: { name: string, initial: string }[] })[];
 }
 
 /**
  * Fetches a single signup by ID with event details.
  */
 export async function fetchPubCrawlSignupByIdDb(signupId: number): Promise<EnrichedPubCrawlSignup | null> {
-    try {
-        const res = await query(
-            `SELECT s.*, e.name as event_name, e.date as event_date, e.description as event_description, e.image as event_image
-             FROM pub_crawl_signups s
-             JOIN pub_crawl_events e ON s.pub_crawl_event_id = e.id
-             WHERE s.id = $1 
-             LIMIT 1`,
-            [signupId]
-        );
+    const res = await query(
+        `SELECT s.*, e.name as event_name, e.date as event_date, e.description as event_description, e.image as event_image
+         FROM pub_crawl_signups s
+         JOIN pub_crawl_events e ON s.pub_crawl_event_id = e.id
+         WHERE s.id = $1 
+         LIMIT 1`,
+        [signupId]
+    );
 
-        if (res.rowCount === 0) return null;
+    if (res.rowCount === 0) return null;
 
-        const signup = res.rows[0];
-        const ticketRes = await query(
-            `SELECT * FROM pub_crawl_tickets WHERE signup_id = $1 ORDER BY id ASC`,
-            [signupId]
-        );
+    const signup = res.rows[0];
+    const ticketRes = await query(
+        `SELECT * FROM pub_crawl_tickets WHERE signup_id = $1 ORDER BY id ASC`,
+        [signupId]
+    );
 
-        let participants: { name: string, initial: string }[] = [];
-        if (signup.name_initials) {
-            if (Array.isArray(signup.name_initials)) {
-                participants = signup.name_initials;
-            } else if (typeof signup.name_initials === 'string') {
-                try {
-                    const parsed = JSON.parse(signup.name_initials);
-                    participants = Array.isArray(parsed) ? parsed : [parsed];
-                } catch (e) {}
-            }
+    let participants: { name: string, initial: string }[] = [];
+    if (signup.name_initials) {
+        if (Array.isArray(signup.name_initials)) {
+            participants = signup.name_initials;
+        } else if (typeof signup.name_initials === 'string') {
+            try {
+                const parsed = JSON.parse(signup.name_initials);
+                participants = Array.isArray(parsed) ? parsed : [parsed];
+            } catch (e) {}
         }
-
-        // Map tickets, but use participant names if available
-        const tickets = (ticketRes.rows || []).map((t, i) => {
-            const p = participants[i];
-            return {
-                ...t,
-                name: p?.name || t.name,
-                initial: p?.initial || t.initial
-            };
-        });
-
-        return {
-            ...signup,
-            pub_crawl_event_id: {
-                id: signup.pub_crawl_event_id,
-                name: signup.event_name,
-                date: signup.event_date,
-                description: signup.event_description,
-                image: signup.event_image
-            },
-            tickets
-        };
-    } catch (error: unknown) {
-        console.error(`[PubCrawlDb] Failed to fetch signup ${signupId}:`, error);
-        return null;
     }
+
+    // Map tickets, but use participant names if available
+    const tickets = (ticketRes.rows || []).map((t, i) => {
+        const p = participants[i];
+        return {
+            ...t,
+            name: p?.name || t.name,
+            initial: p?.initial || t.initial
+        };
+    });
+
+    return {
+        ...signup,
+        pub_crawl_event_id: {
+            id: signup.pub_crawl_event_id,
+            name: signup.event_name,
+            date: signup.event_date,
+            description: signup.event_description,
+            image: signup.event_image
+        },
+        tickets
+    };
 }
 
 /**
  * Fetches all tickets for a specific event.
  */
 export async function fetchPubCrawlTicketsDb(eventId: number): Promise<PubCrawlTicket[]> {
-    try {
         const res = await query(
             `SELECT t.* FROM pub_crawl_tickets t
              JOIN pub_crawl_signups s ON t.signup_id = s.id
@@ -163,25 +142,18 @@ export async function fetchPubCrawlTicketsDb(eventId: number): Promise<PubCrawlT
             [eventId]
         );
         return (res.rows as PubCrawlTicket[]) || [];
-    } catch (error: unknown) {
-        return [];
-    }
 }
 
 /**
  * Gets the total number of tickets sold for a specific event.
  */
 export async function getPubCrawlTicketCountDb(eventId: number): Promise<number> {
-    try {
-        const res = await query(
-            `SELECT SUM(amount_tickets) as total FROM pub_crawl_signups 
-             WHERE pub_crawl_event_id = $1 AND payment_status = 'paid'`,
-            [eventId]
-        );
-        return parseInt(res.rows[0]?.total || '0', 10);
-    } catch (error: unknown) {
-        return 0;
-    }
+    const res = await query(
+        `SELECT SUM(amount_tickets) as total FROM pub_crawl_signups 
+         WHERE pub_crawl_event_id = $1 AND payment_status = 'paid'`,
+        [eventId]
+    );
+    return parseInt(res.rows[0]?.total || '0', 10);
 }
 
 /**

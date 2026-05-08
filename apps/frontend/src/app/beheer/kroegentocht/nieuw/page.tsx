@@ -1,4 +1,4 @@
-import EventForm from '@/components/admin/kroegentocht/EventForm';
+import EventForm from '@/components/islands/admin/kroegentocht/EventForm';
 import { Beer } from 'lucide-react';
 
 export const metadata = {
