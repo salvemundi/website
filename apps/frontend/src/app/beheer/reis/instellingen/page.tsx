@@ -11,8 +11,8 @@ export const metadata: Metadata = {
 export default async function ReisInstellingenPage() {
     // NUCLEAR SSR: Fetch all trip settings before flushing
     const [trips, settings] = await Promise.all([
-        getTrips().catch(() => []),
-        getReisSiteSettings().catch(() => null)
+        getTrips(),
+        getReisSiteSettings()
     ]);
 
     return (
