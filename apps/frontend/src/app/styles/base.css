@@ -74,6 +74,32 @@
         -ms-text-size-adjust: 100%;
     }
 
+    /* Global Brand Scrollbar */
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: var(--bg-main);
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: var(--beheer-border);
+        border: 2px solid var(--bg-main);
+        border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--beheer-accent);
+    }
+
+    /* Firefox Support */
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: var(--beheer-border) transparent;
+    }
+
     body {
         margin: 0;
         padding: 0;

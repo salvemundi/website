@@ -42,6 +42,10 @@ const start = async () => {
         // Start the Event Reminder Job
         const { EventReminderJob } = await import('./services/event-reminder.job.js');
         EventReminderJob.start(fastify.redis);
+
+        // Start the Nightly Full Sync Job
+        const { FullSyncJob } = await import('./services/full-sync.job.js');
+        FullSyncJob.start(fastify.redis);
     } catch (err) {
         fastify.log.error(err);
         process.exit(1);

@@ -42,17 +42,17 @@ export class SyncJob {
             console.warn(`[SYNC] Stale job detected (${current.jobId}). Forcing start of new job ${jobId}.`);
         }
 
-        console.log(`[SYNC] [${jobId}] Starting BULK synchronization job...`);
+        if (!options.silent) console.log(`[SYNC] [${jobId}] Starting BULK synchronization job...`);
         await redis.del(SYNC_ABORT_KEY);
 
         try {
             const initialToken = await TokenService.getAccessToken(redis);
             
             // 2. PRE-FETCH EVERYTHING IN BULK
-            console.log(`[SYNC] [${jobId}] Step 1: Fetching all users from Azure...`);
+            if (!options.silent) console.log(`[SYNC] [${jobId}] Step 1: Fetching all users from Azure...`);
             const azureUsers = await GraphService.getAllUsers(initialToken);
             
-            console.log(`[SYNC] [${jobId}] Step 2: Pre-caching Directus & Group data...`);
+            if (!options.silent) console.log(`[SYNC] [${jobId}] Step 2: Pre-caching Directus & Group data...`);
             const [committees, allLeden, allMemberships] = await Promise.all([
                 DirectusService.getAllCommittees(),
                 DirectusService.getAllUsers(),
@@ -81,7 +81,7 @@ export class SyncJob {
                 }
             }
 
-            console.log(`[SYNC] [${jobId}] Step 3: Bulk fetching group memberships from Azure (Batch API)...`);
+            if (!options.silent) console.log(`[SYNC] [${jobId}] Step 3: Bulk fetching group memberships from Azure (Batch API)...`);
             const groupDetails = await GraphService.getBatchGroupDetails(relevantAzureGroupIds, initialToken);
             
             const membershipMap = new Map<string, Map<number, boolean>>();
@@ -209,7 +209,7 @@ export class SyncJob {
                 console.error(`[SYNC] [${jobId}] Retention cleanup failed:`, pruneErr);
             }
 
-            console.log(`[SYNC] [${jobId}] Bulk sync finished successfully.`);
+            if (!options.silent) console.log(`[SYNC] [${jobId}] Bulk sync finished successfully.`);
         } catch (error) {
             const err = error instanceof Error ? error : new Error(String(error));
             console.error(`[SYNC] [${jobId}] Fatal error:`, err);

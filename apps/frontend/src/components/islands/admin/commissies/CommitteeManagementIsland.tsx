@@ -15,7 +15,6 @@ import {
     updateCommitteeDetails,
 } from '@/server/actions/admin-committees.actions';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
-import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 
 import CommitteeSidebar from './CommitteeSidebar';
 import CommitteeDetail from './CommitteeDetail';
@@ -102,18 +101,17 @@ export default function CommitteeManagementIsland({ initialCommittees, totalUniq
         });
     }, []);
 
-    const handleAddMember = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!selected?.azure_group_id || !newMemberEmail) return;
+    const handleAddMember = async (user: any) => {
+        if (!selected?.azure_group_id || !user.email) return;
         setAddingMember(true);
         setAddError(null);
-        const res = await addCommitteeMember(selected.azure_group_id, selected.id.toString(), newMemberEmail);
+        const res = await addCommitteeMember(selected.azure_group_id, selected.id.toString(), user.email);
         if (!res.success) {
             setAddError(res.error ?? 'Toevoegen mislukt');
             showToast(res.error ?? 'Toevoegen mislukt', 'error');
         } else {
             setNewMemberEmail('');
-            showToast('Lid succesvol toegevoegd aan de commissie', 'success');
+            showToast(`${user.first_name} succesvol toegevoegd aan de commissie`, 'success');
             // Sync is done on server, so we can reload immediately
             handleSelectCommittee(selected);
         }
@@ -123,12 +121,17 @@ export default function CommitteeManagementIsland({ initialCommittees, totalUniq
     const handleRemoveMember = async (member: CommitteeMember) => {
         if (!selected?.azure_group_id) return;
         if (!confirm(`Weet je zeker dat je ${member.displayName} wilt verwijderen?`)) return;
+        
+        // Optimistic UI Update
+        const previousMembers = [...members];
+        setMembers(prev => prev.filter(m => m.entraId !== member.entraId));
         setActionLoading(`remove-${member.entraId}`);
-        const res = await removeCommitteeMember(selected.azure_group_id, member.entraId, member.isLeader);
+        
+        const res = await removeCommitteeMember(selected!.azure_group_id!, member.entraId, member.isLeader);
         if (res.success) {
-            setMembers(prev => prev.filter(m => m.entraId !== member.entraId));
             showToast('Lid succesvol verwijderd uit de commissie', 'success');
         } else {
+            setMembers(previousMembers); // Rollback
             showToast(res.error ?? 'Verwijderen mislukt', 'error');
         }
         setActionLoading(null);
@@ -139,7 +142,12 @@ export default function CommitteeManagementIsland({ initialCommittees, totalUniq
             showToast('Lidmaatschapsrecord niet gevonden.', 'error');
             return;
         }
+
+        // Optimistic UI Update
+        const previousMembers = [...members];
+        setMembers(prev => prev.map(m => m.entraId === member.entraId ? { ...m, isLeader: !m.isLeader } : m));
         setActionLoading(`leader-${member.entraId}`);
+
         const res = await toggleCommitteeLeader(
             member.directusMembershipId,
             member.isLeader,
@@ -147,9 +155,9 @@ export default function CommitteeManagementIsland({ initialCommittees, totalUniq
             member.entraId
         );
         if (res.success) {
-            setMembers(prev => prev.map(m => m.entraId === member.entraId ? { ...m, isLeader: !m.isLeader } : m));
             showToast(`Status '${member.isLeader ? 'Lid' : 'Leider'}' succesvol bijgewerkt`, 'success');
         } else {
+            setMembers(previousMembers); // Rollback
             showToast(res.error ?? 'Bijwerken mislukt', 'error');
         }
         setActionLoading(null);
@@ -172,14 +180,35 @@ export default function CommitteeManagementIsland({ initialCommittees, totalUniq
         setSavingDetail(false);
     };
 
-    const adminStats = useMemo(() => [
-        { 
-            label: selected ? 'Commissie Leden' : 'Actieve Leden', 
-            value: selected ? members.length : totalUniqueMembers, 
-            icon: Users, 
-            theme: 'indigo' 
-        },
-    ], [selected, members.length, totalUniqueMembers]);
+    // Admin stats logic moved to Hero/Toolbar actions
+    const toolbarActions = (
+        <div className="flex items-center gap-6">
+            <div className="hidden md:flex items-center gap-4 bg-[var(--beheer-card-soft)] px-4 py-2 rounded-2xl border border-[var(--beheer-border)]/50 shadow-sm">
+                <div className="flex flex-col items-center px-2">
+                    <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1">Groepen</span>
+                    <span className="text-sm font-bold text-[var(--beheer-text)] leading-none">{committees.length}</span>
+                </div>
+                <div className="w-px h-6 bg-[var(--beheer-border)]/20" />
+                <div className="flex flex-col items-center px-2">
+                    <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1">
+                        {selected ? 'C. Leden' : 'Totaal Leden'}
+                    </span>
+                    <span className="text-sm font-bold text-[var(--beheer-text)] leading-none">
+                        {selected ? members.length : totalUniqueMembers}
+                    </span>
+                </div>
+            </div>
+            
+            <button
+                onClick={handleRefresh}
+                disabled={refreshing}
+                className="flex items-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-xs font-semibold hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50"
+            >
+                <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+                Verversen
+            </button>
+        </div>
+    );
 
     return (
         <div className="min-h-screen bg-[var(--bg-main)]">
@@ -187,20 +216,10 @@ export default function CommitteeManagementIsland({ initialCommittees, totalUniq
                 title="Commissies"
                 subtitle="Beheer commissies, leden en Azure-groepen"
                 backHref="/beheer"
-                actions={
-                    <button
-                        onClick={handleRefresh}
-                        disabled={refreshing}
-                        className="flex items-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-[10px] font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50"
-                    >
-                        <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-                        Verversen
-                    </button>
-                }
+                actions={toolbarActions}
             />
 
-            <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700">
-                <AdminStatsBar stats={adminStats} />
+            <div className="container mx-auto px-4 py-8 max-w-7xl">
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                     <div className="lg:col-span-4">
@@ -219,8 +238,8 @@ export default function CommitteeManagementIsland({ initialCommittees, totalUniq
                         {!selected ? (
                             <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm ring-1 ring-[var(--beheer-border)] p-24 text-center border-2 border-dashed border-[var(--beheer-border)] opacity-60">
                                 <Users className="h-16 w-16 text-[var(--beheer-text-muted)] mx-auto mb-6 opacity-20" />
-                                <h3 className="text-xl font-black text-[var(--beheer-text)] uppercase tracking-tight mb-2">Geen selectie</h3>
-                                <p className="text-[var(--beheer-text-muted)] font-black uppercase tracking-widest text-[10px] max-w-xs mx-auto opacity-60">
+                                <h3 className="text-xl font-semibold text-[var(--beheer-text)] mb-2">Geen selectie</h3>
+                                <p className="text-[var(--beheer-text-muted)] font-semibold text-xs max-w-xs mx-auto opacity-60">
                                     Kies een groep uit de lijst om de details en leden te beheren.
                                 </p>
                             </div>

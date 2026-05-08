@@ -4,17 +4,9 @@ import { useState, useEffect } from 'react';
 import { X, Search, Check, Loader2, User, UserPlus, XCircle, CheckCircle } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { searchMembersAction, createManualSignupAction } from '@/server/actions/aanmeldingen.actions';
+import { createManualSignupAction } from '@/server/actions/aanmeldingen.actions';
 import { UserBasic } from '@salvemundi/validations';
-
-function useDebounce<T>(value: T, delay: number): T {
-    const [debouncedValue, setDebouncedValue] = useState<T>(value);
-    useEffect(() => {
-        const timer = setTimeout(() => setDebouncedValue(value), delay);
-        return () => clearTimeout(timer);
-    }, [value, delay]);
-    return debouncedValue;
-}
+import UserSearch from '@/components/ui/admin/UserSearch';
 
 interface ManualSignupModalProps {
     isOpen: boolean;
@@ -32,11 +24,8 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName,
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
     // Member specific state
-    const [memberQuery, setMemberQuery] = useState('');
     const [memberResults, setMemberResults] = useState<UserBasic[]>([]);
     const [selectedMember, setSelectedMember] = useState<UserBasic | null>(null);
-    const [isSearchingMember, setIsSearchingMember] = useState(false);
-    const debouncedMemberQuery = useDebounce(memberQuery, 300);
 
     // Guest specific state
     const [guestName, setGuestName] = useState('');
@@ -49,33 +38,11 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName,
         }
     }, [isOpen]);
 
-    // Effect for searching members
-    useEffect(() => {
-        const searchMembers = async () => {
-            if (debouncedMemberQuery.length < 2) {
-                setMemberResults([]);
-                return;
-            }
-
-            setIsSearchingMember(true);
-            const res = await searchMembersAction(debouncedMemberQuery);
-            if (res.success && res.data) {
-                setMemberResults(res.data);
-            } else {
-                setMemberResults([]);
-            }
-            setIsSearchingMember(false);
-        };
-
-        searchMembers();
-    }, [debouncedMemberQuery]);
-
     const resetForm = () => {
         setActiveTab('member');
         setIsLoading(false);
         setError(null);
         setSuccessMessage(null);
-        setMemberQuery('');
         setMemberResults([]);
         setSelectedMember(null);
         setGuestName('');
@@ -250,65 +217,11 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName,
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className="relative">
-                                                <div className="relative group">
-                                                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-[var(--beheer-text-muted)] group-focus-within:text-[var(--beheer-accent)] transition-colors z-20" />
-                                                    <input
-                                                        suppressHydrationWarning
-                                                        type="text"
-                                                        placeholder="TYP NAAM OM TE ZOEKEN..."
-                                                        value={memberQuery}
-                                                        onChange={(e) => setMemberQuery(e.target.value)}
-                                                        onKeyDown={(e) => {
-                                                            if (e.key === 'Enter') {
-                                                                e.preventDefault();
-                                                                if (memberResults.length > 0) {
-                                                                    handleMemberSelect(memberResults[0]);
-                                                                }
-                                                            }
-                                                        }}
-                                                        className="beheer-input !pl-14 h-14 text-[10px] font-semibold  tracking-[0.2em] focus:ring-4 focus:ring-[var(--beheer-accent)]/10"
-                                                        autoFocus
-                                                        autoComplete="off"
-                                                    />
-                                                    {isSearchingMember && (
-                                                        <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                                                            <Loader2 className="h-5 w-5 animate-spin text-[var(--beheer-accent)]" />
-                                                        </div>
-                                                    )}
-                                                </div>
-
-                                                {/* Premium Floating Results */}
-                                                {memberResults.length > 0 && !selectedMember && (
-                                                    <div className="w-full mt-3 bg-[var(--beheer-card-bg)]/95 backdrop-blur-xl border border-[var(--beheer-border)] rounded-2xl shadow-2xl max-h-64 overflow-y-auto py-3 z-50 absolute animate-in fade-in slide-in-from-top-4 duration-300">
-                                                        {memberResults.map((user) => (
-                                                            <button
-                                                                key={user.id}
-                                                                type="button"
-                                                                onClick={() => handleMemberSelect(user)}
-                                                                className="w-full text-left px-5 py-4 hover:bg-[var(--beheer-accent)]/10 group transition-all flex items-center justify-between border-b last:border-0 border-[var(--beheer-border)]/50"
-                                                            >
-                                                                <div className="flex flex-col gap-0.5">
-                                                                    <span className="font-semibold text-[var(--beheer-text)] text-xs  tracking-tight group-hover:text-[var(--beheer-accent)] transition-colors">
-                                                                        {user.first_name} {user.last_name}
-                                                                    </span>
-                                                                    <span className="text-[9px]  tracking-[0.15em] font-bold text-[var(--beheer-text-muted)]">
-                                                                        {user.email}
-                                                                    </span>
-                                                                </div>
-                                                                <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-[var(--beheer-accent)] text-white p-1.5 rounded-lg">
-                                                                    <Check className="h-3 w-3" />
-                                                                </div>
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                                {memberQuery.length >= 2 && !isSearchingMember && memberResults.length === 0 && (
-                                                    <div className="mt-4 flex items-center justify-center py-8 bg-[var(--beheer-card-soft)]/50 rounded-2xl border border-dashed border-[var(--beheer-border)]">
-                                                        <p className="text-[10px] font-semibold  tracking-widest text-[var(--beheer-text-muted)] opacity-50">Niemand gevonden.</p>
-                                                    </div>
-                                                )}
-                                            </div>
+                                        <UserSearch 
+                                            onSelect={handleMemberSelect}
+                                            placeholder="TYP NAAM OM TE ZOEKEN..."
+                                            autoFocus
+                                        />
                                         )}
                                     </div>
                                 ) : (
