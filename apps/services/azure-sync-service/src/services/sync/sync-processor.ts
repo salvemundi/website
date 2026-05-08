@@ -2,7 +2,7 @@ import { AzureUser, GraphService } from '../graph.service.js';
 import { DirectusUser } from '../../types/schema.js';
 import { DirectusService } from '../directus.service.js';
 import { SyncContext } from './sync-types.js';
-import { parseAzureDate } from './sync-helpers.js';
+import { parseAzureDate, sanitizeAzureDate } from './sync-helpers.js';
 import { SyncLifecycle } from './sync-lifecycle.js';
 
 export class SyncProcessor {
@@ -35,21 +35,21 @@ export class SyncProcessor {
             
             let dob: string | undefined = undefined;
             if (csa?.Geboortedatum) {
-                dob = csa.Geboortedatum.includes('-') ? csa.Geboortedatum : parseAzureDate(csa.Geboortedatum) || undefined;
+                dob = sanitizeAzureDate(csa.Geboortedatum.includes('-') ? csa.Geboortedatum : parseAzureDate(csa.Geboortedatum)) || undefined;
             } else if (aUser.birthday) {
-                dob = new Date(aUser.birthday).toISOString().split('T')[0];
+                dob = sanitizeAzureDate(new Date(aUser.birthday).toISOString().split('T')[0]) || undefined;
             }
 
             let expiry: string | undefined = undefined;
             const date = csa?.VerloopdatumStr || csa?.Verloopdatum;
             if (date) {
-                expiry = parseAzureDate(date) || undefined;
+                expiry = sanitizeAzureDate(parseAzureDate(date)) || undefined;
             }
 
             let paidDate: string | undefined = undefined;
             const pDate = csa?.OrigineleBetaalDatumStr || csa?.OrigineleBetaalDatum;
             if (pDate) {
-                paidDate = parseAzureDate(pDate) || undefined;
+                paidDate = sanitizeAzureDate(parseAzureDate(pDate)) || undefined;
             }
 
             try {
@@ -90,19 +90,25 @@ export class SyncProcessor {
 
         if (fields.includes('membership_expiry')) {
             const date = csa?.VerloopdatumStr || csa?.Verloopdatum;
-            if (date) updatePayload.membership_expiry = parseAzureDate(date);
+            const parsed = date ? sanitizeAzureDate(parseAzureDate(date)) : null;
+            if (parsed) updatePayload.membership_expiry = parsed;
         }
 
         if (fields.includes('geboortedatum')) {
+            let azureDob: string | null = null;
             if (csa?.Geboortedatum) {
-                updatePayload.date_of_birth = csa.Geboortedatum.includes('-') ? csa.Geboortedatum : parseAzureDate(csa.Geboortedatum);
+                azureDob = sanitizeAzureDate(csa.Geboortedatum.includes('-') ? csa.Geboortedatum : parseAzureDate(csa.Geboortedatum));
             } else if (aUser.birthday) {
-                updatePayload.date_of_birth = new Date(aUser.birthday).toISOString().split('T')[0];
+                azureDob = sanitizeAzureDate(new Date(aUser.birthday).toISOString().split('T')[0]);
             }
+
+            if (azureDob) updatePayload.date_of_birth = azureDob;
         }
 
-        if (fields.includes('originele_betaaldatum') && csa?.OrigineleBetaalDatumStr) {
-            updatePayload.originele_betaaldatum = parseAzureDate(csa.OrigineleBetaalDatumStr);
+        if (fields.includes('originele_betaaldatum')) {
+            const pDate = csa?.OrigineleBetaalDatumStr || csa?.OrigineleBetaalDatum;
+            const parsed = pDate ? sanitizeAzureDate(parseAzureDate(pDate)) : null;
+            if (parsed) updatePayload.originele_betaaldatum = parsed;
         }
 
         if (fields.includes('phone_number') && aUser.mobilePhone) {

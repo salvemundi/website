@@ -173,7 +173,7 @@ export class ProvisionWorkerService {
                                             'Content-Type': 'application/json'
                                         },
                                         body: JSON.stringify({
-                                            type: 'provisioning_failed',
+                                            type: 'system_provisioning_failed',
                                             status: 'ERROR',
                                             payload: { 
                                                 email: task.email, 

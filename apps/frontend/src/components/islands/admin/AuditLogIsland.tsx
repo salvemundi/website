@@ -20,7 +20,6 @@ import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 
-import AuditHeader from './audit/AuditHeader';
 import PendingTab from './audit/PendingTab';
 import LogsTab from './audit/LogsTab';
 import QueuesTab from './audit/QueuesTab';
@@ -203,29 +202,43 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
     ];
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700">
-            <AuditHeader 
-                stats={adminStats}
-                manualApproval={manualApproval}
-                onToggleManualApproval={toggleManualApproval}
-            />
+        <div className="container mx-auto px-4 py-8 max-w-7xl">
+            <div className="space-y-6 mt-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex gap-1 bg-[var(--beheer-card-soft)] p-1 rounded-2xl w-fit border border-[var(--beheer-border)]">
+                        {[
+                            { id: 'pending', label: 'Wachtrij', icon: Clock },
+                            { id: 'admin_logs', label: 'Beheerder', icon: Shield },
+                            { id: 'system_logs', label: 'Systeem', icon: Server },
+                            { id: 'queues', label: 'Wachtrijen', icon: RefreshCw },
+                        ].map(tab => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-[11px] transition-all ${activeTab === tab.id ? 'bg-[var(--beheer-card-bg)] shadow-md text-[var(--beheer-accent)]' : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)]'}`}
+                            >
+                                <tab.icon className="h-3 w-3" /> {tab.label}
+                            </button>
+                        ))}
+                    </div>
 
-            <div className="space-y-6 mt-6">
-                <div className="flex gap-1 bg-[var(--beheer-card-soft)] p-1 rounded-2xl w-fit border border-[var(--beheer-border)]">
-                    {[
-                        { id: 'pending', label: 'Wachtrij', icon: Clock },
-                        { id: 'admin_logs', label: 'Beheerder', icon: Shield },
-                        { id: 'system_logs', label: 'Systeem', icon: Server },
-                        { id: 'queues', label: 'Wachtrijen', icon: RefreshCw },
-                    ].map(tab => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] transition-all ${activeTab === tab.id ? 'bg-[var(--beheer-card-bg)] shadow-md text-[var(--beheer-accent)]' : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)]'}`}
+                    {/* Compact Config Toggle */}
+                    <div className="flex items-center gap-4 px-4 py-2 bg-[var(--beheer-card-soft)] rounded-2xl border border-[var(--beheer-border)] shadow-sm">
+                        <div className="flex items-center gap-2">
+                            <Shield className={`h-3.5 w-3.5 ${manualApproval ? 'text-amber-500' : 'text-green-500'}`} />
+                            <span className="text-[11px] font-bold text-[var(--beheer-text)] leading-tight">
+                                {manualApproval 
+                                    ? "Handmatige goedkeuring is ACTIEF. Alle aanmeldingen moeten worden goedgekeurd."
+                                    : "Automatische goedkeuring is ACTIEF. Aanmeldingen worden direct verwerkt."}
+                            </span>
+                        </div>
+                        <button 
+                            onClick={toggleManualApproval}
+                            className={`relative inline-flex h-5 w-10 shrink-0 items-center rounded-full transition-all focus:outline-none ${manualApproval ? 'bg-amber-500' : 'bg-green-500'}`}
                         >
-                            <tab.icon className="h-3.5 w-3.5" /> {tab.label}
+                            <span className={`inline-block h-3 w-3 transform rounded-full bg-white shadow-sm transition-transform ${manualApproval ? 'translate-x-[1.2rem]' : 'translate-x-1'}`} />
                         </button>
-                    ))}
+                    </div>
                 </div>
 
                 {activeTab === 'pending' && (
@@ -260,7 +273,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                         actions={
                             <a
                                 href="/beheer/sync"
-                                className="flex items-center gap-2 px-3 py-1.5 bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-[var(--beheer-accent)]/20 transition-all active:scale-95"
+                                className="flex items-center gap-2 px-3 py-1.5 bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] rounded-lg text-xs font-semibold hover:bg-[var(--beheer-accent)]/20 transition-all active:scale-95"
                             >
                                 Sync Beheren
                             </a>
