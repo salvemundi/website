@@ -18,7 +18,7 @@ declare const self: ServiceWorkerGlobalScope & {
 const manifest = self.__SW_MANIFEST;
 
 const serwist = new Serwist({
-  precacheEntries: manifest ? [...manifest, { url: "/offline", revision: "v1" }] : [{ url: "/offline", revision: "v1" }],
+  precacheEntries: manifest,
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
@@ -66,16 +66,6 @@ const serwist = new Serwist({
     },
     ...defaultCache,
   ],
-  fallbacks: {
-    entries: [
-      {
-        url: "/offline",
-        matcher({ request }) {
-          return request.mode === "navigate";
-        },
-      },
-    ],
-  },
 });
 
 serwist.addEventListeners();

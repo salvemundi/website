@@ -11,13 +11,14 @@ import { STICKER_FIELDS, stickerPublicSchema } from "@salvemundi/validations";
 import { query } from '@/lib/database';
 import { z } from 'zod';
 
-import { cacheLife } from 'next/cache';
+import { cacheLife, cacheTag } from 'next/cache';
 
 const stickerListSchema = z.array(stickerPublicSchema);
 
 export async function getPublicStickers() {
     'use cache';
-    cacheLife('minutes');
+    cacheLife('max');
+    cacheTag('stickers');
     const sql = `
         SELECT 
             s.*,
@@ -37,6 +38,7 @@ export async function getPublicStickers() {
         id: Number(row.id),
         latitude: Number(row.latitude),
         longitude: Number(row.longitude),
+        date_created: row.date_created instanceof Date ? row.date_created.toISOString() : row.date_created,
         user_created: row.user_id ? {
             id: row.user_id,
             first_name: row.first_name,

@@ -172,11 +172,6 @@ export default function SystemManagementIsland({
                                                     <Clock className="h-3.5 w-3.5 text-[var(--beheer-accent)]" />
                                                     {service.latency ? `${service.latency}ms` : 'N/A'}
                                                 </div>
-                                                <div className="h-3 w-[1px] bg-[var(--beheer-border)]"></div>
-                                                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">
-                                                    <Activity className="h-3.5 w-3.5 text-[var(--beheer-accent)]" />
-                                                    SSL SECURE
-                                                </div>
                                             </div>
                                         </div>
 
