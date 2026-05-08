@@ -50,6 +50,8 @@ export async function getStickers() {
         return rows.map((s) => ({
             ...s,
             id: Number(s.id),
+            latitude: Number(s.latitude),
+            longitude: Number(s.longitude),
             user_created: s.user_id ? {
                 id: s.user_id,
                 first_name: s.first_name,

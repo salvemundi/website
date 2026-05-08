@@ -171,7 +171,18 @@ export default function StickerMapIsland({
                 <StatCard label="Totaal" value={stickers.length} icon={MapIcon} color="text-purple-500" />
                 <StatCard label="Landen" value={new Set(stickers.map((s: StickerPublic) => s.country?.toLowerCase()).filter(Boolean)).size} icon={Globe} color="text-blue-500" />
                 <StatCard label="Steden" value={new Set(stickers.map((s: StickerPublic) => s.city?.toLowerCase()).filter(Boolean)).size} icon={Award} color="text-green-500" />
-                <StatCard label="Top Land" value="NL" icon={TrendingUp} color="text-orange-500" />
+                <StatCard 
+                    label="Top Land" 
+                    value={(() => {
+                        const counts: Record<string, number> = {};
+                        stickers.forEach(s => {
+                            if (s.country) counts[s.country] = (counts[s.country] || 0) + 1;
+                        });
+                        return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || '..';
+                    })()} 
+                    icon={TrendingUp} 
+                    color="text-orange-500" 
+                />
             </div>
 
             {/* Map Container - LOCKED GEOMETRY */}

@@ -33,7 +33,7 @@ async function StickersContent() {
     });
 
     const [stickers, session] = await Promise.all([
-        stickersPromise.catch(() => []),
+        stickersPromise,
         sessionPromise.catch(() => null)
     ]);
 
