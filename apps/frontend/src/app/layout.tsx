@@ -19,6 +19,7 @@ export const viewport: Viewport = {
         { media: '(prefers-color-scheme: light)', color: '#ffffff' },
         { media: '(prefers-color-scheme: dark)', color: '#1a141b' },
     ],
+    viewportFit: 'cover',
 };
 
 export const metadata: Metadata = {
@@ -34,7 +35,7 @@ export const metadata: Metadata = {
     publisher: 'SV Salve Mundi',
     appleWebApp: {
         capable: true,
-        statusBarStyle: 'default',
+        statusBarStyle: 'black-translucent',
         title: 'Salve Mundi',
     },
     openGraph: {
