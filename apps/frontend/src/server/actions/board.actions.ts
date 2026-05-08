@@ -23,19 +23,19 @@ export async function getBoardHistory(): Promise<Board[]> {
                             'id', bm.id,
                             'functie', bm.functie,
                             'name', bm.name,
-                            'user_id', json_build_object(
+                            'user_id', CASE WHEN u.id IS NOT NULL THEN json_build_object(
                                 'id', u.id,
                                 'first_name', u.first_name,
                                 'last_name', u.last_name,
                                 'avatar', u.avatar,
                                 'title', u.title
-                            )
+                            ) ELSE NULL END
                         )
                     ) FILTER (WHERE bm.id IS NOT NULL),
                     '[]'
                 ) as members
-            FROM board b
-            LEFT JOIN board_members bm ON b.id = bm.board_id
+            FROM "Board" b
+            LEFT JOIN "Board_Members" bm ON b.id = bm.board_id
             LEFT JOIN directus_users u ON bm.user_id = u.id
             GROUP BY b.id
             ORDER BY b.year DESC
