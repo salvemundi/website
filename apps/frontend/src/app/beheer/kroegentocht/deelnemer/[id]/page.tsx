@@ -1,6 +1,6 @@
 'use server';
 
-import SignupForm from '@/components/admin/kroegentocht/SignupForm';
+import SignupForm from '@/components/islands/admin/kroegentocht/SignupForm';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import { getPubCrawlSignup } from '@/server/actions/admin-kroegentocht.actions';
 import { notFound } from 'next/navigation';

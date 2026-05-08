@@ -3,7 +3,7 @@ import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import ActivitiesBannerIsland from '@/components/islands/activities/ActivitiesBannerIsland';
 import ActivitiesProviderIsland from '@/components/islands/activities/ActivitiesProviderIsland';
-import { getActivities } from '@/server/actions/activiteit-actions';
+import { getActivities } from '@/server/actions/public-activiteit.actions';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

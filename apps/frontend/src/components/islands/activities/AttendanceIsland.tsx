@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getActivitySignups } from '@/server/actions/activiteit-actions';
+import { getActivitySignups } from '@/server/actions/admin-activiteit.actions';
 import { toggleCheckInAction } from '@/server/actions/aanmeldingen.actions';
 import { Search, UserCheck, UserX, QrCode, Loader2, RefreshCw } from 'lucide-react';
 

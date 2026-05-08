@@ -20,8 +20,10 @@ import { useAdminToast } from '@/hooks/use-admin-toast';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { toLocalISOString } from '@/lib/utils/date-utils';
 
+import { type PubCrawlEvent } from '@salvemundi/validations/schema/pub-crawl.zod';
+
 interface EventFormProps {
-    event?: any;
+    event?: PubCrawlEvent;
 }
 
 export default function EventForm({ event }: EventFormProps) {
@@ -51,8 +53,9 @@ export default function EventForm({ event }: EventFormProps) {
             const result = await uploadPubCrawlImage(uploadData);
             setFormData(prev => ({ ...prev, image: result.id }));
             showToast('Afbeelding succesvol geüpload', 'success');
-        } catch (err: any) {
-            showToast('Upload mislukt: ' + err.message, 'error');
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Upload mislukt';
+            showToast(message, 'error');
         } finally {
             setUploading(false);
         }
@@ -69,9 +72,10 @@ export default function EventForm({ event }: EventFormProps) {
                 showToast('Event succesvol opgeslagen', 'success');
                 router.push('/beheer/kroegentocht');
                 router.refresh();
-            } catch (err: any) {
-                console.error('[EventForm] Save error:', err);
-                showToast(err.message || 'Fout bij opslaan', 'error');
+            } catch (err) {
+                const message = err instanceof Error ? err.message : 'Fout bij opslaan';
+                console.error('[EventForm] Save error:', message);
+                showToast(message, 'error');
             }
         });
     };
@@ -85,7 +89,7 @@ export default function EventForm({ event }: EventFormProps) {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         <div className="md:col-span-2 space-y-6">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] ml-1 flex items-center gap-2">
+                                <label className="text-[10px] font-semibold text-[var(--text-muted)] ml-1 flex items-center gap-2">
                                     <Type className="h-3 w-3" /> Event Naam
                                 </label>
                                 <input
@@ -100,7 +104,7 @@ export default function EventForm({ event }: EventFormProps) {
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] ml-1 flex items-center gap-2">
+                                    <label className="text-[10px] font-semibold text-[var(--text-muted)] ml-1 flex items-center gap-2">
                                         <Calendar className="h-3 w-3" /> Datum
                                     </label>
                                     <input
@@ -113,7 +117,7 @@ export default function EventForm({ event }: EventFormProps) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] ml-1 flex items-center gap-2">
+                                    <label className="text-[10px] font-semibold text-[var(--text-muted)] ml-1 flex items-center gap-2">
                                         <Mail className="h-3 w-3" /> Contact E-mail
                                     </label>
                                     <input
@@ -129,7 +133,7 @@ export default function EventForm({ event }: EventFormProps) {
 
                         {/* Image Upload Sidebar */}
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] ml-1 flex items-center gap-2">
+                            <label className="text-[10px] font-semibold text-[var(--text-muted)] ml-1 flex items-center gap-2">
                                 <ImagePlus className="h-3 w-3" /> Event Afbeelding
                             </label>
                             <div className="relative group/img h-[184px]">
@@ -159,7 +163,7 @@ export default function EventForm({ event }: EventFormProps) {
                                                 <div className="p-4 rounded-full bg-[var(--bg-card)] mb-2 group-hover:scale-110 transition-transform">
                                                     <ImagePlus className="h-6 w-6 text-[var(--text-muted)]" />
                                                 </div>
-                                                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Upload Image</span>
+                                                <span className="text-[10px] font-semibold text-[var(--text-muted)]">Upload Image</span>
                                             </>
                                         )}
                                         <input 
@@ -177,7 +181,7 @@ export default function EventForm({ event }: EventFormProps) {
 
                     {/* Description Full Width */}
                     <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] ml-1 flex items-center gap-2">
+                        <label className="text-[10px] font-semibold text-[var(--text-muted)] ml-1 flex items-center gap-2">
                             <FileText className="h-3 w-3" /> Beschrijving
                         </label>
                         <textarea
@@ -193,7 +197,7 @@ export default function EventForm({ event }: EventFormProps) {
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                 <Link 
                     href="/beheer/kroegentocht"
-                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-xl)] text-xs font-black uppercase tracking-widest text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-main)] transition-all active:scale-95"
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-xl)] text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-main)] transition-all active:scale-95"
                 >
                     <ArrowLeft className="h-4 w-4" />
                     Annuleren
@@ -202,7 +206,7 @@ export default function EventForm({ event }: EventFormProps) {
                 <button
                     type="submit"
                     disabled={isPending}
-                    className="w-full sm:w-auto flex items-center justify-center gap-3 px-12 py-5 bg-[var(--theme-purple)] text-white font-black text-sm uppercase tracking-[0.2em] rounded-[var(--radius-xl)] shadow-[var(--shadow-glow)] hover:opacity-95 transition-all active:scale-95 disabled:opacity-50"
+                    className="w-full sm:w-auto flex items-center justify-center gap-3 px-12 py-5 bg-[var(--theme-purple)] text-white font-semibold text-sm rounded-[var(--radius-xl)] shadow-[var(--shadow-glow)] hover:opacity-95 transition-all active:scale-95 disabled:opacity-50"
                 >
                     {isPending ? (
                         <Loader2 className="h-5 w-5 animate-spin" />

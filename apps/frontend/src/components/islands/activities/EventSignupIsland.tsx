@@ -4,7 +4,7 @@ import React, { useState, useEffect, useTransition } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/features/auth/providers/auth-provider';
-import { signupForActivity } from '@/server/actions/activiteit-actions';
+import { signupForActivity } from '@/server/actions/public-activiteit.actions';
 import { eventSignupFormSchema, type EventSignupForm } from '@salvemundi/validations/schema/activity.zod';
 import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
@@ -123,7 +123,7 @@ export default function EventSignupIsland({
             }
 
             try {
-                const { retryActivityPayment } = await import('@/server/actions/activiteit-actions');
+                const { retryActivityPayment } = await import('@/server/actions/public-activiteit-status.actions');
                 const result = await retryActivityPayment(signupId);
                 if (result.success && result.checkoutUrl) {
                     window.location.href = result.checkoutUrl;

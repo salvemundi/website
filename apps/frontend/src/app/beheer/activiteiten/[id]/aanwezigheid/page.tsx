@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getActivityById, getActivitySignups } from '@/server/actions/activiteit-actions';
+import { getActivityById } from '@/server/actions/public-activiteit.actions';
+import { getActivitySignups } from '@/server/actions/admin-activiteit.actions';
 import AttendanceIsland from '@/components/islands/activities/AttendanceIsland';
 import AnimatedBeheerHeader from '@/components/ui/admin/AnimatedBeheerHeader';
 import { ClipboardCheck } from 'lucide-react';
