@@ -66,8 +66,10 @@ export function HeaderShell({ children, mobileMenu }: HeaderShellProps) {
         <header
             ref={headerRef}
             className={cn(
-                "fixed z-[100] w-full h-20 transition-all duration-300",
-                isScrolled ? "bg-white/95 dark:bg-black/95 backdrop-blur-md shadow-md" : "bg-transparent"
+                "fixed z-[100] w-full transition-all duration-300 pt-[env(safe-area-inset-top,0px)]",
+                isScrolled 
+                    ? "h-20 bg-white/95 dark:bg-black/95 backdrop-blur-md shadow-md" 
+                    : "h-[calc(80px+env(safe-area-inset-top,0px))] bg-white/50 dark:bg-black/50 backdrop-blur-sm"
             )}
             style={{ top: 'var(--impersonation-banner-height, 0px)' }}
         >
