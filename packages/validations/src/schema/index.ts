@@ -12,3 +12,4 @@ export * from './committees.zod.js';
 export * from './pub-crawl.zod.js';
 export * from './intro.zod.js';
 export * from './admin.zod.js';
+export * from './stickers.zod.js';

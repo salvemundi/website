@@ -15,28 +15,10 @@ const ASSET_PROXY_URL = '/api/assets';
 
 import { type EnrichedUser } from '@/types/auth';
 
-interface Sticker {
-    id: number;
-    latitude: number;
-    longitude: number;
-    location_name: string;
-    description: string | null;
-    city: string | null;
-    country: string | null;
-    image: string | null;
-    date_created?: string;
-    address?: string;
-    user_created: {
-        id: string;
-        first_name: string | null;
-        last_name: string | null;
-        avatar: string | null;
-        email?: string | null;
-    } | null;
-}
+import { type StickerPublic } from '@salvemundi/validations';
 
 interface StickerMapProps {
-    stickers?: Sticker[];
+    stickers?: StickerPublic[];
     user?: EnrichedUser | null;
     selectedLocation?: { lat: number; lng: number } | null;
     filterCountry?: string;
@@ -60,7 +42,7 @@ export default function StickerMap({
     zoom = 2,
     center = [52.1326, 5.2913] // Netherlands default
 }: StickerMapProps) {
-    const [popupInfo, setPopupInfo] = useState<Sticker | null>(null);
+    const [popupInfo, setPopupInfo] = useState<StickerPublic | null>(null);
     const [isDark, setIsDark] = useState<boolean>(false);
     const [showImage, setShowImage] = useState<boolean>(false);
 
