@@ -71,7 +71,7 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, onExport,
     };
 
     return (
-        <div className="animate-in fade-in duration-500">
+        <div>
             <div className="flex flex-col sm:flex-row gap-3 mb-8">
                 <div className="flex-1 relative">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--beheer-text-muted)]" />
@@ -164,7 +164,7 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, onExport,
                                         </tr>
                                         {isExpanded && (
                                             <tr className="bg-[var(--beheer-card-soft)]/30">
-                                                <td colSpan={5} className="px-12 py-10 animate-in slide-in-from-top-2 duration-300">
+                                                <td colSpan={5} className="px-12 py-10">
                                                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 text-sm font-medium text-[var(--beheer-text-muted)]">
                                                         <div className="lg:col-span-2 space-y-8">
                                                         {editingId === s.id ? (

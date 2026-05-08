@@ -72,7 +72,7 @@ export default function IntroBlogsTab({ blogs, onSave, onDelete, saving, deletin
     };
 
     return (
-        <div className="animate-in fade-in duration-500">
+        <div>
             <div className="flex justify-between items-center mb-8">
                 <div className="flex flex-col">
                     <h2 className="text-xl font-semibold text-[var(--beheer-text)] tracking-tight">Blogs</h2>
@@ -168,7 +168,7 @@ export default function IntroBlogsTab({ blogs, onSave, onDelete, saving, deletin
                                     </tr>
                                     {isExpanded && (
                                         <tr className="bg-[var(--beheer-card-soft)]/30">
-                                            <td colSpan={5} className="px-12 py-10 animate-in slide-in-from-top-2 duration-300">
+                                            <td colSpan={5} className="px-12 py-10">
                                                 {isEditing ? (
                                                     <BlogEditForm 
                                                         blog={blog}

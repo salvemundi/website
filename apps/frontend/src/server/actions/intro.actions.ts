@@ -14,7 +14,7 @@ import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 
 import { getSystemDirectus } from '@/lib/directus';
-import { readItems, createItem } from '@directus/sdk';
+import { readItems, createItem, updateItem } from '@directus/sdk';
 import { query } from '@/lib/database';
 import { cacheLife, revalidateTag, revalidatePath, unstable_noStore as noStore } from 'next/cache';
 import { normalizeDate } from '@/lib/utils/date-utils';
@@ -48,35 +48,50 @@ export async function getIntroSettings() {
 }
 
 export async function hasParentSignup(): Promise<boolean> {
+    const check = await checkParentSignupInternal();
+    return check.exists;
+}
+
+async function checkParentSignupInternal(): Promise<{ exists: boolean; record?: { id: number; user_id: string | null; email: string | null } }> {
     const session = await auth.api.getSession({
         headers: await headers(),
     });
 
-    if (!session?.user) return false;
+    if (!session?.user) return { exists: false };
 
     try {
+        // 1. Primary check: Strict User ID match
         const signups = await getSystemDirectus().request(
             readItems('intro_parent_signups', {
-                filter: {
-                    _or: [
-                        { user_id: { _eq: session.user.id } },
-                        { email: { _eq: session.user.email } }
-                    ]
-                },
+                filter: { user_id: { _eq: session.user.id } },
                 fields: ['id', 'user_id', 'email'],
                 limit: 1
             })
         );
-        
-        const exists = signups.length > 0;
-        console.log(`[hasParentSignup] User ${session.user.id} / ${session.user.email} exists in Directus:`, exists);
-        if (exists) {
-            console.log('[hasParentSignup] Found record:', signups[0]);
+
+        if (signups.length > 0) {
+            return { exists: true, record: signups[0] as any };
         }
-        return exists;
+
+        // 2. Fallback check: Email match (legacy or ID change)
+        const emailSignups = await getSystemDirectus().request(
+            readItems('intro_parent_signups', {
+                filter: { email: { _eq: session.user.email } },
+                fields: ['id', 'user_id', 'email'],
+                limit: 1
+            })
+        );
+
+        if (emailSignups.length > 0) {
+            const record = emailSignups[0] as any;
+            console.warn(`[hasParentSignup] ID Mismatch! Email ${session.user.email} matched ID ${record.user_id}, but session is ${session.user.id}.`);
+            return { exists: true, record };
+        }
+
+        return { exists: false };
     } catch (e) {
         console.error('[hasParentSignup] Directus check failed:', e);
-        return false;
+        return { exists: false };
     }
 }
 
@@ -178,9 +193,20 @@ export async function submitIntroParentSignup(data: IntroParentSignupForm): Prom
         return { success: false, error: 'Je moet ingelogd zijn als lid om je aan te melden als Intro Ouder' };
     }
 
-    // Prevents unique constraint error by checking existence first
-    const alreadySignedUp = await hasParentSignup();
-    if (alreadySignedUp) {
+    // Prevents unique constraint error and ensures data integrity (linking)
+    const check = await checkParentSignupInternal();
+    if (check.exists && check.record) {
+        // If it matched by email but not ID, fix the integrity by updating the ID
+        if (check.record.user_id !== session.user.id) {
+            console.log(`[IntroParentSignup] Fixing Data Integrity: Linking email ${session.user.email} to current User ID ${session.user.id}`);
+            try {
+                await getSystemDirectus().request(updateItem('intro_parent_signups', check.record.id, {
+                    user_id: session.user.id
+                }));
+            } catch (e) {
+                console.error('[IntroParentSignup] Failed to fix User ID link:', e);
+            }
+        }
         return { success: true };
     }
 
