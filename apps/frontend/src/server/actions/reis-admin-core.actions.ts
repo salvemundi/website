@@ -47,8 +47,8 @@ async function handleImageUpload(formData: FormData): Promise<string | null> {
 }
  
  export async function getAdminTrips() {
-     await requireReisAdmin();
      try {
+         await requireReisAdmin();
          return await fetchAllTripsDb();
      } catch (error) {
          
@@ -57,8 +57,8 @@ async function handleImageUpload(formData: FormData): Promise<string | null> {
  }
  
  export async function getAdminTripById(id: number) {
-     await requireReisAdmin();
      try {
+         await requireReisAdmin();
          const { rows } = await query('SELECT id, name, is_bus_trip FROM trips WHERE id = $1 LIMIT 1', [id]);
          if (!rows?.[0]) return null;
          return {
