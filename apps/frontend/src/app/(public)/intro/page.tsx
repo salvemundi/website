@@ -15,7 +15,7 @@ export const metadata = {
 };
 
 const IntroInfoStudent = () => (
-    <div className="animate-in fade-in duration-700">
+    <div>
         <h2 className="text-2xl lg:text-3xl font-bold mb-4 text-theme dark:text-white">
             Klaar om je studententijd met een knal te beginnen?
         </h2>
@@ -40,7 +40,7 @@ const IntroInfoStudent = () => (
 );
 
 const IntroInfoParent = () => (
-    <div className="animate-in fade-in duration-700">
+    <div>
         <h2 className="text-2xl lg:text-3xl font-bold mb-4 text-theme dark:text-white">
             Word Intro Ouder — begeleid de nieuwe lichting
         </h2>
@@ -93,7 +93,7 @@ export default async function IntroPage() {
                     <div className="flex-1 w-full flex flex-col justify-start">
                         {isAuthenticated ? (
                             isAlreadyParent ? (
-                                <div className="bg-gradient-theme squircle-lg p-6 lg:p-8 shadow-lg text-center animate-in zoom-in duration-500">
+                                <div className="bg-gradient-theme squircle-lg p-6 lg:p-8 shadow-lg text-center">
                                     <h3 className="text-xl lg:text-2xl font-bold text-white mb-4">Je hebt je al aangemeld als Intro Ouder</h3>
                                     <p className="text-white/70">
                                         Bedankt! Je inschrijving is ontvangen. Als je iets wilt aanpassen, neem contact op met de intro commissie.

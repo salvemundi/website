@@ -74,7 +74,7 @@ export default async function ReisPage() {
     return (
         <PublicPageShell>
             <h1 className="sr-only">Reis</h1>
-            <div className="mx-auto max-w-app px-4 pt-8 pb-8 sm:py-10 md:py-12 animate-in fade-in duration-700">
+            <div className="mx-auto max-w-app px-4 pt-8 pb-8 sm:py-10 md:py-12">
                 <div className="flex flex-col lg:flex-row gap-8 items-start">
                     <ReisFormIsland
                         nextTrip={nextTrip}

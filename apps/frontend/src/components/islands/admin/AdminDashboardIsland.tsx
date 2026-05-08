@@ -6,7 +6,6 @@ import {
     Users, Calendar, TrendingUp, Gift, FileText, 
     Settings, ShieldCheck, ChevronRight 
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { formatDate } from '@/shared/lib/utils/date';
 
 interface StatProps {
@@ -17,9 +16,7 @@ interface StatProps {
 }
 
 const StatCard: React.FC<StatProps> = ({ title, value, icon, color }) => (
-    <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+    <div 
         className="bg-white dark:bg-[var(--beheer-card-bg)] p-8 rounded-[2.5rem] shadow-sm border border-slate-100 dark:border-[var(--beheer-border)] flex items-center gap-6 transition-all hover:shadow-md group relative overflow-hidden"
     >
         {/* Accent Bar */}
@@ -34,7 +31,7 @@ const StatCard: React.FC<StatProps> = ({ title, value, icon, color }) => (
             <p className="text-[10px] font-black text-slate-500 dark:text-[var(--beheer-text-muted)] uppercase tracking-widest">{title}</p>
             <h3 className="text-3xl font-black text-slate-900 dark:text-[var(--beheer-text)] mt-1">{value}</h3>
         </div>
-    </motion.div>
+    </div>
 );
 
 interface AdminDashboardIslandProps {

@@ -44,7 +44,7 @@ export default function MobileMenu({
 }: MobileMenuProps) {
     return (
         <div
-            className={`xl:hidden ${isOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
+            className={`lg:hidden ${isOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
                 } transition-opacity duration-200`}
         >
             {/* Backdrop */}
@@ -95,14 +95,6 @@ export default function MobileMenu({
                             Salve Mundi
                         </span>
                     </Link>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="rounded-full bg-[var(--bg-card)] p-2 text-[var(--text-main)] shadow-sm transition hover:bg-[var(--color-purple-100)]"
-                        aria-label="Sluit navigatie"
-                    >
-                        <X className="h-5 w-5" />
-                    </button>
                 </div>
 
                 {/* Navigatielinks */}

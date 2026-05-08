@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
-import BoardHistoryTimeline from '@/components/islands/committees/BoardHistoryTimeline';
+import BoardHistoryTimeline from '@/components/ui/committees/BoardHistoryTimeline';
 import { getBoardHistory } from '@/server/actions/board.actions';
 import BackButton from '@/components/ui/navigation/BackButton';
 import { History } from 'lucide-react';
