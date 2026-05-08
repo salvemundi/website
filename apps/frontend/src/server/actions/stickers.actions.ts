@@ -6,11 +6,14 @@ import { revalidateTag, revalidatePath } from "next/cache";
 
 import { getSystemDirectus } from "@/lib/directus";
 import { readItems } from "@directus/sdk";
-import { STICKER_FIELDS } from "@salvemundi/validations";
+import { STICKER_FIELDS, stickerPublicSchema } from "@salvemundi/validations";
 
 import { query } from '@/lib/database';
+import { z } from 'zod';
 
 import { cacheLife } from 'next/cache';
+
+const stickerListSchema = z.array(stickerPublicSchema);
 
 export async function getPublicStickers() {
     'use cache';
@@ -30,7 +33,7 @@ export async function getPublicStickers() {
         `;
         const { rows } = await query(sql);
 
-        return rows.map((row) => ({
+        const mapped = rows.map((row) => ({
             ...row,
             id: Number(row.id),
             user_created: row.user_id ? {
@@ -40,6 +43,9 @@ export async function getPublicStickers() {
                 avatar: row.avatar
             } : null
         }));
+
+        // Validate and clean data before sending to the client
+        return stickerListSchema.parse(mapped);
     } catch (error) {
         console.error('[Stickers-Action] Fetch failed:', error);
         return [];
