@@ -31,8 +31,8 @@ import {
 import { normalizeDate } from '@/lib/utils/date-utils';
 
 export async function getTripSignups(tripId: number) {
+    await requireReisAdmin();
     try {
-        await requireReisAdmin();
         return await fetchAllTripSignupsDb(tripId);
     } catch (error) {
         
@@ -41,8 +41,8 @@ export async function getTripSignups(tripId: number) {
 }
 
 export async function getTripSignup(id: number): Promise<TripSignup | null> {
+    await requireReisAdmin();
     try {
-        await requireReisAdmin();
         return await fetchTripSignupByIdDb(id);
     } catch (error) {
         
@@ -199,8 +199,8 @@ export async function updateTripSignup(prevState: unknown, formData: FormData) {
 }
 
 export async function getSignupActivities(signupId: number) {
+    await requireReisAdmin();
     try {
-        await requireReisAdmin();
         const activities = await fetchSelectedSignupActivitiesDb(signupId);
         const parsed = z.array(tripSignupActivitySchema).safeParse(activities);
 
@@ -217,8 +217,8 @@ export async function getSignupActivities(signupId: number) {
 }
 
 export async function getActivitySignups(activityId: number) {
+    await requireReisAdmin();
     try {
-        await requireReisAdmin();
         return await fetchSignupsByActivityIdDb(activityId);
     } catch (error) {
         
@@ -381,8 +381,8 @@ export async function sendBulkPaymentEmails(tripId: number, signupIds: number[],
  * Fetches all activity selections for a specific trip directly from the database.
  */
 export async function getTripSignupActivitiesAction(tripId: number) {
+    await requireReisAdmin();
     try {
-        await requireReisAdmin();
         return await fetchTripSignupActivitiesDb(tripId);
     } catch (error) {
         

@@ -58,21 +58,16 @@ const getServiceHeaders = (): HeadersInit => {
 export async function getReisSiteSettings(): Promise<ReisSiteSettings | null> {
     'use cache';
     cacheLife('minutes');
-    try {
-        const { rows } = await query('SELECT is_active, message FROM feature_flags WHERE name = $1 LIMIT 1', ['trip_registration']);
-        const flag = rows?.[0];
+    const { rows } = await query('SELECT is_active, message FROM feature_flags WHERE name = $1 LIMIT 1', ['trip_registration']);
+    const flag = rows?.[0];
 
-        if (!flag) return null;
+    if (!flag) return null;
 
-        return {
-            id: 'reis',
-            show: !!flag.is_active,
-            disabled_message: flag.message
-        };
-    } catch (err) {
-        console.error('[ReisActions] Failed to fetch site settings:', err);
-        return null;
-    }
+    return {
+        id: 'reis',
+        show: !!flag.is_active,
+        disabled_message: flag.message
+    };
 }
 
 export async function getCurrentUserProfileAction(): Promise<{ success: boolean; data?: Record<string, unknown>; error?: string }> {

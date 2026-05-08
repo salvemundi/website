@@ -18,38 +18,33 @@ const stickerListSchema = z.array(stickerPublicSchema);
 export async function getPublicStickers() {
     'use cache';
     cacheLife('minutes');
-    try {
-        const sql = `
-            SELECT 
-                s.*,
-                u.id as user_id,
-                u.first_name,
-                u.last_name,
-                u.avatar
-            FROM "Stickers" s
-            LEFT JOIN directus_users u ON s.user_created = u.id
-            WHERE s.status = 'published'
-            ORDER BY s.date_created DESC
-        `;
-        const { rows } = await query(sql);
+    const sql = `
+        SELECT 
+            s.*,
+            u.id as user_id,
+            u.first_name,
+            u.last_name,
+            u.avatar
+        FROM "Stickers" s
+        LEFT JOIN directus_users u ON s.user_created = u.id
+        WHERE s.status = 'published'
+        ORDER BY s.date_created DESC
+    `;
+    const { rows } = await query(sql);
 
-        const mapped = rows.map((row) => ({
-            ...row,
-            id: Number(row.id),
-            user_created: row.user_id ? {
-                id: row.user_id,
-                first_name: row.first_name,
-                last_name: row.last_name,
-                avatar: row.avatar
-            } : null
-        }));
+    const mapped = rows.map((row) => ({
+        ...row,
+        id: Number(row.id),
+        user_created: row.user_id ? {
+            id: row.user_id,
+            first_name: row.first_name,
+            last_name: row.last_name,
+            avatar: row.avatar
+        } : null
+    }));
 
-        // Validate and clean data before sending to the client
-        return stickerListSchema.parse(mapped);
-    } catch (error) {
-        console.error('[Stickers-Action] Fetch failed:', error);
-        return [];
-    }
+    // Validate and clean data before sending to the client
+    return stickerListSchema.parse(mapped);
 }
 
 export async function createStickerPublic(data: Record<string, unknown>) {
