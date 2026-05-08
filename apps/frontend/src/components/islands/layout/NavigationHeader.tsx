@@ -65,9 +65,9 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
                                     priority 
                                 />
                             </div>
-                            <div className="hidden text-left @[1150px]:block whitespace-nowrap shrink-0 transition-all duration-300">
+                            <div className="hidden text-left @[1024px]:block whitespace-nowrap shrink-0 transition-all duration-300">
                                 <p className="text-[13px] font-bold text-[var(--color-purple-500)] leading-none">Salve Mundi</p>
-                                <p className="text-xs font-semibold text-[var(--text-main)] mt-0.5 @[1400px]:block hidden">Fontys ICT</p>
+                                <p className="text-xs font-semibold text-[var(--text-main)] mt-0.5 @[1250px]:block hidden">Fontys ICT</p>
                             </div>
                         </Link>
                     </div>
