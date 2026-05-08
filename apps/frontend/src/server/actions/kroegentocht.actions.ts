@@ -70,36 +70,31 @@ export const getKroegentochtEvent = cache(async (): Promise<PubCrawlEvent | null
             const { toLocalISOString } = await import('@/lib/utils/date-utils');
             const today = toLocalISOString(new Date()) as string;
 
-            try {
-                const events = await fetchPubCrawlEventsDb();
-                // Sort ascending to find the nearest upcoming event
-                const nearestEvents = [...events].sort((a, b) => {
-                    const dateA = a.date ? new Date(a.date).getTime() : 0;
-                    const dateB = b.date ? new Date(b.date).getTime() : 0;
-                    return dateA - dateB;
-                });
+            const events = await fetchPubCrawlEventsDb();
+            // Sort ascending to find the nearest upcoming event
+            const nearestEvents = [...events].sort((a, b) => {
+                const dateA = a.date ? new Date(a.date).getTime() : 0;
+                const dateB = b.date ? new Date(b.date).getTime() : 0;
+                return dateA - dateB;
+            });
 
-                const event = nearestEvents.find((e) => (e.date ?? '') >= today);
+            const event = nearestEvents.find((e) => (e.date ?? '') >= today);
 
-                if (!event) {
-
-                    return null;
-                }
-
-                // Apply defaults/overrides
-                if (!event.email) event.email = 'feest@salvemundi.nl';
-                event.price = 1;
-                event.max_tickets_per_person = 10;
-
-                const parsed = pubCrawlEventSchema.safeParse(event);
-                if (!parsed.success) {
-
-                    return null;
-                }
-                return parsed.data;
-            } catch (error) {
+            if (!event) {
                 return null;
             }
+
+            // Apply defaults/overrides
+            if (!event.email) event.email = 'feest@salvemundi.nl';
+            event.price = 1;
+            event.max_tickets_per_person = 10;
+
+            const parsed = pubCrawlEventSchema.safeParse(event);
+            if (!parsed.success) {
+                console.error('[Kroegentocht-Action] Validation failed:', parsed.error.format());
+                return null; // Return null if invalid data, but we've logged the error
+            }
+            return parsed.data;
         },
         ['kroegentocht-active-event'],
         {
