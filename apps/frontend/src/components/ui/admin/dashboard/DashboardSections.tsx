@@ -67,7 +67,6 @@ export function DashboardHub({
             items: [
                 { title: "Azure Sync", value: "Beheer", icon: <Zap />, href: "/beheer/sync", colorClass: "blue" as const, disabled: !permissions.canAccessSync },
                 { title: "Systeem Status", icon: <Activity />, href: "/beheer/services", colorClass: "blue" as const, disabled: !permissions.isICT },
-                { title: "Mail", value: "Beheer", icon: <Mail />, href: "/beheer/mail", colorClass: "purple" as const, disabled: !permissions.canAccessMail },
                 { title: "Logboek", value: "Bekijken", icon: <FileText />, href: "/beheer/logging", colorClass: "amber" as const, disabled: !permissions.canAccessLogging },
                 { title: "Test Modus", value: "Start", icon: <UserCheck />, href: "/beheer/impersonate", colorClass: "teal" as const, disabled: !permissions.isICT },
             ].filter(i => !i.disabled)

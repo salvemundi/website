@@ -3,23 +3,16 @@
 import { useState, useTransition } from 'react';
 import { 
     MapPin, 
-    ChevronLeft, 
-    RefreshCcw,
-    AlertCircle,
-    Clock,
-    UserCircle,
-    CheckCircle
+    AlertCircle
 } from 'lucide-react';
-import Link from 'next/link';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import { deleteSticker, updateSticker } from '@/server/actions/admin-stickers.actions';
-import AdminToolbar from '@/components/ui/admin/AdminToolbar';
-import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import StickersTable from '@/components/admin/stickers/StickersTable';
+import { type StickerPublic } from '@salvemundi/validations';
 
 interface StickerManagementIslandProps {
-    initialStickers: Record<string, unknown>[];
+    initialStickers: StickerPublic[];
 }
 
 export default function StickerManagementIsland({
@@ -49,18 +42,8 @@ export default function StickerManagementIsland({
         }
     };
 
-    const publishedCount = stickers.filter(s => s.status === 'published').length;
-    const draftCount = stickers.filter(s => s.status === 'draft' || !s.status).length;
-
-    const adminStats = [
-        { label: 'Stickers', value: stickers.length, icon: MapPin, trend: 'Totaal' },
-        { label: 'Gepubliceerd', value: publishedCount, icon: CheckCircle, trend: 'Live' },
-        { label: 'Afwachting', value: draftCount, icon: Clock, trend: 'Moderatie' },
-    ];
-
     return (
         <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700">
-            <AdminStatsBar stats={adminStats} />
 
             <div className="animate-in fade-in zoom-in-95 duration-500">
                 <div className="flex items-center gap-3 mb-6">

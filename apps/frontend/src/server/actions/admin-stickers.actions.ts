@@ -52,6 +52,7 @@ export async function getStickers() {
             id: Number(s.id),
             latitude: Number(s.latitude),
             longitude: Number(s.longitude),
+            date_created: s.date_created instanceof Date ? s.date_created.toISOString() : s.date_created,
             user_created: s.user_id ? {
                 id: s.user_id,
                 first_name: s.first_name,
@@ -60,7 +61,6 @@ export async function getStickers() {
             } : null
         }));
     } catch (e: unknown) {
-        console.error('[AdminStickers] Failed to fetch stickers:', e);
         throw new Error('Could not fetch stickers');
     }
 }

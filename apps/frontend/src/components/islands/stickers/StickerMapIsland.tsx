@@ -11,7 +11,8 @@ import {
     Loader2,
     Globe,
     Award,
-    TrendingUp
+    TrendingUp,
+    type LucideIcon
 } from 'lucide-react';
 import { createStickerPublic, uploadFileAction } from '@/server/actions/stickers.actions';
 import AdminToast from '@/components/ui/admin/AdminToast';
@@ -362,7 +363,7 @@ export default function StickerMapIsland({
     );
 }
 
-function StatCard({ label, value, icon: Icon, color }: { label: string; value: number | string; icon: any; color: string }) {
+function StatCard({ label, value, icon: Icon, color }: { label: string; value: number | string; icon: LucideIcon; color: string }) {
     return (
         <div className="bg-[var(--bg-card)] rounded-2xl p-4 shadow-xl border border-white/5 flex items-center justify-between">
             <div>

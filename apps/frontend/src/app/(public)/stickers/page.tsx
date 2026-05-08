@@ -39,20 +39,8 @@ async function StickersContent() {
 
     return (
         <div className="container mx-auto px-4 py-12 max-w-7xl">
-            <div>
-                <div className="flex justify-between items-center mb-8 bg-[var(--bg-card)] border border-[var(--beheer-border)] p-6 rounded-3xl shadow-sm">
-                    <div className="space-y-1">
-                        <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Totaal Geplakt</p>
-                        <p className="text-3xl font-black text-[var(--theme-purple)] tracking-tighter">{stickers.length}+</p>
-                    </div>
-                    <div className="p-3 bg-[var(--theme-purple)]/10 rounded-2xl">
-                        <span className="text-2xl">📍</span>
-                    </div>
-                </div>
-                
-                <div className="rounded-3xl border border-[var(--beheer-border)] overflow-hidden shadow-2xl">
-                    <StickerMapIsland initialStickers={stickers} user={(session?.user as unknown as EnrichedUser) || null} />
-                </div>
+            <div className="rounded-3xl border border-[var(--beheer-border)] overflow-hidden shadow-2xl">
+                <StickerMapIsland initialStickers={stickers} user={(session?.user as unknown as EnrichedUser) || null} />
             </div>
         </div>
     );

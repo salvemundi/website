@@ -14,11 +14,12 @@ import {
     CheckCircle,
     Clock
 } from 'lucide-react';
-import { format } from 'date-fns';
-import { nl } from 'date-fns/locale';
+import { formatDate } from '@/shared/lib/utils/date';
+
+import { type StickerPublic } from '@salvemundi/validations';
 
 interface StickersTableProps {
-    stickers: any[];
+    stickers: StickerPublic[];
     onDelete: (id: number) => void;
     onApprove: (id: number) => void;
 }
@@ -108,7 +109,7 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest" suppressHydrationWarning>
-                                            {sticker.date_created ? format(new Date(sticker.date_created), 'dd MMM yyyy', { locale: nl }) : '-'}
+                                            {formatDate(sticker.date_created, 'dd MMM yyyy')}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-center">
