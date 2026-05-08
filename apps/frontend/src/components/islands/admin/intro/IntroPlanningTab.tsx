@@ -46,7 +46,7 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
     };
 
     return (
-        <div className="animate-in fade-in duration-500">
+        <div>
             <div className="flex items-center justify-between mb-8">
                 {editingPlanning === null && (
                     <Button 
@@ -68,7 +68,7 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
 
             {/* Planning Form */}
             {editingPlanning !== null && (
-                <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] p-8 mb-8 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] p-8 mb-8 shadow-2xl">
                     <div className="flex items-center justify-between mb-8">
                         <h3 className="font-semibold text-xs tracking-tight text-[var(--beheer-text-muted)]">
                             {editingPlanning.id ? 'Planning Bewerken' : 'Nieuw Planning Item'}
