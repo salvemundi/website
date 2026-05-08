@@ -35,6 +35,8 @@ export async function getPublicStickers() {
     const mapped = rows.map((row) => ({
         ...row,
         id: Number(row.id),
+        latitude: Number(row.latitude),
+        longitude: Number(row.longitude),
         user_created: row.user_id ? {
             id: row.user_id,
             first_name: row.first_name,
