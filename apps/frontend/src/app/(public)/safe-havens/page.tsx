@@ -46,28 +46,12 @@ function BentoCard({
 }
 
 import { connection } from 'next/server';
-import { Suspense } from 'react';
 
 export default async function SafeHavensPage() {
     return (
         <PublicPageShell>
-            <Suspense fallback={<SafeHavensSkeleton />}>
-                <SafeHavensContent />
-            </Suspense>
+            <SafeHavensContent />
         </PublicPageShell>
-    );
-}
-
-function SafeHavensSkeleton() {
-    return (
-        <div className="mx-auto max-w-app px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16 animate-pulse">
-            <div className="mx-auto max-w-7xl">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                    <div className="lg:col-span-8 h-[800px] bg-[var(--bg-card)] rounded-3xl" />
-                    <div className="lg:col-span-4 h-[400px] bg-[var(--bg-card)] rounded-3xl" />
-                </div>
-            </div>
-        </div>
     );
 }
 

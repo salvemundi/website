@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import { getPublicStickers } from '@/server/actions/stickers.actions';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
@@ -19,19 +19,8 @@ export default async function StickersPage() {
             description="Bekijk waar Salve Mundi stikkers zijn geplakt over de hele wereld. Heb je er zelf een geplakt? Log in en voeg hem toe!"
             backgroundImage="/img/backgrounds/stickers-banner.jpg" 
         >
-            <Suspense fallback={<StickersSkeleton />}>
-                <StickersContent />
-            </Suspense>
+            <StickersContent />
         </PublicPageShell>
-    );
-}
-
-function StickersSkeleton() {
-    return (
-        <div className="container mx-auto px-4 py-12 max-w-7xl animate-pulse">
-            <div className="h-24 bg-[var(--bg-card)] rounded-3xl mb-8" />
-            <div className="h-[600px] bg-[var(--bg-card)] rounded-3xl" />
-        </div>
     );
 }
 
