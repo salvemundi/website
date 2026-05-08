@@ -1,6 +1,7 @@
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
+import { connection } from 'next/server';
 
 interface BeheerLayoutProps {
     children: React.ReactNode;
