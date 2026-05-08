@@ -69,9 +69,11 @@ export async function getServicesStatusAction(): Promise<ServiceStatus[]> {
         try {
             // SDK doesn't support AbortSignal.timeout directly in this version easily, 
             // but we can wrap it or use a raw fetch to its health endpoint.
-            // Directus has /health or we can just stick to readMe() with a fetch wrap.
-            const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL || '';
-            const res = await fetch(`${directusUrl}/health`, { 
+            const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.NEXT_PUBLIC_DIRECTUS_URL || '';
+            if (!directusUrl) throw new Error('Directus URL not configured');
+
+            const healthUrl = directusUrl.endsWith('/') ? `${directusUrl}server/health` : `${directusUrl}/server/health`;
+            const res = await fetch(healthUrl, { 
                 cache: 'no-store',
                 signal: AbortSignal.timeout(timeout)
             });

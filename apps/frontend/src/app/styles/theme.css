@@ -5,6 +5,7 @@
 
 /* ── Dark Mode ─────────────────────────────────────────────────────────────── */
 .dark {
+    color-scheme: dark;
     --bg-main: #1a141b;
     --bg-soft: #161116;
     --bg-card: #241824;
@@ -36,6 +37,7 @@
    New code should use the --color-* and semantic vars directly.
    Aliases here exist purely for backwards-compat with old components.        */
 :root {
+    color-scheme: light;
     --theme-purple: var(--color-purple-300);
     --theme-purple-light: var(--color-purple-500);
     --theme-purple-dark: var(--color-purple-800);

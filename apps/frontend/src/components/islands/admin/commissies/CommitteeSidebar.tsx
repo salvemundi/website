@@ -35,9 +35,9 @@ export default function CommitteeSidebar({
     return (
         <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm ring-1 ring-[var(--beheer-border)] overflow-hidden h-full flex flex-col">
             <div className="p-6 border-b border-[var(--beheer-border)]/50">
-                <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--beheer-text-muted)] flex items-center gap-3 mb-5">
+                <h2 className="text-xs font-semibold text-[var(--beheer-text-muted)] flex items-center gap-3 mb-5">
                     <Users className="h-4 w-4 text-[var(--beheer-accent)]" />
-                    Groepen & Commissies
+                    Groepen & commissies
                 </h2>
                 
                 <div className="space-y-4">
@@ -48,19 +48,19 @@ export default function CommitteeSidebar({
                             placeholder="Zoek commissie..."
                             value={searchQuery}
                             onChange={e => onSearchChange(e.target.value)}
-                            className="w-full pl-11 pr-4 py-3 bg-[var(--beheer-card-soft)] border-none rounded-xl text-xs font-bold text-[var(--beheer-text)] placeholder:text-[var(--beheer-text-muted)] focus:ring-2 focus:ring-[var(--beheer-accent)]/20 transition-all uppercase tracking-widest"
+                            className="w-full pl-11 pr-4 py-3 bg-[var(--beheer-card-soft)] border-none rounded-xl text-sm font-semibold text-[var(--beheer-text)] placeholder:text-[var(--beheer-text-muted)] focus:ring-2 focus:ring-[var(--beheer-accent)]/20 transition-all"
                         />
                     </div>
                     <div className="flex p-1 bg-[var(--beheer-card-soft)] rounded-xl border border-[var(--beheer-border)]/50">
                         <button
                             onClick={() => onShowAllChange(false)}
-                            className={`flex-1 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${!showAll ? 'bg-[var(--beheer-accent)] text-white shadow-sm' : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)]'}`}
+                            className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${!showAll ? 'bg-[var(--beheer-accent)] text-white shadow-sm' : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)]'}`}
                         >
                             Kern
                         </button>
                         <button
                             onClick={() => onShowAllChange(true)}
-                            className={`flex-1 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${showAll ? 'bg-[var(--beheer-accent)] text-white shadow-sm' : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)]'}`}
+                            className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${showAll ? 'bg-[var(--beheer-accent)] text-white shadow-sm' : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)]'}`}
                         >
                             Alles
                         </button>
@@ -72,7 +72,7 @@ export default function CommitteeSidebar({
                 {committees.length === 0 ? (
                     <div className="py-16 text-center">
                         <Search className="h-10 w-10 text-[var(--beheer-text-muted)] opacity-10 mx-auto mb-3" />
-                        <p className="text-[var(--beheer-text-muted)] text-[10px] font-black uppercase tracking-widest opacity-40 italic">Geen resultaten</p>
+                        <p className="text-[var(--beheer-text-muted)] text-sm font-semibold opacity-40 italic">Geen resultaten</p>
                     </div>
                 ) : (
                     committees.map(c => (
@@ -84,11 +84,11 @@ export default function CommitteeSidebar({
                                 : 'hover:bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] hover:translate-x-1'}`}
                         >
                             <div className="text-left min-w-0">
-                                <div className={`font-black uppercase tracking-[0.1em] text-[10px] truncate ${selectedId === c.id ? 'text-white' : 'text-[var(--beheer-text)]'}`}>
+                                <div className={`font-semibold text-sm truncate ${selectedId === c.id ? 'text-white' : 'text-[var(--beheer-text)]'}`}>
                                     {normalizeName(c.name)}
                                 </div>
                                 {c.email && (
-                                    <div className={`text-[9px] truncate flex items-center gap-1.5 mt-1 font-bold ${selectedId === c.id ? 'text-white/60' : 'text-[var(--beheer-text-muted)]'}`}>
+                                    <div className={`text-xs truncate flex items-center gap-1.5 mt-1 font-medium ${selectedId === c.id ? 'text-white/60' : 'text-[var(--beheer-text-muted)]'}`}>
                                         <Mail className="h-3 w-3" />
                                         {c.email}
                                     </div>
