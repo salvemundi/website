@@ -31,14 +31,14 @@ async function fetchSafeHavensFromDirectus(isAuthenticated: boolean): Promise<Sa
 
         const parsed = safeHavensSchema.safeParse(mappedData);
         if (!parsed.success) {
-            console.error('Safe Haven parsing error:', parsed.error);
-            return [];
+            throw new Error(`Safe Haven parsing error: ${parsed.error.message}`);
         }
 
         return parsed.data;
     } catch (err: unknown) {
-        console.error('Safe Haven DB error:', err);
-        return [];
+        const message = err instanceof Error ? err.message : 'Onbekende DB fout';
+        console.error('[Safe Haven Action] Error:', message);
+        throw new Error('Kon Safe Havens niet ophalen');
     }
 }
 
