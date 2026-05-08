@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import { auth } from '@/server/auth/auth';
 import { type DbEventSignup } from '@salvemundi/validations/directus/schema';
 import { headers } from 'next/headers';
