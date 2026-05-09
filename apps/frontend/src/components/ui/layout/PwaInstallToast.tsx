@@ -318,12 +318,6 @@ export function PwaInstallToast() {
         if (isStandalone()) return;
         if (isDismissed()) return;
 
-        // Alleen op touch-apparaten (telefoon/tablet) of mobile emulation
-        const isTouch = window.matchMedia('(pointer: coarse)').matches ||
-            /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-        if (!isTouch) return;
-
         // 1. Check specifiek voor iOS Safari
         if (detectIosSafari()) {
             setMode('ios');
