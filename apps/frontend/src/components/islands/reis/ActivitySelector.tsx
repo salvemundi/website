@@ -4,10 +4,15 @@ import React from 'react';
 import { Check, Info, Plus, X } from 'lucide-react';
 import type { TripActivity, TripSignupActivity } from '@salvemundi/validations/schema/admin-reis.zod';
 
+export interface SelectedActivity {
+    activityId: number;
+    options: Record<string, boolean>;
+}
+
 interface ActivitySelectorProps {
     activities: TripActivity[];
-    selectedSelections: { activityId: number; options: any }[];
-    onChange: (selections: { activityId: number; options: any }[]) => void;
+    selectedSelections: SelectedActivity[];
+    onChange: (selections: SelectedActivity[]) => void;
 }
 
 export default function ActivitySelector({ activities, selectedSelections, onChange }: ActivitySelectorProps) {
@@ -104,7 +109,7 @@ export default function ActivitySelector({ activities, selectedSelections, onCha
                             {/* Options Section */}
                             {isSelected && hasOptions && (
                                 <div className="px-5 pb-5 pt-0 border-t border-theme-purple/10 mt-2">
-                                    <p className="text-xs font-black uppercase tracking-widest text-theme-purple mb-3 mt-4">
+                                    <p className="text-xs font-bold tracking-widest text-theme-purple mb-3 mt-4">
                                         Maak je keuze ({activity.max_selections === 1 ? 'één optie' : 'meerdere mogelijk'}):
                                     </p>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">

@@ -309,7 +309,7 @@ export async function updatePubCrawlTickets(signupId: number, eventId: number, t
 
         // 2. Update name_initials JSON on signup for consistency
         const nameInitials = JSON.stringify(tickets.map(t => ({ name: t.name, initial: t.initial })));
-        await updatePubCrawlSignupDb(signupId, { name_initials: nameInitials } as any);
+        await updatePubCrawlSignupDb(signupId, { name_initials: nameInitials });
         
         // Background sync to Directus
         getSystemDirectus().request(updateItem('pub_crawl_signups', signupId, {

@@ -9,6 +9,8 @@ import { RefreshCcw, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { revalidateReisAction } from '@/server/actions/reis.actions';
 
+import { type EnrichedUser } from '@/types/auth';
+
 interface ReisFormIslandProps {
     isSignedUp?: boolean;
     isReisDisabled?: boolean;
@@ -17,7 +19,7 @@ interface ReisFormIslandProps {
     canSignUp: boolean;
     registrationStartText: string;
     participantsCount: number;
-    initialUser?: any;
+    initialUser?: EnrichedUser | null;
 }
 
 export function ReisFormIsland({ 
@@ -31,7 +33,7 @@ export function ReisFormIsland({
     const router = useRouter();
     
     // We prioritize the server-provided user to avoid any flicker.
-    const currentUser = initialUser || session?.user;
+    const currentUser = (initialUser || session?.user || null) as EnrichedUser | null;
     
     const [refreshing, setRefreshing] = useState(false);
 
@@ -62,12 +64,8 @@ export function ReisFormIsland({
             <div className="relative z-10">
                 <div className="flex justify-between items-start mb-8 sm:mb-10">
                     <div className="space-y-1">
-                        <div className="flex items-center gap-2 text-theme-purple font-semibold text-[10px] uppercase tracking-[0.2em] mb-1">
-                            <Sparkles className="h-3 w-3" />
-                            <span>Studiereis {new Date().getFullYear() + (new Date().getMonth() > 8 ? 1 : 0)}</span>
-                        </div>
                         <h1 className="text-3xl sm:text-4xl font-bold text-theme-purple dark:text-theme-white tracking-tight">
-                            Inschrijven
+                            {nextTrip?.name || 'Inschrijven'}
                         </h1>
                     </div>
                     <button
@@ -80,7 +78,7 @@ export function ReisFormIsland({
                     </button>
                 </div>
 
-                <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="duration-700">
                     {userSignup ? (
                         <ReisSignupStatus
                             userSignup={userSignup}

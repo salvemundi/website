@@ -47,7 +47,7 @@ export default function MailEditor({
                 {/* Editor Body */}
                 <div className="p-8 space-y-8 relative z-10">
                     {emailType === 'custom' ? (
-                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="space-y-6">
                             <div className="space-y-2">
                                 <label className="text-[10px] font-semibold uppercase tracking-widest text-[var(--beheer-text-muted)] ml-1 opacity-70">Onderwerp van de e-mail</label>
                                 <input 
@@ -70,7 +70,7 @@ export default function MailEditor({
                             </div>
                         </div>
                     ) : (
-                        <div className="p-8 bg-[var(--beheer-accent)]/5 rounded-3xl border border-[var(--beheer-accent)]/10 flex items-start gap-6 animate-in zoom-in-95 duration-500">
+                        <div className="p-8 bg-[var(--beheer-accent)]/5 rounded-3xl border border-[var(--beheer-accent)]/10 flex items-start gap-6">
                             <div className="p-4 bg-[var(--beheer-accent)]/10 rounded-2xl text-[var(--beheer-accent)] shadow-sm">
                                 <Info className="h-6 w-6" />
                             </div>

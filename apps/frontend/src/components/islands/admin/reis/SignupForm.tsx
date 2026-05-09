@@ -16,7 +16,7 @@ import { DateInput } from '@/shared/ui/DateInput';
 
 interface SignupFormProps {
     signup: TripSignup;
-    initialData?: any;
+    initialData?: Partial<TripSignup>;
     isBusTrip?: boolean;
     minimal?: boolean;
     section?: 'all' | 'personal' | 'admin' | 'personal_basic' | 'personal_extended';
@@ -79,8 +79,8 @@ export default function SignupForm({
                                 <HorizontalTextarea label="Bijzonderheden" name="special_notes" defaultValue={initialData?.special_notes || signup.special_notes || ''} />
                             </div>
                             <div className="flex items-center gap-6 mt-2 px-1">
-                                {!isBusTrip && <HorizontalCheckbox label="Extra Koffer" name="extra_luggage" defaultChecked={initialData ? (initialData.extra_luggage === 'on' || initialData.extra_luggage === 'true' || initialData.extra_luggage === true) : (signup.extra_luggage || false)} />}
-                                {isBusTrip && <HorizontalCheckbox label="Chauffeur" name="willing_to_drive" defaultChecked={initialData ? (initialData.willing_to_drive === 'on' || initialData.willing_to_drive === 'true' || initialData.willing_to_drive === true) : (signup.willing_to_drive || false)} />}
+                                {!isBusTrip && <HorizontalCheckbox label="Extra Koffer" name="extra_luggage" defaultChecked={initialData ? ((initialData.extra_luggage as any) === 'on' || (initialData.extra_luggage as any) === 'true' || initialData.extra_luggage === true) : (signup.extra_luggage || false)} />}
+                                {isBusTrip && <HorizontalCheckbox label="Chauffeur" name="willing_to_drive" defaultChecked={initialData ? ((initialData.willing_to_drive as any) === 'on' || (initialData.willing_to_drive as any) === 'true' || initialData.willing_to_drive === true) : (signup.willing_to_drive || false)} />}
                             </div>
                         </div>
                     </div>
@@ -106,11 +106,11 @@ export default function SignupForm({
                             </HorizontalSelect>
                             <div className="pt-3 flex flex-col gap-2 px-1">
                                 <div className="flex items-center justify-between">
-                                    <HorizontalCheckbox label="Aanbetaling" name="deposit_paid" defaultChecked={initialData ? (initialData.deposit_paid === 'on' || initialData.deposit_paid === 'true' || initialData.deposit_paid === true) : !!signup.deposit_paid} />
+                                    <HorizontalCheckbox label="Aanbetaling" name="deposit_paid" defaultChecked={initialData ? ((initialData.deposit_paid as any) === 'on' || (initialData.deposit_paid as any) === 'true' || initialData.deposit_paid === true) : !!signup.deposit_paid} />
                                     {signup.deposit_paid_at && <span className="text-[8px] font-semibold text-[var(--beheer-text-muted)] opacity-50">{format(new Date(signup.deposit_paid_at), 'd MMM yy', { locale: nl })}</span>}
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <HorizontalCheckbox label="Restbetaling" name="full_payment_paid" defaultChecked={initialData ? (initialData.full_payment_paid === 'on' || initialData.full_payment_paid === 'true' || initialData.full_payment_paid === true) : !!signup.full_payment_paid} />
+                                    <HorizontalCheckbox label="Restbetaling" name="full_payment_paid" defaultChecked={initialData ? ((initialData.full_payment_paid as any) === 'on' || (initialData.full_payment_paid as any) === 'true' || initialData.full_payment_paid === true) : !!signup.full_payment_paid} />
                                     {signup.full_payment_paid_at && <span className="text-[8px] font-semibold text-[var(--beheer-text-muted)] opacity-50">{format(new Date(signup.full_payment_paid_at), 'd MMM yy', { locale: nl })}</span>}
                                 </div>
                             </div>
@@ -169,14 +169,14 @@ export default function SignupForm({
                                 <div className={`${compact ? 'mt-4' : 'mt-8'} grid grid-cols-1 md:grid-cols-2 ${compact ? 'gap-4' : 'gap-8'}`}>
                                     <DateAndLabel label="Vervaldatum Document" name="document_expiry_date" defaultValue={initialData?.document_expiry_date || (signup.document_expiry_date ? format(new Date(signup.document_expiry_date), 'yyyy-MM-dd') : '')} />
                                     <div className="flex items-center pt-4">
-                                        <Checkbox label="Extra Koffer" name="extra_luggage" defaultChecked={initialData ? (initialData.extra_luggage === 'on' || initialData.extra_luggage === 'true' || initialData.extra_luggage === true) : (signup.extra_luggage || false)} />
+                                        <Checkbox label="Extra Koffer" name="extra_luggage" defaultChecked={initialData ? ((initialData.extra_luggage as any) === 'on' || (initialData.extra_luggage as any) === 'true' || initialData.extra_luggage === true) : (signup.extra_luggage || false)} />
                                     </div>
                                 </div>
                             )}
 
                             <div className={`${compact ? 'mt-4' : 'mt-6'}`}>
                                 {isBusTrip ? (
-                                    <Checkbox label="Beschikbaar als chauffeur" name="willing_to_drive" defaultChecked={initialData ? (initialData.willing_to_drive === 'on' || initialData.willing_to_drive === 'true' || initialData.willing_to_drive === true) : (signup.willing_to_drive || false)} />
+                                    <Checkbox label="Beschikbaar als chauffeur" name="willing_to_drive" defaultChecked={initialData ? ((initialData.willing_to_drive as any) === 'on' || (initialData.willing_to_drive as any) === 'true' || initialData.willing_to_drive === true) : (signup.willing_to_drive || false)} />
                                 ) : (
                                     <div className="flex items-center gap-3 px-3 py-2 bg-[var(--bg-main)]/30 rounded-xl border border-[var(--beheer-border)]/20 text-[10px] font-semibold text-[var(--beheer-text-muted)] opacity-60">
                                         <Bus className="h-4 w-4 text-[var(--beheer-accent)] opacity-50" />
@@ -218,7 +218,7 @@ export default function SignupForm({
                         <div className={`${compact ? 'space-y-4' : 'space-y-6'}`}>
                             <div className={`${compact ? 'p-4' : 'p-6'} bg-[var(--bg-main)]/50 rounded-2xl border border-[var(--beheer-border)]/50 ${compact ? 'space-y-4' : 'space-y-5'} shadow-inner`}>
                                 <div className="flex items-center justify-between gap-4">
-                                    <Checkbox label="Aanbetaling OK" name="deposit_paid" defaultChecked={initialData ? (initialData.deposit_paid === 'on' || initialData.deposit_paid === 'true' || initialData.deposit_paid === true) : !!signup.deposit_paid} />
+                                    <Checkbox label="Aanbetaling OK" name="deposit_paid" defaultChecked={initialData ? ((initialData.deposit_paid as any) === 'on' || (initialData.deposit_paid as any) === 'true' || initialData.deposit_paid === true) : !!signup.deposit_paid} />
                                     {signup.deposit_paid_at && (
                                         <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] opacity-60 shrink-0">
                                             {format(new Date(signup.deposit_paid_at), 'd MMM yyyy', { locale: nl })}
@@ -226,7 +226,7 @@ export default function SignupForm({
                                     )}
                                 </div>
                                 <div className="flex items-center justify-between gap-4">
-                                    <Checkbox label="Restbetaling OK" name="full_payment_paid" defaultChecked={initialData ? (initialData.full_payment_paid === 'on' || initialData.full_payment_paid === 'true' || initialData.full_payment_paid === true) : !!signup.full_payment_paid} />
+                                    <Checkbox label="Restbetaling OK" name="full_payment_paid" defaultChecked={initialData ? ((initialData.full_payment_paid as any) === 'on' || (initialData.full_payment_paid as any) === 'true' || initialData.full_payment_paid === true) : !!signup.full_payment_paid} />
                                     {signup.full_payment_paid_at && (
                                         <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] opacity-60 shrink-0">
                                             {format(new Date(signup.full_payment_paid_at), 'd MMM yyyy', { locale: nl })}

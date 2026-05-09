@@ -136,7 +136,7 @@ export default function ReisInstellingenIsland({ initialTrips, initialSettings }
                 }
             />
 
-            <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700">
+            <div className="container mx-auto px-4 py-8 max-w-7xl">
                 {/* Form (Add/Edit) */}
                 {(isAdding || editingTrip) && (
                     <TripForm 
@@ -149,7 +149,7 @@ export default function ReisInstellingenIsland({ initialTrips, initialSettings }
 
                 {/* Trips List */}
                 {!isAdding && !editingTrip && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20 animate-in fade-in duration-1000">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
                         {trips.map((trip) => (
                             <TripCard 
                                 key={trip.id} 

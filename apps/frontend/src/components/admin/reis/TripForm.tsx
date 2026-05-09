@@ -90,7 +90,7 @@ export default function TripForm({
     };
 
     return (
-        <div className="mb-12 animate-in slide-in-from-bottom-8 duration-500">
+        <div className="mb-12">
             <form action={editingTrip ? updateAction : createAction}>
                 {editingTrip && <input type="hidden" name="id" value={editingTrip.id} />}
                 {/* Hidden fields for controlled state toggles */}

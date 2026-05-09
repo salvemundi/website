@@ -148,7 +148,7 @@ export default function SignupView({ signup, isBusTrip }: SignupViewProps) {
     );
 }
 
-function ViewField({ label, value, icon: Icon }: { label: string; value: string; icon: any }) {
+function ViewField({ label, value, icon: Icon }: { label: string; value: string; icon: React.ComponentType<any> }) {
     return (
         <div className="flex items-center justify-between gap-4 py-1.5 border-b border-white/5 last:border-0">
             <div className="flex items-center gap-2">

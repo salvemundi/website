@@ -71,7 +71,7 @@ async function handleImageUpload(formData: FormData): Promise<string | null> {
      }
  }
 
-export async function createTrip(prevState: any, formData: FormData) {
+export async function createTrip(prevState: unknown, formData: FormData) {
     await requireReisAdmin();
 
     try {
@@ -124,7 +124,7 @@ export async function createTrip(prevState: any, formData: FormData) {
     }
 }
 
-export async function updateTrip(prevState: any, formData: FormData) {
+export async function updateTrip(prevState: unknown, formData: FormData) {
     await requireReisAdmin();
 
     try {
