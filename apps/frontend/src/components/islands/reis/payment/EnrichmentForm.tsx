@@ -28,9 +28,9 @@ export function EnrichmentForm({ trip }: EnrichmentFormProps) {
     const idDocument = watch('id_document');
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
+        <div className="space-y-6">
             <header className="mb-4">
-                <h2 className="text-3xl font-black text-[var(--text-main)] mb-1 uppercase italic tracking-tighter">Reisgegevens</h2>
+                <h2 className="text-3xl font-bold text-[var(--text-main)] mb-1 italic tracking-tighter">Reisgegevens</h2>
                 <p className="text-[var(--text-muted)] text-sm">Vul je gegevens aan voor <span className="text-theme-purple font-bold">{trip.name}</span>.</p>
                 <input type="hidden" {...register('is_bus_trip')} />
             </header>
@@ -49,7 +49,7 @@ export function EnrichmentForm({ trip }: EnrichmentFormProps) {
                             />
                             <AlertCircle className="w-5 h-5 text-red-500 absolute right-3 top-1/2 -translate-y-1/2 opacity-50 group-hover:opacity-100 transition-opacity" />
                         </div>
-                        <p className="text-[10px] text-red-500 font-bold uppercase mt-1 flex items-center gap-1">
+                        <p className="text-[10px] text-red-500 font-bold mt-1 flex items-center gap-1">
                             <span className="animate-pulse">→</span> LET OP: MOET EXACT OVEREENKOMEN MET JE ID-BEWIJS!
                         </p>
                     </FormField>

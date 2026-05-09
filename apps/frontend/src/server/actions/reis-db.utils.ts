@@ -15,13 +15,16 @@ import { DbTripSignup as TripSignup, DbTrip as Trip, DbTripActivitie as TripActi
  * @param userId The BetterAuth user ID
  * @param tripId The trip ID
  */
-export async function fetchUserSignupStatusDb(userId: string, tripId: number): Promise<ReisTripSignup | null> {
+export async function fetchUserSignupStatusDb(userIdOrEmail: string, tripId: number): Promise<ReisTripSignup | null> {
+    if (!userIdOrEmail || userIdOrEmail === '') return null;
     try {
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userIdOrEmail);
         const res = await query(
             `SELECT * FROM trip_signups 
-             WHERE directus_relations = $1 AND trip_id = $2 AND status != 'cancelled' 
+             WHERE (${isUuid ? 'directus_relations' : 'email'} = $1) 
+             AND trip_id = $2 AND status != 'cancelled' 
              LIMIT 1`,
-            [userId, tripId]
+            [userIdOrEmail, tripId]
         );
 
         if (res.rowCount === 0) return null;

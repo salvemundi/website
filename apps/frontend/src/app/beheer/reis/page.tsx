@@ -140,7 +140,7 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
             backHref="/beheer"
             hideToolbar={true}
         >
-            <div className="pb-8 space-y-2 animate-in fade-in duration-700">
+            <div className="pb-8 space-y-2">
                 <AdminReisTableIsland
                     title={`Reis Beheer — ${activeTrip.name}`}
                     backHref="/beheer"
@@ -159,7 +159,7 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
 function NoTripsView() {
     return (
         <div className="container mx-auto px-4 py-20 max-w-2xl text-center">
-            <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] p-12 shadow-xl border border-[var(--beheer-border)] animate-in fade-in zoom-in duration-500">
+            <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] p-12 shadow-xl border border-[var(--beheer-border)]">
                 <div className="h-20 w-20 rounded-full bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] flex items-center justify-center mx-auto mb-6 shadow-glow">
                     <Ticket className="h-10 w-10" />
                 </div>

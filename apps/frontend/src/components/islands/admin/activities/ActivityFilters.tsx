@@ -27,7 +27,7 @@ export default function ActivityFilters({
     onCommitteeChange
 }: Props) {
     return (
-        <div className="flex flex-col xl:flex-row gap-4 mb-10 items-stretch xl:items-center animate-in fade-in slide-in-from-top-4 duration-500">
+        <div className="flex flex-col xl:flex-row gap-4 mb-10 items-stretch xl:items-center">
             {/* Search Bar */}
             <div className="relative group flex-1 shadow-sm rounded-[var(--beheer-radius)]">
                 <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none z-20">

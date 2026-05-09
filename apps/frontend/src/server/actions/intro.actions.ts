@@ -70,8 +70,14 @@ async function checkParentSignupInternal(): Promise<{ exists: boolean; record?: 
             })
         );
 
+        interface ParentSignupRecord {
+            id: number;
+            user_id: string | null;
+            email: string | null;
+        }
+
         if (signups.length > 0) {
-            return { exists: true, record: signups[0] as any };
+            return { exists: true, record: signups[0] as unknown as ParentSignupRecord };
         }
 
         // 2. Fallback check: Email match (legacy or ID change)
@@ -92,7 +98,7 @@ async function checkParentSignupInternal(): Promise<{ exists: boolean; record?: 
                     session_id_exists: !!session.user.id
                 }
             });
-            return { exists: true, record: emailSignups[0] as any };
+            return { exists: true, record: emailSignups[0] as unknown as ParentSignupRecord };
         }
 
         return { exists: false };
@@ -250,14 +256,22 @@ export async function submitIntroParentSignup(data: IntroParentSignupForm): Prom
         console.log('[IntroParentSignup] Success:', result);
         revalidatePath('/beheer/intro');
         return { success: true };
-    } catch (e: any) {
+    } catch (e: unknown) {
+        interface DirectusError {
+            message?: string;
+            status?: number;
+            code?: string;
+            response?: { data?: unknown };
+        }
+        
+        const error = e as DirectusError;
         console.error('[IntroParentSignup] Error details:', {
-            message: e.message,
-            status: e.status,
-            code: e.code,
-            response: e.response?.data || e.response
+            message: error.message,
+            status: error.status,
+            code: error.code,
+            response: error.response?.data || error.response
         });
-        throw new Error(`Er is een fout opgetreden tijdens de intro-ouder inschrijving: ${e.message || 'Onbekende fout'}`);
+        throw new Error(`Er is een fout opgetreden tijdens de intro-ouder inschrijving: ${error.message || 'Onbekende fout'}`);
     }
 }
 

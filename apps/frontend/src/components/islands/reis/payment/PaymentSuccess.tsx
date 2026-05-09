@@ -14,7 +14,7 @@ export function PaymentSuccess({ trip }: PaymentSuccessProps) {
             </div>
             
              <div className="space-y-4">
-                <h2 className="text-4xl font-black text-[var(--text-main)] uppercase italic tracking-tighter italic">Activiteiten Opgeslagen!</h2>
+                <h2 className="text-4xl font-bold text-[var(--text-main)] italic tracking-tighter">Activiteiten Opgeslagen!</h2>
                 <p className="text-[var(--text-muted)] max-w-md mx-auto leading-relaxed">
                     Je keuzes zijn succesvol verwerkt. Zodra de restbetaling voor <strong>{trip.name}</strong> wordt geopend, ontvang je van ons een e-mail om de betaling af te ronden.
                 </p>
@@ -22,7 +22,7 @@ export function PaymentSuccess({ trip }: PaymentSuccessProps) {
 
              <a 
                 href="/reis" 
-                className="inline-flex items-center gap-3 px-10 py-5 bg-theme-purple text-white font-black uppercase tracking-widest text-sm rounded-2xl hover:bg-theme-purple-dark transition-all shadow-xl shadow-theme-purple/5"
+                className="inline-flex items-center gap-3 px-10 py-5 bg-theme-purple text-white font-bold tracking-widest text-sm rounded-2xl hover:bg-theme-purple-dark transition-all shadow-xl shadow-theme-purple/5"
             >
                 <Home className="w-5 h-5" />
                 Terug naar Dashboard

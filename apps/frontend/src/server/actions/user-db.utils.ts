@@ -70,6 +70,7 @@ export async function fetchUserProfileByEmailDb(email: string): Promise<UserProf
  * Fetches the committees a user belongs to.
  */
 export async function fetchUserCommitteesDb(userId: string): Promise<Committee[]> {
+    if (!userId || userId === '') return [];
     const { rows } = await query(
         `SELECT c.id, c.name, c.azure_group_id, cm.is_leader
          FROM committees c
@@ -84,6 +85,7 @@ export async function fetchUserCommitteesDb(userId: string): Promise<Committee[]
  * Fetches user metadata (membership, phone, dob) directly by ID.
  */
 export async function fetchUserMetadataDb(userId: string): Promise<UserMetadata | null> {
+    if (!userId || userId === '') return null;
     const { rows } = await query(
         `SELECT membership_status, membership_expiry, phone_number, date_of_birth, minecraft_username, entra_id
          FROM directus_users 

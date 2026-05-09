@@ -45,12 +45,18 @@ export async function query(text: string, params?: (string | number | boolean | 
                 await new Promise(resolve => setTimeout(resolve, 500 * (i + 1)));
                 continue;
             }
+            interface PgError {
+                detail?: string;
+                hint?: string;
+            }
+            const pgError = e as PgError;
+
             console.error('[DB-Query Error]', {
                 message: errorMessage,
                 code: errorCode,
                 text,
-                detail: (e as any)?.detail,
-                hint: (e as any)?.hint
+                detail: pgError.detail,
+                hint: pgError.hint
             });
 
             // NEAT FIX: If we are in a CI build environment with dummy credentials,

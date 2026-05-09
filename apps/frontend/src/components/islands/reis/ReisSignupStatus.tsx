@@ -42,7 +42,7 @@ export function ReisSignupStatus({ userSignup, nextTrip, error }: ReisSignupStat
             </div>
 
             <div className="bg-white/50 dark:bg-black/5 rounded-2xl p-6 border border-theme-purple/10 mb-6">
-                <p className="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">Huidige status</p>
+                <p className="text-sm font-semibold text-[var(--text-muted)] tracking-wider mb-2">Huidige status</p>
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <div>
                         <p className="text-2xl sm:text-3xl font-bold text-theme-purple dark:text-theme-white tracking-tight break-words">
@@ -54,7 +54,7 @@ export function ReisSignupStatus({ userSignup, nextTrip, error }: ReisSignupStat
                             </p>
                         )}
                     </div>
-                    <div className="px-4 py-1.5 bg-theme-purple/10 rounded-full text-[10px] font-semibold text-theme-purple uppercase tracking-widest shrink-0">
+                    <div className="px-4 py-1.5 bg-theme-purple/10 rounded-full text-[10px] font-semibold text-theme-purple tracking-widest shrink-0">
                         {userSignup.status}
                     </div>
                 </div>

@@ -1,6 +1,7 @@
-interface ActivityOption {
-    id: string;
-    name: string;
+export interface ActivityOption {
+    id?: string | null;
+    name?: string | null;
+    price?: number | null;
 }
 
 /**
@@ -30,7 +31,7 @@ export function mapActivityOptionIdToName(optId: string, metaOptions: ActivityOp
 
     // 3. Fallback: Check if the optId itself is actually the name (sometimes happens in legacy data or simpler forms)
     const nameMatch = metaOptions.find((m: ActivityOption) => m.name === optId);
-    if (nameMatch) return nameMatch.name;
+    if (nameMatch?.name) return nameMatch.name;
 
     return optId;
 }

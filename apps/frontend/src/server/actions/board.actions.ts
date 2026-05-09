@@ -52,8 +52,9 @@ export async function getBoardHistory(): Promise<Board[]> {
         }
 
         return parsed.data;
-    } catch (err: any) {
-        console.error('[BoardActions] SQL Query failed:', err.message);
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Onbekende fout';
+        console.error('[BoardActions] SQL Query failed:', message);
         return [];
     }
 }

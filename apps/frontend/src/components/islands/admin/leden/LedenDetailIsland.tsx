@@ -99,7 +99,7 @@ export default function LedenDetailIsland({
         if (cleanData.last_name === null) delete cleanData.last_name;
         if (cleanData.phone_number === null) delete cleanData.phone_number;
         
-        const res = await updateMemberProfileAction(localMember.id, cleanData as any);
+        const res = await updateMemberProfileAction(localMember.id, cleanData as Parameters<typeof updateMemberProfileAction>[1]);
         if (res.success) {
             setLocalMember(prev => ({ ...prev, ...data }));
             return true;

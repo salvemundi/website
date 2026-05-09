@@ -7,7 +7,8 @@ interface PageProps {
     searchParams: Promise<{ id?: string; transaction_id?: string; t?: string }>;
 }
 
-import { getSignupStatus, type SignupStatusResult } from '@/server/actions/public-activiteit-status.actions';
+import { getSignupStatus } from '@/server/actions/public-activiteit-status.actions';
+import { type SignupData } from '@/components/islands/activities/ConfirmationIsland';
 
 export default async function ActiviteitenConfirmationPage({ searchParams }: PageProps) {
     const { id, transaction_id, t } = await searchParams;
@@ -30,7 +31,7 @@ export default async function ActiviteitenConfirmationPage({ searchParams }: Pag
                     initialTransactionId={transaction_id || t} 
                     isLoggedIn={!!session?.user} 
                     initialStatus={initialStatusRes.status}
-                    initialData={initialStatusRes.signup as any}
+                    initialData={initialStatusRes.signup as SignupData}
                 />
             </div>
         </div>

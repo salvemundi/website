@@ -7,7 +7,7 @@ import {
     Loader2 
 } from 'lucide-react';
 
-import { mapActivityOptionIdToName, parseActivityOptions, parseSelectedOptions } from '@/lib/reis';
+import { mapActivityOptionIdToName, parseActivityOptions, parseSelectedOptions, type ActivityOption } from '@/lib/reis';
 
 export interface Signup {
     id: number;
@@ -21,7 +21,7 @@ export interface Signup {
 
 interface Props {
     activityName: string;
-    options?: any;
+    options?: ActivityOption[] | string | null;
     signups: Signup[];
     loading: boolean;
     onClose: () => void;

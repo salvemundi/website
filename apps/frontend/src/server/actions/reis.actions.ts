@@ -220,13 +220,18 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
     const now = new Date();
     const registrationStartDate = targetTrip.registration_start_date ? new Date(targetTrip.registration_start_date) : null;
 
-    // isRegistrationDateReached is true if a date was set and we passed it.
+    // registrationDateReached is true if a date was set and we passed it.
     const isRegistrationDateReached = Boolean(registrationStartDate && now >= registrationStartDate);
     
-    // canSignUp is true if EITHER the manual override is ON OR the scheduled date has been reached.
-    const canSignUp = targetTrip.registration_open || isRegistrationDateReached;
+    // canSignUp is true if:
+    // 1. The manual override is ON OR the scheduled date has been reached
+    // 2. AND the final payment phase has NOT started (registration closes when payments open)
+    const canSignUp = (targetTrip.registration_open || isRegistrationDateReached) && !targetTrip.allow_final_payments;
 
     if (!canSignUp) {
+        if (targetTrip.allow_final_payments) {
+            return { success: false, message: 'De inschrijving voor deze reis is gesloten omdat de betalingsfase is begonnen.' };
+        }
         const dateText = registrationStartDate ? ` op ${registrationStartDate.toLocaleString('nl-NL')}` : '';
         return { success: false, message: `De inschrijving voor deze reis is nog niet geopend${dateText}.` };
     }
@@ -286,8 +291,10 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
         // registrationDateReached is true if a date was set and we passed it.
         const registrationDateReached = Boolean(registrationStartDate && now >= registrationStartDate);
         
-        // canSignUp is true if EITHER the manual override is ON OR the scheduled date has been reached.
-        const canSignUp = targetTrip.registration_open || registrationDateReached;
+        // canSignUp is true if:
+        // 1. The manual override is ON OR the scheduled date has been reached
+        // 2. AND the final payment phase has NOT started (registration closes when payments open)
+        const canSignUp = (targetTrip.registration_open || registrationDateReached) && !targetTrip.allow_final_payments;
 
         if (!canSignUp) {
             return { success: false, message: 'De inschrijving voor deze reis is momenteel niet geopend.' };
@@ -328,7 +335,7 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
             
             if (isUniqueError) {
                 try {
-                    const existing = await fetchUserSignupStatusDb(userId || '', tripId);
+                    const existing = await fetchUserSignupStatusDb(userId || payload.email, tripId);
                     const matchesTrip = existing && Number(existing.trip_id) === Number(payload.trip_id);
                     const matchesUser = existing && userId && existing.directus_relations === userId;
                     const matchesEmail = existing && !userId && existing.email === payload.email;
@@ -367,7 +374,6 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
 
         return { success: true };
     } catch (err: unknown) {
-        console.error('[ReisActions] Critical error in signup:', err);
         return { success: false, message: 'Interne serverfout tijdens inschrijving.' };
     } finally {
         const currentToken = await redis.get(lockKey);

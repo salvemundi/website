@@ -12,9 +12,9 @@ interface PaymentSummaryProps {
 
 export function PaymentSummary({ signup, pricing, paymentType }: PaymentSummaryProps) {
     return (
-        <div className="space-y-8 animate-in fade-in duration-300">
+        <div className="space-y-8">
             <div className="text-center">
-                <h2 className="text-3xl font-black text-[var(--text-main)] mb-2 uppercase italic tracking-tighter">Betalingssamenvatting</h2>
+                <h2 className="text-3xl font-bold text-[var(--text-main)] mb-2 italic tracking-tighter">Betalingssamenvatting</h2>
                 <p className="text-[var(--text-muted)]">Controleer de gegevens voordat we je doorsturen naar Mollie.</p>
             </div>
 
@@ -37,8 +37,8 @@ export function PaymentSummary({ signup, pricing, paymentType }: PaymentSummaryP
                         </div>
                     )}
                     <div className="pt-3 border-t border-white/10 flex justify-between items-center">
-                        <span className="text-white font-black uppercase text-xs tracking-widest">Totaalbedrag</span>
-                        <span className="text-xl font-black text-white uppercase italic">€{pricing.total.toFixed(2)}</span>
+                        <span className="text-white font-bold text-xs tracking-widest">Totaalbedrag</span>
+                        <span className="text-xl font-bold text-white italic">€{pricing.total.toFixed(2)}</span>
                     </div>
                     {paymentType === 'final' && (
                         <div className="flex justify-between items-center text-sm pt-2">
@@ -51,7 +51,7 @@ export function PaymentSummary({ signup, pricing, paymentType }: PaymentSummaryP
                 <div className="p-8 rounded-3xl bg-gradient-to-br from-theme-purple to-theme-purple-dark shadow-xl shadow-theme-purple/10 text-white">
                     <div className="flex justify-between items-end">
                         <div>
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mb-1">
+                            <p className="text-[10px] font-bold tracking-[0.2em] opacity-80 mb-1">
                                 {paymentType === 'deposit' ? 'Nu te voldoen (Aanbetaling)' : 'Nu te voldoen (Restbetaling)'}
                             </p>
                             <h3 className="text-5xl font-black italic tracking-tighter italic">€{pricing.toPayNow.toFixed(2)}</h3>

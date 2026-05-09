@@ -72,7 +72,7 @@ export function NameConfirmModal({ isOpen, name, onConfirm, onCancel }: NameConf
                                 <div className="bg-theme-purple/10 text-theme-purple p-2.5 rounded-2xl">
                                     <AlertCircle className="h-5 w-5" />
                                 </div>
-                                <h2 className="text-[10px] font-bold text-[var(--text-main)] tracking-[0.2em] uppercase">
+                                <h2 className="text-[10px] font-bold text-[var(--text-main)] tracking-[0.2em]">
                                     Naam Bevestigen
                                 </h2>
                             </div>
@@ -91,7 +91,7 @@ export function NameConfirmModal({ isOpen, name, onConfirm, onCancel }: NameConf
                             </h3>
                             
                             <div className="p-6 rounded-3xl bg-theme-purple/5 border border-theme-purple/10 mb-8">
-                                <p className="text-sm text-[var(--text-muted)] mb-2 font-medium tracking-wide uppercase opacity-70">
+                                <p className="text-sm text-[var(--text-muted)] mb-2 font-medium tracking-wide opacity-70">
                                     Ingevulde voornaam:
                                 </p>
                                 <p className="text-2xl font-bold text-theme-purple tracking-tight">
@@ -110,14 +110,14 @@ export function NameConfirmModal({ isOpen, name, onConfirm, onCancel }: NameConf
                             <div className="flex flex-col gap-3 mb-2">
                                 <button
                                     onClick={onConfirm}
-                                    className="w-full py-5 bg-theme-purple hover:bg-theme-purple-dark text-white rounded-2xl font-bold text-sm tracking-widest uppercase transition-all flex items-center justify-center gap-3 shadow-lg shadow-theme-purple/20 group"
+                                    className="w-full py-5 bg-theme-purple hover:bg-theme-purple-dark text-white rounded-2xl font-bold text-sm tracking-widest transition-all flex items-center justify-center gap-3 shadow-lg shadow-theme-purple/20 group"
                                 >
                                     <CheckCircle2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
                                     Ja, dit klopt exact
                                 </button>
                                 <button
                                     onClick={onCancel}
-                                    className="w-full py-5 bg-[var(--bg-soft)] hover:bg-[var(--bg-card)] text-[var(--text-muted)] hover:text-[var(--text-main)] rounded-2xl font-bold text-sm tracking-widest uppercase transition-all border border-[var(--border-color)] dark:border-white/5"
+                                    className="w-full py-5 bg-[var(--bg-soft)] hover:bg-[var(--bg-card)] text-[var(--text-muted)] hover:text-[var(--text-main)] rounded-2xl font-bold text-sm tracking-widest transition-all border border-[var(--border-color)] dark:border-white/5"
                                 >
                                     Nee, aanpassen
                                 </button>

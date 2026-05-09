@@ -23,6 +23,7 @@ import TripActivityForm from './reis/TripActivityForm';
 import TripActivitySignupsModal, { type Signup } from './reis/TripActivitySignupsModal';
 
 import { type Trip, type TripActivity } from '@salvemundi/validations/schema/admin-reis.zod';
+import { type ActivityOption } from '@/lib/reis';
 interface Props {
     initialTrips?: Trip[];
     initialActivities?: TripActivity[];
@@ -57,7 +58,7 @@ export default function ReisActiviteitenIsland({
         router.push(`/beheer/reis/activiteiten?tripId=${id}`);
     };
 
-    const handleSave = async (formData: FormData, options: Record<string, unknown>[]) => {
+    const handleSave = async (formData: FormData, options: ActivityOption[]) => {
         formData.set('options', JSON.stringify(options));
         
         let res;
@@ -151,7 +152,7 @@ export default function ReisActiviteitenIsland({
 
                 {/* List View */}
                 {activities.length === 0 && !editingActivity ? (
-                    <div className="py-24 text-center bg-[var(--beheer-card-bg)] rounded-3xl border-2 border-dashed border-[var(--beheer-border)]/20 animate-in fade-in duration-500">
+                    <div className="py-24 text-center bg-[var(--beheer-card-bg)] rounded-3xl border-2 border-dashed border-[var(--beheer-border)]/20">
                         <Layers className="h-12 w-12 text-[var(--beheer-text-muted)] mx-auto mb-4 opacity-10" />
                         <p className="text-[var(--beheer-text-muted)] font-semibold tracking-widest text-[10px] uppercase opacity-60">Nog geen activiteiten voor deze reis</p>
                     </div>

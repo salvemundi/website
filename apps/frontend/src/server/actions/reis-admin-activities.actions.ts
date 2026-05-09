@@ -23,7 +23,7 @@ import {
 
 
 
-export async function createTripActivity(prevState: any, formData: FormData) {
+export async function createTripActivity(prevState: unknown, formData: FormData) {
     await requireReisAdmin();
 
     const rawData: Record<string, any> = {};
@@ -71,7 +71,7 @@ export async function createTripActivity(prevState: any, formData: FormData) {
     }
 }
 
-export async function updateTripActivity(prevState: any, formData: FormData) {
+export async function updateTripActivity(prevState: unknown, formData: FormData) {
     await requireReisAdmin();
 
     const id = parseInt(formData.get('id') as string);

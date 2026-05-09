@@ -27,13 +27,14 @@ interface ConfirmationIslandProps {
     isLoggedIn?: boolean;
 }
 
-interface SignupData {
+export interface SignupData {
     errorType?: 'canceled' | 'failed' | 'expired' | 'timeout';
     amount_tickets?: number;
     tickets?: Array<{ qr_token: string | null }>;
     qr_token?: string | null;
     id?: string | number | null;
-    event_id?: { id?: string | number; name: string };
+    event_id?: { id?: string | number; name: string; custom_url?: string };
+    custom_url?: string;
 }
 
 export default function ConfirmationIsland({ 
@@ -98,7 +99,7 @@ export default function ConfirmationIsland({
     // Delayed redirect if custom_url exists for paid events
     useEffect(() => {
         if (status === 'paid' && !isMembership && !isTrip) {
-            const customUrl = (signupData as Record<string, any>)?.event_id?.custom_url || (signupData as Record<string, any>)?.custom_url;
+            const customUrl = signupData?.event_id?.custom_url || signupData?.custom_url;
             if (customUrl) {
                 const timeout = setTimeout(() => {
                     window.location.href = customUrl;

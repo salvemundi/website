@@ -77,7 +77,7 @@ export default function CouponManagementIsland({
         setIsAdding(false);
 
         startTransition(async () => {
-            const res = await createCoupon(formData) as any;
+            const res = await createCoupon(formData);
             
             if (!res.success) {
                 setFormError(res.error ?? 'Aanmaken mislukt');
@@ -88,8 +88,9 @@ export default function CouponManagementIsland({
             }
 
             // 2. Replace optimistic with real data
-            if (res.data) {
-                setCoupons(prev => prev.map(c => c.id === tempId ? res.data : c));
+            const newCoupon = res.data;
+            if (newCoupon) {
+                setCoupons(prev => prev.map(c => c.id === tempId ? newCoupon : c));
             }
         });
     };

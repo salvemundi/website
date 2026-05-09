@@ -11,12 +11,14 @@ import {
     Trash2 
 } from 'lucide-react';
 import { Field, inputClass } from './TripTabComponents';
+import { type ActivityOption } from '@/lib/reis';
 
 import { type TripActivity } from '@salvemundi/validations/schema/admin-reis.zod';
 
+
 interface Props {
     activity: Partial<TripActivity> | null;
-    onSave: (formData: FormData, options: any[]) => Promise<void>;
+    onSave: (formData: FormData, options: ActivityOption[]) => Promise<void>;
     onCancel: () => void;
     pending: boolean;
 }
@@ -24,24 +26,26 @@ interface Props {
 export default function TripActivityForm({ activity, onSave, onCancel, pending }: Props) {
     // Map existing options, handling nulls from the schema type
     const initialOptions = (activity?.options || []).map(opt => ({
+        id: opt.id || '',
         name: opt.name || '',
         price: opt.price || 0
     }));
-    const [options, setOptions] = useState<{ name: string; price: number }[]>(initialOptions);
+    const [options, setOptions] = useState<ActivityOption[]>(initialOptions);
     
     // Sync options if activity prop changes (e.g. after failed submission with initialData)
     useEffect(() => {
         if (activity?.options) {
             setOptions(activity.options.map((opt: any) => ({
+                id: opt.id || '',
                 name: opt.name || '',
                 price: opt.price || 0
             })));
         }
     }, [activity?.options]);
 
-    const addOption = () => setOptions([...options, { name: '', price: 0 }]);
+    const addOption = () => setOptions([...options, { id: `opt-${options.length}`, name: '', price: 0 }]);
     const removeOption = (idx: number) => setOptions(options.filter((_, i) => i !== idx));
-    const updateOption = (idx: number, field: 'name' | 'price', value: any) => {
+    const updateOption = (idx: number, field: keyof ActivityOption, value: string) => {
         const newOpts = [...options];
         newOpts[idx] = { ...newOpts[idx], [field]: field === 'price' ? parseFloat(value) || 0 : value };
         setOptions(newOpts);
@@ -147,7 +151,7 @@ export default function TripActivityForm({ activity, onSave, onCancel, pending }
                             <div key={idx} className="flex gap-4 items-center">
                                 <div className="flex-1">
                                     <input
-                                        type="text" value={opt.name}
+                                        type="text" value={opt.name || ''}
                                         onChange={(e) => updateOption(idx, 'name', e.target.value)}
                                         placeholder="Bijv. Inclusief lunch..."
                                         className={`${inputClass} py-4 text-xs`}
@@ -156,7 +160,7 @@ export default function TripActivityForm({ activity, onSave, onCancel, pending }
                                 <div className="w-40 relative">
                                     <Euro className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--beheer-text-muted)] opacity-40" />
                                     <input
-                                        type="number" step="0.01" value={opt.price}
+                                        type="number" step="0.01" value={opt.price || 0}
                                         onChange={(e) => updateOption(idx, 'price', e.target.value)}
                                         className={`${inputClass} py-4 pl-12 text-xs`}
                                         placeholder="Meerprijs"

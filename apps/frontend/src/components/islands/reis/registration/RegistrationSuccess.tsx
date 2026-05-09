@@ -1,11 +1,14 @@
 import React from 'react';
 
+import { type EnrichedUser } from '@/types/auth';
+
 interface RegistrationSuccessProps {
-    currentUser: any;
+    currentUser: EnrichedUser | null;
+    email?: string;
     onReset?: () => void;
 }
 
-export function RegistrationSuccess({ currentUser, onReset }: RegistrationSuccessProps) {
+export function RegistrationSuccess({ currentUser, email, onReset }: RegistrationSuccessProps) {
     return (
         <div className="flex flex-col items-center justify-center py-10 px-4 text-center bg-theme-purple/5 rounded-2xl border border-theme-purple/10">
             <div className="w-16 h-16 bg-theme-purple/20 rounded-full flex items-center justify-center mb-4">
@@ -17,16 +20,8 @@ export function RegistrationSuccess({ currentUser, onReset }: RegistrationSucces
             <p className="text-[var(--text-muted)] mb-6">
                 {currentUser 
                     ? 'Bedankt voor je inschrijving. Je status wordt nu bijgewerkt...' 
-                    : 'Bedankt voor je inschrijving! Check je mail voor de bevestiging.'}
+                    : `Bedankt voor je inschrijving! Check je mail (${email || 'jouw e-mailadres'}) voor de bevestiging.`}
             </p>
-            {!currentUser && onReset && (
-                <button 
-                    onClick={onReset}
-                    className="text-sm font-semibold text-theme-purple hover:underline"
-                >
-                    Nog iemand inschrijven?
-                </button>
-            )}
         </div>
     );
 }

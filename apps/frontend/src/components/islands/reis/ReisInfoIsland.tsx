@@ -95,7 +95,7 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
                                     <Calendar className="h-7 w-7 text-theme-purple" />
                                 </div>
                                 <div>
-                                    <p className="text-[var(--text-muted)] text-[10px] font-bold uppercase tracking-widest">Wanneer gaan we?</p>
+                                    <p className="text-[var(--text-muted)] text-[10px] font-bold tracking-widest">Wanneer gaan we?</p>
                                     <p className="text-xl sm:text-2xl font-bold text-theme-purple dark:text-theme-white mt-1">
                                         {formattedFromDate && formattedUntilDate ? (
                                             formattedFromDate === formattedUntilDate ? formattedFromDate : `${formattedFromDate} — ${formattedUntilDate}`
@@ -150,7 +150,7 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
                                     {item.icon}
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">{item.title}</p>
+                                    <p className="text-[10px] font-bold tracking-widest text-[var(--text-muted)]">{item.title}</p>
                                     <SafeHtml as="div" className="text-sm text-[var(--text-main)] font-medium leading-relaxed" html={item.text} />
                                 </div>
                             </div>

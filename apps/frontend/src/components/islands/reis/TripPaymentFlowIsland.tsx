@@ -96,8 +96,8 @@ export default function TripPaymentFlowIsland({
             date_of_birth: localSignup.date_of_birth ? format(new Date(localSignup.date_of_birth), 'yyyy-MM-dd') : '',
             id_document: localSignup.id_document || 'none',
             document_number: localSignup.document_number || '',
-            document_expiry_date: (localSignup as unknown as Record<string, any>).document_expiry_date ? format(new Date((localSignup as unknown as Record<string, any>).document_expiry_date), 'yyyy-MM-dd') : '',
-            extra_luggage: (localSignup as unknown as Record<string, any>).extra_luggage || false,
+            document_expiry_date: (localSignup as TripSignup & { document_expiry_date?: string }).document_expiry_date ? format(new Date((localSignup as TripSignup & { document_expiry_date?: string }).document_expiry_date!), 'yyyy-MM-dd') : '',
+            extra_luggage: (localSignup as TripSignup & { extra_luggage?: boolean }).extra_luggage || false,
             allergies: localSignup.allergies || '',
             special_notes: localSignup.special_notes || '',
             willing_to_drive: localSignup.willing_to_drive || false,
@@ -112,7 +112,7 @@ export default function TripPaymentFlowIsland({
 
     const [activitySelections, setActivitySelections] = useState<{ activityId: number, options: Record<string, boolean> }[]>(
         selectedActivities.map(sa => ({
-            activityId: typeof sa.trip_activity_id === 'object' ? (sa.trip_activity_id as unknown as Record<string, any>).id : Number(sa.trip_activity_id),
+            activityId: typeof sa.trip_activity_id === 'object' ? (sa.trip_activity_id as unknown as { id: number }).id : Number(sa.trip_activity_id),
             options: (sa.selected_options as Record<string, boolean>) || {}
         }))
     );
@@ -260,7 +260,7 @@ export default function TripPaymentFlowIsland({
                                 >
                                     <AlertCircle className="w-5 h-5 shrink-0" />
                                     <div className="text-sm">
-                                        <p className="font-bold uppercase tracking-tight italic">Er is iets misgegaan</p>
+                                        <p className="font-bold tracking-tight italic">Er is iets misgegaan</p>
                                         <p className="opacity-80">{error}</p>
                                     </div>
                                 </motion.div>

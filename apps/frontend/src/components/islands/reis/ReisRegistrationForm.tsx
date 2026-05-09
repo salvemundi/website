@@ -20,11 +20,13 @@ import { NameConfirmModal } from './shared/NameConfirmModal';
 import { RegistrationSuccess } from './registration/RegistrationSuccess';
 import { RegistrationClosed } from './registration/RegistrationClosed';
 
+import { type EnrichedUser } from '@/types/auth';
+
 interface ReisRegistrationFormProps {
     nextTrip: ReisTrip | null;
     canSignUp: boolean;
     registrationStartText: string;
-    currentUser: any;
+    currentUser: EnrichedUser | null;
     onRefresh?: () => void;
 }
 
@@ -109,6 +111,7 @@ export function ReisRegistrationForm({
         return (
             <RegistrationSuccess 
                 currentUser={currentUser} 
+                email={pendingData?.email}
                 onReset={() => setIsSuccess(false)} 
             />
         );
@@ -173,7 +176,7 @@ export function ReisRegistrationForm({
                             <div className="flex items-center gap-1 mt-0.5">
                                 <AlertCircle className="w-4 h-4 text-theme-purple shrink-0 opacity-60" />
                             </div>
-                            <p className="text-[10px] leading-relaxed text-[var(--text-muted)] font-semibold uppercase tracking-wider opacity-70">
+                            <p className="text-[10px] leading-relaxed text-[var(--text-muted)] font-semibold tracking-wider opacity-70">
                                 <span className="text-theme-purple font-bold">LET OP:</span> Gebruik je volledige voornaam zoals op je paspoort/ID. Dit is essentieel voor je ticket!
                             </p>
                         </div>
