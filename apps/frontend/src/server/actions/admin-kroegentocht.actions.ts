@@ -291,3 +291,76 @@ export async function togglePubCrawlTicketCheckIn(ticketId: number, currentStatu
         throw new Error('Inchecken mislukt');
     }
 }
+
+export async function updatePubCrawlTickets(signupId: number, eventId: number, tickets: { id: number, name: string, initial: string }[]) {
+    await requireKroegAdmin();
+    try {
+        const { updatePubCrawlTicketDb, updatePubCrawlSignupDb } = await import('./kroegentocht-db.utils');
+        
+        // 1. Update each ticket in SQL
+        for (const ticket of tickets) {
+            await updatePubCrawlTicketDb(ticket.id, { name: ticket.name, initial: ticket.initial });
+            // Background sync to Directus
+            getSystemDirectus().request(updateItem('pub_crawl_tickets', ticket.id, {
+                name: ticket.name,
+                initial: ticket.initial
+            })).catch(() => {});
+        }
+
+        // 2. Update name_initials JSON on signup for consistency
+        const nameInitials = JSON.stringify(tickets.map(t => ({ name: t.name, initial: t.initial })));
+        await updatePubCrawlSignupDb(signupId, { name_initials: nameInitials } as any);
+        
+        // Background sync to Directus
+        getSystemDirectus().request(updateItem('pub_crawl_signups', signupId, {
+            name_initials: nameInitials
+        })).catch(() => {});
+
+        revalidateTag(`signups-${eventId}`, 'max');
+        return { success: true };
+    } catch (e) {
+        console.error('[Kroegentocht-Action] updatePubCrawlTickets failed:', e);
+        throw new Error('Bijwerken tickets mislukt');
+    }
+}
+
+export async function deletePubCrawlTicket(ticketId: number, signupId: number, eventId: number) {
+    await requireKroegAdmin();
+    try {
+        const { query } = await import('@/lib/database');
+        
+        // 1. Delete the ticket
+        await query('DELETE FROM pub_crawl_tickets WHERE id = $1', [ticketId]);
+        // Background sync to Directus
+        getSystemDirectus().request(deleteItem('pub_crawl_tickets', ticketId)).catch(() => {});
+
+        // 2. Fetch remaining tickets to rebuild the name_initials JSON
+        const { rows: remainingTickets } = await query(
+            'SELECT name, initial FROM pub_crawl_tickets WHERE signup_id = $1 ORDER BY id ASC',
+            [signupId]
+        );
+
+        const amountTickets = remainingTickets.length;
+        const nameInitials = JSON.stringify(remainingTickets.map(t => ({ name: t.name, initial: t.initial })));
+
+        // 3. Update the signup record with new count and JSON
+        await query(
+            'UPDATE pub_crawl_signups SET amount_tickets = $1, name_initials = $2 WHERE id = $3',
+            [amountTickets, nameInitials, signupId]
+        );
+
+        // Background sync to Directus
+        getSystemDirectus().request(updateItem('pub_crawl_signups', signupId, {
+            amount_tickets: amountTickets,
+            name_initials: nameInitials
+        })).catch(() => {});
+
+        revalidateTag(`signups-${eventId}`, 'max');
+        return { success: true };
+    } catch (e) {
+        console.error('[Kroegentocht-Action] deletePubCrawlTicket failed:', e);
+        throw new Error('Verwijderen ticket mislukt');
+    }
+}
+
+

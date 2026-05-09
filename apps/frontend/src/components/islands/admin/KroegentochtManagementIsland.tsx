@@ -124,7 +124,7 @@ export default function KroegentochtManagementIsland({
     const paidSignups = signups.filter(s => s.payment_status === 'paid');
     const adminStats = [
         { label: 'Tickets', value: paidSignups.reduce((sum, s) => sum + (s.amount_tickets || 0), 0), icon: Beer, trend: 'Totaal verkocht' },
-        { label: 'Groepen', value: paidSignups.length, icon: Users, trend: 'Aanmeldingen' },
+        { label: 'Aanmeldingen', value: paidSignups.length, icon: Users, trend: 'Totaal groepen' },
         { label: 'Verenigingen', value: [...new Set(paidSignups.map(s => s.association).filter(Boolean))].length, icon: Building2, trend: 'Deelnemend' },
     ];
 

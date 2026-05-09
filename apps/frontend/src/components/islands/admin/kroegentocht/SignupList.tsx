@@ -17,6 +17,7 @@ import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zo
 
 interface ExtendedSignup extends PubCrawlSignup {
     participants?: { name: string; initial: string }[];
+    created_at?: string | Date;
 }
 
 interface SignupListProps {
@@ -50,14 +51,25 @@ export default function SignupList({
 
     const exportToCSV = () => {
         const rows: Record<string, any>[] = [];
-        filteredSignups.forEach(signup => {
+        // Signups are sorted newest first (id DESC), so we calculate the sequential number accordingly
+        filteredSignups.forEach((signup, signupIdx) => {
+            const groupNumber = filteredSignups.length - signupIdx;
+            const registrationDate = signup.created_at ? new Date(signup.created_at).toLocaleString('nl-NL', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }) : '-';
+
             const participants = signup.participants || [];
             if (participants.length > 0) {
                 participants.forEach((p: any) => {
                     rows.push({
-                        'Naam': `${p.name} ${p.initial}.`,
+                        'Naam': `${p.name} ${p.initial}.`.trim(),
                         'Vereniging': signup.association || '-',
-                        'Groep': signup.email
+                        'Inschrijfdatum': registrationDate,
+                        'Groep': groupNumber
                     });
                 });
             } else {
@@ -65,13 +77,14 @@ export default function SignupList({
                     rows.push({
                         'Naam': i === 0 ? signup.name : '-',
                         'Vereniging': signup.association || '-',
-                        'Groep': signup.email
+                        'Inschrijfdatum': registrationDate,
+                        'Groep': groupNumber
                     });
                 }
             }
         });
 
-        const filename = `kroegentocht-${eventName.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+        const filename = `kroegentocht-${eventName.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${format(new Date(), 'yyyy-MM-dd_HH-mm-ss')}.csv`;
         downloadCSV(rows, filename);
     };
 
@@ -113,7 +126,7 @@ export default function SignupList({
                     <table className="w-full text-left">
                         <thead>
                             <tr className="bg-[var(--bg-main)]/50 border-b border-[var(--border-color)]/30">
-                                <th className="px-6 py-4 text-[10px] font-semibold text-[var(--text-muted)]">Groep / Deelnemers</th>
+                                <th className="px-6 py-4 text-[10px] font-semibold text-[var(--text-muted)]">Deelnemers</th>
                                 <th className="px-6 py-4 text-center text-[10px] font-semibold text-[var(--text-muted)]">Tickets</th>
                                 <th className="px-6 py-4 text-[10px] font-semibold text-[var(--text-muted)] hidden lg:table-cell">Vereniging</th>
                                 <th className="px-6 py-4 text-right text-[10px] font-semibold text-[var(--text-muted)]">Acties</th>
@@ -140,11 +153,9 @@ export default function SignupList({
                                             <td className="px-6 py-3 min-w-[300px]">
                                                 <div className="flex flex-col gap-0.5">
                                                     <div className="flex items-center gap-2">
-                                                        <span className="font-semibold text-sm text-[var(--text-main)] group-hover:text-[var(--theme-purple)] transition-colors">
-                                                            Groep {signups.length - signups.findIndex(s => s.id === signup.id)}
-                                                        </span>
-                                                        <a href={`mailto:${signup.email}`} className="text-[var(--text-muted)] hover:text-[var(--theme-purple)] transition-colors" title={signup.email}>
-                                                            <Mail className="h-3 w-3" />
+                                                        <a href={`mailto:${signup.email}`} className="text-sm font-semibold text-[var(--text-main)] hover:text-[var(--theme-purple)] transition-colors flex items-center gap-2" title={signup.email}>
+                                                            <Mail className="h-3.5 w-3.5 text-[var(--text-muted)]" />
+                                                            {signup.email}
                                                         </a>
                                                     </div>
                                                     

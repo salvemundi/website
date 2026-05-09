@@ -30,7 +30,6 @@ export default async function DeelnemerPage({ params }: DeelnemerPageProps) {
         <div className="w-full">
             <AdminToolbar 
                 title="Deelnemer Beheer"
-                subtitle={`Groep #${id}`}
                 backHref="/beheer/kroegentocht"
             />
 
