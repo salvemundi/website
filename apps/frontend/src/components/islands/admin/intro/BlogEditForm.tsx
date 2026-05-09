@@ -17,10 +17,10 @@ interface Props {
 
 export default function BlogEditForm({ blog, data, onChange, onSave, onCancel, saving }: Props) {
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 text-[11px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 text-[11px] font-semibold text-[var(--beheer-text-muted)]">
             <div className="lg:col-span-2 space-y-8">
                 <div className="flex items-center justify-between">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--beheer-accent)]">
+                    <p className="text-[10px] font-semibold text-[var(--beheer-accent)]">
                         {blog.id && blog.id !== -1 ? 'Blog Bewerken' : 'Nieuwe Blog'}
                     </p>
                     <div className="flex gap-2">
@@ -75,7 +75,7 @@ export default function BlogEditForm({ blog, data, onChange, onSave, onCancel, s
 
             <div className="space-y-8 lg:border-l lg:border-[var(--beheer-border)]/10 lg:pl-12">
                 <div className="space-y-6">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--beheer-accent)]">Instellingen</p>
+                    <p className="text-[10px] font-semibold text-[var(--beheer-accent)]">Instellingen</p>
                     
                     <Field label="Type">
                         <select 
@@ -112,15 +112,15 @@ export default function BlogEditForm({ blog, data, onChange, onSave, onCancel, s
                                 <div className="absolute left-1 top-1 h-4 w-4 bg-white rounded-full transition-all peer-checked:left-6 shadow-lg transform peer-active:scale-90" />
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text)]">Zichtbaarheid</span>
-                                <span className="text-[9px] font-bold text-[var(--beheer-text-muted)]">{data.is_published ? 'Openbaar' : 'Concept'}</span>
+                                <span className="text-[10px] font-semibold text-[var(--beheer-text)]">Zichtbaarheid</span>
+                                <span className="text-[9px] font-semibold text-[var(--beheer-text-muted)]">{data.is_published ? 'Openbaar' : 'Concept'}</span>
                             </div>
                         </label>
                     </div>
                 </div>
 
                 <div className="space-y-6">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--beheer-accent)]">Voorvertoning</p>
+                    <p className="text-[10px] font-semibold text-[var(--beheer-accent)]">Voorvertoning</p>
                     <div className="p-6 rounded-2xl bg-white/5 border border-dashed border-[var(--beheer-border)]/40 flex flex-col items-center justify-center text-center gap-3">
                         <Eye className="h-6 w-6 opacity-20" />
                         <p className="text-[9px] opacity-40 italic">Voorvertoning functionaliteit binnenkort beschikbaar</p>

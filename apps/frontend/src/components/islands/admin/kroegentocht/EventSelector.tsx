@@ -32,12 +32,12 @@ export default function EventSelector({
         <div className="bg-[var(--bg-card)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)]/30 p-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                 <div>
-                    <h2 className="text-xl font-black text-[var(--text-main)] tracking-tight uppercase">Selecteer <span className="text-[var(--theme-purple)]">Event</span></h2>
-                    <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mt-1">Kies een kroegentocht om te beheren</p>
+                    <h2 className="text-xl font-semibold text-[var(--text-main)] tracking-tight">Selecteer <span className="text-[var(--theme-purple)]">Event</span></h2>
+                    <p className="text-[10px] font-semibold text-[var(--text-muted)] mt-1">Kies een kroegentocht om te beheren</p>
                 </div>
                 <button
                     onClick={() => setShowPastEvents(!showPastEvents)}
-                    className={`flex items-center gap-2 px-4 py-2 text-xs font-black rounded-[var(--radius-lg)] border-2 transition-all active:scale-95 ${showPastEvents
+                    className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-[var(--radius-lg)] border-2 transition-all active:scale-95 ${showPastEvents
                         ? 'bg-[var(--theme-purple)]/10 border-[var(--theme-purple)] text-[var(--theme-purple)]'
                         : 'bg-[var(--bg-main)]/50 border-[var(--border-color)] text-[var(--text-light)] hover:border-[var(--theme-purple)]/30'
                         }`}
@@ -72,15 +72,15 @@ export default function EventSelector({
                                         <ChevronRight className="h-5 w-5 text-[var(--theme-purple)]" />
                                     </div>
                                 )}
-                                <div className="flex items-start justify-between mb-3">
-                                    <h3 className={`font-black uppercase tracking-tight truncate pr-6 ${isSelected ? 'text-[var(--theme-purple)]' : 'text-[var(--text-main)]'}`}>
+                                <div className="flex flex-col min-w-0 mb-3">
+                                    <span className={`text-sm font-semibold truncate ${isSelected ? 'text-[var(--theme-purple)]' : 'text-[var(--text-main)]'}`}>
                                         {event.name}
-                                    </h3>
+                                    </span>
                                 </div>
-                                <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-subtle)]">
+                                <div className="flex items-center gap-2 text-xs font-semibold text-[var(--text-subtle)]">
                                     <Calendar className="h-3.5 w-3.5 opacity-50" />
-                                    {format(eventDate, 'd MMMM yyyy', { locale: nl })}
-                                    {isUpcoming && <span className="ml-auto px-2 py-0.5 bg-green-500/10 text-green-500 text-[9px] rounded-full uppercase">Live</span>}
+                                    <span>{format(eventDate, 'd MMM yyyy', { locale: nl })}</span>
+                                    {isUpcoming && <span className="text-green-500 font-semibold tracking-tighter">Live</span>}
                                 </div>
                             </button>
                         );

@@ -75,7 +75,7 @@ export default function AdminReisSignupModalIsland({
                     {/* Header with subtle glow */}
                     <div className="px-8 py-6 border-b border-[var(--beheer-border)] flex justify-between items-center bg-[var(--beheer-card-soft)]/80 relative shrink-0">
                         <div className="absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-[var(--beheer-accent)]/30 to-transparent" />
-                        <h2 className="text-[10px] font-semibold text-[var(--beheer-text)] tracking-[0.2em] flex items-center gap-3">
+                        <h2 className="text-[10px] font-semibold text-[var(--beheer-text)] flex items-center gap-3">
                             <div className="bg-[var(--beheer-accent)] text-white p-2.5 rounded-2xl shadow-[var(--shadow-glow)]">
                                 {isEditing ? <Edit2 className="h-4 w-4" /> : <Users className="h-4 w-4" />}
                             </div>
@@ -112,7 +112,7 @@ export default function AdminReisSignupModalIsland({
                             <form ref={formRef} action={onSave} className="flex flex-col h-full">
                                 <input type="hidden" name="id" value={selectedSignup.id} />
                                 
-                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 xl:gap-12 animate-in fade-in slide-in-from-bottom-4 duration-500 items-start">
+                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 xl:gap-12 items-start">
                                     <div className="space-y-4">
                                         <SignupForm 
                                             signup={selectedSignup} 
@@ -145,7 +145,7 @@ export default function AdminReisSignupModalIsland({
                                         <div className="pt-4 border-t border-[var(--beheer-border)]/10">
                                             <div className="flex items-center gap-2 mb-3 opacity-50">
                                                 <Ticket className="h-3 w-3 text-[var(--beheer-accent)]" />
-                                                <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--beheer-text)]">ACTIVITEITEN</h3>
+                                                <h3 className="text-[10px] font-semibold text-[var(--beheer-text)]">Activiteiten</h3>
                                             </div>
                                             <SignupActivities 
                                                 allActivities={allTripActivities}
@@ -162,7 +162,7 @@ export default function AdminReisSignupModalIsland({
                             </form>
                         </div>
                     ) : (
-                        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 animate-in fade-in zoom-in-95 duration-300">
+                        <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
                             <SignupView signup={selectedSignup} isBusTrip={!!trip?.is_bus_trip} />
                         </div>
                     )}
@@ -172,7 +172,7 @@ export default function AdminReisSignupModalIsland({
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] transition-colors"
+                            className="px-6 py-2.5 text-[10px] font-semibold text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] transition-colors"
                         >
                             {isEditing ? 'Annuleren' : 'Sluiten'}
                         </button>
@@ -183,7 +183,7 @@ export default function AdminReisSignupModalIsland({
                                     if (formRef.current) formRef.current.requestSubmit();
                                 }}
                                 disabled={isPending}
-                                className="px-10 py-3 bg-[var(--beheer-accent)] text-white rounded-2xl font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-[var(--beheer-accent)]/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3"
+                                className="px-10 py-3 bg-[var(--beheer-accent)] text-white rounded-2xl font-semibold text-[10px] shadow-lg shadow-[var(--beheer-accent)]/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3"
                             >
                                 {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                                 <span>Gegevens Opslaan</span>
@@ -194,7 +194,7 @@ export default function AdminReisSignupModalIsland({
                                     type="button"
                                     onClick={() => onResendEmail(selectedSignup.id, 'deposit')}
                                     disabled={selectedSignup.deposit_paid || (sendingEmailTo?.signupId === selectedSignup.id && sendingEmailTo.type === 'deposit')}
-                                    className={`px-5 py-2.5 rounded-xl text-[9px] font-bold uppercase tracking-widest border transition-all ${selectedSignup.deposit_email_sent ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-[var(--beheer-accent)] text-white border-white/10 shadow-lg shadow-[var(--beheer-accent)]/20 hover:scale-[1.02]'} disabled:opacity-30 disabled:grayscale disabled:scale-100 disabled:cursor-not-allowed`}
+                                    className={`px-5 py-2.5 rounded-xl text-[9px] font-semibold border transition-all ${selectedSignup.deposit_email_sent ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-[var(--beheer-accent)] text-white border-white/10 shadow-lg shadow-[var(--beheer-accent)]/20 hover:scale-[1.02]'} disabled:opacity-30 disabled:grayscale disabled:scale-100 disabled:cursor-not-allowed`}
                                 >
                                     Aanbetaling Mail
                                 </button>
@@ -202,7 +202,7 @@ export default function AdminReisSignupModalIsland({
                                     type="button"
                                     onClick={() => onResendEmail(selectedSignup.id, 'final')}
                                     disabled={selectedSignup.full_payment_paid || !trip?.allow_final_payments || (sendingEmailTo?.signupId === selectedSignup.id && sendingEmailTo.type === 'final')}
-                                    className={`px-5 py-2.5 rounded-xl text-[9px] font-bold uppercase tracking-widest border transition-all ${selectedSignup.final_email_sent ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-emerald-500 text-white border-white/10 shadow-lg shadow-emerald-500/20 hover:scale-[1.02] disabled:opacity-30 disabled:grayscale disabled:scale-100 disabled:cursor-not-allowed'}`}
+                                    className={`px-5 py-2.5 rounded-xl text-[9px] font-semibold border transition-all ${selectedSignup.final_email_sent ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-emerald-500 text-white border-white/10 shadow-lg shadow-emerald-500/20 hover:scale-[1.02] disabled:opacity-30 disabled:grayscale disabled:scale-100 disabled:cursor-not-allowed'}`}
                                 >
                                     Restbetaling Mail
                                 </button>

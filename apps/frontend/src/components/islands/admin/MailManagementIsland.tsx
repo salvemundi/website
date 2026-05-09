@@ -45,7 +45,7 @@ export default function MailManagementIsland({ initialSettings = [] }: MailManag
     };
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="container mx-auto px-4 py-8 max-w-7xl">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {settings.map((setting) => (
                     <div 
@@ -57,7 +57,7 @@ export default function MailManagementIsland({ initialSettings = [] }: MailManag
                                 <div className={`p-2 rounded-lg ${setting.isActive ? 'bg-[var(--beheer-active)]/10 text-[var(--beheer-active)]' : 'bg-[var(--beheer-inactive)]/10 text-[var(--beheer-inactive)]'}`}>
                                     {setting.id === 'mail_expiry_check' ? <CalendarClock className="h-6 w-6" /> : <BellRing className="h-6 w-6" />}
                                 </div>
-                                <h3 className="font-black uppercase tracking-widest text-sm text-[var(--beheer-text)]">
+                                <h3 className="font-semibold text-sm text-[var(--beheer-text)]">
                                     {setting.name}
                                 </h3>
                             </div>
@@ -67,7 +67,7 @@ export default function MailManagementIsland({ initialSettings = [] }: MailManag
                         </div>
                         
                         <div className="flex items-center justify-between pt-4 border-t border-[var(--beheer-border)]/50">
-                            <span className={`text-[10px] font-bold uppercase tracking-tighter ${setting.isActive ? 'text-[var(--beheer-active)]' : 'text-[var(--beheer-inactive)]'}`}>
+                            <span className={`text-[10px] font-semibold ${setting.isActive ? 'text-[var(--beheer-active)]' : 'text-[var(--beheer-inactive)]'}`}>
                                 Status: {setting.isActive ? 'Actief' : 'Gepauzeerd'}
                             </span>
                             <AdminVisibilityToggle 
@@ -85,7 +85,7 @@ export default function MailManagementIsland({ initialSettings = [] }: MailManag
                 <div className="flex items-start gap-4">
                     <ShieldCheck className="h-6 w-6 text-[var(--beheer-accent)] mt-1 shrink-0" />
                     <div>
-                        <h4 className="font-black uppercase tracking-widest text-xs text-[var(--beheer-accent)] mb-2">Veiligheidsmodus Actief</h4>
+                        <h4 className="font-semibold text-xs text-[var(--beheer-accent)] mb-2">Veiligheidsmodus Actief</h4>
                         <p className="text-[var(--beheer-text-muted)] text-xs leading-relaxed max-w-2xl">
                             Alle automatische e-mail flows staan standaard uitgeschakeld voor nieuwe omgevingen. 
                             Gebruik deze toggles om ze te activeren wanneer de configuratie en templates volledig zijn getest. 

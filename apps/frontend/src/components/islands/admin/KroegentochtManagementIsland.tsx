@@ -159,7 +159,7 @@ export default function KroegentochtManagementIsland({
 
                         <Link 
                             href="/beheer/kroegentocht/nieuw"
-                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-semibold text-xs tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
+                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-semibold text-xs rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
                         >
                             <Plus className="h-4 w-4" />
                             Nieuw Event
@@ -168,10 +168,10 @@ export default function KroegentochtManagementIsland({
                 }
             />
 
-            <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="container mx-auto px-4 py-8 max-w-7xl">
                 
                 {error && (
-                    <div className="mb-8 p-4 bg-red-500/10 border border-red-500/50 rounded-[var(--beheer-radius)] text-red-500 text-sm font-bold flex items-center gap-3">
+                    <div className="mb-8 p-4 bg-red-500/10 border border-red-500/50 rounded-[var(--beheer-radius)] text-red-500 text-sm font-semibold flex items-center gap-3">
                         <AlertCircle className="h-5 w-5" />
                         {error}
                         <button onClick={handleRefresh} className="ml-auto underline">Probeer opnieuw</button>
@@ -179,7 +179,7 @@ export default function KroegentochtManagementIsland({
                 )}
 
             {selectedEvent ? (
-                <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
+                <div className="space-y-8">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <Beer className="h-6 w-6 text-[var(--theme-purple)]" />
@@ -189,7 +189,7 @@ export default function KroegentochtManagementIsland({
                         </div>
                         <Link 
                             href={`/beheer/kroegentocht/bewerk/${selectedEvent.id}`}
-                            className="flex items-center gap-2 px-4 py-2 bg-[var(--bg-main)]/50 border border-[var(--border-color)] rounded-[var(--radius-xl)] text-xs font-bold text-[var(--text-subtle)] hover:border-[var(--theme-purple)]/50 transition-all"
+                            className="flex items-center gap-2 px-4 py-2 bg-[var(--bg-main)]/50 border border-[var(--border-color)] rounded-[var(--radius-xl)] text-xs font-semibold text-[var(--text-subtle)] hover:border-[var(--theme-purple)]/50 transition-all"
                         >
                             <Settings className="h-4 w-4" />
                             Event Details

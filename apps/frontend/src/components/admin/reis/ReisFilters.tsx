@@ -33,10 +33,10 @@ export default function ReisFilters({
                         {stats.map((stat, i) => (
                             <div key={i} className="flex items-center gap-2.5 group whitespace-nowrap">
                                 {stat.icon && <stat.icon className="h-3 w-3 text-[var(--beheer-accent)] opacity-40 group-hover:opacity-100 transition-opacity" />}
-                                <span className="text-[9px] font-semibold text-[var(--beheer-text-muted)] opacity-60 tracking-widest">
+                                <span className="text-[9px] font-semibold text-[var(--beheer-text-muted)] opacity-60">
                                     {stat.label}
                                 </span>
-                                <span className="text-sm font-bold text-[var(--beheer-text)] tabular-nums">
+                                <span className="text-sm font-semibold text-[var(--beheer-text)] tabular-nums">
                                     {stat.value}
                                 </span>
                                 {i < stats.length - 1 && (

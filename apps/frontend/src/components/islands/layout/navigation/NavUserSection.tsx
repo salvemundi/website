@@ -27,7 +27,7 @@ export function NavUserSection({ initialSession, canAccessAdmin }: NavUserSectio
             {canAccessAdmin && (
                 <Link
                     href={ROUTES.ADMIN}
-                    className="flex items-center gap-2 rounded-full bg-[var(--color-purple-500)] text-[var(--color-white)] px-3 py-1.5 h-8 text-sm font-medium shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg shrink-0"
+                    className="flex items-center gap-2 rounded-full bg-[var(--color-purple-500)] text-[var(--color-white)] px-3 py-1.5 h-9 text-sm font-medium shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg shrink-0"
                 >
                     <Shield className="h-4 w-4 shrink-0" />
                     <span className="hidden @[1200px]:inline">Admin</span>
@@ -37,7 +37,7 @@ export function NavUserSection({ initialSession, canAccessAdmin }: NavUserSectio
             {isAuthenticated ? (
                 <Link
                     href={ROUTES.ACCOUNT}
-                    className="flex items-center gap-2 rounded-full px-3 py-1.5 h-8 text-sm font-medium text-[var(--text-main)] shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg shrink-0"
+                    className="flex items-center gap-2 rounded-full px-3 py-1.5 h-9 text-sm font-medium text-[var(--text-main)] shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg shrink-0"
                 >
                     <div className="relative h-6 w-6 rounded-full overflow-hidden shrink-0 bg-[var(--color-purple-50)] dark:bg-white/10 flex items-center justify-center">
                         {user.avatar ? (
@@ -54,7 +54,7 @@ export function NavUserSection({ initialSession, canAccessAdmin }: NavUserSectio
                         provider: 'microsoft', 
                         callbackURL: '/profiel'
                     })}
-                    className="flex cursor-pointer items-center justify-center gap-2 rounded-full font-semibold px-3 py-1.5 h-8 text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg bg-[var(--color-purple-50)] text-[var(--color-purple-700)] shrink-0"
+                    className="flex cursor-pointer items-center justify-center gap-2 rounded-full font-semibold px-4 py-1.5 h-9 text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg bg-[var(--color-purple-50)] text-[var(--color-purple-700)] shrink-0"
                 >
                     Inloggen
                 </button>

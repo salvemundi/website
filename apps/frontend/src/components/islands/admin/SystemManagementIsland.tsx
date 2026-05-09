@@ -95,14 +95,14 @@ export default function SystemManagementIsland({
     };
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700">
+        <div className="container mx-auto px-4 py-8 max-w-7xl">
             {/* Header Actions */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-8 mt-4">
                 <div className="flex bg-[var(--beheer-card-soft)] p-1.5 rounded-2xl border border-[var(--beheer-border)] gap-1 w-full sm:w-auto">
                     <button
                         onClick={() => setActiveTab('status')}
                         className={cn(
-                            "flex-1 sm:flex-none px-6 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2.5",
+                            "flex-1 sm:flex-none px-6 py-2.5 text-[10px] font-semibold rounded-xl transition-all flex items-center justify-center gap-2.5",
                             activeTab === 'status' 
                                 ? "bg-[var(--beheer-card-bg)] text-[var(--beheer-accent)] shadow-sm border border-[var(--beheer-border)]" 
                                 : "text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] hover:bg-[var(--beheer-card-bg)]/40"
@@ -114,7 +114,7 @@ export default function SystemManagementIsland({
                     <button
                         onClick={() => setActiveTab('automation')}
                         className={cn(
-                            "flex-1 sm:flex-none px-6 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2.5",
+                            "flex-1 sm:flex-none px-6 py-2.5 text-[10px] font-semibold rounded-xl transition-all flex items-center justify-center gap-2.5",
                             activeTab === 'automation' 
                                 ? "bg-[var(--beheer-card-bg)] text-[var(--beheer-accent)] shadow-sm border border-[var(--beheer-border)]" 
                                 : "text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] hover:bg-[var(--beheer-card-bg)]/40"
@@ -128,7 +128,7 @@ export default function SystemManagementIsland({
                 <button
                     onClick={fetchStatus}
                     disabled={isRefreshing}
-                    className="flex items-center justify-center gap-2 px-8 py-3 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-2xl text-[10px] font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
+                    className="flex items-center justify-center gap-2 px-8 py-3 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-2xl text-[10px] font-semibold hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
                 >
                     <RefreshCw className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin")} />
                     Update Status
@@ -139,11 +139,11 @@ export default function SystemManagementIsland({
 
             <div className="mt-8">
                 {activeTab === 'status' ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 animate-in slide-in-from-left-4 duration-500">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
                         {statuses.length === 0 ? (
                             <div className="md:col-span-2 flex flex-col items-center justify-center py-20 bg-[var(--beheer-card-bg)] rounded-[2.5rem] border border-[var(--beheer-border)] border-dashed">
                                 <AlertCircle className="h-12 w-12 text-[var(--beheer-text-muted)] opacity-20 mb-4" />
-                                <p className="text-sm font-semibold text-[var(--beheer-text-muted)] tracking-widest">Geen status data beschikbaar</p>
+                                <p className="text-sm font-semibold text-[var(--beheer-text-muted)]">Geen status data beschikbaar</p>
                             </div>
                         ) : (
                             statuses.map((service) => (
@@ -156,7 +156,7 @@ export default function SystemManagementIsland({
                                             {service.name.toLowerCase().includes('database') ? <Database className="h-6 w-6" /> : <Zap className="h-6 w-6" />}
                                         </div>
                                         <div className={cn(
-                                            "flex items-center gap-2 px-4 py-2 rounded-full border text-[10px] font-black uppercase tracking-widest",
+                                            "flex items-center gap-2 px-4 py-2 rounded-full border text-[10px] font-semibold",
                                             getStatusColor(service.status)
                                         )}>
                                             {getStatusIcon(service.status)}
@@ -166,9 +166,9 @@ export default function SystemManagementIsland({
 
                                     <div className="space-y-4">
                                         <div>
-                                            <h3 className="text-lg font-black uppercase tracking-widest text-[var(--beheer-text)]">{service.name}</h3>
+                                            <h3 className="text-lg font-semibold text-[var(--beheer-text)]">{service.name}</h3>
                                             <div className="flex items-center gap-4 mt-3">
-                                                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">
+                                                <div className="flex items-center gap-2 text-[10px] font-semibold text-[var(--beheer-text-muted)]">
                                                     <Clock className="h-3.5 w-3.5 text-[var(--beheer-accent)]" />
                                                     {service.latency ? `${service.latency}ms` : 'N/A'}
                                                 </div>
@@ -177,8 +177,8 @@ export default function SystemManagementIsland({
 
                                         {service.error && (
                                             <div className="p-4 bg-rose-500/5 border border-rose-500/10 rounded-2xl">
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-rose-500">Error Detail</p>
-                                                <p className="text-xs font-bold text-rose-400/80 mt-1">{service.error}</p>
+                                                <p className="text-[10px] font-semibold text-rose-500">Error Detail</p>
+                                                <p className="text-xs font-semibold text-rose-400/80 mt-1">{service.error}</p>
                                             </div>
                                         )}
                                     </div>
@@ -192,7 +192,7 @@ export default function SystemManagementIsland({
                         )}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 animate-in slide-in-from-right-4 duration-500">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
                         {automationSettings.map((setting) => (
                             <div 
                                 key={setting.id}
@@ -210,7 +210,7 @@ export default function SystemManagementIsland({
                                              setting.id === 'auto_sync_nightly' ? <RefreshCcw className="h-6 w-6" /> :
                                              <BellRing className="h-6 w-6" />}
                                         </div>
-                                        <h3 className="font-black uppercase tracking-widest text-base text-[var(--beheer-text)]">
+                                        <h3 className="font-semibold text-base text-[var(--beheer-text)]">
                                             {setting.name}
                                         </h3>
                                     </div>
@@ -226,7 +226,7 @@ export default function SystemManagementIsland({
                                             setting.isActive ? "bg-emerald-500 animate-pulse" : "bg-rose-500"
                                         )} />
                                         <span className={cn(
-                                            "text-[10px] font-black uppercase tracking-widest",
+                                            "text-[10px] font-semibold",
                                             setting.isActive ? "text-emerald-500" : "text-rose-500"
                                         )}>
                                             {setting.isActive ? 'Actief' : 'Gepauzeerd'}
@@ -248,7 +248,7 @@ export default function SystemManagementIsland({
                                     <ShieldCheck className="h-8 w-8" />
                                 </div>
                                 <div>
-                                    <h4 className="font-black uppercase tracking-widest text-sm text-[var(--beheer-accent)] mb-3">Systeem Veiligheids Protocol</h4>
+                                    <h4 className="font-semibold text-sm text-[var(--beheer-accent)] mb-3">Systeem Veiligheids Protocol</h4>
                                     <p className="text-[var(--beheer-text-muted)] text-xs leading-relaxed max-w-3xl font-medium opacity-90">
                                         Deze toggles beheren kritieke achtergrondprocessen. Wijzigingen treden onmiddellijk in werking. 
                                         De **Nachtelijke Sync** draait dagelijks om 03:00 en zorgt dat alle Azure-rechten in de cockpit up-to-date zijn.
@@ -264,10 +264,10 @@ export default function SystemManagementIsland({
 
             {lastUpdated && (
                 <div className="mt-12 flex flex-col items-center gap-2">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--beheer-text-muted)] opacity-40">
+                    <p className="text-[10px] font-semibold text-[var(--beheer-text-muted)] opacity-40">
                         System Monitoring Active
                     </p>
-                    <p className="text-[9px] font-bold text-[var(--beheer-text-muted)] opacity-30">
+                    <p className="text-[9px] font-semibold text-[var(--beheer-text-muted)] opacity-30">
                         {`Last Sync: ${formatDate(lastUpdated!, true)}`}
                     </p>
                 </div>

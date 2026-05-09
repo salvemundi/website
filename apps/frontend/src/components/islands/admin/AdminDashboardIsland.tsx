@@ -28,8 +28,8 @@ const StatCard: React.FC<StatProps> = ({ title, value, icon, color }) => (
             })}
         </div>
         <div>
-            <p className="text-[10px] font-black text-slate-500 dark:text-[var(--beheer-text-muted)] uppercase tracking-widest">{title}</p>
-            <h3 className="text-3xl font-black text-slate-900 dark:text-[var(--beheer-text)] mt-1">{value}</h3>
+            <p className="text-xs font-semibold text-slate-500 dark:text-[var(--beheer-text-muted)]">{title}</p>
+            <h3 className="text-3xl font-semibold text-slate-900 dark:text-[var(--beheer-text)] mt-1">{value}</h3>
         </div>
     </div>
 );
@@ -49,13 +49,13 @@ const AdminDashboardIsland: React.FC<AdminDashboardIslandProps> = ({ stats, birt
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-4xl font-black text-slate-900 dark:text-[var(--beheer-text)] uppercase tracking-tighter">Admin Dashboard</h1>
-                    <p className="text-slate-500 dark:text-[var(--beheer-text-muted)] mt-2 font-bold uppercase tracking-widest text-xs">Welkom terug bij het beheerpaneel van Salve Mundi.</p>
+                    <h1 className="text-4xl font-semibold text-slate-900 dark:text-[var(--beheer-text)]">Admin Dashboard</h1>
+                    <p className="text-slate-500 dark:text-[var(--beheer-text-muted)] mt-2 font-semibold text-xs">Welkom terug bij het beheerpaneel van Salve Mundi.</p>
                 </div>
                 <div className="flex gap-3">
                     <Link 
                         href="/beheer/services"
-                        className="px-6 py-3 bg-[var(--beheer-accent)] text-white rounded-[var(--beheer-radius)] font-black uppercase tracking-widest text-[10px] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 flex items-center gap-2"
+                        className="px-6 py-3 bg-[var(--beheer-accent)] text-white rounded-[var(--beheer-radius)] font-semibold text-xs shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 flex items-center gap-2"
                     >
                         <ShieldCheck className="w-4 h-4" />
                         Systeem Status
@@ -88,7 +88,7 @@ const AdminDashboardIsland: React.FC<AdminDashboardIslandProps> = ({ stats, birt
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                 {/* Navigation Links (Quick Actions) */}
                 <div className="lg:col-span-2 space-y-8">
-                    <h2 className="text-xs font-black text-slate-900 dark:text-[var(--beheer-text)] flex items-center gap-3 uppercase tracking-widest border-l-4 border-[var(--beheer-accent)] pl-4 py-1">
+                    <h2 className="text-xs font-semibold text-slate-900 dark:text-[var(--beheer-text)] flex items-center gap-3 border-l-4 border-[var(--beheer-accent)] pl-4 py-1">
                         Beheer Modules
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -113,8 +113,8 @@ const AdminDashboardIsland: React.FC<AdminDashboardIslandProps> = ({ stats, birt
                                     })}
                                 </div>
                                 <div className="flex-grow pt-1">
-                                    <h3 className="font-black text-slate-900 dark:text-[var(--beheer-text)] uppercase tracking-tight group-hover:text-[var(--beheer-accent)] transition-colors">{item.title}</h3>
-                                    <p className="text-[10px] font-bold text-slate-500 dark:text-[var(--beheer-text-muted)] uppercase tracking-widest mt-1 opacity-60">{item.desc}</p>
+                                    <h3 className="font-semibold text-slate-900 dark:text-[var(--beheer-text)] group-hover:text-[var(--beheer-accent)] transition-colors">{item.title}</h3>
+                                    <p className="text-[10px] font-semibold text-slate-500 dark:text-[var(--beheer-text-muted)] mt-1 opacity-60">{item.desc}</p>
                                 </div>
                                 <ChevronRight className="w-5 h-5 text-slate-300 dark:text-slate-600 group-hover:text-[var(--beheer-accent)] transition-all self-center" />
                             </Link>
@@ -124,24 +124,24 @@ const AdminDashboardIsland: React.FC<AdminDashboardIslandProps> = ({ stats, birt
 
                 {/* Side Section: Birthdays */}
                 <div className="space-y-8">
-                    <h2 className="text-xs font-black text-slate-900 dark:text-[var(--beheer-text)] flex items-center gap-3 uppercase tracking-widest border-l-4 border-pink-500 pl-4 py-1">
+                    <h2 className="text-xs font-semibold text-slate-900 dark:text-[var(--beheer-text)] flex items-center gap-3 border-l-4 border-pink-500 pl-4 py-1">
                         Jarigen (7 dagen)
                     </h2>
                     <div className="bg-white dark:bg-[var(--beheer-card-bg)] rounded-[2.5rem] border border-slate-100 dark:border-[var(--beheer-border)] divide-y divide-slate-50 dark:divide-white/5 overflow-hidden shadow-sm">
                         {birthdays.length > 0 ? birthdays.map((b, i) => (
                             <div key={i} className="p-5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-11 h-11 rounded-full bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center text-pink-600 font-black text-sm">
+                                    <div className="w-11 h-11 rounded-full bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center text-pink-600 font-semibold text-sm">
                                         {b.name.charAt(0).toUpperCase()}
                                     </div>
-                                    <span className="font-black text-[var(--beheer-text)] text-xs uppercase tracking-tight truncate max-w-[120px]">{b.name}</span>
+                                    <span className="font-semibold text-[var(--beheer-text)] text-xs truncate max-w-[150px]">{b.name}</span>
                                 </div>
-                                <span className="text-[10px] font-black px-3 py-1 bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-[var(--beheer-text-muted)] rounded-full uppercase tracking-widest">
+                                <span className="text-[10px] font-semibold px-3 py-1 bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-[var(--beheer-text-muted)] rounded-full">
                                     {formatDate(b.date)}
                                 </span>
                             </div>
                         )) : (
-                            <div className="p-12 text-center text-slate-400 italic font-bold uppercase tracking-widest text-[10px] opacity-40">
+                            <div className="p-12 text-center text-slate-400 italic font-semibold text-[10px] opacity-40">
                                 Geen jarigen deze week
                             </div>
                         )}
@@ -150,9 +150,9 @@ const AdminDashboardIsland: React.FC<AdminDashboardIslandProps> = ({ stats, birt
                     {/* Quick Access Documents */}
                     <div className="bg-gradient-to-br from-[var(--beheer-accent)] to-[var(--beheer-accent)]/80 rounded-[2.5rem] p-10 text-white overflow-hidden relative group shadow-lg">
                         <div className="relative z-10">
-                            <h3 className="font-black text-xl uppercase tracking-tighter mb-2">Reglementen</h3>
-                            <p className="text-white/80 text-[10px] font-bold uppercase tracking-widest mb-6 leading-relaxed">Statuten, HR en andere belangrijke stukken.</p>
-                            <Link href="/beheer/commissies" className="inline-flex items-center gap-2 bg-white text-[var(--beheer-accent)] px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/90 transition-all active:scale-95 shadow-lg">
+                            <h3 className="font-semibold text-xl mb-2">Reglementen</h3>
+                            <p className="text-white/80 text-[10px] font-semibold mb-6 leading-relaxed">Statuten, HR en andere belangrijke stukken.</p>
+                            <Link href="/beheer/commissies" className="inline-flex items-center gap-2 bg-white text-[var(--beheer-accent)] px-6 py-3 rounded-2xl text-[10px] font-semibold hover:bg-white/90 transition-all active:scale-95 shadow-lg">
                                 <FileText className="w-4 h-4" />
                                 Doorlezen
                             </Link>

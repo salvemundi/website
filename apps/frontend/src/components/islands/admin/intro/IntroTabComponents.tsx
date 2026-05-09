@@ -86,7 +86,7 @@ export function ActionButton({
 
 export function EmptyState({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
     return (
-        <div className="py-24 text-center text-[var(--beheer-text-muted)] animate-in fade-in zoom-in-95 duration-500">
+        <div className="py-24 text-center text-[var(--beheer-text-muted)]">
             <div className="p-8 bg-[var(--beheer-card-soft)]/50 rounded-full w-fit mx-auto mb-8 ring-1 ring-[var(--beheer-border)]/20 shadow-inner">
                 <Icon className="h-12 w-12 opacity-20 text-[var(--beheer-accent)]" />
             </div>

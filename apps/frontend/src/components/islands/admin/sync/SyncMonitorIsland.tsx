@@ -34,7 +34,7 @@ function FilterTab({ active, label, count, onClick, color = 'indigo' }: FilterTa
             }`}
         >
             <span>{label}</span>
-            <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-bold ${active ? 'bg-white/20' : 'bg-[var(--beheer-border)]/30'}`}>
+            <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${active ? 'bg-white/20' : 'bg-[var(--beheer-border)]/30'}`}>
                 {count}
             </span>
         </button>

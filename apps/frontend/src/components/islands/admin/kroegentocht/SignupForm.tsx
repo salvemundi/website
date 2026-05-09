@@ -71,7 +71,7 @@ export default function SignupForm({ signup }: SignupFormProps) {
 
     return (
         <>
-        <form onSubmit={handleSubmit} className="space-y-8 max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500" autoComplete="off">
+        <form onSubmit={handleSubmit} className="space-y-8 max-w-3xl mx-auto" autoComplete="off">
             <div className="bg-[var(--bg-card)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)]/30 overflow-hidden">
                 <div className="p-8 border-b border-[var(--border-color)]/30 bg-[var(--bg-main)]/30">
                     <h2 className="text-2xl font-semibold text-[var(--text-main)] tracking-tight flex items-center gap-3">
@@ -91,7 +91,7 @@ export default function SignupForm({ signup }: SignupFormProps) {
                                 type="text"
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-bold text-[var(--text-main)]"
+                                className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-semibold text-[var(--text-main)]"
                                 required
                                 autoComplete="off"
                             />
@@ -105,7 +105,7 @@ export default function SignupForm({ signup }: SignupFormProps) {
                                 type="email"
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-bold text-[var(--text-main)]"
+                                className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-semibold text-[var(--text-main)]"
                                 required
                                 autoComplete="off"
                             />
@@ -121,7 +121,7 @@ export default function SignupForm({ signup }: SignupFormProps) {
                                 type="text"
                                 value={formData.association}
                                 onChange={(e) => setFormData({ ...formData, association: e.target.value })}
-                                className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-bold text-[var(--text-main)]"
+                                className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-semibold text-[var(--text-main)]"
                                 autoComplete="off"
                             />
                         </div>
@@ -134,7 +134,7 @@ export default function SignupForm({ signup }: SignupFormProps) {
                                 <select
                                     value={formData.payment_status}
                                     onChange={(e) => setFormData({ ...formData, payment_status: e.target.value as "paid" | "open" | "failed" | "canceled" | "expired" })}
-                                    className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-bold text-[var(--text-main)] appearance-none cursor-pointer hover:border-[var(--theme-purple)]/30"
+                                    className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-semibold text-[var(--text-main)] appearance-none cursor-pointer hover:border-[var(--theme-purple)]/30"
                                     autoComplete="off"
                                 >
                                     <option value="paid" className="bg-[var(--bg-card)] text-[var(--text-main)]">Paid</option>

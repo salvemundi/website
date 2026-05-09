@@ -159,7 +159,7 @@ export default function LedenDetailIsland({
                     {/* Header info */}
                     <div className="flex flex-col md:flex-row md:items-center gap-8 mb-12">
                         <div className="relative group">
-                            <div className="h-28 w-28 rounded-[2rem] bg-[var(--beheer-accent)]/10 flex items-center justify-center text-[var(--beheer-accent)] font-black text-4xl shadow-2xl border border-[var(--beheer-border)] transition-transform group-hover:scale-105 duration-500">
+                            <div className="h-28 w-28 rounded-[2rem] bg-[var(--beheer-accent)]/10 flex items-center justify-center text-[var(--beheer-accent)] font-semibold text-4xl shadow-2xl border border-[var(--beheer-border)] transition-transform group-hover:scale-105 duration-500">
                                 {localMember.avatar ? (
                                     <img src={getImageUrl(localMember.avatar, { width: 150, height: 150, fit: 'cover' }) || ''} alt="avatar" className="h-full w-full object-cover rounded-[2rem]" />
                                 ) : (
@@ -168,14 +168,14 @@ export default function LedenDetailIsland({
                             </div>
                         </div>
                         <div className="space-y-3">
-                            <h1 className="text-4xl font-black text-[var(--beheer-text)] leading-none uppercase tracking-tight">
+                            <h1 className="text-4xl font-semibold text-[var(--beheer-text)] leading-none">
                                 {localMember.first_name} {localMember.last_name}
                             </h1>
                             <div className="flex flex-wrap items-center gap-4">
-                                <span className="text-[var(--beheer-text-muted)] font-black flex items-center gap-2 text-xs uppercase tracking-widest opacity-70">
+                                <span className="text-[var(--beheer-text-muted)] font-semibold flex items-center gap-2 text-xs opacity-70">
                                     <Mail className="h-4 w-4 text-[var(--beheer-accent)]" /> {localMember.email}
                                 </span>
-                                <div suppressHydrationWarning className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-sm border ${isMembershipActive
+                                <div suppressHydrationWarning className={`px-4 py-1.5 rounded-full text-[10px] font-semibold shadow-sm border ${isMembershipActive
                                         ? 'bg-green-500/10 text-green-500 border-green-500/20'
                                         : 'bg-red-500/10 text-red-500 border-red-500/20'
                                     }`}>
@@ -196,7 +196,7 @@ export default function LedenDetailIsland({
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                                    className={`flex items-center gap-3 px-8 py-5 font-black text-xs uppercase tracking-[0.2em] transition-all border-b-2 ${
+                                    className={`flex items-center gap-3 px-8 py-5 font-semibold text-xs transition-all border-b-2 ${
                                         activeTab === tab.id 
                                             ? 'text-[var(--beheer-accent)] border-[var(--beheer-accent)]' 
                                             : 'text-[var(--beheer-text-muted)] border-transparent hover:text-[var(--beheer-text)]'

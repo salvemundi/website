@@ -30,7 +30,7 @@ export default function LedenTable({
             <div className="overflow-x-auto custom-scrollbar">
                 <table className="w-full text-left border-collapse min-w-[800px]">
                     <thead>
-                        <tr className="border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[10px] uppercase font-black tracking-widest text-[var(--beheer-text-muted)]">
+                        <tr className="border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-xs font-semibold text-[var(--beheer-text-muted)]">
                             <th className="px-4 md:px-8 py-4">Lid</th>
                             <th className="px-4 md:px-8 py-4">Contactgegevens</th>
                             <th className="px-4 md:px-8 py-4">Validiteit</th>
@@ -42,14 +42,14 @@ export default function LedenTable({
                             <tr key={member.id} className="group hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition-colors">
                                 <td className="px-4 md:px-8 py-5">
                                     <div className="flex items-center gap-4">
-                                        <div className="h-10 w-10 shrink-0 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black text-sm ring-2 ring-white dark:ring-slate-800 shadow-sm transition-transform group-hover:scale-110">
+                                        <div className="h-10 w-10 shrink-0 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm ring-2 ring-white dark:ring-slate-800 shadow-sm transition-transform group-hover:scale-110">
                                             {member.first_name?.[0]}{member.last_name?.[0]}
                                         </div>
                                         <div>
-                                            <p className="font-extrabold text-slate-900 dark:text-white leading-tight">
+                                            <p className="font-semibold text-slate-900 dark:text-white leading-tight">
                                                 {member.first_name} {member.last_name}
                                             </p>
-                                            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-bold uppercase tracking-wider">Lid ID: {member.id.substring(0, 8)}</p>
+                                            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-medium">Lid ID: {member.id.substring(0, 8)}</p>
                                         </div>
                                     </div>
                                 </td>
@@ -60,7 +60,7 @@ export default function LedenTable({
                                     </div>
                                 </td>
                                 <td className="px-4 md:px-8 py-5">
-                                    <span suppressHydrationWarning className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase ${isMembershipActive(member)
+                                    <span suppressHydrationWarning className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-semibold ${isMembershipActive(member)
                                         ? 'bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400'
                                         : 'bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400'
                                         }`}>
@@ -84,7 +84,7 @@ export default function LedenTable({
             {members.length === 0 && (
                 <div className="p-20 text-center">
                     <Users className="h-16 w-16 text-slate-200 dark:text-slate-700 mx-auto mb-4" />
-                    <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">Geen leden gevonden</h3>
+                    <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">Geen leden gevonden</h3>
                     <p className="text-slate-500 dark:text-slate-400 font-medium">Pas de filters aan of probeer een andere zoekterm.</p>
                 </div>
             )}

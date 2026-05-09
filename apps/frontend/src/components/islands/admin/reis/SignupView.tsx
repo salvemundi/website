@@ -44,7 +44,7 @@ export default function SignupView({ signup, isBusTrip }: SignupViewProps) {
                 <section>
                     <div className="flex items-center gap-2 mb-3 opacity-50">
                         <User className="h-3 w-3 text-[var(--beheer-accent)]" />
-                        <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--beheer-text)]">REIZIGER</h3>
+                        <h3 className="text-[10px] font-semibold text-[var(--beheer-text)]">Reiziger</h3>
                     </div>
                     <div className="bg-[var(--bg-main)]/30 rounded-2xl border border-[var(--beheer-border)]/10 p-4 space-y-3 shadow-inner">
                         <ViewField label="Naam" value={`${signup.first_name} ${signup.last_name}`} icon={User} />
@@ -61,16 +61,16 @@ export default function SignupView({ signup, isBusTrip }: SignupViewProps) {
                 <section>
                     <div className="flex items-center gap-2 mb-3 opacity-50">
                         {isBusTrip ? <Bus className="h-3 w-3 text-[var(--beheer-accent)]" /> : <FileText className="h-3 w-3 text-[var(--beheer-accent)]" />}
-                        <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--beheer-text)]">{isBusTrip ? 'VERVOER' : 'DOCUMENTEN'}</h3>
+                        <h3 className="text-[10px] font-semibold text-[var(--beheer-text)]">{isBusTrip ? 'Vervoer' : 'Documenten'}</h3>
                     </div>
                     <div className="bg-[var(--bg-main)]/30 rounded-2xl border border-[var(--beheer-border)]/10 p-4 space-y-3 shadow-inner">
                         {isBusTrip ? (
-                            <div className={`px-3 py-2 rounded-xl text-[9px] font-bold uppercase tracking-widest flex items-center justify-between border ${signup.willing_to_drive ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'}`}>
+                            <div className={`px-3 py-2 rounded-xl text-[9px] font-semibold flex items-center justify-between border ${signup.willing_to_drive ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'}`}>
                                 <div className="flex items-center gap-2">
                                     <Bus className="h-3.5 w-3.5" />
                                     <span>Chauffeur</span>
                                 </div>
-                                <span>{signup.willing_to_drive ? 'BESCHIKBAAR' : 'NEE'}</span>
+                                <span>{signup.willing_to_drive ? 'Beschikbaar' : 'Nee'}</span>
                             </div>
                         ) : (
                             <>
@@ -93,19 +93,19 @@ export default function SignupView({ signup, isBusTrip }: SignupViewProps) {
                 <section>
                     <div className="flex items-center gap-2 mb-3 opacity-50">
                         <CreditCard className="h-3 w-3 text-[var(--beheer-accent)]" />
-                        <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--beheer-text)]">STATUS</h3>
+                        <h3 className="text-[10px] font-semibold text-[var(--beheer-text)]">Status</h3>
                     </div>
                     <div className="bg-[var(--bg-main)]/30 rounded-2xl border border-[var(--beheer-border)]/10 p-4 space-y-4 shadow-inner">
                         <div className="flex items-center justify-between">
-                            <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--beheer-text-muted)] opacity-50">Status</span>
+                            <span className="text-[9px] font-semibold text-[var(--beheer-text-muted)] opacity-50">Status</span>
                             <div className={`flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 ${statusInfo.color}`}>
                                 <statusInfo.icon className="h-3 w-3" />
-                                <span className="text-[10px] font-bold uppercase tracking-wider">{statusInfo.label}</span>
+                                <span className="text-[10px] font-semibold">{statusInfo.label}</span>
                             </div>
                         </div>
                         <div className="flex items-center justify-between">
-                            <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--beheer-text-muted)] opacity-50">Rol</span>
-                            <span className="text-[10px] font-bold text-[var(--beheer-text)]">{signup.role === 'crew' ? 'Crew' : 'Reguliere Reiziger'}</span>
+                            <span className="text-[9px] font-semibold text-[var(--beheer-text-muted)] opacity-50">Rol</span>
+                            <span className="text-[10px] font-semibold text-[var(--beheer-text)]">{signup.role === 'crew' ? 'Crew' : 'Reguliere Reiziger'}</span>
                         </div>
                         
                         <div className="pt-2 space-y-2 border-t border-white/5">
@@ -126,17 +126,17 @@ export default function SignupView({ signup, isBusTrip }: SignupViewProps) {
                 <section>
                     <div className="flex items-center gap-2 mb-3 opacity-50">
                         <AlertCircle className="h-3 w-3 text-[var(--beheer-accent)]" />
-                        <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--beheer-text)]">NOTITIES</h3>
+                        <h3 className="text-[10px] font-semibold text-[var(--beheer-text)]">Notities</h3>
                     </div>
                     <div className="space-y-3">
                         <div className="bg-red-500/5 rounded-xl border border-red-500/10 p-3">
-                            <h4 className="text-[8px] font-bold uppercase tracking-widest text-red-500 mb-1">Allergieën</h4>
+                            <h4 className="text-[8px] font-semibold text-red-500 mb-1">Allergieën</h4>
                             <p className="text-xs text-[var(--beheer-text)] font-medium leading-relaxed">
                                 {signup.allergies || 'Geen'}
                             </p>
                         </div>
                         <div className="bg-[var(--beheer-accent)]/5 rounded-xl border border-[var(--beheer-accent)]/10 p-3">
-                            <h4 className="text-[8px] font-bold uppercase tracking-widest text-[var(--beheer-accent)] mb-1">Bijzonderheden</h4>
+                            <h4 className="text-[8px] font-semibold text-[var(--beheer-accent)] mb-1">Bijzonderheden</h4>
                             <p className="text-xs text-[var(--beheer-text)] font-medium leading-relaxed">
                                 {signup.special_notes || 'Geen'}
                             </p>
@@ -153,7 +153,7 @@ function ViewField({ label, value, icon: Icon }: { label: string; value: string;
         <div className="flex items-center justify-between gap-4 py-1.5 border-b border-white/5 last:border-0">
             <div className="flex items-center gap-2">
                 <Icon className="h-3 w-3 text-[var(--beheer-text-muted)] opacity-30" />
-                <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--beheer-text-muted)] opacity-50">{label}</span>
+                <span className="text-[9px] font-semibold text-[var(--beheer-text-muted)] opacity-50">{label}</span>
             </div>
             <span className="text-[11px] font-semibold text-[var(--beheer-text)] truncate max-w-[200px]">{value}</span>
         </div>
@@ -165,10 +165,10 @@ function PaymentStatus({ label, isPaid, date }: { label: string; isPaid: boolean
         <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
                 <div className={`h-1.5 w-1.5 rounded-full ${isPaid ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--beheer-text-muted)] opacity-50">{label}</span>
+                <span className="text-[9px] font-semibold text-[var(--beheer-text-muted)] opacity-50">{label}</span>
             </div>
             <div className="flex flex-col items-end">
-                <span className={`text-[10px] font-bold ${isPaid ? 'text-emerald-500' : 'text-red-500'}`}>
+                <span className={`text-[10px] font-semibold ${isPaid ? 'text-emerald-500' : 'text-red-500'}`}>
                     {isPaid ? 'Betaald' : 'Niet betaald'}
                 </span>
                 {isPaid && date && (

@@ -67,17 +67,17 @@ export default function ActivityCard({
             {/* Middle: Main Info */}
             <div className="flex-1 px-6 py-4 sm:px-8 sm:py-5 min-w-0 flex flex-col justify-center">
                 <div className="flex flex-wrap items-center gap-3 mb-2">
-                    <h3 className="text-2xl sm:text-3xl font-black text-[var(--beheer-text)] truncate tracking-tight uppercase leading-tight">
+                    <h3 className="text-2xl font-semibold text-[var(--beheer-text)] leading-tight">
                         {event.name}
                     </h3>
                     <div className="flex gap-2">
-                        {isDraft && <span className="px-3 py-1 text-[8px] font-black bg-[var(--beheer-text-muted)]/10 text-[var(--beheer-text-muted)] border border-[var(--beheer-border)] rounded-full uppercase tracking-widest">Draft</span>}
-                        {isScheduled && <span className="px-3 py-1 text-[8px] font-black bg-blue-500/10 text-blue-500 border border-blue-500/20 rounded-full uppercase tracking-widest">Scheduled</span>}
-                        {isPast && <span className="px-3 py-1 text-[8px] font-black bg-[var(--beheer-border)] text-[var(--beheer-text-muted)] rounded-full uppercase tracking-widest">Verleden</span>}
+                        {isDraft && <span className="px-3 py-1 text-[8px] font-semibold bg-[var(--beheer-text-muted)]/10 text-[var(--beheer-text-muted)] border border-[var(--beheer-border)] rounded-full">Draft</span>}
+                        {isScheduled && <span className="px-3 py-1 text-[8px] font-semibold bg-blue-500/10 text-blue-500 border border-blue-500/20 rounded-full">Ingepland</span>}
+                        {isPast && <span className="px-3 py-1 text-[8px] font-semibold bg-[var(--beheer-border)] text-[var(--beheer-text-muted)] rounded-full">Verleden</span>}
                     </div>
                 </div>
 
-                <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-bold text-[var(--beheer-text-muted)] mb-4 uppercase tracking-wider">
+                <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-semibold text-[var(--beheer-text-muted)] mb-4">
                     <div className="flex items-center gap-2">
                         <Calendar className="h-3.5 w-3.5 text-[var(--beheer-accent)]" />
                         <span>{formatDate(event.event_date)}</span>
@@ -102,9 +102,9 @@ export default function ActivityCard({
                             <Users className="h-4 w-4" />
                         </div>
                         <div className="flex items-baseline gap-1.5">
-                            <span className="font-black text-xl text-[var(--beheer-text)] leading-none">{event.signup_count || 0}</span>
-                            {event.max_sign_ups && <span className="text-[var(--beheer-text-muted)] font-black text-sm">/ {event.max_sign_ups}</span>}
-                            <span className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest ml-1">aanmeldingen</span>
+                            <span className="font-semibold text-xl text-[var(--beheer-text)] leading-none">{event.signup_count || 0}</span>
+                            {event.max_sign_ups && <span className="text-[var(--beheer-text-muted)] font-semibold text-sm">/ {event.max_sign_ups}</span>}
+                            <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] ml-1">aanmeldingen</span>
                         </div>
                     </div>
                     {(event.price_members !== undefined || event.price_non_members !== undefined) && (
@@ -112,9 +112,9 @@ export default function ActivityCard({
                             <div className="p-2 rounded-full bg-emerald-500/10 text-emerald-500 group-hover/price:scale-110 transition-transform">
                                 <Euro className="h-4 w-4" />
                             </div>
-                            <div className="flex items-center gap-2 font-black text-[var(--beheer-text)] uppercase tracking-tighter">
+                            <div className="flex items-center gap-2 font-semibold text-[var(--beheer-text)]">
                                 {event.price_members === 0 && event.price_non_members === 0 ? (
-                                    <span className="text-emerald-500">GRATIS</span>
+                                    <span className="text-emerald-500">Gratis</span>
                                 ) : (
                                     <>
                                         <span>€{event.price_members || 0} Lid</span>
@@ -132,7 +132,7 @@ export default function ActivityCard({
             <div className="flex flex-col sm:flex-row md:flex-col gap-3 justify-center items-stretch md:w-64 p-6 border-t md:border-t-0 md:border-l border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/20">
                 <button
                     onClick={() => onViewSignups(event.id)}
-                    className="flex-1 flex items-center justify-center gap-4 px-6 py-5 text-[11px] bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] hover:bg-[var(--beheer-accent)] hover:text-white rounded-2xl transition-all font-black tracking-widest cursor-pointer active:scale-95 group/btn"
+                    className="flex-1 flex items-center justify-center gap-4 px-6 py-5 text-[11px] bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] hover:bg-[var(--beheer-accent)] hover:text-white rounded-2xl transition-all font-semibold cursor-pointer active:scale-95 group/btn"
                 >
                     <Eye className="h-5 w-5 group-hover/btn:scale-110 transition-transform" />
                     <span>Aanmeldingen</span>
@@ -141,7 +141,7 @@ export default function ActivityCard({
                 {canEdit && (
                     <button
                         onClick={() => onEdit(event.id)}
-                        className="flex-1 flex items-center justify-center gap-4 px-6 py-5 text-[11px] border border-[var(--beheer-border)] text-[var(--beheer-text)] hover:bg-[var(--beheer-border)] rounded-2xl transition-all font-black tracking-widest cursor-pointer active:scale-95 group/btn"
+                        className="flex-1 flex items-center justify-center gap-4 px-6 py-5 text-[11px] border border-[var(--beheer-border)] text-[var(--beheer-text)] hover:bg-[var(--beheer-border)] rounded-2xl transition-all font-semibold cursor-pointer active:scale-95 group/btn"
                     >
                         <Edit className="h-5 w-5 group-hover/btn:rotate-12 transition-transform" />
                         <span>Bewerken</span>

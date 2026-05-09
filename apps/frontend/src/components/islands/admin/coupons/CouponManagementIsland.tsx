@@ -147,13 +147,13 @@ export default function CouponManagementIsland({
 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10">
                     <div className="space-y-1">
-                        <h2 className="text-2xl font-bold text-[var(--beheer-text)] tracking-tight flex items-center gap-3">
+                        <h2 className="text-2xl font-semibold text-[var(--beheer-text)] tracking-tight flex items-center gap-3">
                             <div className="p-2.5 bg-[var(--beheer-accent)]/10 rounded-xl text-[var(--beheer-accent)]">
                                 <Ticket className="h-6 w-6" />
                             </div>
                             Coupon Beheer
                         </h2>
-                        <p className="text-xs font-semibold text-[var(--beheer-text-muted)] tracking-widest uppercase opacity-60 ml-14">
+                        <p className="text-xs font-semibold text-[var(--beheer-text-muted)] opacity-60 ml-14">
                             Beheer kortingscodes en acties
                         </p>
                     </div>
@@ -174,7 +174,7 @@ export default function CouponManagementIsland({
                     <div className="flex items-center justify-between border-l-4 border-[var(--beheer-active)] pl-4 py-1">
                         <h2 className="text-sm font-semibold text-[var(--beheer-text)] flex items-center gap-3">
                             Coupons
-                            <span className="px-2.5 py-0.5 rounded-full bg-[var(--beheer-active)]/10 text-[var(--beheer-active)] text-xs font-bold border border-[var(--beheer-active)]/20">
+                            <span className="px-2.5 py-0.5 rounded-full bg-[var(--beheer-active)]/10 text-[var(--beheer-active)] text-xs font-semibold border border-[var(--beheer-active)]/20">
                                 {validCoupons.length}
                             </span>
                         </h2>
@@ -193,12 +193,12 @@ export default function CouponManagementIsland({
                                 <table className="w-full text-left">
                                     <thead className="bg-[var(--beheer-card-soft)] border-b border-[var(--beheer-border)]">
                                         <tr>
-                                            <th className="px-8 py-5 text-xs font-semibold text-[var(--beheer-text-muted)] uppercase tracking-wider">Code</th>
-                                            <th className="px-8 py-5 text-xs font-semibold text-[var(--beheer-text-muted)] uppercase tracking-wider">Korting</th>
-                                            <th className="px-8 py-5 text-xs font-semibold text-[var(--beheer-text-muted)] uppercase tracking-wider hidden sm:table-cell">Gebruik</th>
-                                            <th className="px-8 py-5 text-xs font-semibold text-[var(--beheer-text-muted)] uppercase tracking-wider hidden lg:table-cell">Geldigheid</th>
-                                            <th className="px-8 py-5 text-center text-xs font-semibold text-[var(--beheer-text-muted)] uppercase tracking-wider">Status</th>
-                                            <th className="px-8 py-5 text-right text-xs font-semibold text-[var(--beheer-text-muted)] uppercase tracking-wider">Acties</th>
+                                            <th className="px-8 py-5 text-xs font-semibold text-[var(--beheer-text-muted)]">Code</th>
+                                            <th className="px-8 py-5 text-xs font-semibold text-[var(--beheer-text-muted)]">Korting</th>
+                                            <th className="px-8 py-5 text-xs font-semibold text-[var(--beheer-text-muted)] hidden sm:table-cell">Gebruik</th>
+                                            <th className="px-8 py-5 text-xs font-semibold text-[var(--beheer-text-muted)] hidden lg:table-cell">Geldigheid</th>
+                                            <th className="px-8 py-5 text-center text-xs font-semibold text-[var(--beheer-text-muted)]">Status</th>
+                                            <th className="px-8 py-5 text-right text-xs font-semibold text-[var(--beheer-text-muted)]">Acties</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-[var(--beheer-border)]">
@@ -228,14 +228,14 @@ export default function CouponManagementIsland({
                         <h2 className="text-sm font-semibold flex items-center gap-3">
                             {showExpired ? <ToggleRight className="h-5 w-5 text-[var(--beheer-accent)]" /> : <ToggleLeft className="h-5 w-5" />}
                             Verlopen Coupons
-                            <span className="px-2.5 py-0.5 rounded-full bg-slate-500/10 text-slate-500 text-xs font-bold border border-slate-500/20">
+                            <span className="px-2.5 py-0.5 rounded-full bg-slate-500/10 text-slate-500 text-xs font-semibold border border-slate-500/20">
                                 {inactiveCoupons.length}
                             </span>
                         </h2>
                     </button>
 
                     {showExpired && (
-                        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] overflow-hidden opacity-80 shadow-lg transition-all animate-in fade-in slide-in-from-top-4">
+                        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] overflow-hidden opacity-80 shadow-lg transition-all">
                             {inactiveCoupons.length === 0 ? (
                                 <div className="py-12 text-center text-[var(--beheer-text-muted)] italic text-xs font-semibold">
                                     Niets gevonden

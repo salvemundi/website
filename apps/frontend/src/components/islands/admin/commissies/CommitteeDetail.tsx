@@ -78,7 +78,7 @@ export default function CommitteeDetail({
                                 <Users className="h-8 w-8 group-hover:scale-110 transition-transform" />
                             </div>
                             <div className="min-w-0">
-                                <h2 className="text-3xl font-semibold text-[var(--beheer-text)] leading-tight tracking-tight truncate">
+                                <h2 className="text-2xl md:text-3xl font-semibold text-[var(--beheer-text)] leading-tight tracking-tight">
                                     {selected.name}
                                 </h2>
                                 {selected.email && (

@@ -83,7 +83,7 @@ export function DashboardHub({
                     <div className="bg-[var(--beheer-accent)]/10 p-2 rounded-xl text-[var(--beheer-accent)]">
                         {React.isValidElement(icon) && React.cloneElement(icon as React.ReactElement<any>, { className: 'h-4 w-4' })}
                     </div>
-                    <h2 className="text-base font-semibold text-[var(--beheer-text)] tracking-wider">{title}</h2>
+                    <h2 className="text-base font-semibold text-[var(--beheer-text)]">{title}</h2>
                     <div className="h-px flex-1 bg-gradient-to-r from-[var(--beheer-border)] to-transparent" />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -126,7 +126,7 @@ export function BirthdaysList({ data }: { data: Birthday[] }) {
                 <div className="bg-[var(--beheer-accent)]/10 p-2 rounded-xl text-[var(--beheer-accent)]">
                     <Cake className="h-4 w-4" />
                 </div>
-                <h3 className="text-base font-semibold text-[var(--beheer-text)] tracking-wider">Aankomende Jarigen</h3>
+                <h3 className="text-base font-semibold text-[var(--beheer-text)]">Aankomende Jarigen</h3>
                 <div className="h-px flex-1 bg-gradient-to-r from-[var(--beheer-border)] to-transparent" />
             </div>
             <div className="grid grid-cols-1 gap-3">
@@ -156,7 +156,7 @@ export function TopStickersList({ data }: { data: TopSticker[] }) {
                 <div className="bg-[var(--beheer-accent)]/10 p-2 rounded-xl text-[var(--beheer-accent)]">
                     <Award className="h-4 w-4" />
                 </div>
-                <h3 className="text-base font-semibold text-[var(--beheer-text)] tracking-wider">Top Sticker Verzamelaars</h3>
+                <h3 className="text-base font-semibold text-[var(--beheer-text)]">Top Sticker Verzamelaars</h3>
                 <div className="h-px flex-1 bg-gradient-to-r from-[var(--beheer-border)] to-transparent" />
             </div>
             <div className="grid grid-cols-1 gap-3">
@@ -184,7 +184,7 @@ export function ActivitySignupsList({ data }: { data: RecentActivity[] }) {
                 <div className="bg-[var(--beheer-accent)]/10 p-2 rounded-xl text-[var(--beheer-accent)]">
                     <Activity className="h-4 w-4" />
                 </div>
-                <h3 className="text-base font-semibold text-[var(--beheer-text)] tracking-wider">Activiteiten aanmeldingen</h3>
+                <h3 className="text-base font-semibold text-[var(--beheer-text)]">Activiteiten aanmeldingen</h3>
                 <div className="h-px flex-1 bg-gradient-to-r from-[var(--beheer-border)] to-transparent" />
             </div>
             <div className="grid grid-cols-1 gap-3">

@@ -69,17 +69,8 @@ function ToastWrapper({ children, visible }: { children: React.ReactNode; visibl
                 width: 'min(calc(100vw - 2rem), 440px)',
                 pointerEvents: visible ? 'auto' : 'none',
                 opacity: visible ? 1 : 0,
-                transition: 'opacity 0.3s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                // Start net onder beeld, glijd omhoog
-                animation: visible ? 'pwaToastIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards' : 'none',
             }}
         >
-            <style>{`
-                @keyframes pwaToastIn {
-                    from { opacity: 0; transform: translateX(-50%) translateY(1.5rem) scale(0.97); }
-                    to   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
-                }
-            `}</style>
             <div style={{
                 background: 'linear-gradient(145deg, rgba(75,36,72,0.97) 0%, rgba(58,27,56,0.98) 100%)',
                 backdropFilter: 'blur(24px)',
@@ -113,7 +104,7 @@ function ToastHeader({ onDismiss }: { onDismiss: () => void }) {
                 <Smartphone size={20} color="white" />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ margin: 0, fontWeight: 700, fontSize: '0.9rem', color: '#fff', lineHeight: 1.3 }}>
+                <p style={{ margin: 0, fontWeight: 600, fontSize: '0.9rem', color: '#fff', lineHeight: 1.3 }}>
                     Installeer de app
                 </p>
                 <p style={{ margin: '0.1rem 0 0', fontSize: '0.775rem', color: 'rgba(255,255,255,0.6)', lineHeight: 1.4 }}>
@@ -181,7 +172,7 @@ function NativeToast({ onInstall, onDismiss, installing }: {
                         borderRadius: '0.75rem',
                         padding: '0.7rem 1rem',
                         fontSize: '0.85rem',
-                        fontWeight: 700,
+                        fontWeight: 600,
                         cursor: installing ? 'default' : 'pointer',
                         boxShadow: installing ? 'none' : '0 3px 10px rgba(164,83,155,0.4)',
                         transition: 'all 0.2s ease',
@@ -231,7 +222,7 @@ function IosToast({ onDismiss }: { onDismiss: () => void }) {
 
             {/* Steps */}
             <div style={{ padding: '0.875rem 1.125rem 1.125rem', display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
-                <p style={{ margin: '0 0 0.375rem', fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)' }}>
+                <p style={{ margin: '0 0 0.375rem', fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.08em', color: 'rgba(255,255,255,0.4)' }}>
                     Hoe installeer je de app?
                 </p>
                 {IOS_STEPS.map((step, i) => (
@@ -243,7 +234,6 @@ function IosToast({ onDismiss }: { onDismiss: () => void }) {
                             border: '1px solid rgba(255,255,255,0.07)',
                             borderRadius: '0.75rem',
                             padding: '0.625rem 0.875rem',
-                            animation: `pwaStepIn 0.35s ${0.08 * i}s cubic-bezier(0.34,1.56,0.64,1) both`,
                         }}
                     >
                         {/* Step number */}
@@ -254,7 +244,7 @@ function IosToast({ onDismiss }: { onDismiss: () => void }) {
                             background: 'rgba(164,83,155,0.25)',
                             border: '1px solid rgba(164,83,155,0.4)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: '0.7rem', fontWeight: 700, color: '#c47abd',
+                            fontSize: '0.7rem', fontWeight: 600, color: '#c47abd',
                         }}>
                             {step.id}
                         </div>
@@ -273,7 +263,7 @@ function IosToast({ onDismiss }: { onDismiss: () => void }) {
                         <div style={{ flex: 1, minWidth: 0 }}>
                             <p style={{ margin: 0, fontSize: '0.82rem', color: 'rgba(255,255,255,0.75)', lineHeight: 1.3 }}>
                                 {step.label}{' '}
-                                <span style={{ fontWeight: 700, color: '#fff' }}>{step.highlight}</span>
+                                <span style={{ fontWeight: 600, color: '#fff' }}>{step.highlight}</span>
                             </p>
                             <p style={{ margin: '0.1rem 0 0', fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.3 }}>
                                 {step.sublabel}
@@ -281,12 +271,6 @@ function IosToast({ onDismiss }: { onDismiss: () => void }) {
                         </div>
                     </div>
                 ))}
-                <style>{`
-                    @keyframes pwaStepIn {
-                        from { opacity: 0; transform: translateX(-8px); }
-                        to   { opacity: 1; transform: translateX(0); }
-                    }
-                `}</style>
             </div>
 
             {/* Arrow pointing down (alleen op iOS zichtbaar) */}

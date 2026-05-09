@@ -54,11 +54,11 @@ export default function TripActivityForm({ activity, onSave, onCancel, pending }
     };
 
     return (
-        <div className="bg-[var(--beheer-card-bg)] rounded-3xl border border-[var(--beheer-border)] p-8 mb-10 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-500 overflow-hidden relative group/form">
+        <div className="bg-[var(--beheer-card-bg)] rounded-3xl border border-[var(--beheer-border)] p-8 mb-10 shadow-2xl overflow-hidden relative group/form">
             <div className="absolute -top-24 -right-24 w-48 h-48 bg-[var(--beheer-accent)]/5 rounded-full blur-3xl group-hover/form:bg-[var(--beheer-accent)]/10 transition-colors duration-700" />
             
             <div className="flex items-center justify-between mb-8 relative z-10">
-                <h2 className="text-xl font-bold text-[var(--beheer-text)] tracking-tight flex items-center gap-3">
+                <h2 className="text-xl font-semibold text-[var(--beheer-text)] tracking-tight flex items-center gap-3">
                     <div className="p-2.5 bg-[var(--beheer-accent)]/10 rounded-xl text-[var(--beheer-accent)] shadow-sm">
                         {activity?.id ? <Save className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
                     </div>
@@ -101,7 +101,7 @@ export default function TripActivityForm({ activity, onSave, onCancel, pending }
                                     <div className="h-6 w-11 bg-[var(--beheer-border)]/20 dark:bg-white/5 backdrop-blur-md rounded-full peer-checked:bg-[var(--beheer-accent)] transition-all border border-[var(--beheer-border)]/30 shadow-inner" />
                                     <div className="absolute left-1 top-1 h-4 w-4 bg-white rounded-full transition-all peer-checked:left-6 shadow-lg transform peer-active:scale-90" />
                                 </div>
-                                <span className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text-muted)] uppercase opacity-70 group-hover:text-[var(--beheer-text)] transition-colors">Activiteit is zichtbaar</span>
+                                <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] opacity-70 group-hover:text-[var(--beheer-text)] transition-colors">Activiteit is zichtbaar</span>
                             </label>
                         </div>
                     </div>
@@ -111,12 +111,12 @@ export default function TripActivityForm({ activity, onSave, onCancel, pending }
                 <div className="bg-[var(--beheer-card-soft)]/30 rounded-3xl p-8 border border-[var(--beheer-border)]/30 space-y-8">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="space-y-1">
-                            <h3 className="text-sm font-bold text-[var(--beheer-text)] flex items-center gap-3">
+                            <h3 className="text-sm font-semibold text-[var(--beheer-text)] flex items-center gap-3">
                                 <List className="h-4 w-4 text-[var(--beheer-accent)]" /> Sub-opties
                             </h3>
-                            <p className="text-[10px] font-semibold text-[var(--beheer-text-muted)] uppercase tracking-widest opacity-60">Optionele keuzes voor deze activiteit</p>
+                            <p className="text-[10px] font-semibold text-[var(--beheer-text-muted)] opacity-60">Optionele keuzes voor deze activiteit</p>
                         </div>
-                        <button type="button" onClick={addOption} className="text-[var(--beheer-accent)] font-semibold uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[var(--beheer-accent)]/5 hover:bg-[var(--beheer-accent)]/10 transition-all border border-[var(--beheer-accent)]/20 active:scale-95">
+                        <button type="button" onClick={addOption} className="text-[var(--beheer-accent)] font-semibold text-[10px] flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[var(--beheer-accent)]/5 hover:bg-[var(--beheer-accent)]/10 transition-all border border-[var(--beheer-accent)]/20 active:scale-95">
                             <Plus className="h-4 w-4" /> Optie toevoegen
                         </button>
                     </div>
@@ -129,7 +129,7 @@ export default function TripActivityForm({ activity, onSave, onCancel, pending }
                                     <div className="h-2 w-2 bg-white rounded-sm opacity-0 peer-checked:opacity-100 transition-opacity" />
                                 </div>
                             </div>
-                            <span className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text-muted)] uppercase group-hover:text-[var(--beheer-accent)] transition-colors">Checkbox (Meerdere)</span>
+                            <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)] transition-colors">Checkbox (Meerdere)</span>
                         </label>
                         <label className="flex items-center gap-3 cursor-pointer group select-none">
                             <div className="relative flex items-center h-5">
@@ -138,13 +138,13 @@ export default function TripActivityForm({ activity, onSave, onCancel, pending }
                                     <div className="h-2 w-2 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity" />
                                 </div>
                             </div>
-                            <span className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text-muted)] uppercase group-hover:text-[var(--beheer-accent)] transition-colors">Radio (Eén keuze)</span>
+                            <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)] transition-colors">Radio (Eén keuze)</span>
                         </label>
                     </div>
 
                     <div className="space-y-4">
                         {options.map((opt, idx) => (
-                            <div key={idx} className="flex gap-4 items-center animate-in slide-in-from-bottom-2 duration-300">
+                            <div key={idx} className="flex gap-4 items-center">
                                 <div className="flex-1">
                                     <input
                                         type="text" value={opt.name}
@@ -168,7 +168,7 @@ export default function TripActivityForm({ activity, onSave, onCancel, pending }
                             </div>
                         ))}
                         {options.length === 0 && (
-                            <div className="py-16 text-center bg-[var(--beheer-card-bg)]/20 border border-dashed border-[var(--beheer-border)]/30 rounded-2xl text-[10px] font-semibold tracking-widest text-[var(--beheer-text-muted)] uppercase opacity-40">
+                            <div className="py-16 text-center bg-[var(--beheer-card-bg)]/20 border border-dashed border-[var(--beheer-border)]/30 rounded-2xl text-[10px] font-semibold text-[var(--beheer-text-muted)] opacity-40">
                                 Geen sub-opties geconfigureerd voor deze activiteit
                             </div>
                         )}
@@ -176,8 +176,8 @@ export default function TripActivityForm({ activity, onSave, onCancel, pending }
                 </div>
 
                 <div className="flex flex-wrap items-center justify-end gap-4 pt-4 border-t border-[var(--beheer-border)]/10">
-                    <button type="button" onClick={onCancel} className="px-8 py-4 rounded-xl font-semibold text-[10px] tracking-widest text-[var(--beheer-text-muted)] hover:bg-[var(--beheer-card-soft)] transition-all border border-transparent hover:border-[var(--beheer-border)] uppercase active:scale-95">Annuleren</button>
-                    <button type="submit" disabled={pending} className="px-10 py-4 bg-[var(--beheer-accent)] text-white rounded-xl font-semibold text-[10px] tracking-widest shadow-xl hover:opacity-90 active:scale-95 transition-all flex items-center gap-3 disabled:opacity-50 border border-white/10 uppercase">
+                    <button type="button" onClick={onCancel} className="px-8 py-4 rounded-xl font-semibold text-[10px] text-[var(--beheer-text-muted)] hover:bg-[var(--beheer-card-soft)] transition-all border border-transparent hover:border-[var(--beheer-border)] active:scale-95">Annuleren</button>
+                    <button type="submit" disabled={pending} className="px-10 py-4 bg-[var(--beheer-accent)] text-white rounded-xl font-semibold text-[10px] shadow-xl hover:opacity-90 active:scale-95 transition-all flex items-center gap-3 disabled:opacity-50 border border-white/10">
                         {pending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
                         <span>Opslaan</span>
                     </button>

@@ -69,7 +69,7 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                         <button
                             onClick={handleClear}
                             disabled={isPending}
-                            className="flex items-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-inactive)]/10 text-[var(--beheer-inactive)] border border-[var(--beheer-inactive)]/20 rounded-[var(--beheer-radius)] text-xs font-black uppercase tracking-widest hover:bg-[var(--beheer-inactive)] hover:text-white transition-all active:scale-95 disabled:opacity-50"
+                            className="flex items-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-inactive)]/10 text-[var(--beheer-inactive)] border border-[var(--beheer-inactive)]/20 rounded-[var(--beheer-radius)] text-xs font-semibold hover:bg-[var(--beheer-inactive)] hover:text-white transition-all active:scale-95 disabled:opacity-50"
                         >
                             {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                             Stop Testen
@@ -78,7 +78,7 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                 }
             />
 
-            <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700">
+            <div className="container mx-auto px-4 py-8 max-w-7xl">
                 <AdminStatsBar stats={adminStats} />
 
                 {/* Active Status Box */}
@@ -86,18 +86,18 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                     <div className="p-8 rounded-[var(--beheer-radius)] bg-[var(--beheer-accent)]/5 border border-[var(--beheer-accent)]/20 shadow-sm">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                             <div>
-                                <h3 className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-accent)] mb-2 flex items-center gap-2">
+                                <h3 className="text-xs font-semibold text-[var(--beheer-accent)] mb-2 flex items-center gap-2">
                                     <Shield className="h-3.5 w-3.5" />
                                     Actieve Sessie
                                 </h3>
-                                <p className="text-sm font-bold text-[var(--beheer-text)] mb-4">
+                                <p className="text-sm font-semibold text-[var(--beheer-text)] mb-4">
                                     Je navigeert nu over de website met de rechten van <span className="text-[var(--beheer-accent)]">{impersonatedName}</span>.
                                 </p>
                                 
                                 {impersonatedCommittees.length > 0 && (
                                     <div className="flex flex-wrap gap-2 mb-4">
                                         {impersonatedCommittees.map(c => (
-                                            <span key={c} className="text-[10px] uppercase font-black tracking-widest px-2.5 py-1 rounded-lg bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] border border-[var(--beheer-accent)]/10">
+                                            <span key={c} className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] border border-[var(--beheer-accent)]/10">
                                                 {c}
                                             </span>
                                         ))}
@@ -115,9 +115,9 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
 
                 {/* Token Input Form */}
                 {!activeToken && (
-                    <div className="max-w-xl space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="max-w-xl space-y-6">
                         <div>
-                            <label className="block text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] mb-3 ml-1">
+                            <label className="block text-xs font-semibold text-[var(--beheer-text-muted)] mb-3 ml-1">
                                 Directus Statische Token
                             </label>
                             <div className="relative group">
@@ -137,7 +137,7 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                         <button
                             onClick={handleSave}
                             disabled={!token || isPending}
-                            className="w-full py-[var(--beheer-btn-py)] rounded-[var(--beheer-radius)] bg-[var(--beheer-accent)] text-white font-black uppercase tracking-widest text-sm shadow-[var(--shadow-glow)] hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                            className="w-full py-[var(--beheer-btn-py)] rounded-[var(--beheer-radius)] bg-[var(--beheer-accent)] text-white font-semibold text-sm shadow-[var(--shadow-glow)] hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-3"
                         >
                             {isPending ? (
                                 <><Loader2 className="h-5 w-5 animate-spin" /> Controleren...</>
@@ -150,15 +150,15 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                         
                         {/* Instructies */}
                         <div className="p-8 rounded-[var(--beheer-radius)] bg-[var(--beheer-card-soft)] border border-[var(--beheer-border)]">
-                            <h3 className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text)] mb-4 flex items-center gap-2">
+                            <h3 className="text-xs font-semibold text-[var(--beheer-text)] mb-4 flex items-center gap-2">
                                 <Shield className="h-3.5 w-3.5 text-[var(--beheer-accent)]" />
                                 Hoe werkt het?
                             </h3>
-                            <ul className="text-xs text-[var(--beheer-text-muted)] space-y-3 font-bold">
+                            <ul className="text-xs text-[var(--beheer-text-muted)] space-y-3 font-semibold">
                                 <li className="flex gap-3"><span className="text-[var(--beheer-accent)]">•</span> Ga naar Directus &gt; User Settings &gt; Token.</li>
                                 <li className="flex gap-3"><span className="text-[var(--beheer-accent)]">•</span> Kopieer de statische token van de user die je wilt testen.</li>
                                 <li className="flex gap-3"><span className="text-[var(--beheer-accent)]">•</span> Plak deze hierboven en klik op 'Start Testen'.</li>
-                                <li className="flex gap-3 text-[var(--beheer-inactive)] opacity-80"><span className="text-[var(--beheer-inactive)] font-black italic">!</span> Dit overschrijft tijdelijk je eigen rechten in de datalaag.</li>
+                                <li className="flex gap-3 text-[var(--beheer-inactive)] opacity-80"><span className="text-[var(--beheer-inactive)] font-semibold italic">!</span> Dit overschrijft tijdelijk je eigen rechten in de datalaag.</li>
                             </ul>
                         </div>
                     </div>

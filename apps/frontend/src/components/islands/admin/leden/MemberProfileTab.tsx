@@ -97,12 +97,12 @@ export default function MemberProfileTab({
     ];
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in duration-500">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column: Info Card */}
             <div className="lg:col-span-1 space-y-6">
                 <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] p-8 shadow-sm">
                     <div className="flex items-center justify-between mb-8">
-                        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[var(--beheer-text-muted)]">Gegevens</h3>
+                        <h3 className="text-xs font-semibold text-[var(--beheer-text-muted)]">Gegevens</h3>
                         {isAdmin && !isEditing && (
                             <button onClick={() => setIsEditing(true)} className="p-2 text-[var(--beheer-text-muted)] hover:text-[var(--beheer-accent)] hover:bg-[var(--beheer-accent)]/10 rounded-xl transition-all">
                                 <Edit className="h-4 w-4" />
@@ -114,20 +114,20 @@ export default function MemberProfileTab({
                         <div className="space-y-5">
                             {editFields.map(field => (
                                 <div key={field.key} className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">{field.label}</label>
+                                    <label className="text-xs font-semibold text-[var(--beheer-text-muted)]">{field.label}</label>
                                     <input
                                         type={field.type}
                                         value={(editData[field.key] as string) || ''}
                                         onChange={e => setEditData(prev => ({ ...prev, [field.key]: e.target.value }))}
-                                        className="w-full px-4 py-3 rounded-xl bg-[var(--beheer-card-soft)] border border-[var(--beheer-border)] text-sm font-bold focus:ring-2 focus:ring-[var(--beheer-accent)] outline-none transition-all"
+                                        className="w-full px-4 py-3 rounded-xl bg-[var(--beheer-card-soft)] border border-[var(--beheer-border)] text-sm font-semibold focus:ring-2 focus:ring-[var(--beheer-accent)] outline-none transition-all"
                                     />
                                 </div>
                             ))}
                             <div className="flex gap-3 pt-4">
-                                <button onClick={handleSave} disabled={saving} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[var(--beheer-accent)] text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-[var(--shadow-glow)] hover:opacity-90 transition-all disabled:opacity-50">
+                                <button onClick={handleSave} disabled={saving} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[var(--beheer-accent)] text-white rounded-xl text-xs font-semibold shadow-[var(--shadow-glow)] hover:opacity-90 transition-all disabled:opacity-50">
                                     {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Opslaan
                                 </button>
-                                <button onClick={() => setIsEditing(false)} className="flex-1 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest text-[var(--beheer-text-muted)] hover:bg-[var(--beheer-card-soft)] transition-all border border-transparent hover:border-[var(--beheer-border)]">
+                                <button onClick={() => setIsEditing(false)} className="flex-1 px-4 py-3 rounded-xl text-xs font-semibold text-[var(--beheer-text-muted)] hover:bg-[var(--beheer-card-soft)] transition-all border border-transparent hover:border-[var(--beheer-border)]">
                                     X
                                 </button>
                             </div>
@@ -152,8 +152,8 @@ export default function MemberProfileTab({
                             <Award className="h-6 w-6" />
                         </div>
                         <div>
-                            <h3 className="text-xl font-black text-[var(--beheer-text)] leading-tight uppercase tracking-tight">Commissies</h3>
-                            <p className="text-xs text-[var(--beheer-text-muted)] font-black uppercase tracking-widest mt-1 opacity-60">Actieve rollen binnen Salve Mundi</p>
+                            <h3 className="text-xl font-semibold text-[var(--beheer-text)] leading-tight">Commissies</h3>
+                            <p className="text-xs text-[var(--beheer-text-muted)] font-semibold mt-1 opacity-60">Actieve rollen binnen Salve Mundi</p>
                         </div>
                     </div>
 
@@ -174,8 +174,8 @@ export default function MemberProfileTab({
                             <Layers className="h-6 w-6" />
                         </div>
                         <div>
-                            <h3 className="text-xl font-black text-[var(--beheer-text)] leading-tight uppercase tracking-tight">Teams & Groepen</h3>
-                            <p className="text-xs text-[var(--beheer-text-muted)] font-black uppercase tracking-widest mt-1 opacity-60">Systeemgroepen en secundaire teams</p>
+                            <h3 className="text-xl font-semibold text-[var(--beheer-text)] leading-tight">Teams & Groepen</h3>
+                            <p className="text-xs text-[var(--beheer-text-muted)] font-semibold mt-1 opacity-60">Systeemgroepen en secundaire teams</p>
                         </div>
                     </div>
 

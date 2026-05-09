@@ -107,11 +107,11 @@ export default function SignupForm({
                             <div className="pt-3 flex flex-col gap-2 px-1">
                                 <div className="flex items-center justify-between">
                                     <HorizontalCheckbox label="Aanbetaling" name="deposit_paid" defaultChecked={initialData ? (initialData.deposit_paid === 'on' || initialData.deposit_paid === 'true' || initialData.deposit_paid === true) : !!signup.deposit_paid} />
-                                    {signup.deposit_paid_at && <span className="text-[8px] font-bold text-[var(--beheer-text-muted)] opacity-50">{format(new Date(signup.deposit_paid_at), 'd MMM yy', { locale: nl })}</span>}
+                                    {signup.deposit_paid_at && <span className="text-[8px] font-semibold text-[var(--beheer-text-muted)] opacity-50">{format(new Date(signup.deposit_paid_at), 'd MMM yy', { locale: nl })}</span>}
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <HorizontalCheckbox label="Restbetaling" name="full_payment_paid" defaultChecked={initialData ? (initialData.full_payment_paid === 'on' || initialData.full_payment_paid === 'true' || initialData.full_payment_paid === true) : !!signup.full_payment_paid} />
-                                    {signup.full_payment_paid_at && <span className="text-[8px] font-bold text-[var(--beheer-text-muted)] opacity-50">{format(new Date(signup.full_payment_paid_at), 'd MMM yy', { locale: nl })}</span>}
+                                    {signup.full_payment_paid_at && <span className="text-[8px] font-semibold text-[var(--beheer-text-muted)] opacity-50">{format(new Date(signup.full_payment_paid_at), 'd MMM yy', { locale: nl })}</span>}
                                 </div>
                             </div>
                         </div>
@@ -131,7 +131,7 @@ export default function SignupForm({
                             <FileText className="h-5 w-5" />
                         </div>
                         <div className="space-y-0.5">
-                            <h2 className={`${compact ? 'text-lg' : 'text-xl'} font-bold text-[var(--beheer-text)] tracking-tight`}>Persoonsgegevens</h2>
+                            <h2 className={`${compact ? 'text-lg' : 'text-xl'} font-semibold text-[var(--beheer-text)] tracking-tight`}>Persoonsgegevens</h2>
                             <p className="text-[10px] font-semibold text-[var(--beheer-text-muted)] opacity-60">Basis informatie over de reiziger</p>
                         </div>
                     </div>
@@ -197,7 +197,7 @@ export default function SignupForm({
                             <CreditCard className="h-5 w-5" />
                         </div>
                         <div className="space-y-0.5">
-                            <h2 className={`${compact ? 'text-lg' : 'text-xl'} font-bold text-[var(--beheer-text)] tracking-tight`}>Beheer & Betaling</h2>
+                            <h2 className={`${compact ? 'text-lg' : 'text-xl'} font-semibold text-[var(--beheer-text)] tracking-tight`}>Beheer & Betaling</h2>
                             <p className="text-[10px] font-semibold text-[var(--beheer-text-muted)] opacity-60">Status en administratieve afhandeling</p>
                         </div>
                     </div>
@@ -287,7 +287,7 @@ function HorizontalSelect({ label, name, children, ...props }: React.SelectHTMLA
     const id = React.useId();
     return (
         <div className="flex items-center gap-3 py-0.5 group relative">
-            <label htmlFor={id} className="w-28 shrink-0 text-[9px] font-bold uppercase tracking-widest text-[var(--beheer-text-muted)] opacity-50 group-hover:opacity-100 group-focus-within:text-[var(--beheer-accent)] group-focus-within:opacity-100 transition-all cursor-pointer">{label}</label>
+            <label htmlFor={id} className="w-28 shrink-0 text-[10px] font-semibold text-[var(--beheer-text-muted)] opacity-50 group-hover:opacity-100 group-focus-within:text-[var(--beheer-accent)] group-focus-within:opacity-100 transition-all cursor-pointer">{label}</label>
             <div className="flex-1 bg-slate-500/5 dark:bg-black/40 rounded-lg px-3 border border-[var(--beheer-border)]/5 group-focus-within:border-[var(--beheer-accent)]/20 transition-all relative">
                 <select 
                     {...props} 
@@ -389,7 +389,7 @@ function Select({ label, children, ...props }: FieldProps & { children: React.Re
 function Textarea({ label, ...props }: FieldProps) {
     return (
         <div className="space-y-1.5 group/field">
-            <label className="block text-[10px] font-bold uppercase tracking-widest text-[var(--beheer-text-muted)] group-focus-within/field:text-[var(--beheer-accent)] transition-colors px-1 opacity-70">{label}</label>
+            <label className="block text-[11px] font-semibold text-[var(--beheer-text-muted)] group-focus-within/field:text-[var(--beheer-accent)] transition-colors px-1 opacity-70">{label}</label>
             <textarea 
                 {...props} 
                 className="w-full px-4 py-2.5 bg-[var(--bg-main)]/40 dark:bg-black/20 backdrop-blur-sm border border-[var(--beheer-border)]/40 rounded-xl text-sm text-[var(--beheer-text)] focus:ring-2 focus:ring-[var(--beheer-accent)] focus:bg-[var(--bg-main)]/80 transition-all resize-none min-h-[80px] font-semibold outline-none shadow-inner placeholder:opacity-30 leading-relaxed"
@@ -407,7 +407,7 @@ function Checkbox({ label, ...props }: FieldProps) {
                 <div className="absolute left-1 top-1 h-3 w-3 bg-white rounded-full transition-all peer-checked:left-5 shadow-lg transform peer-active:scale-90" />
             </div>
             <div className="flex flex-col">
-                <span className="text-[11px] font-bold text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-text)] transition-colors tracking-tight">{label}</span>
+                <span className="text-[11px] font-semibold text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-text)] transition-colors tracking-tight">{label}</span>
             </div>
         </label>
     );

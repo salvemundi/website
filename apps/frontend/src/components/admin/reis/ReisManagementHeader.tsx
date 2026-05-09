@@ -57,7 +57,7 @@ export default function ReisManagementHeader({
                             <select
                                 value={selectedId}
                                 onChange={onTripChange}
-                                className="beheer-select w-full pr-8 py-1.5 text-xs font-bold uppercase tracking-wider"
+                                className="beheer-select w-full pr-8 py-1.5 text-xs font-semibold"
                             >
                                 {trips.map(trip => {
                                     const displayStartDate = trip.start_date;
@@ -81,7 +81,7 @@ export default function ReisManagementHeader({
                         <div className="flex items-center gap-1.5">
                             <button
                                 onClick={() => router.push('/beheer/reis/mail')}
-                                className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-xl squircle text-[11px] font-bold uppercase tracking-tight hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 shadow-sm whitespace-nowrap"
+                                className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-xl squircle text-[11px] font-semibold hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 shadow-sm whitespace-nowrap"
                             >
                                 <Mail className="h-3.5 w-3.5 text-[var(--beheer-accent)]" />
                                 Email
@@ -89,7 +89,7 @@ export default function ReisManagementHeader({
 
                             <button
                                 onClick={() => router.push('/beheer/reis/activiteiten')}
-                                className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[var(--beheer-accent)] text-white rounded-xl squircle text-[11px] font-bold uppercase tracking-tight shadow-lg hover:opacity-90 transition-all active:scale-95 border border-white/10 whitespace-nowrap"
+                                className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[var(--beheer-accent)] text-white rounded-xl squircle text-[11px] font-semibold shadow-lg hover:opacity-90 transition-all active:scale-95 border border-white/10 whitespace-nowrap"
                             >
                                 <Ticket className="h-3.5 w-3.5" />
                                 Activiteiten
@@ -97,7 +97,7 @@ export default function ReisManagementHeader({
                             
                             <button
                                 onClick={() => router.push('/beheer/reis/instellingen')}
-                                className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-xl squircle text-[11px] font-bold uppercase tracking-tight hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 shadow-sm whitespace-nowrap"
+                                className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-xl squircle text-[11px] font-semibold hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 shadow-sm whitespace-nowrap"
                             >
                                 <Edit2 className="h-3.5 w-3.5" />
                                 Instellingen
@@ -106,7 +106,7 @@ export default function ReisManagementHeader({
                             <button
                                 onClick={onExport}
                                 disabled={!hasResults}
-                                className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-700 text-white rounded-xl squircle text-[11px] font-bold uppercase tracking-tight shadow-lg hover:bg-emerald-800 transition-all active:scale-95 disabled:opacity-50 border border-white/10 whitespace-nowrap"
+                                className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-700 text-white rounded-xl squircle text-[11px] font-semibold shadow-lg hover:bg-emerald-800 transition-all active:scale-95 disabled:opacity-50 border border-white/10 whitespace-nowrap"
                             >
                                 <Download className="h-3.5 w-3.5" />
                                 Export

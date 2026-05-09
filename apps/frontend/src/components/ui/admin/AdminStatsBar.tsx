@@ -14,13 +14,13 @@ interface StatItem {
  */
 export default function AdminStatsBar({ stats = [] }: AdminStatsBarProps) {
     return (
-        <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 py-2 animate-in fade-in duration-1000">
+        <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 py-2">
             {stats.map((stat, i) => (
                 <div key={i} className="flex items-center gap-2 group whitespace-nowrap">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--beheer-text-muted)] opacity-50 group-hover:opacity-100 transition-opacity">
+                    <span className="text-xs font-semibold text-[var(--beheer-text-muted)] opacity-50 group-hover:opacity-100 transition-opacity">
                         {stat.label}
                     </span>
-                    <span className="text-lg font-black text-[var(--beheer-text)] tabular-nums">
+                    <span className="text-lg font-semibold text-[var(--beheer-text)] tabular-nums">
                         {stat.value}
                     </span>
                     {i < stats.length - 1 && (
