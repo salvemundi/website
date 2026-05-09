@@ -31,7 +31,7 @@ export async function getBoardHistory(): Promise<Board[]> {
                         ) ELSE NULL END
                     )
                 ) FILTER (WHERE bm.id IS NOT NULL),
-                '[]'
+                '[]'::json
             ) as members
         FROM "Board" b
         LEFT JOIN "Board_Members" bm ON b.id = bm.board_id
@@ -40,16 +40,20 @@ export async function getBoardHistory(): Promise<Board[]> {
         ORDER BY b.year DESC
     `;
 
-    const { rows } = await query(sql);
-    
-    const parsed = boardHistorySchema.safeParse(rows);
+    try {
+        const result = await query(sql);
+        const rows = result.rows;
+        
+        const parsed = boardHistorySchema.safeParse(rows);
 
-    if (!parsed.success) {
-        console.error('[BoardActions] Schema validation failed:', JSON.stringify(parsed.error.format(), null, 2));
-        // We log the error but still return empty for the UI to prevent a total crash, 
-        // however by removing the try-catch we ensure query errors are seen.
+        if (!parsed.success) {
+            console.error('[BoardActions] Zod validation failed');
+            return [];
+        }
+
+        return parsed.data;
+    } catch (err: any) {
+        console.error('[BoardActions] SQL Query failed:', err.message);
         return [];
     }
-
-    return parsed.data;
 }

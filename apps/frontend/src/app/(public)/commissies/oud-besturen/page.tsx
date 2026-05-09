@@ -4,6 +4,7 @@ import BoardHistoryTimeline from '@/components/ui/committees/BoardHistoryTimelin
 import { getBoardHistory } from '@/server/actions/board.actions';
 import BackButton from '@/components/ui/navigation/BackButton';
 import { History } from 'lucide-react';
+import { connection } from 'next/server';
 
 export const metadata: Metadata = {
     title: 'Bestuursgeschiedenis | SV Salve Mundi',
@@ -11,6 +12,8 @@ export const metadata: Metadata = {
 };
 
 export default async function BoardHistoryPage() {
+    await connection();
+    
     // NUCLEAR SSR: Fetch all history data before flushing the shell
     const boards = await getBoardHistory();
 
