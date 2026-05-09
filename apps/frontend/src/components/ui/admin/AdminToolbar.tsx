@@ -24,7 +24,7 @@ export default function AdminToolbar({
         <header 
             className="bg-[var(--beheer-card-bg)] border-b border-[var(--beheer-border)] sticky top-[var(--header-total-height,80px)] z-30 w-full transition-all"
         >
-            <div className="container mx-auto px-4 py-4 max-w-7xl">
+            <div className="container mx-auto px-2 sm:px-4 py-4 max-w-7xl">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div className="flex items-center gap-4">
                         {backHref && (

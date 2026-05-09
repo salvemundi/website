@@ -25,7 +25,7 @@ export default async function ServicesStatusPage() {
 
     // NUCLEAR SSR: Parallel fetch for status and settings
     const [initialStatuses, automationRes] = await Promise.all([
-        getServicesStatusAction().catch(() => []),
+        getServicesStatusAction(),
         getSystemAutomationSettings()
     ]);
 

@@ -144,6 +144,13 @@
     label[for],
     label:has(input) {
         cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Standardized premium touch targets for all buttons and links */
+    a, button, [role="button"] {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
     }
 
     button:disabled,

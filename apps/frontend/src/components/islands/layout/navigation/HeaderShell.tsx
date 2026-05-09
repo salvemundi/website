@@ -48,10 +48,8 @@ export function HeaderShell({ children, mobileMenu }: HeaderShellProps) {
         };
         applyHeight(el.offsetHeight || 80);
         
-        const ro = new ResizeObserver((entries) => {
-            for (const entry of entries) {
-                applyHeight(Math.round(entry.contentRect?.height ?? el.offsetHeight ?? 64));
-            }
+        const ro = new ResizeObserver(() => {
+            applyHeight(el.offsetHeight || 80);
         });
         ro.observe(el);
         return () => ro.disconnect();
@@ -66,13 +64,15 @@ export function HeaderShell({ children, mobileMenu }: HeaderShellProps) {
         <header
             ref={headerRef}
             className={cn(
-                "fixed z-[100] w-full transition-all duration-300",
-                "h-[calc(81px+env(safe-area-inset-top,0px))] pt-[calc(1px+env(safe-area-inset-top,0px))]",
+                "fixed z-[100] w-full transition-all duration-300 pt-safe",
                 isScrolled 
                     ? "bg-white/95 dark:bg-black/95 backdrop-blur-md shadow-md" 
                     : "bg-white/50 dark:bg-black/50 backdrop-blur-sm"
             )}
-            style={{ top: 'calc(var(--impersonation-banner-height, 0px) - 1px)' }}
+            style={{ 
+                top: 'calc(var(--impersonation-banner-height, 0px) - 1px)',
+                minHeight: 'calc(80px + env(safe-area-inset-top, 0px))' 
+            }}
         >
             {children}
             {mobileMenu}

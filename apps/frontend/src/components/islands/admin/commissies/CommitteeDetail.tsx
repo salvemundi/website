@@ -68,7 +68,7 @@ export default function CommitteeDetail({
     return (
         <div className="space-y-8">
             {/* Header / Info Section */}
-            <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl ring-1 ring-[var(--beheer-border)] p-10 border-t-8 border-[var(--beheer-accent)] relative overflow-hidden">
+            <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl ring-1 ring-[var(--beheer-border)] p-6 md:p-10 border-t-8 border-[var(--beheer-accent)] relative overflow-hidden">
                 <div className="absolute -top-24 -right-24 h-48 w-48 bg-[var(--beheer-accent)]/5 blur-3xl rounded-full" />
                 
                 <div className="flex flex-col md:flex-row justify-between items-start gap-8 relative z-10">
@@ -97,18 +97,18 @@ export default function CommitteeDetail({
                         )}
                     </div>
 
-                    <div className="flex gap-3 flex-shrink-0">
+                    <div className="flex flex-wrap gap-3 flex-shrink-0 w-full md:w-auto">
                         <a
                             href={`/commissies/${slugify(selected.name)}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-2 px-6 py-3 bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] rounded-xl font-semibold text-xs border border-[var(--beheer-border)] hover:bg-[var(--beheer-accent)] hover:text-white hover:border-[var(--beheer-accent)] transition-all shadow-sm active:scale-95"
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] rounded-xl font-semibold text-xs border border-[var(--beheer-border)] hover:bg-[var(--beheer-accent)] hover:text-white hover:border-[var(--beheer-accent)] transition-all shadow-sm active:scale-95"
                         >
                             <ExternalLink className="h-4 w-4" /> Website
                         </a>
                         <button
                             onClick={onToggleEditing}
-                            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-xs transition-all shadow-sm active:scale-95 border ${editingDetail ? 'bg-[var(--beheer-accent)] text-white border-[var(--beheer-accent)]' : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] border-[var(--beheer-border)] hover:bg-white'}`}
+                            className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-xs transition-all shadow-sm active:scale-95 border ${editingDetail ? 'bg-[var(--beheer-accent)] text-white border-[var(--beheer-accent)]' : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] border-[var(--beheer-border)] hover:bg-white'}`}
                         >
                             <Settings className={`h-4 w-4 ${editingDetail ? 'animate-spin' : ''}`} /> {editingDetail ? 'Annuleren' : 'Details'}
                         </button>
@@ -155,7 +155,7 @@ export default function CommitteeDetail({
 
             {/* Member Management Section */}
             <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl ring-1 ring-[var(--beheer-border)] overflow-hidden">
-                <div className="p-8 md:p-10 border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/30 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+                <div className="p-6 md:p-10 border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/30 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
                     <div>
                         <h3 className="text-xl font-semibold text-[var(--beheer-text)] flex items-center gap-2">
                             <Shield className="h-5 w-5 text-[var(--beheer-accent)]" />
@@ -184,7 +184,7 @@ export default function CommitteeDetail({
                     )}
                 </div>
 
-                <div className={`p-8 md:p-10 transition-opacity duration-300 ${isUpdating ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+                <div className={`p-6 md:p-10 transition-opacity duration-300 ${isUpdating ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
                     {members.length === 0 ? (
                         <div className="py-24 text-center bg-[var(--beheer-card-soft)]/20 rounded-[var(--beheer-radius)] border-2 border-dashed border-[var(--beheer-border)]">
                             <Users className="h-12 w-12 text-[var(--beheer-text-muted)] opacity-10 mx-auto mb-4" />
@@ -214,7 +214,7 @@ export default function CommitteeDetail({
                                         </div>
                                     </div>
                                     
-                                    <div className="flex items-center gap-1 translate-x-2 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition-all">
+                                    <div className="flex items-center gap-1 translate-x-0 md:translate-x-2 opacity-100 md:opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition-all">
                                         {member.directusMembershipId && (
                                             <button
                                                 onClick={() => onToggleLeader(member)}

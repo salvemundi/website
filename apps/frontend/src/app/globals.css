@@ -134,5 +134,12 @@
    --font-size-5xl: 3rem;
 }
 
+@utility pt-safe { padding-top: env(safe-area-inset-top, 0px); }
+@utility pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
+@utility pl-safe { padding-left: env(safe-area-inset-left, 0px); }
+@utility pr-safe { padding-right: env(safe-area-inset-right, 0px); }
+@utility mt-safe { margin-top: env(safe-area-inset-top, 0px); }
+@utility mb-safe { margin-bottom: env(safe-area-inset-bottom, 0px); }
+
 /* Stabilize Autofill - Import at the absolute bottom to ensure it overrides defaults */
 @import "./styles/autofill.css";

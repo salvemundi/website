@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 async function CouponDataLoader() {
-    const coupons = await getCoupons().catch(() => []);
+    const coupons = await getCoupons();
     return <CouponManagementIsland initialCoupons={coupons} />;
 }
 

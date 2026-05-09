@@ -33,7 +33,9 @@ export default function AdminPageShell({
                 />
             )}
             
-            {children}
+            <div className="container mx-auto px-2 sm:px-4 py-4 md:py-8 max-w-7xl">
+                {children}
+            </div>
         </div>
     );
 }

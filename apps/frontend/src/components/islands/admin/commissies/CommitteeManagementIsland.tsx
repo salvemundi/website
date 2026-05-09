@@ -219,54 +219,51 @@ export default function CommitteeManagementIsland({ initialCommittees, totalUniq
                 actions={toolbarActions}
             />
 
-            <div className="container mx-auto px-4 py-8 max-w-7xl">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-8 items-start">
+                <div className="lg:col-span-4">
+                    <CommitteeSidebar 
+                        committees={filteredCommittees}
+                        selectedId={selected?.id || null}
+                        onSelect={handleSelectCommittee}
+                        searchQuery={searchQuery}
+                        onSearchChange={setSearchQuery}
+                        showAll={showAll}
+                        onShowAllChange={setShowAll}
+                    />
+                </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                    <div className="lg:col-span-4">
-                        <CommitteeSidebar 
-                            committees={filteredCommittees}
-                            selectedId={selected?.id || null}
-                            onSelect={handleSelectCommittee}
-                            searchQuery={searchQuery}
-                            onSearchChange={setSearchQuery}
-                            showAll={showAll}
-                            onShowAllChange={setShowAll}
+                <div className="lg:col-span-8">
+                    {!selected ? (
+                        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm ring-1 ring-[var(--beheer-border)] p-24 text-center border-2 border-dashed border-[var(--beheer-border)] opacity-60">
+                            <Users className="h-16 w-16 text-[var(--beheer-text-muted)] mx-auto mb-6 opacity-20" />
+                            <h3 className="text-xl font-semibold text-[var(--beheer-text)] mb-2">Geen selectie</h3>
+                            <p className="text-[var(--beheer-text-muted)] font-semibold text-xs max-w-xs mx-auto opacity-60">
+                                Kies een groep uit de lijst om de details en leden te beheren.
+                            </p>
+                        </div>
+                    ) : (
+                        <CommitteeDetail 
+                            selected={selected}
+                            members={members}
+                            isUpdating={isPending}
+                            actionLoading={actionLoading}
+                            editingDetail={editingDetail}
+                            onToggleEditing={() => setEditingDetail(!editingDetail)}
+                            editShortDesc={editShortDesc}
+                            onShortDescChange={setEditShortDesc}
+                            editDesc={editDesc}
+                            onDescChange={setEditDesc}
+                            onSaveDetail={handleSaveDetail}
+                            savingDetail={savingDetail}
+                            newMemberEmail={newMemberEmail}
+                            onNewMemberEmailChange={setNewMemberEmail}
+                            onAddMember={handleAddMember}
+                            addingMember={addingMember}
+                            addError={addError}
+                            onRemoveMember={handleRemoveMember}
+                            onToggleLeader={handleToggleLeader}
                         />
-                    </div>
-
-                    <div className="lg:col-span-8">
-                        {!selected ? (
-                            <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm ring-1 ring-[var(--beheer-border)] p-24 text-center border-2 border-dashed border-[var(--beheer-border)] opacity-60">
-                                <Users className="h-16 w-16 text-[var(--beheer-text-muted)] mx-auto mb-6 opacity-20" />
-                                <h3 className="text-xl font-semibold text-[var(--beheer-text)] mb-2">Geen selectie</h3>
-                                <p className="text-[var(--beheer-text-muted)] font-semibold text-xs max-w-xs mx-auto opacity-60">
-                                    Kies een groep uit de lijst om de details en leden te beheren.
-                                </p>
-                            </div>
-                        ) : (
-                            <CommitteeDetail 
-                                selected={selected}
-                                members={members}
-                                isUpdating={isPending}
-                                actionLoading={actionLoading}
-                                editingDetail={editingDetail}
-                                onToggleEditing={() => setEditingDetail(!editingDetail)}
-                                editShortDesc={editShortDesc}
-                                onShortDescChange={setEditShortDesc}
-                                editDesc={editDesc}
-                                onDescChange={setEditDesc}
-                                onSaveDetail={handleSaveDetail}
-                                savingDetail={savingDetail}
-                                newMemberEmail={newMemberEmail}
-                                onNewMemberEmailChange={setNewMemberEmail}
-                                onAddMember={handleAddMember}
-                                addingMember={addingMember}
-                                addError={addError}
-                                onRemoveMember={handleRemoveMember}
-                                onToggleLeader={handleToggleLeader}
-                            />
-                        )}
-                    </div>
+                    )}
                 </div>
             </div>
             <AdminToast toast={toast} onClose={hideToast} />
