@@ -53,8 +53,8 @@ export default function EventDropdown({
                     <Beer className="h-4 w-4" />
                 </div>
                 <div className="flex flex-col items-start overflow-hidden">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] leading-none mb-0.5">Selecteer Event</span>
-                    <span className="text-sm font-bold truncate w-full">
+                    <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-0.5">Selecteer Event</span>
+                    <span className="text-sm font-semibold truncate w-full">
                         {selectedEvent?.name || 'Geen event'}
                     </span>
                 </div>
@@ -93,10 +93,10 @@ export default function EventDropdown({
                                             <Calendar className="h-3.5 w-3.5" />
                                         </div>
                                         <div className="flex flex-col min-w-0">
-                                            <span className="text-sm font-bold truncate">{event.name}</span>
+                                            <span className="text-sm font-semibold truncate">{event.name}</span>
                                             <div className="flex items-center gap-2 text-[10px] opacity-60">
                                                 <span>{format(eventDate, 'd MMM yyyy', { locale: nl })}</span>
-                                                {isUpcoming && <span className="text-green-500 font-black tracking-tighter uppercase">Live</span>}
+                                                {isUpcoming && <span className="text-green-500 font-semibold tracking-tighter">Live</span>}
                                             </div>
                                         </div>
                                     </button>

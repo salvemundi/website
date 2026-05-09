@@ -40,7 +40,7 @@ export default function CouponRow({
     return (
         <tr className={cn(
             "hover:bg-[var(--beheer-card-soft)]/50 transition-colors border-b border-[var(--beheer-border)] last:border-0 opacity-100 group",
-            coupon.isOptimistic && "animate-pulse opacity-60 pointer-events-none"
+            coupon.isOptimistic && "opacity-60 pointer-events-none"
         )}>
             {/* Code */}
             <td className="px-8 py-6 whitespace-nowrap">
@@ -90,7 +90,7 @@ export default function CouponRow({
                     )}
                     {coupon.valid_until ? (
                         <span className={`flex items-center gap-2 ${status.type === 'expired' ? 'text-red-500' : 'opacity-70'}`}>
-                            <div className={`w-1 h-1 rounded-full ${status.type === 'expired' ? 'bg-red-500 animate-pulse' : 'bg-amber-500'}`} /> Tot: {formatDate(coupon.valid_until)}
+                            <div className={`w-1 h-1 rounded-full ${status.type === 'expired' ? 'bg-red-500' : 'bg-amber-500'}`} /> Tot: {formatDate(coupon.valid_until)}
                         </span>
                     ) : (
                         <span className="flex items-center gap-2 opacity-30 italic"><div className="w-1 h-1 rounded-full bg-[var(--beheer-border)]" /> Geen limiet</span>

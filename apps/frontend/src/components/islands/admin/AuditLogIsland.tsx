@@ -226,7 +226,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                     <div className="flex items-center gap-4 px-4 py-2 bg-[var(--beheer-card-soft)] rounded-2xl border border-[var(--beheer-border)] shadow-sm">
                         <div className="flex items-center gap-2">
                             <Shield className={`h-3.5 w-3.5 ${manualApproval ? 'text-amber-500' : 'text-green-500'}`} />
-                            <span className="text-[11px] font-bold text-[var(--beheer-text)] leading-tight">
+                            <span className="text-[11px] font-semibold text-[var(--beheer-text)] leading-tight">
                                 {manualApproval 
                                     ? "Handmatige goedkeuring is ACTIEF. Alle aanmeldingen moeten worden goedgekeurd."
                                     : "Automatische goedkeuring is ACTIEF. Aanmeldingen worden direct verwerkt."}

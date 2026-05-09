@@ -43,12 +43,12 @@ export default function StickerManagementIsland({
     };
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700">
+        <div className="container mx-auto px-4 py-8 max-w-7xl">
 
-            <div className="animate-in fade-in zoom-in-95 duration-500">
+            <div>
                 <div className="flex items-center gap-3 mb-6">
                     <MapPin className="h-5 w-5 text-[var(--beheer-accent)]" />
-                    <h2 className="text-lg font-semibold text-[var(--beheer-text)] tracking-tight  tracking-widest">
+                    <h2 className="text-lg font-semibold text-[var(--beheer-text)] tracking-tight">
                         Geregistreerde <span className="text-[var(--beheer-accent)]">Locaties</span>
                     </h2>
                 </div>
@@ -63,7 +63,7 @@ export default function StickerManagementIsland({
                     <div className="text-center py-32 bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-dashed border-[var(--beheer-border)]">
                         <AlertCircle className="h-16 w-16 text-[var(--beheer-text-muted)] opacity-20 mx-auto mb-4" />
                         <h2 className="text-xl font-semibold text-[var(--beheer-text)]  tracking-tight">Geen stickers gevonden</h2>
-                        <p className="text-sm text-[var(--beheer-text-muted)] mt-2 font-bold  tracking-widest text-xs">Er zijn nog geen stickers geregistreerd.</p>
+                        <p className="text-sm text-[var(--beheer-text-muted)] mt-2 font-semibold text-xs">Er zijn nog geen stickers geregistreerd.</p>
                     </div>
                 )}
             </div>

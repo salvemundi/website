@@ -121,7 +121,7 @@ export default function ReisDeelnemerDetailIsland({
                         type="button"
                         onClick={handleDelete}
                         disabled={isPending}
-                        className="px-6 py-3 bg-[var(--beheer-inactive)]/5 text-[var(--beheer-inactive)] rounded-xl font-semibold uppercase tracking-widest text-[10px] border border-[var(--beheer-inactive)]/10 hover:bg-[var(--beheer-inactive)]/10 transition-all flex items-center gap-2 shadow-sm active:scale-95"
+                        className="px-6 py-3 bg-[var(--beheer-inactive)]/5 text-[var(--beheer-inactive)] rounded-xl font-semibold text-[10px] border border-[var(--beheer-inactive)]/10 hover:bg-[var(--beheer-inactive)]/10 transition-all flex items-center gap-2 shadow-sm active:scale-95"
                     >
                         {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                         <span>Verwijderen</span>
@@ -129,7 +129,7 @@ export default function ReisDeelnemerDetailIsland({
                 }
             />
 
-            <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700">
+            <div className="container mx-auto px-4 py-8 max-w-7xl">
                 <AdminStatsBar stats={adminStats} />
 
                 <form action={formAction} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -156,13 +156,13 @@ export default function ReisDeelnemerDetailIsland({
                             <div className="absolute -right-8 -bottom-8 opacity-5 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-700">
                                 <Clock className="h-24 w-24 text-[var(--beheer-accent)]" />
                             </div>
-                            <div className="flex justify-between items-center text-[10px] font-semibold uppercase tracking-widest text-[var(--beheer-text-muted)] opacity-60">
+                            <div className="flex justify-between items-center text-[10px] font-semibold text-[var(--beheer-text-muted)] opacity-60">
                                 <span>Aangemeld op</span>
-                                <span className="text-[var(--beheer-text)] font-bold">{initialSignup.date_created ? format(new Date(initialSignup.date_created), 'd MMM yyyy HH:mm', { locale: nl }) : '-'}</span>
+                                <span className="text-[var(--beheer-text)] font-semibold">{initialSignup.date_created ? format(new Date(initialSignup.date_created), 'd MMM yyyy HH:mm', { locale: nl }) : '-'}</span>
                             </div>
-                            <div className="flex justify-between items-center text-[10px] font-semibold uppercase tracking-widest text-[var(--beheer-text-muted)] opacity-60 border-t border-[var(--beheer-border)]/10 pt-4">
+                            <div className="flex justify-between items-center text-[10px] font-semibold text-[var(--beheer-text-muted)] opacity-60 border-t border-[var(--beheer-border)]/10 pt-4">
                                 <span>Deelnemer ID</span>
-                                <span className="text-[var(--beheer-text)] font-bold">#{initialSignup.id}</span>
+                                <span className="text-[var(--beheer-text)] font-semibold">#{initialSignup.id}</span>
                             </div>
                         </div>
 
@@ -170,7 +170,7 @@ export default function ReisDeelnemerDetailIsland({
                             <button
                                 type="submit"
                                 disabled={isSaving}
-                                className="w-full py-5 bg-[var(--beheer-accent)] hover:opacity-95 text-white rounded-2xl font-bold uppercase tracking-widest text-lg shadow-2xl shadow-[var(--beheer-accent)]/30 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-4 group border border-white/10"
+                                className="w-full py-5 bg-[var(--beheer-accent)] hover:opacity-95 text-white rounded-2xl font-semibold text-lg shadow-2xl shadow-[var(--beheer-accent)]/30 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-4 group border border-white/10"
                             >
                                 {isSaving ? <Loader2 className="h-7 w-7 animate-spin" /> : <Save className="h-7 w-7 group-hover:scale-110 transition-transform" />}
                                 <span>Gegevens Opslaan</span>
@@ -180,7 +180,7 @@ export default function ReisDeelnemerDetailIsland({
                                 <button
                                     type="button"
                                     onClick={() => router.push('/beheer/reis')}
-                                    className="flex-1 py-4 bg-[var(--bg-main)]/50 hover:bg-[var(--beheer-card-bg)] text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] rounded-2xl font-semibold uppercase tracking-widest text-[10px] border border-[var(--beheer-border)] transition-all flex items-center justify-center gap-3 active:scale-95"
+                                    className="flex-1 py-4 bg-[var(--bg-main)]/50 hover:bg-[var(--beheer-card-bg)] text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] rounded-2xl font-semibold text-[10px] border border-[var(--beheer-border)] transition-all flex items-center justify-center gap-3 active:scale-95"
                                 >
                                     <ArrowLeft className="h-4 w-4" />
                                     Annuleren

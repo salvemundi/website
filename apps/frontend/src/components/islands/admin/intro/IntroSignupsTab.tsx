@@ -100,11 +100,11 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, onExport,
                     <table className="w-full text-sm">
                         <thead className="bg-[var(--beheer-card-soft)] border-b border-[var(--beheer-border)]">
                             <tr>
-                                <th className="px-8 py-5 text-left text-xs font-semibold text-[var(--beheer-text-muted)] tracking-tight w-20">Status</th>
-                                <th className="px-8 py-5 text-left text-xs font-semibold text-[var(--beheer-text-muted)] tracking-tight w-1/4">Naam</th>
-                                <th className="px-8 py-5 text-left text-xs font-semibold text-[var(--beheer-text-muted)] tracking-tight hidden sm:table-cell">Email</th>
-                                <th className="px-8 py-5 text-left text-xs font-semibold text-[var(--beheer-text-muted)] tracking-tight hidden md:table-cell w-48">Telefoon</th>
-                                <th className="px-8 py-5 text-right text-xs font-semibold text-[var(--beheer-text-muted)] tracking-tight w-48">Acties</th>
+                                <th className="px-8 py-5 text-left text-xs font-semibold text-[var(--beheer-text-muted)] w-20">Status</th>
+                                <th className="px-8 py-5 text-left text-xs font-semibold text-[var(--beheer-text-muted)] w-1/4">Naam</th>
+                                <th className="px-8 py-5 text-left text-xs font-semibold text-[var(--beheer-text-muted)] hidden sm:table-cell">Email</th>
+                                <th className="px-8 py-5 text-left text-xs font-semibold text-[var(--beheer-text-muted)] hidden md:table-cell w-48">Telefoon</th>
+                                <th className="px-8 py-5 text-right text-xs font-semibold text-[var(--beheer-text-muted)] w-48">Acties</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[var(--beheer-border)]/10">
@@ -117,7 +117,7 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, onExport,
                                             className="hover:bg-[var(--beheer-accent)]/[0.02] cursor-pointer transition-colors group"
                                         >
                                             <td className="px-8 py-5">
-                                                <div className={`h-2.5 w-2.5 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.1)] transition-all ${s.approved ? 'bg-emerald-500 shadow-emerald-500/40 scale-110' : 'bg-[var(--beheer-border)] opacity-30'}`} />
+                                                <div className={`h-2.5 w-2.5 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.1)] transition-all ${s.approved ? 'bg-emerald-500 shadow-emerald-500/40' : 'bg-[var(--beheer-border)] opacity-30'}`} />
                                             </td>
                                             <td className="px-8 py-5">
                                                 <div className="flex items-center gap-3">
@@ -170,7 +170,7 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, onExport,
                                                         {editingId === s.id ? (
                                                             <div className="space-y-6">
                                                                 <div className="flex items-center justify-between">
-                                                                    <p className="text-xs font-semibold tracking-tight text-[var(--beheer-accent)]">Deelnemer Bewerken</p>
+                                                                    <p className="text-xs font-semibold text-[var(--beheer-accent)]">Deelnemer Bewerken</p>
                                                                     <div className="flex gap-2">
                                                                         <Button onClick={() => handleSaveEdit(s.id)} variant="success" icon={Save}>Opslaan</Button>
                                                                         <Button onClick={() => setEditingId(null)} variant="ghost" icon={X}>Annuleren</Button>
@@ -179,22 +179,22 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, onExport,
                                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                                                     <div className="flex flex-col gap-2">
                                                                         <span className="opacity-50 text-[9px]">Voornaam</span>
-                                                                        <input type="text" value={editData.first_name || ''} onChange={e => setEditData({...editData, first_name: e.target.value})} className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-lg px-3 py-2 text-[var(--beheer-text)] text-xs font-bold focus:ring-2 focus:ring-[var(--beheer-accent)] outline-none" />
+                                                                        <input type="text" value={editData.first_name || ''} onChange={e => setEditData({...editData, first_name: e.target.value})} className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-lg px-3 py-2 text-[var(--beheer-text)] text-xs font-semibold focus:ring-2 focus:ring-[var(--beheer-accent)] outline-none" />
                                                                     </div>
                                                                     <div className="flex flex-col gap-2">
                                                                         <span className="opacity-50 text-[9px]">Achternaam</span>
-                                                                        <input type="text" value={editData.last_name || ''} onChange={e => setEditData({...editData, last_name: e.target.value})} className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-lg px-3 py-2 text-[var(--beheer-text)] text-xs font-bold focus:ring-2 focus:ring-[var(--beheer-accent)] outline-none" />
+                                                                        <input type="text" value={editData.last_name || ''} onChange={e => setEditData({...editData, last_name: e.target.value})} className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-lg px-3 py-2 text-[var(--beheer-text)] text-xs font-semibold focus:ring-2 focus:ring-[var(--beheer-accent)] outline-none" />
                                                                     </div>
                                                                     <div className="flex flex-col gap-2">
                                                                         <span className="opacity-50 text-[9px]">Email</span>
-                                                                        <input type="email" value={editData.email || ''} onChange={e => setEditData({...editData, email: e.target.value})} className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-lg px-3 py-2 text-[var(--beheer-text)] text-xs font-bold focus:ring-2 focus:ring-[var(--beheer-accent)] outline-none" />
+                                                                        <input type="email" value={editData.email || ''} onChange={e => setEditData({...editData, email: e.target.value})} className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-lg px-3 py-2 text-[var(--beheer-text)] text-xs font-semibold focus:ring-2 focus:ring-[var(--beheer-accent)] outline-none" />
                                                                     </div>
                                                                     <div className="flex flex-col gap-2">
                                                                         <span className="opacity-50 text-[9px]">Telefoon</span>
                                                                         <PhoneInput 
                                                                             value={editData.phone_number || ''} 
                                                                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditData({...editData, phone_number: e.target.value})} 
-                                                                            className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-lg px-3 py-2 text-[var(--beheer-text)] text-xs font-bold focus:ring-2 focus:ring-[var(--beheer-accent)] outline-none" 
+                                                                            className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-lg px-3 py-2 text-[var(--beheer-text)] text-xs font-semibold focus:ring-2 focus:ring-[var(--beheer-accent)] outline-none" 
                                                                         />
                                                                     </div>
                                                                 </div>
@@ -202,7 +202,7 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, onExport,
                                                         ) : (
                                                             <div className="space-y-4">
                                                                 <div className="flex items-center justify-between">
-                                                                    <p className="text-xs font-semibold tracking-tight text-[var(--beheer-accent)]">Extra Informatie</p>
+                                                                    <p className="text-xs font-semibold text-[var(--beheer-accent)]">Extra Informatie</p>
                                                                     <Button onClick={() => startEdit({ stopPropagation: () => {} } as React.MouseEvent, s)} variant="ghost" icon={Edit}>
                                                                         Bewerken
                                                                     </Button>
@@ -211,12 +211,12 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, onExport,
                                                                     {s.date_of_birth && (
                                                                         <div className="flex flex-col gap-1">
                                                                             <span className="opacity-50">Geboortedatum</span>
-                                                                            <span className="text-[var(--beheer-text)] text-sm font-bold">{formatDate(s.date_of_birth)}</span>
+                                                                            <span className="text-[var(--beheer-text)] text-sm font-semibold">{formatDate(s.date_of_birth)}</span>
                                                                         </div>
                                                                     )}
                                                                     <div className="flex flex-col gap-1">
                                                                         <span className="opacity-50">Aangemeld op</span>
-                                                                        <span className="text-[var(--beheer-text)] text-sm font-bold">{s.created_at ? formatDate(s.created_at) : '-'}</span>
+                                                                        <span className="text-[var(--beheer-text)] text-sm font-semibold">{s.created_at ? formatDate(s.created_at) : '-'}</span>
                                                                     </div>
                                                                     <div className="flex flex-col gap-1">
                                                                         <span className="opacity-50">Status</span>
@@ -229,7 +229,7 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, onExport,
                                                         )}
                                                             </div>
                                                         <div className="space-y-6 lg:border-l lg:border-[var(--beheer-border)]/10 lg:pl-12">
-                                                            <p className="text-xs font-semibold tracking-tight text-[var(--beheer-accent)]">Beheer Acties</p>
+                                                            <p className="text-xs font-semibold text-[var(--beheer-accent)]">Beheer Acties</p>
                                                             <div className="flex flex-col gap-3">
                                                                 <Button 
                                                                     onClick={() => onUpdate(s.id, { approved: !s.approved, status: !s.approved ? 'approved' : 'registered' })}

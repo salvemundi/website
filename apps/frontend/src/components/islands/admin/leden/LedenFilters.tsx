@@ -20,7 +20,7 @@ export default function LedenFilters({
             <div className="flex p-1 bg-[var(--beheer-card-soft)] rounded-xl w-full lg:w-auto border border-[var(--beheer-border)]">
                 <button
                     onClick={() => onTabChange('active')}
-                    className={`flex-1 lg:flex-none px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${activeTab === 'active'
+                    className={`flex-1 lg:flex-none px-6 py-2.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2 ${activeTab === 'active'
                         ? 'bg-[var(--beheer-card-bg)] text-[var(--beheer-accent)] shadow-sm ring-1 ring-[var(--beheer-border)]'
                         : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)]'
                         }`}
@@ -30,7 +30,7 @@ export default function LedenFilters({
                 </button>
                 <button
                     onClick={() => onTabChange('inactive')}
-                    className={`flex-1 lg:flex-none px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${activeTab === 'inactive'
+                    className={`flex-1 lg:flex-none px-6 py-2.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2 ${activeTab === 'inactive'
                         ? 'bg-[var(--beheer-card-bg)] text-[var(--beheer-accent)] shadow-sm ring-1 ring-[var(--beheer-border)]'
                         : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)]'
                         }`}
@@ -47,7 +47,7 @@ export default function LedenFilters({
                     placeholder="Zoek op naam of email..."
                     value={searchQuery}
                     onChange={(e) => onSearchChange(e.target.value)}
-                    className="w-full pl-11 pr-5 py-3 rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] placeholder:text-[var(--beheer-text-muted)] focus:ring-2 focus:ring-[var(--beheer-accent)]/20 focus:border-[var(--beheer-accent)] outline-none transition-all shadow-sm font-bold uppercase tracking-widest text-[10px]"
+                    className="w-full pl-11 pr-5 py-3 rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] placeholder:text-[var(--beheer-text-muted)] focus:ring-2 focus:ring-[var(--beheer-accent)]/20 focus:border-[var(--beheer-accent)] outline-none transition-all shadow-sm font-semibold text-xs"
                     suppressHydrationWarning
                     autoComplete="off"
                 />

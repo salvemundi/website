@@ -118,7 +118,7 @@ export default function LedenOverzichtIsland({
             <div className="flex justify-end gap-3 mb-8">
                 <button
                     onClick={exportToCSV}
-                    className="flex items-center gap-2 px-6 py-2 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-[10px] font-black uppercase tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 shadow-sm disabled:opacity-50"
+                    className="flex items-center gap-2 px-6 py-2 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-xs font-semibold hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 shadow-sm disabled:opacity-50"
                 >
                     <Download className="h-3.5 w-3.5" />
                     Export
@@ -126,7 +126,7 @@ export default function LedenOverzichtIsland({
                 <button
                     onClick={handleSendReminder}
                     disabled={isSendingReminder}
-                    className="flex items-center gap-2 px-6 py-2 bg-[var(--beheer-accent)] text-white font-black text-[10px] uppercase tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 disabled:opacity-50"
+                    className="flex items-center gap-2 px-6 py-2 bg-[var(--beheer-accent)] text-white font-semibold text-xs rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 disabled:opacity-50"
                 >
                     {isSendingReminder ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Bell className="h-3.5 w-3.5" />}
                     Reminder

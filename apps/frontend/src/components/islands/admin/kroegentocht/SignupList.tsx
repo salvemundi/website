@@ -98,7 +98,7 @@ export default function SignupList({
                         <button
                             onClick={exportToCSV}
                             disabled={filteredSignups.length === 0}
-                            className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-black text-xs uppercase tracking-widest rounded-[var(--radius-xl)] shadow-lg shadow-green-600/20 transition-all active:scale-95 disabled:opacity-50"
+                            className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold text-xs rounded-[var(--radius-xl)] shadow-lg shadow-green-600/20 transition-all active:scale-95 disabled:opacity-50"
                         >
                             <Download className="h-4 w-4" />
                             Export CSV
@@ -113,10 +113,10 @@ export default function SignupList({
                     <table className="w-full text-left">
                         <thead>
                             <tr className="bg-[var(--bg-main)]/50 border-b border-[var(--border-color)]/30">
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Groep / Deelnemers</th>
-                                <th className="px-6 py-4 text-center text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Tickets</th>
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] hidden lg:table-cell">Vereniging</th>
-                                <th className="px-6 py-4 text-right text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Acties</th>
+                                <th className="px-6 py-4 text-[10px] font-semibold text-[var(--text-muted)]">Groep / Deelnemers</th>
+                                <th className="px-6 py-4 text-center text-[10px] font-semibold text-[var(--text-muted)]">Tickets</th>
+                                <th className="px-6 py-4 text-[10px] font-semibold text-[var(--text-muted)] hidden lg:table-cell">Vereniging</th>
+                                <th className="px-6 py-4 text-right text-[10px] font-semibold text-[var(--text-muted)]">Acties</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[var(--border-color)]/20">
@@ -140,7 +140,7 @@ export default function SignupList({
                                             <td className="px-6 py-3 min-w-[300px]">
                                                 <div className="flex flex-col gap-0.5">
                                                     <div className="flex items-center gap-2">
-                                                        <span className="font-bold text-sm text-[var(--text-main)] group-hover:text-[var(--theme-purple)] transition-colors">
+                                                        <span className="font-semibold text-sm text-[var(--text-main)] group-hover:text-[var(--theme-purple)] transition-colors">
                                                             Groep {signups.length - signups.findIndex(s => s.id === signup.id)}
                                                         </span>
                                                         <a href={`mailto:${signup.email}`} className="text-[var(--text-muted)] hover:text-[var(--theme-purple)] transition-colors" title={signup.email}>
@@ -175,7 +175,7 @@ export default function SignupList({
                                                 </div>
                                             </td>
                                             <td className="px-6 py-3 text-center">
-                                                <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] text-[10px] font-black ring-1 ring-[var(--theme-purple)]/30">
+                                                <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] text-[10px] font-semibold ring-1 ring-[var(--theme-purple)]/30">
                                                     {signup.amount_tickets}
                                                 </span>
                                             </td>

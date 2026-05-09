@@ -61,7 +61,7 @@ export default function ReisTableRow({
                         <div className="text-xs font-semibold text-[var(--beheer-accent)] mb-0.5 opacity-70">
                             {signup.role === 'crew' ? 'Crew' : 'Deelnemer'}
                         </div>
-                        <div className="text-lg font-bold text-[var(--beheer-text)] tracking-tight leading-tight group-hover:text-[var(--beheer-accent)] transition-colors line-clamp-2 min-h-[2.8rem] flex items-center">
+                        <div className="text-lg font-semibold text-[var(--beheer-text)] leading-tight group-hover:text-[var(--beheer-accent)] transition-colors line-clamp-2 min-h-[2.8rem] flex items-center">
                             {signup.first_name} {signup.last_name}
                         </div>
                     </div>
@@ -96,7 +96,7 @@ export default function ReisTableRow({
                         {signup.email}
                     </div>
                     <div className="flex items-center justify-between">
-                        <div className="text-[10px] font-bold text-[var(--beheer-text-muted)] tabular-nums opacity-60">
+                        <div className="text-[10px] font-semibold text-[var(--beheer-text-muted)] tabular-nums opacity-60">
                             {signup.date_of_birth ? format(new Date(signup.date_of_birth), 'd MMM yyyy', { locale: nl }) : '-'}
                         </div>
                         

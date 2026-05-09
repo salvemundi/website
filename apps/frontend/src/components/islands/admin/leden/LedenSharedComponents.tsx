@@ -15,8 +15,8 @@ export function InfoRow({ icon: Icon, label, value }: { icon: any, label: string
                 <Icon className="h-5 w-5" />
             </div>
             <div className="min-w-0 flex-1">
-                <p className="text-[10px] uppercase font-black text-[var(--beheer-text-muted)] tracking-widest mb-0.5">{label}</p>
-                <p className="text-sm font-extrabold text-[var(--beheer-text)] truncate">{value}</p>
+                <p className="text-xs font-semibold text-[var(--beheer-text-muted)] mb-0.5">{label}</p>
+                <p className="text-sm font-semibold text-[var(--beheer-text)] truncate">{value}</p>
             </div>
         </div>
     );
@@ -30,9 +30,9 @@ export function CommitteeCard({ membership, cleanName }: { membership: any, clea
                     <Shield className="h-5 w-5" />
                 </div>
                 <div className="min-w-0">
-                    <p className="font-extrabold text-[var(--beheer-text)] truncate">{cleanName(membership.committee_id.name)}</p>
+                    <p className="font-semibold text-[var(--beheer-text)] truncate">{cleanName(membership.committee_id.name)}</p>
                     {membership.is_leader && membership.committee_id.azure_group_id !== COMMITTEES.BESTUUR && (
-                        <span className="inline-flex items-center gap-1.5 text-[9px] font-black text-[var(--beheer-accent)] uppercase tracking-widest mt-0.5">
+                        <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-[var(--beheer-accent)] mt-0.5">
                             <Award className="h-3 w-3" />
                             Commissie Leider
                         </span>
@@ -49,7 +49,7 @@ export function GroupCard({ membership, cleanName }: { membership: any, cleanNam
             <div className="h-10 w-10 shrink-0 rounded-xl bg-[var(--beheer-card-soft)] flex items-center justify-center text-[var(--beheer-text-muted)] group-hover:bg-[var(--beheer-accent)] group-hover:text-white transition-all shadow-sm border border-[var(--beheer-border)]">
                 <Hash className="h-5 w-5" />
             </div>
-            <p className="font-extrabold text-[var(--beheer-text)] text-sm truncate">{cleanName(membership.committee_id.name)}</p>
+            <p className="font-semibold text-[var(--beheer-text)] text-sm truncate">{cleanName(membership.committee_id.name)}</p>
         </div>
     );
 }
@@ -58,20 +58,20 @@ export function SignupStatus({ status }: { status: string }) {
     switch (status) {
         case 'paid':
             return (
-                <span className="px-3 py-1 bg-green-500/10 text-green-500 rounded-full text-[10px] font-black uppercase tracking-wider">
+                <span className="px-3 py-1 bg-green-500/10 text-green-500 rounded-full text-[10px] font-semibold">
                     Betaald
                 </span>
             );
         case 'failed':
         case 'canceled':
             return (
-                <span className="px-3 py-1 bg-red-500/10 text-red-500 rounded-full text-[10px] font-black uppercase tracking-wider">
+                <span className="px-3 py-1 bg-red-500/10 text-red-500 rounded-full text-[10px] font-semibold">
                     Mislukt
                 </span>
             );
         default:
             return (
-                <span className="px-3 py-1 bg-amber-500/10 text-amber-500 rounded-full text-[10px] font-black uppercase tracking-wider">
+                <span className="px-3 py-1 bg-amber-500/10 text-amber-500 rounded-full text-[10px] font-semibold">
                     Open
                 </span>
             );

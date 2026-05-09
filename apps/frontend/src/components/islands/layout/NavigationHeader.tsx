@@ -49,8 +49,8 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
 
     return (
         <HeaderShell>
-            <div className="mx-auto max-w-app h-full px-4 lg:px-6 z-10 relative @container">
-                <div className="grid h-full grid-cols-[auto_1fr_auto] items-center gap-[clamp(0.75rem,1.5vw,2rem)]">
+            <div className="mx-auto max-w-app px-4 lg:px-6 z-10 relative @container w-full">
+                <div className="grid grid-cols-[auto_1fr_auto] items-center gap-[clamp(0.75rem,1.5vw,2rem)]">
                     {/* Logo Section */}
                     <div className="flex items-center gap-3">
 
@@ -66,7 +66,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
                                 />
                             </div>
                             <div className="hidden text-left @[1024px]:block whitespace-nowrap shrink-0 transition-all duration-300">
-                                <p className="text-[13px] font-bold text-[var(--color-purple-500)] leading-none">Salve Mundi</p>
+                                <p className="text-[13px] font-semibold text-[var(--color-purple-500)] leading-none">Salve Mundi</p>
                                 <p className="text-xs font-semibold text-[var(--text-main)] mt-0.5">Fontys ICT</p>
                             </div>
                         </Link>

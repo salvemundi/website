@@ -73,7 +73,7 @@ export function ActionCard({
                     {title}
                 </p>
                 {subtitle && (
-                    <p className="font-medium text-base text-[var(--beheer-text-muted)] tracking-wide truncate leading-tight opacity-60">
+                    <p className="font-medium text-base text-[var(--beheer-text-muted)] truncate leading-tight opacity-60">
                         {subtitle}
                     </p>
                 )}
@@ -82,7 +82,7 @@ export function ActionCard({
             {/* Right: Optional value/stat */}
             {value !== undefined && value !== null && (
                 <div className="shrink-0 flex flex-col items-end">
-                    <span className="text-2xl font-semibold italic tracking-normal text-[var(--beheer-text)] opacity-80 group-hover:opacity-100 group-hover:text-[var(--beheer-accent)] transition-all">
+                    <span className="text-2xl font-semibold tracking-normal text-[var(--beheer-text)] opacity-80 group-hover:opacity-100 group-hover:text-[var(--beheer-accent)] transition-all">
                         {value}
                     </span>
                 </div>
@@ -150,8 +150,8 @@ export function StatCard({
                 </div>
                 
                 <div className="space-y-0.5 mt-1">
-                    <p className="text-lg font-bold text-[var(--beheer-text)] tracking-normal leading-tight group-hover:text-[var(--beheer-accent)] transition-colors">{title}</p>
-                    <div className="text-2xl font-bold text-[var(--beheer-text-muted)] tracking-tight leading-none mt-1">
+                    <p className="text-lg font-semibold text-[var(--beheer-text)] leading-tight group-hover:text-[var(--beheer-accent)] transition-colors">{title}</p>
+                    <div className="text-2xl font-semibold text-[var(--beheer-text-muted)] leading-none mt-1">
                         {value}
                     </div>
                 </div>
