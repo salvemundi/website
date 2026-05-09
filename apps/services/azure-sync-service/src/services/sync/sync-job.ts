@@ -185,6 +185,19 @@ export class SyncJob {
                 await new Promise(resolve => setImmediate(resolve));
             }
 
+            // 4. IDENTIFY ORPHANED USERS (Users in Directus but not in Azure)
+            const azureUserIds = new Set(azureUsers.map(u => u.id));
+            for (const dUser of allLeden) {
+                if (dUser.entra_id && !azureUserIds.has(dUser.entra_id)) {
+                    const email = (dUser.email || 'Onbekend').toLowerCase();
+                    status.warningCount++;
+                    status.warnings.push({
+                        email,
+                        message: 'Gebruiker niet gevonden in Azure AD (SSO niet mogelijk).'
+                    });
+                }
+            }
+
             status.active = false; status.status = 'completed'; status.endTime = new Date().toISOString();
             await persistSyncStatus(redis, status);
 
