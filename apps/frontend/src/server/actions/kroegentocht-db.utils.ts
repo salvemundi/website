@@ -143,9 +143,6 @@ export async function fetchPubCrawlTicketsDb(eventId: number): Promise<PubCrawlT
         return (res.rows as PubCrawlTicket[]) || [];
 }
 
-/**
- * Gets the total number of tickets sold for a specific event.
- */
 export async function getPubCrawlTicketCountDb(eventId: number): Promise<number> {
     const res = await query(
         `SELECT SUM(amount_tickets) as total FROM pub_crawl_signups 
@@ -154,6 +151,19 @@ export async function getPubCrawlTicketCountDb(eventId: number): Promise<number>
     );
     return parseInt(res.rows[0]?.total || '0', 10);
 }
+
+/**
+ * Gets the total number of tickets sold for a specific user (by email) for a specific event.
+ */
+export async function getPubCrawlTicketCountByEmailDb(eventId: number, email: string): Promise<number> {
+    const res = await query(
+        `SELECT SUM(amount_tickets) as total FROM pub_crawl_signups 
+         WHERE pub_crawl_event_id = $1 AND LOWER(email) = LOWER($2) AND payment_status != 'failed'`,
+        [eventId, email]
+    );
+    return parseInt(res.rows[0]?.total || '0', 10);
+}
+
 
 /**
  * Fetches signups for a specific user.
@@ -266,3 +276,11 @@ export async function updatePubCrawlSignupDb(id: number, data: Partial<PubCrawlS
 export async function deletePubCrawlSignupDb(id: number): Promise<void> {
     await query(`DELETE FROM pub_crawl_signups WHERE id = $1`, [id]);
 }
+
+export async function updatePubCrawlTicketDb(id: number, data: { name: string, initial: string }): Promise<void> {
+    await query(
+        `UPDATE pub_crawl_tickets SET name = $1, initial = $2 WHERE id = $3`,
+        [data.name, data.initial, id]
+    );
+}
+

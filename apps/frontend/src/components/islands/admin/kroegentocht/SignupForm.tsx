@@ -12,11 +12,14 @@ import {
     CheckCircle,
     XCircle,
     Tag,
-    RefreshCw
+    RefreshCw,
+    Edit2,
+    X
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { updatePubCrawlSignup, togglePubCrawlTicketCheckIn } from '@/server/actions/admin-kroegentocht.actions';
+import { updatePubCrawlSignup, togglePubCrawlTicketCheckIn, updatePubCrawlTickets, deletePubCrawlSignup } from '@/server/actions/admin-kroegentocht.actions';
+import { Trash2 } from 'lucide-react';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 
@@ -38,6 +41,8 @@ export default function SignupForm({ signup }: SignupFormProps) {
         payment_status: signup?.payment_status || 'open',
         amount_tickets: signup?.amount_tickets || 1,
     });
+    const [ticketsData, setTicketsData] = useState(signup?.tickets || []);
+    const [editingTicketId, setEditingTicketId] = useState<number | null>(null);
 
     const tickets = signup?.tickets || [];
 
@@ -55,12 +60,58 @@ export default function SignupForm({ signup }: SignupFormProps) {
         }
     };
 
+    const handleTicketChange = (id: number, field: 'name' | 'initial', value: string) => {
+        setTicketsData(prev => prev.map(t => 
+            t.id === id ? { ...t, [field]: field === 'initial' ? value.slice(0, 1).toUpperCase() : value } : t
+        ));
+    };
+
+    const handleDeleteSignup = async () => {
+        if (!window.confirm('Weet je zeker dat je deze volledige aanmelding wilt verwijderen? Dit kan niet ongedaan worden gemaakt.')) return;
+        
+        startTransition(async () => {
+            try {
+                await deletePubCrawlSignup(Number(signup.id), Number(signup.pub_crawl_event_id?.id || 0));
+                showToast('Aanmelding verwijderd', 'success');
+                router.push('/beheer/kroegentocht');
+                router.refresh();
+            } catch (err) {
+                showToast('Fout bij verwijderen: ' + err, 'error');
+            }
+        });
+    };
+
+    const handleDeleteTicket = async (ticketId: number) => {
+        if (!window.confirm('Weet je zeker dat je dit ticket wilt verwijderen?')) return;
+        
+        const { deletePubCrawlTicket } = await import('@/server/actions/admin-kroegentocht.actions');
+        
+        startTransition(async () => {
+            try {
+                await deletePubCrawlTicket(ticketId, Number(signup.id), Number(signup.pub_crawl_event_id?.id || 0));
+                showToast('Ticket verwijderd', 'success');
+                router.refresh();
+            } catch (err) {
+                showToast('Fout bij verwijderen ticket: ' + err, 'error');
+            }
+        });
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         startTransition(async () => {
             try {
-                await updatePubCrawlSignup(Number(signup.id), Number(signup.pub_crawl_event_id?.id || 0), formData);
-                showToast('Aanmelding succesvol bijgewerkt', 'success');
+                const eventId = Number(signup.pub_crawl_event_id?.id || 0);
+                await Promise.all([
+                    updatePubCrawlSignup(Number(signup.id), eventId, formData),
+                    updatePubCrawlTickets(Number(signup.id), eventId, ticketsData.map(t => ({
+                        id: Number(t.id),
+                        name: t.name,
+                        initial: t.initial
+                    })))
+                ]);
+                
+                showToast('Aanmelding en tickets succesvol bijgewerkt', 'success');
                 router.push('/beheer/kroegentocht');
                 router.refresh();
             } catch (err) {
@@ -85,7 +136,7 @@ export default function SignupForm({ signup }: SignupFormProps) {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <label className="text-[10px] font-semibold text-[var(--text-muted)] ml-1 flex items-center gap-2">
-                                <User className="h-3 w-3" /> Groep
+                                <User className="h-3 w-3" /> Naam
                             </label>
                             <input
                                 type="text"
@@ -160,14 +211,44 @@ export default function SignupForm({ signup }: SignupFormProps) {
                             </span>
                         </div>
 
-                        <div className="grid grid-cols-1 gap-3">
-                            {tickets.map((ticket, idx) => (
-                                <div key={ticket.id} className="p-4 bg-[var(--bg-main)]/30 rounded-[var(--radius-xl)] border border-[var(--border-color)]/50 flex items-center justify-between group hover:border-[var(--theme-purple)]/30 transition-all">
-                                    <div className="flex flex-col gap-1">
-                                        <p className="text-sm font-semibold text-[var(--text-main)]">{ticket.name}{ticket.initial ? ` ${ticket.initial}` : ''}</p>
-                                        <p className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-tighter">{ticket.qr_token}</p>
-                                    </div>
-                                    <div className="flex items-center gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {ticketsData.map((ticket, idx) => (
+                                <div key={ticket.id} className="p-4 bg-[var(--bg-main)]/30 rounded-[var(--radius-xl)] border border-[var(--border-color)]/50 flex flex-col gap-3 group hover:border-[var(--theme-purple)]/30 transition-all relative">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-6 h-6 rounded-lg bg-[var(--bg-card)] flex items-center justify-center text-[10px] font-semibold text-[var(--text-muted)] border border-[var(--border-color)] select-none group-hover:bg-[var(--theme-purple)] group-hover:text-white group-hover:border-[var(--theme-purple)] transition-all">
+                                                {idx + 1}
+                                            </div>
+                                            {!editingTicketId || editingTicketId !== ticket.id ? (
+                                                <div className="flex items-center gap-1 transition-all">
+                                                    <button 
+                                                        type="button"
+                                                        onClick={() => setEditingTicketId(Number(ticket.id))}
+                                                        className="p-1 text-[var(--text-muted)] hover:text-[var(--theme-purple)]"
+                                                        title="Naam aanpassen"
+                                                    >
+                                                        <Edit2 className="h-3 w-3" />
+                                                    </button>
+                                                    <button 
+                                                        type="button"
+                                                        onClick={() => handleDeleteTicket(Number(ticket.id))}
+                                                        className="p-1 text-[var(--text-muted)] hover:text-red-500"
+                                                        title="Ticket verwijderen"
+                                                    >
+                                                        <Trash2 className="h-3 w-3" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => setEditingTicketId(null)}
+                                                    className="p-1 text-[var(--theme-purple)] hover:text-[var(--text-main)] transition-all"
+                                                    title="Sluiten"
+                                                >
+                                                    <X className="h-3 w-3" />
+                                                </button>
+                                            )}
+                                        </div>
                                         <button 
                                             type="button"
                                             onClick={() => handleToggleCheckIn(Number(ticket.id), !!ticket.checked_in)}
@@ -177,19 +258,52 @@ export default function SignupForm({ signup }: SignupFormProps) {
                                             {ticket.checked_in ? (
                                                 <span className="flex items-center gap-1.5 px-3 py-1 bg-green-500/10 text-green-500 text-[9px] font-semibold rounded-full ring-1 ring-green-500/20 hover:bg-green-500/20 transition-all">
                                                     {togglingId === ticket.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle className="h-3 w-3" />}
-                                                    Heeft de kaart
+                                                    Checked-in
                                                 </span>
                                             ) : (
                                                 <span className="flex items-center gap-1.5 px-3 py-1 bg-red-500/10 text-red-500 text-[9px] font-semibold rounded-full ring-1 ring-red-500/20 hover:bg-red-500/20 transition-all">
                                                     {togglingId === ticket.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <XCircle className="h-3 w-3 opacity-50" />}
-                                                    Geen kaart
+                                                    Inschrijven
                                                 </span>
                                             )}
                                         </button>
-                                        <div className="w-8 h-8 rounded-lg bg-[var(--bg-card)] flex items-center justify-center text-[10px] font-semibold text-[var(--text-muted)] border border-[var(--border-color)] select-none group-hover:bg-[var(--theme-purple)] group-hover:text-white group-hover:border-[var(--theme-purple)] transition-all">
-                                            {idx + 1}
-                                        </div>
                                     </div>
+
+                                    {editingTicketId === ticket.id ? (
+                                        <div className="flex gap-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                                            <div className="flex-1">
+                                                <label className="text-[9px] font-bold text-[var(--text-muted)] uppercase mb-1 block">Naam</label>
+                                                <input
+                                                    type="text"
+                                                    value={ticket.name}
+                                                    onChange={(e) => handleTicketChange(Number(ticket.id), 'name', e.target.value)}
+                                                    className="w-full px-3 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-xs font-semibold text-[var(--text-main)] focus:border-[var(--theme-purple)] transition-all"
+                                                    autoFocus
+                                                    autoComplete="off"
+                                                />
+                                            </div>
+                                            <div className="w-16">
+                                                <label className="text-[9px] font-bold text-[var(--text-muted)] uppercase mb-1 block">Init.</label>
+                                                <input
+                                                    type="text"
+                                                    value={ticket.initial}
+                                                    onChange={(e) => handleTicketChange(Number(ticket.id), 'initial', e.target.value)}
+                                                    className="w-full px-3 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-xs font-semibold text-[var(--text-main)] text-center focus:border-[var(--theme-purple)] transition-all"
+                                                    maxLength={1}
+                                                    autoComplete="off"
+                                                />
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div 
+                                            className="cursor-pointer group/name" 
+                                            onClick={() => setEditingTicketId(Number(ticket.id))}
+                                        >
+                                            <p className="text-sm font-bold text-[var(--text-main)] group-hover/name:text-[var(--theme-purple)] transition-colors">
+                                                {ticket.name} {ticket.initial && <span className="opacity-50 text-[10px] uppercase">{ticket.initial}.</span>}
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                             {tickets.length === 0 && (
@@ -202,26 +316,37 @@ export default function SignupForm({ signup }: SignupFormProps) {
                 </div>
             </div>
 
-            <div className="flex justify-between items-center gap-4">
-                <button 
-                    type="button"
-                    onClick={() => setFormData({
-                        name: signup?.name || '',
-                        email: signup?.email || '',
-                        association: signup?.association || '',
-                        payment_status: signup?.payment_status || 'open',
-                        amount_tickets: signup?.amount_tickets || 1,
-                    })}
-                    className="flex items-center gap-2 px-8 py-4 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-xl)] text-xs font-semibold text-[var(--text-light)] hover:text-red-500 hover:border-red-500/30 transition-all active:scale-95 shadow-sm"
-                >
-                    <RefreshCw className="h-4 w-4" />
-                    Annuleren
-                </button>
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="flex gap-4 w-full md:w-auto">
+                    <button 
+                        type="button"
+                        onClick={() => setFormData({
+                            name: signup?.name || '',
+                            email: signup?.email || '',
+                            association: signup?.association || '',
+                            payment_status: signup?.payment_status || 'open',
+                            amount_tickets: signup?.amount_tickets || 1,
+                        })}
+                        className="flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-4 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-xl)] text-xs font-semibold text-[var(--text-light)] hover:text-[var(--theme-purple)] transition-all active:scale-95 shadow-sm"
+                    >
+                        <RefreshCw className="h-4 w-4" />
+                        Reset
+                    </button>
+
+                    <button 
+                        type="button"
+                        onClick={handleDeleteSignup}
+                        className="flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-4 bg-red-500/10 border border-red-500/20 rounded-[var(--radius-xl)] text-xs font-semibold text-red-500 hover:bg-red-500 hover:text-white transition-all active:scale-95 shadow-sm"
+                    >
+                        <Trash2 className="h-4 w-4" />
+                        Verwijder Aanmelding
+                    </button>
+                </div>
 
                 <button
                     type="submit"
                     disabled={isPending}
-                    className="flex-1 md:flex-none flex items-center justify-center gap-3 px-12 py-5 bg-[var(--theme-purple)] text-white font-semibold text-sm rounded-[var(--radius-xl)] shadow-[var(--shadow-glow)] hover:opacity-95 transition-all active:scale-95 disabled:opacity-50"
+                    className="w-full md:w-auto flex items-center justify-center gap-3 px-12 py-5 bg-[var(--theme-purple)] text-white font-semibold text-sm rounded-[var(--radius-xl)] shadow-[var(--shadow-glow)] hover:opacity-95 transition-all active:scale-95 disabled:opacity-50"
                 >
                     {isPending ? (
                         <Loader2 className="h-5 w-5 animate-spin" />

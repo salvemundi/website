@@ -30,10 +30,12 @@ async function RegistrationSection() {
 
     if (!event) {
         return (
-            <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30 p-8 rounded-3xl text-center">
-                <AlertCircle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
-                <h2 className="text-xl font-black text-amber-900 dark:text-amber-200">Geen actieve Kroegentocht</h2>
-                <p className="text-amber-800/80 dark:text-amber-400/80 mt-2">
+            <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 p-8 rounded-3xl text-center shadow-lg">
+                <div className="w-16 h-16 bg-[var(--color-purple-theme)]/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Calendar className="w-8 h-8 text-[var(--color-purple-theme)]" />
+                </div>
+                <h2 className="text-xl font-black text-[var(--text-main)]">Geen actieve Kroegentocht</h2>
+                <p className="text-[var(--text-muted)] mt-2">
                     Er is momenteel geen kroegentocht gepland waarvoor je je kunt inschrijven.
                 </p>
             </div>

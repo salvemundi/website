@@ -26,7 +26,7 @@ import { readItems, createItem, updateItem, deleteItem } from '@directus/sdk';
 import {
     createPubCrawlSignupDb,
     deletePubCrawlSignupDb,
-    getPubCrawlTicketCountDb,
+    getPubCrawlTicketCountByEmailDb,
     createPubCrawlTicketsDb,
     deletePubCrawlTicketsBySignupIdDb,
     fetchPubCrawlSignupByIdDb,
@@ -156,14 +156,8 @@ export async function initiateKroegentochtPayment(formData: unknown) {
         }
 
         const price = 1;
-        const maxPerPerson = 10;
-
-        // Validate existing ticket count - SQL-first for accuracy during peaks
-        const existingCount = await getPubCrawlTicketCountDb(Number(parsed.data.pub_crawl_event_id));
-
-        if (existingCount + parsed.data.amount_tickets > maxPerPerson) {
-            return { success: false, error: `Je hebt al ${existingCount} tickets. Maximaal ${maxPerPerson} per persoon/groep.` };
-        }
+        // The limit of 10 tickets per registration is already enforced by the Zod schema (pubCrawlSignupSchema).
+        // Per user request, we allow multiple registrations from the same email.
 
         const session = await auth.api.getSession({ headers: await headers() });
         const userId = session?.user?.id;
