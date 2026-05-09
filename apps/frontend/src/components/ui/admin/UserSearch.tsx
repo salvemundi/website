@@ -84,6 +84,7 @@ export default function UserSearch({
                 )} />
                 <input
                     type="text"
+                    inputMode="search"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onFocus={() => query.length >= 2 && setIsOpen(true)}

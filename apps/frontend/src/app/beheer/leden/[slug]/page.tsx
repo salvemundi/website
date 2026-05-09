@@ -155,12 +155,17 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
                 title="Lid Detail"
                 backHref="/beheer/leden"
             >
-                <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <div className="container mx-auto px-4 py-8 max-w-7xl">
                     <LedenDetailIsland 
                         member={memberData as unknown as Member} 
                         initialMemberships={userCommittees as unknown as CommitteeMembership[]} 
                         signups={signups as unknown as Signup[]}
-                        allCommittees={allCommittees as any}
+                        allCommittees={allCommittees.map(c => ({
+                            id: String(c.id),
+                            name: c.name || '',
+                            is_visible: !!c.is_visible,
+                            azure_group_id: c.azure_group_id
+                        }))}
                         isAdmin={hasPriv}
                     />
                 </div>

@@ -113,7 +113,7 @@ export default function LedenOverzichtIsland({
     ];
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <>
             {/* Global Actions */}
             <div className="flex justify-end gap-3 mb-8">
                 <button
@@ -152,6 +152,6 @@ export default function LedenOverzichtIsland({
             </div>
             
             <AdminToast toast={toast} onClose={hideToast} />
-        </div>
+        </>
     );
 }

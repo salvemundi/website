@@ -18,7 +18,7 @@ export default async function StickersAdminPage() {
     const { user } = await checkAdminAccess();
 
     // NUCLEAR SSR: Fetch stickers at the top level
-    const stickers = await getStickers().catch(() => []);
+    const stickers = await getStickers();
 
     const publishedCount = stickers.filter(s => s.status === 'published').length;
     const draftCount = stickers.filter(s => s.status === 'draft' || !s.status).length;

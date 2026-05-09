@@ -42,11 +42,11 @@ export default async function BeheerIntroPage() {
 
     // NUCLEAR SSR: Fetch all data before flushing any part of the page content
     const [signups, parents, blogs, planning, settings] = await Promise.all([
-        getIntroSignups().catch(() => []),
-        getIntroParentSignups().catch(() => []),
-        getIntroBlogs().catch(() => []),
-        getIntroPlanning().catch(() => []),
-        getIntroSettings().catch(() => ({ show: false })),
+        getIntroSignups(),
+        getIntroParentSignups(),
+        getIntroBlogs(),
+        getIntroPlanning(),
+        getIntroSettings(),
     ]);
 
     const introVisible = settings?.show ?? false;
