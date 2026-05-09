@@ -33,7 +33,7 @@ function slugify(text: string): string {
 }
 
 const HEADING_CLS =
-    'text-sm font-bold uppercase tracking-[0.3em] mb-4 ' +
+    'text-sm font-bold uppercase tracking-[0.3em] mb-4 text-center md:text-left ' +
     'text-[var(--color-purple-700)] dark:text-[var(--color-white)]';
 
 const LINK_CLS =
@@ -88,7 +88,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                 <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-5">
 
                     {/* ── Kolom 1: Informatie ── */}
-                    <div>
+                    <div className="flex flex-col items-center md:items-start text-center md:text-left">
                         <h3 className={HEADING_CLS}>Informatie</h3>
                         <ul className={`space-y-2 text-sm ${MUTED_CLS}`}>
                             <li>Rachelsmolen 1</li>
@@ -111,9 +111,9 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                     </div>
 
                     {/* ── Kolom 2: Pagina's ── */}
-                    <div>
+                    <div className="flex flex-col items-center md:items-start text-center md:text-left">
                         <h3 className={HEADING_CLS}>Pagina&apos;s</h3>
-                        <ul className="space-y-2 text-sm">
+                        <ul className="grid grid-cols-2 md:grid-cols-1 gap-x-8 gap-y-2 text-sm w-full max-w-fit mx-auto md:mx-0 md:max-w-none">
                             {pageLinks.map((link) => (
                                 <li key={link.href}>
                                     <Link href={link.href} className={LINK_CLS}>
@@ -169,7 +169,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                     </div>
 
                     {/* ── Kolom 4: Contact & Social ── */}
-                    <div>
+                    <div className="flex flex-col items-center md:items-start text-center md:text-left">
                         <h3 className={HEADING_CLS}>Contact</h3>
                         <ul className="space-y-2 text-sm mb-6">
                             <li>
@@ -215,7 +215,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                         </ul>
 
                         <h3 className={HEADING_CLS}>Social Media</h3>
-                        <div className="flex gap-3">
+                        <div className="flex justify-center md:justify-start gap-3">
                             {/* Social-icons: white/10 bg werkt op zowel lichte als donkere footer */}
                             <a
                                 href="https://www.instagram.com/sv.salvemundi/"
