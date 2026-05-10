@@ -9,8 +9,22 @@ import { Tile } from './ProfielUI';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { COMMITTEES } from '@/shared/lib/permissions-config';
 
+interface Committee {
+    id: string | number;
+    name: string;
+    is_leader?: boolean;
+    azure_group_id?: string;
+}
+
 interface ProfielHeaderProps {
-    user?: Record<string, any>;
+    user?: {
+        name?: string | null;
+        avatar?: string | null;
+        image?: string | null;
+        committees?: Committee[];
+        membership_expiry?: string | null;
+        onAvatarChange?: (file: File) => void;
+    };
     membershipStatus?: {
         text: string;
         color: string;
@@ -69,7 +83,7 @@ export default function ProfielHeader({ user = {}, membershipStatus = { text: ''
                     </label>
                 </div>
 
-                <div className="min-w-0 w-full animate-in fade-in duration-500">
+                <div className="min-w-0 w-full">
                     <h2 className="text-xl sm:text-2xl font-extrabold text-[var(--color-purple-700)] dark:text-white break-words">
                         {user.name || "Niet ingesteld"}
                     </h2>
@@ -86,9 +100,9 @@ export default function ProfielHeader({ user = {}, membershipStatus = { text: ''
                                 Mijn Commissies
                             </p>
                             <div className="flex flex-wrap gap-2 justify-center">
-                                {user.committees.map((committee: Record<string, any>) => (
+                                {user.committees.map((committee) => (
                                     <span
-                                        key={committee.id || (committee.name ?? 'unknown')}
+                                        key={committee.id || committee.name}
                                         className="group relative inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-purple-50)] dark:bg-white/10 border border-[var(--color-purple-100)] dark:border-white/20 rounded-full text-xs font-bold text-[var(--color-purple-700)] dark:text-white shadow-sm max-w-full"
                                     >
                                         {committee.is_leader && committee.azure_group_id !== COMMITTEES.BESTUUR && (
@@ -97,7 +111,7 @@ export default function ProfielHeader({ user = {}, membershipStatus = { text: ''
                                             </span>
                                         )}
                                         <Users2 className="h-3.5 w-3.5 shrink-0" />
-                                        <span className="truncate">{(committee.name ?? '').replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim()}</span>
+                                        <span className="truncate">{committee.name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim()}</span>
                                     </span>
                                 ))}
                             </div>

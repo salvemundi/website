@@ -1,5 +1,5 @@
 import 'server-only';
-import { Pool, type QueryResult } from 'pg';
+import { Pool, type QueryResult, type QueryResultRow } from 'pg';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -27,7 +27,7 @@ if (!globalThis._pgPool) {
 
 export const pool = globalThis._pgPool;
 
-export async function query(text: string, params?: (string | number | boolean | null | undefined | object)[], retries = 2): Promise<QueryResult> {
+export async function query<R extends QueryResultRow = any>(text: string, params?: (string | number | boolean | null | undefined | object)[], retries = 2): Promise<QueryResult<R>> {
     const start = Date.now();
     for (let i = 0; i <= retries; i++) {
         try {

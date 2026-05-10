@@ -21,10 +21,12 @@ export default async function ProfielPage() {
     });
 
     // NUCLEAR SSR: Fetch all data before flushing any part of the page content
+    // We remove the silent .catch() as we want the page to fail/trigger error boundary 
+    // if critical data fetching fails, rather than showing an empty profile.
     const [eventSignups, pubCrawlSignups, freshMetadata] = await Promise.all([
-        getUserEventSignups().catch(() => []),
-        getUserPubCrawlSignups().catch(() => []),
-        session?.user?.id ? fetchUserMetadataDb(session.user.id).catch(() => null) : null
+        getUserEventSignups(),
+        getUserPubCrawlSignups(),
+        session?.user?.id ? fetchUserMetadataDb(session.user.id) : null
     ]);
 
     // Merge fresh metadata into session user to bypass Better Auth stale cache
@@ -36,11 +38,13 @@ export default async function ProfielPage() {
     return (
         <PublicPageShell title="Mijn Profiel">
             <div className="container mx-auto px-4 py-12 max-w-7xl">
-                <ProfielIsland 
-                    user={enrichedUser as unknown as Record<string, unknown>} 
-                    initialSignups={eventSignups}
-                    pubCrawlSignups={pubCrawlSignups}
-                />
+                {enrichedUser && (
+                    <ProfielIsland 
+                        user={enrichedUser} 
+                        initialSignups={eventSignups}
+                        pubCrawlSignups={pubCrawlSignups}
+                    />
+                )}
             </div>
         </PublicPageShell>
     );

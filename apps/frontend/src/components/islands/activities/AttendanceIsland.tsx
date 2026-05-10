@@ -5,14 +5,23 @@ import { getActivitySignups } from '@/server/actions/admin-activiteit.actions';
 import { toggleCheckInAction } from '@/server/actions/aanmeldingen.actions';
 import { Search, UserCheck, UserX, QrCode, Loader2, RefreshCw } from 'lucide-react';
 
+interface AttendanceSignup {
+    id: number;
+    participant_name: string;
+    participant_email: string;
+    checked_in: boolean;
+    qr_token?: string;
+    checked_in_at?: string | null;
+}
+
 interface AttendanceIslandProps {
     eventId: string;
     eventName: string;
-    initialSignups?: any[];
+    initialSignups?: AttendanceSignup[];
 }
 
 export default function AttendanceIsland({ eventId, eventName, initialSignups = [] }: AttendanceIslandProps) {
-    const [signups, setSignups] = useState<any[]>(initialSignups);
+    const [signups, setSignups] = useState<AttendanceSignup[]>(initialSignups);
     const [loading, setLoading] = useState(initialSignups.length === 0);
     const [search, setSearch] = useState('');
     const [scanning, setScanning] = useState(false);
@@ -21,7 +30,18 @@ export default function AttendanceIsland({ eventId, eventName, initialSignups = 
     const fetchData = async () => {
         setLoading(true);
         const data = await getActivitySignups(eventId);
-        setSignups(data);
+        
+        // Strictly map the database data to our clean interface
+        const mapped = data.map(s => ({
+            id: s.id || 0,
+            participant_name: s.participant_name || 'Onbekend',
+            participant_email: s.participant_email || 'Geen email',
+            checked_in: !!s.checked_in,
+            qr_token: s.qr_token || undefined,
+            checked_in_at: s.checked_in_at || null
+        }));
+        
+        setSignups(mapped);
         setLoading(false);
     };
 

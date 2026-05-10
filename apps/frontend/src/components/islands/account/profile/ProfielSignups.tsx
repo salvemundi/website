@@ -8,8 +8,13 @@ import { nl } from 'date-fns/locale';
 import { Tile } from './ProfielUI';
 import { slugify } from '@/shared/lib/utils/slug';
 
+import { type EventSignup } from '@salvemundi/validations/schema/profiel.zod';
+import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
+
+type EnrichedSignup = (EventSignup & { _type: 'event' }) | (PubCrawlSignup & { _type: 'pub_crawl' });
+
 interface ProfielSignupsProps {
-    filteredSignups?: any[];
+    filteredSignups?: EnrichedSignup[];
     showPastEvents?: boolean;
     setShowPastEvents?: (val: boolean | ((v: boolean) => boolean)) => void;
 }
@@ -49,10 +54,18 @@ export default function ProfielSignups({
         >
             {filteredSignups.length > 0 ? (
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-                    {filteredSignups.map((signup: any) => {
+                    {filteredSignups.map((signup: EnrichedSignup) => {
                         const isEvent = signup._type === 'event';
                         const eventData = isEvent ? signup.event_id : signup.pub_crawl_event_id;
-                        const eventDateStr = isEvent ? eventData?.event_date : eventData?.date;
+                        
+                        // Type guard to ensure we have an object with a name and date info
+                        const isExpanded = (data: any): data is { name: string; event_date?: string | null; date?: string | null } => {
+                            return typeof data === 'object' && data !== null && 'name' in data;
+                        };
+
+                        if (!isExpanded(eventData)) return null;
+
+                        const eventDateStr = isEvent ? eventData.event_date : eventData.date;
                         const detailHref = isEvent ? `/activiteiten/${slugify(eventData.name)}` : `/kroegentocht`;
                         const icon = isEvent ? <Calendar className="h-7 w-7" /> : <CreditCard className="h-7 w-7" />;
 

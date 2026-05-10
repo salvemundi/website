@@ -23,7 +23,7 @@ interface ActionState {
     id?: number;
     error?: string;
     fieldErrors?: Record<string, string[]>;
-    initialData?: Record<string, any>;
+    initialData?: Record<string, unknown>;
 }
 
 interface ActiviteitNieuwIslandProps {
@@ -67,9 +67,14 @@ export default function ActiviteitNieuwIsland({
             
             // Sync stateful inputs if they were returned
             if (state.initialData) {
-                if (state.initialData.status) setStatus(state.initialData.status);
-                if (state.initialData.only_members) setOnlyMembers(state.initialData.only_members === 'on' || state.initialData.only_members === true);
-                if (state.initialData.contact) setContactEmail(state.initialData.contact as string);
+                const data = state.initialData as Record<string, string | boolean | undefined>;
+                if (data.status && typeof data.status === 'string' && ['published', 'draft', 'scheduled'].includes(data.status)) {
+                    setStatus(data.status as 'published' | 'draft' | 'scheduled');
+                }
+                if (data.only_members !== undefined) {
+                    setOnlyMembers(data.only_members === 'on' || data.only_members === true);
+                }
+                if (data.contact && typeof data.contact === 'string') setContactEmail(data.contact);
             }
         }
     }, [state, showToast, router]);
@@ -122,7 +127,7 @@ export default function ActiviteitNieuwIsland({
                                             suppressHydrationWarning
                                             className={`beheer-input ${formErrors.name ? 'border-red-500 ring-4 ring-red-500/10' : ''}`}
                                             placeholder="Bijv. Introductiebivak 2024"
-                                            defaultValue={state.initialData?.name}
+                                            defaultValue={state.initialData?.name as string}
                                         />
                                         {formErrors.name && <p className="text-red-500 text-[10px] font-semibold  tracking-widest mt-2">{formErrors.name[0]}</p>}
                                     </div>
@@ -130,12 +135,12 @@ export default function ActiviteitNieuwIsland({
                                     <div className="grid grid-cols-1 gap-6">
                                         <div>
                                             <label htmlFor="description" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)]  tracking-widest mb-2">Publieke Beschrijving *</label>
-                                            <textarea id="description" name="description" rows={4} autoComplete="off" suppressHydrationWarning className={`beheer-input ${formErrors.description ? 'border-red-500 ring-4 ring-red-500/10' : ''}`} placeholder="Wat gaan we doen?" defaultValue={state.initialData?.description} />
+                                            <textarea id="description" name="description" rows={4} autoComplete="off" suppressHydrationWarning className={`beheer-input ${formErrors.description ? 'border-red-500 ring-4 ring-red-500/10' : ''}`} placeholder="Wat gaan we doen?" defaultValue={state.initialData?.description as string} />
                                             {formErrors.description && <p className="text-red-500 text-[10px] font-semibold  tracking-widest mt-2">{formErrors.description[0]}</p>}
                                         </div>
                                         <div>
                                             <label htmlFor="description_logged_in" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)]  tracking-widest mb-2">Extra Informatie (alleen ingelogd)</label>
-                                            <textarea id="description_logged_in" name="description_logged_in" rows={2} autoComplete="off" suppressHydrationWarning className="beheer-input" placeholder="Bijv. verzamelplek, wat mee te nemen..." defaultValue={state.initialData?.description_logged_in} />
+                                            <textarea id="description_logged_in" name="description_logged_in" rows={2} autoComplete="off" suppressHydrationWarning className="beheer-input" placeholder="Bijv. verzamelplek, wat mee te nemen..." defaultValue={state.initialData?.description_logged_in as string} />
                                         </div>
                                     </div>
                                 </div>
@@ -151,20 +156,20 @@ export default function ActiviteitNieuwIsland({
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                         <div>
                                             <label htmlFor="event_date" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)]  tracking-widest mb-2">Startdatum *</label>
-                                            <input type="date" id="event_date" name="event_date" autoComplete="off" suppressHydrationWarning className={`beheer-input ${formErrors.event_date ? 'border-red-500' : ''}`} defaultValue={state.initialData?.event_date} />
+                                            <input type="date" id="event_date" name="event_date" autoComplete="off" suppressHydrationWarning className={`beheer-input ${formErrors.event_date ? 'border-red-500' : ''}`} defaultValue={state.initialData?.event_date as string} />
                                             {formErrors.event_date && <p className="text-red-500 text-[10px] font-semibold  tracking-widest mt-2">{formErrors.event_date[0]}</p>}
                                         </div>
                                         <div>
                                             <label htmlFor="event_time" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)]  tracking-widest mb-2">Tijd</label>
-                                            <input type="time" id="event_time" name="event_time" autoComplete="off" suppressHydrationWarning className="beheer-input" defaultValue={state.initialData?.event_time} />
+                                            <input type="time" id="event_time" name="event_time" autoComplete="off" suppressHydrationWarning className="beheer-input" defaultValue={state.initialData?.event_time as string} />
                                         </div>
                                         <div>
                                             <label htmlFor="event_date_end" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)]  tracking-widest mb-2">Einddatum</label>
-                                            <input type="date" id="event_date_end" name="event_date_end" autoComplete="off" suppressHydrationWarning className="beheer-input" defaultValue={state.initialData?.event_date_end} />
+                                            <input type="date" id="event_date_end" name="event_date_end" autoComplete="off" suppressHydrationWarning className="beheer-input" defaultValue={state.initialData?.event_date_end as string} />
                                         </div>
                                         <div>
                                             <label htmlFor="event_time_end" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)]  tracking-widest mb-2">Eindtijd</label>
-                                            <input type="time" id="event_time_end" name="event_time_end" autoComplete="off" suppressHydrationWarning className="beheer-input" defaultValue={state.initialData?.event_time_end} />
+                                            <input type="time" id="event_time_end" name="event_time_end" autoComplete="off" suppressHydrationWarning className="beheer-input" defaultValue={state.initialData?.event_time_end as string} />
                                         </div>
                                     </div>
 
@@ -173,11 +178,11 @@ export default function ActiviteitNieuwIsland({
                                             <label htmlFor="location" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)]  tracking-widest mb-2 flex items-center gap-2">
                                                 <MapPin className="h-3 w-3" /> Locatie
                                             </label>
-                                            <input type="text" id="location" name="location" autoComplete="off" suppressHydrationWarning className="beheer-input" placeholder="Bijv. Fontys R10" defaultValue={state.initialData?.location} />
+                                            <input type="text" id="location" name="location" autoComplete="off" suppressHydrationWarning className="beheer-input" placeholder="Bijv. Fontys R10" defaultValue={state.initialData?.location as string} />
                                         </div>
                                         <div>
                                             <label htmlFor="registration_deadline" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)]  tracking-widest mb-2">Inschrijfdeadline</label>
-                                            <input type="datetime-local" id="registration_deadline" name="registration_deadline" autoComplete="off" suppressHydrationWarning className="beheer-input" defaultValue={state.initialData?.registration_deadline} />
+                                            <input type="datetime-local" id="registration_deadline" name="registration_deadline" autoComplete="off" suppressHydrationWarning className="beheer-input" defaultValue={state.initialData?.registration_deadline as string} />
                                         </div>
                                     </div>
 
@@ -185,7 +190,7 @@ export default function ActiviteitNieuwIsland({
                                         <label htmlFor="custom_url" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)]  tracking-widest mb-2 flex items-center gap-2">
                                             <LinkIcon className="h-3 w-3" /> Custom Redirect URL (optioneel)
                                         </label>
-                                        <input type="text" id="custom_url" name="custom_url" autoComplete="off" suppressHydrationWarning className="beheer-input" placeholder="bijv. https://forms.gle/..." defaultValue={state.initialData?.custom_url} />
+                                        <input type="text" id="custom_url" name="custom_url" autoComplete="off" suppressHydrationWarning className="beheer-input" placeholder="bijv. https://forms.gle/..." defaultValue={state.initialData?.custom_url as string} />
                                     </div>
                                 </div>
                             </div>
@@ -200,15 +205,15 @@ export default function ActiviteitNieuwIsland({
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div>
                                             <label htmlFor="max_sign_ups" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)]  tracking-widest mb-2">Max. Deelnemers</label>
-                                            <input type="number" id="max_sign_ups" name="max_sign_ups" min="0" autoComplete="off" suppressHydrationWarning className="beheer-input" placeholder="Onbeperkt" defaultValue={state.initialData?.max_sign_ups} />
+                                            <input type="number" id="max_sign_ups" name="max_sign_ups" min="0" autoComplete="off" suppressHydrationWarning className="beheer-input" placeholder="Onbeperkt" defaultValue={state.initialData?.max_sign_ups as number} />
                                         </div>
                                         <div>
                                             <label htmlFor="price_members" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)]  tracking-widest mb-2">Leden (€)</label>
-                                            <input type="number" id="price_members" name="price_members" min="0" step="0.01" autoComplete="off" suppressHydrationWarning className="beheer-input" placeholder="0.00" defaultValue={state.initialData?.price_members} />
+                                            <input type="number" id="price_members" name="price_members" min="0" step="0.01" autoComplete="off" suppressHydrationWarning className="beheer-input" placeholder="0.00" defaultValue={state.initialData?.price_members as number} />
                                         </div>
                                         <div>
                                             <label htmlFor="price_non_members" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)]  tracking-widest mb-2">Niet-leden (€)</label>
-                                            <input type="number" id="price_non_members" name="price_non_members" min="0" step="0.01" autoComplete="off" suppressHydrationWarning className="beheer-input" placeholder="0.00" defaultValue={state.initialData?.price_non_members} />
+                                            <input type="number" id="price_non_members" name="price_non_members" min="0" step="0.01" autoComplete="off" suppressHydrationWarning className="beheer-input" placeholder="0.00" defaultValue={state.initialData?.price_non_members as number} />
                                         </div>
                                     </div>
 
@@ -221,7 +226,7 @@ export default function ActiviteitNieuwIsland({
                                                 autoComplete="off" 
                                                 suppressHydrationWarning 
                                                 className="beheer-select" 
-                                                defaultValue={state.initialData?.committee_id}
+                                                defaultValue={state.initialData?.committee_id as number}
                                                 onChange={(e) => {
                                                     const committeeId = e.target.value;
                                                     const committee = committees.find(c => String(c.id) === committeeId);
@@ -325,7 +330,7 @@ export default function ActiviteitNieuwIsland({
                                             <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-text)]  tracking-widest transition-colors">Inplannen</span>
                                             {status === 'scheduled' && (
                                                 <div className="mt-2 animate-in slide-in-from-top-2 duration-300">
-                                                    <input type="datetime-local" name="publish_date" autoComplete="off" suppressHydrationWarning className="beheer-input text-[10px] py-2" defaultValue={state.initialData?.publish_date} />
+                                                    <input type="datetime-local" name="publish_date" autoComplete="off" suppressHydrationWarning className="beheer-input text-[10px] py-2" defaultValue={state.initialData?.publish_date as string} />
                                                 </div>
                                             )}
                                         </div>

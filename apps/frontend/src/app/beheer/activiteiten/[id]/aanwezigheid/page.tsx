@@ -27,6 +27,16 @@ export default async function AttendancePage({ params }: PageProps) {
 
     if (!activity) return notFound();
 
+    // Strictly map signups to match the component's strict interface
+    const mappedSignups = signups.map(s => ({
+        id: s.id || 0,
+        participant_name: s.participant_name || 'Onbekend',
+        participant_email: s.participant_email || 'Geen email',
+        checked_in: !!s.checked_in,
+        qr_token: s.qr_token || undefined,
+        checked_in_at: s.checked_in_at || null
+    }));
+
     return (
         <div className="w-full">
             <AnimatedBeheerHeader 
@@ -39,7 +49,7 @@ export default async function AttendancePage({ params }: PageProps) {
                 <AttendanceIsland 
                     eventId={id} 
                     eventName={activity.titel} 
-                    initialSignups={signups} 
+                    initialSignups={mappedSignups} 
                 />
             </div>
         </div>

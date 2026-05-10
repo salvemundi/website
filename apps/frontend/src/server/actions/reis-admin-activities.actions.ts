@@ -25,7 +25,7 @@ import {
 export async function createTripActivity(prevState: unknown, formData: FormData) {
     await requireReisAdmin();
 
-    const rawData: Record<string, any> = {};
+    const rawData: Record<string, unknown> = {};
     formData.forEach((value, key) => {
         if (key === 'options') {
             try { rawData[key] = JSON.parse(value as string); } catch { rawData[key] = []; }
@@ -76,7 +76,7 @@ export async function updateTripActivity(prevState: unknown, formData: FormData)
     const id = parseInt(formData.get('id') as string);
     if (!id) throw new Error('Geen ID gevonden voor update');
 
-    const rawData: Record<string, any> = {};
+    const rawData: Record<string, unknown> = {};
     formData.forEach((value, key) => {
         if (key === 'options') {
             try { rawData[key] = JSON.parse(value as string); } catch { rawData[key] = []; }
@@ -151,7 +151,7 @@ export async function getActivitySignups(activityId: number) {
     try {
         return await fetchSignupsByActivityIdDb(activityId);
     } catch (error) {
-        
+        console.error('[ReisAdmin] Failed to fetch activity signups:', error);
         return [];
     }
 }

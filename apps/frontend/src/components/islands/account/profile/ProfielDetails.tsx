@@ -9,15 +9,22 @@ import { formatPhoneNumber } from '@/lib/utils/phone-utils';
 import { authClient } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 
+import { UseFormRegister, UseFormHandleSubmit, FieldErrors } from 'react-hook-form';
+
 interface ProfielDetailsProps {
-    user?: any;
+    user?: {
+        email?: string | null;
+        fontys_email?: string | null;
+        phone_number?: string | null;
+        date_of_birth?: string | null;
+    };
     isEditingPhoneNumber?: boolean;
     setIsEditingPhoneNumber?: (val: boolean) => void;
-    registerPhone?: any;
-    handleSubmitPhone?: any;
-    onSavePhone?: (data: any) => void;
-    resetPhone?: (data: any) => void;
-    phoneErrors?: any;
+    registerPhone?: UseFormRegister<{ phone_number?: string | null }>;
+    handleSubmitPhone?: UseFormHandleSubmit<{ phone_number?: string | null }>;
+    onSavePhone?: (data: { phone_number?: string | null }) => void;
+    resetPhone?: (data: { phone_number?: string | null }) => void;
+    phoneErrors?: FieldErrors<{ phone_number?: string | null }>;
     isPending?: boolean;
 }
 
@@ -25,8 +32,8 @@ export default function ProfielDetails({
     user = {},
     isEditingPhoneNumber = false,
     setIsEditingPhoneNumber = () => {},
-    registerPhone,
-    handleSubmitPhone,
+    registerPhone = (() => ({})) as any,
+    handleSubmitPhone = (() => {}) as any,
     onSavePhone = () => {},
     resetPhone = () => {},
     phoneErrors = {},

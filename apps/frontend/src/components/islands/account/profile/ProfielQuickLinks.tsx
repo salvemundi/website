@@ -5,7 +5,9 @@ import { ChevronRight, CreditCard, MessageCircle, Shield } from 'lucide-react';
 import { Tile, QuickLink } from './ProfielUI';
 
 interface ProfielQuickLinksProps {
-    user?: any;
+    user?: {
+        membership_status?: string | null;
+    };
     canAccessAdmin?: boolean;
     isICT?: boolean;
 }

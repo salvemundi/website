@@ -39,7 +39,7 @@ export default async function BlogDetailPage({ params }: Props) {
 
     return (
         <PublicPageShell>
-            <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-10 py-12 lg:py-24 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+            <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-10 py-12 lg:py-24">
                 <Link 
                     href="/intro/blogs" 
                     className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] hover:text-[var(--beheer-accent)] transition-colors group mb-12"

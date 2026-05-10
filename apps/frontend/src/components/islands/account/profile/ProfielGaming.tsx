@@ -4,15 +4,19 @@ import React from 'react';
 import { Gamepad2, Edit2, Save, Loader2, X } from 'lucide-react';
 import { Tile, formatForBreak } from './ProfielUI';
 
+import { UseFormRegister, UseFormHandleSubmit, FieldErrors } from 'react-hook-form';
+
 interface ProfielGamingProps {
-    user?: any;
+    user?: {
+        minecraft_username?: string | null;
+    };
     isEditingMinecraft?: boolean;
     setIsEditingMinecraft?: (val: boolean) => void;
-    registerMinecraft?: any;
-    handleSubmitMinecraft?: any;
-    onSaveMinecraft?: (data: any) => void;
-    resetMinecraft?: (data: any) => void;
-    minecraftErrors?: any;
+    registerMinecraft?: UseFormRegister<{ minecraft_username?: string | null }>;
+    handleSubmitMinecraft?: UseFormHandleSubmit<{ minecraft_username?: string | null }>;
+    onSaveMinecraft?: (data: { minecraft_username?: string | null }) => void;
+    resetMinecraft?: (data: { minecraft_username?: string | null }) => void;
+    minecraftErrors?: FieldErrors<{ minecraft_username?: string | null }>;
     isPending?: boolean;
 }
 
@@ -20,8 +24,8 @@ export default function ProfielGaming({
     user = {},
     isEditingMinecraft = false,
     setIsEditingMinecraft = () => {},
-    registerMinecraft,
-    handleSubmitMinecraft,
+    registerMinecraft = (() => ({})) as any,
+    handleSubmitMinecraft = (() => {}) as any,
     onSaveMinecraft = () => {},
     resetMinecraft = () => {},
     minecraftErrors = {},

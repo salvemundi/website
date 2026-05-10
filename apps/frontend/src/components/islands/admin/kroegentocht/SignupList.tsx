@@ -15,8 +15,13 @@ import { nl } from 'date-fns/locale';
 import { downloadCSV } from '@/lib/utils/export';
 import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 
+interface Participant {
+    name: string;
+    initial: string;
+}
+
 interface ExtendedSignup extends PubCrawlSignup {
-    participants?: { name: string; initial: string }[];
+    participants?: Participant[];
     created_at?: string | Date;
 }
 
@@ -50,7 +55,7 @@ export default function SignupList({
     });
 
     const exportToCSV = () => {
-        const rows: Record<string, any>[] = [];
+        const rows: Record<string, string | number>[] = [];
         // Signups are sorted newest first (id DESC), so we calculate the sequential number accordingly
         filteredSignups.forEach((signup, signupIdx) => {
             const groupNumber = filteredSignups.length - signupIdx;
@@ -64,7 +69,7 @@ export default function SignupList({
 
             const participants = signup.participants || [];
             if (participants.length > 0) {
-                participants.forEach((p: any) => {
+                participants.forEach((p) => {
                     rows.push({
                         'Naam': `${p.name} ${p.initial}.`.trim(),
                         'Vereniging': signup.association || '-',
@@ -161,7 +166,7 @@ export default function SignupList({
                                                     
                                                     {participants.length > 0 && (
                                                         <div className="mt-1.5 flex flex-wrap gap-1.5">
-                                                            {participants.map((p: any, i: number) => {
+                                                            {participants.map((p, i) => {
                                                                 // AGGRESSIVE CLEANUP for broken JSON data
                                                                 let rawName = typeof p === 'object' ? (p.name || 'Onbekend') : String(p);
                                                                 let rawInitial = typeof p === 'object' ? (p.initial || '') : '';
