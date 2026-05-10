@@ -6,11 +6,8 @@ import { headers } from 'next/headers';
 
 import { query } from '@/lib/database';
 
-import { cacheLife } from 'next/cache';
 
 async function fetchSafeHavensFromDirectus(isAuthenticated: boolean): Promise<SafeHaven[]> {
-    'use cache';
-    cacheLife('hours');
     try {
         const queryText = isAuthenticated
             ? 'SELECT id, contact_name, email, phone_number, image FROM safe_havens LIMIT 10'
@@ -26,8 +23,7 @@ async function fetchSafeHavensFromDirectus(isAuthenticated: boolean): Promise<Sa
             telefoon: item.phone_number || null,
             afbeelding_id: item.image,
             status: 'published' as const,
-            sort: 0,
-        }));
+            sort: 0 }));
 
         const parsed = safeHavensSchema.safeParse(mappedData);
         if (!parsed.success) {

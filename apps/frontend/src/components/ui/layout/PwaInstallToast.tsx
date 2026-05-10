@@ -68,8 +68,7 @@ function ToastWrapper({ children, visible }: { children: React.ReactNode; visibl
                 zIndex: 9999,
                 width: 'min(calc(100vw - 2rem), 440px)',
                 pointerEvents: visible ? 'auto' : 'none',
-                opacity: visible ? 1 : 0,
-            }}
+                opacity: visible ? 1 : 0 }}
         >
             <div style={{
                 background: 'linear-gradient(145deg, rgba(75,36,72,0.97) 0%, rgba(58,27,56,0.98) 100%)',
@@ -78,8 +77,7 @@ function ToastWrapper({ children, visible }: { children: React.ReactNode; visibl
                 border: '1px solid rgba(164,83,155,0.3)',
                 borderRadius: '1.375rem',
                 boxShadow: '0 12px 40px rgba(0,0,0,0.55), 0 0 0 1px rgba(164,83,155,0.08), inset 0 1px 0 rgba(255,255,255,0.07)',
-                overflow: 'hidden',
-            }}>
+                overflow: 'hidden' }}>
                 {children}
             </div>
         </div>
@@ -99,8 +97,7 @@ function ToastHeader({ onDismiss }: { onDismiss: () => void }) {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 4px 14px rgba(164,83,155,0.45)',
-            }}>
+                boxShadow: '0 4px 14px rgba(164,83,155,0.45)' }}>
                 <Smartphone size={20} color="white" />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -126,8 +123,7 @@ function ToastHeader({ onDismiss }: { onDismiss: () => void }) {
                     color: 'rgba(255,255,255,0.5)',
                     cursor: 'pointer',
                     transition: 'background 0.15s, color 0.15s',
-                    fontFamily: 'inherit',
-                }}
+                    fontFamily: 'inherit' }}
                 onMouseEnter={e => {
                     (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.16)';
                     (e.currentTarget as HTMLButtonElement).style.color = '#fff';
@@ -154,8 +150,7 @@ function NativeToast({ onInstall, onDismiss, installing }: {
             <ToastHeader onDismiss={onDismiss} />
             <div style={{
                 padding: '0 1.125rem 1rem',
-                display: 'flex', gap: '0.625rem',
-            }}>
+                display: 'flex', gap: '0.625rem' }}>
                 <button
                     id="pwa-install-btn"
                     onClick={onInstall}
@@ -176,8 +171,7 @@ function NativeToast({ onInstall, onDismiss, installing }: {
                         cursor: installing ? 'default' : 'pointer',
                         boxShadow: installing ? 'none' : '0 3px 10px rgba(164,83,155,0.4)',
                         transition: 'all 0.2s ease',
-                        fontFamily: 'inherit',
-                    }}
+                        fontFamily: 'inherit' }}
                 >
                     <Download size={15} />
                     {installing ? 'Bezig…' : 'Voeg toe aan beginscherm'}
@@ -194,22 +188,19 @@ const IOS_STEPS = [
         icon: <IosShareIcon />,
         label: 'Tik op',
         highlight: 'Deel',
-        sublabel: 'de knop onderaan in Safari',
-    },
+        sublabel: 'de knop onderaan in Safari' },
     {
         id: 2,
         icon: <Plus size={18} />,
         label: 'Kies',
         highlight: 'Zet op beginscherm',
-        sublabel: 'scroll omlaag in het menu',
-    },
+        sublabel: 'scroll omlaag in het menu' },
     {
         id: 3,
         icon: <Smartphone size={18} />,
         label: 'Tik op',
         highlight: 'Voeg toe',
-        sublabel: 'rechts bovenin',
-    },
+        sublabel: 'rechts bovenin' },
 ];
 
 function IosToast({ onDismiss }: { onDismiss: () => void }) {
@@ -233,8 +224,7 @@ function IosToast({ onDismiss }: { onDismiss: () => void }) {
                             background: 'rgba(255,255,255,0.04)',
                             border: '1px solid rgba(255,255,255,0.07)',
                             borderRadius: '0.75rem',
-                            padding: '0.625rem 0.875rem',
-                        }}
+                            padding: '0.625rem 0.875rem' }}
                     >
                         {/* Step number */}
                         <div style={{
@@ -244,8 +234,7 @@ function IosToast({ onDismiss }: { onDismiss: () => void }) {
                             background: 'rgba(164,83,155,0.25)',
                             border: '1px solid rgba(164,83,155,0.4)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: '0.7rem', fontWeight: 600, color: '#c47abd',
-                        }}>
+                            fontSize: '0.7rem', fontWeight: 600, color: '#c47abd' }}>
                             {step.id}
                         </div>
                         {/* Icon */}
@@ -255,8 +244,7 @@ function IosToast({ onDismiss }: { onDismiss: () => void }) {
                             borderRadius: '0.5rem',
                             background: 'rgba(164,83,155,0.18)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: '#c47abd',
-                        }}>
+                            color: '#c47abd' }}>
                             {step.icon}
                         </div>
                         {/* Text */}
@@ -280,8 +268,7 @@ function IosToast({ onDismiss }: { onDismiss: () => void }) {
                 background: 'rgba(164,83,155,0.12)',
                 border: '1px solid rgba(164,83,155,0.2)',
                 borderRadius: '0.625rem',
-                display: 'flex', alignItems: 'center', gap: '0.5rem',
-            }}>
+                display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Share size={13} color="rgba(196,122,189,0.9)" style={{ flexShrink: 0 }} />
                 <p style={{ margin: 0, fontSize: '0.73rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.4 }}>
                     De <span style={{ color: '#c47abd', fontWeight: 600 }}>Deel-knop</span> staat in de Safari-werkbalk onderaan je scherm

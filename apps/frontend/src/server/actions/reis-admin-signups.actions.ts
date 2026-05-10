@@ -168,8 +168,7 @@ export async function updateTripSignup(prevState: unknown, formData: FormData) {
         status: rawData.status as string,
         role: rawData.role as string,
         allergies: rawData.allergies as string,
-        special_notes: rawData.special_notes as string,
-    };
+        special_notes: rawData.special_notes as string };
 
     const validated = tripSignupSchema.partial().safeParse(data);
     if (!validated.success) {
@@ -250,8 +249,7 @@ export async function updateSignupActivities(signupId: number, activityIds: numb
         for (const activityId of toAdd) {
             await client.request(createItem('trip_signup_activities', {
                 trip_signup_id: signupId,
-                trip_activity_id: activityId,
-            }));
+                trip_activity_id: activityId }));
         }
 
         revalidatePath('/beheer/reis');
@@ -324,8 +322,7 @@ export async function sendBulkTripEmail(data: {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${INTERNAL_SERVICE_TOKEN}`,
-            },
+                'Authorization': `Bearer ${INTERNAL_SERVICE_TOKEN}` },
             body: JSON.stringify({
                 to: data.recipients,
                 subject: data.subject,
@@ -334,8 +331,7 @@ export async function sendBulkTripEmail(data: {
                     message: data.message,
                     tripId: data.tripId
                 }
-            }),
-        });
+            }) });
 
         if (!response.ok) {
             const err = await response.json().catch(() => ({}));
@@ -355,8 +351,7 @@ export async function sendBulkPaymentEmails(tripId: number, signupIds: number[],
 
     const results = {
         successCount: 0,
-        failCount: 0,
-    };
+        failCount: 0 };
 
     for (const signupId of signupIds) {
         try {

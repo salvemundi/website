@@ -38,8 +38,7 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
                 email: user.email,
                 telefoon: user.phone_number || '',
                 geboortedatum: user.date_of_birth || '',
-                coupon: '',
-            };
+                coupon: '' };
 
             const result = await initiateMembershipPaymentAction(formData);
 

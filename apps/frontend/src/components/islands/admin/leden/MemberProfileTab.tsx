@@ -64,8 +64,7 @@ export default function MemberProfileTab({
         first_name: member.first_name || '',
         last_name: member.last_name || '',
         phone_number: member.phone_number || '',
-        date_of_birth: member.date_of_birth || '',
-    });
+        date_of_birth: member.date_of_birth || '' });
     const [saving, setSaving] = useState(false);
 
     const handleSave = async () => {

@@ -5,8 +5,7 @@ import BackButton from '@/components/ui/navigation/BackButton';
 
 export const metadata: Metadata = {
     title: 'WhatsApp Groepen | SV Salve Mundi',
-    description: 'Word lid van onze exclusieve WhatsApp groepen voor leden.',
-};
+    description: 'Word lid van onze exclusieve WhatsApp groepen voor leden.' };
 
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';

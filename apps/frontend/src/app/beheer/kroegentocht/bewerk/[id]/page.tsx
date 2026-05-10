@@ -4,8 +4,7 @@ import { notFound } from 'next/navigation';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 
 export const metadata = {
-    title: 'Kroegentocht Event Bewerken | Salve Mundi',
-};
+    title: 'Kroegentocht Event Bewerken | Salve Mundi' };
 
 interface EditKroegentochtPageProps {
     params: Promise<{ id: string }>;

@@ -13,8 +13,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
     title: 'Home | SV Salve Mundi',
-    description: 'Dè studievereniging voor HBO-studenten in Eindhoven. Ontmoet nieuwe mensen, bouw aan je netwerk en maak het meeste van je studententijd.',
-};
+    description: 'Dè studievereniging voor HBO-studenten in Eindhoven. Ontmoet nieuwe mensen, bouw aan je netwerk en maak het meeste van je studententijd.' };
 
 import { connection } from 'next/server';
 

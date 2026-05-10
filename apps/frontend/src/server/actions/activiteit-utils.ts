@@ -12,8 +12,7 @@ export const getInternalHeaders = () => {
     const token = process.env.INTERNAL_SERVICE_TOKEN;
     return {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-    };
+        'Authorization': `Bearer ${token}` };
 };
 
 export async function getSession() {
@@ -42,8 +41,7 @@ export async function fetchWithTimeout(url: string, options: RequestInit & { tim
     try {
         const response = await fetch(url, {
             ...fetchOptions,
-            signal: controller.signal,
-        });
+            signal: controller.signal });
         clearTimeout(id);
         return response;
     } catch (error) {

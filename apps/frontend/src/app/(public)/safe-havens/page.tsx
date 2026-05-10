@@ -19,13 +19,11 @@ import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 
 export const metadata: Metadata = {
     title: 'Safe Havens',
-    description: 'Een veilig aanspreekpunt waar je terechtkunt met zorgen, vragen of problemen. Wij luisteren zonder te oordelen.',
-};
+    description: 'Een veilig aanspreekpunt waar je terechtkunt met zorgen, vragen of problemen. Wij luisteren zonder te oordelen.' };
 
 function BentoCard({
     children,
-    className = '',
-}: {
+    className = '' }: {
     children: React.ReactNode;
     className?: string;
 }) {

@@ -7,8 +7,7 @@ import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import { type EnrichedUser } from '@/types/auth';
 
 export const metadata = {
-    title: 'Sticker Kaart | Salve Mundi',
-};
+    title: 'Sticker Kaart | Salve Mundi' };
 
 import { connection } from 'next/server';
 
@@ -29,8 +28,7 @@ async function StickersContent() {
     // NUCLEAR SSR: Fetch all data before flushing any part of the page content
     const stickersPromise = getPublicStickers();
     const sessionPromise = auth.api.getSession({
-        headers: await headers(),
-    });
+        headers: await headers() });
 
     const [stickers, session] = await Promise.all([
         stickersPromise,

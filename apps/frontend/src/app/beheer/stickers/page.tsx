@@ -6,8 +6,7 @@ import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 
 export const metadata = {
     title: 'Sticker Beheer | SV Salve Mundi',
-    description: 'Beheer en modereer stickerlocaties.',
-};
+    description: 'Beheer en modereer stickerlocaties.' };
 
 /**
  * StickersAdminPage: Ultra-PPR Modernization.

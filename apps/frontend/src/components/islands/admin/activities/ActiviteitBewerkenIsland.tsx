@@ -30,8 +30,7 @@ interface ActiviteitBewerkenIslandProps {
 
 export default function ActiviteitBewerkenIsland({ 
     event = {} as AdminActivity, 
-    committees = [], 
-}: ActiviteitBewerkenIslandProps) {
+    committees = [] }: ActiviteitBewerkenIslandProps) {
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
     const [imageFile, setImageFile] = useState<File | null>(null);

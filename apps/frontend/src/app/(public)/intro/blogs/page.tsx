@@ -8,8 +8,7 @@ import * as nextServer from 'next/server';
 
 export const metadata = {
     title: 'Nieuws & Updates | Salve Mundi Introductie',
-    description: 'Blijf op de hoogte van het laatste nieuws rondom de Salve Mundi introductieweek.',
-};
+    description: 'Blijf op de hoogte van het laatste nieuws rondom de Salve Mundi introductieweek.' };
 
 export default async function BlogsPage() {
     await nextServer.connection();

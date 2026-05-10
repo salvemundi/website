@@ -50,7 +50,7 @@ export function EventsSection({ activities = [], count = 4 }: EventsSectionProps
 
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         {!hasActivities ? (
-                            <div className="col-span-full flex flex-col items-center justify-center min-h-[320px] p-12 text-center bg-white/50 dark:bg-black/20 rounded-[2.5rem] border border-dashed border-[var(--color-purple-500)]/20 animate-in fade-in duration-500">
+                            <div className="col-span-full flex flex-col items-center justify-center min-h-[320px] p-12 text-center bg-white/50 dark:bg-black/20 rounded-[2.5rem] border border-dashed border-[var(--color-purple-500)]/20">
                                 <div className="h-16 w-16 mb-4 rounded-full bg-[var(--color-purple-100)] dark:bg-[var(--color-purple-900)]/30 flex items-center justify-center text-[var(--color-purple-600)] dark:text-[var(--color-purple-300)]">
                                     <Calendar className="h-8 w-8" />
                                 </div>

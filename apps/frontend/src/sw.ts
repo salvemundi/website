@@ -37,15 +37,12 @@ const serwist = new Serwist({
         networkTimeoutSeconds: 3,
         plugins: [
           new CacheableResponsePlugin({
-            statuses: [0, 200],
-          }),
+            statuses: [0, 200] }),
           new ExpirationPlugin({
             maxEntries: 100,
             maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
           }),
-        ],
-      }),
-    },
+        ] }) },
     {
       // Cache local images with CacheFirst (Aggressive caching for static UI elements)
       matcher: ({ url }) => {
@@ -55,17 +52,13 @@ const serwist = new Serwist({
         cacheName: "local-images",
         plugins: [
           new CacheableResponsePlugin({
-            statuses: [0, 200],
-          }),
+            statuses: [0, 200] }),
           new ExpirationPlugin({
             maxEntries: 50,
             maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
           }),
-        ],
-      }),
-    },
+        ] }) },
     ...defaultCache,
-  ],
-});
+  ] });
 
 serwist.addEventListeners();

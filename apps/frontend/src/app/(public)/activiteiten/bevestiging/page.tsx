@@ -10,6 +10,7 @@ interface PageProps {
 import { getSignupStatus } from '@/server/actions/public-activiteit-status.actions';
 import { type SignupData } from '@/components/islands/activities/ConfirmationIsland';
 
+
 export default async function ActiviteitenConfirmationPage({ searchParams }: PageProps) {
     const { id, transaction_id, t } = await searchParams;
 

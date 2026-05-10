@@ -11,8 +11,7 @@ import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 
 export const metadata = {
     title: 'Kroegentocht | SV Salve Mundi',
-    description: 'Schrijf je in voor de gezelligste kroegentocht van Eindhoven!',
-};
+    description: 'Schrijf je in voor de gezelligste kroegentocht van Eindhoven!' };
 
 async function TicketsSection({ userEmail }: { userEmail: string }) {
     const tickets = await getKroegentochtTickets(userEmail);

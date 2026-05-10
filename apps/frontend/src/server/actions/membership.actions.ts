@@ -24,8 +24,7 @@ const getInternalHeaders = () => {
     const token = getExpandedEnv('INTERNAL_SERVICE_TOKEN');
     return {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-    };
+        'Authorization': `Bearer ${token}` };
 };
 
 export async function validateCouponAction(formData: FormData) {
@@ -122,8 +121,7 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
                 phoneNumber: parsed.data.telefoon,
                 couponCode: parsed.data.coupon,
                 redirectUrl: `${process.env.PUBLIC_URL}/lidmaatschap/bevestiging${isExpired ? '?type=renewal' : ''}`
-            }),
-        });
+            }) });
 
         const data = await response.json() as { checkoutUrl?: string };
 

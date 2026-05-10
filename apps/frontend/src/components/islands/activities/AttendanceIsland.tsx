@@ -83,8 +83,7 @@ export default function AttendanceIsland({ eventId, eventName, initialSignups = 
 
     const stats = {
         total: signups.length,
-        checkedIn: signups.filter(s => s.checked_in).length,
-    };
+        checkedIn: signups.filter(s => s.checked_in).length };
 
     return (
         <div className="space-y-6">

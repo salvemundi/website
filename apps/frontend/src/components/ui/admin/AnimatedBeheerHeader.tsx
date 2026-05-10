@@ -37,8 +37,8 @@ export default function AnimatedBeheerHeader({
 
                 <div className="flex flex-col md:flex-row md:items-center gap-8">
                     {icon && (
-                        <div className="h-20 w-20 rounded-[var(--radius-3xl)] bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] flex items-center justify-center shadow-2xl shadow-[var(--beheer-accent)]/20 animate-in zoom-in-50 duration-700 relative group">
-                            <div className="absolute inset-0 rounded-[var(--radius-3xl)] bg-[var(--beheer-accent)]/20 animate-pulse " />
+                        <div className="h-20 w-20 rounded-[var(--radius-3xl)] bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] flex items-center justify-center shadow-2xl shadow-[var(--beheer-accent)]/20 relative group">
+                            <div className="absolute inset-0 rounded-[var(--radius-3xl)] bg-[var(--beheer-accent)]/20" />
                             <div className="relative z-10 group-hover:scale-110 transition-transform duration-500">
                                 {icon}
                             </div>
@@ -46,7 +46,7 @@ export default function AnimatedBeheerHeader({
                     )}
                     
                     <div className="space-y-3">
-                        <div className="flex items-center gap-3 animate-in slide-in-from-left-8 duration-700">
+                        <div className="flex items-center gap-3">
                             <h1 className="text-5xl md:text-6xl font-bold text-[var(--beheer-text)] tracking-tight leading-none">
                                 {title.split(' ').map((word, i) => (
                                     <span key={i} className={i === title.split(' ').length - 1 ? 'text-[var(--beheer-accent)]' : ''}>
@@ -57,7 +57,7 @@ export default function AnimatedBeheerHeader({
                         </div>
                         
                         {subtitle && (
-                            <p className="text-[var(--beheer-text-muted)] text-xl max-w-3xl leading-relaxed font-medium animate-in slide-in-from-left-12 duration-1000 delay-100">
+                            <p className="text-[var(--beheer-text-muted)] text-xl max-w-3xl leading-relaxed font-medium">
                                 {subtitle}
                             </p>
                         )}

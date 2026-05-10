@@ -15,8 +15,7 @@ import { type EnrichedUser } from '@/types/auth';
 import { type Committee } from '@/shared/lib/permissions';
 
 export const metadata: Metadata = {
-    title: 'Beheer Sync | SV Salve Mundi',
-};
+    title: 'Beheer Sync | SV Salve Mundi' };
 
 async function checkSyncAccess() {
     const session = await auth.api.getSession({

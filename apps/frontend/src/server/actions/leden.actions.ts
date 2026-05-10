@@ -14,12 +14,10 @@ const updateMemberSchema = z.object({
     first_name: z.string().min(1).optional(),
     last_name: z.string().min(1).optional(),
     phone_number: z.string().optional(),
-    date_of_birth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
-});
+    date_of_birth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable() });
 
 const renewMembershipSchema = z.object({
-    months: z.number().int().min(1).max(60),
-});
+    months: z.number().int().min(1).max(60) });
 
 const AZURE_MGMT_URL = process.env.AZURE_MANAGEMENT_SERVICE_URL;
 const AZURE_SYNC_URL = process.env.AZURE_SYNC_SERVICE_URL;
@@ -232,8 +230,7 @@ export async function renewMembershipAction(
 
         if (AZURE_SYNC_URL && INTERNAL_TOKEN) {
             fetch(`${AZURE_SYNC_URL}/api/sync/run/${encodeURIComponent(directusUserId)}`, {
-                method: 'POST',
-            }).catch(() => {});
+                method: 'POST' }).catch(() => {});
         }
 
         const renewSlug = user.email?.split('@')[0]?.replace(/\./g, '-') ?? directusUserId;

@@ -15,8 +15,7 @@ const poolConfig = {
     password: process.env.DB_PASSWORD,
     port: Number(process.env.DB_PORT) || 5432,
     max: 20, // Max 20 clients in the pool
-    idleTimeoutMillis: 30000,
-};
+    idleTimeoutMillis: 30000 };
 
 // Use global cache in development to prevent connection exhaustion during hot-reloads
 if (!globalThis._pgPool) {

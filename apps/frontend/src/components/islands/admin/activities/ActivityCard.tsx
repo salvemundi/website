@@ -34,8 +34,7 @@ export default function ActivityCard({
     canEdit = false,
     isPending = false,
     onViewSignups = () => {},
-    onEdit = () => {},
-}: Props) {
+    onEdit = () => {} }: Props) {
     if (!event) return null;
     const eventDate = new Date(event.event_date);
     const isPast = eventDate < new Date();

@@ -106,8 +106,7 @@ export default function ActiviteitAanmeldingenIsland({
             total: base.length,
             paid: base.filter(s => s.payment_status === 'paid').length,
             checkedIn: base.filter(s => s.checked_in).length,
-            open: base.filter(s => s.payment_status === 'open').length,
-        };
+            open: base.filter(s => s.payment_status === 'open').length };
     }, [filteredSignups, searchQuery, initialSignups]);
 
     function getName(signup: Signup): string {

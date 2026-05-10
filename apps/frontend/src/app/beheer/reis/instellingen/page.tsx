@@ -5,8 +5,7 @@ import { getReisSiteSettings } from '@/server/actions/reis.actions';
 
 
 export const metadata: Metadata = {
-    title: 'Reis Instellingen | SV Salve Mundi',
-};
+    title: 'Reis Instellingen | SV Salve Mundi' };
 
 export default async function ReisInstellingenPage() {
     // NUCLEAR SSR: Fetch all trip settings before flushing

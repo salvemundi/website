@@ -6,8 +6,7 @@ import { checkAdminAccess } from '@/server/actions/admin.actions';
 import { redirect } from 'next/navigation';
 
 export const metadata = {
-    title: 'Test Modus | Salve Mundi Beheer',
-};
+    title: 'Test Modus | Salve Mundi Beheer' };
 
 export default async function ImpersonatePage() {
     // 1. Controleer permissies op de server

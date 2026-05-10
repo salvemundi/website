@@ -19,8 +19,7 @@ export const viewport: Viewport = {
         { media: '(prefers-color-scheme: light)', color: '#ffffff' },
         { media: '(prefers-color-scheme: dark)', color: '#1a141b' },
     ],
-    viewportFit: 'cover',
-};
+    viewportFit: 'cover' };
 
 export const metadata: Metadata = {
     metadataBase: new URL(process.env.PUBLIC_URL || 'https://salvemundi.nl'),
@@ -36,8 +35,7 @@ export const metadata: Metadata = {
     appleWebApp: {
         capable: true,
         statusBarStyle: 'black-translucent',
-        title: 'Salve Mundi',
-    },
+        title: 'Salve Mundi' },
     openGraph: {
         type: 'website',
         locale: 'nl_NL',
@@ -50,58 +48,43 @@ export const metadata: Metadata = {
                 url: '/img/newlogo.png',
                 width: 1200,
                 height: 630,
-                alt: 'SV Salve Mundi Logo',
-            },
-        ],
-    },
+                alt: 'SV Salve Mundi Logo' },
+        ] },
     twitter: {
         card: 'summary_large_image',
         title: 'SV Salve Mundi | Studievereniging Fontys ICT',
         description: 'De officiële studievereniging van Fontys ICT Eindhoven.',
-        images: ['/img/newlogo.png'],
-    },
+        images: ['/img/newlogo.png'] },
     icons: {
         icon: [
             { url: '/img/newlogo.svg', type: 'image/svg+xml' },
         ],
         apple: [
             { url: '/img/newlogo.svg', type: 'image/svg+xml' },
-        ],
-    },
-};
+        ] } };
 
 const poppins = Poppins({
     subsets: ['latin'],
     weight: ['400', '600', '700', '900'],
-    variable: '--font-poppins',
-});
+    variable: '--font-poppins' });
 
 export default async function RootLayout({
-    children,
-}: Readonly<{ children: React.ReactNode }>) {
+    children }: Readonly<{ children: React.ReactNode }>) {
+    await connection();
     return (
         <html lang="nl" className="dark" suppressHydrationWarning>
             <head>
-                <Suspense fallback={null}>
-                    <ThemeScript />
-                </Suspense>
+                <ThemeScript />
                 <link rel="preload" as="image" href="/img/newlogo.png" />
-                <Suspense fallback={null}>
-                    <HeadPreloads />
-                </Suspense>
+                <HeadPreloads />
             </head>
             <body className={`${poppins.variable} antialiased flex flex-col min-h-screen`}>
-                <Suspense fallback={null}>
-                    <ImpersonationWrapper />
-                </Suspense>
-
-                <Suspense fallback={<div className="h-[80px] w-full bg-[var(--bg-main)]" />}>
-                    <HeaderWrapper />
-                    <main className="flex-grow min-h-[70vh] pt-[var(--header-total-height,var(--header-height,80px))]">
-                        {children}
-                    </main>
-                    <FooterWrapper />
-                </Suspense>
+                <ImpersonationWrapper />
+                <HeaderWrapper />
+                <main className="flex-grow min-h-[70vh] pt-[var(--header-total-height,var(--header-height,80px))]">
+                    {children}
+                </main>
+                <FooterWrapper />
             </body>
         </html>
     );
@@ -149,8 +132,7 @@ async function ThemeScript() {
                             document.documentElement.classList.remove('dark');
                         }
                     } catch (_) {}
-                `,
-            }}
+                ` }}
         />
     );
 }

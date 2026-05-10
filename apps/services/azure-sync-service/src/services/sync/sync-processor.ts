@@ -66,7 +66,7 @@ export class SyncProcessor {
                     membership_expiry: expiry,
                     originele_betaaldatum: paidDate,
                     membership_status: 'none'
-                }) as DirectusUser;
+                }) as unknown as DirectusUser;
                 ctx.status.createdCount++;
                 changes.push({ field: 'User', old: 'Bestaat niet', new: 'Nieuw lid aangemaakt' });
                 ctx.status.createdUsers.push({ email, changes: [...changes] });
@@ -82,7 +82,7 @@ export class SyncProcessor {
         const csa = aUser.customSecurityAttributes?.SalveMundiLidmaatschap;
         const updatePayload: any = {};
 
-        const fields = ctx.options.fields;
+        const fields = ctx.options.fields || [];
 
         if (fields.includes('status') && currentUser.status !== 'active') {
             updatePayload.status = 'active';

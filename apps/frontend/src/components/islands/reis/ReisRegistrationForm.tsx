@@ -68,8 +68,7 @@ export function ReisRegistrationForm({
             email: currentUser?.email || '',
             phone_number: formatPhoneNumber(currentUser?.phone_number),
             date_of_birth: formatDateForInput(currentUser?.date_of_birth),
-            terms_accepted: false,
-        }
+            terms_accepted: false }
     });
 
     const firstName = watch('first_name');

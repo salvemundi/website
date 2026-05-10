@@ -85,10 +85,10 @@ export class DirectusRetryService {
         const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL!;
         const directusToken = process.env.DIRECTUS_STATIC_TOKEN!;
         
-        const directus = createDirectus(directusUrl)
+        const directus = createDirectus<any>(directusUrl)
             .with(staticToken(directusToken))
             .with(rest());
 
-        await directus.request(updateItem(task.collection as any, task.id as any, task.data));
+        await directus.request(updateItem(task.collection, task.id, task.data));
     }
 }

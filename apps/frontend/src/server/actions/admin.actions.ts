@@ -50,8 +50,7 @@ const pool = new Pool({
     password: process.env.DB_PASSWORD,
     host: process.env.DB_HOST || process.env.INTERNAL_DB_HOST || 'v7-core-db',
     port: 5432,
-    database: process.env.DB_NAME,
-});
+    database: process.env.DB_NAME });
 
 const TEST_TOKEN_COOKIE = 'directus_test_token';
 const IMPERSONATION_INFO_COOKIE = 'directus_impersonation_info';
@@ -283,8 +282,7 @@ export async function setImpersonateToken(token: string) {
             maxAge: 7 * 24 * 60 * 60,
             sameSite: 'lax',
             secure: process.env.NODE_ENV === 'production',
-            httpOnly: true,
-        });
+            httpOnly: true });
 
         let impCommittees: Committee[] = [];
         try {
@@ -317,8 +315,7 @@ export async function setImpersonateToken(token: string) {
             maxAge: 7 * 24 * 60 * 60,
             sameSite: 'lax',
             secure: process.env.NODE_ENV === 'production',
-            httpOnly: true,
-        });
+            httpOnly: true });
 
         const sessionToken = cookieStore.get('better-auth.session-token')?.value || 
                            cookieStore.get('__Secure-better-auth.session-token')?.value;

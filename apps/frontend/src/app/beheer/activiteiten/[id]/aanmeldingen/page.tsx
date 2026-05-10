@@ -13,8 +13,7 @@ import { type EnrichedUser } from '@/types/auth';
 import { type DbEventSignup } from "@salvemundi/validations";
 
 export const metadata: Metadata = {
-    title: 'Activiteit Aanmeldingen | SV Salve Mundi',
-};
+    title: 'Activiteit Aanmeldingen | SV Salve Mundi' };
 
 export default async function AanmeldingenPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;
@@ -51,8 +50,7 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
             id: eventData.id!,
             name: eventData.titel,
             price_members: eventData.price_members,
-            max_sign_ups: eventData.max_sign_ups,
-        };
+            max_sign_ups: eventData.max_sign_ups };
 
         // Fetch Signups using high-performance SQL query (filters out failed payments)
         const dbSignups = await getActivitySignupsInternal(id);

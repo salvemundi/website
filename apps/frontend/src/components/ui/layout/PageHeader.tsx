@@ -31,8 +31,7 @@ export default function PageHeader({
     variant = 'centered',
     description,
     contentPadding = 'py-20',
-    backLink,
-}: PageHeaderProps) {
+    backLink }: PageHeaderProps) {
     const effectiveImageFilter = (() => {
         const base = imageFilter || 'brightness(0.7)';
         return /blur\(/.test(base) ? base : `${base} blur(0px)`;

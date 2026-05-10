@@ -38,8 +38,7 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
             email: '',
             geboortedatum: '',
             telefoon: '',
-            coupon: '',
-        }
+            coupon: '' }
     });
 
     const couponValue = watch('coupon');

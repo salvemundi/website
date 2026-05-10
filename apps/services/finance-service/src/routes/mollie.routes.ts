@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify';
-import { timingSafeCompare, PaymentSuccessEventSchema } from '@salvemundi/validations';
+import { PaymentSuccessEventSchema, type MolliePaymentMetadata } from '@salvemundi/validations';
+import { timingSafeCompare } from '@salvemundi/validations/security';
 import { DirectusRetryService } from '../services/directus-retry.service.js';
 import { AzureRetryService } from '../services/azure-retry.service.js';
 import { RegistrationService } from '../services/registration.service.js';
@@ -9,7 +10,7 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
      * POST /api/finance/webhook/mollie
      * Payload: { id: "tr_..." }
      */
-    fastify.post('/webhook/mollie', async (request: any, reply) => {
+    fastify.post<{ Body: { id: string }, Querystring: { token?: string } }>('/webhook/mollie', async (request, reply) => {
         const webhookSecret = process.env.MOLLIE_WEBHOOK_SECRET;
         if (!webhookSecret) {
             fastify.log.error('[FINANCE] MOLLIE_WEBHOOK_SECRET is NOT SET. Webhook processing disabled for security.');
@@ -42,7 +43,7 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
             const mollie = getMollieClient();
             const payment = await mollie.payments.get(id);
 
-            const metadata = payment.metadata as any;
+            const metadata = payment.metadata as unknown as MolliePaymentMetadata;
             const userId = metadata?.userId;
 
             // 2. Fetch transaction details from DB (needed for access_token)

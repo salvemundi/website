@@ -4,7 +4,7 @@ import { createItem } from '@directus/sdk';
 export class AuditService {
     static async logSystemAction(type: string, status: 'SUCCESS' | 'ERROR' | 'INFO', payload?: any) {
         try {
-            await getDirectusClient().request(createItem('system_logs' as any, {
+            await getDirectusClient().request(createItem('system_logs', {
                 type,
                 status,
                 payload: {

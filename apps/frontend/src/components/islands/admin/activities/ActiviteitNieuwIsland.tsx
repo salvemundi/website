@@ -31,8 +31,7 @@ interface ActiviteitNieuwIslandProps {
 }
 
 export default function ActiviteitNieuwIsland({ 
-    committees = [], 
-}: ActiviteitNieuwIslandProps) {
+    committees = [] }: ActiviteitNieuwIslandProps) {
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
     const [imageFile, setImageFile] = useState<File | null>(null);

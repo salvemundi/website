@@ -1,6 +1,6 @@
 'use server';
 
-import { cacheLife, revalidatePath } from 'next/cache';
+import {  revalidatePath } from 'next/cache';
 import {
     reisSiteSettingsSchema,
     reisTripSchema,
@@ -9,8 +9,7 @@ import {
     type ReisSiteSettings,
     type ReisTrip,
     type ReisTripSignup,
-    type ReisSignupForm,
-} from '@salvemundi/validations/schema/reis.zod';
+    type ReisSignupForm } from '@salvemundi/validations/schema/reis.zod';
 import { 
     FEATURE_FLAG_FIELDS, 
     TRIP_FIELDS, 
@@ -51,13 +50,10 @@ const getServiceHeaders = (): HeadersInit => {
     if (!token) throw new Error('INTERNAL_SERVICE_TOKEN is missing');
     return {
         Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-    };
+        'Content-Type': 'application/json' };
 };
 
 export async function getReisSiteSettings(): Promise<ReisSiteSettings | null> {
-    'use cache';
-    cacheLife('minutes');
     const { rows } = await query('SELECT is_active, message FROM feature_flags WHERE name = $1 LIMIT 1', ['trip_registration']);
     const flag = rows?.[0];
 
@@ -92,8 +88,6 @@ export async function getCurrentUserProfileAction(): Promise<{ success: boolean;
 }
 
 export const getUpcomingTrips = async (): Promise<ReisTrip[]> => {
-    'use cache';
-    cacheLife('minutes');
     // 1. Direct SQL for speed and bypass cache
     const data = await fetchPublicTripsDb();
 
@@ -124,8 +118,7 @@ export const getUpcomingTrips = async (): Promise<ReisTrip[]> => {
 }
 
 export async function getTripParticipantsCount(tripId: number): Promise<number> {
-    'use cache';
-    cacheLife('seconds'); // Very short cache for live-ish feel
+ // Very short cache for live-ish feel
     try {
         const { rows } = await query(
             `SELECT COUNT(*)::int as count FROM trip_signups 

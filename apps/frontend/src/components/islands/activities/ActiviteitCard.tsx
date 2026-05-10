@@ -53,8 +53,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     committeeName,
     contact,
     registrationDeadline,
-    onlyMembers = false,
-}) => {
+    onlyMembers = false }) => {
     const { toast, showToast, hideToast } = useAdminToast();
     const { isAuthenticated, user } = useAuth();
     const { login: loginWithMicrosoft } = useAuthActions();

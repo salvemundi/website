@@ -10,8 +10,7 @@ import BackButton from '@/components/ui/navigation/BackButton';
  */
 export default function MembershipError({
     error,
-    reset,
-}: {
+    reset }: {
     error: Error & { digest?: string };
     reset: () => void;
 }) {

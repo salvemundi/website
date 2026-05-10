@@ -5,5 +5,7 @@ export const azureGroupOwnerSchema = z.object({
 });
 
 export const azureSyncRunSchema = z.object({
-    // Optional: add fields if we want to support partial syncs in the future
+    fields: z.array(z.string()).optional(),
+    activeOnly: z.boolean().optional(),
+    silent: z.boolean().optional()
 });

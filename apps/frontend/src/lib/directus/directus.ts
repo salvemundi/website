@@ -138,10 +138,8 @@ export function getSystemDirectus() {
                     next: {
                         ...nextOptions,
                         tags,
-                        revalidate: revalidate,
-                    },
-                    signal: controller.signal,
-                };
+                        revalidate: revalidate },
+                    signal: controller.signal };
 
                 try {
                     const response = await fetchWithRetry(urlStr, requestInit);

@@ -25,6 +25,5 @@ export function useAuthActions() {
         login: () => authClient.signIn.social({ 
             provider: 'microsoft'
         }),
-        logout: () => authClient.signOut(),
-    };
+        logout: () => authClient.signOut() };
 }

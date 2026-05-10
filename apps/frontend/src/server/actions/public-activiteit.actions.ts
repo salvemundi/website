@@ -6,7 +6,7 @@ import { type DbEventSignup } from '@salvemundi/validations/directus/schema';
 import { auth } from '@/server/auth/auth';
 import { type EnrichedUser } from '@/types/auth';
 import { headers } from 'next/headers';
-import { cacheLife, revalidateTag } from 'next/cache';
+import {  revalidateTag } from 'next/cache';
 
 import { getSystemDirectus } from '@/lib/directus';
 import { deleteItem } from '@directus/sdk';
@@ -27,8 +27,6 @@ import { getFinanceServiceUrl, getInternalHeaders, fetchWithTimeout } from './ac
  * Fetches all published activities directly from the database (SQL-first).
  */
 export async function getActivities(email?: string): Promise<(Activiteit & { is_signed_up?: boolean })[]> {
-    'use cache';
-    cacheLife('minutes');
     const activities = await getActivitiesInternal(true);
     
     if (!email) return activities;
@@ -54,8 +52,6 @@ export async function getActivities(email?: string): Promise<(Activiteit & { is_
  * Fetches a single activity by ID directly from the database (SQL-first).
  */
 export async function getActivityById(id: string): Promise<Activiteit | null> {
-    'use cache';
-    cacheLife('minutes');
     const cleanId = id.includes('-') ? id.split('-')[0] : id;
     if (!/^\d+$/.test(cleanId)) return null;
     return await getActivityByIdInternal(cleanId);
@@ -65,8 +61,6 @@ export async function getActivityById(id: string): Promise<Activiteit | null> {
  * Fetches a single activity by custom URL slug or numeric ID.
  */
 export async function getActivityBySlug(slug: string): Promise<Activiteit | null> {
-    'use cache';
-    cacheLife('minutes');
     return await getActivityBySlugInternal(slug);
 }
 
@@ -168,8 +162,7 @@ export async function signupForActivity(data: EventSignupForm) {
             payment_status: (price ?? 0) > 0 ? 'open' : 'paid',
             qr_token: qrToken,
             directus_relations: userId || null,
-            is_member: isMember,
-        };
+            is_member: isMember };
 
         const signupId = await createEventSignupDb(payload);
         if (!signupId) throw new Error('Could not write to database');

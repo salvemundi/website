@@ -8,8 +8,7 @@ import { connection } from 'next/server';
 
 export const metadata: Metadata = {
     title: 'Bestuur | SV Salve Mundi',
-    description: 'Het bestuur van SV Salve Mundi',
-};
+    description: 'Het bestuur van SV Salve Mundi' };
 
 export default async function BestuurPage() {
     await connection();

@@ -11,8 +11,7 @@ import { checkAdminAccess } from '@/server/actions/admin.actions';
 import { cn } from '@/lib/utils/cn';
 
 export const metadata = {
-    title: 'Systeem Beheer | SV Salve Mundi',
-};
+    title: 'Systeem Beheer | SV Salve Mundi' };
 
 /**
  * SystemStatusPage: Nuclear SSR for both service health and automation toggles.

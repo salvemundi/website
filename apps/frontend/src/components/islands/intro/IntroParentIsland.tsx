@@ -30,8 +30,7 @@ export const IntroParentIsland = ({ userName, userEmail, initialPhone }: IntroPa
         resolver: zodResolver(introParentSignupFormSchema),
         defaultValues: {
             telefoonnummer: formatPhoneNumber(initialPhone),
-            motivation: '',
-        }
+            motivation: '' }
     });
 
     const onSubmit = async (data: IntroParentSignupForm) => {

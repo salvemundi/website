@@ -26,12 +26,12 @@ export class EventListenerService {
                     'GROUP', this.GROUP_NAME, this.CONSUMER_NAME,
                     'COUNT', 1, 'BLOCK', 5000,
                     'STREAMS', this.STREAM_KEY, '>'
-                )) as any[];
+                )) as [string, [string, string[]][]][] | null;
 
                 if (response && response.length > 0) {
-                    for (const [stream, messages] of response) {
+                    for (const [, messages] of response) {
                         for (const [id, fields] of messages) {
-                            const data: any = {};
+                            const data: Record<string, string> = {};
                             for (let i = 0; i < fields.length; i += 2) {
                                 data[fields[i]] = fields[i + 1];
                             }

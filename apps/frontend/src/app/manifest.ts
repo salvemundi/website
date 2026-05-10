@@ -14,20 +14,16 @@ export default function manifest(): MetadataRoute.Manifest {
                 src: '/img/newlogo.svg',
                 sizes: 'any',
                 type: 'image/svg+xml',
-                purpose: 'any',
-            },
+                purpose: 'any' },
             {
                 src: '/img/newlogo.png',
                 sizes: '192x192',
                 type: 'image/png',
-                purpose: 'maskable',
-            },
+                purpose: 'maskable' },
             {
                 src: '/img/newlogo.png',
                 sizes: '512x512',
                 type: 'image/png',
-                purpose: 'maskable',
-            },
-        ],
-    };
+                purpose: 'maskable' },
+        ] };
 }

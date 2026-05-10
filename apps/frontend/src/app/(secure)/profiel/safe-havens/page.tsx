@@ -3,8 +3,7 @@ import BackButton from '@/components/ui/navigation/BackButton';
 
 export const metadata: Metadata = {
     title: 'Safe Haven | SV Salve Mundi',
-    description: 'Safe Haven Beschikbaarheid',
-};
+    description: 'Safe Haven Beschikbaarheid' };
 
 export default function SafeHavenPage() {
     return (

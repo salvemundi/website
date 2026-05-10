@@ -17,8 +17,7 @@ import {
 } from '@/server/actions/admin.actions';
 
 export const metadata = {
-    title: 'Beheer Dashboard | SV Salve Mundi',
-};
+    title: 'Beheer Dashboard | SV Salve Mundi' };
 
 export default async function BeheerPage() {
     // NUCLEAR SSR: All access and permission checks must happen before flushing the shell

@@ -7,8 +7,7 @@ import BackButton from '@/components/ui/navigation/BackButton';
 
 export const metadata: Metadata = {
     title: 'Commissie Detail | SV Salve Mundi',
-    description: 'Ontdek deze commissie en wat zij doen voor de vereniging.',
-};
+    description: 'Ontdek deze commissie en wat zij doen voor de vereniging.' };
 
 export default async function CommitteePage(props: { params: Promise<{ slug: string }> }) {
     const { slug } = await props.params;

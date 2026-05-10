@@ -6,8 +6,8 @@ import { CheckCircle2, ChevronRight, XCircle, Home } from 'lucide-react';
 import BackButton from '@/components/ui/navigation/BackButton';
 
 export const metadata: Metadata = {
-    title: 'Bevestiging Betaling | SV Salve Mundi',
-};
+    title: 'Bevestiging Betaling | SV Salve Mundi' };
+
 
 interface PageProps {
     searchParams: Promise<{ id?: string; t?: string }>;

@@ -18,6 +18,6 @@ export * from './schema/stickers.zod.js';
 export * from './schema/shared.zod.js';
 export * from './schema/events.zod.js';
 export * from './schema/audit.zod.js';
-export * from './security.js';
 export * from './directus/schema.js';
 export * from './directus/fields.js';
+export * from './utils/boolean-utils.js';

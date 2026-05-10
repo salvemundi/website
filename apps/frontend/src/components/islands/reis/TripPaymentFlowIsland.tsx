@@ -101,8 +101,7 @@ export default function TripPaymentFlowIsland({
             allergies: localSignup.allergies || '',
             special_notes: localSignup.special_notes || '',
             willing_to_drive: localSignup.willing_to_drive || false,
-            is_bus_trip: trip.is_bus_trip ?? false,
-        },
+            is_bus_trip: trip.is_bus_trip ?? false },
         mode: 'onChange',
         shouldUnregister: true
     });
@@ -214,10 +213,9 @@ export default function TripPaymentFlowIsland({
             <div className="max-w-4xl mx-auto px-6 py-4">
                 <form autoComplete="off" onSubmit={(e) => e.preventDefault()}>
                     <div className="py-4 min-h-[400px]">
-                        <AnimatePresence mode="wait">
+                        <AnimatePresence mode="wait" initial={false}>
                             <motion.div
                                 key={step}
-                                initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
                                 transition={{ duration: 0.2 }}

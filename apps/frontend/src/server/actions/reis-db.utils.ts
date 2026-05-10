@@ -4,8 +4,7 @@ import 'server-only';
 import { query } from '@/lib/database';
 import { 
     reisTripSignupSchema,
-    type ReisTripSignup, 
-} from '@salvemundi/validations/schema/reis.zod';
+    type ReisTripSignup } from '@salvemundi/validations/schema/reis.zod';
 import { z } from 'zod';
 import { toLocalISOString } from '@/lib/utils/date-utils';
 import { DbTripSignup as TripSignup, DbTrip as Trip, DbTripActivitie as TripActivity, DbTripSignupActivitie as TripSignupActivity } from '@salvemundi/validations/directus/schema';
@@ -233,8 +232,7 @@ export async function fetchTripActivitiesByTripIdDb(tripId: number): Promise<Tri
             price: a.price !== null ? Number(a.price) : 0,
             display_order: a.display_order !== null ? Number(a.display_order) : 0,
             max_participants: a.max_participants !== null ? Number(a.max_participants) : null,
-            max_selections: a.max_selections !== null ? Number(a.max_selections) : null,
-        }));
+            max_selections: a.max_selections !== null ? Number(a.max_selections) : null }));
     } catch (error) {
         
         return [];

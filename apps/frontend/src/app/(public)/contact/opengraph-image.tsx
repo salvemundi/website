@@ -22,8 +22,7 @@ export default function Image() {
                     background: 'linear-gradient(135deg, #5e2b52 0%, #a4539b 100%)',
                     color: '#ffffff',
                     fontFamily: 'sans-serif',
-                    padding: '60px',
-                }}
+                    padding: '60px' }}
             >
                 {/* Categorie label */}
                 <p style={{ fontSize: 24, opacity: 0.75, marginBottom: 16, letterSpacing: 4 }}>

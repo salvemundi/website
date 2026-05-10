@@ -16,8 +16,7 @@ export async function generateMetadata({ params }: Props) {
 
     return {
         title: `${blog.title} | Salve Mundi Introductie`,
-        description: blog.excerpt || 'Lees meer over de introductie van Salve Mundi.',
-    };
+        description: blog.excerpt || 'Lees meer over de introductie van Salve Mundi.' };
 }
 
 const typeConfig: Record<string, { label: string; color: string }> = {

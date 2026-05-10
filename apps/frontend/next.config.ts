@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
     output: 'standalone',
     poweredByHeader: false,
     // @ts-ignore - cacheComponents is a top-level property in Next.js 16
-    cacheComponents: true,
+    cacheComponents: false,
     productionBrowserSourceMaps: false,
     serverExternalPackages: ['isomorphic-dompurify', 'jsdom'],
     experimental: {

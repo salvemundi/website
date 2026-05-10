@@ -4,8 +4,7 @@ import BackButton from '@/components/ui/navigation/BackButton';
 
 export const metadata = {
     title: 'Mijn Tickets | Salve Mundi',
-    description: 'Bekijk al je actieve tickets voor aankomende activiteiten.',
-};
+    description: 'Bekijk al je actieve tickets voor aankomende activiteiten.' };
 
 export default async function TicketsPage() {
     // NUCLEAR SSR: Fetch tickets at the top level

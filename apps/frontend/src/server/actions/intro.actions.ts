@@ -17,7 +17,7 @@ import { getSystemDirectus } from '@/lib/directus';
 import { readItems, createItem, updateItem } from '@directus/sdk';
 import { query } from '@/lib/database';
 import { insertSystemLogInternal } from '@/server/queries/audit.queries';
-import { cacheLife, revalidateTag, revalidatePath, unstable_noStore as noStore } from 'next/cache';
+import {  revalidateTag, revalidatePath, unstable_noStore as noStore } from 'next/cache';
 import { normalizeDate } from '@/lib/utils/date-utils';
 
 const getMailUrl = () => process.env.MAIL_SERVICE_URL;
@@ -27,21 +27,17 @@ const getServiceHeaders = (): HeadersInit => {
     if (!token) throw new Error('INTERNAL_SERVICE_TOKEN is missing');
     return {
         Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-    };
+        'Content-Type': 'application/json' };
 };
 
 export async function getIntroSettings() {
-    'use cache';
-    cacheLife('minutes');
     try {
         const { rows } = await query('SELECT is_active, message FROM feature_flags WHERE route_match = $1 LIMIT 1', ['/intro']);
         const data = rows?.[0];
 
         return {
             show: data?.is_active ?? false,
-            disabled_message: data?.message ?? 'De inschrijvingen voor de introweek zijn momenteel gesloten.',
-        };
+            disabled_message: data?.message ?? 'De inschrijvingen voor de introweek zijn momenteel gesloten.' };
     } catch (e) {
         
         return { show: false, disabled_message: 'De inschrijvingen voor de introweek zijn momenteel gesloten.' };
@@ -55,8 +51,7 @@ export async function hasParentSignup(): Promise<boolean> {
 
 async function checkParentSignupInternal(): Promise<{ exists: boolean; record?: { id: number; user_id: string | null; email: string | null } }> {
     const session = await auth.api.getSession({
-        headers: await headers(),
-    });
+        headers: await headers() });
 
     if (!session?.user) return { exists: false };
 
@@ -134,8 +129,7 @@ export async function submitIntroSignup(data: IntroSignupForm): Promise<{ succes
         date_of_birth: parsed.data.geboortedatum,
         email: parsed.data.email,
         phone_number: parsed.data.telefoonnummer,
-        favorite_gif: parsed.data.favorieteGif || null,
-    };
+        favorite_gif: parsed.data.favorieteGif || null };
 
     try {
         await getSystemDirectus().request(createItem('intro_signups', payload));
@@ -154,16 +148,13 @@ export async function submitIntroSignup(data: IntroSignupForm): Promise<{ succes
             data: {
                 firstName: payload.first_name,
                 lastName: payload.last_name,
-                phone: payload.phone_number,
-            }
+                phone: payload.phone_number }
         })
     }).catch(() => {});
     return { success: true };
 }
 
 export async function getIntroBlogsPublic() {
-    'use cache';
-    cacheLife('minutes');
     try {
         const sql = 'SELECT * FROM intro_blogs WHERE is_published = true ORDER BY id DESC LIMIT 6';
         const { rows } = await query(sql);
@@ -174,8 +165,6 @@ export async function getIntroBlogsPublic() {
 }
 
 export async function getAllIntroBlogsPublic() {
-    'use cache';
-    cacheLife('minutes');
     try {
         const sql = 'SELECT * FROM intro_blogs WHERE is_published = true ORDER BY id DESC';
         const { rows } = await query(sql);
@@ -186,8 +175,6 @@ export async function getAllIntroBlogsPublic() {
 }
 
 export async function getIntroBlogBySlug(slug: string) {
-    'use cache';
-    cacheLife('minutes');
     try {
         const sql = 'SELECT * FROM intro_blogs WHERE slug = $1 AND is_published = true LIMIT 1';
         const { rows } = await query(sql, [slug]);
@@ -199,8 +186,7 @@ export async function getIntroBlogBySlug(slug: string) {
 
 export async function submitIntroParentSignup(data: IntroParentSignupForm): Promise<{ success: boolean; error?: string }> {
     const session = await auth.api.getSession({
-        headers: await headers(),
-    });
+        headers: await headers() });
 
     if (!session?.user) {
         return { success: false, error: 'Je moet ingelogd zijn als lid om je aan te melden als Intro Ouder' };

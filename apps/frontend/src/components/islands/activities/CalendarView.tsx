@@ -45,8 +45,7 @@ export default function CalendarView({
 
     const days = eachDayOfInterval({
         start: startDate,
-        end: endDate,
-    });
+        end: endDate });
 
     const weekDays = ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'];
 
