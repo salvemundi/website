@@ -29,7 +29,7 @@ async function proxy(request: NextRequest) {
             form-action 'self';
             frame-ancestors 'none';
             ${origin.includes('localhost') ? '' : 'upgrade-insecure-requests;'}
-        `.replace(/\s{2 }/g, ' ').trim();
+        `.replace(/\s+/g, ' ').trim();
 
         res.headers.set('Content-Security-Policy', cspHeader);
         res.headers.set('x-nonce', nonce);
@@ -164,6 +164,6 @@ async function proxy(request: NextRequest) {
 
 export const config = {
     // Exclude static files, images, and PWA assets. API/Assets is now protected.
-    matcher: ['/((?!_next/static|_next/image|fonts|img|favicon.ico|robots.txt|.well-known|sw.js|manifest.json|manifest.webmanifest|workbox-|logo.svg|icons/|api/assets).*)'] };
+    matcher: ['/((?!_next/static|_next/image|fonts|img|favicon.ico|robots.txt|.well-known|sw.js|manifest.json|manifest.webmanifest|workbox-|logo.svg|icons/|api/assets|api/auth).*)'] };
 
 export { proxy };
