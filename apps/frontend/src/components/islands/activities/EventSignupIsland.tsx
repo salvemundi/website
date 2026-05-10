@@ -74,8 +74,7 @@ export default function EventSignupIsland({
             name: user?.name || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : ''),
             email: user?.email || '',
             phoneNumber: formatPhoneNumber(user?.phone_number || ''),
-            website: '',
-        }
+            website: '' }
     });
 
 

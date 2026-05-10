@@ -21,8 +21,7 @@ interface PublicPageShellProps {
  * Props are kept for backward compatibility with existing route pages.
  */
 export default function PublicPageShell({
-    children,
-}: PublicPageShellProps) {
+    children }: PublicPageShellProps) {
     return (
         <div className="w-full">
             {children}

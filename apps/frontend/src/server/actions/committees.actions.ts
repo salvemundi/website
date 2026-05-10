@@ -6,12 +6,7 @@ import { query } from '@/lib/database';
 const COMMITTEES_CACHE_KEY = 'cache:committees:all';
 const COMMITTEES_TTL = 3600; // 1 hour
 
-import { cacheLife } from 'next/cache';
-
 export async function getCommittees(): Promise<Committee[]> {
-    'use cache';
-    cacheLife('hours');
-    
     try {
         const sql = `
             SELECT 
@@ -56,9 +51,6 @@ export async function getCommittees(): Promise<Committee[]> {
 }
 
 export async function getCommitteeBySlug(slug: string): Promise<Committee | null> {
-    'use cache';
-    cacheLife('hours');
-
     try {
         const sql = `
             SELECT 

@@ -39,8 +39,7 @@ export const COMMITTEES = {
     MARKETING: process.env.NEXT_PUBLIC_COMMITTEE_MARKETING_ID || '0140644c-be1e-438f-9db1-9c082283abf2',
     ACTIVITEIT: process.env.NEXT_PUBLIC_COMMITTEE_ACTIVITEIT_ID || 'd4686b83-4679-46ed-9fd8-c6ff3c6a265f',
     REIS: process.env.NEXT_PUBLIC_COMMITTEE_REIS_ID || '4c027a6d-0307-4aee-b719-23d67bcd0959',
-    KANDI: process.env.NEXT_PUBLIC_COMMITTEE_KANDI_ID || '00000000-0000-0000-0000-000000000000',
-};
+    KANDI: process.env.NEXT_PUBLIC_COMMITTEE_KANDI_ID || '00000000-0000-0000-0000-000000000000' };
 
 const ALL_COMMITTEES = Object.values(COMMITTEES);
 
@@ -81,5 +80,4 @@ export const RESOURCE_PERMISSIONS: Record<AdminResource, PermissionRequirement> 
     [AdminResource.ActivitiesEdit]: { 
         allowedCommitteeIds: ALL_COMMITTEES,
         leaderOnly: true 
-    },
-};
+    } };

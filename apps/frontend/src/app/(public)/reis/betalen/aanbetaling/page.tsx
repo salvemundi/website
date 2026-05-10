@@ -6,8 +6,7 @@ import { Search, Home } from 'lucide-react';
 import BackButton from '@/components/ui/navigation/BackButton';
 
 export const metadata: Metadata = {
-    title: 'Aanbetaling Reis | SV Salve Mundi',
-};
+    title: 'Aanbetaling Reis | SV Salve Mundi' };
 
 interface PageProps {
     searchParams: Promise<{ id?: string; t?: string }>;

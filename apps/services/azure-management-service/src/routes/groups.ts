@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { timingSafeCompare } from '@salvemundi/validations';
+import { timingSafeCompare } from '@salvemundi/validations/security';
 import { TokenService } from '../services/token.service.js';
 import { GraphService } from '../services/graph.service.js';
 

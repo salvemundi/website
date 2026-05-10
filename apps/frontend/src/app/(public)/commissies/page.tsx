@@ -4,8 +4,7 @@ import CommitteesList from '@/components/ui/committees/CommitteesList';
 
 export const metadata: Metadata = {
     title: 'Commissies | SV Salve Mundi',
-    description: 'Ontdek onze commissies en het team dat SV Salve Mundi draaiende houdt.',
-};
+    description: 'Ontdek onze commissies en het team dat SV Salve Mundi draaiende houdt.' };
 
 import { getCommittees } from '@/server/actions/committees.actions';
 

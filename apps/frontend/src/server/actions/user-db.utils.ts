@@ -17,8 +17,7 @@ export const userProfileSchema = z.object({
     location: z.string().nullable().optional(),
     title: z.string().nullable().optional(),
     tags: z.array(z.string()).nullable().optional(),
-    admin_access: z.boolean().nullable().optional(),
-});
+    admin_access: z.boolean().nullable().optional() });
 
 export type UserProfile = z.infer<typeof userProfileSchema>;
 
@@ -55,8 +54,7 @@ export async function fetchUserProfileByEmailDb(email: string): Promise<UserProf
     const parsed = userProfileSchema.safeParse({
         ...raw,
         date_of_birth: toLocalISOString(raw.date_of_birth),
-        membership_expiry: toLocalISOString(raw.membership_expiry),
-    });
+        membership_expiry: toLocalISOString(raw.membership_expiry) });
 
     if (!parsed.success) {
         // Fallback to raw if validation fails slightly but we have the ID (common in Directus nullable fields)
@@ -100,6 +98,5 @@ export async function fetchUserMetadataDb(userId: string): Promise<UserMetadata 
     return {
         ...raw,
         date_of_birth: raw.date_of_birth instanceof Date ? raw.date_of_birth.toISOString() : raw.date_of_birth,
-        membership_expiry: raw.membership_expiry instanceof Date ? raw.membership_expiry.toISOString() : raw.membership_expiry,
-    } as UserMetadata;
+        membership_expiry: raw.membership_expiry instanceof Date ? raw.membership_expiry.toISOString() : raw.membership_expiry } as UserMetadata;
 }

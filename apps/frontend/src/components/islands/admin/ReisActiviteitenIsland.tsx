@@ -35,8 +35,7 @@ export default function ReisActiviteitenIsland({
     initialTrips = [], 
     initialActivities = [], 
     initialSelectedTripId = 0,
-    initialSignupsByActivity = {},
-}: Props) {
+    initialSignupsByActivity = {} }: Props) {
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
     const [selectedTripId, setSelectedTripId] = useState<number>(initialSelectedTripId);

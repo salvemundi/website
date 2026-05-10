@@ -8,8 +8,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
     title: 'Activiteiten | Salve Mundi',
-    description: 'Bekijk alle komende en afgelopen activiteiten van studievereniging Salve Mundi.',
-};
+    description: 'Bekijk alle komende en afgelopen activiteiten van studievereniging Salve Mundi.' };
 
 import type { Session } from 'better-auth';
 import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';

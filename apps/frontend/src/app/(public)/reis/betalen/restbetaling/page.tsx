@@ -6,8 +6,7 @@ import { CheckCircle2, Search, Home } from 'lucide-react';
 import BackButton from '@/components/ui/navigation/BackButton';
 
 export const metadata: Metadata = {
-    title: 'Restbetaling Reis | SV Salve Mundi',
-};
+    title: 'Restbetaling Reis | SV Salve Mundi' };
 
 interface PageProps {
     searchParams: Promise<{ id?: string; t?: string }>;

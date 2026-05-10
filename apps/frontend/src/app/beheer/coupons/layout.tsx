@@ -8,8 +8,7 @@ import { fetchUserCommitteesDb } from '@/server/actions/user-db.utils';
 import { type EnrichedUser } from '@/types/auth';
 
 export default async function CouponsLayout({
-    children,
-}: {
+    children }: {
     children: React.ReactNode;
 }) {
     const session = await auth.api.getSession({

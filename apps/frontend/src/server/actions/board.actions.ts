@@ -1,14 +1,6 @@
 import { query } from '@/lib/database';
 import { boardHistorySchema, type Board } from '@salvemundi/validations/schema/board.zod';
-import { cacheLife } from 'next/cache';
-
-/**
- * Fetch the entire board history from PostgreSQL.
- * NUCLEAR SSR: This is called on the server to pre-fetch all history data.
- */
 export async function getBoardHistory(): Promise<Board[]> {
-    'use cache';
-    cacheLife('hours');
 
     const sql = `
         SELECT 

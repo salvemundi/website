@@ -5,8 +5,7 @@ import KroegentochtManagementIsland from '@/components/islands/admin/Kroegentoch
 
 export const metadata = {
     title: 'Kroegentocht Beheer | Salve Mundi',
-    description: 'Beheer aanmeldingen en instellingen voor de Kroegentocht.',
-};
+    description: 'Beheer aanmeldingen en instellingen voor de Kroegentocht.' };
 
 export default async function KroegentochtPage() {
     const { user } = await checkAdminAccess(); // Ensure authorized

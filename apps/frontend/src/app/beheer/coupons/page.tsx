@@ -8,8 +8,7 @@ import { auth } from '@/server/auth/auth';
 import { getCoupons } from '@/server/queries/admin-coupon.queries';
 
 export const metadata: Metadata = {
-    title: 'Coupons Beheer | SV Salve Mundi',
-};
+    title: 'Coupons Beheer | SV Salve Mundi' };
 
 async function CouponDataLoader() {
     const coupons = await getCoupons();

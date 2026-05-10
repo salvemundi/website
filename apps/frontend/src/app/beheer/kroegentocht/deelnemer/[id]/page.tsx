@@ -8,8 +8,7 @@ import { unstable_noStore as noStore } from 'next/cache';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
     return {
-        title: `Kroegentocht Deelnemer Beheer | Salve Mundi`,
-    };
+        title: `Kroegentocht Deelnemer Beheer | Salve Mundi` };
 }
 
 interface DeelnemerPageProps {

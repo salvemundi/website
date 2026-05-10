@@ -3,8 +3,8 @@ import PaymentStatusIsland from '@/components/islands/activities/PaymentStatusIs
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import BackButton from '@/components/ui/navigation/BackButton';
-
 import { getPaymentStatusAction } from '@/server/actions/reis-payment.actions';
+
 
 interface PageProps {
     searchParams: Promise<{ id?: string; transaction_id?: string; t?: string }>;

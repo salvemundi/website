@@ -16,8 +16,7 @@ interface EventDropdownProps {
 export default function EventDropdown({
     events,
     selectedEventId,
-    onSelect,
-}: EventDropdownProps) {
+    onSelect }: EventDropdownProps) {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const selectedEvent = events.find(e => e.id === selectedEventId);

@@ -22,8 +22,7 @@ const StickerMap = dynamic(() => import('@/components/ui/maps/StickerMap'), {
     ssr: false,
     loading: () => (
         <div className="w-full rounded-[var(--radius-2xl)] overflow-hidden shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)]/30 bg-[var(--bg-soft)] animate-pulse" style={{ height: '600px' }} />
-    ),
-});
+    ) });
 
 import { type EnrichedUser } from '@/types/auth';
 

@@ -1,7 +1,8 @@
 import { FastifyInstance } from 'fastify';
 import { SyncJob } from '../services/sync/sync-job.js';
 import { TokenService } from '../services/token.service.js';
-import { timingSafeCompare } from '@salvemundi/validations';
+import { azureSyncRunSchema } from '@salvemundi/validations';
+import { timingSafeCompare } from '@salvemundi/validations/security';
 import { SYNC_REDIS_KEY, SYNC_ABORT_KEY, DEFAULT_SYNC_STATUS } from '../services/sync/sync-types.js';
 
 export default async function syncRoutes(fastify: FastifyInstance) {
@@ -30,7 +31,7 @@ export default async function syncRoutes(fastify: FastifyInstance) {
      */
     fastify.post('/run', async (request, reply) => {
         try {
-            const options = request.body as any;
+            const options = azureSyncRunSchema.parse(request.body || {});
 
             // Start sync job asynchronously (Fire-and-forget)
             SyncJob.run(fastify.redis, options).catch(err => {
@@ -53,7 +54,7 @@ export default async function syncRoutes(fastify: FastifyInstance) {
      */
     fastify.post<{ Params: { userId: string } }>('/run/:userId', async (request, reply) => {
         const { userId } = request.params;
-        const options = request.body as any;
+        const options = azureSyncRunSchema.parse(request.body || {});
 
         try {
             const accessToken = await TokenService.getAccessToken(fastify.redis);

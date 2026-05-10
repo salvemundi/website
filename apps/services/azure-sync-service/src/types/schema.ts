@@ -5,6 +5,7 @@ export interface Schema {
     events: Event[];
     event_signups: EventSignup[];
     feature_flags: FeatureFlag[];
+    system_logs: any[];
 }
 
 export interface FeatureFlag {
@@ -33,7 +34,7 @@ export interface EventSignup {
 
 export interface DirectusUser {
     id: string;
-    email: string;
+    email?: string | null;
     first_name?: string;
     last_name?: string;
     entra_id?: string;

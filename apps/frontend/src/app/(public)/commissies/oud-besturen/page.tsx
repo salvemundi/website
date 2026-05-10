@@ -8,8 +8,7 @@ import { connection } from 'next/server';
 
 export const metadata: Metadata = {
     title: 'Bestuursgeschiedenis | SV Salve Mundi',
-    description: 'Ontdek de mensen die Salve Mundi door de jaren heen hebben gevormd en geleid.',
-};
+    description: 'Ontdek de mensen die Salve Mundi door de jaren heen hebben gevormd en geleid.' };
 
 export default async function BoardHistoryPage() {
     await connection();

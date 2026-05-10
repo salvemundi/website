@@ -11,8 +11,7 @@ interface PageProps {
 }
 
 export const metadata: Metadata = {
-    title: 'Reis Mail Beheer | SV Salve Mundi',
-};
+    title: 'Reis Mail Beheer | SV Salve Mundi' };
 
 export default async function ReisMailPage({ searchParams }: PageProps) {
     const resolvedSearchParams = await searchParams;

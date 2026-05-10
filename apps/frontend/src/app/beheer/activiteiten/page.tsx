@@ -15,8 +15,7 @@ import { type Committee } from '@/shared/lib/permissions';
 import { type DbCommittee } from '@salvemundi/validations/directus/schema';
 
 export const metadata: Metadata = {
-    title: 'Beheer Activiteiten | SV Salve Mundi',
-};
+    title: 'Beheer Activiteiten | SV Salve Mundi' };
 
 export default async function AdminActiviteitenPage() {
     const session = await auth.api.getSession({

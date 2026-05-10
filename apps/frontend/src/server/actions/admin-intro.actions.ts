@@ -30,8 +30,7 @@ import { getSystemDirectus } from "@/lib/directus";
 import { 
     deleteItem,
     updateItem,
-    createItem,
-} from '@directus/sdk';
+    createItem } from '@directus/sdk';
 
 import { AdminResource } from '@/shared/lib/permissions-config';
 import { getRedis } from '@/server/auth/redis-client';

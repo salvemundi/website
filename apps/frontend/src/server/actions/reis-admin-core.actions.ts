@@ -3,8 +3,7 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import {
-    tripSchema,
-} from '@salvemundi/validations/schema/admin-reis.zod';
+    tripSchema } from '@salvemundi/validations/schema/admin-reis.zod';
 import { TRIP_FIELDS } from '@salvemundi/validations/directus/fields';
 import { type DbTrip } from '@salvemundi/validations/directus/schema';
 import { getSystemDirectus } from '@/lib/directus';
@@ -148,8 +147,7 @@ export async function updateTrip(prevState: unknown, formData: FormData) {
             start_date: rawData.start_date || null,
             registration_start_date: rawData.registration_start_date || null,
             image: newImageId || (rawData.image as string) || null,
-            end_date: (rawData.end_date as string) || null,
-        };
+            end_date: (rawData.end_date as string) || null };
 
         const validated = tripSchema.omit({ id: true }).partial().safeParse(data);
         if (!validated.success) {

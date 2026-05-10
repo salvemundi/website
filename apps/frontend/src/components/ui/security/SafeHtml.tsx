@@ -20,8 +20,7 @@ export const SafeHtml: React.FC<SafeHtmlProps> = ({
     const cleanHtml = DOMPurify.sanitize(html, {
         USE_PROFILES: { html: true },
         // Allow common formatting and links
-        ADD_ATTR: ['target', 'rel'],
-    });
+        ADD_ATTR: ['target', 'rel'] });
 
     return (
         <Component

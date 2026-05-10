@@ -9,8 +9,7 @@ import { ClipboardCheck } from 'lucide-react';
 import { checkAdminAccess } from '@/server/actions/admin.actions';
 
 export const metadata: Metadata = {
-    title: 'Aanwezigheidsbeheer | SV Salve Mundi',
-};
+    title: 'Aanwezigheidsbeheer | SV Salve Mundi' };
 
 interface PageProps {
     params: Promise<{ id: string }>;

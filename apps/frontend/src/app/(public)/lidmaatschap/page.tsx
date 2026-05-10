@@ -9,8 +9,7 @@ import { connection } from 'next/server';
 
 export const metadata = {
     title: 'Word Lid | Salve Mundi',
-    description: 'Beheer je lidmaatschap bij Salve Mundi.',
-};
+    description: 'Beheer je lidmaatschap bij Salve Mundi.' };
 
 
 export default async function MembershipPage() {

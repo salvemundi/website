@@ -7,8 +7,7 @@ import BackButton from '@/components/ui/navigation/BackButton';
 
 export const metadata = {
     title: 'Transacties | SV Salve Mundi',
-    description: 'Bekijk je eerdere betalingen bij Salve Mundi.',
-};
+    description: 'Bekijk je eerdere betalingen bij Salve Mundi.' };
 
 import { redirect } from 'next/navigation';
 

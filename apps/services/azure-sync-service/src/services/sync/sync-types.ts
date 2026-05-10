@@ -29,7 +29,7 @@ export interface SyncStatus {
 }
 
 export interface SyncOptions {
-    fields: string[];
+    fields?: string[];
     forceLink?: boolean;
     activeOnly?: boolean;
     forceSyncPhotos?: boolean;

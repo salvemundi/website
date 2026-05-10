@@ -2,8 +2,7 @@ import EventForm from '@/components/islands/admin/kroegentocht/EventForm';
 import { Beer } from 'lucide-react';
 
 export const metadata = {
-    title: 'Nieuw Kroegentocht Event | Salve Mundi',
-};
+    title: 'Nieuw Kroegentocht Event | Salve Mundi' };
 
 export default function NewKroegentochtPage() {
     return (

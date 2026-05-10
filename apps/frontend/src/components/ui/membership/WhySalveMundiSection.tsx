@@ -31,8 +31,7 @@ const pijlers: Pijler[] = [
             >
                 <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
             </svg>
-        ),
-    },
+        ) },
     {
         titel: 'Studie',
         beschrijving:
@@ -54,8 +53,7 @@ const pijlers: Pijler[] = [
                 <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
                 <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
             </svg>
-        ),
-    },
+        ) },
     {
         titel: 'Ontwikkeling',
         beschrijving:
@@ -77,8 +75,7 @@ const pijlers: Pijler[] = [
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                 <polyline points="22 4 12 14.01 9 11.01" />
             </svg>
-        ),
-    },
+        ) },
 ];
 
 export function WhySalveMundiSection() {
@@ -86,7 +83,7 @@ export function WhySalveMundiSection() {
         <section className="px-6 py-8 sm:py-10 md:py-12 bg-[var(--bg-main)]">
             <div className="mx-auto max-w-app">
                 {/* Sectie-header */}
-                <div className="animate-fade-in-up text-center mb-8 sm:mb-12">
+                <div className="text-center mb-8 sm:mb-12">
                     <p className="text-sm sm:text-base font-bold uppercase tracking-[0.2em] text-[var(--color-purple-300)] mb-3">
                         Waarom Salve Mundi?
                     </p>

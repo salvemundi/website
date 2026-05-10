@@ -15,8 +15,7 @@ import type {
 import { 
     getCommittees as getCommitteesQuery, 
     getCommitteeMembers as getCommitteeMembersQuery, 
-    countUniqueCommitteeMembers as getUniqueCommitteeMembersCountQuery,
-} from '@/server/queries/admin-commissies.queries';
+    countUniqueCommitteeMembers as getUniqueCommitteeMembersCountQuery } from '@/server/queries/admin-commissies.queries';
 import { 
     updateCommitteeDetailsSchema,
     addCommitteeMemberSchema,
@@ -113,8 +112,7 @@ export async function addCommitteeMember(
     const azRes = await fetch(`${getAzureManagementUrl()}/api/groups/${encodeURIComponent(azureGroupId)}/members`, {
         method: 'POST',
         headers: serviceHeaders(),
-        body: JSON.stringify({ userId: user.entra_id }),
-    });
+        body: JSON.stringify({ userId: user.entra_id }) });
     if (!azRes.ok) {
         const err = await azRes.json().catch(() => ({}));
         
@@ -141,8 +139,7 @@ export async function removeCommitteeMember(
     if (isLeader) {
         await fetch(`${getAzureManagementUrl()}/api/groups/${encodeURIComponent(azureGroupId)}/owners/${encodeURIComponent(entraId)}`, {
             method: 'DELETE',
-            headers: serviceHeaders(false),
-        }).then(async (r) => {
+            headers: serviceHeaders(false) }).then(async (r) => {
             if (!r.ok) {
                 const body = await r.json().catch(() => ({}));
                 if (body.details?.includes('at least one owner')) {
@@ -159,8 +156,7 @@ export async function removeCommitteeMember(
     // 2. Remove from Members
     const azRes = await fetch(`${getAzureManagementUrl()}/api/groups/${encodeURIComponent(azureGroupId)}/members/${encodeURIComponent(entraId)}`, {
         method: 'DELETE',
-        headers: serviceHeaders(false),
-    });
+        headers: serviceHeaders(false) });
     
     if (!azRes.ok) {
         const err = await azRes.json().catch(() => ({}));
@@ -201,8 +197,7 @@ export async function toggleCommitteeLeader(
         await fetch(path, {
             method,
             headers: serviceHeaders(method === 'POST'),
-            body: currentIsLeader ? undefined : JSON.stringify({ userId: entraId }),
-        }).then(async (r) => {
+            body: currentIsLeader ? undefined : JSON.stringify({ userId: entraId }) }).then(async (r) => {
             if (!r.ok) {
                 const body = await r.json().catch(() => ({}));
                 if (body.details?.includes('at least one owner')) {

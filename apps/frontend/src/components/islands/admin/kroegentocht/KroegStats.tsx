@@ -13,8 +13,7 @@ export default function KroegStats({ signups }: KroegStatsProps) {
         totalPaidSignups: paidSignups.length,
         totalTickets: paidSignups.reduce((sum, s) => sum + (s.amount_tickets || 0), 0),
         totalAssociations: [...new Set(paidSignups.map(s => s.association).filter(Boolean))].length,
-        failedCount: signups.filter(s => s.payment_status !== 'paid').length,
-    };
+        failedCount: signups.filter(s => s.payment_status !== 'paid').length };
 
     return (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

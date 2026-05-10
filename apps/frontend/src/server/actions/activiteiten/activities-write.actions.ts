@@ -10,8 +10,7 @@ import {
     uploadFiles 
 } from "@directus/sdk";
 import { 
-    activityAdminSchema,
-} from "@salvemundi/validations";
+    activityAdminSchema } from "@salvemundi/validations";
 import { logAdminAction } from "../audit.actions";
 import { createEventDb, updateEventDb, deleteEventDb } from "../event-db.utils";
 import { ensureActivitiesEdit } from "./auth-check";
@@ -120,8 +119,7 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
         ...data,
         status: data.status === 'scheduled' ? 'published' : data.status,
         price_members: data.price_members ?? 0,
-        price_non_members: data.price_non_members ?? 0,
-    };
+        price_non_members: data.price_non_members ?? 0 };
     
     if (imageId) directusPayload.image = imageId;
 
@@ -231,8 +229,7 @@ export async function updateActivityAction(eventId: number, prevState: unknown, 
 
         const directusPayload: Record<string, unknown> = {
             ...data,
-            status: data.status === 'scheduled' ? 'published' : data.status,
-        };
+            status: data.status === 'scheduled' ? 'published' : data.status };
         
         if (imageId !== undefined) directusPayload.image = imageId;
 

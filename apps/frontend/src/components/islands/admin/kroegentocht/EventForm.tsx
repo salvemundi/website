@@ -35,8 +35,7 @@ export default function EventForm({ event }: EventFormProps) {
         description: event?.description || '',
         date: toLocalISOString(event?.date) || '',
         email: event?.email || 'intro@salvemundi.nl',
-        image: event?.image || null,
-    });
+        image: event?.image || null });
     const [uploading, setUploading] = useState(false);
 
     const isEdit = !!event?.id;

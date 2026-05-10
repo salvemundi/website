@@ -21,8 +21,7 @@ function FilterTab({ active, label, count, onClick, color = 'indigo' }: FilterTa
         blue: 'bg-[var(--theme-info)] text-white shadow-lg shadow-[var(--theme-info)]/20',
         red: 'bg-[var(--beheer-inactive)] text-white shadow-lg shadow-[var(--beheer-inactive)]/20',
         slate: 'bg-[var(--beheer-text-muted)] text-white shadow-lg shadow-[var(--beheer-text-muted)]/20',
-        purple: 'bg-[var(--beheer-accent)] text-white shadow-[var(--shadow-glow)]',
-    };
+        purple: 'bg-[var(--beheer-accent)] text-white shadow-[var(--shadow-glow)]' };
 
     return (
         <button

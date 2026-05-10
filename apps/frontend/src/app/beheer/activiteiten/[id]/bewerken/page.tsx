@@ -14,8 +14,7 @@ import { type AdminActivity } from "@salvemundi/validations";
 import { type Committee } from '@/shared/lib/permissions';
 
 export const metadata: Metadata = {
-    title: 'Activiteit Bewerken | SV Salve Mundi',
-};
+    title: 'Activiteit Bewerken | SV Salve Mundi' };
 
 export default async function BewerkenActiviteitPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;
@@ -66,8 +65,7 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
         // Missing fields
         description_logged_in: eventData.description_logged_in,
         publish_date: eventData.publish_date,
-        only_members: eventData.only_members,
-    };
+        only_members: eventData.only_members };
 
     const cleanedCommittees = allCommittees.map((c) => ({
         id: c.id,

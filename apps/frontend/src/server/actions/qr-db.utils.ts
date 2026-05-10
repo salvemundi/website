@@ -11,8 +11,7 @@ export const eventSignupSchema = z.object({
     checked_in: z.boolean().default(false),
     checked_in_at: z.string().nullable().optional(),
     qr_token: z.string().nullable().optional(),
-    created_at: z.string().nullable().optional(),
-});
+    created_at: z.string().nullable().optional() });
 
 export const pubCrawlTicketSchema = z.object({
     id: z.number(),
@@ -21,8 +20,7 @@ export const pubCrawlTicketSchema = z.object({
     qr_token: z.string().nullable().optional(),
     checked_in: z.boolean().default(false),
     checked_in_at: z.string().nullable().optional(),
-    created_at: z.string().nullable().optional(),
-});
+    created_at: z.string().nullable().optional() });
 
 export type EventSignup = z.infer<typeof eventSignupSchema>;
 export type PubCrawlTicket = z.infer<typeof pubCrawlTicketSchema>;

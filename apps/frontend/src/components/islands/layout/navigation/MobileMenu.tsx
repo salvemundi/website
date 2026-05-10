@@ -157,8 +157,7 @@ export default function MobileMenu({
                         className="inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow-lg shadow-purple-500/10 active:scale-95 transition-all"
                         style={{
                             background: 'linear-gradient(135deg, var(--color-purple-500), var(--color-purple-700))',
-                            color: 'white',
-                        }}
+                            color: 'white' }}
                     >
                         <Sparkles className="h-4 w-4" />
                         Word lid
@@ -193,8 +192,7 @@ export default function MobileMenu({
                                 className="flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow-lg shadow-purple-500/10 active:scale-95 transition-all"
                                 style={{
                                     backgroundColor: 'var(--color-purple-500)',
-                                    color: 'white',
-                                }}
+                                    color: 'white' }}
                             >
                                 Inloggen
                             </button>

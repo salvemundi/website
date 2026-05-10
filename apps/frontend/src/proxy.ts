@@ -29,7 +29,7 @@ async function proxy(request: NextRequest) {
             form-action 'self';
             frame-ancestors 'none';
             ${origin.includes('localhost') ? '' : 'upgrade-insecure-requests;'}
-        `.replace(/\s{2,}/g, ' ').trim();
+        `.replace(/\s{2 }/g, ' ').trim();
 
         res.headers.set('Content-Security-Policy', cspHeader);
         res.headers.set('x-nonce', nonce);
@@ -127,8 +127,7 @@ async function proxy(request: NextRequest) {
                         'x-forwarded-host': new URL(publicUrl).host,
                         'x-forwarded-proto': new URL(publicUrl).protocol.replace(':', '')
                     },
-                    signal: AbortSignal.timeout(10000),
-                });
+                    signal: AbortSignal.timeout(10000) });
 
                 hasSession = sessionRes.ok && sessionRes.status !== 204;
                 if (hasSession) {
@@ -165,7 +164,6 @@ async function proxy(request: NextRequest) {
 
 export const config = {
     // Exclude static files, images, and PWA assets. API/Assets is now protected.
-    matcher: ['/((?!_next/static|_next/image|fonts|img|favicon.ico|robots.txt|.well-known|sw.js|manifest.json|manifest.webmanifest|workbox-|logo.svg|icons/|api/assets).*)'],
-};
+    matcher: ['/((?!_next/static|_next/image|fonts|img|favicon.ico|robots.txt|.well-known|sw.js|manifest.json|manifest.webmanifest|workbox-|logo.svg|icons/|api/assets).*)'] };
 
 export { proxy };

@@ -47,8 +47,7 @@ export default function AdminModal({
         '4xl': 'max-w-4xl',
         '5xl': 'max-w-5xl',
         '6xl': 'max-w-6xl',
-        '7xl': 'max-w-7xl',
-    };
+        '7xl': 'max-w-7xl' };
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-500">

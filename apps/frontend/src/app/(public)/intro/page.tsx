@@ -11,8 +11,7 @@ import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 
 export const metadata = {
     title: 'Introductie | Salve Mundi',
-    description: 'Schrijf je in voor de gezelligste introductieweek bij Salve Mundi.',
-};
+    description: 'Schrijf je in voor de gezelligste introductieweek bij Salve Mundi.' };
 
 const IntroInfoStudent = () => (
     <div>

@@ -26,8 +26,7 @@ export default function TripForm({
     editingTrip, 
     isAdding, 
     onCancel, 
-    onSuccess,
-}: TripFormProps) {
+    onSuccess }: TripFormProps) {
     const [createState, createAction, isCreating] = useActionState<ActionState | null, FormData>(createTrip, null);
     const [updateState, updateAction, isUpdating] = useActionState<ActionState | null, FormData>(updateTrip, null);
 

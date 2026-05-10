@@ -41,8 +41,7 @@ interface KroegentochtManagementIslandProps {
 export default function KroegentochtManagementIsland({
     initialEvents = [],
     initialSettings = { show: false },
-    initialSignups = [],
-}: KroegentochtManagementIslandProps) {
+    initialSignups = [] }: KroegentochtManagementIslandProps) {
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
     const [events] = useState(initialEvents);

@@ -223,8 +223,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                                 ...targetUser,
                                                 emailVerified: true,
                                                 createdAt: new Date(),
-                                                updatedAt: new Date(),
-                                            };
+                                                updatedAt: new Date() };
 
                                             // Re-calculate permissions for target user
                                             const perms = getPermissions(targetUser.committees);

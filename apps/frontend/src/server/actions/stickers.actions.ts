@@ -11,13 +11,11 @@ import { STICKER_FIELDS, stickerPublicSchema } from "@salvemundi/validations";
 import { query } from '@/lib/database';
 import { z } from 'zod';
 
-import { cacheLife, cacheTag } from 'next/cache';
+import {  cacheTag } from 'next/cache';
 
 const stickerListSchema = z.array(stickerPublicSchema);
 
 export async function getPublicStickers() {
-    'use cache';
-    cacheLife('max');
     cacheTag('stickers');
     const sql = `
         SELECT 

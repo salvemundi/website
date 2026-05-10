@@ -21,8 +21,7 @@ interface Props {
 }
 
 export default function CouponManagementIsland({ 
-    initialCoupons = [], 
-}: Props) {
+    initialCoupons = [] }: Props) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [coupons, setCoupons] = useState<Coupon[]>(initialCoupons);
     const [isAdding, setIsAdding] = useState(false);

@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify';
+import { type MolliePaymentMetadata } from '@salvemundi/validations';
 import { getMollieClient } from '../services/mollie.service.js';
 import crypto from 'node:crypto';
 
@@ -7,7 +8,22 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
      * POST /api/payments/create
      * Creates a new Mollie payment and stores a transaction record.
      */
-    fastify.post('/create', async (request: any, reply) => {
+    fastify.post<{ Body: {
+        amount: number;
+        description: string;
+        registrationId: string | number;
+        registrationType: string;
+        email: string;
+        firstName: string;
+        lastName: string;
+        phoneNumber?: string;
+        dateOfBirth?: string;
+        isContribution?: boolean;
+        isNewMember?: boolean;
+        userId?: string | null;
+        redirectUrl: string;
+        couponCode?: string | null;
+    } }>('/create', async (request, reply) => {
         const {
             amount,
             description,
@@ -149,7 +165,7 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
      * POST /api/payments/approve
      * Manually approves a pending payment and triggers automated processing.
      */
-    fastify.post('/approve', async (request: any, reply) => {
+    fastify.post<{ Body: { mollieId: string } }>('/approve', async (request, reply) => {
         const authHeader = request.headers.authorization;
         const internalToken = process.env.INTERNAL_SERVICE_TOKEN;
 
@@ -183,7 +199,7 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
             // Fetch full payment from Mollie to get metadata (names, phone, DOB)
             const mollie = getMollieClient();
             const payment = await mollie.payments.get(mollieId);
-            const metadata = payment.metadata as any;
+            const metadata = payment.metadata as unknown as MolliePaymentMetadata;
 
             const eventData = {
                 event: 'PAYMENT_SUCCESS',

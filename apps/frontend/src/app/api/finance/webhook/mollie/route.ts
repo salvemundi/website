@@ -33,10 +33,8 @@ export async function POST(request: NextRequest) {
             headers: {
                 'Content-Type': 'application/json',
                 // Forward the internal token for authentication
-                'Authorization': `Bearer ${process.env.INTERNAL_SERVICE_TOKEN}`,
-            },
-            body: JSON.stringify({ id }),
-        });
+                'Authorization': `Bearer ${process.env.INTERNAL_SERVICE_TOKEN}` },
+            body: JSON.stringify({ id }) });
 
         const text = await response.text();
         return new NextResponse(text, { status: response.status });

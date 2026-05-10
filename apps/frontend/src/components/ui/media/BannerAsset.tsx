@@ -28,8 +28,7 @@ export default function BannerAsset({
     sizes,
     priority = false,
     loading,
-    unoptimized = true,
-}: BannerAssetProps) {
+    unoptimized = true }: BannerAssetProps) {
     if (!asset) return null;
 
     const id = typeof asset === 'string' ? asset : asset?.id;

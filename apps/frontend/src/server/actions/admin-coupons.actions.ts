@@ -99,8 +99,7 @@ export async function createCoupon(formData: FormData): Promise<{ success: boole
         usage_count: 0,
         usage_limit: usageLimit,
         valid_from: validFrom || null,
-        valid_until: validUntil || null,
-    };
+        valid_until: validUntil || null };
 
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session) throw new Error('Unauthorized');

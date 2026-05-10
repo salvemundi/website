@@ -9,11 +9,8 @@ import { readItems } from '@directus/sdk';
 import { getDisabledRoutes, FLAGS_CACHE_KEY } from '@/lib/config/feature-flags';
 export { getDisabledRoutes };
 
-import { cacheLife } from 'next/cache';
 
 export async function getDocumenten(): Promise<Document[]> {
-    'use cache';
-    cacheLife('hours');
     try {
         const rawData = await getSystemDirectus().request(readItems('documents', {
             fields: [...DOCUMENT_FIELDS],

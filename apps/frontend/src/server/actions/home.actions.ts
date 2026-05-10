@@ -26,11 +26,8 @@ import {
     type DbHeroBanner,
     type DbSponsor 
 } from '@salvemundi/validations';
-import { cacheLife } from 'next/cache';
 
 export const getHeroBanners = async (): Promise<HeroBanner[]> => {
-    'use cache';
-    cacheLife('minutes');
     const rawData = await getSystemDirectus().request(readItems('hero_banners', {
         fields: [...HERO_BANNER_FIELDS],
         limit: 10
@@ -42,8 +39,7 @@ export const getHeroBanners = async (): Promise<HeroBanner[]> => {
         subtitle: null,
         afbeelding_id: item.image ?? null,
         status: 'published',
-        display_order: item.sort ?? 0,
-    }));
+        display_order: item.sort ?? 0 }));
 
     const parsed = heroBannersSchema.safeParse(mappedData);
     if (!parsed.success) {
@@ -64,8 +60,6 @@ import {
 import { connection } from "next/server";
 
 export const getUpcomingActiviteiten = async (limit = 4): Promise<Activiteit[]> => {
-    'use cache';
-    cacheLife('minutes');
     const client = getSystemDirectus();
     const now = new Date();
     const today = toLocalISOString(now) as string;
@@ -108,8 +102,7 @@ export const getUpcomingActiviteiten = async (limit = 4): Promise<Activiteit[]> 
         event_time_end: null,
         custom_url: '/kroegentocht',
         category: 'Feestcommissie',
-        committee_name: 'Feestcommissie',
-    }));
+        committee_name: 'Feestcommissie' }));
 
     const mappedTrips = (tripEvents as DbTrip[]).map((item) => ({
         id: `trip-${item.id}`,
@@ -129,8 +122,7 @@ export const getUpcomingActiviteiten = async (limit = 4): Promise<Activiteit[]> 
         event_time_end: null,
         custom_url: '/reis',
         category: 'Reiscommissie',
-        committee_name: 'Reiscommissie',
-    }));
+        committee_name: 'Reiscommissie' }));
 
     const allEvents = [...mappedRegular, ...mappedPubCrawl, ...mappedTrips]
         .sort((a, b) => new Date(a.datum_start).getTime() - new Date(b.datum_start).getTime())
@@ -152,8 +144,6 @@ export const getUpcomingActiviteiten = async (limit = 4): Promise<Activiteit[]> 
 
 
 export const getSponsors = async (): Promise<Sponsor[]> => {
-    'use cache';
-    cacheLife('hours');
     const rawData = await getSystemDirectus().request(readItems('sponsors', {
         fields: [...SPONSOR_FIELDS],
         sort: ['sponsor_id'],

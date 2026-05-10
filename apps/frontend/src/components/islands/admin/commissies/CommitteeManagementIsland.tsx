@@ -3,8 +3,7 @@
 import { useState, useCallback, useMemo, useTransition } from 'react';
 import {
     Users, 
-    RefreshCw, 
-} from 'lucide-react';
+    RefreshCw } from 'lucide-react';
 import type { Committee, CommitteeMember } from '@/server/queries/admin-commissies.queries';
 import {
     getCommittees,
@@ -12,8 +11,7 @@ import {
     addCommitteeMember,
     removeCommitteeMember,
     toggleCommitteeLeader,
-    updateCommitteeDetails,
-} from '@/server/actions/admin-committees.actions';
+    updateCommitteeDetails } from '@/server/actions/admin-committees.actions';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 
 import CommitteeSidebar from './CommitteeSidebar';
@@ -168,8 +166,7 @@ export default function CommitteeManagementIsland({ initialCommittees, totalUniq
         setSavingDetail(true);
         const res = await updateCommitteeDetails(selected.id.toString(), {
             short_description: editShortDesc,
-            description: editDesc,
-        });
+            description: editDesc });
         if (res.success) {
             setSelected(prev => prev ? { ...prev, short_description: editShortDesc, description: editDesc } : prev);
             setEditingDetail(false);

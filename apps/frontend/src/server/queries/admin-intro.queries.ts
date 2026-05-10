@@ -31,8 +31,7 @@ export async function getIntroStatsInternal() {
             signups: Number(stats?.signups ?? 0),
             parents: Number(stats?.parents ?? 0),
             blogs: Number(stats?.blogs ?? 0),
-            planning: Number(stats?.planning ?? 0),
-        };
+            planning: Number(stats?.planning ?? 0) };
     } catch (e) {
         console.error('[AdminIntroQueries] getIntroStatsInternal failed:', e);
         return { signups: 0, parents: 0, blogs: 0, planning: 0 };

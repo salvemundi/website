@@ -131,8 +131,7 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
         confirmed: signups.filter((s) => s.status === 'confirmed').length,
         waitlist: signups.filter((s) => s.status === 'waitlist').length,
         depositPaid: signups.filter((s) => s.deposit_paid).length,
-        fullPaid: signups.filter((s) => s.full_payment_paid).length,
-    };
+        fullPaid: signups.filter((s) => s.full_payment_paid).length };
 
     return (
         <AdminPageShell

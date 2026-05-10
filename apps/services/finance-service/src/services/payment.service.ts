@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { PaymentSuccessEventSchema } from '@salvemundi/validations';
+import { PaymentSuccessEventSchema, type DbFeatureFlag, type DirectusSchema } from '@salvemundi/validations';
 import { RegistrationService } from './registration.service.js';
 import { AzureRetryService } from './azure-retry.service.js';
 import { CacheInvalidationService } from './cache-invalidation.js';
@@ -59,13 +59,13 @@ export class PaymentService {
                     const { createDirectus, rest, staticToken, readItems } = await import('@directus/sdk');
                     const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL!;
                     const directusToken = process.env.DIRECTUS_STATIC_TOKEN!;
-                    const directus = createDirectus(directusUrl).with(staticToken(directusToken)).with(rest());
+                    const directus = createDirectus<DirectusSchema>(directusUrl).with(staticToken(directusToken)).with(rest());
 
-                    const flags = await directus.request(readItems('feature_flags' as any, {
+                    const flags = await directus.request(readItems('feature_flags', {
                         filter: { name: { _eq: 'manual_approval' } },
                         fields: ['is_active']
-                    }));
-                    manualApproval = (flags?.[0] as any)?.is_active ?? false;
+                    })) as DbFeatureFlag[];
+                    manualApproval = flags?.[0]?.is_active ?? false;
                 } catch (authErr) {
                     fastify.log.error(`[FINANCE] Failed to check manual_approval flag: ${authErr}`);
                 }

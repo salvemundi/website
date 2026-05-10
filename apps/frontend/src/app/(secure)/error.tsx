@@ -4,8 +4,7 @@ import GlobalError from '@/components/ui/layout/GlobalError';
 
 export default function SecureError({
     error,
-    reset,
-}: {
+    reset }: {
     error: Error & { digest?: string };
     reset: () => void;
 }) {

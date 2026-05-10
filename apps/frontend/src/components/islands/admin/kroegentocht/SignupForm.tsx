@@ -39,8 +39,7 @@ export default function SignupForm({ signup }: SignupFormProps) {
         email: signup?.email || '',
         association: signup?.association || '',
         payment_status: signup?.payment_status || 'open',
-        amount_tickets: signup?.amount_tickets || 1,
-    });
+        amount_tickets: signup?.amount_tickets || 1 });
     const [ticketsData, setTicketsData] = useState(signup?.tickets || []);
     const [editingTicketId, setEditingTicketId] = useState<number | null>(null);
 
@@ -325,8 +324,7 @@ export default function SignupForm({ signup }: SignupFormProps) {
                             email: signup?.email || '',
                             association: signup?.association || '',
                             payment_status: signup?.payment_status || 'open',
-                            amount_tickets: signup?.amount_tickets || 1,
-                        })}
+                            amount_tickets: signup?.amount_tickets || 1 })}
                         className="flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-4 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-xl)] text-xs font-semibold text-[var(--text-light)] hover:text-[var(--theme-purple)] transition-all active:scale-95 shadow-sm"
                     >
                         <RefreshCw className="h-4 w-4" />

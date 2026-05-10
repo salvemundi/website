@@ -13,9 +13,7 @@ export const metadata: Metadata = {
     openGraph: {
         title: 'Contact | Salve Mundi',
         description:
-            'Neem contact op met studievereniging Salve Mundi voor vragen, suggesties of informatie.',
-    },
-};
+            'Neem contact op met studievereniging Salve Mundi voor vragen, suggesties of informatie.' } };
 
 /**
  * Contactpagina — pure Server Component.

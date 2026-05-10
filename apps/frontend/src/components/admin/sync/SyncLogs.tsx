@@ -30,8 +30,7 @@ function ResultRow({ email, message, type, timestamp, stack, changes }: ResultRo
         warning: <AlertTriangle className="h-4 w-4 text-[var(--theme-warning)]" />,
         error: <X className="h-4 w-4 text-[var(--beheer-inactive)]" />,
         info: <Info className="h-4 w-4 text-[var(--theme-info)]" />,
-        excluded: <Users className="h-4 w-4 text-[var(--beheer-text-muted)]" />,
-    };
+        excluded: <Users className="h-4 w-4 text-[var(--beheer-text-muted)]" /> };
 
     return (
         <div 

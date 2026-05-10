@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify';
-import { MailRequestSchema, timingSafeCompare } from '@salvemundi/validations';
+import { MailRequestSchema } from '@salvemundi/validations';
+import { timingSafeCompare } from '@salvemundi/validations/security';
 
 export default async function mailRoutes(fastify: FastifyInstance) {
     /**

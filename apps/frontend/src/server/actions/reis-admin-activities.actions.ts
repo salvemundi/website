@@ -3,8 +3,7 @@
 import { z } from 'zod';
 import { revalidateTag, revalidatePath } from 'next/cache';
 import {
-    tripActivitySchema,
-} from '@salvemundi/validations/schema/admin-reis.zod';
+    tripActivitySchema } from '@salvemundi/validations/schema/admin-reis.zod';
 import { TRIP_ACTIVITY_FIELDS } from '@salvemundi/validations/directus/fields';
 import { getSystemDirectus } from '@/lib/directus';
 import { 

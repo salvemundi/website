@@ -12,8 +12,7 @@ import { query } from '@/lib/database';
 
 
 export const metadata = {
-    title: 'Leden Beheer | SV Salve Mundi',
-};
+    title: 'Leden Beheer | SV Salve Mundi' };
 
 export default async function LedenPage() {
     const session = await auth.api.getSession({

@@ -81,8 +81,7 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
             membership_status: initialUser?.membership_status ?? sUser.membership_status,
             membership_expiry: initialUser?.membership_expiry ?? sUser.membership_expiry,
             date_of_birth: initialUser?.date_of_birth ?? sUser.date_of_birth,
-            entra_id: initialUser?.entra_id ?? sUser.entra_id,
-        };
+            entra_id: initialUser?.entra_id ?? sUser.entra_id };
 
         // Enrich name if missing on client
         if (!mergedUser.name && (mergedUser.first_name || mergedUser.last_name)) {

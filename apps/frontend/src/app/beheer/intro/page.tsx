@@ -10,16 +10,14 @@ import {
     getIntroSignups,
     getIntroParentSignups,
     getIntroBlogs,
-    getIntroPlanning,
-} from '@/server/actions/admin-intro.actions';
+    getIntroPlanning } from '@/server/actions/admin-intro.actions';
 import { getIntroSettings } from '@/server/actions/intro.actions';
 
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import IntroVisibilityIsland from '@/components/islands/admin/intro/IntroVisibilityIsland';
 
 export const metadata: Metadata = {
-    title: 'Intro Beheer | SV Salve Mundi',
-};
+    title: 'Intro Beheer | SV Salve Mundi' };
 
 import { type EnrichedUser } from '@/types/auth';
 

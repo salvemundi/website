@@ -31,8 +31,7 @@ export const IntroStudentIsland = () => {
             email: '',
             telefoonnummer: '',
             favorieteGif: '',
-            website: '',
-        }
+            website: '' }
     });
 
     const onSubmit = async (data: IntroSignupForm) => {

@@ -10,8 +10,7 @@ const pool = new Pool({
     password: process.env.DB_PASSWORD,
     host: process.env.DB_HOST || process.env.INTERNAL_DB_HOST,
     port: 5432,
-    database: process.env.DB_NAME,
-});
+    database: process.env.DB_NAME });
 
 export const auth = betterAuth({
     database: pool,
@@ -25,9 +24,7 @@ export const auth = betterAuth({
             clientId: process.env.AZURE_WEBSITEV7_AUTH_CLIENT_ID!,
             clientSecret: process.env.AZURE_WEBSITEV7_AUTH_CLIENT_SECRET!,
             tenantId: process.env.AZURE_WEBSITEV7_TENANT_ID!,
-            prompt: "select_account",
-        },
-    },
+            prompt: "select_account" } },
     user: {
         modelName: "directus_users",
         additionalFields: {
@@ -42,8 +39,7 @@ export const auth = betterAuth({
             entra_id: { type: "string" },
             isAdmin: { type: "boolean" },
             isICT: { type: "boolean" },
-            role: { type: "string" },
-        }
+            role: { type: "string" } }
     },
     session: {
         modelName: "auth_sessions"
@@ -52,8 +48,7 @@ export const auth = betterAuth({
         modelName: "auth_accounts",
         accountLinking: {
             enabled: true,
-            trustedProviders: ["microsoft"],
-        }
+            trustedProviders: ["microsoft"] }
     },
     plugins: [
         nextCookies(),

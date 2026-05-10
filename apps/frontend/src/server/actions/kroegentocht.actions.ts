@@ -42,8 +42,7 @@ const getInternalHeaders = () => {
     const token = process.env.INTERNAL_SERVICE_TOKEN;
     return {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-    };
+        'Authorization': `Bearer ${token}` };
 };
 
 async function fetchWithTimeout(url: string, options: RequestInit & { timeout?: number } = {}) {
@@ -54,8 +53,7 @@ async function fetchWithTimeout(url: string, options: RequestInit & { timeout?: 
     try {
         const response = await fetch(url, {
             ...fetchOptions,
-            signal: controller.signal,
-        });
+            signal: controller.signal });
         clearTimeout(id);
         return response;
     } catch (error) {
@@ -170,8 +168,7 @@ export async function initiateKroegentochtPayment(formData: unknown) {
             name_initials: parsed.data.name_initials,
             pub_crawl_event_id: Number(parsed.data.pub_crawl_event_id),
             payment_status: 'open',
-            directus_relations: userId || null,
-        });
+            directus_relations: userId || null });
 
         const ticketsTable: { name: string; initial: string; qr_token: string }[] = [];
         let participantsData: { name: string, initial: string }[] = [];
@@ -215,8 +212,7 @@ export async function initiateKroegentochtPayment(formData: unknown) {
             name_initials: parsed.data.name_initials,
             pub_crawl_event_id: Number(parsed.data.pub_crawl_event_id),
             payment_status: 'open',
-            directus_relations: userId || null,
-        };
+            directus_relations: userId || null };
 
         try {
             await getSystemDirectus().request(createItem('pub_crawl_signups', syncPayload as Record<string, unknown>));

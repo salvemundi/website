@@ -69,8 +69,7 @@ export default function KroegentochtFormIsland({
                 initial: '' 
             }],
             website: '',
-            pub_crawl_event_id: event.id,
-        }
+            pub_crawl_event_id: event.id }
     });
 
     // REIS_FORM_V7.6_SSR: Skeletons en useEffect prefills verwijderd voor maximale stabiliteit.
@@ -109,8 +108,7 @@ export default function KroegentochtFormIsland({
                 name: `${participants[0].name} ${participants[0].initial}`.trim(),
                 association: finalAssociation || '',
                 name_initials: JSON.stringify(participants),
-                pub_crawl_event_id: Number(event.id),
-            };
+                pub_crawl_event_id: Number(event.id) };
 
             const result = await initiateKroegentochtPayment(formData);
 

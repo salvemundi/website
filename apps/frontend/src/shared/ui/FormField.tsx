@@ -19,8 +19,7 @@ export const FormField: React.FC<FormFieldProps> = ({
     children,
     className = '',
     id,
-    labelClassName = '',
-}) => {
+    labelClassName = '' }) => {
     return (
         <div className={`flex flex-col gap-1.5 ${className}`}>
             <label htmlFor={id} className={`form-label mb-0 ${labelClassName}`}>

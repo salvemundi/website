@@ -11,8 +11,7 @@ import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 
 export const metadata = {
     title: 'Reis | Salve Mundi',
-    description: 'Schrijf je in voor de jaarlijkse reis van Salve Mundi! Een onvergetelijke ervaring.',
-};
+    description: 'Schrijf je in voor de jaarlijkse reis van Salve Mundi! Een onvergetelijke ervaring.' };
 
 /**
  * ReisPage: Pure Nuclear SSR implementation.

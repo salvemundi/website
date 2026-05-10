@@ -1,6 +1,5 @@
 import 'server-only';
 import { query } from '@/lib/database';
-import { cacheLife } from 'next/cache';
 import { z } from 'zod';
 import { committeeSchema } from '@salvemundi/validations';
 
@@ -15,15 +14,12 @@ const adminCommitteeMemberSchema = z.object({
     entraId: z.string(),
     displayName: z.string(),
     email: z.string(),
-    isLeader: z.boolean(),
-});
+    isLeader: z.boolean() });
 
 export type Committee = z.infer<typeof committeeSchema>;
 export type CommitteeMember = z.infer<typeof adminCommitteeMemberSchema>;
 
 export async function getCommittees(): Promise<Committee[]> {
-    'use cache';
-    cacheLife('minutes');
     
     const { rows } = await query('SELECT * FROM committees ORDER BY name ASC');
     
@@ -31,8 +27,7 @@ export async function getCommittees(): Promise<Committee[]> {
     return rows.map(i => {
         const parsed = committeeSchema.parse({
             ...i,
-            id: Number(i.id),
-        });
+            id: Number(i.id) });
         return parsed;
     });
 }
@@ -58,13 +53,10 @@ export async function getCommitteeMembers(committeeId: string): Promise<Committe
         entraId: r.entra_id || r.user_id,
         displayName: `${r.first_name || ''} ${r.last_name || ''}`.trim() || r.email,
         email: r.email || '',
-        isLeader: r.is_leader || false,
-    }));
+        isLeader: r.is_leader || false }));
 }
 
 export async function countUniqueCommitteeMembers(): Promise<number> {
-    'use cache';
-    cacheLife('hours');
     
     const { rows } = await query('SELECT COUNT(DISTINCT user_id) as count FROM committee_members WHERE user_id IS NOT NULL');
     return Number(rows?.[0]?.count || 0);
