@@ -189,12 +189,14 @@ export async function fetchUserEventSignupsDb(email: string): Promise<EnrichedEv
             ORDER BY e.event_date DESC
         `;
         const { rows } = await query(sql, [email]);
+        const { toLocalISOString } = await import('@/lib/utils/date-utils');
+        
         return rows.map((row) => ({
             ...row,
             event_id: {
                 id: row.event_id,
                 name: row.event_name,
-                event_date: row.event_date,
+                event_date: toLocalISOString(row.event_date),
                 description: row.description,
                 image: row.image,
                 contact: row.contact
@@ -222,12 +224,13 @@ export async function fetchEventSignupByIdDb(id: number): Promise<EnrichedEventS
         if (rows.length === 0) return null;
 
         const row = rows[0];
+        const { toLocalISOString } = await import('@/lib/utils/date-utils');
         return {
             ...row,
             event_id: {
                 id: row.event_id,
                 name: row.event_name,
-                event_date: row.event_date,
+                event_date: toLocalISOString(row.event_date),
                 description: row.description,
                 image: row.image,
                 contact: row.contact
