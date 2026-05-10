@@ -116,12 +116,13 @@ export async function fetchPubCrawlSignupByIdDb(signupId: number): Promise<Enric
         };
     });
 
+    const { toLocalISOString } = await import('@/lib/utils/date-utils');
     return {
         ...signup,
         pub_crawl_event_id: {
             id: signup.pub_crawl_event_id,
             name: signup.event_name,
-            date: signup.event_date,
+            date: toLocalISOString(signup.event_date),
             description: signup.event_description,
             image: signup.event_image
         },
@@ -177,12 +178,13 @@ export async function fetchUserPubCrawlSignupsDb(email: string): Promise<Enriche
              ORDER BY s.created_at DESC`,
             [email]
         );
+        const { toLocalISOString } = await import('@/lib/utils/date-utils');
         return (res.rows || []).map(row => ({
             ...row,
             pub_crawl_event_id: {
                 id: row.pub_crawl_event_id,
                 name: row.event_name,
-                date: row.event_date,
+                date: toLocalISOString(row.event_date),
                 description: row.event_description,
                 image: row.event_image
             }
