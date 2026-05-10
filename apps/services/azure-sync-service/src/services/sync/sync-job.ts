@@ -135,9 +135,23 @@ export class SyncJob {
 
             await redis.set(SYNC_REDIS_KEY, JSON.stringify(status), 'EX', 86400 * 7);
 
-            // 3. PARALLEL CHUNK PROCESSING
+            // 3. FILTER BY ACTIVE STATUS (If requested)
+            let usersToProcess = azureUsers;
+            if (options.activeOnly) {
+                const totalBefore = azureUsers.length;
+                usersToProcess = azureUsers.filter(u => ctx.mainMembershipState.get(u.id)?.has(GROUP_ACTIVE_LID));
+                status.excludedCount = totalBefore - usersToProcess.length;
+                status.total = usersToProcess.length;
+                
+                if (!options.silent) console.log(`[SYNC] [${jobId}] activeOnly enabled: Filtered ${totalBefore} users down to ${status.total} active members.`);
+                
+                // Persist updated total to Redis immediately for UI accuracy
+                await persistSyncStatus(redis, status);
+            }
+
+            // 4. PARALLEL CHUNK PROCESSING
             const CHUNK_SIZE = 50;
-            for (let i = 0; i < azureUsers.length; i += CHUNK_SIZE) {
+            for (let i = 0; i < usersToProcess.length; i += CHUNK_SIZE) {
                 const abort = await redis.get(SYNC_ABORT_KEY);
                 if (abort) {
                     status.active = false; status.status = 'aborted'; status.endTime = new Date().toISOString();
@@ -148,7 +162,7 @@ export class SyncJob {
                     return;
                 }
 
-                const chunk = azureUsers.slice(i, i + CHUNK_SIZE);
+                const chunk = usersToProcess.slice(i, i + CHUNK_SIZE);
                 
                 // De-duplicate chunk just in case Graph paging returned same users
                 const uniqueChunk = Array.from(new Map(chunk.map(u => [u.id, u])).values());
@@ -324,6 +338,17 @@ export class SyncJob {
         };
 
         await persistSyncStatus(redis, status, false);
+
+        // Check if user should be skipped due to activeOnly option
+        if (options.activeOnly && !mainMembershipState.get(entraId)?.has(GROUP_ACTIVE_LID)) {
+            status.active = false;
+            status.status = 'completed';
+            status.excludedCount = 1;
+            status.endTime = new Date().toISOString();
+            await persistSyncStatus(redis, status, false);
+            if (!options.silent) console.log(`[SYNC] [single-${entraId}] User skipped because activeOnly is enabled and user is not in active group.`);
+            return;
+        }
 
         try {
             await SyncProcessor.syncUserOptimized(ctx, aUser);
