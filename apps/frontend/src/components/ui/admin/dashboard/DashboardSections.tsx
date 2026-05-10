@@ -75,13 +75,23 @@ export function DashboardHub({
 
     const groups = getGroups(stats);
 
-    const renderSection = (title: string, items: any[], icon: React.ReactNode) => {
+    interface DashboardItem {
+        title: string;
+        value?: string | number;
+        icon: React.ReactNode;
+        href: string;
+        colorClass: 'purple' | 'blue' | 'teal' | 'orange' | 'green' | 'amber';
+        disabled?: boolean;
+        subtitle?: string;
+    }
+
+    const renderSection = (title: string, items: DashboardItem[], icon: React.ReactNode) => {
         if (items.length === 0) return null;
         return (
             <div className="space-y-5">
                 <div className="flex items-center gap-3 px-1">
                     <div className="bg-[var(--beheer-accent)]/10 p-2 rounded-xl text-[var(--beheer-accent)]">
-                        {React.isValidElement(icon) && React.cloneElement(icon as React.ReactElement<any>, { className: 'h-4 w-4' })}
+                        {React.isValidElement(icon) && React.cloneElement(icon as React.ReactElement<{ className?: string }>, { className: 'h-4 w-4' })}
                     </div>
                     <h2 className="text-base font-semibold text-[var(--beheer-text)]">{title}</h2>
                     <div className="h-px flex-1 bg-gradient-to-r from-[var(--beheer-border)] to-transparent" />

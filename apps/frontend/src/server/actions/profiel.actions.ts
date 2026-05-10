@@ -29,21 +29,16 @@ export async function getUserEventSignups(): Promise<EventSignup[]> {
     const email = user?.email;
     if (!email) return [];
 
-    try {
-        const registrations = await fetchUserEventSignupsDb(email);
-        // Ensure all registrations have an ID before parsing
-        const validRegistrations = registrations.filter(r => r.id !== null);
-        const parsed = eventSignupSchema.array().safeParse(validRegistrations);
+    const registrations = await fetchUserEventSignupsDb(email);
+    // Ensure all registrations have an ID before parsing
+    const validRegistrations = registrations.filter(r => r.id !== null);
+    const parsed = eventSignupSchema.array().safeParse(validRegistrations);
 
-        if (!parsed.success) {
-            return validRegistrations as unknown as EventSignup[];
-        }
-
-        return parsed.data;
-    } catch (err: unknown) {
-        
-        return [];
+    if (!parsed.success) {
+        throw new Error(`Failed to parse event signups: ${parsed.error.message}`);
     }
+
+    return parsed.data;
 }
 
 
@@ -54,11 +49,7 @@ export async function getUserPubCrawlSignups(): Promise<PubCrawlSignup[]> {
     const email = user?.email;
     if (!email) return [];
 
-    try {
-        return await fetchUserPubCrawlSignupsDb(email);
-    } catch (err: unknown) {
-        return [];
-    }
+    return await fetchUserPubCrawlSignupsDb(email);
 }
 
 
@@ -69,24 +60,20 @@ export async function getUserTransactions(): Promise<Transaction[]> {
     const targetUserId = user?.id;
     if (!targetUserId) return [];
 
-    try {
-        const res = await query(
-            `SELECT * FROM transactions 
-             WHERE user_id = $1 OR email = $2
-             ORDER BY created_at DESC`,
-            [targetUserId, user?.email || null]
-        );
+    const res = await query(
+        `SELECT * FROM transactions 
+         WHERE user_id = $1 OR email = $2
+         ORDER BY created_at DESC`,
+        [targetUserId, user?.email || null]
+    );
 
-        const parsed = transactionSchema.array().safeParse(res.rows);
+    const parsed = transactionSchema.array().safeParse(res.rows);
 
-        if (!parsed.success) {
-            return res.rows as unknown as Transaction[];
-        }
-
-        return parsed.data;
-    } catch (err: unknown) {
-        return [];
+    if (!parsed.success) {
+        throw new Error(`Failed to parse transactions: ${parsed.error.message}`);
     }
+
+    return parsed.data;
 }
 
 
@@ -94,23 +81,19 @@ export async function getWhatsAppGroups(): Promise<WhatsAppGroup[]> {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) return [];
 
-    try {
-        const res = await query(
-            `SELECT id, name, invite_link, is_active 
-             FROM whatsapp_groups 
-             WHERE is_active = true 
-             ORDER BY id ASC`
-        );
+    const res = await query(
+        `SELECT id, name, invite_link, is_active 
+         FROM whatsapp_groups 
+         WHERE is_active = true 
+         ORDER BY id ASC`
+    );
 
-        const parsed = whatsappGroupSchema.array().safeParse(res.rows);
+    const parsed = whatsappGroupSchema.array().safeParse(res.rows);
 
-        if (!parsed.success) {
-            return res.rows as unknown as WhatsAppGroup[];
-        }
-
-        return parsed.data;
-    } catch (err: unknown) {
-        return [];
+    if (!parsed.success) {
+        throw new Error(`Failed to parse WhatsApp groups: ${parsed.error.message}`);
     }
+
+    return parsed.data;
 }
 

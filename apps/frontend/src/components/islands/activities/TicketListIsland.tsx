@@ -14,12 +14,24 @@ import { motion, AnimatePresence } from 'framer-motion';
 import QRDisplay from '@/shared/ui/QRDisplay';
 import { formatDate } from '@/shared/lib/utils/date';
 
+interface TicketData {
+    id: number | string;
+    qr_token: string;
+    participant_name?: string;
+    date_created?: string | Date;
+    event_id?: {
+        name?: string;
+        event_date?: string | Date;
+        location?: string;
+    };
+}
+
 interface TicketListIslandProps {
-    tickets: any[];
+    tickets: TicketData[];
 }
 
 export default function TicketListIsland({ tickets }: TicketListIslandProps) {
-    const [selectedTicket, setSelectedTicket] = useState<any | null>(null);
+    const [selectedTicket, setSelectedTicket] = useState<TicketData | null>(null);
     const [search, setSearch] = useState('');
     const [mounted, setMounted] = useState(false);
 
@@ -35,7 +47,7 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
         }
     }, [selectedTicket]);
 
-    const handleTicketSelect = (ticket: any) => setSelectedTicket(ticket);
+    const handleTicketSelect = (ticket: TicketData) => setSelectedTicket(ticket);
     const handleCloseModal = () => setSelectedTicket(null);
 
     const filteredTickets = tickets.filter(ticket => 

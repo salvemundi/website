@@ -14,18 +14,25 @@ export type AutomationSetting = {
 
 const AUTOMATION_FLAGS = ['mail_expiry_check', 'mail_event_reminders', 'auto_sync_nightly'];
 
+interface DbFeatureFlag {
+    name: string;
+    route_match: string;
+    is_active: boolean;
+    message: string | null;
+}
+
 export async function getSystemAutomationSettings(): Promise<{ success: boolean; settings?: AutomationSetting[]; error?: string }> {
     const { isAuthorized, user } = await checkAdminAccess();
     if (!isAuthorized || !isSuperAdmin(user?.committees)) throw new Error('Geen toegang: Alleen voor ICT en Bestuur.');
 
     try {
-        const { rows } = await query(
+        const { rows } = await query<DbFeatureFlag>(
             "SELECT name, route_match, is_active, message FROM feature_flags WHERE route_match = ANY($1)",
             [AUTOMATION_FLAGS]
         );
         
         // If auto_sync_nightly is missing, we could insert it here or just handle it gracefully
-        const foundFlags = rows.map((r: any) => r.route_match);
+        const foundFlags = rows.map((r) => r.route_match);
         if (!foundFlags.includes('auto_sync_nightly')) {
             await query(
                 "INSERT INTO feature_flags (name, route_match, is_active, message) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING",
@@ -42,7 +49,7 @@ export async function getSystemAutomationSettings(): Promise<{ success: boolean;
 
         return {
             success: true,
-            settings: rows.map((r: any) => ({
+            settings: rows.map((r) => ({
                 id: r.route_match,
                 name: r.name,
                 isActive: r.is_active,

@@ -5,6 +5,7 @@ import { startOfDay, isBefore } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth';
 import { type EventSignup, updateProfileSchema } from '@salvemundi/validations/schema/profiel.zod';
+import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { updateUserProfile, uploadUserAvatar } from '@/server/actions/profiel-update.actions';
@@ -19,7 +20,7 @@ import ProfielQuickLinks from './profile/ProfielQuickLinks';
 import ProfielSignups from './profile/ProfielSignups';
 
 type CommitteeMeta = {
-    id?: string | number;
+    id: string | number;
     name?: string | null;
     is_leader?: boolean | null;
 };
@@ -48,7 +49,7 @@ type SessionUser = {
 
 interface ProfielIslandProps {
     initialSignups?: EventSignup[];
-    pubCrawlSignups?: any[];
+    pubCrawlSignups?: PubCrawlSignup[];
     user?: SessionUser;
     impersonation?: { 
         name: string; 
@@ -242,15 +243,20 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
 
         if (showPastEvents) return allSignups;
 
-        return allSignups.filter((s: any) => {
+        return allSignups.filter((s) => {
             try {
                 let eventDate;
                 if (s._type === 'event') {
-                    if (!s?.event_id?.event_date) return true;
-                    eventDate = startOfDay(new Date(s.event_id.event_date));
+                    const es = s as EventSignup & { _type: 'event' };
+                    if (!es?.event_id?.event_date) return true;
+                    eventDate = startOfDay(new Date(es.event_id.event_date));
                 } else {
-                    if (!s?.pub_crawl_event_id?.date) return true;
-                    eventDate = startOfDay(new Date(s.pub_crawl_event_id.date));
+                    const ps = s as PubCrawlSignup & { _type: 'pub_crawl' };
+                    const eventData = ps.pub_crawl_event_id;
+                    if (typeof eventData !== 'object' || !eventData || !('date' in eventData)) return true;
+                    const dateVal = (eventData as { date?: string | null }).date;
+                    if (!dateVal) return true;
+                    eventDate = startOfDay(new Date(dateVal));
                 }
                 return !isBefore(eventDate, todayStart);
             } catch {
@@ -304,7 +310,15 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
             {/* Left Column */}
             <div className="md:col-span-12 lg:col-span-4 flex flex-col gap-6">
                 <ProfielHeader 
-                    user={{ ...optimisticUser, onAvatarChange }} 
+                    user={{ 
+                        ...optimisticUser, 
+                        committees: (optimisticUser.committees || []).map(c => ({
+                            ...c,
+                            name: c.name || 'Onbekende Commissie',
+                            is_leader: !!c.is_leader
+                        })), 
+                        onAvatarChange 
+                    }} 
                     membershipStatus={membershipStatus} 
                 />
                 <ProfielGaming 

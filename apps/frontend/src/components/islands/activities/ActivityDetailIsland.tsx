@@ -42,7 +42,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                     <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-main)] via-[var(--bg-main)]/40 to-transparent" />
                     
                     <div className="absolute inset-x-0 bottom-0 max-w-7xl mx-auto px-4 pb-12">
-                        <div className="max-w-3xl space-y-4 animate-in fade-in duration-700">
+                        <div className="max-w-3xl space-y-4">
                             <span className="inline-block px-4 py-1.5 rounded-full bg-[var(--theme-purple)] text-white text-[11px] font-black uppercase tracking-widest mb-4 shadow-xl border border-white/10">
                                 {activity?.committee_name || 'Algemene Activiteit'}
                             </span>

@@ -1,4 +1,4 @@
-{{#> layout headerTitle="GET READY!"}}
+{{#> layout headerTitle="MAAK JE KLAAR!"}}
     <div class="status-badge warning">Herinnering</div>
     <p>Beste {{name}},</p>
     
@@ -17,9 +17,12 @@
         <a href="https://salvemundi.nl/profiel/tickets" class="button">Mijn Tickets Bekijken</a>
     </p>
 
-    <p>Mocht je onverhoopt toch niet kunnen komen, laat het ons dan zo snel mogelijk weten via <a href="mailto:ict@salvemundi.nl">ict@salvemundi.nl</a> of de organiserende commissie.</p>
+    <p>Mocht je onverhoopt toch niet kunnen komen, laat het ons dan zo snel mogelijk weten via <a href="mailto:{{#if contactEmail}}{{contactEmail}}{{else}}bestuur@salvemundi.nl{{/if}}">{{#if contactEmail}}{{contactEmail}}{{else}}bestuur@salvemundi.nl{{/if}}</a> of de organiserende commissie.</p>
 
     <p>Tot snel!</p>
 
-    <p>Met paarse groet,<br><strong>Bestuur Salve Mundi</strong></p>
+    <p>Met vriendelijke groet,<br><br>
+    <strong>Salve Mundi</strong><br>
+    Rachelsmolen 1<br>
+    5612 MA Eindhoven</p>
 {{/layout}}
