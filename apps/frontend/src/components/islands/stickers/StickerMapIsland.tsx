@@ -2,11 +2,11 @@
 
 import { useState, useTransition } from 'react';
 import dynamic from 'next/dynamic';
-import { 
-    Plus, 
-    X, 
-    Camera, 
-    Search, 
+import {
+    Plus,
+    X,
+    Camera,
+    Search,
     Map as MapIcon,
     Loader2,
     Globe,
@@ -21,8 +21,9 @@ import { useAdminToast } from '@/hooks/use-admin-toast';
 const StickerMap = dynamic(() => import('@/components/ui/maps/StickerMap'), {
     ssr: false,
     loading: () => (
-        <div className="w-full rounded-[var(--radius-2xl)] overflow-hidden shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)]/30 bg-[var(--bg-soft)] animate-pulse" style={{ height: '600px' }} />
-    ) });
+        <div className="w-full rounded-[var(--radius-2xl)] overflow-hidden shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)]/30 bg-[var(--bg-soft)]" style={{ height: '600px' }} />
+    )
+});
 
 import { type EnrichedUser } from '@/types/auth';
 
@@ -33,25 +34,21 @@ interface StickerMapIslandProps {
     user: EnrichedUser | null;
 }
 
-// No client-side Directus URL needed anymore.
-
 export default function StickerMapIsland({
     initialStickers,
-    user,
-    isAuthenticated: serverAuth = undefined
-}: StickerMapIslandProps & { isAuthenticated?: boolean }) {
+    user
+}: StickerMapIslandProps) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [stickers, setStickers] = useState(initialStickers);
     const [isPending, startTransition] = useTransition();
     const [isLocating, setIsLocating] = useState(false);
 
-    // Resolve auth status for skeleton
-    const isAuthenticated = serverAuth !== undefined ? serverAuth : !!user;
+
 
     // UI State
     const [showAddModal, setShowAddModal] = useState(false);
     const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
-    
+
     // Filters
     const [filterCountry, setFilterCountry] = useState('');
     const [filterCity, setFilterCity] = useState('');
@@ -69,9 +66,9 @@ export default function StickerMapIsland({
 
     const handlePlaceSticker = () => {
         if (!user) return;
-        
+
         setIsLocating(true);
-        
+
         if (!navigator.geolocation) {
             showToast("Je browser ondersteunt geen geolocatie.", 'error');
             setIsLocating(false);
@@ -82,7 +79,7 @@ export default function StickerMapIsland({
             async (position) => {
                 const { latitude, longitude } = position.coords;
                 setSelectedLocation({ lat: latitude, lng: longitude });
-                
+
                 // Reverse Geocoding to pre-fill city and country
                 try {
                     const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=nl`, {
@@ -92,14 +89,14 @@ export default function StickerMapIsland({
                     const addr = geoData.address || {};
                     const city = addr.city || addr.town || addr.village || addr.suburb || '';
                     const country = addr.country || '';
-                    
+
                     setFormData(prev => ({
                         ...prev,
                         city,
                         country
                     }));
                 } catch (err) {
-                    
+
                 }
 
                 setShowAddModal(true);
@@ -171,25 +168,25 @@ export default function StickerMapIsland({
                 <StatCard label="Totaal" value={stickers.length} icon={MapIcon} color="text-purple-500" />
                 <StatCard label="Landen" value={new Set(stickers.map((s: StickerPublic) => s.country?.toLowerCase()).filter(Boolean)).size} icon={Globe} color="text-blue-500" />
                 <StatCard label="Steden" value={new Set(stickers.map((s: StickerPublic) => s.city?.toLowerCase()).filter(Boolean)).size} icon={Award} color="text-green-500" />
-                <StatCard 
-                    label="Top Land" 
+                <StatCard
+                    label="Top Land"
                     value={(() => {
                         const counts: Record<string, number> = {};
                         stickers.forEach(s => {
                             if (s.country) counts[s.country] = (counts[s.country] || 0) + 1;
                         });
                         return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || '..';
-                    })()} 
-                    icon={TrendingUp} 
-                    color="text-orange-500" 
+                    })()}
+                    icon={TrendingUp}
+                    color="text-orange-500"
                 />
             </div>
 
             {/* Map Container - LOCKED GEOMETRY */}
             <div className="relative group min-h-[600px]">
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-orange-500/10 blur-3xl -z-10 group-hover:from-purple-500/20 group-hover:to-orange-500/20 transition-all duration-1000" />
-                
-                <StickerMap 
+
+                <StickerMap
                     stickers={stickers}
                     user={user}
                     selectedLocation={selectedLocation}
@@ -206,17 +203,17 @@ export default function StickerMapIsland({
                             <h3 className="text-xs font-black uppercase tracking-widest text-[var(--text-main)]">Filteren</h3>
                         </div>
                         <div className="space-y-3">
-                            <input 
-                                type="text" 
-                                placeholder="Land..." 
+                            <input
+                                type="text"
+                                placeholder="Land..."
                                 value={filterCountry}
                                 onChange={(e) => setFilterCountry(e.target.value)}
                                 suppressHydrationWarning
                                 className="w-full bg-[var(--bg-main)]/50 border border-[var(--border-color)]/30 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-[var(--theme-purple)]/50 transition-all outline-none"
                             />
-                            <input 
-                                type="text" 
-                                placeholder="Stad..." 
+                            <input
+                                type="text"
+                                placeholder="Stad..."
                                 value={filterCity}
                                 onChange={(e) => setFilterCity(e.target.value)}
                                 suppressHydrationWarning
@@ -227,7 +224,7 @@ export default function StickerMapIsland({
 
                     {user ? (
                         <div className="bg-[var(--bg-card)]/90 backdrop-blur-md rounded-2xl p-4 shadow-2xl pointer-events-auto border border-white/10">
-                             <button
+                            <button
                                 onClick={handlePlaceSticker}
                                 disabled={isLocating}
                                 className="w-full py-3 bg-gradient-to-r from-[var(--theme-purple)] to-orange-500 text-white rounded-xl shadow-lg hover:shadow-xl transition-all font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 disabled:opacity-50"
@@ -271,9 +268,9 @@ export default function StickerMapIsland({
                             <div className="space-y-4">
                                 <div>
                                     <label className="block text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-2 ml-1">Naam van de Locatie</label>
-                                    <input 
+                                    <input
                                         required
-                                        type="text" 
+                                        type="text"
                                         placeholder="Bijv. Eiffeltoren, Fontys R10..."
                                         value={formData.location_name}
                                         onChange={(e) => setFormData(prev => ({ ...prev, location_name: e.target.value }))}
@@ -284,9 +281,9 @@ export default function StickerMapIsland({
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-2 ml-1">Stad</label>
-                                        <input 
+                                        <input
                                             required
-                                            type="text" 
+                                            type="text"
                                             placeholder="Eindhoven"
                                             value={formData.city}
                                             onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
@@ -296,9 +293,9 @@ export default function StickerMapIsland({
                                     </div>
                                     <div>
                                         <label className="block text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-2 ml-1">Land</label>
-                                        <input 
+                                        <input
                                             required
-                                            type="text" 
+                                            type="text"
                                             placeholder="Nederland"
                                             value={formData.country}
                                             onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
@@ -309,7 +306,7 @@ export default function StickerMapIsland({
                                 </div>
                                 <div>
                                     <label className="block text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-2 ml-1">Beschrijving</label>
-                                    <textarea 
+                                    <textarea
                                         rows={3}
                                         placeholder="Wat een mooie plek voor een Salve sticker!"
                                         value={formData.description}
@@ -317,18 +314,18 @@ export default function StickerMapIsland({
                                         className="w-full bg-[var(--bg-main)]/50 border border-[var(--border-color)]/30 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all outline-none resize-none"
                                     />
                                 </div>
-                                
+
                                 <div>
                                     <label className="block text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-2 ml-1">Foto Bewijs</label>
                                     <div className="relative group/photo">
-                                        <input 
-                                            type="file" 
-                                            accept="image/*" 
+                                        <input
+                                            type="file"
+                                            accept="image/*"
                                             onChange={handleImageChange}
-                                            className="hidden" 
+                                            className="hidden"
                                             id="photo-upload"
                                         />
-                                        <label 
+                                        <label
                                             htmlFor="photo-upload"
                                             className="cursor-pointer flex flex-col items-center justify-center w-full h-40 bg-[var(--bg-main)]/30 border-2 border-dashed border-[var(--border-color)]/50 rounded-2xl hover:border-[var(--theme-purple)]/50 hover:bg-[var(--theme-purple)]/5 transition-all group-hover/photo:shadow-inner overflow-hidden"
                                         >

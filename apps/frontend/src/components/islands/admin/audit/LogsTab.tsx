@@ -71,7 +71,7 @@ export default function LogsTab({ logs, onRefresh, title = "Activiteitslogboek",
                         {filteredLogs.map((log) => (
                             <tr key={log.id} className="hover:bg-[var(--beheer-accent)]/[0.02] transition-colors group">
                                 <td className="p-4 text-xs font-medium text-[var(--beheer-text-muted)] tracking-tight whitespace-nowrap">
-                                    {formatDate(log.created_at, true)}
+                                    {formatDate(log.created_at, 'dd-MM-yyyy HH:mm')}
                                 </td>
                                 <td className="p-4">
                                     <span className="font-semibold text-[var(--beheer-text)] tracking-tight text-xs capitalize">

@@ -57,8 +57,7 @@ export function ActionCard({
             } : {})}
             className={`w-full flex items-center gap-4 p-4 rounded-[var(--beheer-radius)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] shadow-sm relative overflow-hidden
                 ${disabled ? 'opacity-50 cursor-not-allowed shadow-none' : ''} 
-                ${!disabled && href ? 'hover:border-[var(--beheer-accent)]/40 hover:bg-[var(--beheer-accent)]/[0.02] hover:shadow-md transition-all cursor-pointer active:scale-[0.98] group' : ''}
-                ${pulse ? 'animate-pulse-subtle border-amber-500/30 shadow-amber-500/5' : ''}`}
+                ${!disabled && href ? 'hover:border-[var(--beheer-accent)]/40 hover:bg-[var(--beheer-accent)]/[0.02] hover:shadow-md transition-all cursor-pointer active:scale-[0.98] group' : ''}`}
         >
             {/* Left: Icon (Optional) */}
             {icon && (
@@ -118,7 +117,7 @@ export function ListCard({
 }
 
 /**
- * StatCard (Legacy variant).
+ * StatCard variant for Dashboard.
  */
 export function StatCard({
     title = '',

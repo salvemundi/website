@@ -45,12 +45,13 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
             );
         }
 
-        // Remap to legacy format for the Island
-        const legacyEventData: AdminEvent = {
+        // Map to standardized format for the Island
+        const event: AdminEvent = {
             id: eventData.id!,
             name: eventData.titel,
             price_members: eventData.price_members,
-            max_sign_ups: eventData.max_sign_ups };
+            max_sign_ups: eventData.max_sign_ups
+        };
 
         // Fetch Signups using high-performance SQL query (filters out failed payments)
         const dbSignups = await getActivitySignupsInternal(id);
@@ -71,13 +72,13 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
         return (
             <AdminPageShell
                 title="Aanmeldingen"
-                subtitle={`Lijst van deelnemers voor "${legacyEventData.name}"`}
+                subtitle={`Lijst van deelnemers voor "${event.name}"`}
                 backHref={`/beheer/activiteiten`}
                 hideToolbar={true}
             >
                 <div className="pb-20">
                     <ActiviteitAanmeldingenIsland 
-                        event={legacyEventData} 
+                        event={event} 
                         initialSignups={signups} 
                         canAccessEdit={!!user.canAccessActivitiesEdit}
                     />

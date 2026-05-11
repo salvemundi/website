@@ -29,7 +29,7 @@ export function mapActivityOptionIdToName(optId: string, metaOptions: ActivityOp
         }
     }
 
-    // 3. Fallback: Check if the optId itself is actually the name (sometimes happens in legacy data or simpler forms)
+    // 3. Fallback: Check if the optId itself is actually the name (sometimes happens in simpler forms)
     const nameMatch = metaOptions.find((m: ActivityOption) => m.name === optId);
     if (nameMatch?.name) return nameMatch.name;
 

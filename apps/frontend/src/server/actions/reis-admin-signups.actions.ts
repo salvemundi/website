@@ -9,7 +9,8 @@ import {
     type TripSignupActivity
 } from '@salvemundi/validations/schema/admin-reis.zod';
 import { TRIP_SIGNUP_FIELDS } from '@salvemundi/validations/directus/fields';
-import { requireReisAdmin } from './reis-admin-utils';
+import { requireAdminResource } from '@/server/auth/auth-utils';
+import { AdminResource } from '@/shared/lib/permissions-config';
 import { 
     fetchAllTripSignupsDb, 
     fetchTripSignupByIdDb, 
@@ -31,7 +32,7 @@ import {
 import { normalizeDate } from '@/lib/utils/date-utils';
 
 export async function getTripSignups(tripId: number) {
-    await requireReisAdmin();
+    await requireAdminResource(AdminResource.Reis);
     try {
         return await fetchAllTripSignupsDb(tripId);
     } catch (error) {
@@ -41,7 +42,7 @@ export async function getTripSignups(tripId: number) {
 }
 
 export async function getTripSignup(id: number): Promise<TripSignup | null> {
-    await requireReisAdmin();
+    await requireAdminResource(AdminResource.Reis);
     try {
         return await fetchTripSignupByIdDb(id);
     } catch (error) {
@@ -51,7 +52,7 @@ export async function getTripSignup(id: number): Promise<TripSignup | null> {
 }
 
 export async function updateSignupStatus(signupId: number, status: string) {
-    await requireReisAdmin();
+    await requireAdminResource(AdminResource.Reis);
 
     try {
         const signup = await fetchTripSignupByIdDb(signupId);
@@ -125,7 +126,7 @@ export async function updateSignupStatus(signupId: number, status: string) {
 }
 
 export async function deleteTripSignup(signupId: number) {
-    await requireReisAdmin();
+    await requireAdminResource(AdminResource.Reis);
 
     try {
         const success = await deleteTripSignupDb(signupId);
@@ -149,7 +150,7 @@ export async function deleteTripSignup(signupId: number) {
 }
 
 export async function updateTripSignup(prevState: unknown, formData: FormData) {
-    await requireReisAdmin();
+    await requireAdminResource(AdminResource.Reis);
 
     const id = parseInt(formData.get('id') as string);
     if (!id) throw new Error('Geen ID gevonden voor update');
@@ -198,7 +199,7 @@ export async function updateTripSignup(prevState: unknown, formData: FormData) {
 }
 
 export async function getSignupActivities(signupId: number) {
-    await requireReisAdmin();
+    await requireAdminResource(AdminResource.Reis);
     try {
         const activities = await fetchSelectedSignupActivitiesDb(signupId);
         const parsed = z.array(tripSignupActivitySchema).safeParse(activities);
@@ -216,7 +217,7 @@ export async function getSignupActivities(signupId: number) {
 }
 
 export async function getActivitySignups(activityId: number) {
-    await requireReisAdmin();
+    await requireAdminResource(AdminResource.Reis);
     try {
         return await fetchSignupsByActivityIdDb(activityId);
     } catch (error) {
@@ -226,7 +227,7 @@ export async function getActivitySignups(activityId: number) {
 }
 
 export async function updateSignupActivities(signupId: number, activityIds: number[]) {
-    await requireReisAdmin();
+    await requireAdminResource(AdminResource.Reis);
 
     try {
         const client = getSystemDirectus();
@@ -267,7 +268,7 @@ import { sendPaymentEmail, sendBulkTripEmail, sendBulkPaymentEmails } from './re
  * Fetches all activity selections for a specific trip directly from the database.
  */
 export async function getTripSignupActivitiesAction(tripId: number) {
-    await requireReisAdmin();
+    await requireAdminResource(AdminResource.Reis);
     try {
         return await fetchTripSignupActivitiesDb(tripId);
     } catch (error) {

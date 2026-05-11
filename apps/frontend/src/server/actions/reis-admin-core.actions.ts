@@ -14,7 +14,8 @@ import {
     createItem,
     uploadFiles
 } from '@directus/sdk';
-import { requireReisAdmin } from './reis-admin-utils';
+import { requireAdminResource } from '../auth/auth-utils';
+import { AdminResource } from '@/shared/lib/permissions-config';
 import { query } from '@/lib/database';
 import { getRedis } from '@/server/auth/redis-client';
 import { FLAGS_CACHE_KEY } from '@/lib/config/feature-flags';
@@ -46,7 +47,7 @@ async function handleImageUpload(formData: FormData): Promise<string | null> {
 }
  
  export async function getAdminTrips() {
-     await requireReisAdmin();
+     await requireAdminResource(AdminResource.Reis);
      try {
          return await fetchAllTripsDb();
      } catch (error) {
@@ -56,7 +57,7 @@ async function handleImageUpload(formData: FormData): Promise<string | null> {
  }
  
  export async function getAdminTripById(id: number) {
-     await requireReisAdmin();
+     await requireAdminResource(AdminResource.Reis);
      try {
          const { rows } = await query('SELECT id, name, is_bus_trip FROM trips WHERE id = $1 LIMIT 1', [id]);
          if (!rows?.[0]) return null;
@@ -71,7 +72,7 @@ async function handleImageUpload(formData: FormData): Promise<string | null> {
  }
 
 export async function createTrip(prevState: unknown, formData: FormData) {
-    await requireReisAdmin();
+    await requireAdminResource(AdminResource.Reis);
 
     try {
         const newImageId = await handleImageUpload(formData);
@@ -124,7 +125,7 @@ export async function createTrip(prevState: unknown, formData: FormData) {
 }
 
 export async function updateTrip(prevState: unknown, formData: FormData) {
-    await requireReisAdmin();
+    await requireAdminResource(AdminResource.Reis);
 
     try {
         const id = parseInt(formData.get('id') as string);
@@ -178,7 +179,7 @@ export async function updateTrip(prevState: unknown, formData: FormData) {
 }
 
 export async function deleteTrip(id: number) {
-    await requireReisAdmin();
+    await requireAdminResource(AdminResource.Reis);
     try {
         await getSystemDirectus().request(deleteItem('trips', id));
         revalidatePath('/beheer/reis');
@@ -191,7 +192,7 @@ export async function deleteTrip(id: number) {
 }
 
 export async function toggleReisVisibility(): Promise<{ success: boolean; show?: boolean; error?: string }> {
-    await requireReisAdmin();
+    await requireAdminResource(AdminResource.Reis);
     const flagName = 'trip_registration';
 
     try {

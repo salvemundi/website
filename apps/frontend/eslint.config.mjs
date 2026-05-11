@@ -9,8 +9,11 @@ const compat = new FlatCompat({
     baseDirectory: __dirname,
 });
 
+import securityPlugin from "eslint-plugin-security";
+
 const eslintConfig = [
     ...compat.extends("next/core-web-vitals", "next/typescript"),
+    securityPlugin.configs.recommended,
     {
         rules: {
             "@typescript-eslint/no-explicit-any": "warn",

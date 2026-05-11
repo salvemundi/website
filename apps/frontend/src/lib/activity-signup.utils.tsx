@@ -61,7 +61,7 @@ export function PaymentBadge({ status }: { status: string }) {
     }
     if (status === 'open') {
         return (
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 text-[9px] font-semibold tracking-wider border border-amber-500/20 animate-pulse">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 text-[9px] font-semibold tracking-wider border border-amber-500/20">
                 <CreditCard className="h-3 w-3" />
                 <span>Open</span>
             </div>

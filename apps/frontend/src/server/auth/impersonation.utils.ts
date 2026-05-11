@@ -8,7 +8,6 @@ import { type ExtendedSession } from "@/types/auth";
  */
 export async function canUserImpersonate(userId: string): Promise<boolean> {
     try {
-        console.log(`[ImpersonationUtils] Checking permissions for userId: ${userId}`);
         const { rows } = await query(
             `SELECT c.id, c.name, c.azure_group_id, m.is_leader 
              FROM committee_members m 
@@ -17,14 +16,9 @@ export async function canUserImpersonate(userId: string): Promise<boolean> {
             [userId]
         );
         
-        console.log(`[ImpersonationUtils] Found committees: ${rows.map(r => r.name).join(', ')}`);
         const perms = getPermissions(rows);
-        console.log(`[ImpersonationUtils] Perms - ICT: ${perms.isICT}, Leader: ${perms.isLeader}, Admin: ${perms.isAdmin}`);
-        
-        // For development/debugging: allow if ICT, Leader, OR explicitly Admin
         return perms.isICT || perms.isLeader || perms.isAdmin;
     } catch (error) {
-        console.error('[ImpersonationUtils] Failed to check permissions:', error);
         return false;
     }
 }
@@ -40,23 +34,15 @@ export async function performImpersonationSwap(
     if (!directusUrl) return session;
 
     try {
-        console.log(`[ImpersonationUtils] Starting swap. Target token: ${testToken.substring(0, 5)}...`);
-        if (!directusUrl) {
-            console.error('[ImpersonationUtils] DIRECTUS_SERVICE_URL is missing!');
-            return session;
-        }
-
         const testClient = createDirectus(directusUrl)
             .with(staticToken(testToken))
             .with(rest());
 
-        console.log(`[ImpersonationUtils] Fetching target user info from ${directusUrl}...`);
         const targetUserRes = await testClient.request(readMe({
             fields: ['id', 'first_name', 'last_name', 'email', 'avatar']
-        } as never)) as any;
+        } as never)) as Record<string, unknown>;
 
         if (!targetUserRes?.id) {
-            console.warn('[ImpersonationUtils] Target user not found or token invalid.');
             return session;
         }
 
@@ -67,12 +53,10 @@ export async function performImpersonationSwap(
         );
         const dbUser = dbUserRows[0] || {};
 
-        const targetEmail = targetUserRes.email || dbUser.email || `user-${targetUserRes.id.substring(0, 8)}@salvemundi.local`;
-        const targetFirstName = targetUserRes.first_name || dbUser.first_name || '';
-        const targetLastName = targetUserRes.last_name || dbUser.last_name || '';
+        const targetEmail = (targetUserRes.email as string) || (dbUser.email as string) || `user-${(targetUserRes.id as string).substring(0, 8)}@salvemundi.local`;
+        const targetFirstName = (targetUserRes.first_name as string) || (dbUser.first_name as string) || '';
+        const targetLastName = (targetUserRes.last_name as string) || (dbUser.last_name as string) || '';
         const targetName = `${targetFirstName} ${targetLastName}`.trim() || targetEmail;
-
-        console.log(`[ImpersonationUtils] Swapping to user: ${targetName} (${targetEmail})`);
 
         const { rows: targetCommittees } = await query(
             `SELECT c.id, c.name, c.azure_group_id, m.is_leader 
@@ -98,7 +82,7 @@ export async function performImpersonationSwap(
         // Swap user
         sessionWithImpersonation.user = {
             ...session.user,
-            id: targetUserRes.id,
+            id: targetUserRes.id as string,
             email: targetEmail,
             name: targetName,
             image: targetUserRes.avatar ? `${directusUrl}/assets/${targetUserRes.avatar}` : null,
@@ -109,12 +93,10 @@ export async function performImpersonationSwap(
 
         // CRITICAL: Also swap the userId in the session object itself 
         // to ensure DB queries using session.userId find the target user.
-        sessionWithImpersonation.session.userId = targetUserRes.id;
+        sessionWithImpersonation.session.userId = targetUserRes.id as string;
 
-        console.log('[ImpersonationUtils] Swap successful!');
         return sessionWithImpersonation;
     } catch (error) {
-        console.error('[ImpersonationUtils] Swap failed with error:', error instanceof Error ? error.message : 'Unknown error');
         return session;
     }
 }
@@ -142,7 +124,6 @@ export async function enrichSession(session: ExtendedSession): Promise<ExtendedS
 
         return enrichedSession;
     } catch (error) {
-        console.error('[ImpersonationUtils] Enrichment failed:', error);
         return session;
     }
 }

@@ -151,7 +151,7 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName,
                                         }`}
                                     onClick={() => setActiveTab('member')}
                                 >
-                                    <User className={`h-3.5 w-3.5 ${activeTab === 'member' ? 'animate-pulse' : ''}`} />
+                                    <User className="h-3.5 w-3.5" />
                                     Lid
                                 </button>
                                 <button
@@ -162,7 +162,7 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName,
                                         }`}
                                     onClick={() => setActiveTab('guest')}
                                 >
-                                    <UserPlus className={`h-3.5 w-3.5 ${activeTab === 'guest' ? 'animate-pulse' : ''}`} />
+                                    <UserPlus className="h-3.5 w-3.5" />
                                     Gast (Niet-lid)
                                 </button>
                             </div>

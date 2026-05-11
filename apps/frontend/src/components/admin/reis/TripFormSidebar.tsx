@@ -80,7 +80,7 @@ export default function TripFormSidebar({
                             </div>
                             <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest group-hover:text-[var(--beheer-text)] transition-colors">Inschrijving Open</span>
                             {isAutoOpen && (
-                                <div className="ml-auto px-2 py-0.5 bg-emerald-500/10 text-emerald-500 rounded-md text-[8px] font-black uppercase tracking-tighter animate-pulse border border-emerald-500/20">
+                                <div className="ml-auto px-2 py-0.5 bg-emerald-500/10 text-emerald-500 rounded-md text-[8px] font-black uppercase tracking-tighter border border-emerald-500/20">
                                     Auto-Open Actief
                                 </div>
                             )}

@@ -12,7 +12,7 @@ export default function DeletionTimer({ expiryDateStr }: DeletionTimerProps) {
     useEffect(() => {
         if (!expiryDateStr) return;
 
-        // Based on legacy logic: 2 years after expiry
+        // Based on retention policy: 2 years after expiry
         const expiryDate = new Date(expiryDateStr);
         const deletionDate = new Date(expiryDate);
         deletionDate.setFullYear(deletionDate.getFullYear() + 2);

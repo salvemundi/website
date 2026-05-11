@@ -49,7 +49,7 @@ export function ReisFormIsland({
             // Trigger the server component to re-render with fresh data
             router.refresh();
         } catch (error) {
-            // Error handling ignored as per legacy
+            // Silently fail on background refresh
         } finally {
             // Keep the spinner going for a moment to indicate activity
             setTimeout(() => setRefreshing(false), 800);

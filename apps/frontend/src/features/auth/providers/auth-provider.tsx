@@ -18,7 +18,7 @@ export function useAuth() {
 }
 
 /**
- * Legacy compatibility hook (if needed by some components)
+ * Compatibility hook (if needed by some components)
  */
 export function useAuthActions() {
     return {
