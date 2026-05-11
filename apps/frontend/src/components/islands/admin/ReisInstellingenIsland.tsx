@@ -26,7 +26,7 @@ interface ReisInstellingenIslandProps {
     initialSettings: { show: boolean };
 }
 
-interface ActionState {
+interface _ActionState {
     success: boolean;
     id?: number;
     error?: string;
@@ -83,7 +83,7 @@ export default function ReisInstellingenIsland({ initialTrips, initialSettings }
                 } else {
                     showToast(result.error || 'Fout bij bijwerken zichtbaarheid', 'error');
                 }
-            } catch (err) {
+            } catch {
                 showToast('Er is een onverwachte fout opgetreden', 'error');
             }
         });
@@ -102,7 +102,7 @@ export default function ReisInstellingenIsland({ initialTrips, initialSettings }
             } else {
                 showToast(res.error || 'Verwijderen mislukt', 'error');
             }
-        } catch (err) {
+        } catch {
             showToast('Er is een fout opgetreden', 'error');
         } finally {
             setIsDeleting(null);

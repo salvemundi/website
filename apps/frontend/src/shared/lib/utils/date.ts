@@ -21,12 +21,7 @@ export function formatDate(
     }
 }
 
-/**
- * Modern Salve Mundi Event Formatter: "vrijdag 25 april"
- */
-export function formatEventDate(date: string | Date | number | undefined | null): string {
-    return formatDate(date, 'EEEE d MMMM');
-}
+
 
 
 

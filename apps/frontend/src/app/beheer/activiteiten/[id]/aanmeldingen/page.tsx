@@ -84,7 +84,7 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
                 </div>
             </AdminPageShell>
         );
-    } catch (e) {
+    } catch {
         return notFound();
     }
 }

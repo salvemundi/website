@@ -59,7 +59,7 @@ export default function PaymentStatusIsland({
                     setStatus('expired'); // Polling timeout
                 }
             }
-        } catch (err) {
+        } catch {
             
             if (attempts < maxAttempts) {
                 setAttempts(prev => prev + 1);

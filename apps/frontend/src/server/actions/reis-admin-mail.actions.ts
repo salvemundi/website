@@ -102,7 +102,7 @@ export async function sendBulkPaymentEmails(tripId: number, signupIds: number[],
             } else {
                 results.failCount++;
             }
-        } catch (error) {
+        } catch {
             results.failCount++;
         }
     }

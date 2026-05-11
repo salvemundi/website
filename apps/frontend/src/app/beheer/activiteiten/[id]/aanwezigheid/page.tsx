@@ -17,7 +17,7 @@ interface PageProps {
 
 export default async function AttendancePage({ params }: PageProps) {
     const { id } = await params;
-    const { user } = await checkAdminAccess();
+    const { user: _user } = await checkAdminAccess();
 
     // NUCLEAR SSR: Fetch all data at the top level
     const [activity, signups] = await Promise.all([

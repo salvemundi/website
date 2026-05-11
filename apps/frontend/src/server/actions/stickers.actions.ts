@@ -73,7 +73,7 @@ export async function createStickerPublic(data: Record<string, unknown>) {
         revalidatePath('/stickers');
         revalidateTag('stickers', 'max');
         return result;
-    } catch (error) {
+    } catch {
         throw new Error('Kon sticker niet opslaan.');
     }
 }
@@ -96,7 +96,7 @@ export async function uploadFileAction(formData: FormData) {
         const result = await directus.request(uploadFiles(formData));
         const fileObj = Array.isArray(result) ? result[0] : result;
         return fileObj?.id || null;
-    } catch (error) {
+    } catch {
         throw new Error('Foto upload mislukt op de server.');
     }
 }

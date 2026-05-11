@@ -5,6 +5,7 @@ import 'server-only';
  */
 
 export function getExpandedEnv(key: string, defaultValue?: string): string {
+    // eslint-disable-next-line security/detect-object-injection
     const value = process.env[key];
 
     if (!value) {
@@ -20,6 +21,7 @@ export function getExpandedEnv(key: string, defaultValue?: string): string {
         expansionPattern.lastIndex = 0;
         
         return value.replace(expansionPattern, (_, varName) => {
+            // eslint-disable-next-line security/detect-object-injection
             const expanded = process.env[varName];
             return expanded || '';
         });

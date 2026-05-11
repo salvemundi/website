@@ -24,7 +24,7 @@ export async function getDocumenten(): Promise<Document[]> {
         }
 
         return parsed.data;
-    } catch (err: unknown) {
+    } catch {
         
         return [];
     }

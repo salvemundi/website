@@ -18,7 +18,7 @@ export const getAdminActivities = cache(async (search?: string, filter: 'all' | 
         const eventsWithCounts = await getActivitiesWithSignupCountsInternal(search, filter);
         const parsed = AdminActivitySchema.array().parse(eventsWithCounts);
         return parsed;
-    } catch (error) {
+    } catch {
         
         return [];
     }

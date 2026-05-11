@@ -78,7 +78,7 @@ export async function getDashboardStatsInternal(): Promise<DashboardStats> {
         };
 
         return DashboardStatsSchema.parse(stats);
-    } catch (error) {
+    } catch {
         
         return {
             totalMembers: 0,
@@ -120,7 +120,7 @@ export async function getRecentActivitiesInternal(): Promise<RecentActivity[]> {
         }));
 
         return z.array(RecentActivitySchema).parse(mapped);
-    } catch (error) {
+    } catch {
         
         return [];
     }

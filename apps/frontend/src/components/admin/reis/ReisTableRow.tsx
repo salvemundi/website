@@ -29,16 +29,16 @@ export default function ReisTableRow({
     signup,
     isSelected,
     onSelect,
-    statusBadge,
+    statusBadge: _statusBadge,
     paymentStatus,
     isStatusLoading,
     isDeleteLoading,
-    sendingEmailType,
+    sendingEmailType: _sendingEmailType,
     onStatusChange,
     onDelete,
-    onResendEmail,
-    activities,
-    allowFinalPayments,
+    onResendEmail: _onResendEmail,
+    activities: _activities,
+    allowFinalPayments: _allowFinalPayments,
     isBusTrip = false
 }: ReisTableRowProps) {
     const router = useRouter();

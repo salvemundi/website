@@ -58,7 +58,7 @@ export async function getStickers() {
                 avatar: s.avatar
             } : null
         }));
-    } catch (e: unknown) {
+    } catch {
         throw new Error('Could not fetch stickers');
     }
 }
@@ -75,7 +75,7 @@ export async function deleteSticker(id: number) {
         await logAdminAction('sticker_deleted', 'SUCCESS', { sticker_id: id });
 
         return { success: true };
-    } catch (error: unknown) {
+    } catch {
         
         throw new Error('Could not delete sticker');
     }
@@ -90,7 +90,7 @@ export async function updateSticker(id: number, data: Partial<Record<string, unk
         revalidatePath('/stickers');
         revalidateTag('stickers', 'max');
         return updated;
-    } catch (e: unknown) {
+    } catch {
         
         throw new Error('Could not update sticker');
     }

@@ -32,7 +32,7 @@ export default function LedenOverzichtIsland({
     initialTotalCount = 0
 }: LedenOverzichtIslandProps) {
     const { toast, showToast, hideToast } = useAdminToast();
-    const [isPending, startTransition] = useTransition();
+    const [isPending, _startTransition] = useTransition();
     const [searchQuery, setSearchQuery] = useState('');
     const [isSendingReminder, setIsSendingReminder] = useState(false);
     const [activeTab, setActiveTab] = useState<'active' | 'inactive'>('active');
@@ -46,7 +46,7 @@ export default function LedenOverzichtIsland({
             
             const today = startOfDay(new Date());
             return startOfDay(expiryDate) >= today;
-        } catch (e) {
+        } catch {
             return false;
         }
     };
@@ -73,7 +73,7 @@ export default function LedenOverzichtIsland({
         if (!dateString) return 'Onbekend';
         try {
             return format(new Date(dateString), 'dd-MM-yyyy', { locale: nl });
-        } catch (e) {
+        } catch {
             return 'Onbekend';
         }
     };

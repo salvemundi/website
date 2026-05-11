@@ -35,7 +35,7 @@ async function handleImageUpload(formData: FormData): Promise<string | null> {
         // Directus SDK returns the uploaded file object or array of objects
         const fileObj = Array.isArray(response) ? response[0] : response;
         return fileObj?.id || null;
-    } catch (error) {
+    } catch {
         
         return null;
     }
@@ -45,7 +45,7 @@ async function handleImageUpload(formData: FormData): Promise<string | null> {
      await requireAdminResource(AdminResource.Reis);
      try {
          return await fetchAllTripsDb();
-     } catch (error) {
+     } catch {
          
          return [];
      }
@@ -60,7 +60,7 @@ async function handleImageUpload(formData: FormData): Promise<string | null> {
              ...rows[0],
              is_bus_trip: !!rows[0].is_bus_trip
          };
-     } catch (error) {
+     } catch {
          
          return null;
      }
@@ -99,7 +99,7 @@ export async function createTrip(prevState: unknown, formData: FormData) {
         const newId = await createTripDb(validated.data);
         if (!newId) throw new Error('Database insert failed');
 
-        getSystemDirectus().request(updateItem('trips', newId, validated.data)).catch(err => {
+        getSystemDirectus().request(updateItem('trips', newId, validated.data)).catch(() => {
             
         });
 
@@ -153,7 +153,7 @@ export async function updateTrip(prevState: unknown, formData: FormData) {
         const success = await updateTripDb(id, validated.data);
         if (!success) throw new Error('Database update failed');
 
-        getSystemDirectus().request(updateItem('trips', id, validated.data)).catch(err => {
+        getSystemDirectus().request(updateItem('trips', id, validated.data)).catch(() => {
             
         });
 
@@ -209,7 +209,7 @@ export async function toggleReisVisibility(): Promise<{ success: boolean; show?:
         try {
             const redis = await getRedis();
             await redis.del(FLAGS_CACHE_KEY);
-        } catch (e) {
+        } catch {
             
         }
 
@@ -224,12 +224,12 @@ export async function toggleReisVisibility(): Promise<{ success: boolean; show?:
         try {
             const redis = await getRedis();
             await redis.del(FLAGS_CACHE_KEY);
-        } catch (e) {
+        } catch {
             
         }
         
         return { success: true, show: newStatus };
-    } catch (e) {
+    } catch {
         
         return { success: false, error: 'Bijwerken mislukt' };
     }

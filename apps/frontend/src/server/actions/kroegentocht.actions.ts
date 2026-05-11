@@ -117,7 +117,7 @@ export async function getKroegentochtTickets(email: string): Promise<PubCrawlTic
 
         const parsed = items.map((t) => pubCrawlTicketSchema.safeParse(t).data).filter((t): t is PubCrawlTicket => !!t);
         return parsed;
-    } catch (error) {
+    } catch {
         return [];
     }
 }
@@ -180,7 +180,7 @@ export async function initiateKroegentochtPayment(formData: unknown) {
                         initial: name.substring(0, 1).toUpperCase()
                     }));
             }
-        } catch (e) {
+        } catch {
             // Final fallback
             participantsData = [];
         }
@@ -215,8 +215,7 @@ export async function initiateKroegentochtPayment(formData: unknown) {
 
                 try {
                     await getSystemDirectus().request(updateItem('pub_crawl_signups', signupId, syncPayload));
-                } catch (updateErr) {
-
+                } catch {
                     // Rollback both if even update fails
                     await deletePubCrawlTicketsBySignupIdDb(signupId);
                     await deletePubCrawlSignupDb(signupId);
@@ -258,15 +257,20 @@ export async function initiateKroegentochtPayment(formData: unknown) {
             await deletePubCrawlTicketsBySignupIdDb(signupId);
             await deletePubCrawlSignupDb(signupId);
             getSystemDirectus().request(deleteItem('pub_crawl_signups', signupId)).catch(() => { });
-        } catch (cleanupErr) {
+        } catch {
         }
 
         return { success: false, error: 'Failed to initiate payment. Please try again later.' };
 
-    } catch (error) {
+    } catch {
         return { success: false, error: 'An internal error occurred.' };
     }
 }
+
+
+
+
+
 
 export async function getKroegentochtStatus(signupId: string) {
     try {
@@ -281,10 +285,7 @@ export async function getKroegentochtStatus(signupId: string) {
         }
 
         return { status: 'open' };
-    } catch (error) {
+    } catch {
         return { status: 'error' };
     }
 }
-
-
-

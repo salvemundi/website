@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 
         const text = await response.text();
         return new NextResponse(text, { status: response.status });
-    } catch (error) {
+    } catch {
         
         // Return 200 to Mollie to prevent retries for internal errors
         return NextResponse.json({ received: true }, { status: 200 });

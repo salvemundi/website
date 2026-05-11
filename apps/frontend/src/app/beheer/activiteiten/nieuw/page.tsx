@@ -27,7 +27,7 @@ async function getCommitteesForUser(user: EnrichedUser, permissions: ReturnType<
             const { rows } = await query(`SELECT id, name FROM committees WHERE id IN (${placeholders}) ORDER BY name ASC`, committeeIds);
             return rows;
         }
-    } catch (error) {
+    } catch {
         return [];
     }
 }

@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
                 title: `Deelnemer: ${signup[0].first_name} ${signup[0].last_name} | SV Salve Mundi`
             };
         }
-    } catch (e) {}
+    } catch {}
 
     return { title: 'Deelnemer Details | SV Salve Mundi' };
 }

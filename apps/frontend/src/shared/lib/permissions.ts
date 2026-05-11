@@ -31,6 +31,7 @@ export interface UserPermissions {
  * Checks if a user has permission to access a specific resource.
  */
 export function hasPermission(committees: Committee[] = [], resource: AdminResource): boolean {
+    // eslint-disable-next-line security/detect-object-injection
     const requirement = RESOURCE_PERMISSIONS[resource];
     if (!requirement) return false;
 

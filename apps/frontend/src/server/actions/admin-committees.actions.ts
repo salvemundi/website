@@ -82,7 +82,7 @@ export async function updateCommitteeDetails(
         revalidatePath(`/beheer/commissies/${committeeId}`);
         revalidatePath('/beheer/commissies');
         return { success: true };
-    } catch (e) {
+    } catch {
         
         return { success: false, error: 'Opslaan mislukt' };
     }
@@ -184,7 +184,7 @@ export async function toggleCommitteeLeader(
     try {
         await getSystemDirectus().request(updateItem('committee_members', membershipId, { is_leader: !currentIsLeader }));
         revalidatePath('/beheer/commissies');
-    } catch (e) {
+    } catch {
         
         return { success: false, error: 'Bijwerken mislukt' };
     }

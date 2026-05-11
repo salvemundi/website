@@ -83,7 +83,7 @@ export default function MemberProfileTab({
         if (!dateString) return 'Onbekend';
         try {
             return format(new Date(dateString), 'd MMMM yyyy', { locale: nl });
-        } catch (e) {
+        } catch {
             return 'Onbekend';
         }
     };

@@ -123,7 +123,7 @@ export async function rejectSignupAction(id: string, type: string) {
 
         revalidatePath('/beheer/logging');
         return { success: true };
-    } catch (err) {
+    } catch {
         
         return { success: false, error: "Afwijzen mislukt." };
     }
@@ -138,7 +138,7 @@ export async function getAuditSettingsAction() {
         
         const flag = rows?.[0];
         return { success: true, data: { manual_approval: !!flag?.is_active } };
-    } catch (e) {
+    } catch {
         
         return { success: true, data: { manual_approval: false } };
     }
@@ -168,7 +168,7 @@ export async function updateAuditSettingsAction(manualApproval: boolean) {
 
         revalidateTag('audit_settings', 'max');
         return { success: true };
-    } catch (error) {
+    } catch {
         
         return { success: false, error: "Bijwerken instellingen mislukt." };
     }
@@ -203,45 +203,35 @@ export async function getQueueStatusAction() {
         const data = await res.json();
         
         return { success: true, data };
-    } catch (err) {
+    } catch {
         return { success: false, error: "Kon wachtrij status niet ophalen." };
     }
+}
+
+async function bulkActionHelper(items: { id: string; type: string }[], actionFn: (id: string, type: string) => Promise<any>) {
+    const results = await Promise.allSettled(
+        items.map(item => actionFn(item.id, item.type))
+    );
+
+    const failures = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.success));
+    
+    revalidatePath('/beheer/logging');
+    
+    if (failures.length > 0) {
+        return { success: false, error: `${failures.length} items konden niet worden verwerkt.` };
+    }
+
+    return { success: true };
 }
 
 export async function bulkApproveSignupsAction(items: { id: string; type: string }[]) {
     const admin = await checkAuditAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
-
-    const results = await Promise.allSettled(
-        items.map(item => approveSignupAction(item.id, item.type))
-    );
-
-    const failures = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.success));
-    
-    revalidatePath('/beheer/logging');
-    
-    if (failures.length > 0) {
-        return { success: false, error: `${failures.length} items konden niet worden goedgekeurd.` };
-    }
-
-    return { success: true };
+    return bulkActionHelper(items, approveSignupAction);
 }
 
 export async function bulkRejectSignupsAction(items: { id: string; type: string }[]) {
     const admin = await checkAuditAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
-
-    const results = await Promise.allSettled(
-        items.map(item => rejectSignupAction(item.id, item.type))
-    );
-
-    const failures = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.success));
-    
-    revalidatePath('/beheer/logging');
-
-    if (failures.length > 0) {
-        return { success: false, error: `${failures.length} items konden niet worden afgewezen.` };
-    }
-
-    return { success: true };
+    return bulkActionHelper(items, rejectSignupAction);
 }

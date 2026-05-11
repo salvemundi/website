@@ -1,7 +1,5 @@
 'use server';
 
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { updateProfileSchema } from '@salvemundi/validations/schema/profiel.zod';
@@ -9,16 +7,14 @@ import { updateProfileSchema } from '@salvemundi/validations/schema/profiel.zod'
 
 import { getSystemDirectus } from '@/lib/directus';
 import { updateUser } from '@directus/sdk';
-import { getRedis } from '@/server/auth/redis-client';
-import { cookies } from 'next/headers';
 import { triggerUserSyncAction } from './azure-sync/sync-tasks.actions';
+import { clearSessionCache } from '@/server/auth/session-utils';
+import { getAuthorizedUser } from './activiteiten/auth-check';
 import sharp from 'sharp';
 
-import { type EnrichedUser } from '@/types/auth';
 
 export async function updateUserProfile(data: z.infer<typeof updateProfileSchema>) {
-    const session = await auth.api.getSession({ headers: await headers() });
-    const user = session?.user as EnrichedUser | undefined;
+    const user = await getAuthorizedUser();
 
     if (!user?.id) {
         return { success: false, error: 'Not authenticated' };
@@ -74,21 +70,13 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
             await getSystemDirectus().request(updateUser(user.id, directusOnlyData));
         }
 
-        // Clear session cache in Redis
-        const cookieStore = await cookies();
-        const sessionToken = cookieStore.get('better-auth.session-token')?.value || 
-                           cookieStore.get('__Secure-better-auth.session-token')?.value;
-                           
-        if (sessionToken) {
-            const redis = await getRedis();
-            await redis.del(`session:${sessionToken}`);
-        }
+        await clearSessionCache();
 
         revalidatePath('/profiel');
         revalidatePath('/profiel', 'page');
         revalidatePath('/', 'layout');
         return { success: true };
-    } catch (err) {
+    } catch {
         
         return { success: false, error: 'Bijwerken mislukt door een onbekende systeemfout.' };
     }
@@ -98,8 +86,7 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
  * Upload a new avatar to Azure AD, then sync to Directus.
  */
 export async function uploadUserAvatar(formData: FormData) {
-    const session = await auth.api.getSession({ headers: await headers() });
-    const user = session?.user as EnrichedUser | undefined;
+    const user = await getAuthorizedUser();
 
     if (!user?.id) {
         return { success: false, error: 'Not authenticated' };
@@ -162,15 +149,7 @@ export async function uploadUserAvatar(formData: FormData) {
         // Only sync the profile_photo field to avoid accidental updates to other fields
         await triggerUserSyncAction(entraId, { fields: ['profile_photo'] });
 
-        // Step 4: Clear session cache
-        const cookieStore = await cookies();
-        const sessionToken = cookieStore.get('better-auth.session-token')?.value || 
-                           cookieStore.get('__Secure-better-auth.session-token')?.value;
-                           
-        if (sessionToken) {
-            const redis = await getRedis();
-            await redis.del(`session:${sessionToken}`);
-        }
+        await clearSessionCache();
 
         revalidatePath('/profiel');
         return { success: true };
@@ -179,5 +158,3 @@ export async function uploadUserAvatar(formData: FormData) {
         return { success: false, error: 'Uploaden van profielfoto mislukt.' };
     }
 }
-
-

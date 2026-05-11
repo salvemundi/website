@@ -25,7 +25,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
             if (trip && trip[0]) {
                 title = `${trip[0].name} - Activiteiten | SV Salve Mundi`;
             }
-        } catch (e) {}
+        } catch {}
     }
 
     return { title };

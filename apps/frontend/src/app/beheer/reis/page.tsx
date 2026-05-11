@@ -33,7 +33,7 @@ export async function generateMetadata({ searchParams }: AdminReisPageProps): Pr
             if (trip) {
                 title = `${trip.name} - Aanmeldingen | SV Salve Mundi`;
             }
-        } catch (e) {
+        } catch {
             // Fallback to default
         }
     }
@@ -48,13 +48,13 @@ export async function generateMetadata({ searchParams }: AdminReisPageProps): Pr
  * to ensure maximum stability and zero layout shift.
  */
 export default async function AdminReisPage({ searchParams }: AdminReisPageProps) {
-    const { user } = await checkAdminAccess();
+    const { user: _user } = await checkAdminAccess();
     const resolvedSearchParams = await searchParams;
     const tripIdParam = typeof resolvedSearchParams.tripId === 'string' ? resolvedSearchParams.tripId : undefined;
 
     // Fetch initial trips and settings concurrently
     let trips: Trip[] = [];
-    let reisSettings = { show: true };
+    let _reisSettings = { show: true };
     let errorMsg: string | null = null;
     
     try {
@@ -64,7 +64,7 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
         ]);
         
         trips = (tripsRes as unknown as Trip[]) || [];
-        reisSettings = settingsRes || { show: true };
+        _reisSettings = settingsRes || { show: true };
     } catch (e: unknown) {
         errorMsg = (e instanceof Error) ? e.message : 'Interne serverfout';
     }
@@ -110,7 +110,7 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
         signups = (sRes as unknown as TripSignup[]) || [];
         allSignupSelections = (saRes as unknown as TripSignupActivity[]) || [];
         allTripActivities = (activitiesRes as unknown as TripActivity[]) || [];
-    } catch (e: unknown) {
+    } catch {
         // Log or handle error
     }
 

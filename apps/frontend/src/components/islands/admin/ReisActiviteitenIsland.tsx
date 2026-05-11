@@ -39,7 +39,7 @@ export default function ReisActiviteitenIsland({
     const [activities, setActivities] = useState<TripActivity[]>(initialActivities);
     const [signupsByActivity] = useState<Record<number, Signup[]>>(initialSignupsByActivity);
     
-    const [isPending, startTransition] = useTransition();
+    const [_isPending, startTransition] = useTransition();
     const [editingActivity, setEditingActivity] = useState<Partial<TripActivity> | null>(null);
     const [viewingSignupsId, setViewingSignupsId] = useState<number | null>(null);
 
@@ -92,15 +92,15 @@ export default function ReisActiviteitenIsland({
         });
     };
 
-    const totalSignups = Object.values(signupsByActivity).reduce((acc, curr) => acc + curr.length, 0);
-    const avgPrice = activities.length > 0 ? (activities.reduce((acc, curr) => acc + (curr.price || 0), 0) / activities.length).toFixed(2) : '0.00';
+    const _totalSignups = Object.values(signupsByActivity).reduce((acc, curr) => acc + curr.length, 0);
+    const _avgPrice = activities.length > 0 ? (activities.reduce((acc, curr) => acc + (curr.price || 0), 0) / activities.length).toFixed(2) : '0.00';
 
     const adminStats = [
         { label: 'Activiteiten', value: activities.length, icon: Layers, theme: 'blue' },
         { label: 'Actief', value: activities.filter(a => a.is_active).length, icon: Layers, theme: 'emerald' },
     ];
 
-    const activeTrip = initialTrips.find(t => t.id === selectedTripId) || initialTrips[0];
+    const _activeTrip = initialTrips.find(t => t.id === selectedTripId) || initialTrips[0];
 
     return (
         <>

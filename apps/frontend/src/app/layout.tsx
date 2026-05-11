@@ -130,7 +130,7 @@ async function HeadPreloads() {
                 ))}
             </>
         );
-    } catch (e) {
+    } catch {
         return null;
     }
 }
@@ -156,7 +156,7 @@ async function HeaderWrapper() {
                 isAdmin={isAuthorized}
             />
         );
-    } catch (e) {
+    } catch {
         return (
              <NavigationHeader
                 disabledRoutes={[]}
@@ -187,7 +187,7 @@ async function FooterWrapper() {
                 initialSession={session}
             />
         );
-    } catch (e) {
+    } catch {
         return (
             <FooterIsland
                 documents={[]}
@@ -214,7 +214,7 @@ async function ImpersonationWrapper() {
                 isNormallyAdmin={impersonation.isNormallyAdmin}
             />
         );
-    } catch (e) {
+    } catch {
         return null;
     }
 }

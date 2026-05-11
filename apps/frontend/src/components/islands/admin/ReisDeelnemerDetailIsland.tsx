@@ -52,14 +52,14 @@ export default function ReisDeelnemerDetailIsland({
     const [state, formAction, isSaving] = useActionState<ActionState | null, FormData>(updateTripSignup, null);
     const [selectedActivities, setSelectedActivities] = useState<number[]>(initialSelectedActivities);
     const [isUpdatingActivities, setIsUpdatingActivities] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
+    const [_error, _setError] = useState<string | null>(null);
+ 
     const toggleActivity = (id: number) => {
         setSelectedActivities(prev => 
             prev.includes(id) ? prev.filter(aid => aid !== id) : [...prev, id]
         );
     };
-
+ 
     const handleUpdateActivities = async () => {
         setIsUpdatingActivities(true);
         try {
@@ -69,7 +69,7 @@ export default function ReisDeelnemerDetailIsland({
             } else {
                 showToast('Activiteiten succesvol bijgewerkt', 'success');
             }
-        } catch (err) {
+        } catch {
             showToast('Geen verbinding met de server', 'error');
         } finally {
             setIsUpdatingActivities(false);

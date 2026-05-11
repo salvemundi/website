@@ -99,7 +99,7 @@ export async function checkUserSignupStatus(eventId: number, email: string, user
             };
         }
         return { isSignedUp: false };
-    } catch (error) {
+    } catch {
         return { isSignedUp: false };
     }
 }
@@ -195,7 +195,7 @@ export async function signupForActivity(data: EventSignupForm) {
             try {
                 await deleteEventSignupDb(signupId);
                 getSystemDirectus().request(deleteItem('event_signups', signupId)).catch(() => {});
-            } catch (cleanupErr) {}
+            } catch {}
 
             return { success: false, error: 'Could not create payment for this signup.' };
         } else {

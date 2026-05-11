@@ -38,7 +38,7 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                     setStatus('error');
                     showToast(result?.error || 'Ongeldige token of fout bij valideren.', 'error');
                 }
-            } catch (err) {
+            } catch {
                 setStatus('error');
                 showToast('Er is een onverwachte fout opgetreden.', 'error');
             }

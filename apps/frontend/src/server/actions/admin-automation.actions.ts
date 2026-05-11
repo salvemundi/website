@@ -75,7 +75,7 @@ export async function toggleAutomationSetting(key: string) {
         revalidatePath('/beheer/services');
         revalidatePath('/beheer/mail');
         return { success: true };
-    } catch (e) {
+    } catch {
         return { success: false, error: 'Bijwerken instelling mislukt' };
     }
 }

@@ -42,7 +42,7 @@ export async function getPubCrawlEvents(): Promise<PubCrawlEvent[]> {
     try {
         // Direct DB fetch to bypass API cache
         return await fetchPubCrawlEventsDb();
-    } catch (e) {
+    } catch {
         
         throw new Error('Kon events niet ophalen');
     }
@@ -56,7 +56,7 @@ export async function getPubCrawlEvent(id: string | number): Promise<PubCrawlEve
         }));
         const event = item as unknown as PubCrawlEvent;
         return pubCrawlEventSchema.parse(event);
-    } catch (e) {
+    } catch {
         
         throw new Error('Kon event niet ophalen');
     }
@@ -96,7 +96,7 @@ export async function uploadPubCrawlImage(formData: FormData) {
         const client = getSystemDirectus();
         const response = await client.request(uploadFiles(formData));
         return response;
-    } catch (e) {
+    } catch {
         
         throw new Error('Afbeelding uploaden mislukt');
     }
@@ -152,7 +152,7 @@ export async function getPubCrawlSignup(id: number) {
     try {
         // Direct DB fetch to bypass API cache
         return await fetchPubCrawlSignupByIdDb(id);
-    } catch (e) {
+    } catch {
         
         throw new Error('Kon aanmelding niet ophalen');
     }
@@ -168,7 +168,7 @@ export async function deletePubCrawlSignup(id: number, eventId: number) {
         getSystemDirectus().request(deleteItem('pub_crawl_signups', id)).catch(() => {});
 
         return { success: true };
-    } catch (e) {
+    } catch {
         throw new Error('Verwijderen mislukt');
     }
 }
@@ -194,7 +194,7 @@ export async function updatePubCrawlSignup(id: number, eventId: number, data: Pa
         getSystemDirectus().request(updateItem('pub_crawl_signups', id, filteredData)).catch(() => {});
 
         return { success: true };
-    } catch (e) {
+    } catch {
         throw new Error('Bijwerken mislukt');
     }
 }
@@ -223,7 +223,7 @@ export async function toggleKroegentochtVisibility(): Promise<{ success: boolean
         try {
             const redis = await getRedis();
             await redis.del(FLAGS_CACHE_KEY);
-        } catch (e) {
+        } catch {
             
         }
 
@@ -237,12 +237,12 @@ export async function toggleKroegentochtVisibility(): Promise<{ success: boolean
         try {
             const redis = await getRedis();
             await redis.del(FLAGS_CACHE_KEY);
-        } catch (e) {
+        } catch {
             
         }
 
         return { success: true, show: newStatus };
-    } catch (e) {
+    } catch {
         
         return { success: false, error: 'Bijwerken mislukt' };
     }
@@ -255,7 +255,7 @@ export async function getKroegentochtSettings() {
         const { rows } = await query('SELECT is_active FROM feature_flags WHERE route_match = $1 LIMIT 1', ['/kroegentocht']);
         const isVisible = rows && rows.length > 0 ? !!rows[0].is_active : true;
         return { show: isVisible };
-    } catch (e) {
+    } catch {
         
         return { show: true };
     }
@@ -281,7 +281,7 @@ export async function togglePubCrawlTicketCheckIn(ticketId: number, currentStatu
 
         revalidateTag(`signups-${eventId}`, 'max');
         return { success: true, newStatus };
-    } catch (e) {
+    } catch {
         throw new Error('Inchecken mislukt');
     }
 }
