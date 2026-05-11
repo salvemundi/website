@@ -1,4 +1,3 @@
-import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import GlobalError from '@/components/ui/layout/GlobalError';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import { 

@@ -1,18 +1,13 @@
 'use server';
 
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
 import { revalidateTag, revalidatePath, unstable_noStore as noStore } from 'next/cache';
 import { 
     pubCrawlEventSchema, 
-    pubCrawlSignupSchema, 
     type PubCrawlEvent, 
     type PubCrawlSignup
 } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { 
-    PUB_CRAWL_EVENT_FIELDS, 
-    PUB_CRAWL_SIGNUP_FIELDS, 
-    PUB_CRAWL_TICKET_FIELDS 
+    PUB_CRAWL_EVENT_FIELDS 
 } from '@salvemundi/validations/directus/fields';
 import { getRedis } from '@/server/auth/redis-client';
 import { FLAGS_CACHE_KEY } from '@/lib/config/feature-flags';
@@ -31,7 +26,6 @@ import {
     fetchPubCrawlEventsDb, 
     fetchPubCrawlSignupsDb, 
     fetchPubCrawlSignupByIdDb,
-    fetchPubCrawlTicketsDb,
     updatePubCrawlSignupDb,
     deletePubCrawlSignupDb
 } from './kroegentocht-db.utils';

@@ -2,15 +2,11 @@
 
 import 'server-only';
 import { query } from '@/lib/database';
-import { 
-    pubCrawlEventSchema, 
-    pubCrawlSignupSchema, 
-    pubCrawlTicketSchema,
+import {
     type PubCrawlEvent, 
     type PubCrawlSignup,
     type PubCrawlTicket
 } from '@salvemundi/validations/schema/pub-crawl.zod';
-import { z } from 'zod';
 
 export type EnrichedPubCrawlSignup = PubCrawlSignup & {
     pub_crawl_event_id: {

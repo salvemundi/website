@@ -1,13 +1,10 @@
 'use client';
 
-import { useState, useMemo, useTransition, useEffect } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
     Layers, 
-    Users, 
     Plus, 
-    Euro, 
-    Settings2, 
     ChevronDown 
 } from 'lucide-react';
 import { deleteTripActivity, createTripActivity, updateTripActivity } from '@/server/actions/reis-admin-activities.actions';

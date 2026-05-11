@@ -5,7 +5,6 @@ import {
     Plus, 
     X, 
     Save, 
-    Loader2, 
     Edit, 
     Trash2, 
     List, 
@@ -13,8 +12,6 @@ import {
     Calendar 
 } from 'lucide-react';
 import { formatDate } from '@/shared/lib/utils/date';
-import { format } from 'date-fns';
-import { nl } from 'date-fns/locale';
 import type { IntroPlanningItem } from '@salvemundi/validations/schema/intro.zod';
 import { ActionButton, EmptyState, Field, inputClass, Button } from './IntroTabComponents';
 

@@ -4,15 +4,12 @@ import { useState } from 'react';
 import { 
     Search, 
     Trash2, 
-    ExternalLink, 
     User, 
     MapPin, 
     Globe, 
     Image as ImageIcon,
-    Loader2,
     X,
-    CheckCircle,
-    Clock
+    CheckCircle
 } from 'lucide-react';
 import { formatDate } from '@/shared/lib/utils/date';
 

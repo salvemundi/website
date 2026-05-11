@@ -16,7 +16,6 @@ import {
     Edit2,
     X
 } from 'lucide-react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { updatePubCrawlSignup, togglePubCrawlTicketCheckIn, updatePubCrawlTickets, deletePubCrawlSignup } from '@/server/actions/admin-kroegentocht.actions';
 import { Trash2 } from 'lucide-react';

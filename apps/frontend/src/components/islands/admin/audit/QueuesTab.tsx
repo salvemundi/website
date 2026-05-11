@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Loader2, CheckCircle } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 import { QueueInfo } from '@salvemundi/validations';
 
 

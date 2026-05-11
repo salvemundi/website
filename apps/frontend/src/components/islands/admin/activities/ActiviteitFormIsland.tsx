@@ -6,8 +6,7 @@ import {
     ArrowLeft, 
     Upload, 
     X, 
-    Save, 
-    Loader2 
+    Save 
 } from 'lucide-react';
 import { createActivityAction } from '@/server/actions/activiteiten/activities-write.actions';
 import AdminToast from '@/components/ui/admin/AdminToast';

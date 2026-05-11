@@ -6,7 +6,6 @@ import {
   Serwist, 
   NetworkFirst, 
   CacheFirst, 
-  StaleWhileRevalidate, 
   ExpirationPlugin, 
   CacheableResponsePlugin 
 } from "serwist";

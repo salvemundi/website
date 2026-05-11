@@ -6,7 +6,6 @@ import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { Mail, Ticket, Edit2, Download, ChevronDown, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
-import AdminVisibilityToggle from '@/components/ui/admin/AdminVisibilityToggle';
 import type { Trip } from '@salvemundi/validations/schema/admin-reis.zod';
 
 interface ReisManagementHeaderProps {

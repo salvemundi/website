@@ -6,7 +6,6 @@ import {
     transactionStatusSchema, 
     type SignupFormData
 } from '@salvemundi/validations/schema/membership.zod';
-import { TRANSACTION_FIELDS } from '@salvemundi/validations/directus/fields';
 import { auth } from '@/server/auth/auth';
 import { type EnrichedUser } from '@/types/auth';
 import { headers } from 'next/headers';

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useTransition, useEffect, useRef } from 'react';
-import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
@@ -9,10 +9,9 @@ import { initiateKroegentochtPayment } from '@/server/actions/kroegentocht.actio
 import { 
     type PubCrawlEvent, 
     pubCrawlSignupFormSchema, 
-    type PubCrawlSignupForm,
-    type PubCrawlParticipant 
+    type PubCrawlSignupForm 
 } from '@salvemundi/validations/schema/pub-crawl.zod';
-import { Plus, Minus, Mail, Building, Ticket, AlertCircle } from 'lucide-react';
+import { Plus, Minus, Mail, Building, Ticket } from 'lucide-react';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import AdminToast from '@/components/ui/admin/AdminToast';
 

@@ -3,7 +3,6 @@
 import React from 'react';
 import { 
     Users, 
-    UserPlus, 
     UserMinus, 
     Shield, 
     Mail, 

@@ -1,9 +1,5 @@
 'use server';
 
-import { auth } from "@/server/auth/auth";
-import { headers } from "next/headers";
-import { getSystemDirectus } from "@/lib/directus";
-import { readMe } from "@directus/sdk";
 import { checkAdminAccess } from "./admin-utils.actions";
 
 const AZURE_MGMT_URL = process.env.AZURE_MANAGEMENT_SERVICE_URL;

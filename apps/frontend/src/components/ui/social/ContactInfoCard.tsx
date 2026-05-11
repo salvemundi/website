@@ -1,9 +1,7 @@
 import React from 'react';
-import Link from 'next/link';
 import { MapPin, Building, Calendar, Mail, Phone, FileText, ChevronRight, MessageCircle } from 'lucide-react';
 import DocumentenLijst from '@/components/ui/social/DocumentenLijst';
 import SafeHavenButton from '@/components/islands/social/SafeHavenButton';
-import WhatsAppLink from '@/components/islands/social/WhatsAppLink';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 import type { Document as WebsiteDocument } from '@salvemundi/validations/schema/website.zod';
 

@@ -1,6 +1,5 @@
 'use server';
 
-import { auth } from '@/server/auth/auth';
 import { checkAdminAccess } from './activiteit-utils';
 import { getActivitySignupsInternal } from "@/server/queries/admin-event.queries";
 

@@ -2,7 +2,6 @@
 
 import { stripHtml } from '@/shared/lib/text';
 import ActiviteitCard from './ActiviteitCard';
-import { getImageUrl } from '@/lib/utils/image-utils';
 import { isEventPast } from '@/shared/lib/utils/date';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';

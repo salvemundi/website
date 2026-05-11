@@ -1,8 +1,6 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import AnimatedBeheerHeader from '@/components/ui/admin/AnimatedBeheerHeader';
 import ReisDeelnemerDetailIsland from '@/components/islands/admin/ReisDeelnemerDetailIsland';
-import { User } from 'lucide-react';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 import { Trip, TripActivity } from '@salvemundi/validations/schema/admin-reis.zod';

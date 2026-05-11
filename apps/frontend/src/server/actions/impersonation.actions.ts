@@ -71,7 +71,7 @@ export async function setImpersonateToken(token: string) {
         }
 
         const fullName = `${targetUser.first_name || ''} ${targetUser.last_name || ''}`.trim();
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+         
         const normallyAdmin = hasPermission(impCommittees, AdminResource.Intro);
 
         const sessionToken = cookieStore.get('better-auth.session-token')?.value ||

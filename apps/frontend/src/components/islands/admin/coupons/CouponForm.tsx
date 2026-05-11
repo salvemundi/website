@@ -2,12 +2,9 @@
 
 import React from 'react';
 import { 
-    Plus, 
     Percent, 
     Euro, 
-    Calendar, 
     Loader2, 
-    X, 
     AlertCircle, 
     Save 
 } from 'lucide-react';

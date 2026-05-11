@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Gamepad2, Edit2, Save, Loader2, X } from 'lucide-react';
+import { Gamepad2, Edit2, Save, Loader2 } from 'lucide-react';
 import { Tile, formatForBreak } from './ProfielUI';
 
 import { UseFormRegister, UseFormHandleSubmit, FieldErrors } from 'react-hook-form';

@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { z } from 'zod';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AlertCircle, ArrowLeft } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { 
     type Trip, 
     type TripSignup, 
@@ -21,7 +21,7 @@ import {
     syncSignupActivities, 
     initiateTripPaymentAction 
 } from '@/server/actions/reis-payment.actions';
-import { calculateTripPricing, type TripPricingResult, type ActivitySelection } from '@/lib/reis/pricing';
+import { calculateTripPricing, type ActivitySelection } from '@/lib/reis/pricing';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 

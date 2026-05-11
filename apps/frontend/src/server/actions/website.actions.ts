@@ -1,12 +1,11 @@
 'use server';
  
-import { connection } from 'next/server';
 
 import { documentenSchema, type Document } from '@salvemundi/validations/schema/website.zod';
 import { DOCUMENT_FIELDS } from '@salvemundi/validations/directus/fields';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
-import { getDisabledRoutes, FLAGS_CACHE_KEY } from '@/lib/config/feature-flags';
+import { getDisabledRoutes } from '@/lib/config/feature-flags';
 export { getDisabledRoutes };
 
 

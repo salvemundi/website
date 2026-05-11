@@ -1,7 +1,6 @@
 'use client';
 
-import { Search, Download, Edit, ChevronDown } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { Search, ChevronDown } from 'lucide-react';
 
 interface ReisFiltersProps {
     searchQuery: string;

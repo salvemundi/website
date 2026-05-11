@@ -5,11 +5,9 @@ import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
 import { logAdminAction } from "./audit.actions";
 import { isSuperAdmin } from "@/lib/auth";
-import { type Committee } from "@/shared/lib/permissions";
 
 import { getSystemDirectus } from "@/lib/directus";
-import { readItems, deleteItem, updateItem } from "@directus/sdk";
-import { STICKER_FIELDS } from "@salvemundi/validations";
+import { deleteItem, updateItem } from "@directus/sdk";
 
 import { type EnrichedUser } from "@/types/auth";
 

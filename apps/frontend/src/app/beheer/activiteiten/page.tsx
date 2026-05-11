@@ -10,7 +10,6 @@ import { fetchUserCommitteesDb } from '@/server/actions/user-db.utils';
 import { getPermissions } from '@/shared/lib/permissions';
 import { type EnrichedUser } from '@/types/auth';
 import { type AdminActivity } from "@salvemundi/validations";
-import { type Committee } from '@/shared/lib/permissions';
 
 import { type DbCommittee } from '@salvemundi/validations/directus/schema';
 

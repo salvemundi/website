@@ -3,7 +3,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { Sponsor } from '@salvemundi/validations/schema/home.zod';
 import { getImageUrl } from '@/lib/utils/image-utils';
-import { cn } from '@/lib/utils/cn';
 
 interface SponsorsSectionProps {
     sponsors?: Sponsor[];

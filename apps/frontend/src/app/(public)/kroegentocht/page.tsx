@@ -4,7 +4,7 @@ import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import KroegentochtFormIsland from '@/components/islands/kroegentocht/KroegentochtFormIsland';
 import KroegentochtTicketsIsland from '@/components/islands/kroegentocht/KroegentochtTicketsIsland';
-import { Info, MapPin, Calendar, Clock, AlertCircle, Users, Mail, ShieldAlert } from 'lucide-react';
+import { Info, MapPin, Calendar, Clock, Users, Mail, ShieldAlert } from 'lucide-react';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 import { formatDate } from '@/shared/lib/utils/date';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';

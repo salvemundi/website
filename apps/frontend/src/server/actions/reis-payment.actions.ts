@@ -1,18 +1,12 @@
 'use server';
 
-import { revalidatePath, revalidateTag } from 'next/cache';
-import { 
-    TRIP_FIELDS, 
-    TRIP_SIGNUP_FIELDS, 
-    TRIP_ACTIVITY_FIELDS,
-    TRIP_SIGNUP_ACTIVITY_FIELDS
-} from '@salvemundi/validations/directus/fields';
+
+
 import { 
     reisPaymentEnrichmentSchema
 } from '@salvemundi/validations/schema/reis.zod';
 import {
     tripSchema,
-    tripSignupSchema,
     tripActivitySchema,
     tripSignupActivitySchema
 } from '@salvemundi/validations/schema/admin-reis.zod';

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { type PubCrawlTicket } from '@salvemundi/validations/schema/pub-crawl.zod';
 import QRDisplay from '@/shared/ui/QRDisplay';
 import { generateQRCode } from '@/lib/utils/qr-service';
-import { Ticket, Download, CheckCircle2 } from 'lucide-react';
+import { Download, CheckCircle2 } from 'lucide-react';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 interface KroegentochtTicketsIslandProps {

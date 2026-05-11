@@ -1,7 +1,7 @@
 'use client';
 
 import { Upload, X, Save, Loader2, Eye, Check } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 
 interface TripFormSidebarProps {
     isAdding: boolean;

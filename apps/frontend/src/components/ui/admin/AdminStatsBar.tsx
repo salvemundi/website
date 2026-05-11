@@ -1,5 +1,4 @@
 import { LucideIcon } from 'lucide-react';
-import { cn } from '@/lib/utils/cn';
 
 interface StatItem {
     label: string;

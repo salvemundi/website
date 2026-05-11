@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useTransition } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getKroegentochtStatus } from '@/server/actions/kroegentocht.actions';
 import { CheckCircle2, XCircle, Loader2, Home, ArrowRight } from 'lucide-react';

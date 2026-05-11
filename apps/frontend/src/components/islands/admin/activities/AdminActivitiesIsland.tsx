@@ -6,8 +6,7 @@ import {
     Calendar, 
     Users, 
     Plus, 
-    Clock, 
-    Loader2 
+    Clock 
 } from 'lucide-react';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import ActivityCard from './ActivityCard';

@@ -5,7 +5,7 @@ import type { ReisTrip, ReisTripSignup } from '@salvemundi/validations/schema/re
 import { authClient } from '@/lib/auth';
 import { ReisSignupStatus } from './ReisSignupStatus';
 import { ReisRegistrationForm } from './ReisRegistrationForm';
-import { RefreshCcw, Sparkles } from 'lucide-react';
+import { RefreshCcw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { revalidateReisAction } from '@/server/actions/reis.actions';
 

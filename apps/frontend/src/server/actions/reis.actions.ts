@@ -2,27 +2,17 @@
 
 import {  revalidatePath } from 'next/cache';
 import {
-    reisSiteSettingsSchema,
     reisTripSchema,
-    reisTripSignupSchema,
     reisSignupFormSchema,
     type ReisSiteSettings,
     type ReisTrip,
     type ReisTripSignup,
     type ReisSignupForm } from '@salvemundi/validations/schema/reis.zod';
-import { 
-    FEATURE_FLAG_FIELDS, 
-    TRIP_FIELDS, 
-    TRIP_SIGNUP_FIELDS, 
-    SAFE_TRIP_SIGNUP_FIELDS, 
-    USER_FULL_FIELDS, 
-    TRIP_ID_FIELDS,
-    TRIP_ACTIVITY_FIELDS 
-} from '@salvemundi/validations/directus/fields';
-import { COMMITTEES } from '@/shared/lib/permissions-config';
+
+
 
 import { getSystemDirectus } from '@/lib/directus';
-import { readItems, createItem, readUsers } from '@directus/sdk';
+import { createItem } from '@directus/sdk';
 import { query } from '@/lib/database';
 import { auth } from '@/server/auth/auth';
 import { headers as nextHeaders } from 'next/headers';
@@ -32,11 +22,7 @@ import {
     fetchPublicTripsDb, 
     insertTripSignupDb, 
     deleteTripSignupDb,
-    fetchAllTripSignupsDb,
-    fetchTripSignupByIdDb, 
-    fetchTripByIdDb, 
-    fetchTripActivitiesByTripIdDb,
-    fetchSelectedSignupActivitiesDb
+    fetchAllTripSignupsDb
 } from './reis-db.utils';
 import { fetchUserProfileByEmailDb, fetchUserCommitteesDb, type Committee } from './user-db.utils';
 import { getRedis } from '@/server/auth/redis-client';

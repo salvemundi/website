@@ -4,14 +4,11 @@ import { useState } from 'react';
 import { 
     Search, 
     Download, 
-    AlertCircle, 
     Trash2, 
     Edit, 
-    Mail, 
-    ExternalLink 
+    Mail 
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { nl } from 'date-fns/locale';
 import { downloadCSV } from '@/lib/utils/export';
 import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 

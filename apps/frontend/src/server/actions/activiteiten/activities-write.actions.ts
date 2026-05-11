@@ -12,7 +12,7 @@ import {
 import { 
     activityAdminSchema } from "@salvemundi/validations";
 import { logAdminAction } from "../audit.actions";
-import { createEventDb, updateEventDb, deleteEventDb } from "../event-db.utils";
+import { deleteEventDb } from "../event-db.utils";
 import { ensureActivitiesEdit } from "./auth-check";
 import { query as dbQuery } from "@/lib/database";
 import { COMMITTEES } from "@/shared/lib/permissions-config";

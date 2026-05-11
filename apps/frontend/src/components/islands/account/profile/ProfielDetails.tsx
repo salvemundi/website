@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Mail, Phone, Calendar, Edit2, Save, Loader2, X, LogOut } from 'lucide-react';
+import { Mail, Phone, Calendar, Edit2, Save, Loader2, LogOut } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { Tile, formatForBreak } from './ProfielUI';

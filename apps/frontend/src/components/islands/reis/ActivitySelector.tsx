@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Check, Info, Plus, X } from 'lucide-react';
-import type { TripActivity, TripSignupActivity } from '@salvemundi/validations/schema/admin-reis.zod';
+import { Check, Plus } from 'lucide-react';
+import type { TripActivity } from '@salvemundi/validations/schema/admin-reis.zod';
 
 export interface SelectedActivity {
     activityId: number;

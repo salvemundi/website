@@ -8,7 +8,6 @@ import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import type { ReisTrip } from '@salvemundi/validations/schema/reis.zod';
 import { SafeHtml } from '@/components/ui/security/SafeHtml';
-import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 
 interface ReisInfoIslandProps {
     nextTrip: ReisTrip | null;

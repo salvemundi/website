@@ -1,7 +1,5 @@
 import { notFound } from 'next/navigation';
 import PaymentStatusIsland from '@/components/islands/activities/PaymentStatusIsland';
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
 import BackButton from '@/components/ui/navigation/BackButton';
 import { getPaymentStatusAction } from '@/server/actions/reis-payment.actions';
 

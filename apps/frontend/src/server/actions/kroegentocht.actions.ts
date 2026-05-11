@@ -5,16 +5,10 @@ import {
     type PubCrawlEvent,
     pubCrawlEventSchema,
     pubCrawlTicketSchema,
-    pubCrawlSignupSchema,
-    pubCrawlSignupFormSchema,
-    type PubCrawlSignupForm
+    pubCrawlSignupSchema
 } from '@salvemundi/validations/schema/pub-crawl.zod';
-import {
-    PUB_CRAWL_EVENT_FIELDS,
-    PUB_CRAWL_SIGNUP_FIELDS,
-    PUB_CRAWL_TICKET_FIELDS,
-    EVENT_FIELDS
-} from '@salvemundi/validations/directus/fields';
+
+
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { revalidateTag, unstable_cache as cacheTag } from 'next/cache';
@@ -22,11 +16,10 @@ import { cache } from 'react';
 import { logAdminAction } from './audit.actions';
 
 import { getSystemDirectus } from '@/lib/directus';
-import { readItems, createItem, updateItem, deleteItem } from '@directus/sdk';
+import { createItem, updateItem, deleteItem } from '@directus/sdk';
 import {
     createPubCrawlSignupDb,
     deletePubCrawlSignupDb,
-    getPubCrawlTicketCountByEmailDb,
     createPubCrawlTicketsDb,
     deletePubCrawlTicketsBySignupIdDb,
     fetchPubCrawlSignupByIdDb,

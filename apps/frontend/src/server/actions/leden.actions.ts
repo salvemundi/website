@@ -5,10 +5,9 @@ import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
 import { getSystemDirectus } from "@/lib/directus";
-import { readItems, updateItem, updateUser, readUsers, readUser } from "@directus/sdk";
-import { isSuperAdmin, isMemberAdmin } from "@/lib/auth";
+import { updateUser } from "@directus/sdk";
+import { isMemberAdmin } from "@/lib/auth";
 import { logAdminAction } from "./audit.actions";
-import { USER_FULL_FIELDS, COMMITTEE_FIELDS, USER_ID_FIELDS } from "@salvemundi/validations";
 
 const updateMemberSchema = z.object({
     first_name: z.string().min(1).optional(),

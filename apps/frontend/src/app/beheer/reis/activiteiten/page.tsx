@@ -1,7 +1,5 @@
 import type { Metadata } from 'next';
-import AnimatedBeheerHeader from '@/components/ui/admin/AnimatedBeheerHeader';
 import ReisActiviteitenIsland from '@/components/islands/admin/ReisActiviteitenIsland';
-import { Layers } from 'lucide-react';
 import { getTrips, getTripActivities } from '@/server/queries/admin-reis.queries';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';

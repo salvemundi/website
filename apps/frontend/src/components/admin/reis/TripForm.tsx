@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useActionState } from 'react';
-import { Plus, Edit2, X, Info, Calendar as CalendarIcon, MapPin, Users, Euro, Link as LinkIcon, Eye, Check } from 'lucide-react';
+import { Info, Calendar as CalendarIcon, Euro } from 'lucide-react';
 import type { Trip } from '@salvemundi/validations/schema/admin-reis.zod';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import TripFormSidebar from './TripFormSidebar';

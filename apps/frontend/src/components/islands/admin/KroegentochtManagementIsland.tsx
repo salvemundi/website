@@ -4,9 +4,7 @@ import { useState, useTransition, useEffect } from 'react';
 import { 
     Plus, 
     Settings, 
-    Loader2, 
-    Beer, 
-    ChevronLeft,
+    Beer,
     AlertCircle,
     Users,
     Building2,
