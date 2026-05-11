@@ -5,10 +5,8 @@ import { revalidatePath } from 'next/cache';
 import {
     tripSignupSchema,
     tripSignupActivitySchema,
-    type TripSignup,
-    type TripSignupActivity
+    type TripSignup
 } from '@salvemundi/validations/schema/admin-reis.zod';
-import { TRIP_SIGNUP_FIELDS } from '@salvemundi/validations/directus/fields';
 import { requireAdminResource } from '@/server/auth/auth-utils';
 import { AdminResource } from '@/shared/lib/permissions-config';
 import { 
@@ -22,9 +20,7 @@ import {
     fetchTripByIdDb
 } from './reis-db.utils';
 import { getSystemDirectus } from '@/lib/directus';
-import { 
-    readItems, 
-    readItem,
+import {
     updateItem, 
     deleteItem, 
     createItem
@@ -262,7 +258,6 @@ export async function updateSignupActivities(signupId: number, activityIds: numb
     }
 }
 
-import { sendPaymentEmail, sendBulkTripEmail, sendBulkPaymentEmails } from './reis-admin-mail.actions';
 
 /**
  * Fetches all activity selections for a specific trip directly from the database.

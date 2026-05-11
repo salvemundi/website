@@ -1,4 +1,3 @@
-import type { Metadata } from 'next';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';

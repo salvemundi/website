@@ -1,22 +1,18 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
-    Clock, Tag, Server, RefreshCw, History, Shield
+    Clock, Server, RefreshCw, History, Shield
 } from 'lucide-react';
 import { 
-    getPendingSignupsAction, 
     approveSignupAction, 
     rejectSignupAction,
-    getAuditSettingsAction,
     updateAuditSettingsAction,
     getSystemLogsAction,
-    getQueueStatusAction,
     bulkApproveSignupsAction,
     bulkRejectSignupsAction
 } from '@/server/actions/audit.actions';
 import { type PendingSignup, type QueueInfo, type SystemLog } from '@salvemundi/validations';
-import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 

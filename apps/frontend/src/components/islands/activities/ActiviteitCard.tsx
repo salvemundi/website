@@ -1,9 +1,7 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import BannerAsset from '@/components/ui/media/BannerAsset';
-import { getImageUrl } from '@/lib/utils/image-utils';
 import { Calendar } from 'lucide-react';
 import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider';
 import AdminToast from '@/components/ui/admin/AdminToast';

@@ -12,7 +12,6 @@ import {
 } from '@salvemundi/validations';
 import { 
     HERO_BANNER_FIELDS, 
-    EVENT_FIELDS, 
     PUB_CRAWL_EVENT_FIELDS, 
     SPONSOR_FIELDS 
 } from '@salvemundi/validations';
@@ -23,8 +22,7 @@ import { toLocalISOString } from '@/lib/utils/date-utils';
 import { 
     type DbPubCrawlEvent,
     type DbTrip,
-    type DbHeroBanner,
-    type DbSponsor 
+    type DbHeroBanner 
 } from '@salvemundi/validations';
 
 export const getHeroBanners = async (): Promise<HeroBanner[]> => {
@@ -57,7 +55,6 @@ import {
 import { 
     getUpcomingTrips 
 } from "@/server/actions/reis.actions";
-import { connection } from "next/server";
 
 export const getUpcomingActiviteiten = async (limit = 4): Promise<Activiteit[]> => {
     const client = getSystemDirectus();

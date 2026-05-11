@@ -3,13 +3,13 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { User, Shield } from 'lucide-react';
 import { authClient } from '@/lib/auth';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { ROUTES } from '@/lib/config/routes';
 
-import { type ExtendedSession, type EnrichedUser } from '@/types/auth';
+import { type ExtendedSession } from '@/types/auth';
 
 interface NavUserSectionProps {
     initialSession: ExtendedSession | null | undefined;

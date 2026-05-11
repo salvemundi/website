@@ -6,7 +6,6 @@ import {
     Ticket, 
     Shield, 
     MapPin, 
-    Mail, 
     UserCheck,
     Cake,
     Award,
@@ -17,8 +16,7 @@ import {
     Layout
 } from 'lucide-react';
 import { 
-    ActionCard,
-    ListCard 
+    ActionCard 
 } from './AdminCards';
 import { formatDate } from '@/shared/lib/utils/date';
 import { 

@@ -13,7 +13,7 @@ import {
     type PubCrawlTicket
 } from './qr-db.utils';
 import { getSystemDirectus } from '@/lib/directus';
-import { updateItem, readItems } from '@directus/sdk';
+import { updateItem } from '@directus/sdk';
 import { isSuperAdmin } from '@/lib/auth';
 
 /**

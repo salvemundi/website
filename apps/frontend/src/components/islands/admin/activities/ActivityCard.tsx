@@ -1,24 +1,17 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import { 
     Calendar, 
     Users, 
     Edit, 
-    Trash2, 
     Eye, 
-    Bell, 
-    Send, 
     MapPin, 
-    Mail, 
-    Euro, 
-    Loader2 
+    Euro 
 } from 'lucide-react';
 import { AdminActivity } from '@salvemundi/validations';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import { getImageUrl } from '@/lib/utils/image-utils';
 import BannerAsset from '@/components/ui/media/BannerAsset';
 
 interface Props {

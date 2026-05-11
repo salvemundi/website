@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useTransition, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
 import {
     Users,
     UserCheck,
@@ -18,7 +17,6 @@ import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import LedenFilters from './LedenFilters';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
-import { cn } from '@/lib/utils/cn';
 import LedenTable from './LedenTable';
 import { type AdminMember } from '@salvemundi/validations';
 

@@ -5,7 +5,6 @@ import {
     Loader2, 
     Save, 
     Trash2, 
-    CheckCircle, 
     ArrowLeft, 
     CheckCircle2
 } from 'lucide-react';

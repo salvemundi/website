@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 
 interface PublicPageShellProps {
     title?: string;

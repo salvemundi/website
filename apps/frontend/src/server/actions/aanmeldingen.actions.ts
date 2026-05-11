@@ -5,7 +5,6 @@ import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
 import { getSystemDirectus } from "@/lib/directus";
 import { getAuthorizedUser } from "./activiteiten/auth-check";
-import { isSuperAdmin } from "@/lib/auth";
 import { 
     deleteItem,
     createItem,
@@ -13,7 +12,7 @@ import {
     readUsers
 } from "@directus/sdk";
 import { USER_BASIC_FIELDS, type UserBasic } from "@salvemundi/validations";
-import { createEventSignupDb, updateEventSignupDb, deleteEventSignupDb } from "./event-db.utils";
+import { updateEventSignupDb, deleteEventSignupDb } from "./event-db.utils";
 import { logAdminAction } from "./audit.actions";
 import { query as dbQuery } from "@/lib/database";
 import { COMMITTEES } from "@/shared/lib/permissions-config";

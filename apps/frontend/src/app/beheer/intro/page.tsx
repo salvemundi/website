@@ -19,7 +19,6 @@ import IntroVisibilityIsland from '@/components/islands/admin/intro/IntroVisibil
 export const metadata: Metadata = {
     title: 'Intro Beheer | SV Salve Mundi' };
 
-import { type EnrichedUser } from '@/types/auth';
 
 export default async function BeheerIntroPage() {
     const session = await auth.api.getSession({ headers: await headers() });

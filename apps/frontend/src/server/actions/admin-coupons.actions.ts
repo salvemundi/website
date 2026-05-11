@@ -3,7 +3,6 @@
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
-import { isSuperAdmin } from '@/lib/auth';
 
 import { getSystemDirectus } from '@/lib/directus';
 import { 
@@ -30,7 +29,7 @@ async function checkAccess() {
     return session;
 }
 
-import { type Coupon, type CouponStatus } from '@/components/islands/admin/coupons/coupon-types';
+import { type Coupon } from '@/components/islands/admin/coupons/coupon-types';
 
 export async function getCoupons(): Promise<Coupon[]> {
     await checkAccess();

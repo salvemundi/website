@@ -10,11 +10,9 @@ import {
     Trash2, 
     UserCheck, 
     Eye,
-    Plus,
     Users,
     Save,
-    X,
-    Loader2
+    X
 } from 'lucide-react';
 import { ActionButton, EmptyState, Button } from './IntroTabComponents';
 import { type DbIntroSignup as IntroSignupRow } from '@salvemundi/validations/directus/schema';

@@ -10,7 +10,6 @@ import {
 } from '@/server/queries/admin-event.queries';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import { type EnrichedUser } from '@/types/auth';
-import { type DbEventSignup } from "@salvemundi/validations";
 
 export const metadata: Metadata = {
     title: 'Activiteit Aanmeldingen | SV Salve Mundi' };

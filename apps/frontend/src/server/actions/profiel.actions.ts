@@ -9,11 +9,8 @@ import {
     whatsappGroupSchema
 } from '@salvemundi/validations/schema/profiel.zod';
 import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
-import { 
-    EVENT_SIGNUP_FIELDS,
-    TRANSACTION_FIELDS,
-    WHATSAPP_GROUP_FIELDS
-} from '@salvemundi/validations/directus/fields';
+
+
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 

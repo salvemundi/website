@@ -5,7 +5,6 @@ import {
     Users, 
     Edit2, 
     Trash2, 
-    Euro, 
     LayoutGrid 
 } from 'lucide-react';
 import { getImageUrl } from '@/lib/utils/image-utils';

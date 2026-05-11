@@ -1,17 +1,12 @@
 'use server';
 
-import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import {
     tripSchema } from '@salvemundi/validations/schema/admin-reis.zod';
-import { TRIP_FIELDS } from '@salvemundi/validations/directus/fields';
-import { type DbTrip } from '@salvemundi/validations/directus/schema';
 import { getSystemDirectus } from '@/lib/directus';
 import { 
-    readItems, 
     updateItem, 
-    deleteItem, 
-    createItem,
+    deleteItem,
     uploadFiles
 } from '@directus/sdk';
 import { requireAdminResource } from '../auth/auth-utils';

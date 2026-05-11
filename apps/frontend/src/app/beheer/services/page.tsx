@@ -1,14 +1,10 @@
 import React from 'react';
 import { redirect } from 'next/navigation';
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
-import { COMMITTEES } from '@/shared/lib/permissions-config';
 import SystemManagementIsland from '@/components/islands/admin/SystemManagementIsland';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import { getServicesStatusAction } from '@/server/actions/services-status.actions';
 import { getSystemAutomationSettings } from '@/server/actions/admin-automation.actions';
 import { checkAdminAccess } from '@/server/actions/admin-utils.actions';
-import { cn } from '@/lib/utils/cn';
 
 export const metadata = {
     title: 'Systeem Beheer | SV Salve Mundi' };

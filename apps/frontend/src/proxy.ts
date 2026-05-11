@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 
 import { PUBLIC_ROUTES } from '@/lib/config/routes';
 import { getRedis } from '@/server/auth/redis-client';
-import { getDisabledRoutes, FLAGS_CACHE_KEY } from '@/lib/config/feature-flags';
+import { getDisabledRoutes } from '@/lib/config/feature-flags';
 
 
 /**

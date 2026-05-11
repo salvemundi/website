@@ -9,7 +9,7 @@ import type { IconName } from '@/lib/utils/icons';
 import { HeaderShell } from './navigation/HeaderShell';
 import { NavUserSection } from './navigation/NavUserSection';
 import { MobileNav } from './navigation/MobileNav';
-import { type EnrichedUser, type ImpersonationInfo, type ExtendedSession } from '@/types/auth';
+import { type ImpersonationInfo, type ExtendedSession } from '@/types/auth';
 
 interface NavigationHeaderProps {
     disabledRoutes?: string[];

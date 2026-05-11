@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import PaymentStatusIsland from '@/components/islands/activities/PaymentStatusIsland';
 import { getPaymentStatusAction } from '@/server/actions/reis-payment.actions';
-import { CheckCircle2, ChevronRight, XCircle, Home } from 'lucide-react';
+import { CheckCircle2, ChevronRight, XCircle } from 'lucide-react';
 import BackButton from '@/components/ui/navigation/BackButton';
 
 export const metadata: Metadata = {

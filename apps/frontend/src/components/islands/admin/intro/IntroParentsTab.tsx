@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { 
     Search, 
-    Mail, 
     Download, 
     ChevronDown, 
     Edit, 
@@ -11,8 +10,7 @@ import {
     UserCheck, 
     Heart,
     Save,
-    X,
-    Loader2
+    X
 } from 'lucide-react';
 import { ActionButton, EmptyState, Button } from './IntroTabComponents';
 import { type DbIntroParentSignup as IntroParentRow } from '@salvemundi/validations/directus/schema';

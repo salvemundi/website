@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
     Activity, 
     CheckCircle2, 
@@ -8,10 +8,8 @@ import {
     Zap, 
     RefreshCw, 
     ShieldCheck, 
-    Server, 
     Clock,
     XCircle,
-    Mail,
     CalendarClock,
     BellRing,
     Settings2,
@@ -20,7 +18,6 @@ import {
 } from 'lucide-react';
 import { getServicesStatusAction, type ServiceStatus } from '@/server/actions/services-status.actions';
 import { toggleAutomationSetting, type AutomationSetting } from '@/server/actions/admin-automation.actions';
-import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminVisibilityToggle from '@/components/ui/admin/AdminVisibilityToggle';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { 
-    CheckSquare, Square, RefreshCw, CheckCircle, XCircle, Loader2, Tag, Clock
+    CheckSquare, Square, RefreshCw, CheckCircle, XCircle, Loader2, Tag
 } from 'lucide-react';
 import { type PendingSignup } from '@salvemundi/validations/schema/audit.zod';
 import { formatDate } from '@/shared/lib/utils/date';

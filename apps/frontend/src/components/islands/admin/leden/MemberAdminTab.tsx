@@ -6,8 +6,6 @@ import {
     ShieldAlert, 
     Plus, 
     Loader2, 
-    CheckCircle2, 
-    XCircle, 
     Award, 
     Trash2, 
     CalendarPlus, 

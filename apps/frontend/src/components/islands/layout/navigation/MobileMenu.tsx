@@ -3,8 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { 
-    X, Shield, Sparkles, LogOut
+import { Shield, Sparkles, LogOut
 } from 'lucide-react';
 import { ROUTES } from '@/lib/config/routes';
 import { getImageUrl } from '@/lib/utils/image-utils';

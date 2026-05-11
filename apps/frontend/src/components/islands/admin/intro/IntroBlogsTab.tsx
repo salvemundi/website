@@ -3,16 +3,10 @@
 import React, { useState } from 'react';
 import { 
     Plus, 
-    X, 
-    Save, 
-    Loader2, 
     Edit, 
     Trash2, 
     FileText,
-    ChevronDown,
-    Globe,
-    Eye,
-    Type
+    ChevronDown
 } from 'lucide-react';
 import type { IntroBlog } from '@salvemundi/validations/schema/intro.zod';
 import { ActionButton, EmptyState, Button } from './IntroTabComponents';

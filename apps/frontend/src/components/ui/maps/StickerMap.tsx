@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Map, { Marker, Popup, NavigationControl, GeolocateControl } from 'react-map-gl/maplibre';
 import { MapPin, Camera, X } from 'lucide-react';
 import 'maplibre-gl/dist/maplibre-gl.css';
