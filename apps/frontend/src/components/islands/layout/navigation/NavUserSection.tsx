@@ -3,28 +3,37 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { User, Shield } from 'lucide-react';
 import { authClient } from '@/lib/auth';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { ROUTES } from '@/lib/config/routes';
 
-import { type Session } from 'better-auth';
-import { type EnrichedUser } from '@/types/auth';
+import { type ExtendedSession, type EnrichedUser } from '@/types/auth';
 
 interface NavUserSectionProps {
-    initialSession: Session | null | undefined;
+    initialSession: ExtendedSession | null | undefined;
     canAccessAdmin: boolean;
 }
 
 export function NavUserSection({ initialSession, canAccessAdmin }: NavUserSectionProps) {
+    const searchParams = useSearchParams();
     const { data: sessionData } = authClient.useSession();
-    const session = sessionData || initialSession;
-    const user = (session?.user as unknown as EnrichedUser) ?? null;
+
+    let session = initialSession;
+    if (sessionData !== undefined) {
+        // Better Auth useSession returns { session, user } or null
+        session = sessionData as ExtendedSession | null;
+    }
+
+    const user = session?.user ?? null;
     const isAuthenticated = !!user;
+
+    const showAdmin = isAuthenticated && canAccessAdmin;
 
     return (
         <div className="flex items-center justify-end gap-1.5 lg:gap-2 shrink-0 flex-nowrap">
-            {canAccessAdmin && (
+            {showAdmin && (
                 <Link
                     href={ROUTES.ADMIN}
                     className="flex items-center gap-2 rounded-full bg-[var(--color-purple-500)] text-[var(--color-white)] px-3 py-1.5 h-9 text-sm font-medium shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg shrink-0"
@@ -50,9 +59,10 @@ export function NavUserSection({ initialSession, canAccessAdmin }: NavUserSectio
                 </Link>
             ) : (
                 <button
-                    onClick={() => authClient.signIn.social({ 
-                        provider: 'microsoft', 
-                        callbackURL: '/profiel'
+                    onClick={() => authClient.signIn.social({
+                        provider: 'microsoft',
+                        // Jouw toevoeging blijft intact
+                        callbackURL: searchParams.get('callbackURL') || ROUTES.MEMBERSHIP
                     })}
                     className="flex cursor-pointer items-center justify-center gap-2 rounded-full font-semibold px-4 py-1.5 h-9 text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg bg-[var(--color-purple-50)] text-[var(--color-purple-700)] shrink-0"
                 >

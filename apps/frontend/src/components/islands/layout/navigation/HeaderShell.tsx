@@ -15,13 +15,14 @@ export function HeaderShell({ children, mobileMenu }: HeaderShellProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [isScrolled, setIsScrolled] = useState(false);
+    const [mounted, setMounted] = useState(false);
     const headerRef = useRef<HTMLElement | null>(null);
-
+ 
     // Auto-login flow
     useEffect(() => {
         const needLogin = searchParams.get('needLogin');
-        const callbackURL = searchParams.get('callbackURL') || '/profiel';
-
+        const callbackURL = searchParams.get('callbackURL') || '/lidmaatschap';
+ 
         if (needLogin === 'true') {
             router.replace(pathname || '/');
             authClient.signIn.social({ 
@@ -30,11 +31,12 @@ export function HeaderShell({ children, mobileMenu }: HeaderShellProps) {
             }).catch(console.error);
         }
     }, [searchParams, pathname, router]);
-
-    // Scroll listener
+ 
+    // Scroll listener & mounting
     useEffect(() => {
+        setMounted(true);
         const handleScroll = () => setIsScrolled(window.scrollY > 10);
-        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('scroll', handleScroll, { passive: true });
         handleScroll();
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
@@ -65,7 +67,7 @@ export function HeaderShell({ children, mobileMenu }: HeaderShellProps) {
             ref={headerRef}
             className={cn(
                 "fixed z-[100] w-full transition-all duration-300 flex flex-col justify-center",
-                isScrolled 
+                (mounted && isScrolled) 
                     ? "bg-white/95 dark:bg-black/95 backdrop-blur-md shadow-md" 
                     : "bg-white/50 dark:bg-black/50 backdrop-blur-sm"
             )}

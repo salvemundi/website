@@ -17,7 +17,7 @@ async function CouponDataLoader() {
 
 export default async function BeheerCouponsPage() {
     const session = await auth.api.getSession({ headers: await headers() });
-    if (!session?.user) redirect('/login');
+    if (!session?.user) redirect('/?needLogin=true');
 
     return (
         <AdminPageShell

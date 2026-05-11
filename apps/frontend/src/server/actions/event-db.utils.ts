@@ -193,6 +193,8 @@ export async function fetchUserEventSignupsDb(email: string): Promise<EnrichedEv
         
         return rows.map((row) => ({
             ...row,
+            created_at: toLocalISOString(row.created_at),
+            checked_in_at: toLocalISOString(row.checked_in_at),
             event_id: {
                 id: row.event_id,
                 name: row.event_name,
@@ -227,6 +229,8 @@ export async function fetchEventSignupByIdDb(id: number): Promise<EnrichedEventS
         const { toLocalISOString } = await import('@/lib/utils/date-utils');
         return {
             ...row,
+            created_at: toLocalISOString(row.created_at),
+            checked_in_at: toLocalISOString(row.checked_in_at),
             event_id: {
                 id: row.event_id,
                 name: row.event_name,

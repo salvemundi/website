@@ -6,7 +6,7 @@ import AttendanceIsland from '@/components/islands/activities/AttendanceIsland';
 import AnimatedBeheerHeader from '@/components/ui/admin/AnimatedBeheerHeader';
 import { ClipboardCheck } from 'lucide-react';
 
-import { checkAdminAccess } from '@/server/actions/admin.actions';
+import { checkAdminAccess } from '@/server/actions/admin-utils.actions';
 
 export const metadata: Metadata = {
     title: 'Aanwezigheidsbeheer | SV Salve Mundi' };

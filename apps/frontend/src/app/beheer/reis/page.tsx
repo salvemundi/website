@@ -8,7 +8,7 @@ import { Ticket, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getReisSiteSettings } from '@/server/actions/reis.actions';
-import { checkAdminAccess } from '@/server/actions/admin.actions';
+import { checkAdminAccess } from '@/server/actions/admin-utils.actions';
 import { getAdminTrips, getAdminTripById } from '@/server/actions/reis-admin-core.actions';
 import { getTripSignups, getTripSignupActivitiesAction } from '@/server/actions/reis-admin-signups.actions';
 import { getTripActivities } from '@/server/queries/admin-reis.queries';

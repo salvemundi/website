@@ -1,7 +1,7 @@
 import { getStickers } from '@/server/actions/admin-stickers.actions';
 import StickerManagementIsland from '@/components/islands/admin/StickerManagementIsland';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
-import { checkAdminAccess } from '@/server/actions/admin.actions';
+import { checkAdminAccess } from '@/server/actions/admin-utils.actions';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 
 export const metadata = {

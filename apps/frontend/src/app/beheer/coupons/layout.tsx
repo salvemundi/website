@@ -16,7 +16,7 @@ export default async function CouponsLayout({
     });
 
     if (!session || !session.user) {
-        redirect('/login');
+        redirect('/?needLogin=true');
     }
 
     const user = session.user as unknown as EnrichedUser;

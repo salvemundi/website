@@ -19,7 +19,7 @@ export default async function SecureLayout({ children }: SecureLayoutProps) {
     });
 
     if (!session?.user) {
-        redirect('/login');
+        redirect('/?needLogin=true');
     }
 
     return <>{children}</>;

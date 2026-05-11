@@ -8,7 +8,7 @@ import ImpersonationBanner from '@/components/ui/admin/ImpersonationBanner';
 import { getDocumenten, getDisabledRoutes } from '@/server/actions/website.actions';
 import { getCommittees } from '@/server/actions/committees.actions';
 import { auth } from '@/server/auth/auth';
-import { checkAdminAccess } from '@/server/actions/admin.actions';
+import { checkAdminAccess } from '@/server/actions/admin-utils.actions';
 import { headers } from 'next/headers';
 import { connection } from 'next/server';
 import { getHeroBanners, getUpcomingActiviteiten } from '@/server/actions/home.actions';
@@ -19,7 +19,8 @@ export const viewport: Viewport = {
         { media: '(prefers-color-scheme: light)', color: '#ffffff' },
         { media: '(prefers-color-scheme: dark)', color: '#1a141b' },
     ],
-    viewportFit: 'cover' };
+    viewportFit: 'cover'
+};
 
 export const metadata: Metadata = {
     metadataBase: new URL(process.env.PUBLIC_URL || 'https://salvemundi.nl'),
@@ -35,7 +36,8 @@ export const metadata: Metadata = {
     appleWebApp: {
         capable: true,
         statusBarStyle: 'black-translucent',
-        title: 'Salve Mundi' },
+        title: 'Salve Mundi'
+    },
     openGraph: {
         type: 'website',
         locale: 'nl_NL',
@@ -48,33 +50,47 @@ export const metadata: Metadata = {
                 url: '/img/newlogo.png',
                 width: 1200,
                 height: 630,
-                alt: 'SV Salve Mundi Logo' },
-        ] },
+                alt: 'SV Salve Mundi Logo'
+            },
+        ]
+    },
     twitter: {
         card: 'summary_large_image',
         title: 'SV Salve Mundi | Studievereniging Fontys ICT',
         description: 'De officiële studievereniging van Fontys ICT Eindhoven.',
-        images: ['/img/newlogo.png'] },
+        images: ['/img/newlogo.png']
+    },
     icons: {
         icon: [
             { url: '/img/newlogo.svg', type: 'image/svg+xml' },
         ],
         apple: [
             { url: '/img/newlogo.svg', type: 'image/svg+xml' },
-        ] } };
+        ]
+    }
+};
 
 const poppins = Poppins({
     subsets: ['latin'],
     weight: ['400', '600', '700', '900'],
-    variable: '--font-poppins' });
+    variable: '--font-poppins'
+});
 
 export default async function RootLayout({
     children }: Readonly<{ children: React.ReactNode }>) {
     await connection();
+    const nonce = (await headers()).get('x-nonce') || undefined;
+
     return (
         <html lang="nl" className="dark" suppressHydrationWarning>
             <head>
-                <ThemeScript />
+                <script
+                    nonce={nonce}
+                    suppressHydrationWarning
+                    dangerouslySetInnerHTML={{
+                        __html: `(function(){try{if(localStorage.theme==='light'){document.documentElement.classList.remove('dark')}}catch(_){}})()`
+                    }}
+                />
                 <link rel="preload" as="image" href="/img/newlogo.png" />
                 <HeadPreloads />
             </head>
@@ -119,36 +135,21 @@ async function HeadPreloads() {
     }
 }
 
-async function ThemeScript() {
-    const nonce = (await headers()).get('x-nonce') || undefined;
-    return (
-        <script
-            nonce={nonce}
-            suppressHydrationWarning
-            dangerouslySetInnerHTML={{
-                __html: `
-                    try {
-                        if (localStorage.theme === 'light') {
-                            document.documentElement.classList.remove('dark');
-                        }
-                    } catch (_) {}
-                ` }}
-        />
-    );
-}
 
 async function HeaderWrapper() {
     await connection();
-    const [disabledRoutes, session, { impersonation, isAuthorized }] = await Promise.all([
+    const [disabledRoutes, session, adminAccess] = await Promise.all([
         getDisabledRoutes(),
         auth.api.getSession({ headers: await headers() }),
         checkAdminAccess(),
     ]);
 
+    const { impersonation, isAuthorized } = adminAccess;
+
     return (
-        <NavigationHeader 
-            disabledRoutes={disabledRoutes} 
-            initialSession={session} 
+        <NavigationHeader
+            disabledRoutes={disabledRoutes}
+            initialSession={session}
             impersonation={impersonation}
             isAdmin={isAuthorized}
         />
@@ -177,11 +178,11 @@ async function FooterWrapper() {
 async function ImpersonationWrapper() {
     await connection();
     const { impersonation } = await checkAdminAccess();
-    
+
     if (!impersonation) return null;
 
     return (
-        <ImpersonationBanner 
+        <ImpersonationBanner
             targetName={impersonation.targetName}
             adminName={impersonation.name}
             committees={impersonation.targetCommittees}

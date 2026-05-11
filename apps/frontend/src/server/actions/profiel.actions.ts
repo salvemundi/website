@@ -67,7 +67,14 @@ export async function getUserTransactions(): Promise<Transaction[]> {
         [targetUserId, user?.email || null]
     );
 
-    const parsed = transactionSchema.array().safeParse(res.rows);
+    const { toLocalISOString } = await import('@/lib/utils/date-utils');
+    const mappedRows = res.rows.map(r => ({
+        ...r,
+        created_at: toLocalISOString(r.created_at),
+        date_created: toLocalISOString(r.date_created)
+    }));
+
+    const parsed = transactionSchema.array().safeParse(mappedRows);
 
     if (!parsed.success) {
         throw new Error(`Failed to parse transactions: ${parsed.error.message}`);

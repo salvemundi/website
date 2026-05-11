@@ -5,16 +5,13 @@ import { ROUTES } from '@/lib/config/routes';
 import type { Committee } from '@salvemundi/validations/schema/committees.zod';
 import type { Document } from '@salvemundi/validations/schema/website.zod';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
-import { type Session } from 'better-auth';
+import { type ExtendedSession } from '@/types/auth';
 
-// ─── Props ────────────────────────────────────────────────────────────────────
-// Alle data wordt server-side opgehaald en als props doorgegeven.
-// V7.12 RSC: Now fully server-side.
 interface FooterIslandProps {
     documents: Document[];
     disabledRoutes?: string[];
     committees: Committee[];
-    initialSession?: Session | null;
+    initialSession?: ExtendedSession | null;
 }
 
 // Zorgt voor een eenduidige presentatie van commissienamen door redundante achtervoegsels te verwijderen.
@@ -127,7 +124,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                     {/* ── Kolom 3: Commissies ── */}
                     <div className="lg:col-span-2 flex flex-col items-center">
                         <h3 className={`${HEADING_CLS} text-center w-full`}>Commissies</h3>
-                        
+
                         <div className="grid grid-cols-2 gap-x-12 gap-y-2 text-sm w-full max-w-fit mx-auto">
                             {/* Linkerkolom (eerste 6) */}
                             <div className="flex flex-col gap-y-2 text-left">
@@ -173,10 +170,10 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                         <h3 className={HEADING_CLS}>Contact</h3>
                         <ul className="space-y-2 text-sm mb-6">
                             <li>
-                                <ObfuscatedEmail 
-                                    email="info@salvemundi.nl" 
-                                    className={LINK_CLS} 
-                                    showIcon={false} 
+                                <ObfuscatedEmail
+                                    email="info@salvemundi.nl"
+                                    className={LINK_CLS}
+                                    showIcon={false}
                                 />
                             </li>
                             <li>

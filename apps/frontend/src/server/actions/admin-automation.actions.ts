@@ -1,7 +1,7 @@
 'use server';
 
 import { query } from '@/lib/database';
-import { checkAdminAccess } from './admin.actions';
+import { checkAdminAccess } from './admin-utils.actions';
 import { revalidatePath } from 'next/cache';
 import { isSuperAdmin } from '@/lib/auth/auth-utils';
 

@@ -1,10 +1,9 @@
-import { type User } from "better-auth";
+import { type User, type Session } from "better-auth";
 import { type UserPermissions, type Committee } from "@/shared/lib/permissions";
 
-export type EnrichedUser = User & UserPermissions & {
+export type EnrichedUser = User & Partial<UserPermissions> & {
     id: string;
-    email: string;
-    name?: string | null;
+    name: string;
     committees?: Committee[];
     membership_status?: string | null;
     membership_expiry?: string | null;
@@ -13,6 +12,7 @@ export type EnrichedUser = User & UserPermissions & {
     date_of_birth?: string | null;
     entra_id?: string | null;
     isICT?: boolean;
+    impersonated?: boolean;
 };
 
 export interface ImpersonationInfo {
@@ -22,4 +22,10 @@ export interface ImpersonationInfo {
     isNormallyAdmin: boolean;
     targetName?: string;
     targetCommittees?: string[];
+}
+
+export interface ExtendedSession {
+    user: EnrichedUser;
+    session: Session;
+    impersonatedBy?: ImpersonationInfo;
 }

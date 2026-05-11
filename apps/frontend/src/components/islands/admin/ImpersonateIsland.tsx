@@ -1,10 +1,9 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { Check, Save, Trash2, Key, Loader2, Shield, User, Lock, Activity } from 'lucide-react';
-import { setImpersonateToken, clearImpersonateToken } from '@/server/actions/admin.actions';
+import { Check, Save, Trash2, Key, Loader2, Shield } from 'lucide-react';
+import { setImpersonateToken, clearImpersonateToken } from '@/server/actions/impersonation.actions';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
-import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 
@@ -31,7 +30,10 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                     setStatus('success');
                     setToken('');
                     showToast('Test modus succesvol geactiveerd', 'success');
-                    setTimeout(() => setStatus('idle'), 3000);
+                    setTimeout(() => {
+                        setStatus('idle');
+                        window.location.reload();
+                    }, 1000);
                 } else {
                     setStatus('error');
                     showToast(result?.error || 'Ongeldige token of fout bij valideren.', 'error');
@@ -48,15 +50,10 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
             await clearImpersonateToken();
             showToast('Test modus gedeactiveerd', 'info');
             setStatus('idle');
+            setTimeout(() => window.location.reload(), 1000);
         });
     };
 
-    const adminStats = [
-        { label: 'Status', value: activeToken ? 'Testen' : 'Normaal', icon: Activity, trend: activeToken ? 'Impersonating' : 'Direct Access' },
-        { label: 'Doel', value: impersonatedName || 'Zelf', icon: User, trend: 'Identity' },
-        { label: 'Rechten', value: impersonatedCommittees?.length || 0, icon: Shield, trend: 'Committees' },
-        { label: 'Beveiliging', value: activeToken ? 'Override' : 'Secure', icon: Lock, trend: 'Layer' },
-    ];
 
     return (
         <>
@@ -65,25 +62,51 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                 subtitle="Imiteer een andere gebruiker"
                 backHref="/beheer"
                 actions={
-                    activeToken ? (
-                        <button
-                            onClick={handleClear}
-                            disabled={isPending}
-                            className="flex items-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-inactive)]/10 text-[var(--beheer-inactive)] border border-[var(--beheer-inactive)]/20 rounded-[var(--beheer-radius)] text-xs font-semibold hover:bg-[var(--beheer-inactive)] hover:text-white transition-all active:scale-95 disabled:opacity-50"
-                        >
-                            {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                            Stop Testen
-                        </button>
-                    ) : null
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-4 bg-[var(--beheer-card-soft)] px-4 py-2 rounded-2xl border border-[var(--beheer-border)]/50 shadow-sm">
+                            <div className="flex flex-col items-center px-2">
+                                <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1 text-center">Status</span>
+                                <span className={`text-sm font-bold leading-none ${activeToken ? 'text-[var(--beheer-active)]' : 'text-[var(--beheer-text)]'}`}>
+                                    {activeToken ? 'Testen' : 'Normaal'}
+                                </span>
+                            </div>
+                            <div className="w-px h-6 bg-[var(--beheer-border)]/20" />
+                            <div className="flex flex-col items-center px-2">
+                                <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1 text-center">Doel</span>
+                                <span className="text-sm font-bold text-[var(--beheer-text)] leading-none">{impersonatedName || 'Zelf'}</span>
+                            </div>
+                            <div className="w-px h-6 bg-[var(--beheer-border)]/20" />
+                            <div className="flex flex-col items-center px-2">
+                                <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1 text-center">Rechten</span>
+                                <span className="text-sm font-bold text-[var(--beheer-text)] leading-none">{impersonatedCommittees?.length || 0}</span>
+                            </div>
+                            <div className="w-px h-6 bg-[var(--beheer-border)]/20 hidden sm:block" />
+                            <div className="flex-col items-center px-2 hidden sm:flex">
+                                <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1 text-center">Beveiliging</span>
+                                <span className={`text-sm font-bold leading-none ${activeToken ? 'text-[var(--beheer-inactive)]' : 'text-[var(--beheer-text)]'}`}>
+                                    {activeToken ? 'Override' : 'Secure'}
+                                </span>
+                            </div>
+                        </div>
+
+                        {activeToken && (
+                            <button
+                                onClick={handleClear}
+                                disabled={isPending}
+                                className="flex items-center gap-2 px-4 py-2 bg-[var(--beheer-inactive)]/10 text-[var(--beheer-inactive)] border border-[var(--beheer-inactive)]/20 rounded-[var(--beheer-radius)] text-xs font-semibold hover:bg-[var(--beheer-inactive)] hover:text-white transition-all active:scale-95 disabled:opacity-50 shadow-sm"
+                            >
+                                {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                                <span className="hidden md:inline">Stop Testen</span>
+                            </button>
+                        )}
+                    </div>
                 }
             />
 
             <div className="container mx-auto px-4 py-8 max-w-7xl">
-                <AdminStatsBar stats={adminStats} />
-
                 {/* Active Status Box */}
                 {activeToken && (
-                    <div className="p-8 rounded-[var(--beheer-radius)] bg-[var(--beheer-accent)]/5 border border-[var(--beheer-accent)]/20 shadow-sm">
+                    <div className="p-8 rounded-[var(--beheer-radius)] bg-[var(--beheer-accent)]/5 border border-[var(--beheer-accent)]/20 shadow-sm mb-8">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                             <div>
                                 <h3 className="text-xs font-semibold text-[var(--beheer-accent)] mb-2 flex items-center gap-2">

@@ -1,10 +1,7 @@
 'use client';
 
 import { useState, useMemo, useOptimistic, useTransition } from 'react';
-import { Search, Download, Mail, Phone, CheckCircle, XCircle, Clock, Trash2, UserPlus, CheckCircle2, Circle, Loader2, User, CreditCard } from 'lucide-react';
-import { format } from 'date-fns';
-import { nl } from 'date-fns/locale';
-import { downloadCSV } from '@/lib/utils/export';
+import { Search, Download, UserPlus, Users, UserCheck } from 'lucide-react';
 import { deleteSignupAction, toggleCheckInAction } from '@/server/actions/aanmeldingen.actions';
 import ManualSignupModal from './ManualSignupModal';
 import { useRouter } from 'next/navigation';
@@ -12,7 +9,11 @@ import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
-import { Users, UserCheck, UserMinus, DollarSign } from 'lucide-react';
+
+// Refactored Modules
+import { getSignupName, getSignupEmail, getSignupPhone } from '@/lib/activity-signup.utils';
+import { exportSignupsToCSV } from '@/lib/activity-export';
+import ActivitySignupTable from '@/components/admin/activities/ActivitySignupTable';
 
 export interface Signup {
     id: number;
@@ -41,6 +42,10 @@ export interface AdminEvent {
     max_sign_ups?: number | null;
 }
 
+/**
+ * ActiviteitAanmeldingenIsland: Beheert de deelnemerslijst van een activiteit.
+ * Onder de 300 regels door extractie van tabel-UI, export-logica en utilities.
+ */
 export default function ActiviteitAanmeldingenIsland({ 
     event, 
     initialSignups = [], 
@@ -57,18 +62,18 @@ export default function ActiviteitAanmeldingenIsland({
     const [isManualModalOpen, setIsManualModalOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState<number | null>(null);
 
-    // Optimistic state for check-ins
+    // 1. Optimistic State
     const [optimisticSignups, setOptimisticSignups] = useOptimistic(
         initialSignups || [],
         (state: Signup[], { id, checkedIn }: { id: number; checkedIn: boolean }) =>
             state.map(s => s.id === id ? { ...s, checked_in: checkedIn } : s)
     );
 
+    // 2. Filtering & Deduplication
     const filteredSignups = useMemo(() => {
-        // Deduplicate
         const map = new Map();
         for (const signup of optimisticSignups) {
-            const emailKey = getEmail(signup).toLowerCase();
+            const emailKey = getSignupEmail(signup).toLowerCase();
             const idKey = signup.directus_relations?.id || emailKey;
             const key = idKey === '-' ? signup.participant_name : idKey;
 
@@ -83,7 +88,6 @@ export default function ActiviteitAanmeldingenIsland({
         }
         
         const deduplicated = Array.from(map.values()) as Signup[];
-
         const sorted = deduplicated.sort((a, b) => {
             if (a.is_member && !b.is_member) return -1;
             if (!a.is_member && b.is_member) return 1;
@@ -93,91 +97,23 @@ export default function ActiviteitAanmeldingenIsland({
         if (!searchQuery) return sorted;
         const query = searchQuery.toLowerCase();
         return sorted.filter(signup => {
-            const name = getName(signup).toLowerCase();
-            const email = getEmail(signup).toLowerCase();
-            const phone = getPhone(signup).toLowerCase();
+            const name = getSignupName(signup).toLowerCase();
+            const email = getSignupEmail(signup).toLowerCase();
+            const phone = getSignupPhone(signup).toLowerCase();
             return name.includes(query) || email.includes(query) || phone.includes(query);
         });
     }, [optimisticSignups, searchQuery]);
 
+    // 3. Stats Calculation
     const stats = useMemo(() => {
         const base = searchQuery ? filteredSignups : (initialSignups || []);
         return {
             total: base.length,
-            paid: base.filter(s => s.payment_status === 'paid').length,
             checkedIn: base.filter(s => s.checked_in).length,
-            open: base.filter(s => s.payment_status === 'open').length };
+        };
     }, [filteredSignups, searchQuery, initialSignups]);
 
-    function getName(signup: Signup): string {
-        if (signup.participant_name) return signup.participant_name;
-        if (signup.directus_relations?.first_name) {
-            return `${signup.directus_relations.first_name} ${signup.directus_relations.last_name || ''}`.trim();
-        }
-        return 'Onbekend';
-    }
-
-    function getEmail(signup: Signup): string {
-        return signup.participant_email || signup.directus_relations?.email || '-';
-    }
-
-    function getPhone(signup: Signup): string {
-        return signup.participant_phone || signup.directus_relations?.phone_number || '-';
-    }
-
-    function getMemberBadge(signup: Signup) {
-        if (signup.is_member || signup.directus_relations) {
-            return (
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-[9px] font-semibold  tracking-wider border border-emerald-500/20">
-                    <CheckCircle className="h-3 w-3" />
-                    <span>Lid</span>
-                </div>
-            );
-        }
-        return (
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] text-[9px] font-semibold  tracking-wider border border-[var(--beheer-border)]">
-                <User className="h-3 w-3 opacity-50" />
-                <span>Gast</span>
-            </div>
-        );
-    }
-
-    function getPaymentBadge(status: string) {
-        if (status === 'paid') {
-            return (
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] text-[9px] font-semibold  tracking-wider border border-[var(--beheer-accent)]/20">
-                    <CheckCircle2 className="h-3 w-3" />
-                    <span>Betaald</span>
-                </div>
-            );
-        }
-        if (status === 'open') {
-            return (
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 text-[9px] font-semibold  tracking-wider border border-amber-500/20 animate-pulse">
-                    <CreditCard className="h-3 w-3" />
-                    <span>Open</span>
-                </div>
-            );
-        }
-        return null;
-    }
-
-    const exportToCSV = () => {
-        if (filteredSignups.length === 0) return;
-
-        const data = filteredSignups.map(signup => ({
-            Naam: getName(signup),
-            Email: getEmail(signup),
-            Telefoon: getPhone(signup),
-            Status: signup.payment_status || 'open',
-            'Checked In': signup.checked_in ? 'Ja' : 'Nee',
-            'Inschrijfdatum': signup.created_at ? format(new Date(signup.created_at), 'dd-MM-yyyy HH:mm', { locale: nl }) : 'Onbekend'
-        }));
-
-        const fileName = `Aanmeldingen_${(event.name || 'Activiteit').replace(/[^a-z0-9]/gi, '_')}_${format(new Date(), 'yyyy-MM-dd')}.csv`;
-        downloadCSV(data, fileName);
-    };
-
+    // 4. Action Handlers
     async function handleToggleCheckIn(signupId: number, currentCheckedIn: boolean) {
         const newValue = !currentCheckedIn;
         startTransition(async () => {
@@ -229,9 +165,9 @@ export default function ActiviteitAanmeldingenIsland({
                 actions={
                     <>
                         <button
-                            onClick={exportToCSV}
+                            onClick={() => exportSignupsToCSV(filteredSignups, event.name)}
                             disabled={filteredSignups.length === 0}
-                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-xs font-semibold  tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50"
+                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-xs font-semibold tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50"
                         >
                             <Download className="h-4 w-4" />
                             Exporteer
@@ -239,7 +175,7 @@ export default function ActiviteitAanmeldingenIsland({
                         {canAccessEdit && (
                             <button
                                 onClick={() => setIsManualModalOpen(true)}
-                                className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-semibold text-xs  tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
+                                className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-semibold text-xs tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
                             >
                                 <UserPlus className="h-4 w-4" />
                                 Handmatig
@@ -249,7 +185,7 @@ export default function ActiviteitAanmeldingenIsland({
                 }
             />
 
-        <div className="container mx-auto px-4 py-8 max-w-7xl">
+            <div className="container mx-auto px-4 py-8 max-w-7xl">
                 <AdminStatsBar stats={adminStats} />
 
                 {/* Search Bar */}
@@ -264,129 +200,38 @@ export default function ActiviteitAanmeldingenIsland({
                         onChange={(e) => setSearchQuery(e.target.value)}
                         autoComplete="off"
                         suppressHydrationWarning
-                        className="w-full pl-11 pr-5 py-3 rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] placeholder:text-[var(--beheer-text-muted)] focus:ring-2 focus:ring-[var(--beheer-accent)]/20 focus:border-[var(--beheer-accent)] outline-none transition-all shadow-sm font-bold  tracking-widest text-[10px]"
+                        className="w-full pl-11 pr-5 py-3 rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] placeholder:text-[var(--beheer-text-muted)] focus:ring-2 focus:ring-[var(--beheer-accent)]/20 focus:border-[var(--beheer-accent)] outline-none transition-all shadow-sm font-bold tracking-widest text-[10px]"
                     />
                 </div>
 
-            <ManualSignupModal
-                isOpen={isManualModalOpen}
-                onClose={() => setIsManualModalOpen(false)}
-                eventId={event.id}
-                eventName={event.name}
-                eventPrice={event.price_members || 0}
-            />
+                <ManualSignupModal
+                    isOpen={isManualModalOpen}
+                    onClose={() => setIsManualModalOpen(false)}
+                    eventId={event.id}
+                    eventName={event.name}
+                    eventPrice={event.price_members || 0}
+                />
 
-            {/* Table */}
+                {/* Table Section */}
                 <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm ring-1 ring-[var(--beheer-border)] overflow-hidden">
                     {filteredSignups.length === 0 ? (
                         <div className="p-20 text-center">
                             <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[var(--beheer-card-soft)] mb-6">
                                 <Search className="h-10 w-10 text-[var(--beheer-text-muted)] opacity-20" />
                             </div>
-                            <h3 className="text-xl font-semibold text-[var(--beheer-text)] mb-2  tracking-tighter">Geen resultaten</h3>
-                            <p className="text-[var(--beheer-text-muted)] font-semibold  tracking-widest text-[10px] max-w-xs mx-auto">
+                            <h3 className="text-xl font-semibold text-[var(--beheer-text)] mb-2 tracking-tighter">Geen resultaten</h3>
+                            <p className="text-[var(--beheer-text-muted)] font-semibold tracking-widest text-[10px] max-w-xs mx-auto">
                                 {searchQuery ? "We konden niemand vinden die voldoet aan je zoekopdracht." : "Er zijn nog geen aanmeldingen voor deze activiteit."}
                             </p>
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse min-w-[800px]">
-                                <thead>
-                                    <tr className="border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[10px]  font-semibold tracking-widest text-[var(--beheer-text-muted)]">
-                                        <th className="px-6 py-4">Inchecken</th>
-                                        <th className="px-6 py-4">Deelnemer</th>
-                                        <th className="px-6 py-4">Contact</th>
-                                        <th className="px-6 py-4">Lidmaatschap & Datum</th>
-                                        <th className="px-6 py-4 text-right">Acties</th>
-                                    </tr>
-                                </thead>
-                            <tbody className="divide-y divide-[var(--beheer-border)]">
-                                {filteredSignups.map(signup => {
-                                    const name = getName(signup);
-                                    const email = getEmail(signup);
-                                    const phone = getPhone(signup);
-                                    const isRowDeleting = isDeleting === signup.id;
-                                    
-                                    return (
-                                        <tr key={signup.id} className={`group hover:bg-[var(--beheer-card-soft)] transition-colors ${isRowDeleting ? 'opacity-50 pointer-events-none' : ''}`}>
-                                            <td className="px-6 py-5">
-                                                <div className="flex flex-col gap-1.5">
-                                                    <button
-                                                        onClick={() => handleToggleCheckIn(signup.id, !!signup.checked_in)}
-                                                        disabled={!canAccessEdit}
-                                                        className={`flex items-center gap-2 self-start px-3 py-2 rounded-xl transition-all font-semibold text-[10px]  tracking-wider border shadow-sm active:scale-95 ${
-                                                            signup.checked_in 
-                                                            ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30' 
-                                                            : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] border-[var(--beheer-border)] hover:border-emerald-500/50 hover:text-emerald-500'
-                                                        } ${!canAccessEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                                    >
-                                                        {signup.checked_in ? (
-                                                            <>
-                                                                <CheckCircle2 className="h-4 w-4" />
-                                                                <span>Ingecheckt</span>
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <Circle className="h-4 w-4" />
-                                                                <span>Inchecken</span>
-                                                            </>
-                                                        )}
-                                                    </button>
-                                                    {signup.checked_in && signup.checked_in_at && (
-                                                        <div className="flex items-center gap-1 text-[9px] text-[var(--beheer-text-muted)] opacity-60 font-semibold tracking-tight ml-1">
-                                                            <Clock className="h-3 w-3" />
-                                                            {format(new Date(signup.checked_in_at), 'HH:mm')}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-5">
-                                                <div className="font-semibold text-[var(--beheer-text)] text-sm  tracking-tight mb-1">{name}</div>
-                                            </td>
-                                            <td className="px-6 py-5 space-y-1.5">
-                                                <div className="flex items-center gap-2 text-xs text-[var(--beheer-text-muted)] font-semibold  tracking-tight">
-                                                    <Mail className="h-3.5 w-3.5 opacity-50" />
-                                                    <a href={`mailto:${email}`} className="hover:text-[var(--beheer-accent)] transition-colors">{email}</a>
-                                                </div>
-                                                {phone && phone !== '-' && (
-                                                    <div className="flex items-center gap-2 text-xs text-[var(--beheer-text-muted)] font-semibold  tracking-tight">
-                                                        <Phone className="h-3.5 w-3.5 opacity-50" />
-                                                        <a href={`tel:${phone}`} className="hover:text-[var(--beheer-accent)] transition-colors">{phone}</a>
-                                                    </div>
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-5">
-                                                <div className="flex flex-wrap gap-2 mb-2">
-                                                    {getMemberBadge(signup)}
-                                                    {getPaymentBadge(signup.payment_status || 'open')}
-                                                </div>
-                                                <div className="text-[10px] text-[var(--beheer-text-muted)] font-bold  tracking-widest">
-                                                    {signup.created_at && !isNaN(new Date(signup.created_at).getTime()) 
-                                                        ? format(new Date(signup.created_at), 'dd MMM yyyy, HH:mm', { locale: nl }) 
-                                                        : 'Datum onbekend'}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-5 text-right">
-                                                {canAccessEdit && (
-                                                    <button
-                                                        onClick={() => handleDelete(signup.id, email)}
-                                                        className="inline-flex items-center justify-center w-10 h-10 rounded-xl text-[var(--beheer-text-muted)] opacity-30 hover:opacity-100 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer"
-                                                        title="Verwijder aanmelding"
-                                                    >
-                                                        {isRowDeleting ? (
-                                                            <Loader2 className="h-5 w-5 animate-spin" />
-                                                        ) : (
-                                                            <Trash2 className="h-5 w-5" />
-                                                        )}
-                                                    </button>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
+                        <ActivitySignupTable 
+                            signups={filteredSignups}
+                            canAccessEdit={canAccessEdit}
+                            onToggleCheckIn={handleToggleCheckIn}
+                            onDelete={handleDelete}
+                            isDeletingId={isDeleting}
+                        />
                     )}
                 </div>
             </div>

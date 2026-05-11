@@ -96,65 +96,124 @@ async function proxy(request: NextRequest) {
 
     const disabledRoutes = await getDisabledRoutes();
     if (disabledRoutes.some(r => pathname === r || pathname.startsWith(`${r}/`))) {
-        
+        console.warn(`[Proxy] Route ${pathname} is DISABLED in feature-flags. Rewriting to 404.`);
         return withSecurity(NextResponse.rewrite(new URL('/404', request.url)));
     }
 
     const isPublic = PUBLIC_ROUTES.some(r => pathname === r || pathname.startsWith(`${r}/`));
     if (!isPublic) {
         try {
-            const sessionToken = request.cookies.get('better-auth.session-token')?.value;
+            const rawCookie = request.headers.get('cookie') || '';
+            
+            const sessionTokenRaw = request.cookies.get('better-auth.session_token')?.value || 
+                                request.cookies.get('better-auth.session-token')?.value ||
+                                request.cookies.get('__Secure-better-auth.session_token')?.value ||
+                                request.cookies.get('__Secure-better-auth.session-token')?.value ||
+                                rawCookie.split('better-auth.session_token=')[1]?.split(';')[0]?.trim() ||
+                                rawCookie.split('better-auth.session-token=')[1]?.split(';')[0]?.trim();
+            
+            const testTokenRaw = request.cookies.get('directus_test_token')?.value ||
+                                rawCookie.split('directus_test_token=')[1]?.split(';')[0]?.trim();
+            
+            const hasTestToken = !!testTokenRaw;
+            const sessionToken = sessionTokenRaw?.split('.')[0];
+            
             let hasSession = false;
 
-            if (sessionToken) {
+            // Skip cache if impersonating
+            if (sessionToken && !hasTestToken) {
                 const redis = await getRedis();
                 const cached = await redis.get(`session:${sessionToken}`);
                 if (cached) {
-                    const sessionData = JSON.parse(cached);
-                    if (sessionData && sessionData.user) {
-                        hasSession = true;
-                    }
+                    try {
+                        const sessionData = JSON.parse(cached);
+                        if (sessionData && sessionData.user) {
+                            hasSession = true;
+                        }
+                    } catch (e) {}
                 }
             }
 
             if (!hasSession) {
-                const internalBase = process.env.NEXT_APP_INTERNAL_URL || publicUrl;
+                const host = request.headers.get('host') || 'localhost:3000';
+                const internalBase = process.env.NEXT_APP_INTERNAL_URL || origin;
                 const sessionUrl = new URL('/api/auth/get-session', internalBase);
-                const sessionRes = await fetch(sessionUrl, {
-                    headers: {
-                        cookie: request.headers.get('cookie') || '',
-                        'x-better-auth-origin': publicUrl,
-                        'x-forwarded-host': new URL(publicUrl).host,
-                        'x-forwarded-proto': new URL(publicUrl).protocol.replace(':', '')
-                    },
-                    signal: AbortSignal.timeout(10000) });
+                
+                try {
+                    const sessionRes = await fetch(sessionUrl, {
+                        headers: {
+                            cookie: rawCookie,
+                            'user-agent': request.headers.get('user-agent') || '',
+                            'origin': publicUrl,
+                            'referer': request.headers.get('referer') || publicUrl,
+                            'host': host,
+                            'x-better-auth-origin': publicUrl,
+                            'x-forwarded-host': host,
+                            'x-forwarded-proto': origin.startsWith('https') ? 'https' : 'http',
+                            'x-forwarded-for': request.headers.get('x-forwarded-for') || clientIp,
+                            'x-real-ip': clientIp
+                        },
+                        cache: 'no-store',
+                        signal: AbortSignal.timeout(10000)
+                    });
 
-                hasSession = sessionRes.ok && sessionRes.status !== 204;
-                if (hasSession) {
-                    const text = await sessionRes.text();
-                    if (text === 'null' || !text) hasSession = false;
-                    
-                    if (hasSession) {
-                        const response = nextWithNonce();
-                        sessionRes.headers.forEach((value, key) => {
-                            if (key.toLowerCase() === 'set-cookie') {
-                                response.headers.append('set-cookie', value);
-                            }
-                        });
-                        return response;
+                    if (sessionRes.ok && sessionRes.status !== 204) {
+                        const text = await sessionRes.text();
+                        if (text && text !== 'null' && text !== '{}') {
+                            try {
+                                const sessionData = JSON.parse(text);
+                                if (sessionData && sessionData.user) {
+                                    console.log(`[Proxy] Session found for user: ${sessionData.user.email}`);
+                                    hasSession = true;
+                                    
+                                    // If we are on a page with needLogin=true but we HAVE a session, 
+                                    // strip the params to stop the client-side loop.
+                                    if (request.nextUrl.searchParams.has('needLogin')) {
+                                        const cleanUrl = new URL(request.url);
+                                        cleanUrl.searchParams.delete('needLogin');
+                                        cleanUrl.searchParams.delete('callbackURL');
+                                        const response = NextResponse.redirect(cleanUrl);
+                                        sessionRes.headers.forEach((value, key) => {
+                                            if (key.toLowerCase() === 'set-cookie') {
+                                                response.headers.append('set-cookie', value);
+                                            }
+                                        });
+                                        return withSecurity(response);
+                                    }
+
+                                    const response = nextWithNonce();
+                                    sessionRes.headers.forEach((value, key) => {
+                                        if (key.toLowerCase() === 'set-cookie') {
+                                            response.headers.append('set-cookie', value);
+                                        }
+                                    });
+                                    return response;
+                                }
+                            } catch (e) {}
+                        }
                     }
-                }
+                } catch (fetchError) {}
             }
 
-            if (!hasSession) {
-                const callbackUrl = encodeURIComponent(pathname + request.nextUrl.search);
-                const authRedirectUrl = new URL(`/?needLogin=true&callbackURL=${callbackUrl}`, publicUrl);
-                return withSecurity(NextResponse.redirect(authRedirectUrl));
+            if (hasSession) {
+                // If already has session but URL has needLogin, strip it
+                if (request.nextUrl.searchParams.has('needLogin')) {
+                    const cleanUrl = new URL(request.url);
+                    cleanUrl.searchParams.delete('needLogin');
+                    cleanUrl.searchParams.delete('callbackURL');
+                    return withSecurity(NextResponse.redirect(cleanUrl));
+                }
+                return nextWithNonce();
             }
+
+            const callbackUrl = encodeURIComponent(pathname + request.nextUrl.search);
+            const authRedirectUrl = new URL(`/?needLogin=true&callbackURL=${callbackUrl}`, publicUrl);
+            return withSecurity(NextResponse.redirect(authRedirectUrl));
 
             return nextWithNonce();
         } catch (error) {
-            
+            console.error('[Proxy] Critical error during auth check:', error instanceof Error ? error.message : 'Unknown error');
+            if (error instanceof Error && error.stack) console.error(error.stack);
             return withSecurity(NextResponse.rewrite(new URL('/404', request.url)));
         }
     }
