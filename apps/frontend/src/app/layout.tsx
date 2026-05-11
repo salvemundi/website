@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from 'next';
 import { Poppins } from 'next/font/google';
-import { Suspense } from 'react';
 import './globals.css';
 import NavigationHeader from '@/components/islands/layout/NavigationHeader';
 import FooterIsland from '@/components/islands/layout/FooterIsland';
@@ -79,7 +78,8 @@ const poppins = Poppins({
 export default async function RootLayout({
     children }: Readonly<{ children: React.ReactNode }>) {
     await connection();
-    const nonce = (await headers()).get('x-nonce') || undefined;
+    const h = await headers();
+    const nonce = h.get('x-nonce') || undefined;
 
     return (
         <html lang="nl" className="dark" suppressHydrationWarning>
@@ -138,55 +138,83 @@ async function HeadPreloads() {
 
 async function HeaderWrapper() {
     await connection();
-    const [disabledRoutes, session, adminAccess] = await Promise.all([
-        getDisabledRoutes(),
-        auth.api.getSession({ headers: await headers() }),
-        checkAdminAccess(),
-    ]);
+    try {
+        const h = await headers();
+        const [disabledRoutes, session, adminAccess] = await Promise.all([
+            getDisabledRoutes(),
+            auth.api.getSession({ headers: h }),
+            checkAdminAccess(),
+        ]);
 
-    const { impersonation, isAuthorized } = adminAccess;
+        const { impersonation, isAuthorized } = adminAccess;
 
-    return (
-        <NavigationHeader
-            disabledRoutes={disabledRoutes}
-            initialSession={session}
-            impersonation={impersonation}
-            isAdmin={isAuthorized}
-        />
-    );
+        return (
+            <NavigationHeader
+                disabledRoutes={disabledRoutes}
+                initialSession={session}
+                impersonation={impersonation}
+                isAdmin={isAuthorized}
+            />
+        );
+    } catch (e) {
+        return (
+             <NavigationHeader
+                disabledRoutes={[]}
+                initialSession={null}
+                impersonation={null}
+                isAdmin={false}
+            />
+        );
+    }
 }
 
 async function FooterWrapper() {
     await connection();
-    const [documents, disabledRoutes, committees, session] = await Promise.all([
-        getDocumenten(),
-        getDisabledRoutes(),
-        getCommittees(),
-        auth.api.getSession({ headers: await headers() }),
-    ]);
+    try {
+        const h = await headers();
+        const [documents, disabledRoutes, committees, session] = await Promise.all([
+            getDocumenten(),
+            getDisabledRoutes(),
+            getCommittees(),
+            auth.api.getSession({ headers: h }),
+        ]);
 
-    return (
-        <FooterIsland
-            documents={documents}
-            disabledRoutes={disabledRoutes}
-            committees={committees}
-            initialSession={session}
-        />
-    );
+        return (
+            <FooterIsland
+                documents={documents}
+                disabledRoutes={disabledRoutes}
+                committees={committees}
+                initialSession={session}
+            />
+        );
+    } catch (e) {
+        return (
+            <FooterIsland
+                documents={[]}
+                disabledRoutes={[]}
+                committees={[]}
+                initialSession={null}
+            />
+        );
+    }
 }
 
 async function ImpersonationWrapper() {
     await connection();
-    const { impersonation } = await checkAdminAccess();
+    try {
+        const { impersonation } = await checkAdminAccess();
 
-    if (!impersonation) return null;
+        if (!impersonation) return null;
 
-    return (
-        <ImpersonationBanner
-            targetName={impersonation.targetName}
-            adminName={impersonation.name}
-            committees={impersonation.targetCommittees}
-            isNormallyAdmin={impersonation.isNormallyAdmin}
-        />
-    );
+        return (
+            <ImpersonationBanner
+                targetName={impersonation.targetName}
+                adminName={impersonation.name}
+                committees={impersonation.targetCommittees}
+                isNormallyAdmin={impersonation.isNormallyAdmin}
+            />
+        );
+    } catch (e) {
+        return null;
+    }
 }

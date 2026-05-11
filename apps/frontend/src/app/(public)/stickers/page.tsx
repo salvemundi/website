@@ -26,9 +26,10 @@ export default async function StickersPage() {
 async function StickersContent() {
     await connection();
     // NUCLEAR SSR: Fetch all data before flushing any part of the page content
+    const h = await headers();
     const stickersPromise = getPublicStickers();
     const sessionPromise = auth.api.getSession({
-        headers: await headers() });
+        headers: h });
 
     const [stickers, session] = await Promise.all([
         stickersPromise,

@@ -4,19 +4,14 @@ import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
 
-import { getSystemDirectus } from "@/lib/directus";
-import { readItems } from "@directus/sdk";
-import { STICKER_FIELDS, stickerPublicSchema } from "@salvemundi/validations";
+import { stickerPublicSchema } from "@salvemundi/validations";
 
 import { query } from '@/lib/database';
 import { z } from 'zod';
 
-import {  cacheTag } from 'next/cache';
-
 const stickerListSchema = z.array(stickerPublicSchema);
 
 export async function getPublicStickers() {
-    cacheTag('stickers');
     const sql = `
         SELECT 
             s.*,
@@ -79,7 +74,6 @@ export async function createStickerPublic(data: Record<string, unknown>) {
         revalidateTag('stickers', 'max');
         return result;
     } catch (error) {
-        
         throw new Error('Kon sticker niet opslaan.');
     }
 }
@@ -103,7 +97,6 @@ export async function uploadFileAction(formData: FormData) {
         const fileObj = Array.isArray(result) ? result[0] : result;
         return fileObj?.id || null;
     } catch (error) {
-        
         throw new Error('Foto upload mislukt op de server.');
     }
 }

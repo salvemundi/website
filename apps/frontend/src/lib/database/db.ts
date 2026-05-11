@@ -71,4 +71,4 @@ export async function query<R extends QueryResultRow = any>(text: string, params
     throw new Error('[DB-Query] Unexpected end of function');
 }
 
-
+export default pool;

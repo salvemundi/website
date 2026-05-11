@@ -1,16 +1,7 @@
 import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
-import { Pool } from "pg";
+import { pool } from "@/lib/database/db";
 import { createRedisSessionPlugin } from "./redis-session-plugin";
-
-// Database Pool — gebruik object config zodat speciale tekens in wachtwoorden
-// geen URL-parseer problemen veroorzaken (bijv. @ of / in het wachtwoord).
-const pool = new Pool({
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    host: process.env.DB_HOST || process.env.INTERNAL_DB_HOST,
-    port: 5432,
-    database: process.env.DB_NAME });
 
 export const auth = betterAuth({
     database: pool,
