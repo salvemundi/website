@@ -2,16 +2,19 @@ import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import { getTripSignupByToken } from '@/server/actions/reis-payment.actions';
 import TripPaymentFlowIsland from '@/components/islands/reis/TripPaymentFlowIsland';
-import { Search, Home } from 'lucide-react';
-import BackButton from '@/components/ui/navigation/BackButton';
+import { TripAccessDenied, TripWaitlisted } from '@/components/ui/reis/TripPaymentStates';
 
 export const metadata: Metadata = {
-    title: 'Aanbetaling Reis | SV Salve Mundi' };
+    title: 'Aanbetaling Reis | SV Salve Mundi' 
+};
 
 interface PageProps {
     searchParams: Promise<{ id?: string; t?: string }>;
 }
 
+/**
+ * AanbetalingPage: Afhandeling van de eerste betaling (deposit) voor een reis.
+ */
 export default async function AanbetalingPage({ searchParams }: PageProps) {
     const params = await searchParams;
     const signupId = params.id ? parseInt(params.id) : null;
@@ -23,72 +26,18 @@ export default async function AanbetalingPage({ searchParams }: PageProps) {
     const res = await getTripSignupByToken(signupId, token);
 
     if (!res.success || !res.data) {
-        return (
-            <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
-                <div className="relative mb-8 pt-10">
-                    <div className="absolute inset-x-0 top-0 h-40 w-40 mx-auto blur-3xl bg-[var(--color-purple-500)]/10 rounded-full pointer-events-none" />
-                    <div className="relative rounded-3xl bg-[var(--bg-card)] p-6 shadow-2xl border border-[var(--border-color)]/20 text-[var(--color-purple-500)] inline-block">
-                        <Search className="h-16 w-16" />
-                    </div>
-                </div>
-
-                <h2 className="text-4xl font-black text-[var(--text-main)] mb-3 tracking-tight italic uppercase">
-                    Toegang Geweigerd
-                </h2>
-                
-                <p className="text-[var(--text-muted)] max-w-md mx-auto mb-10 font-medium">
-                    {res.error || 'Deze link is ongeldig of verlopen. Gebruik de link uit de e-mail of log in op je account.'}
-                </p>
-
-                <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-                    <BackButton 
-                        href="/reis" 
-                        text="Terug naar Reizen" 
-                        icon={Home} 
-                        className="rounded-full px-8 py-3.5"
-                    />
-                </div>
-            </div>
-        );
+        return <TripAccessDenied error={res.error} />;
     }
 
     const { signup, trip, allActivities, selectedActivities } = res.data;
-
     if (!signup || !trip) return notFound();
 
-    // Redirection logic:
-    // 1. Waitlist check: Waitlisted users cannot pay yet.
+    // 1. Waitlist check
     if (signup.status === 'waitlist') {
-        return (
-            <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
-                <div className="relative mb-8 pt-10">
-                    <div className="absolute inset-x-0 top-0 h-40 w-40 mx-auto blur-3xl bg-amber-500/10 rounded-full pointer-events-none" />
-                    <div className="relative rounded-3xl bg-[var(--bg-card)] p-6 shadow-2xl border border-[var(--border-color)]/20 text-amber-500 inline-block">
-                        <Search className="h-16 w-16" />
-                    </div>
-                </div>
-
-                <h2 className="text-4xl font-black text-[var(--text-main)] mb-3 tracking-tight italic uppercase">
-                    Wachtlijst
-                </h2>
-                
-                <p className="text-[var(--text-muted)] max-w-md mx-auto mb-10 font-medium text-balance">
-                    Je staat momenteel op de wachtlijst voor deze reis. Je kunt pas betalen zodra er een plek vrijkomt en je status is aangepast naar 'Geregistreerd'.
-                </p>
-
-                <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-                    <BackButton 
-                        href="/reis" 
-                        text="Terug naar Reizen" 
-                        icon={Home} 
-                        className="rounded-full px-8 py-3.5"
-                    />
-                </div>
-            </div>
-        );
+        return <TripWaitlisted />;
     }
 
-    // 2. Already paid check:
+    // 2. Already paid check: Redirect to final payment if deposit is already done
     if (signup.deposit_paid) {
         redirect(`/reis/betalen/restbetaling?id=${signupId}${token ? `&t=${token}` : ''}`);
     }
@@ -104,63 +53,5 @@ export default async function AanbetalingPage({ searchParams }: PageProps) {
                 token={token}
             />
         </div>
-    );
-}
-
-
-async function PaymentDataWrapper({ signupId, token, paymentType }: { signupId: number; token?: string; paymentType: 'deposit' | 'final' }) {
-    const res = await getTripSignupByToken(signupId, token);
-
-    if (!res.success || !res.data) {
-        return (
-            <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
-                <div className="relative mb-8 pt-10">
-                    <div className="absolute inset-x-0 top-0 h-40 w-40 mx-auto blur-3xl bg-[var(--color-purple-500)]/10 rounded-full pointer-events-none" />
-                    <div className="relative rounded-3xl bg-[var(--bg-card)] p-6 shadow-2xl border border-[var(--border-color)]/20 text-[var(--color-purple-500)] inline-block">
-                        <Search className="h-16 w-16" />
-                    </div>
-                </div>
-
-                <h2 className="text-4xl font-black text-[var(--text-main)] mb-3 tracking-tight italic uppercase">
-                    Toegang Geweigerd
-                </h2>
-                
-                <p className="text-[var(--text-muted)] max-w-md mx-auto mb-10 font-medium">
-                    {res.error || 'Deze link is ongeldig of verlopen. Gebruik de link uit de e-mail of log in op je account.'}
-                </p>
-
-                <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-                    <BackButton 
-                        href="/reis" 
-                        text="Terug naar Reizen" 
-                        icon={Home} 
-                        className="rounded-full px-8 py-3.5"
-                    />
-                </div>
-            </div>
-        );
-    }
-
-    const { signup, trip, allActivities, selectedActivities } = res.data;
-
-    if (!signup || !trip) return notFound();
-
-    // Redirection logic from legacy requirements:
-    // "Als de aanbetaling al is voldaan, moet de gebruiker automatisch worden doorgestuurd naar de restbetalingspagina."
-    if (paymentType === 'deposit' && signup.deposit_paid) {
-        const { redirect } = await import('next/navigation');
-        const url = `/reis/betalen/restbetaling?id=${signupId}${token ? `&t=${token}` : ''}`;
-        redirect(url);
-    }
-
-    return (
-        <TripPaymentFlowIsland 
-            signup={signup}
-            trip={trip}
-            allActivities={allActivities}
-            selectedActivities={selectedActivities}
-            paymentType={paymentType}
-            token={token}
-        />
     );
 }
