@@ -16,9 +16,7 @@ interface PublicPageShellProps {
 /**
  * Standardized Shell for all Public pages.
  * V7.12 Industrial SSR: Clean architecture, zero layout shift.
- * The PageHeader component is intentionally removed from this shell to prevent
- * hydration-based layout shifts and redundant headers on the homepage.
- * Props are kept for backward compatibility with existing route pages.
+ * Hydration-based layout shifts are prevented by keeping the shell minimal.
  */
 export default function PublicPageShell({
     children }: PublicPageShellProps) {

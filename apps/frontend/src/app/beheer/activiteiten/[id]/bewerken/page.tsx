@@ -20,7 +20,6 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
     const resolvedParams = await params;
     const id = resolvedParams.id;
     
-    // Check initial session to avoid ghost skeletons for guests
     const session = await auth.api.getSession({
         headers: await headers()
     });
@@ -49,8 +48,8 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
     
     if (!eventData) return notFound();
     
-    // Remap database fields to match the form expectations (if needed)
-    const legacyEventData = {
+    // Map database fields to match the form expectations
+    const event = {
         ...eventData,
         name: eventData.titel,
         description: eventData.beschrijving,
@@ -65,7 +64,8 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
         // Missing fields
         description_logged_in: eventData.description_logged_in,
         publish_date: eventData.publish_date,
-        only_members: eventData.only_members };
+        only_members: eventData.only_members
+    };
 
     const cleanedCommittees = allCommittees.map((c) => ({
         id: c.id,
@@ -81,7 +81,7 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
     return (
         <div className="pb-20">
             <ActiviteitBewerkenIsland 
-                event={legacyEventData as unknown as AdminActivity} 
+                event={event as unknown as AdminActivity} 
                 committees={allowedCommitteesForDropdown as unknown as Committee[]} 
             />
         </div>

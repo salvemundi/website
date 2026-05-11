@@ -112,7 +112,7 @@ export default function PendingTab({
                                         </button>
                                     </td>
                                     <td className="p-4 text-xs font-medium text-[var(--beheer-text-muted)] tracking-tight whitespace-nowrap">
-                                        {formatDate(s.created_at, true)}
+                                        {formatDate(s.created_at, 'dd-MM-yyyy HH:mm')}
                                     </td>
                                     <td className="p-4">
                                         <div className="flex flex-col min-w-0">

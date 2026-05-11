@@ -12,7 +12,8 @@ import {
     deleteItem, 
     createItem
 } from '@directus/sdk';
-import { requireReisAdmin } from './reis-admin-utils';
+import { requireAdminResource } from '../auth/auth-utils';
+import { AdminResource } from '@/shared/lib/permissions-config';
 import { 
     createTripActivityDb, 
     updateTripActivityDb, 
@@ -23,7 +24,7 @@ import {
 
 
 export async function createTripActivity(prevState: unknown, formData: FormData) {
-    await requireReisAdmin();
+    await requireAdminResource(AdminResource.Reis);
 
     const rawData: Record<string, unknown> = {};
     formData.forEach((value, key) => {
@@ -71,7 +72,7 @@ export async function createTripActivity(prevState: unknown, formData: FormData)
 }
 
 export async function updateTripActivity(prevState: unknown, formData: FormData) {
-    await requireReisAdmin();
+    await requireAdminResource(AdminResource.Reis);
 
     const id = parseInt(formData.get('id') as string);
     if (!id) throw new Error('Geen ID gevonden voor update');
@@ -122,7 +123,7 @@ export async function updateTripActivity(prevState: unknown, formData: FormData)
 }
 
 export async function deleteTripActivity(id: number) {
-    await requireReisAdmin();
+    await requireAdminResource(AdminResource.Reis);
 
     try {
         const success = await deleteTripActivityDb(id);
@@ -147,11 +148,10 @@ export async function deleteTripActivity(id: number) {
 }
 
 export async function getActivitySignups(activityId: number) {
-    await requireReisAdmin();
+    await requireAdminResource(AdminResource.Reis);
     try {
         return await fetchSignupsByActivityIdDb(activityId);
     } catch (error) {
-        console.error('[ReisAdmin] Failed to fetch activity signups:', error);
         return [];
     }
 }

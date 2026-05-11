@@ -1,12 +1,13 @@
 'use server';
 
-import { requireReisAdmin } from './reis-admin-utils';
+import { requireAdminResource } from '@/server/auth/auth-utils';
+import { AdminResource } from '@/shared/lib/permissions-config';
 
 const FINANCE_URL = process.env.FINANCE_SERVICE_URL;
 const INTERNAL_SERVICE_TOKEN = process.env.INTERNAL_SERVICE_TOKEN;
 
 export async function sendPaymentEmail(signupId: number, tripId: number, paymentType: 'deposit' | 'final') {
-    await requireReisAdmin();
+    await requireAdminResource(AdminResource.Reis);
 
     if (!INTERNAL_SERVICE_TOKEN) {
         
@@ -49,7 +50,7 @@ export async function sendBulkTripEmail(data: {
     subject: string;
     message: string;
 }) {
-    await requireReisAdmin();
+    await requireAdminResource(AdminResource.Reis);
 
     if (!INTERNAL_SERVICE_TOKEN) {
         throw new Error('Missing service token');
@@ -87,7 +88,7 @@ export async function sendBulkTripEmail(data: {
 }
 
 export async function sendBulkPaymentEmails(tripId: number, signupIds: number[], paymentType: 'deposit' | 'final') {
-    await requireReisAdmin();
+    await requireAdminResource(AdminResource.Reis);
 
     const results = {
         successCount: 0,

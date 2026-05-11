@@ -1,5 +1,6 @@
 import 'server-only';
-import { requireReisAdmin } from '@/server/actions/reis-admin-utils';
+import { requireAdminResource } from '@/server/auth/auth-utils';
+import { AdminResource } from '@/shared/lib/permissions-config';
 import { fetchFullTripsDb, fetchTripActivitiesByTripIdDb } from '@/server/actions/reis-db.utils';
 import { 
     tripSchema,
@@ -13,7 +14,7 @@ import { z } from 'zod';
  * Uses direct database access to bypass Directus cache for immediate consistency.
  */
 export async function getTrips(): Promise<Trip[]> {
-    await requireReisAdmin();
+    await requireAdminResource(AdminResource.Reis);
 
     try {
         const sanitized = await fetchFullTripsDb();
@@ -36,7 +37,7 @@ export async function getTrips(): Promise<Trip[]> {
  * Fetches all activities for a specific trip directly from the database.
  */
 export async function getTripActivities(tripId: number): Promise<TripActivity[]> {
-    await requireReisAdmin();
+    await requireAdminResource(AdminResource.Reis);
 
     try {
         const activities = await fetchTripActivitiesByTripIdDb(tripId);

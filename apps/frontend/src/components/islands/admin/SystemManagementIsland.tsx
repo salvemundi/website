@@ -223,7 +223,7 @@ export default function SystemManagementIsland({
                                     <div className="flex items-center gap-3">
                                         <div className={cn(
                                             "h-2 w-2 rounded-full",
-                                            setting.isActive ? "bg-emerald-500 animate-pulse" : "bg-rose-500"
+                                            setting.isActive ? "bg-emerald-500" : "bg-rose-500"
                                         )} />
                                         <span className={cn(
                                             "text-[10px] font-semibold",
@@ -268,7 +268,7 @@ export default function SystemManagementIsland({
                         System Monitoring Active
                     </p>
                     <p className="text-[9px] font-semibold text-[var(--beheer-text-muted)] opacity-30">
-                        {`Last Sync: ${formatDate(lastUpdated!, true)}`}
+                        {`Last Sync: ${formatDate(lastUpdated!, 'dd-MM-yyyy HH:mm')}`}
                     </p>
                 </div>
             )}

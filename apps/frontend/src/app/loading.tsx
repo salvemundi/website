@@ -57,7 +57,7 @@ export default function GlobalLoading() {
 
                     {status === 'slow' && (
                         <div className="animate-in slide-in-from-bottom-2 duration-500">
-                            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest animate-pulse max-w-xs leading-relaxed">
+                            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest max-w-xs leading-relaxed">
                                 Dit duurt langer dan verwacht... <br/>
                                 Controleer je internetverbinding of neem contact op met de ICT-commissie.
                             </p>

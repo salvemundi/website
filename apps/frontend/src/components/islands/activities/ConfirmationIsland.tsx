@@ -191,7 +191,7 @@ export default function ConfirmationIsland({
                             Bedankt! Je ticket{amount > 1 ? 's' : ''} {amount > 1 ? 'zijn' : 'is'} nu beschikbaar.
                         </p>
                         {((signupData as Record<string, any>)?.event_id?.custom_url || (signupData as Record<string, any>)?.custom_url) && (
-                            <p className="text-[10px]  font-semibold text-[var(--theme-purple)] mt-2 tracking-widest animate-pulse">
+                            <p className="text-[10px]  font-semibold text-[var(--theme-purple)] mt-2 tracking-widest">
                                 Je wordt zo automatisch doorgestuurd...
                             </p>
                         )}

@@ -19,7 +19,6 @@ export default async function CommissiesBeheerPage() {
         countUniqueCommitteeMembers().catch(() => 0),
     ]);
     
-    // Predeterministic first committee fetching to avoid skeleton jitter
     const firstCommittee = committees[0];
     const initialMembers = firstCommittee ? await getCommitteeMembers(firstCommittee.id.toString()).catch(() => []) : [];
 

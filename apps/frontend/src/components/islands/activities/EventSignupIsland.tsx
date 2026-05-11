@@ -141,7 +141,7 @@ export default function EventSignupIsland({
                         {isPaidStatus ? (
                             <CheckCircle2 className="h-10 w-10 text-[var(--color-success)]" />
                         ) : (
-                            <CreditCard className="h-10 w-10 text-amber-500 animate-pulse" />
+                            <CreditCard className="h-10 w-10 text-amber-500" />
                         )}
                     </div>
                     <h3 className="text-3xl font-semibold text-[var(--text-main)] leading-tight">

@@ -99,7 +99,7 @@ export function WhySalveMundiSection() {
                             key={pijler.titel}
                             className="group relative rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-8 shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
                         >
-                            {/* Icoon-badge — hover wisselt naar bg-gradient-theme conform legacy */}
+                            {/* Icoon-badge — hover wisselt naar bg-gradient-theme */}
                             <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--color-purple-300)]/10 text-[var(--color-purple-300)] group-hover:bg-gradient-theme group-hover:text-[var(--text-main)] transition-all duration-300">
                                 {pijler.icon}
                             </div>

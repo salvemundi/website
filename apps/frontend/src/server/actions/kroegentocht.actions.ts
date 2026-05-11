@@ -178,7 +178,7 @@ export async function initiateKroegentochtPayment(formData: unknown) {
             if (parsed.data.name_initials?.startsWith('[')) {
                 participantsData = JSON.parse(parsed.data.name_initials);
             } else {
-                // Fallback for legacy comma-separated strings
+                // Fallback for comma-separated strings
                 participantsData = (parsed.data.name_initials || '').split(',')
                     .map(n => n.trim())
                     .filter(Boolean)

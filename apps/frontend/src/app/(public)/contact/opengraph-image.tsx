@@ -1,5 +1,5 @@
 // OG-image route voor de contactpagina
-// Gebaseerd op het legacy patroon met ImageResponse (Next.js Edge Runtime)
+// Gebaseerd op ImageResponse patroon (Next.js Edge Runtime)
 
 import { ImageResponse } from 'next/og';
 

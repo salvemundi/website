@@ -50,7 +50,7 @@ export function EnrichmentForm({ trip }: EnrichmentFormProps) {
                             <AlertCircle className="w-5 h-5 text-red-500 absolute right-3 top-1/2 -translate-y-1/2 opacity-50 group-hover:opacity-100 transition-opacity" />
                         </div>
                         <p className="text-[10px] text-red-500 font-bold mt-1 flex items-center gap-1">
-                            <span className="animate-pulse">→</span> LET OP: MOET EXACT OVEREENKOMEN MET JE ID-BEWIJS!
+                            <span>→</span> LET OP: MOET EXACT OVEREENKOMEN MET JE ID-BEWIJS!
                         </p>
                     </FormField>
                 </div>

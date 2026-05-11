@@ -64,7 +64,7 @@ export default function SyncMonitorIsland() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
                 <div className="flex items-center gap-4">
                     <div className="p-2.5 bg-[var(--theme-info)]/10 rounded-xl text-[var(--theme-info)]">
-                        <Activity className={`h-5 w-5 ${isRunning ? 'animate-pulse' : ''}`} />
+                        <Activity className="h-5 w-5" />
                     </div>
                     <div>
                         <h3 className="text-lg font-semibold text-[var(--beheer-text)] tracking-tight">Sync Monitor</h3>
@@ -122,7 +122,6 @@ export default function SyncMonitorIsland() {
                             className="h-full bg-gradient-to-r from-[var(--beheer-accent)] to-[var(--theme-info)] transition-all duration-500 relative"
                             style={{ width: `${progress}%` }}
                         >
-                            {isRunning && <div className="absolute inset-0 bg-white/20 animate-pulse" />}
                         </div>
                     </div>
                 </div>

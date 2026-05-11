@@ -75,7 +75,7 @@ async function checkParentSignupInternal(): Promise<{ exists: boolean; record?: 
             return { exists: true, record: signups[0] as unknown as ParentSignupRecord };
         }
 
-        // 2. Fallback check: Email match (legacy or ID change)
+        // 2. Fallback check: Email match verification
         const emailSignups = await getSystemDirectus().request(
             readItems('intro_parent_signups', {
                 filter: { email: { _eq: session.user.email } },
@@ -202,7 +202,7 @@ export async function submitIntroParentSignup(data: IntroParentSignupForm): Prom
                     type: 'system_intro_id_healed',
                     status: 'SUCCESS',
                     payload: { 
-                        context: 'Automatically linked legacy/email-only signup to current session ID',
+                        context: 'Automatically linked email-only signup to current session ID',
                         target_table: 'intro_parent_signups'
                     }
                 });
@@ -237,9 +237,7 @@ export async function submitIntroParentSignup(data: IntroParentSignupForm): Prom
     };
 
     try {
-        console.log('[IntroParentSignup] Payload:', JSON.stringify(payload, null, 2));
-        const result = await getSystemDirectus().request(createItem('intro_parent_signups', payload));
-        console.log('[IntroParentSignup] Success:', result);
+        await getSystemDirectus().request(createItem('intro_parent_signups', payload));
         revalidatePath('/beheer/intro');
         return { success: true };
     } catch (e: unknown) {
