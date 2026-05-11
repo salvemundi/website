@@ -9,9 +9,12 @@ import {
     Clock
 } from 'lucide-react';
 import { 
-    sendBulkTripEmail, 
-    sendBulkPaymentEmails 
+    getTripSignups,
 } from '@/server/actions/reis-admin-signups.actions';
+import {
+    sendBulkTripEmail,
+    sendBulkPaymentEmails
+} from '@/server/actions/reis-admin-mail.actions';
 import type { Trip, TripSignup } from '@salvemundi/validations/schema/admin-reis.zod';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';

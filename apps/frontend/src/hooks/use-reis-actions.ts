@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Trip, TripSignup } from '@salvemundi/validations/schema/admin-reis.zod';
-import { updateSignupStatus, deleteTripSignup, sendPaymentEmail } from '@/server/actions/reis-admin-signups.actions';
+import { updateSignupStatus, deleteTripSignup } from '@/server/actions/reis-admin-signups.actions';
+import { sendPaymentEmail } from '@/server/actions/reis-admin-mail.actions';
 
 import { type ToastType } from '@/components/ui/admin/AdminToast';
 

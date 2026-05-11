@@ -1,7 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { Calendar, MapPin, Clock, Info, User, Mail, Euro, CalendarClock } from 'lucide-react';
-import SafeHtml from '@/components/ui/security/SafeHtml';
+import { SafeHtml } from '@/components/ui/security/SafeHtml';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 import { type Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { buildCommitteeEmail, formatDutchDate, formatTime } from '@/shared/lib/activity-utils';
