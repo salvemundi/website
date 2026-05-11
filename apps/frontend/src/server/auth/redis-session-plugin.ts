@@ -227,17 +227,36 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                 } catch (e) { }
                             }
 
-                            if (isWebResponse) {
-                                const newHeaders = new Headers((ctx.response as Response).headers);
-                                newHeaders.set('content-type', 'application/json');
-                                newHeaders.delete('content-length');
-                                return {
-                                    response: new Response(JSON.stringify(sessionWithUser), {
-                                        status: (ctx.response as Response).status,
-                                        statusText: (ctx.response as Response).statusText,
-                                        headers: newHeaders
-                                    })
-                                };
+                            if (isWebResponse && ctx.response) {
+                                try {
+                                    const rawResponse = ctx.response;
+                                    const responseHeaders = (rawResponse && typeof rawResponse === 'object' && 'headers' in rawResponse) 
+                                        ? (rawResponse as { headers: HeadersInit }).headers 
+                                        : null;
+                                    
+                                    if (responseHeaders) {
+                                        const newHeaders = new Headers(responseHeaders);
+                                        newHeaders.set('content-type', 'application/json');
+                                        newHeaders.delete('content-length');
+                                        
+                                        const status = (rawResponse && typeof rawResponse === 'object' && 'status' in rawResponse) 
+                                            ? (rawResponse as { status: number }).status 
+                                            : 200;
+                                        const statusText = (rawResponse && typeof rawResponse === 'object' && 'statusText' in rawResponse) 
+                                            ? (rawResponse as { statusText: string }).statusText 
+                                            : 'OK';
+
+                                        return {
+                                            response: new Response(JSON.stringify(sessionWithUser), {
+                                                status,
+                                                statusText,
+                                                headers: newHeaders
+                                            })
+                                        };
+                                    }
+                                } catch (e) {
+                                    // Silently fail if wrapping fails
+                                }
                             } else if (ctx.context) {
                                 return {
                                     context: {
