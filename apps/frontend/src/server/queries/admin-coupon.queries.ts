@@ -51,7 +51,7 @@ export async function getCoupons(): Promise<Coupon[]> {
             usage_count: Number(i.usage_count || 0),
             is_active: !!i.is_active
         })) as Coupon[];
-    } catch (e) {
+    } catch {
         
         return [];
     }

@@ -42,7 +42,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
     const [systemLogs, setSystemLogs] = useState<SystemLog[]>(initialData.systemLogs);
     const [adminLogsTotalCount, setAdminLogsTotalCount] = useState(initialData.adminLogsTotal);
     const [systemLogsTotalCount, setSystemLogsTotalCount] = useState(initialData.systemLogsTotal);
-    const [queueData, setQueueData] = useState<Record<string, QueueInfo>>(initialData.queueData);
+    const [queueData, _setQueueData] = useState<Record<string, QueueInfo>>(initialData.queueData);
     
     const [isProcessing, setIsProcessing] = useState<string | null>(null);
     const [isBulkProcessing, setIsBulkProcessing] = useState<'approve' | 'reject' | null>(null);
@@ -84,7 +84,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
             } else {
                 showToast(res.error || 'Goedkeuren mislukt', 'error');
             }
-        } catch (err) {
+        } catch {
             showToast('Er is een fout opgetreden', 'error');
         } finally {
             setIsProcessing(null);
@@ -107,7 +107,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
             } else {
                 showToast(res.error || 'Afwijzen mislukt', 'error');
             }
-        } catch (err) {
+        } catch {
             showToast('Er is een fout opgetreden', 'error');
         } finally {
             setIsProcessing(null);
@@ -131,7 +131,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
             } else {
                 showToast(res.error || 'Bulk goedkeuren mislukt', 'error');
             }
-        } catch (err) {
+        } catch {
             showToast('Er is een fout opgetreden', 'error');
         } finally {
             setIsBulkProcessing(null);
@@ -156,7 +156,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
             } else {
                 showToast(res.error || 'Bulk afwijzen mislukt', 'error');
             }
-        } catch (err) {
+        } catch {
             showToast('Er is een fout opgetreden', 'error');
         } finally {
             setIsBulkProcessing(null);
@@ -191,7 +191,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
         setSelectedIds(newSet);
     };
 
-    const adminStats = [
+    const _adminStats = [
         { label: 'Wachtrij', value: signups.length, icon: Clock, trend: 'Pending' },
         { label: 'Beheerder', value: adminLogsTotalCount, icon: Shield, trend: 'Actions' },
         { label: 'Systeem', value: systemLogsTotalCount, icon: History, trend: 'Events' },

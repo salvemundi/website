@@ -20,7 +20,7 @@ export default function StickerManagementIsland({
 }: StickerManagementIslandProps) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [stickers, setStickers] = useState(initialStickers);
-    const [isPending, startTransition] = useTransition();
+    const [_isPending, _startTransition] = useTransition();
 
     const handleDelete = async (id: number) => {
         try {

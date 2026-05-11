@@ -98,7 +98,7 @@ export default function KroegentochtManagementIsland({
                     showToast(`Kroegentocht is nu ${result.show ? 'zichtbaar' : 'verborgen'}`, 'success');
                     router.refresh(); // Force re-fetch of layout data (like navbar)
                 }
-            } catch (err) {
+            } catch {
                 
                 showToast('Fout bij bijwerken zichtbaarheid', 'error');
             }

@@ -46,7 +46,7 @@ export async function checkAdminAccess() {
                 // Store granular permissions in the user object for convenience
                 Object.assign(user, perms);
             }
-        } catch (e: unknown) {
+        } catch {
             // Silently fail metadata enrichment
         }
 
@@ -72,7 +72,7 @@ export async function checkAdminAccess() {
                 targetCommittees: user.committees?.map((c) => c.name) || []
             } : null
         };
-    } catch (e) {
+    } catch {
         return { isAuthorized: false, user: null, isIct: false, impersonation: null };
     }
 }

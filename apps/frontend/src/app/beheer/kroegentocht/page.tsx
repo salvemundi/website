@@ -8,7 +8,7 @@ export const metadata = {
     description: 'Beheer aanmeldingen en instellingen voor de Kroegentocht.' };
 
 export default async function KroegentochtPage() {
-    const { user } = await checkAdminAccess(); // Ensure authorized
+    const { user: _user } = await checkAdminAccess(); // Ensure authorized
     noStore();
 
     // NUCLEAR SSR: Fetch events, settings and initial signups at the top level

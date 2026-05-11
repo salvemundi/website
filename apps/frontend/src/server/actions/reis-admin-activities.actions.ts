@@ -50,7 +50,7 @@ export async function createTripActivity(prevState: unknown, formData: FormData)
         const newId = await createTripActivityDb(validated.data);
         if (!newId) throw new Error('Database insert failed');
 
-        getSystemDirectus().request(createItem('trip_activities', validated.data)).catch(err => {
+        getSystemDirectus().request(createItem('trip_activities', validated.data)).catch(() => {
             
         });
 
@@ -101,7 +101,7 @@ export async function updateTripActivity(prevState: unknown, formData: FormData)
         const success = await updateTripActivityDb(id, validated.data);
         if (!success) throw new Error('Database update failed');
 
-        getSystemDirectus().request(updateItem('trip_activities', id, validated.data)).catch(err => {
+        getSystemDirectus().request(updateItem('trip_activities', id, validated.data)).catch(() => {
             
         });
 
@@ -126,7 +126,7 @@ export async function deleteTripActivity(id: number) {
         const success = await deleteTripActivityDb(id);
         if (!success) throw new Error('Database delete failed');
 
-        getSystemDirectus().request(deleteItem('trip_activities', id)).catch(err => {
+        getSystemDirectus().request(deleteItem('trip_activities', id)).catch(() => {
             
         });
 
@@ -148,7 +148,7 @@ export async function getActivitySignups(activityId: number) {
     await requireAdminResource(AdminResource.Reis);
     try {
         return await fetchSignupsByActivityIdDb(activityId);
-    } catch (error) {
+    } catch {
         return [];
     }
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import GlobalError from '@/components/ui/layout/GlobalError';
+import ErrorWrapper from '@/components/ui/ErrorWrapper';
 
 export default function BeheerError({
     error,
@@ -9,12 +9,11 @@ export default function BeheerError({
     reset: () => void;
 }) {
     return (
-        <div className="p-4 sm:p-6 lg:p-8">
-            <GlobalError 
-                error={error} 
-                reset={reset} 
-                title="Beheerderspaneel Fout" 
-            />
-        </div>
+        <ErrorWrapper 
+            error={error} 
+            reset={reset} 
+            title="Beheerderspaneel Fout" 
+            className="p-4 sm:p-6 lg:p-8"
+        />
     );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import GlobalError from '@/components/ui/layout/GlobalError';
+import ErrorWrapper from '@/components/ui/ErrorWrapper';
 
 export default function SecureError({
     error,
@@ -9,12 +9,10 @@ export default function SecureError({
     reset: () => void;
 }) {
     return (
-        <div className="mx-auto max-w-app px-4 py-12 sm:px-6 lg:px-8">
-            <GlobalError 
-                error={error} 
-                reset={reset} 
-                title="Ledenomgeving Fout" 
-            />
-        </div>
+        <ErrorWrapper 
+            error={error} 
+            reset={reset} 
+            title="Ledenomgeving Fout" 
+        />
     );
 }

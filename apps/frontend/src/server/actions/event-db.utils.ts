@@ -1,5 +1,6 @@
 import { query } from '@/lib/database';
-import { type DbEvent, type DbEventSignup } from '@salvemundi/validations/directus/schema';
+import { buildUpdateQuery } from '@/lib/database/query-builder';
+import { type DbEventSignup } from '@salvemundi/validations/directus/schema';
 
 export type EnrichedEvent = {
     id: number;
@@ -18,79 +19,9 @@ export type EnrichedEventSignup = DbEventSignup & {
  * Event Operations
  */
 
-export async function createEventDb(data: Partial<DbEvent>): Promise<number | null> {
-    try {
-        const sql = `
-            INSERT INTO events (
-                name, description, location, max_sign_ups, price_members, price_non_members,
-                only_members, registration_deadline, contact, image, committee_id,
-                event_date, event_time, event_date_end, event_time_end, status, publish_date,
-                description_logged_in, custom_url
-            ) VALUES (
-                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
-            ) RETURNING id
-        `;
-        
-        const params = [
-            data.name || null,
-            data.description || null,
-            data.location || null,
-            data.max_sign_ups !== undefined ? data.max_sign_ups : null,
-            data.price_members !== undefined ? data.price_members : null,
-            data.price_non_members !== undefined ? data.price_non_members : null,
-            data.only_members ? true : false,
-            data.registration_deadline || null,
-            data.contact || null,
-            data.image || null,
-            data.committee_id || null,
-            data.event_date || null,
-            data.event_time || null,
-            data.event_date_end || null,
-            data.event_time_end || null,
-            data.status || 'draft',
-            data.publish_date || null,
-            data.description_logged_in || null,
-            data.custom_url || null,
-        ];
 
-        const { rows } = await query(sql, params);
-        return rows[0]?.id || null;
-    } catch (error: unknown) {
-        console.error('[EventDb] Failed to create event:', error);
-        return null;
-    }
-}
 
-export async function updateEventDb(id: number, data: Partial<DbEvent>): Promise<boolean> {
-    try {
-        const fields: string[] = [];
-        const params: (string | number | boolean | object | null | undefined)[] = [];
-        let paramIndex = 1;
 
-        for (const [key, value] of Object.entries(data)) {
-            // Include valid columns
-            if (['name', 'description', 'location', 'max_sign_ups', 'price_members', 'price_non_members',
-                 'only_members', 'registration_deadline', 'contact', 'image', 'committee_id',
-                 'event_date', 'event_time', 'event_date_end', 'event_time_end', 'status', 'publish_date',
-                 'description_logged_in', 'custom_url'].includes(key)) {
-                fields.push(`${key} = $${paramIndex}`);
-                params.push(value);
-                paramIndex++;
-            }
-        }
-
-        if (fields.length === 0) return true; // Nothing to update
-        
-        params.push(id);
-        const sql = `UPDATE events SET ${fields.join(', ')} WHERE id = $${paramIndex} RETURNING id`;
-        
-        const { rows } = await query(sql, params);
-        return rows.length > 0;
-    } catch (error: unknown) {
-        console.error(`[EventDb] Failed to update event ${id}:`, error);
-        return false;
-    }
-}
 
 export async function deleteEventDb(id: number): Promise<boolean> {
     try {
@@ -141,27 +72,15 @@ export async function createEventSignupDb(data: Partial<DbEventSignup>): Promise
 
 export async function updateEventSignupDb(id: number, data: Partial<DbEventSignup>): Promise<boolean> {
     try {
-        const fields: string[] = [];
-        const params: any[] = [];
-        let paramIndex = 1;
+        const allowedFields = ['payment_status', 'checked_in', 'checked_in_at', 'participant_name', 'participant_email', 'participant_phone', 'is_member'];
+        const builder = buildUpdateQuery('event_signups', id, data, allowedFields);
 
-        for (const [key, value] of Object.entries(data)) {
-            if (['payment_status', 'checked_in', 'checked_in_at', 'participant_name', 'participant_email', 'participant_phone', 'is_member'].includes(key)) {
-                fields.push(`${key} = $${paramIndex}`);
-                params.push(value);
-                paramIndex++;
-            }
-        }
-
-        if (fields.length === 0) return true;
+        if (!builder) return true;
         
-        params.push(id);
-        const sql = `UPDATE event_signups SET ${fields.join(', ')} WHERE id = $${paramIndex} RETURNING id`;
-        
-        const { rows } = await query(sql, params);
+        const { rows } = await query(builder.sql, builder.params);
         return rows.length > 0;
     } catch (error: unknown) {
-        console.error(`[EventDb] Failed to update event ${id}:`, error);
+        console.error(`[EventDb] Failed to update event signup ${id}:`, error);
         return false;
     }
 }

@@ -15,7 +15,6 @@ import {
     fetchTripSignupActivitiesDb,
     updateTripSignupDb,
     deleteTripSignupDb,
-    fetchSignupsByActivityIdDb,
     fetchSelectedSignupActivitiesDb,
     fetchTripByIdDb
 } from './reis-db.utils';
@@ -31,7 +30,7 @@ export async function getTripSignups(tripId: number) {
     await requireAdminResource(AdminResource.Reis);
     try {
         return await fetchAllTripSignupsDb(tripId);
-    } catch (error) {
+    } catch {
         
         return [];
     }
@@ -41,7 +40,7 @@ export async function getTripSignup(id: number): Promise<TripSignup | null> {
     await requireAdminResource(AdminResource.Reis);
     try {
         return await fetchTripSignupByIdDb(id);
-    } catch (error) {
+    } catch {
         
         return null;
     }
@@ -60,7 +59,7 @@ export async function updateSignupStatus(signupId: number, status: string) {
         if (!success) throw new Error('Database update mislukt');
 
         // Shadow Write (Directus)
-        getSystemDirectus().request(updateItem('trip_signups', signupId, { status })).catch(err => {
+        getSystemDirectus().request(updateItem('trip_signups', signupId, { status })).catch(() => {
             
         });
         
@@ -77,7 +76,7 @@ export async function updateSignupStatus(signupId: number, status: string) {
                     if (trip?.name) {
                         tripName = trip.name;
                     }
-                } catch (e) {
+                } catch {
                     // Fallback to default
                 }
 
@@ -115,7 +114,7 @@ export async function updateSignupStatus(signupId: number, status: string) {
         revalidatePath('/reis');
 
         return { success: true };
-    } catch (error) {
+    } catch {
         
         return { success: false, error: 'Update mislukt' };
     }
@@ -128,7 +127,7 @@ export async function deleteTripSignup(signupId: number) {
         const success = await deleteTripSignupDb(signupId);
         if (!success) throw new Error('Database delete mislukt');
 
-        getSystemDirectus().request(deleteItem('trip_signups', signupId)).catch(err => {
+        getSystemDirectus().request(deleteItem('trip_signups', signupId)).catch(() => {
             
         });
         
@@ -139,7 +138,7 @@ export async function deleteTripSignup(signupId: number) {
         revalidatePath('/reis');
 
         return { success: true };
-    } catch (error) {
+    } catch {
         
         return { success: false, error: 'Verwijderen mislukt' };
     }
@@ -176,7 +175,7 @@ export async function updateTripSignup(prevState: unknown, formData: FormData) {
         const success = await updateTripSignupDb(id, validated.data);
         if (!success) throw new Error('Database update mislukt');
 
-        getSystemDirectus().request(updateItem('trip_signups', id, validated.data)).catch(err => {
+        getSystemDirectus().request(updateItem('trip_signups', id, validated.data)).catch(() => {
             
         });
 
@@ -188,7 +187,7 @@ export async function updateTripSignup(prevState: unknown, formData: FormData) {
         revalidatePath('/reis');
 
         return { success: true };
-    } catch (error) {
+    } catch {
         
         return { success: false, error: 'Update mislukt' };
     }
@@ -206,21 +205,13 @@ export async function getSignupActivities(signupId: number) {
         }
 
         return parsed.data;
-    } catch (error) {
+    } catch {
         
         return [];
     }
 }
 
-export async function getActivitySignups(activityId: number) {
-    await requireAdminResource(AdminResource.Reis);
-    try {
-        return await fetchSignupsByActivityIdDb(activityId);
-    } catch (error) {
-        
-        return [];
-    }
-}
+
 
 export async function updateSignupActivities(signupId: number, activityIds: number[]) {
     await requireAdminResource(AdminResource.Reis);
@@ -252,7 +243,7 @@ export async function updateSignupActivities(signupId: number, activityIds: numb
         revalidatePath('/beheer/reis');
         revalidatePath(`/beheer/reis/deelnemer/${signupId}`);
         return { success: true };
-    } catch (error) {
+    } catch {
         
         return { success: false, error: 'Internal server error' };
     }
@@ -266,7 +257,7 @@ export async function getTripSignupActivitiesAction(tripId: number) {
     await requireAdminResource(AdminResource.Reis);
     try {
         return await fetchTripSignupActivitiesDb(tripId);
-    } catch (error) {
+    } catch {
         
         return [];
     }

@@ -57,7 +57,7 @@ export async function getSignupStatus(
                 const finData = await finRes.json();
                 paymentStatus = (finData.payment_status as PaymentStatus) || 'open';
             }
-        } catch (err) {}
+        } catch {}
     }
 
     try {
@@ -172,7 +172,7 @@ export async function getSignupStatus(
         }
 
         return { status: paymentStatus };
-    } catch (error) {
+    } catch {
         return { status: 'error' };
     }
 }
@@ -186,8 +186,8 @@ export async function getMyTickets() {
     if (!email) return [];
 
     try {
-        const eventSignups = await fetchUserEventSignupsDb(email).catch(err => []);
-        const pubCrawlSignups = await fetchUserPubCrawlSignupsDb(email).catch(err => []);
+        const eventSignups = await fetchUserEventSignupsDb(email).catch(() => []);
+        const pubCrawlSignups = await fetchUserPubCrawlSignupsDb(email).catch(() => []);
 
         const tripSignupsResult = await query(`
             SELECT ts.id, ts.status, ts.created_at, ts.first_name, ts.last_name,
@@ -229,7 +229,7 @@ export async function getMyTickets() {
             const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
             return dateB - dateA;
         });
-    } catch (error) {
+    } catch {
         return [];
     }
 }

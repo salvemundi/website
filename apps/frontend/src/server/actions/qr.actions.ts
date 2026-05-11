@@ -55,7 +55,7 @@ export async function checkInParticipant(qrToken: string) {
         };
         
         return { success: true, message: 'Succesvol ingecheckt!', signup: updated };
-    } catch (err) {
+    } catch {
         return { success: false, message: 'Er is een fout opgetreden bij het inchecken. Probeer het opnieuw.' };
     }
 }
@@ -63,7 +63,7 @@ export async function checkInParticipant(qrToken: string) {
 export async function getEventSignupsWithCheckIn(eventId: number | string) {
     try {
         return await fetchEventSignupsWithCheckInStatus(eventId);
-    } catch (err) {
+    } catch {
         return [];
     }
 }
@@ -81,7 +81,7 @@ export async function isUserAuthorizedForAttendance(userId: string, eventId: num
         ]);
 
         return isOfficer || isInCommittee;
-    } catch (err) {
+    } catch {
         return false;
     }
 }
@@ -128,7 +128,7 @@ export async function checkInPubCrawlParticipant(qrToken: string) {
             message: `Welkom ${updated.name}!`,
             ticket: updated
         };
-    } catch (err) {
+    } catch {
         return { success: false, message: 'Er is een fout opgetreden bij het inchecken. Probeer het opnieuw.' };
     }
 }
@@ -136,7 +136,7 @@ export async function checkInPubCrawlParticipant(qrToken: string) {
 export async function getPubCrawlSignupsWithCheckIn(eventId: number | string) {
     try {
         return await fetchPubCrawlTicketsByEvent(eventId);
-    } catch (err) {
+    } catch {
         return [];
     }
 }
@@ -145,7 +145,7 @@ export async function isUserAuthorizedForPubCrawlAttendance(userId: string) {
     try {
         const userCommittees = await fetchUserCommittees(userId);
         return userCommittees.length > 0;
-    } catch (err) {
+    } catch {
         return false;
     }
 }

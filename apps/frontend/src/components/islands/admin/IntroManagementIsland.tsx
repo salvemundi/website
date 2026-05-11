@@ -43,8 +43,8 @@ interface Props {
     initialIntroVisible: boolean;
 }
 
-export default function IntroManagementIsland({ initialSignups, initialParents, initialBlogs, initialPlanning, initialIntroVisible }: Props) {
-    const router = useRouter();
+export default function IntroManagementIsland({ initialSignups, initialParents, initialBlogs, initialPlanning, initialIntroVisible: _initialIntroVisible }: Props) {
+    const _router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
     const [activeTab, setActiveTab] = useState<TabType>('signups');
 
@@ -65,8 +65,8 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
     const [deletingPlanningId, setDeletingPlanningId] = useState<number | null>(null);
 
     // Reload helpers
-    const reloadSignups = useCallback(async () => setSignups(await getIntroSignups()), []);
-    const reloadParents = useCallback(async () => setParents(await getIntroParentSignups()), []);
+    const _reloadSignups = useCallback(async () => setSignups(await getIntroSignups()), []);
+    const _reloadParents = useCallback(async () => setParents(await getIntroParentSignups()), []);
     const reloadBlogs = useCallback(async () => setBlogs(await getIntroBlogs()), []);
     const reloadPlanning = useCallback(async () => setPlanning(await getIntroPlanning()), []);
 

@@ -53,7 +53,7 @@ export default function AdminReisTableIsland({
 }: AdminReisTableIslandProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const [isPending, startTransition] = useTransition();
+    const [isPending, _startTransition] = useTransition();
     const { toast, showToast, hideToast } = useAdminToast();
 
     // 1. Hook for Signup Actions (Status, Delete, Email)
@@ -131,7 +131,7 @@ export default function AdminReisTableIsland({
             setSignups(prev => prev.map(updateFunction));
             setSelectedSignup(prev => prev ? updateFunction(prev) : null);
             setIsEditing(false);
-        } catch (err) {
+        } catch {
             showToast('Er is een fout opgetreden', 'error');
         } finally {
             setIsSaving(false);
@@ -165,7 +165,7 @@ export default function AdminReisTableIsland({
             const csvData = generateReisCSVData(filteredSignups, initialSignupActivities, trip);
             downloadCSV(csvData, `reis-aanmeldingen-${trip.name || 'export'}-${format(new Date(), 'yyyy-MM-dd')}.csv`);
             showToast('CSV bestand succesvol gegenereerd', 'success');
-        } catch (error) {
+        } catch {
             showToast('Export mislukt.', 'error');
         }
     };

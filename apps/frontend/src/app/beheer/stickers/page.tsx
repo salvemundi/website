@@ -13,7 +13,7 @@ export const metadata = {
  * Uses Zero-Drift masking via StickerManagementIsland.
  */
 export default async function StickersAdminPage() {
-    const { user } = await checkAdminAccess();
+    const { user: _user } = await checkAdminAccess();
 
     // NUCLEAR SSR: Fetch stickers at the top level
     const stickers = await getStickers();

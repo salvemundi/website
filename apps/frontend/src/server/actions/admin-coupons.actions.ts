@@ -52,7 +52,7 @@ export async function getCoupons(): Promise<Coupon[]> {
             is_active: !!i.is_active,
             date_created: i.date_created || undefined
         } as Coupon));
-    } catch (e) {
+    } catch {
         
         throw new Error('Kon coupons niet ophalen');
     }
@@ -121,7 +121,7 @@ export async function createCoupon(formData: FormData): Promise<{ success: boole
         };
 
         return { success: true, data: newCoupon };
-    } catch (e) {
+    } catch {
         // Directus SDK errors might contain more info, but for simplicity:
         return { success: false, error: 'Aanmaken mislukt (controleer op unieke code of velden)' };
     }
@@ -133,7 +133,7 @@ export async function deleteCoupon(id: number): Promise<{ success: boolean; erro
         await getSystemDirectus().request(deleteItem('coupons', id));
         revalidatePath('/beheer/coupons');
         return { success: true };
-    } catch (e) {
+    } catch {
         
         return { success: false, error: 'Verwijderen mislukt (wordt mogelijk nog gebruikt)' };
     }
@@ -145,7 +145,7 @@ export async function toggleCouponActive(id: number, currentActive: boolean): Pr
         await getSystemDirectus().request(updateItem('coupons', id, { is_active: !currentActive }));
         revalidatePath('/beheer/coupons');
         return { success: true };
-    } catch (e) {
+    } catch {
         
         return { success: false, error: 'Bijwerken mislukt' };
     }

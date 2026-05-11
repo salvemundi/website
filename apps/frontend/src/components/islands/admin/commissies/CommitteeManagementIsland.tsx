@@ -93,7 +93,7 @@ export default function CommitteeManagementIsland({ initialCommittees, totalUniq
             try {
                 const m = await getCommitteeMembers(c.id.toString()).catch(() => []);
                 setMembers(m);
-            } catch (err) {
+            } catch {
                 showToast('Fout bij ophalen leden', 'error');
             }
         });

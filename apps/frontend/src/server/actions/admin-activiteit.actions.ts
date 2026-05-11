@@ -12,7 +12,7 @@ export async function getActivitySignups(eventId: string) {
     
     try {
         return await getActivitySignupsInternal(eventId);
-    } catch (error) {
+    } catch {
         return [];
     }
 }

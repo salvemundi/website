@@ -2,6 +2,7 @@
 
 import 'server-only';
 import { query } from '@/lib/database';
+import { buildUpdateQuery } from '@/lib/database/query-builder';
 import { 
     reisTripSignupSchema,
     type ReisTripSignup } from '@salvemundi/validations/schema/reis.zod';
@@ -49,7 +50,7 @@ export async function fetchUserSignupStatusDb(userIdOrEmail: string, tripId: num
         }
 
         return parsed.data as ReisTripSignup;
-    } catch (error) {
+    } catch {
         
         return null;
     }
@@ -87,7 +88,7 @@ export async function fetchAllTripSignupsDb(tripId: number): Promise<ReisTripSig
         }
 
         return parsed.data as ReisTripSignup[];
-    } catch (error) {
+    } catch {
         
         return [];
     }
@@ -125,7 +126,7 @@ export async function fetchTripSignupByIdDb(signupId: number): Promise<ReisTripS
         }
 
         return parsed.data as ReisTripSignup;
-    } catch (error) {
+    } catch {
         
         return null;
     }
@@ -154,7 +155,7 @@ export async function fetchTripSignupActivitiesDb(tripId: number): Promise<(Trip
                 email: row.email
             }
         }));
-    } catch (error) {
+    } catch {
         
         return [];
     }
@@ -183,7 +184,7 @@ export async function fetchSignupsByActivityIdDb(activityId: number): Promise<{ 
                 email: row.email
             }
         }));
-    } catch (error) {
+    } catch {
         
         return [];
     }
@@ -212,7 +213,7 @@ export async function fetchFullTripsDb(): Promise<Trip[]> {
             end_date: toLocalISOString(t.end_date),
             registration_start_date: toLocalISOString(t.registration_start_date, true)
         }));
-    } catch (error) {
+    } catch {
         
         return [];
     }
@@ -233,7 +234,7 @@ export async function fetchTripActivitiesByTripIdDb(tripId: number): Promise<Tri
             display_order: a.display_order !== null ? Number(a.display_order) : 0,
             max_participants: a.max_participants !== null ? Number(a.max_participants) : null,
             max_selections: a.max_selections !== null ? Number(a.max_selections) : null }));
-    } catch (error) {
+    } catch {
         
         return [];
     }
@@ -255,7 +256,7 @@ export async function fetchAllTripsDb(): Promise<Pick<Trip, 'id' | 'name' | 'sta
             is_bus_trip: !!t.is_bus_trip,
             allow_final_payments: !!t.allow_final_payments
         }));
-    } catch (error) {
+    } catch {
         
         return [];
     }
@@ -271,7 +272,7 @@ export async function fetchSelectedSignupActivitiesDb(signupId: number): Promise
             [signupId]
         );
         return rows || [];
-    } catch (error) {
+    } catch {
         
         return [];
     }
@@ -303,7 +304,7 @@ export async function fetchTripByIdDb(tripId: number): Promise<Trip | null> {
             end_date: toLocalISOString(t.end_date),
             registration_start_date: toLocalISOString(t.registration_start_date, true)
         };
-    } catch (error) {
+    } catch {
         
         return null;
     }
@@ -313,17 +314,12 @@ export async function fetchTripByIdDb(tripId: number): Promise<Trip | null> {
  */
 export async function updateTripDb(id: number, data: Partial<Trip>): Promise<boolean> {
     try {
-        const fields = Object.keys(data);
-        const values = Object.values(data);
-        const setClause = fields.map((f, i) => `${f} = $${i + 2}`).join(', ');
+        const builder = buildUpdateQuery('trips', id, data);
+        if (!builder) return true;
         
-        await query(
-            `UPDATE trips SET ${setClause} WHERE id = $1`,
-            [id, ...values]
-        );
+        await query(builder.sql, builder.params);
         return true;
-    } catch (error) {
-        
+    } catch {
         return false;
     }
 }
@@ -342,7 +338,7 @@ export async function insertTripSignupDb(payload: Partial<TripSignup>): Promise<
             values
         );
         return res.rows[0]?.id || null;
-    } catch (error) {
+    } catch {
         
         return null;
     }
@@ -353,17 +349,12 @@ export async function insertTripSignupDb(payload: Partial<TripSignup>): Promise<
  */
 export async function updateTripSignupDb(id: number, data: Partial<TripSignup>): Promise<boolean> {
     try {
-        const fields = Object.keys(data);
-        const values = Object.values(data);
-        const setClause = fields.map((f, i) => `${f} = $${i + 2}`).join(', ');
+        const builder = buildUpdateQuery('trip_signups', id, data);
+        if (!builder) return true;
         
-        await query(
-            `UPDATE trip_signups SET ${setClause} WHERE id = $1`,
-            [id, ...values]
-        );
+        await query(builder.sql, builder.params);
         return true;
-    } catch (error) {
-        
+    } catch {
         return false;
     }
 }
@@ -375,7 +366,7 @@ export async function deleteTripSignupDb(id: number): Promise<boolean> {
     try {
         await query(`DELETE FROM trip_signups WHERE id = $1`, [id]);
         return true;
-    } catch (error) {
+    } catch {
         
         return false;
     }
@@ -395,7 +386,7 @@ export async function createTripDb(data: Partial<Trip>): Promise<number | null> 
             values
         );
         return res.rows[0]?.id || null;
-    } catch (error) {
+    } catch {
         
         return null;
     }
@@ -427,7 +418,7 @@ export async function fetchPublicTripsDb(): Promise<Trip[]> {
             end_date: toLocalISOString(t.end_date),
             registration_start_date: toLocalISOString(t.registration_start_date, true)
         }));
-    } catch (error) {
+    } catch {
         
         return [];
     }
@@ -447,7 +438,7 @@ export async function createTripActivityDb(data: Partial<TripActivity>): Promise
             values
         );
         return res.rows[0]?.id || null;
-    } catch (error) {
+    } catch {
         
         return null;
     }
@@ -458,17 +449,12 @@ export async function createTripActivityDb(data: Partial<TripActivity>): Promise
  */
 export async function updateTripActivityDb(id: number, data: Partial<TripActivity>): Promise<boolean> {
     try {
-        const fields = Object.keys(data);
-        const values = Object.values(data);
-        const setClause = fields.map((f, i) => `${f} = $${i + 2}`).join(', ');
+        const builder = buildUpdateQuery('trip_activities', id, data);
+        if (!builder) return true;
         
-        await query(
-            `UPDATE trip_activities SET ${setClause} WHERE id = $1`,
-            [id, ...values]
-        );
+        await query(builder.sql, builder.params);
         return true;
-    } catch (error) {
-        
+    } catch {
         return false;
     }
 }
@@ -480,7 +466,7 @@ export async function deleteTripActivityDb(id: number): Promise<boolean> {
     try {
         await query(`DELETE FROM trip_activities WHERE id = $1`, [id]);
         return true;
-    } catch (error) {
+    } catch {
         
         return false;
     }

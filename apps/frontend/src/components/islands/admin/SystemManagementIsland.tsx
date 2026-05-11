@@ -47,7 +47,7 @@ export default function SystemManagementIsland({
             const data = await getServicesStatusAction();
             setStatuses(data);
             setLastUpdated(new Date());
-        } catch (err) {
+        } catch {
             // Background update errors are handled by data absence
         } finally {
             setIsRefreshing(false);
@@ -72,7 +72,7 @@ export default function SystemManagementIsland({
             } else {
                 showToast(res.error || 'Bijwerken mislukt', 'error');
             }
-        } catch (err) {
+        } catch {
             showToast('Er is een onverwachte fout opgetreden', 'error');
         } finally {
             setTogglingId(null);

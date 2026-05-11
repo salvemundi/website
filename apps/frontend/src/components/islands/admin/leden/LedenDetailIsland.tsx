@@ -43,7 +43,7 @@ export default function LedenDetailIsland({
 }: Props) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [activeTab, setActiveTab] = useState<'profiel' | 'activiteiten' | 'beheer'>('profiel');
-    const [isPending, startTransition] = useTransition();
+    const [_isPending, startTransition] = useTransition();
     const [isActionInProgress, setIsActionInProgress] = useState<string | null>(null);
     const [localMember, setLocalMember] = useState(member);
     // Optimistic memberships
@@ -88,7 +88,7 @@ export default function LedenDetailIsland({
             expiryComp.setHours(0, 0, 0, 0);
             
             return expiryComp >= today;
-        } catch (e) {
+        } catch {
             return false;
         }
     }, [localMember.membership_expiry]);

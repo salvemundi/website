@@ -68,7 +68,7 @@ export async function getCurrentUserProfileAction(): Promise<{ success: boolean;
         }
 
         return { success: true, data: user };
-    } catch (err) {
+    } catch {
         return { success: false, error: "Profiel ophalen mislukt" };
     }
 }
@@ -112,7 +112,7 @@ export async function getTripParticipantsCount(tripId: number): Promise<number> 
             [tripId]
         );
         return rows?.[0]?.count || 0;
-    } catch (err) {
+    } catch {
         
         return 0;
     }
@@ -129,7 +129,7 @@ export async function getUserTripSignup(tripId: number): Promise<ReisTripSignup 
 
         const userId = session.user.id;
         return await fetchUserSignupStatusDb(userId, tripId);
-    } catch (err) {
+    } catch {
         
         return null;
     }
@@ -142,7 +142,7 @@ export async function getUserTripSignup(tripId: number): Promise<ReisTripSignup 
 async function getTripSignups(tripId: number): Promise<ReisTripSignup[]> {
     try {
         return await fetchAllTripSignupsDb(tripId);
-    } catch (err) {
+    } catch {
         
         return [];
     }
@@ -322,7 +322,7 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
                     if (matchesTrip && (matchesUser || matchesEmail)) {
                         return { success: true };
                     }
-                } catch (checkErr) {}
+                } catch { }
             }
 
             await deleteTripSignupDb(signupId);
@@ -352,7 +352,7 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
         }).catch(() => {});
 
         return { success: true };
-    } catch (err: unknown) {
+    } catch {
         return { success: false, message: 'Interne serverfout tijdens inschrijving.' };
     } finally {
         const currentToken = await redis.get(lockKey);
@@ -370,7 +370,7 @@ export async function revalidateReisAction() {
         revalidatePath('/reis');
         revalidatePath('/beheer/reis');
         return { success: true };
-    } catch (err) {
+    } catch {
         return { success: false };
     }
 }

@@ -112,7 +112,7 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
                     showToast(`Verzenden voltooid: ${res.successCount || 0} gelukt, ${res.failCount || 0} mislukt.`, 'info');
                 }
             }
-        } catch (err) {
+        } catch {
             showToast('Er is een onverwachte fout opgetreden', 'error');
         } finally {
             setSending(false);

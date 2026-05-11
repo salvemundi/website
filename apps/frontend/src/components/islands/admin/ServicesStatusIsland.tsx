@@ -33,7 +33,7 @@ export default function ServicesStatusIsland({
             const data = await getServicesStatusAction();
             setStatuses(data);
             setLastUpdated(new Date());
-        } catch (err) {
+        } catch {
             // Background update errors are handled by data absence
         } finally {
             setIsRefreshing(false);

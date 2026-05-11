@@ -4,7 +4,7 @@ import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
 import { getSystemDirectus } from "@/lib/directus";
-import { getAuthorizedUser } from "./activiteiten/auth-check";
+import { getAuthorizedUser, verifyActivityBOLA } from "./activiteiten/auth-check";
 import { 
     deleteItem,
     createItem,
@@ -14,8 +14,6 @@ import {
 import { USER_BASIC_FIELDS, type UserBasic } from "@salvemundi/validations";
 import { updateEventSignupDb, deleteEventSignupDb } from "./event-db.utils";
 import { logAdminAction } from "./audit.actions";
-import { query as dbQuery } from "@/lib/database";
-import { COMMITTEES } from "@/shared/lib/permissions-config";
 import { 
     deleteSignupSchema,
     createManualSignupSchema,
@@ -56,7 +54,7 @@ async function sendCancellationEmail(email: string, eventName: string) {
                 html: `Dear member,<br/><br/>You have been signed off from the activity: <strong>${eventName}</strong>.<br/><br/>Kind regards,<br/>The Salve Mundi Team`
             })
         });
-    } catch (e) {
+    } catch {
         
     }
 }
@@ -66,18 +64,10 @@ export async function deleteSignupAction(signupId: number, eventId: string | num
     if (!validated.success) {
         return { success: false, error: "Ongeldige invoer" };
     }
-    const session = await checkAdminAccess();
-    if (!session) return { success: false, error: "Unauthorized" };
-    const { user } = session;
-
-    // BOLA Check: Only ICT, Bestuur or the owning committee leader can delete
-    const activityRes = await dbQuery("SELECT committee_id FROM events WHERE id = $1", [eventId]);
-    const activityCommitteeId = activityRes.rows[0]?.committee_id;
-    const isSuperAdmin = user.isICT || user.committees?.some(c => c.azure_group_id === COMMITTEES.BESTUUR);
-    const userCommitteeIds = user.committees?.map(c => Number(c.id)) || [];
-
-    if (!isSuperAdmin && !userCommitteeIds.includes(Number(activityCommitteeId))) {
-        return { success: false, error: "Unauthorized: Je mag alleen aanmeldingen van je eigen commissie beheren." };
+    try {
+        await verifyActivityBOLA(eventId);
+    } catch (err) {
+        return { success: false, error: err instanceof Error ? err.message : "Unauthorized" };
     }
 
     try {
@@ -103,7 +93,7 @@ export async function deleteSignupAction(signupId: number, eventId: string | num
         revalidatePath(`/beheer/activiteiten/${eventId}/aanmeldingen`);
         revalidatePath('/beheer/activiteiten');
         return { success: true };
-    } catch (error) {
+    } catch {
         
         return { success: false, error: "Deletion failed" };
     }
@@ -124,7 +114,7 @@ export async function searchMembersAction(query: string) {
             })
         );
         return { success: true, data: (users || []) as unknown as UserBasic[] };
-    } catch (error) {
+    } catch {
         
         return { success: false, error: "Search failed", data: [] as UserBasic[] };
     }
@@ -141,23 +131,15 @@ export async function createManualSignupAction(
     if (!validated.success) {
         return { success: false, error: "Ongeldige invoer" };
     }
-    const session = await checkAdminAccess();
-    if (!session) return { success: false, error: "Unauthorized" };
-    const { user } = session;
-
-    const { rateLimit } = await import('../utils/ratelimit');
-    const { success } = await rateLimit(`manual-signup:${user.id}`, 20, 60);
-    if (!success) {
-        return { success: false, error: "Te veel aanmeldingen achter elkaar. Wacht even." };
-    }
-
-    // BOLA Check
-    const activityRes = await dbQuery("SELECT committee_id FROM events WHERE id = $1", [eventId]);
-    const activityCommitteeId = activityRes.rows[0]?.committee_id;
-    const isSuperAdmin = user.isICT || user.committees?.some(c => c.azure_group_id === COMMITTEES.BESTUUR);
-    const userCommitteeIds = user.committees?.map(c => Number(c.id)) || [];
-    if (!isSuperAdmin && !userCommitteeIds.includes(Number(activityCommitteeId))) {
-        return { success: false, error: "Unauthorized: Je mag alleen aanmeldingen van je eigen commissie beheren." };
+    try {
+        const user = await verifyActivityBOLA(eventId);
+        const { rateLimit } = await import('../utils/ratelimit');
+        const { success } = await rateLimit(`manual-signup:${user.id}`, 20, 60);
+        if (!success) {
+            return { success: false, error: "Te veel aanmeldingen achter elkaar. Wacht even." };
+        }
+    } catch (err) {
+        return { success: false, error: err instanceof Error ? err.message : "Unauthorized" };
     }
 
     try {
@@ -217,18 +199,10 @@ export async function toggleCheckInAction(signupId: number, eventId: number, che
     if (!validated.success) {
         return { success: false, error: "Ongeldige invoer" };
     }
-    const session = await checkAdminAccess();
-    if (!session) return { success: false, error: "Unauthorized" };
-    const { user } = session;
-
-    // BOLA Check
-    const activityRes = await dbQuery("SELECT committee_id FROM events WHERE id = $1", [eventId]);
-    const activityCommitteeId = activityRes.rows[0]?.committee_id;
-    const isSuperAdmin = user.isICT || user.committees?.some(c => c.azure_group_id === COMMITTEES.BESTUUR);
-    const userCommitteeIds = user.committees?.map(c => Number(c.id)) || [];
-
-    if (!isSuperAdmin && !userCommitteeIds.includes(Number(activityCommitteeId))) {
-        return { success: false, error: "Unauthorized: Je mag alleen aanmeldingen van je eigen commissie beheren." };
+    try {
+        await verifyActivityBOLA(eventId);
+    } catch (err) {
+        return { success: false, error: err instanceof Error ? err.message : "Unauthorized" };
     }
 
     try {
@@ -253,9 +227,8 @@ export async function toggleCheckInAction(signupId: number, eventId: number, che
 
         revalidateTag(`event_signups_${eventId}`, 'max');
         return { success: true };
-    } catch (error) {
+    } catch {
         
         return { success: false, error: "Failed to update check-in" };
     }
 }
-

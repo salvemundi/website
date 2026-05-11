@@ -42,11 +42,11 @@ interface AuthContext {
         headers: HeadersInit | Record<string, string>;
     };
     context?: {
-        returned?: any;
+        returned?: unknown;
     };
-    response?: any;
-    json?: any;
-    body?: any;
+    response?: unknown;
+    json?: unknown;
+    body?: unknown;
 }
 
 export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
@@ -83,7 +83,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                     return { response: finalSession };
                                 }
                             }
-                        } catch (e) {
+                        } catch {
                         }
                     }
                 }
@@ -103,7 +103,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                 isWebResponse = true;
                                 try {
                                     sessionData = await sessionData.clone().json();
-                                } catch (e) {
+                                } catch {
                                     return;
                                 }
                             }
@@ -224,7 +224,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                 try {
                                     const redis = await getRedis();
                                     await redis.set(`session:${token}`, JSON.stringify(sessionWithUser), 'EX', 300);
-                                } catch (e) { }
+                                } catch { }
                             }
 
                             if (isWebResponse && ctx.response) {
@@ -254,7 +254,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                             })
                                         };
                                     }
-                                } catch (e) {
+                                } catch {
                                     // Silently fail if wrapping fails
                                 }
                             } else if (ctx.context) {
@@ -267,7 +267,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                             } else {
                                 return { response: sessionWithUser };
                             }
-                        } catch (error) {
+                        } catch {
                             return;
                         }
                     }

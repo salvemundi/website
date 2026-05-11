@@ -49,7 +49,7 @@ async function validateAccess(signupId: number, token?: string) {
         } 
         
         return { authorized: false, error: 'Geen toegang. Log in of gebruik de link uit de e-mail.' };
-    } catch (err) {
+    } catch {
         return { authorized: false, error: 'Interne fout bij autorisatie check.' };
     }
 }
@@ -99,7 +99,7 @@ export async function getTripSignupByToken(signupId: number, token?: string) {
             }
         };
 
-    } catch (error) {
+    } catch {
         
         return { success: false, error: 'Er is een fout opgetreden bij het ophalen van je gegevens. Probeer het later opnieuw.' };
     }
@@ -133,12 +133,12 @@ export async function updateSignupDetails(signupId: number, data: ReisPaymentEnr
         // Shadow Write (Directus)
         const { getSystemDirectus } = await import('@/lib/directus');
         const { updateItem } = await import('@directus/sdk');
-        getSystemDirectus().request(updateItem('trip_signups', signupId, dbData)).catch(err => {
+        getSystemDirectus().request(updateItem('trip_signups', signupId, dbData)).catch(() => {
             
         });
 
         return { success: true };
-    } catch (error) {
+    } catch {
         
         return { success: false, error: 'Opslaan mislukt door een serverfout.' };
     }
@@ -203,7 +203,7 @@ export async function syncSignupActivities(signupId: number, selections: { activ
         } finally {
             await redis.del(lockKey);
         }
-    } catch (err) {
+    } catch {
         
         return { success: false, error: 'Synchroniseren van activiteiten mislukt.' };
     }
@@ -264,7 +264,7 @@ export async function getPaymentStatusAction(mollieId: string) {
             success: true, 
             payment_status: data.payment_status as 'paid' | 'open' | 'expired' | 'failed' | 'canceled'
         };
-    } catch (err) {
+    } catch {
         
         return { success: false, error: 'Interne fout bij ophalen betaalstatus.' };
     }

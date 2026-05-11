@@ -36,7 +36,7 @@ export async function getIntroSettings() {
         return {
             show: data?.is_active ?? false,
             disabled_message: data?.message ?? 'De inschrijvingen voor de introweek zijn momenteel gesloten.' };
-    } catch (e) {
+    } catch {
         
         return { show: false, disabled_message: 'De inschrijvingen voor de introweek zijn momenteel gesloten.' };
     }
@@ -131,7 +131,7 @@ export async function submitIntroSignup(data: IntroSignupForm): Promise<{ succes
 
     try {
         await getSystemDirectus().request(createItem('intro_signups', payload));
-    } catch (e) {
+    } catch {
         
         throw new Error('Er is een fout opgetreden bij je inschrijving');
     }
@@ -157,7 +157,7 @@ export async function getIntroBlogsPublic() {
         const sql = 'SELECT * FROM intro_blogs WHERE is_published = true ORDER BY id DESC LIMIT 6';
         const { rows } = await query(sql);
         return rows;
-    } catch (e) {
+    } catch {
         return [];
     }
 }
@@ -167,7 +167,7 @@ export async function getAllIntroBlogsPublic() {
         const sql = 'SELECT * FROM intro_blogs WHERE is_published = true ORDER BY id DESC';
         const { rows } = await query(sql);
         return rows;
-    } catch (e) {
+    } catch {
         return [];
     }
 }
@@ -177,7 +177,7 @@ export async function getIntroBlogBySlug(slug: string) {
         const sql = 'SELECT * FROM intro_blogs WHERE slug = $1 AND is_published = true LIMIT 1';
         const { rows } = await query(sql, [slug]);
         return rows[0] || null;
-    } catch (e) {
+    } catch {
         return null;
     }
 }

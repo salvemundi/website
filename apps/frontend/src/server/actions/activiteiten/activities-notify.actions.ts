@@ -33,7 +33,7 @@ export async function sendActivityReminder(eventId: number) {
         const result = await response.json();
         
         return { success: true, sent: result.sent || 0 };
-    } catch (error) {
+    } catch {
         return { success: false, error: "Failed to send reminder" };
     }
 }
@@ -63,7 +63,7 @@ export async function sendActivityCustomNotification(eventId: number, title: str
         const result = await response.json();
         
         return { success: true, sent: result.sent || 0 };
-    } catch (error) {
+    } catch {
         return { success: false, error: "Failed to send notification" };
     }
 }

@@ -18,7 +18,7 @@ export async function canUserImpersonate(userId: string): Promise<boolean> {
         
         const perms = getPermissions(rows);
         return perms.isICT || perms.isLeader || perms.isAdmin;
-    } catch (error) {
+    } catch {
         return false;
     }
 }
@@ -96,7 +96,7 @@ export async function performImpersonationSwap(
         sessionWithImpersonation.session.userId = targetUserRes.id as string;
 
         return sessionWithImpersonation;
-    } catch (error) {
+    } catch {
         return session;
     }
 }
@@ -123,7 +123,7 @@ export async function enrichSession(session: ExtendedSession): Promise<ExtendedS
         };
 
         return enrichedSession;
-    } catch (error) {
+    } catch {
         return session;
     }
 }

@@ -97,64 +97,6 @@ export function ActionCard({
     );
 }
 
-/**
- * Vertical List Card for Dashboard sections.
- */
-export function ListCard({
-    children
-}: {
-    children: React.ReactNode;
-}) {
-    return (
-        <div 
-            className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] shadow-sm p-6 overflow-hidden h-full flex flex-col"
-        >
-            <div className="space-y-1 flex-1 overflow-auto">
-                {children}
-            </div>
-        </div>
-    );
-}
 
-/**
- * StatCard variant for Dashboard.
- */
-export function StatCard({
-    title = '',
-    value,
-    subtitle,
-    icon,
-    href,
-    colorClass = 'purple',
-    disabled = false
-}: CardProps & {
-    value?: string | number;
-    subtitle?: string;
-    icon?: React.ReactNode;
-}) {
-    const isLink = !disabled && href;
-    const Component = (isLink ? Link : 'div') as React.ElementType;
-    const colorStyle = getColorClasses(colorClass);
 
-    return (
-        <Component
-            {...((isLink && href) ? { href } : {})}
-            className={`block w-full bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] p-5 relative overflow-hidden transition-all 
-                ${!disabled && href ? 'hover:shadow-lg hover:border-[var(--beheer-accent)]/30 hover:-translate-y-1 group cursor-pointer' : ''} 
-                ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-        >
-            <div className="relative z-10 flex flex-col gap-4">
-                <div className={`p-2.5 w-fit rounded-xl ${colorStyle} transition-colors group-hover:bg-opacity-20`}>
-                    {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any>, { className: 'h-5 w-5' }) : icon}
-                </div>
-                
-                <div className="space-y-0.5 mt-1">
-                    <p className="text-lg font-semibold text-[var(--beheer-text)] leading-tight group-hover:text-[var(--beheer-accent)] transition-colors">{title}</p>
-                    <div className="text-2xl font-semibold text-[var(--beheer-text-muted)] leading-none mt-1">
-                        {value}
-                    </div>
-                </div>
-            </div>
-        </Component>
-    );
-}
+

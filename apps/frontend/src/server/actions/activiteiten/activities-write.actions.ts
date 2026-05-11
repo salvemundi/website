@@ -13,9 +13,7 @@ import {
     activityAdminSchema } from "@salvemundi/validations";
 import { logAdminAction } from "../audit.actions";
 import { deleteEventDb } from "../event-db.utils";
-import { ensureActivitiesEdit } from "./auth-check";
-import { query as dbQuery } from "@/lib/database";
-import { COMMITTEES } from "@/shared/lib/permissions-config";
+import { ensureActivitiesEdit, verifyActivityBOLA } from "./auth-check";
 
 /**
  * WRITE ACTIONS: Create, Update, Delete.
@@ -23,16 +21,10 @@ import { COMMITTEES } from "@/shared/lib/permissions-config";
  */
 
 export async function deleteActivity(eventId: number) {
-    const user = await ensureActivitiesEdit();
-
-    // BOLA Check: Only ICT, Bestuur or the owning committee leader can delete
-    const activityRes = await dbQuery("SELECT committee_id FROM events WHERE id = $1", [eventId]);
-    const activityCommitteeId = activityRes.rows[0]?.committee_id;
-    const isSuperAdmin = user.isICT || user.committees?.some(c => c.azure_group_id === COMMITTEES.BESTUUR);
-    const userCommitteeIds = user.committees?.map(c => Number(c.id)) || [];
-
-    if (!isSuperAdmin && !userCommitteeIds.includes(Number(activityCommitteeId))) {
-        return { success: false, error: "Unauthorized: Je mag alleen activiteiten van je eigen commissie verwijderen." };
+    try {
+        await verifyActivityBOLA(eventId);
+    } catch (err) {
+        return { success: false, error: err instanceof Error ? err.message : "Unauthorized" };
     }
 
     try {
@@ -52,7 +44,7 @@ export async function deleteActivity(eventId: number) {
         revalidatePath('/beheer/activiteiten');
         revalidatePath('/beheer');
         return { success: true };
-    } catch (error) {
+    } catch {
         return { success: false, error: "Verwijderen mislukt" };
     }
 }
@@ -151,16 +143,10 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
 }
 
 export async function updateActivityAction(eventId: number, prevState: unknown, formData: FormData) {
-    const user = await ensureActivitiesEdit();
-
-    // BOLA Check: Only ICT, Bestuur or the owning committee leader can update
-    const activityRes = await dbQuery("SELECT committee_id FROM events WHERE id = $1", [eventId]);
-    const activityCommitteeId = activityRes.rows[0]?.committee_id;
-    const isSuperAdmin = user.isICT || user.committees?.some(c => c.azure_group_id === COMMITTEES.BESTUUR);
-    const userCommitteeIds = user.committees?.map(c => Number(c.id)) || [];
-
-    if (!isSuperAdmin && !userCommitteeIds.includes(Number(activityCommitteeId))) {
-        return { success: false, error: "Unauthorized: Je mag alleen activiteiten van je eigen commissie bewerken." };
+    try {
+        await verifyActivityBOLA(eventId);
+    } catch (err) {
+        return { success: false, error: err instanceof Error ? err.message : "Unauthorized" };
     }
 
     try {
@@ -253,7 +239,7 @@ export async function updateActivityAction(eventId: number, prevState: unknown, 
             });
             return { success: false, error: 'Synchronisatie met CMS mislukt. Wijzigingen zijn niet opgeslagen.' };
         }
-    } catch (error) {
+    } catch {
         return { error: 'Internal server error', success: false };
     }
 }

@@ -11,7 +11,6 @@ import {
 } from '@salvemundi/validations/schema/intro.zod';
 
 import { 
-    getIntroStatsInternal, 
     getIntroSignupsInternal, 
     getIntroParentSignupsInternal, 
     getIntroBlogsInternal, 
@@ -37,10 +36,7 @@ async function checkIntroAdminAccess() {
 }
 
 
-export async function getIntroStats() {
-    await checkIntroAdminAccess();
-    return getIntroStatsInternal();
-}
+
 
 
 export async function getIntroSignups() {
@@ -48,16 +44,37 @@ export async function getIntroSignups() {
     return getIntroSignupsInternal();
 }
 
-export async function deleteIntroSignup(id: number): Promise<{ success: boolean; error?: string }> {
-    const session = await checkIntroAdminAccess();
+async function genericDelete(collection: string, id: number) {
     try {
-        await getSystemDirectus().request(deleteItem('intro_signups', id));
+        await getSystemDirectus().request(deleteItem(collection as any, id));
         revalidatePath('/beheer/intro');
         return { success: true };
-    } catch (e) {
-        
+    } catch {
         return { success: false, error: 'Verwijderen mislukt' };
     }
+}
+
+async function genericUpdate(collection: string, id: number, data: any, allowedFields: string[]) {
+    const filteredData = Object.fromEntries(
+        Object.entries(data).filter(([key]) => allowedFields.includes(key))
+    );
+
+    if (Object.keys(filteredData).length === 0) {
+        return { success: false, error: 'Geen geldige velden om bij te werken' };
+    }
+
+    try {
+        await getSystemDirectus().request(updateItem(collection as any, id, filteredData));
+        revalidatePath('/beheer/intro');
+        return { success: true };
+    } catch {
+        return { success: false, error: 'Bijwerken mislukt' };
+    }
+}
+
+export async function deleteIntroSignup(id: number): Promise<{ success: boolean; error?: string }> {
+    await checkIntroAdminAccess();
+    return genericDelete('intro_signups', id);
 }
 
 
@@ -67,15 +84,8 @@ export async function getIntroParentSignups() {
 }
 
 export async function deleteIntroParentSignup(id: number): Promise<{ success: boolean; error?: string }> {
-    const session = await checkIntroAdminAccess();
-    try {
-        await getSystemDirectus().request(deleteItem('intro_parent_signups', id));
-        revalidatePath('/beheer/intro');
-        return { success: true };
-    } catch (e) {
-        
-        return { success: false, error: 'Verwijderen mislukt' };
-    }
+    await checkIntroAdminAccess();
+    return genericDelete('intro_parent_signups', id);
 }
 
 
@@ -85,7 +95,7 @@ export async function getIntroBlogs() {
 }
 
 export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ success: boolean; data?: IntroBlog; error?: string; fieldErrors?: Record<string, string[] | undefined> }> {
-    const session = await checkIntroAdminAccess();
+    await checkIntroAdminAccess();
 
     // Sanitize: Directus returns null for empty fields, but Zod .optional() expects undefined.
     const sanitized = Object.fromEntries(
@@ -135,15 +145,8 @@ export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ succe
 }
 
 export async function deleteIntroBlog(id: number): Promise<{ success: boolean; error?: string }> {
-    const session = await checkIntroAdminAccess();
-    try {
-        await getSystemDirectus().request(deleteItem('intro_blogs', id));
-        revalidatePath('/beheer/intro');
-        return { success: true };
-    } catch (e) {
-        
-        return { success: false, error: 'Verwijderen mislukt' };
-    }
+    await checkIntroAdminAccess();
+    return genericDelete('intro_blogs', id);
 }
 
 
@@ -153,7 +156,7 @@ export async function getIntroPlanning() {
 }
 
 export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Promise<{ success: boolean; data?: IntroPlanningItem; error?: string; fieldErrors?: Record<string, string[] | undefined> }> {
-    const session = await checkIntroAdminAccess();
+    await checkIntroAdminAccess();
 
     // Sanitize: Directus returns null for empty fields, but Zod .optional() expects undefined.
     const sanitized = Object.fromEntries(
@@ -218,58 +221,18 @@ export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Pro
 }
 
 export async function deleteIntroPlanning(id: number): Promise<{ success: boolean; error?: string }> {
-    const session = await checkIntroAdminAccess();
-    try {
-        await getSystemDirectus().request(deleteItem('intro_planning', id));
-        revalidatePath('/beheer/intro');
-        return { success: true };
-    } catch (e) {
-        
-        return { success: false, error: 'Verwijderen mislukt' };
-    }
+    await checkIntroAdminAccess();
+    return genericDelete('intro_planning', id);
 }
 
 export async function updateIntroSignup(id: number, data: Partial<Record<string, unknown>>): Promise<{ success: boolean; error?: string }> {
     await checkIntroAdminAccess();
-    
-    const allowedFields = ['status', 'payment_status', 'is_member', 'notes', 'checked_in'];
-    const filteredData = Object.fromEntries(
-        Object.entries(data).filter(([key]) => allowedFields.includes(key))
-    );
-
-    if (Object.keys(filteredData).length === 0) {
-        return { success: false, error: 'Geen geldige velden om bij te werken' };
-    }
-
-    try {
-        await getSystemDirectus().request(updateItem('intro_signups', id, filteredData));
-        revalidatePath('/beheer/intro');
-        return { success: true };
-    } catch (e) {
-        return { success: false, error: 'Bijwerken mislukt' };
-    }
+    return genericUpdate('intro_signups', id, data, ['status', 'payment_status', 'is_member', 'notes', 'checked_in']);
 }
 
 export async function updateIntroParentSignup(id: number, data: Partial<Record<string, unknown>>): Promise<{ success: boolean; error?: string }> {
     await checkIntroAdminAccess();
-    
-    // PENTEST HARDENING: Strictly validate update payload
-    const allowedFields = ['status', 'payment_status', 'notes', 'checked_in'];
-    const filteredData = Object.fromEntries(
-        Object.entries(data).filter(([key]) => allowedFields.includes(key))
-    );
-
-    if (Object.keys(filteredData).length === 0) {
-        return { success: false, error: 'Geen geldige velden om bij te werken' };
-    }
-
-    try {
-        await getSystemDirectus().request(updateItem('intro_parent_signups', id, filteredData));
-        revalidatePath('/beheer/intro');
-        return { success: true };
-    } catch (e) {
-        return { success: false, error: 'Bijwerken mislukt' };
-    }
+    return genericUpdate('intro_parent_signups', id, data, ['status', 'payment_status', 'notes', 'checked_in']);
 }
 
 
@@ -299,7 +262,7 @@ export async function toggleIntroVisibility(): Promise<{ success: boolean; show?
             const redis = await getRedis();
             await redis.del(FLAGS_CACHE_KEY);
             
-        } catch (e) {
+        } catch {
             
         }
 
@@ -314,14 +277,14 @@ export async function toggleIntroVisibility(): Promise<{ success: boolean; show?
         // 3. Final clear to ensure concurrent requests that fetched stale data are purged
         try {
             const redis = await getRedis();
-            const deletedRows = await redis.del(FLAGS_CACHE_KEY);
+            await redis.del(FLAGS_CACHE_KEY);
             
-        } catch (e) {
+        } catch {
             
         }
         
         return { success: true, show: newStatus };
-    } catch (e: unknown) {
+    } catch {
         
         return { success: false, error: 'Bijwerken mislukt' };
     }
