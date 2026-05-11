@@ -7,14 +7,14 @@ import {
     TopStickersList, 
     ActivitySignupsList
 } from '@/components/ui/admin/dashboard/DashboardSections';
+import { checkAdminAccess } from '@/server/actions/admin-utils.actions';
 import { 
-    checkAdminAccess, 
     getDashboardPermissions,
     getDashboardStats,
     getUpcomingBirthdays,
     getRecentActivities,
     getTopStickers
-} from '@/server/actions/admin.actions';
+} from '@/server/actions/dashboard.actions';
 
 export const metadata = {
     title: 'Beheer Dashboard | SV Salve Mundi' };

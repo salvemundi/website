@@ -1,4 +1,4 @@
-import { checkAdminAccess } from '@/server/actions/admin.actions';
+import { checkAdminAccess } from '@/server/actions/admin-utils.actions';
 import { unstable_noStore as noStore } from 'next/cache';
 import { getPubCrawlEvents, getKroegentochtSettings, getPubCrawlSignups } from '@/server/actions/admin-kroegentocht.actions';
 import KroegentochtManagementIsland from '@/components/islands/admin/KroegentochtManagementIsland';

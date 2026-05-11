@@ -2,7 +2,7 @@ import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { ArrowLeft, Shield } from 'lucide-react';
 import ImpersonateIsland from '@/components/islands/admin/ImpersonateIsland';
-import { checkAdminAccess } from '@/server/actions/admin.actions';
+import { checkAdminAccess } from '@/server/actions/admin-utils.actions';
 import { redirect } from 'next/navigation';
 
 export const metadata = {

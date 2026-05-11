@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default async function CommissiesBeheerPage() {
     const session = await auth.api.getSession({ headers: await headers() });
-    if (!session?.user) redirect('/login');
+    if (!session?.user) redirect('/?needLogin=true');
 
     // NUCLEAR SSR: Fetch all data before flushing any part of the page content
     const [committees, totalUniqueMembers] = await Promise.all([

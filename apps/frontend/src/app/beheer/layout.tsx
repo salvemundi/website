@@ -1,31 +1,19 @@
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { connection } from 'next/server';
+import { checkAdminAccess } from '@/server/actions/admin-utils.actions';
 
 interface BeheerLayoutProps {
     children: React.ReactNode;
 }
 
-type SessionUser = {
-    committees?: Array<{ name?: string | null }>;
-    email?: string | null;
-};
-
 export default async function BeheerLayout({ children }: BeheerLayoutProps) {
     await connection();
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
-
-    const user = session?.user as SessionUser | undefined;
     
-    // Deep RBAC: Controleer of de gebruiker minimaal één commissielidmaatschap heeft.
-    // Dit is veilig omdat onze custom auth-plugin de committees al heeft geïnjecteerd op de server.
-    const hasCommitteeAccess = Array.isArray(user?.committees) && user.committees.length > 0;
-
-    if (!hasCommitteeAccess) {
-        
+    // NUCLEAR SSR: Use centralized checkAdminAccess which handles committee enrichment
+    const { user, isAuthorized } = await checkAdminAccess();
+    
+    // Deep RBAC: Controleer of de gebruiker geautoriseerd is (minimaal één commissie of ICT/Admin).
+    if (!isAuthorized || !user) {
         notFound();
     }
 

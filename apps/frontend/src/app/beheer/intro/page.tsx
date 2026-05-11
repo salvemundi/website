@@ -24,7 +24,7 @@ import { type EnrichedUser } from '@/types/auth';
 export default async function BeheerIntroPage() {
     const session = await auth.api.getSession({ headers: await headers() });
     
-    if (!session?.user) redirect('/login');
+    if (!session?.user) redirect('/?needLogin=true');
 
     const userCommittees = await fetchUserCommitteesDb(session.user.id).catch(() => []);
     const permissions = getPermissions(userCommittees || []);

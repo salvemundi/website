@@ -1,8 +1,5 @@
 import { Redis } from 'ioredis';
-import { MailWorkerService } from './mail-worker.js';
-import { PaymentSuccessEventSchema, ActivitySignupEventSchema } from '@salvemundi/validations';
-import QRCode from 'qrcode';
-import { query } from './db.js';
+import { EventHandlers } from './event-handlers.js';
 
 export class EventListenerService {
     private static readonly STREAM_KEY = 'v7:events';
@@ -10,6 +7,9 @@ export class EventListenerService {
     private static readonly CONSUMER_NAME = 'mail-consumer-1';
     private static shouldStop = false;
 
+    /**
+     * Start luisteren naar Redis Stream events.
+     */
     static async start(redis: Redis) {
         console.log('[MailEventListener] Starting Redis Stream listener...');
 
@@ -52,69 +52,8 @@ export class EventListenerService {
     }
 
     /**
-     * Fetches tickets for a pub crawl signup directly from the database.
+     * Dispatcht binnengekomen events naar de juiste handlers.
      */
-    private static async fetchPubCrawlTicketsDb(
-        signupId: string | number,
-        expectedCount: number,
-        maxAttempts = 5,
-        delayMs = 1000
-    ): Promise<Record<string, unknown>[]> {
-        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-            try {
-                const res = await query(
-                    `SELECT id, name, initial, qr_token FROM pub_crawl_tickets WHERE signup_id = $1`,
-                    [signupId]
-                );
-                const tickets = res.rows || [];
-
-                if (tickets.length >= expectedCount) {
-                    return tickets;
-                }
-            } catch (err) {
-                console.error(`[MailEventListener] SQL ticket fetch attempt ${attempt} failed:`, err);
-            }
-
-            if (attempt < maxAttempts) {
-                await new Promise(resolve => setTimeout(resolve, delayMs));
-            }
-        }
-        return [];
-    }
-
-    /**
-     * Checks if a Directus user account exists for a given email.
-     */
-    private static async checkUserHasAccount(directusUrl: string, directusToken: string, email: string): Promise<boolean> {
-        try {
-            const res = await fetch(
-                `${directusUrl}/users?filter[email][_eq]=${encodeURIComponent(email)}&fields=id&limit=1`,
-                { headers: { 'Authorization': `Bearer ${directusToken}` } }
-            );
-            const json = await res.json() as { data: unknown[] };
-            return (json?.data?.length ?? 0) > 0;
-        } catch {
-            return false;
-        }
-    }
-
-    /**
-     * Generates a base64 PNG data URL from a QR token string.
-     */
-    private static async generateQrDataUrl(token: string): Promise<string> {
-        try {
-            return await QRCode.toDataURL(token, {
-                errorCorrectionLevel: 'M',
-                width: 300,
-                margin: 2,
-                color: { dark: '#5e2b52', light: '#ffffff' }
-            });
-        } catch (err) {
-            console.error('[MailEventListener] QR generation failed:', err);
-            return '';
-        }
-    }
-
     private static async handleEvent(redis: Redis, message: { id: string; data: Record<string, string> }) {
         try {
             if (!message.data.payload) {
@@ -125,191 +64,9 @@ export class EventListenerService {
             console.log(`[MailEventListener] Received event: ${payload.event}`);
 
             if (payload.event === 'PAYMENT_SUCCESS') {
-                const data = PaymentSuccessEventSchema.parse(payload);
-
-                const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL!;
-                const directusToken = process.env.DIRECTUS_STATIC_TOKEN!;
-
-                let templateId = 'payment_confirmed';
-                let mailData: Record<string, unknown> = {
-                    paymentId: data.paymentId,
-                    userId: data.userId,
-                    registrationId: data.registrationId,
-                    registrationType: data.registrationType,
-                    eventName: 'Evenement',
-                    firstName: data.firstName || 'Lid',
-                    qrToken: data.qrToken,
-                    accessToken: data.accessToken
-                };
-
-                // Check if user has an account
-                mailData.hasAccount = data.userId ? true : (data.email ? await this.checkUserHasAccount(directusUrl, directusToken, data.email) : false);
-
-                // Build confirmation URL if registrationId and accessToken are present
-                const baseUrl = process.env.PUBLIC_URL || 'https://salvemundi.nl';
-                if (data.registrationId && data.accessToken) {
-                    const path = data.registrationType === 'membership' || (data as { isContribution?: boolean }).isContribution ? '/lidmaatschap/bevestiging' :
-                                 data.registrationType === 'trip_signup' ? '/reis/bevestiging' :
-                                 '/activiteiten/bevestiging';
-                    
-                    mailData.confirmationUrl = `${baseUrl}${path}?id=${data.registrationId}&t=${data.accessToken}`;
-                }
-
-                // Handle Membership (New vs Renewal)
-                if ((data as { isContribution?: boolean }).isContribution || data.registrationType === 'membership') {
-                    if (data.isNewMember || !data.userId) {
-                        console.log(`[MailEventListener] Skipping welcome_payment for member ${data.email}. Handled by provisioning service or missing userId.`);
-                        return;
-                    }
-
-                    templateId = 'membership_renewal';
-                    try {
-                        const userRes = await fetch(`${directusUrl}/users/${data.userId}?fields=first_name,membership_expiry`, {
-                            headers: { 'Authorization': `Bearer ${directusToken}` }
-                        });
-                        const userData = await userRes.json() as { data: { first_name?: string; membership_expiry?: string } };
-                        mailData.firstName = userData?.data?.first_name || data.firstName || 'Lid';
-                        mailData.expiryDate = userData?.data?.membership_expiry || 'Onbekend';
-                        mailData.amount = '20.00';
-                        
-                        // Ensure confirmationUrl is also available for renewals
-                        if (!mailData.confirmationUrl && data.paymentId) {
-                            mailData.confirmationUrl = `${baseUrl}/lidmaatschap/bevestiging?transaction_id=${data.paymentId}&t=${data.accessToken || ''}`;
-                        }
-                    } catch (err) {
-                        console.error('[MailEventListener] Failed to fetch user info for renewal:', err);
-                    }
-                } else if (data.registrationType === 'pub_crawl_signup' && data.registrationId) {
-                    // Pub Crawl: send dedicated ticket mail with QR codes
-                    templateId = 'pub_crawl_ticket';
-                    try {
-                        // Fetch signup details (name, amount_tickets, event name)
-                        const signupRes = await fetch(
-                            `${directusUrl}/items/pub_crawl_signups/${data.registrationId}?fields=name,email,amount_tickets,pub_crawl_event_id.name`,
-                            { headers: { 'Authorization': `Bearer ${directusToken}` } }
-                        );
-                        const signupJson = await signupRes.json() as { data: { name?: string; email?: string; amount_tickets?: number; pub_crawl_event_id?: { name?: string } } };
-                        const signup = signupJson?.data;
-
-                        const signupName = signup?.name || 'Deelnemer';
-                        const firstName = signupName.split(' ')[0];
-                        const eventName = signup?.pub_crawl_event_id?.name || 'Kroegentocht';
-                        const amountTickets = signup?.amount_tickets || 1;
-
-                        const rawTickets = await this.fetchPubCrawlTicketsDb(data.registrationId, amountTickets);
-
-                        // Generate QR code data URLs for each ticket
-                        const tickets = await Promise.all(rawTickets.map(async (t) => ({
-                            ...t,
-                            qrDataUrl: t.qr_token ? await this.generateQrDataUrl(String(t.qr_token)) : ''
-                        })));
-
-                        // Check if this email belongs to a registered user
-                        const hasAccount = data.email
-                            ? await this.checkUserHasAccount(directusUrl, directusToken, data.email)
-                            : false;
-
-                        mailData = {
-                            name: signupName,
-                            firstName,
-                            email: data.email,
-                            paymentId: data.paymentId,
-                            signupId: data.registrationId,
-                            eventName,
-                            tickets,
-                            totalTickets: tickets.length,
-                            hasAccount
-                        };
-
-                        console.log(`[MailEventListener] Queuing pub_crawl_ticket mail — ${tickets.length} tickets, hasAccount=${hasAccount}`);
-                    } catch (err) {
-                        console.error('[MailEventListener] Failed to build pub crawl ticket mail:', err);
-                        // Fall back to welcome_payment so the user at least gets something
-                        templateId = 'welcome_payment';
-                        mailData.eventName = 'Kroegentocht';
-                    }
-                } else {
-                    // Trip or generic event
-                    try {
-                        if (data.registrationType === 'trip_signup' && data.registrationId) {
-                            templateId = 'trip-signup';
-                            const signupRes = await fetch(`${directusUrl}/items/trip_signups/${data.registrationId}?fields=trip_id,first_name`, {
-                                headers: { 'Authorization': `Bearer ${directusToken}` }
-                            });
-                            const signupJson = await signupRes.json() as { data: { trip_id?: string; first_name?: string } };
-                            const tripId = signupJson?.data?.trip_id;
-                            mailData.firstName = signupJson?.data?.first_name;
-
-                            if (tripId) {
-                                const tripRes = await fetch(`${directusUrl}/items/trips/${tripId}?fields=name`, {
-                                    headers: { 'Authorization': `Bearer ${directusToken}` }
-                                });
-                                const tripJson = await tripRes.json() as { data: { name?: string } };
-                                mailData.eventName = tripJson?.data?.name || 'Reis';
-                            }
-                        } else if (data.registrationType === 'event_signup' && data.registrationId) {
-                            const signupRes = await fetch(`${directusUrl}/items/event_signups/${data.registrationId}?fields=event_id,first_name`, {
-                                headers: { 'Authorization': `Bearer ${directusToken}` }
-                            });
-                            const signupJson = await signupRes.json() as { data: { event_id?: number; first_name?: string } };
-                            const eventId = signupJson?.data?.event_id;
-                            mailData.firstName = signupJson?.data?.first_name;
-
-                            if (eventId) {
-                                const eventRes = await fetch(`${directusUrl}/items/events/${eventId}?fields=name`, {
-                                    headers: { 'Authorization': `Bearer ${directusToken}` }
-                                });
-                                const eventJson = await eventRes.json() as { data: { name?: string } };
-                                mailData.eventName = eventJson?.data?.name || 'Evenement';
-                            }
-
-                            // If qrToken is missing from event and it's an event_signup, try to fetch it
-                            if (!mailData.qrToken && data.registrationId) {
-                                try {
-                                    const qrRes = await fetch(`${directusUrl}/items/event_signups/${data.registrationId}?fields=qr_token`, {
-                                        headers: { 'Authorization': `Bearer ${directusToken}` }
-                                    });
-                                    const qrJson = await qrRes.json() as { data: { qr_token?: string } };
-                                    mailData.qrToken = qrJson?.data?.qr_token;
-                                } catch (qrErr) {
-                                    console.error('[MailEventListener] Failed to fetch qr_token:', qrErr);
-                                }
-                            }
-                        }
-                    } catch (fetchErr) {
-                        console.error('[MailEventListener] Failed to fetch event name:', fetchErr);
-                    }
-                }
-
-                await MailWorkerService.queueMail(redis, data.email, templateId, mailData);
-                console.log(`[MailEventListener] Queued ${templateId} for ${data.email}`);
-
+                await EventHandlers.handlePaymentSuccess(redis, payload);
             } else if (payload.event === 'ACTIVITY_SIGNUP_SUCCESS') {
-                const data = ActivitySignupEventSchema.parse(payload);
-                
-                const hasAccount = await this.checkUserHasAccount(
-                    process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL!,
-                    process.env.DIRECTUS_STATIC_TOKEN!,
-                    data.email
-                );
-
-                let confirmationUrl = '';
-                if (data.signupId && data.accessToken) {
-                    const baseUrl = process.env.PUBLIC_URL || 'https://salvemundi.nl';
-                    confirmationUrl = `${baseUrl}/activiteiten/bevestiging?id=${data.signupId}&t=${data.accessToken}`;
-                }
-
-                await MailWorkerService.queueMail(redis, data.email, 'event-ticket', {
-                    name: data.name,
-                    eventName: data.eventName,
-                    eventDate: data.eventDate,
-                    signupId: data.signupId,
-                    qrToken: data.qrToken,
-                    hasAccount,
-                    confirmationUrl
-                });
-
-                console.log(`[MailEventListener] Queued activity ticket mail for ${data.email}`);
+                await EventHandlers.handleActivitySignup(redis, payload);
             }
         } catch (err) {
             const error = err instanceof Error ? err : new Error(String(err));

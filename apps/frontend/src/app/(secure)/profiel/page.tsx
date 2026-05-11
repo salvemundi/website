@@ -1,14 +1,13 @@
 import React from 'react';
 import { ProfielIsland } from '@/components/islands/account/ProfielIsland';
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
 import { getUserEventSignups, getUserPubCrawlSignups } from '@/server/actions/profiel.actions';
-import { fetchUserMetadataDb } from '@/server/actions/user-db.utils';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 
 export const metadata = {
     title: 'Mijn Profiel | SV Salve Mundi',
     description: 'Beheer je lidmaatschap, bekijk je aanmeldingen en pas je gegevens aan.' };
+
+import { checkAdminAccess } from '@/server/actions/admin-utils.actions';
 
 /**
  * ProfielPage: Ultra-PPR Modernization.
@@ -16,24 +15,12 @@ export const metadata = {
  * Uses ProfielIsland with masked fallback.
  */
 export default async function ProfielPage() {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
-
     // NUCLEAR SSR: Fetch all data before flushing any part of the page content
-    // We remove the silent .catch() as we want the page to fail/trigger error boundary 
-    // if critical data fetching fails, rather than showing an empty profile.
-    const [eventSignups, pubCrawlSignups, freshMetadata] = await Promise.all([
+    const [eventSignups, pubCrawlSignups, { user: enrichedUser }] = await Promise.all([
         getUserEventSignups(),
         getUserPubCrawlSignups(),
-        session?.user?.id ? fetchUserMetadataDb(session.user.id) : null
+        checkAdminAccess()
     ]);
-
-    // Merge fresh metadata into session user to bypass Better Auth stale cache
-    const enrichedUser = session?.user ? {
-        ...session.user,
-        ...(freshMetadata || {})
-    } : null;
 
     return (
         <PublicPageShell title="Mijn Profiel">

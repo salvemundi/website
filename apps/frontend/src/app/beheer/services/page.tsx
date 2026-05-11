@@ -7,7 +7,7 @@ import SystemManagementIsland from '@/components/islands/admin/SystemManagementI
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import { getServicesStatusAction } from '@/server/actions/services-status.actions';
 import { getSystemAutomationSettings } from '@/server/actions/admin-automation.actions';
-import { checkAdminAccess } from '@/server/actions/admin.actions';
+import { checkAdminAccess } from '@/server/actions/admin-utils.actions';
 import { cn } from '@/lib/utils/cn';
 
 export const metadata = {

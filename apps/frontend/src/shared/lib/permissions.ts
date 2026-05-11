@@ -8,7 +8,7 @@ export interface Committee {
 }
 
 export interface UserPermissions {
-    // isAdmin: boolean;
+    isAdmin: boolean;
     isLeader: boolean;
     isICT: boolean;
     // Granular permissions
@@ -58,12 +58,12 @@ export function hasPermission(committees: Committee[] = [], resource: AdminResou
  */
 export function getPermissions(committees: Committee[] = []): UserPermissions {
     // Basic flags for backward compatibility or general navigation
-    // const isAdmin = hasPermission(committees, AdminResource.Intro); 
+    const isAdmin = hasPermission(committees, AdminResource.Intro); 
     const isICT = hasPermission(committees, AdminResource.Sync); // Using Sync access as proxy for ICT-level access
     const isLeader = committees.some(c => c.is_leader && c.azure_group_id !== COMMITTEES.BESTUUR);
 
     return {
-        // isAdmin,
+        isAdmin,
         isLeader,
         isICT,
         canAccessIntro: hasPermission(committees, AdminResource.Intro),

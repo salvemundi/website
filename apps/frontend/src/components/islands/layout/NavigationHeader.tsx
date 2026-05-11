@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -7,20 +9,18 @@ import type { IconName } from '@/lib/utils/icons';
 import { HeaderShell } from './navigation/HeaderShell';
 import { NavUserSection } from './navigation/NavUserSection';
 import { MobileNav } from './navigation/MobileNav';
-import { type EnrichedUser, type ImpersonationInfo } from '@/types/auth';
-import { type Session } from 'better-auth';
+import { type EnrichedUser, type ImpersonationInfo, type ExtendedSession } from '@/types/auth';
 
 interface NavigationHeaderProps {
     disabledRoutes?: string[];
-    initialSession?: Session | null;
+    initialSession?: ExtendedSession | null;
     impersonation?: ImpersonationInfo | null;
     isAdmin?: boolean;
 }
 
 /**
- * Server Component — Hoofdnavigatie van de website.
- * V7.12 RSC: Now fully server-side for maximum performance.
- * Interactive parts are extracted to client islands.
+ * Navigation Header Component.
+ * Implements the "Nuclear SSR" (Zero-Skeleton) standard.
  */
 const NavigationHeader: React.FC<NavigationHeaderProps> = ({ 
     disabledRoutes = [], 
@@ -28,7 +28,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
     impersonation,
     isAdmin: initialIsAdmin
 }) => {
-    const user = (initialSession?.user as unknown as EnrichedUser) ?? null;
+    const user = initialSession?.user ?? null;
     const isAuthenticated = !!user;
     
     // Prioritize the passed isAdmin flag from checkAdminAccess (database source of truth)
@@ -53,8 +53,6 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
                 <div className="grid grid-cols-[auto_1fr_auto] items-center gap-[clamp(0.75rem,1.5vw,2rem)]">
                     {/* Logo Section */}
                     <div className="flex items-center gap-3">
-
-
                         <Link href="/" className="group flex items-center gap-3 shrink-0 transition-transform duration-300 hover:scale-[1.03] active:scale-95">
                             <div className="relative w-12 h-12 shrink-0">
                                 <Image 

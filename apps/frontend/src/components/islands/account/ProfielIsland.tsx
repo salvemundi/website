@@ -1,17 +1,21 @@
 'use client';
 
-import React, { useMemo, useState, useEffect, useOptimistic, useTransition } from 'react';
-import { startOfDay, isBefore } from 'date-fns';
-import { useRouter } from 'next/navigation';
+import React, { useMemo, useState } from 'react';
 import { authClient } from '@/lib/auth';
-import { type EventSignup, updateProfileSchema } from '@salvemundi/validations/schema/profiel.zod';
+import { type EventSignup } from '@salvemundi/validations/schema/profiel.zod';
 import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { updateUserProfile, uploadUserAvatar } from '@/server/actions/profiel-update.actions';
-import { z } from 'zod';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
+
+// Refactored Modules
+import { 
+    mergeUserData, 
+    calculateMembershipStatus, 
+    filterProfileSignups, 
+    type SessionUser 
+} from '@/lib/profile-admin.utils';
+import { useProfileState } from '@/hooks/use-profile-state';
+import AvatarPreviewModal from './profile/AvatarPreviewModal';
 
 import ProfielHeader from './profile/ProfielHeader';
 import ProfielDetails from './profile/ProfielDetails';
@@ -19,46 +23,16 @@ import ProfielGaming from './profile/ProfielGaming';
 import ProfielQuickLinks from './profile/ProfielQuickLinks';
 import ProfielSignups from './profile/ProfielSignups';
 
-type CommitteeMeta = {
-    id: string | number;
-    name?: string | null;
-    is_leader?: boolean | null;
-};
-
-type SessionUser = {
-    id?: string | number;
-    name?: string | null;
-    first_name?: string | null;
-    last_name?: string | null;
-    email?: string | null;
-    fontys_email?: string | null;
-    membership_status?: string | null;
-    membership_expiry?: string | null;
-    phone_number?: string | null;
-    date_of_birth?: string | null;
-    avatar?: string | null;
-    image?: string | null;
-    minecraft_username?: string | null;
-    committees?: CommitteeMeta[] | null;
-    isAdmin?: boolean;
-    isLeader?: boolean;
-    isICT?: boolean;
-    canAccessIntro?: boolean;
-    entra_id?: string | null;
-};
-
 interface ProfielIslandProps {
     initialSignups?: EventSignup[];
     pubCrawlSignups?: PubCrawlSignup[];
     user?: SessionUser;
-    impersonation?: { 
-        name: string; 
-        avatar?: string | null; 
-        email?: string | null;
-        error?: string;
-    } | null;
 }
 
+/**
+ * ProfielIsland: Centraal dashboard voor gebruikersprofielen.
+ * Nu onder de 300 regels door extractie van logica en componenten.
+ */
 export const ProfielIsland: React.FC<ProfielIslandProps> = ({ 
     initialSignups = [], 
     pubCrawlSignups = [], 
@@ -67,243 +41,38 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
     const { toast, showToast, hideToast } = useAdminToast();
     const { data: session, refetch } = authClient.useSession();
 
+    // 1. User Data Syncing
     const user = useMemo<SessionUser>(() => {
-        const sUser = session?.user as SessionUser;
-        
-        // NUCLEAR SSR: Start with server-provided enriched user
-        if (!sUser) return initialUser;
-
-        // Merge client session with fresh server metadata
-        // We prefer server data for critical metadata fields to bypass Better Auth stale cache
-        const mergedUser = {
-            ...sUser,
-            minecraft_username: initialUser?.minecraft_username ?? sUser.minecraft_username,
-            phone_number: initialUser?.phone_number ?? sUser.phone_number,
-            membership_status: initialUser?.membership_status ?? sUser.membership_status,
-            membership_expiry: initialUser?.membership_expiry ?? sUser.membership_expiry,
-            date_of_birth: initialUser?.date_of_birth ?? sUser.date_of_birth,
-            entra_id: initialUser?.entra_id ?? sUser.entra_id };
-
-        // Enrich name if missing on client
-        if (!mergedUser.name && (mergedUser.first_name || mergedUser.last_name)) {
-            mergedUser.name = `${mergedUser.first_name || ''} ${mergedUser.last_name || ''}`.trim();
-        }
-        
-        // Merge committees from initialUser if missing in session
-        if (!mergedUser.committees && initialUser?.committees) {
-            mergedUser.committees = initialUser.committees;
-        }
-        
-        return mergedUser;
+        return mergeUserData(session?.user as SessionUser, initialUser);
     }, [session?.user, initialUser]);
     
-    const router = useRouter();
+    // 2. Profile Actions & State Hook
+    const {
+        optimisticUser,
+        isPending,
+        isEditingMinecraft, setIsEditingMinecraft,
+        isEditingPhoneNumber, setIsEditingPhoneNumber,
+        pendingAvatar,
+        minecraftForm,
+        phoneForm,
+        onSaveMinecraft,
+        onSavePhone,
+        onAvatarChange,
+        cancelAvatarUpload,
+        confirmAvatarUpload
+    } = useProfileState({ user, refetch, showToast });
 
-    const [eventSignups] = useState<EventSignup[]>(initialSignups || []);
+    // 3. UI State
     const [showPastEvents, setShowPastEvents] = useState(false);
 
-    // Profile editing states
-    const [isEditingMinecraft, setIsEditingMinecraft] = useState(false);
-    const [isEditingPhoneNumber, setIsEditingPhoneNumber] = useState(false);
-    const [pendingAvatar, setPendingAvatar] = useState<{ file: File, preview: string } | null>(null);
-    const [isPending, startUpdateTransition] = useTransition();
-
-    // React 19 useOptimistic for instant UI feedback
-    const [optimisticUser, addOptimisticUpdate] = useOptimistic(
-        user,
-        (current, update: Partial<SessionUser>) => ({ ...current, ...update })
-    );
-
-    // Zod validation schemas for forms
-    const minecraftFormSchema = updateProfileSchema.pick({ minecraft_username: true });
-    const phoneFormSchema = updateProfileSchema.pick({ phone_number: true });
-
-    type MinecraftFormData = z.infer<typeof minecraftFormSchema>;
-    type PhoneFormData = z.infer<typeof phoneFormSchema>;
-
-    const {
-        register: registerMinecraft,
-        handleSubmit: handleSubmitMinecraft,
-        reset: resetMinecraft,
-        formState: { errors: minecraftErrors }
-    } = useForm<MinecraftFormData>({
-        resolver: zodResolver(minecraftFormSchema),
-        defaultValues: {
-            minecraft_username: user?.minecraft_username || ""
-        }
-    });
-
-    const {
-        register: registerPhone,
-        handleSubmit: handleSubmitPhone,
-        reset: resetPhone,
-        formState: { errors: phoneErrors }
-    } = useForm<PhoneFormData>({
-        resolver: zodResolver(phoneFormSchema),
-        defaultValues: {
-            phone_number: user?.phone_number || ""
-        }
-    });
-
-    // Update form values if user changes
-    useEffect(() => {
-        resetMinecraft({ minecraft_username: user?.minecraft_username || "" });
-        resetPhone({ phone_number: user?.phone_number || "" });
-    }, [user, resetMinecraft, resetPhone]);
-
-    const onSaveMinecraft = (data: MinecraftFormData) => {
-        startUpdateTransition(async () => {
-            // Step 1: Trigger optimistic update
-            addOptimisticUpdate({ minecraft_username: data.minecraft_username });
-            
-            // Step 2: Trigger server action
-            const result = await updateUserProfile(data);
-            
-            if (result.success) {
-                router.refresh();
-                await refetch();
-                showToast('Minecraft username succesvol bijgewerkt!', 'success');
-                setIsEditingMinecraft(false);
-            } else {
-                showToast(result.error || 'Het bijwerken van je Minecraft username is mislukt.', 'error');
-            }
-        });
-    };
-
-    const onSavePhone = (data: PhoneFormData) => {
-        startUpdateTransition(async () => {
-            // Step 1: Trigger optimistic update
-            addOptimisticUpdate({ phone_number: data.phone_number });
-            
-            // Step 2: Trigger server action
-            const result = await updateUserProfile(data);
-            
-            if (result.success) {
-                router.refresh();
-                await refetch();
-                showToast('Telefoonnummer succesvol bijgewerkt!', 'success');
-                setIsEditingPhoneNumber(false);
-            } else {
-                showToast(result.error || 'Het bijwerken van je telefoonnummer is mislukt.', 'error');
-            }
-        });
-    };
-
-    const onAvatarChange = (file: File) => {
-        const preview = URL.createObjectURL(file);
-        setPendingAvatar({ file, preview });
-    };
-
-    const cancelAvatarUpload = () => {
-        if (pendingAvatar) {
-            URL.revokeObjectURL(pendingAvatar.preview);
-            setPendingAvatar(null);
-        }
-    };
-
-    const confirmAvatarUpload = () => {
-        if (!pendingAvatar) return;
-
-        const { file, preview } = pendingAvatar;
-
-        startUpdateTransition(async () => {
-            // Step 1: Trigger optimistic update with local blob URL
-            addOptimisticUpdate({ avatar: preview, image: preview });
-            setPendingAvatar(null);
-            
-            // Step 2: Upload to Directus
-            const formData = new FormData();
-            formData.append('file', file);
-            
-            const result = await uploadUserAvatar(formData);
-            
-            if (result.success) {
-                await refetch();
-                router.refresh();
-                showToast('Profielfoto succesvol bijgewerkt!', 'success');
-            } else {
-                showToast(result.error || 'Het uploaden van je profielfoto is mislukt.', 'error');
-            }
-            
-            URL.revokeObjectURL(preview);
-        });
-    };
-    
-    // Derived values
-    const isCommitteeMember = Array.isArray(optimisticUser.committees) && optimisticUser.committees.length > 0;
-    
+    // 4. Derived Values
     const filteredSignups = useMemo(() => {
-        const todayStart = startOfDay(new Date());
-        
-        // Merge regular signups and pub crawl signups
-        const allSignups = [
-            ...(eventSignups || []).map(s => ({ ...s, _type: 'event' as const })),
-            ...(pubCrawlSignups || []).map(s => ({ ...s, _type: 'pub_crawl' as const }))
-        ];
-
-        if (showPastEvents) return allSignups;
-
-        return allSignups.filter((s) => {
-            try {
-                let eventDate;
-                if (s._type === 'event') {
-                    const es = s as EventSignup & { _type: 'event' };
-                    if (!es?.event_id?.event_date) return true;
-                    eventDate = startOfDay(new Date(es.event_id.event_date));
-                } else {
-                    const ps = s as PubCrawlSignup & { _type: 'pub_crawl' };
-                    const eventData = ps.pub_crawl_event_id;
-                    if (typeof eventData !== 'object' || !eventData || !('date' in eventData)) return true;
-                    const dateVal = (eventData as { date?: string | null }).date;
-                    if (!dateVal) return true;
-                    eventDate = startOfDay(new Date(dateVal));
-                }
-                return !isBefore(eventDate, todayStart);
-            } catch {
-                return true;
-            }
-        });
-    }, [eventSignups, pubCrawlSignups, showPastEvents]);
+        return filterProfileSignups(initialSignups, pubCrawlSignups, showPastEvents);
+    }, [initialSignups, pubCrawlSignups, showPastEvents]);
 
     const membershipStatus = useMemo(() => {
-        const isLeader = !!optimisticUser.isLeader;
-        const isAdmin = !!(optimisticUser.isAdmin || optimisticUser.canAccessIntro || optimisticUser.isICT);
-        const isInCommittee = isCommitteeMember;
-        const status = optimisticUser.membership_status;
-        const isMember = status === 'active';
-
-        const isBestuur = !!optimisticUser.committees?.some(c => c.name?.toLowerCase().includes('bestuur'));
-        const isICTMember = !!optimisticUser.isICT;
-
-        let role = "Lid";
-        if (isBestuur) role = "Bestuur";
-        else if (isICTMember) role = "ICT";
-        else if (isLeader) role = "Commissie Leider";
-        else if (isInCommittee) role = "Actief Lid";
-        else role = "Lid";
-
-        let statusText = "Geen status";
-        if (status === "active") statusText = "Actief";
-        else if (status === "expired") statusText = "Verlopen";
-
-        let color = "bg-slate-100 dark:bg-white/5 border border-[var(--color-purple-200)] text-[var(--color-purple-700)] dark:text-white";
-        let textColor = "text-[var(--color-purple-700)] dark:text-white font-bold";
-
-        if (status === "active") {
-            if (isAdmin || isLeader) {
-                color = "bg-gradient-to-r from-[var(--color-purple-500)] to-[var(--color-purple-400)] shadow-lg";
-                textColor = "text-white";
-            } else if (isInCommittee || isMember) {
-                color = "bg-[var(--color-purple-500)] shadow-lg";
-                textColor = "text-white";
-            }
-        } else if (status === "expired") {
-            color = "bg-red-500/80 shadow-lg";
-            textColor = "text-white";
-        }
-
-        return { text: `${role} • ${statusText}`, color, textColor };
-    }, [optimisticUser, isCommitteeMember]);
+        return calculateMembershipStatus(optimisticUser);
+    }, [optimisticUser]);
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
@@ -325,11 +94,11 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
                     user={optimisticUser}
                     isEditingMinecraft={isEditingMinecraft}
                     setIsEditingMinecraft={setIsEditingMinecraft}
-                    registerMinecraft={registerMinecraft}
-                    handleSubmitMinecraft={handleSubmitMinecraft}
+                    registerMinecraft={minecraftForm.register}
+                    handleSubmitMinecraft={minecraftForm.handleSubmit}
                     onSaveMinecraft={onSaveMinecraft}
-                    resetMinecraft={resetMinecraft}
-                    minecraftErrors={minecraftErrors}
+                    resetMinecraft={minecraftForm.reset}
+                    minecraftErrors={minecraftForm.formState.errors}
                     isPending={isPending}
                 />
             </div>
@@ -340,11 +109,11 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
                     user={optimisticUser}
                     isEditingPhoneNumber={isEditingPhoneNumber}
                     setIsEditingPhoneNumber={setIsEditingPhoneNumber}
-                    registerPhone={registerPhone}
-                    handleSubmitPhone={handleSubmitPhone}
+                    registerPhone={phoneForm.register}
+                    handleSubmitPhone={phoneForm.handleSubmit}
                     onSavePhone={onSavePhone}
-                    resetPhone={resetPhone}
-                    phoneErrors={phoneErrors}
+                    resetPhone={phoneForm.reset}
+                    phoneErrors={phoneForm.formState.errors}
                     isPending={isPending}
                 />
                 <ProfielQuickLinks 
@@ -362,44 +131,17 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
                     setShowPastEvents={setShowPastEvents}
                 />
             </div>
+            
             <AdminToast toast={toast} onClose={hideToast} />
 
             {/* Avatar Preview Modal */}
             {pendingAvatar && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="bg-[var(--bg-card)] rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl border border-white/10 flex flex-col items-center text-center animate-in zoom-in-95 duration-300">
-                        <h3 className="text-2xl font-black text-white mb-6">Nieuwe profielfoto</h3>
-                        
-                        <div className="relative h-48 w-48 rounded-full overflow-hidden border-4 border-[var(--color-purple-500)] shadow-[0_0_30px_rgba(168,85,247,0.3)] mb-8">
-                            <img 
-                                src={pendingAvatar.preview} 
-                                alt="Preview" 
-                                className="h-full w-full object-cover"
-                            />
-                        </div>
-
-                        <p className="text-[var(--text-muted)] font-medium mb-8 leading-relaxed">
-                            Ziet dit er goed uit? Klik op opslaan om je nieuwe foto te gebruiken.
-                        </p>
-
-                        <div className="flex flex-col w-full gap-3">
-                            <button
-                                onClick={confirmAvatarUpload}
-                                disabled={isPending}
-                                className="w-full py-4 rounded-full bg-[var(--color-purple-600)] text-white font-black text-lg shadow-xl shadow-purple-600/20 transition-all hover:scale-[1.02] hover:bg-[var(--color-purple-500)] active:scale-95 disabled:opacity-50"
-                            >
-                                {isPending ? 'Uploaden...' : 'Opslaan'}
-                            </button>
-                            <button
-                                onClick={cancelAvatarUpload}
-                                disabled={isPending}
-                                className="w-full py-4 rounded-full border-2 border-white/10 text-white font-bold text-lg transition-all hover:bg-white/5 active:scale-95 disabled:opacity-50"
-                            >
-                                Annuleren
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <AvatarPreviewModal 
+                    preview={pendingAvatar.preview}
+                    isPending={isPending}
+                    onConfirm={confirmAvatarUpload}
+                    onCancel={cancelAvatarUpload}
+                />
             )}
         </div>
     );

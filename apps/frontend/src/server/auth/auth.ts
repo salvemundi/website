@@ -27,6 +27,14 @@ export const auth = betterAuth({
             prompt: "select_account" } },
     user: {
         modelName: "directus_users",
+        fields: {
+            email: "email",
+            name: "name",
+            image: "image",
+            emailVerified: "emailVerified",
+            createdAt: "createdAt",
+            updatedAt: "updatedAt"
+        },
         additionalFields: {
             first_name: { type: "string" },
             last_name: { type: "string" },

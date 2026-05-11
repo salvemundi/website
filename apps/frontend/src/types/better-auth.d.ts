@@ -3,6 +3,16 @@ import { type Committee } from "../shared/lib/permissions";
 
 declare module "better-auth" {
     interface User {
+        // Standaard velden
+        id: string;
+        email: string;
+        name: string;
+        emailVerified: boolean;
+        image?: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+
+        // Custom velden
         first_name?: string | null;
         last_name?: string | null;
         membership_status?: string | null;
@@ -16,8 +26,21 @@ declare module "better-auth" {
         role?: string | null;
         isAdmin?: boolean;
         isICT?: boolean;
-    }
-    interface Session {
-        user: User;
+
+        // Permissies (UserPermissions)
+        isLeader?: boolean;
+        canAccessIntro?: boolean;
+        canAccessReis?: boolean;
+        canAccessLogging?: boolean;
+        canAccessSync?: boolean;
+        canAccessCoupons?: boolean;
+        canAccessPermissions?: boolean;
+        canAccessStickers?: boolean;
+        canAccessKroegentocht?: boolean;
+        canAccessMembers?: boolean;
+        canAccessCommittees?: boolean;
+        canAccessActivitiesView?: boolean;
+        canAccessActivitiesEdit?: boolean;
+        canAccessMail?: boolean;
     }
 }
