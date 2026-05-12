@@ -46,7 +46,7 @@ export function ThemeToggle() {
             type="button"
             onClick={toggle}
             aria-label={isDark ? 'Schakel naar lichte modus' : 'Schakel naar donkere modus'}
-            className="inline-flex items-center justify-center rounded-full bg-[var(--bg-card)]/80 p-2 h-9 w-9 text-[var(--text-main)] shadow-sm transition hover:bg-[var(--color-purple-100)]"
+            className="inline-flex items-center justify-center rounded-full bg-[var(--bg-card)]/80 p-2 h-9 w-9 text-[var(--text-main)] shadow-sm transition-transform duration-200 hover:scale-110 active:scale-95 hover:bg-[var(--color-purple-100)] dark:hover:bg-white/10"
         >
             {isDark ? (
                 <Sun className="h-5 w-5" aria-hidden />

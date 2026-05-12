@@ -76,5 +76,11 @@
         "tsx": "^4.21.0",
         "typescript": "5.7.3",
         "unlighthouse": "^0.17.9"
-    }
+    },
+    "browserslist": [
+        "chrome >= 92",
+        "firefox >= 90",
+        "safari >= 15.4",
+        "not dead"
+    ]
 }
