@@ -85,6 +85,11 @@ export default function ActivitiesProviderIsland({
     }, [events, showPastActivities, serverTime, upcomingEvent]);
 
     const handleShowDetails = useCallback((activity: Activiteit) => {
+        const act = activity as any;
+        if (act.custom_url) {
+            router.push(act.custom_url);
+            return;
+        }
         const slug = slugify(activity.titel || '');
         router.push(`/activiteiten/${slug}`);
     }, [router]);

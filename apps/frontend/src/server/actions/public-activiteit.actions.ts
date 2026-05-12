@@ -3,9 +3,8 @@
 import { type Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { eventSignupFormSchema, type EventSignupForm } from '@salvemundi/validations/schema/activity.zod';
 import { type DbEventSignup } from '@salvemundi/validations/directus/schema';
-import { auth } from '@/server/auth/auth';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { type EnrichedUser } from '@/types/auth';
-import { headers } from 'next/headers';
 import {  revalidateTag } from 'next/cache';
 
 import { getSystemDirectus } from '@/lib/directus';
@@ -124,9 +123,7 @@ export async function signupForActivity(data: EventSignupForm) {
     }
 
     try {
-        const session = await auth.api.getSession({
-            headers: await headers()
-        });
+        const session = await getEnrichedSession();
         const userId = session?.user?.id;
 
         const activity = await getActivityById(String(parsed.data.event_id));

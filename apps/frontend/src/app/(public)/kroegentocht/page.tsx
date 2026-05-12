@@ -1,7 +1,6 @@
 import { getKroegentochtEvent, getKroegentochtTickets } from '@/server/actions/kroegentocht.actions';
 import { type PubCrawlTicket } from '@salvemundi/validations/schema/pub-crawl.zod';
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import KroegentochtFormIsland from '@/components/islands/kroegentocht/KroegentochtFormIsland';
 import KroegentochtTicketsIsland from '@/components/islands/kroegentocht/KroegentochtTicketsIsland';
 import { Info, MapPin, Calendar, Clock, Users, Mail, ShieldAlert } from 'lucide-react';
@@ -22,9 +21,7 @@ async function TicketsSection({ userEmail }: { userEmail: string }) {
 async function RegistrationSection() {
     const [event, session] = await Promise.all([
         getKroegentochtEvent(),
-        auth.api.getSession({
-            headers: await headers()
-        })
+        getEnrichedSession()
     ]);
 
     if (!event) {
@@ -148,14 +145,12 @@ async function RegistrationSection() {
 }
 
 export default async function KroegentochtPage() {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
-    const isAuthenticated = !!session;
+    const session = await getEnrichedSession();
+    const isAuthenticated = !!session?.user;
 
     // NUCLEAR SSR: Fetch tickets if authenticated
     let tickets: PubCrawlTicket[] = [];
-    if (isAuthenticated) {
+    if (isAuthenticated && session?.user) {
         tickets = await getKroegentochtTickets(session.user.email!).catch(() => []);
     }
 

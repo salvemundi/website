@@ -18,8 +18,7 @@ import {
     fetchTripActivitiesByTripIdDb,
     fetchSelectedSignupActivitiesDb
 } from './reis-db.utils';
-import { auth } from '@/server/auth/auth';
-import { headers as nextHeaders } from 'next/headers';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { getRedis } from '@/server/auth/redis-client';
 import { normalizeDate } from '@/lib/utils/date-utils';
 
@@ -30,8 +29,7 @@ import { normalizeDate } from '@/lib/utils/date-utils';
  */
 async function validateAccess(signupId: number, token?: string) {
     try {
-        const headers = await nextHeaders();
-        const session = await auth.api.getSession({ headers });
+        const session = await getEnrichedSession();
 
         const signup = await fetchTripSignupByIdDb(signupId);
         if (!signup) {

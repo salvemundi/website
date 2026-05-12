@@ -42,7 +42,7 @@ export async function getRedis() {
             }
         });
 
-        redisClient.on('error', (err: Error) => {
+        redisClient.on('error', (_err: Error) => {
             // Only log errors if they are not just "ECONNREFUSED" or only log them once in a while
             
         });

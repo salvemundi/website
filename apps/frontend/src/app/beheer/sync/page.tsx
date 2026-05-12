@@ -1,8 +1,7 @@
 import React from 'react';
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { getSyncStatusAction } from '@/server/actions/azure-sync/sync-monitoring.actions';
 
 // Modular Islands
@@ -18,9 +17,7 @@ export const metadata: Metadata = {
     title: 'Beheer Sync | SV Salve Mundi' };
 
 async function checkSyncAccess() {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
+    const session = await getEnrichedSession();
     if (!session || !session.user) return false;
     
     const user = session.user as unknown as EnrichedUser;

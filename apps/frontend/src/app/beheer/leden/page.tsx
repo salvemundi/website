@@ -1,6 +1,5 @@
 import React from 'react';
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import LedenOverzichtIsland, { type Member } from '@/components/islands/admin/leden/LedenOverzichtIsland';
@@ -13,10 +12,8 @@ import { query } from '@/lib/database';
 export const metadata = {
     title: 'Leden Beheer | SV Salve Mundi' };
 
-export default async function LedenPage() {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
+export default async function LedenBeheerPage() {
+    const session = await getEnrichedSession();
     
     if (!session || !session.user) return <AdminUnauthorized />;
 

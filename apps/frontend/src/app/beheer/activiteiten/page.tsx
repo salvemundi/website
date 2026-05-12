@@ -1,7 +1,6 @@
 import React from 'react';
 import type { Metadata } from 'next';
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import AdminActivitiesIsland from '@/components/islands/admin/activities/AdminActivitiesIsland';
 import { getAdminActivities } from '@/server/actions/activiteiten/activities-read.actions';
@@ -17,9 +16,7 @@ export const metadata: Metadata = {
     title: 'Beheer Activiteiten | SV Salve Mundi' };
 
 export default async function AdminActiviteitenPage() {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
+    const session = await getEnrichedSession();
 
     const user = session?.user as unknown as EnrichedUser | undefined;
     const userCommittees = await fetchUserCommitteesDb(user?.id || '').catch(() => []);

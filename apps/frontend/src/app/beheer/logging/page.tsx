@@ -1,15 +1,12 @@
 import React from 'react';
 import { redirect } from 'next/navigation';
 import AuditLogIsland from '@/components/islands/admin/AuditLogIsland';
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import { type Committee } from '@/shared/lib/permissions';
 
 async function checkAuditAccess() {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
+    const session = await getEnrichedSession();
     if (!session || !session.user) return false;
     
     const user = session.user as { committees?: Committee[] };

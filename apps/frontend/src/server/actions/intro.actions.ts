@@ -8,8 +8,7 @@ import {
 } from '@salvemundi/validations/schema/intro.zod';
 
 
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems, createItem, updateItem } from '@directus/sdk';
@@ -48,8 +47,7 @@ export async function hasParentSignup(): Promise<boolean> {
 }
 
 async function checkParentSignupInternal(): Promise<{ exists: boolean; record?: { id: number; user_id: string | null; email: string | null } }> {
-    const session = await auth.api.getSession({
-        headers: await headers() });
+    const session = await getEnrichedSession();
 
     if (!session?.user) return { exists: false };
 
@@ -183,8 +181,7 @@ export async function getIntroBlogBySlug(slug: string) {
 }
 
 export async function submitIntroParentSignup(data: IntroParentSignupForm): Promise<{ success: boolean; error?: string }> {
-    const session = await auth.api.getSession({
-        headers: await headers() });
+    const session = await getEnrichedSession();
 
     if (!session?.user) {
         return { success: false, error: 'Je moet ingelogd zijn als lid om je aan te melden als Intro Ouder' };

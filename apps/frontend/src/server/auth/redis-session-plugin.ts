@@ -2,7 +2,6 @@ import type { BetterAuthPlugin, Session, User } from "better-auth";
 import { Pool } from "pg";
 import { getRedis } from "./redis-client";
 import { getPermissions, type UserPermissions, type Committee } from "@/shared/lib/permissions";
-import { connection } from "next/server";
 
 type ExtendedUser = User & Omit<UserPermissions, 'isICT'> & {
     first_name?: string;
@@ -38,15 +37,49 @@ interface ExtendedSession {
 interface AuthContext {
     path?: string;
     headers?: HeadersInit | Record<string, string>;
-    request?: {
-        headers: HeadersInit | Record<string, string>;
-    };
+    request?: Request | { headers: HeadersInit | Record<string, string> };
     context?: {
         returned?: unknown;
     };
     response?: unknown;
-    json?: unknown;
-    body?: unknown;
+}
+
+/**
+ * Safely extracts headers from various Better Auth context shapes without triggering SSR crashes.
+ */
+function extractHeadersSafely(ctx: unknown): Headers | null {
+    if (!ctx || typeof ctx !== 'object') {
+
+        return null;
+    }
+
+    try {
+        // 1. Try request.headers
+        if ('request' in ctx && ctx.request && typeof ctx.request === 'object' && 'headers' in ctx.request) {
+            const h = (ctx.request as { headers?: unknown }).headers;
+            if (h instanceof Headers) return h;
+            if (h && typeof h === 'object') return new Headers(h as Record<string, string>);
+        }
+
+        // 2. Try top-level headers
+        if ('headers' in ctx && ctx.headers) {
+            const h = ctx.headers;
+            if (h instanceof Headers) return h;
+            if (h && typeof h === 'object') return new Headers(h as Record<string, string>);
+        }
+
+        // 3. Try legacy req.headers
+        if ('req' in ctx && ctx.req && typeof ctx.req === 'object' && 'headers' in ctx.req) {
+            const h = (ctx.req as { headers?: Record<string, string> }).headers;
+            if (h && typeof h === 'object') return new Headers(h);
+        }
+        
+
+    } catch (e) {
+        console.error('❌ [RedisPlugin] extractHeadersSafely - Error:', e);
+    }
+
+    return null;
 }
 
 export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
@@ -55,76 +88,101 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
         hooks: {
             before: [
                 {
-                    matcher: (ctx) => !!ctx?.path?.includes("get-session"),
-                    handler: async (ctx: AuthContext) => {
-                        await connection();
+                    matcher: (ctx) => {
                         try {
-                            const headersSource = ctx?.headers || ctx?.request?.headers || {};
-                            const requestHeaders = new Headers(headersSource);
-                            const token = requestHeaders.get("authorization")?.split(" ")[1] ||
-                                requestHeaders.get("cookie")?.split("better-auth.session-token=")[1]?.split(";")[0];
-
-                            const cookies = requestHeaders.get("cookie");
-                            if (cookies?.includes("directus_test_token=")) return;
-
-                            if (token) {
-                                const redis = await getRedis();
-                                const cached = await redis.get(`session:${token}`);
-                                if (cached) {
-                                    const parsed = JSON.parse(cached);
-                                    const finalSession = parsed.response ? parsed.response : parsed;
-
-                                    if (ctx.context) {
-                                        return {
-                                            context: { ...ctx.context, returned: finalSession },
-                                            response: finalSession
-                                        };
-                                    }
-                                    return { response: finalSession };
-                                }
+                            if (!ctx || typeof ctx !== 'object') return false;
+                            const path = (ctx as { path?: unknown }).path;
+                            const isMatch = typeof path === 'string' && path.includes("get-session");
+                            if (isMatch) { /* Matcher hit for path: path */ }
+                            return isMatch;
+                        } catch (e) {
+                            console.error('❌ [RedisPlugin] BeforeMatcher Error:', e);
+                            return false;
+                        }
+                    },
+                    handler: async (ctx: AuthContext) => {
+                        try {
+                            const requestHeaders = extractHeadersSafely(ctx);
+                            if (!requestHeaders) {
+                                return;
                             }
-                        } catch {
+
+                            const authHeader = requestHeaders.get("authorization");
+                            const cookieHeader = requestHeaders.get("cookie");
+
+                            const token = authHeader?.split(" ")[1] ||
+                                cookieHeader?.split("better-auth.session-token=")?.[1]?.split(";")?.[0] ||
+                                cookieHeader?.split("better-auth.session_token=")?.[1]?.split(";")?.[0];
+
+                            if (!token || cookieHeader?.includes("directus_test_token=")) {
+                                return;
+                            }
+
+                            const redis = await getRedis();
+                            const cached = await redis.get(`session:${token}`);
+                            if (cached) {
+                                const parsed = JSON.parse(cached);
+                                const finalSession = parsed.response ? parsed.response : parsed;
+                                
+                                // Ensure user exists in finalSession
+                                if (!finalSession || !finalSession.user) {
+                                    return;
+                                }
+
+                                return {
+                                    response: finalSession
+                                };
+                            }
+                        } catch (_e) {
+                            return;
                         }
                     }
                 }
             ],
             after: [
                 {
-                    matcher: (ctx) => !!ctx?.path?.includes("get-session"),
-                    handler: async (ctx: AuthContext) => {
+                    matcher: (ctx) => {
                         try {
-                            const headersSource = ctx?.headers || ctx?.request?.headers || {};
-                            const requestHeaders = new Headers(headersSource);
+                            if (!ctx || typeof ctx !== 'object') return false;
+                            const path = (ctx as { path?: unknown }).path;
+                            return typeof path === 'string' && path.includes("get-session");
+                        } catch (_e) {
+                            return false;
+                        }
+                    },
+                    handler: async (ctx: AuthContext) => {
+                        const returned = ctx.context?.returned || (ctx as { response?: unknown }).response;
+                        try {
+                            let sessionData: unknown = null;
 
-                            let sessionData = ctx?.context?.returned || ctx?.response;
-                            let isWebResponse = false;
-
-                            if (sessionData instanceof Response) {
-                                isWebResponse = true;
+                            if (returned && typeof returned === 'object' && 'clone' in returned) {
                                 try {
-                                    sessionData = await sessionData.clone().json();
-                                } catch {
-                                    return;
+                                    sessionData = await (returned as Response).clone().json();
+                                } catch (_e) {
+                                    return returned;
                                 }
+                            } else {
+                                sessionData = returned;
                             }
 
                             if (sessionData && typeof sessionData === 'object' && 'response' in sessionData) {
-                                sessionData = sessionData.response;
+                                sessionData = (sessionData as any).response;
                             }
 
-                            if (!sessionData || typeof sessionData !== 'object' || !('user' in sessionData)) {
-                                return;
+                            if (!sessionData || typeof sessionData !== 'object' || !('user' in sessionData) || !sessionData.user) {
+                                return returned;
                             }
 
                             const sessionWithUser = sessionData as ExtendedSession;
-                            if (!sessionWithUser.user?.id) return;
+                            const userId = sessionWithUser.user?.id;
+                            if (!userId) return returned;
 
                             const { rows: realCommittees } = await pool.query(
                                 `SELECT c.id, c.name, c.azure_group_id, m.is_leader 
                                  FROM committee_members m 
                                  JOIN committees c ON m.committee_id = c.id 
                                  WHERE m.user_id = $1`,
-                                [sessionWithUser.user.id]
+                                [userId]
                             );
 
                             sessionWithUser.user.committees = realCommittees;
@@ -134,8 +192,13 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                 sessionWithUser.user.name = `${sessionWithUser.user.first_name || ''} ${sessionWithUser.user.last_name || ''}`.trim();
                             }
 
-                            const cookies = requestHeaders.get("cookie");
-                            const testToken = cookies?.split("directus_test_token=")?.[1]?.split(";")?.[0];
+                            const requestHeaders = extractHeadersSafely(ctx);
+                            if (!requestHeaders) {
+                                return { response: sessionData };
+                            }
+                            
+                            const cookies = requestHeaders.get("cookie") || "";
+                            const testToken = cookies.split("directus_test_token=")?.[1]?.split(";")?.[0];
                             const isAdmin = sessionWithUser.user.isAdmin || sessionWithUser.user.isICT;
 
                             if (testToken && isAdmin) {
@@ -149,9 +212,9 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
 
                                     if (cachedImp) {
                                         targetUser = JSON.parse(cachedImp);
-                                    } else {
+                                    } else if (directusUrl) {
                                         const { createDirectus, rest, staticToken, readMe } = await import("@directus/sdk");
-                                        const testClient = createDirectus(directusUrl!).with(staticToken(testToken)).with(rest());
+                                        const testClient = createDirectus(directusUrl).with(staticToken(testToken)).with(rest());
                                         const rawImpUser = await testClient.request(readMe({ fields: ['id'] })) as { id: string } | null;
 
                                         if (rawImpUser?.id) {
@@ -199,76 +262,37 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                     }
 
                                     if (targetUser) {
-                                        const originalUser = { ...sessionWithUser.user };
-                                        await pool.query(
-                                            `INSERT INTO system_logs (type, status, payload, created_at) VALUES ($1, $2, $3, NOW())`,
-                                            ['impersonation_active', 'INFO', { admin_id: originalUser.id, target_id: targetUser.id, timestamp: new Date().toISOString() }]
-                                        );
-
                                         sessionWithUser.impersonatedBy = {
-                                            id: originalUser.id,
-                                            name: originalUser.name || originalUser.email,
-                                            email: originalUser.email,
+                                            id: sessionWithUser.user.id,
+                                            name: sessionWithUser.user.name || sessionWithUser.user.email,
+                                            email: sessionWithUser.user.email,
                                             isNormallyAdmin: true
                                         };
                                         sessionWithUser.user = { ...targetUser, emailVerified: true, createdAt: new Date(), updatedAt: new Date() };
-                                        Object.assign(sessionWithUser.user, getPermissions(targetUser.committees));
                                     }
-                                } catch (e) {
-                                    console.error('[RedisSessionPlugin] Impersonation fail:', e);
+                                } catch (_e) {
+                                    // Silent fail for impersonation
                                 }
                             }
 
-                            const token = requestHeaders.get("authorization")?.split(" ")[1] || requestHeaders.get("cookie")?.split("better-auth.session-token=")[1]?.split(";")[0];
+                            const token = requestHeaders.get("authorization")?.split(" ")[1] || 
+                                         requestHeaders.get("cookie")?.split("better-auth.session-token=")?.[1]?.split(";")?.[0] || 
+                                         requestHeaders.get("cookie")?.split("better-auth.session_token=")?.[1]?.split(";")?.[0];
+                                         
                             if (token && !sessionWithUser.impersonatedBy) {
                                 try {
                                     const redis = await getRedis();
                                     await redis.set(`session:${token}`, JSON.stringify(sessionWithUser), 'EX', 300);
-                                } catch { }
-                            }
-
-                            if (isWebResponse && ctx.response) {
-                                try {
-                                    const rawResponse = ctx.response;
-                                    const responseHeaders = (rawResponse && typeof rawResponse === 'object' && 'headers' in rawResponse) 
-                                        ? (rawResponse as { headers: HeadersInit }).headers 
-                                        : null;
-                                    
-                                    if (responseHeaders) {
-                                        const newHeaders = new Headers(responseHeaders);
-                                        newHeaders.set('content-type', 'application/json');
-                                        newHeaders.delete('content-length');
-                                        
-                                        const status = (rawResponse && typeof rawResponse === 'object' && 'status' in rawResponse) 
-                                            ? (rawResponse as { status: number }).status 
-                                            : 200;
-                                        const statusText = (rawResponse && typeof rawResponse === 'object' && 'statusText' in rawResponse) 
-                                            ? (rawResponse as { statusText: string }).statusText 
-                                            : 'OK';
-
-                                        return {
-                                            response: new Response(JSON.stringify(sessionWithUser), {
-                                                status,
-                                                statusText,
-                                                headers: newHeaders
-                                            })
-                                        };
-                                    }
-                                } catch {
-                                    // Silently fail if wrapping fails
+                                } catch (_e) { 
+                                    // Silent fail for cache
                                 }
-                            } else if (ctx.context) {
-                                return {
-                                    context: {
-                                        ...ctx.context,
-                                        returned: sessionWithUser
-                                    }
-                                };
-                            } else {
-                                return { response: sessionWithUser };
                             }
-                        } catch {
-                            return;
+
+                            return {
+                                response: sessionWithUser
+                            };
+                        } catch (_e) {
+                            return returned; 
                         }
                     }
                 }

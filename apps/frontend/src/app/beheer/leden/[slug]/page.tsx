@@ -1,5 +1,4 @@
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import { notFound } from 'next/navigation';
 import LedenDetailIsland, { type Member, type CommitteeMembership, type Signup } from '@/components/islands/admin/leden/LedenDetailIsland';
@@ -22,9 +21,7 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
     const decodedSlug = decodeURIComponent(resolvedParams.slug);
 
     // NUCLEAR SSR: All access and permission checks must happen before flushing the shell
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
+    const session = await getEnrichedSession();
     if (!session || !session.user) return <AdminUnauthorized title="Lid Detail" />;
 
     const user = session.user as unknown as EnrichedUser;

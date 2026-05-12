@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
 import ConfirmationIsland from '@/components/islands/membership/ConfirmationIsland';
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { getTransactionStatusAction } from '@/server/actions/membership.actions';
 
 interface PageProps {
@@ -19,9 +18,7 @@ export default async function LidmaatschapConfirmationPage({ searchParams }: Pag
 
     if (!identifier) notFound();
 
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
+    const session = await getEnrichedSession();
 
     // NUCLEAR SSR: Fetch initial status server-side to prevent layout shift
     const initialStatusRes = await getTransactionStatusAction(identifier);

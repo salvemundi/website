@@ -2,8 +2,7 @@ import React from 'react';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import MembershipFormIsland from '@/components/islands/membership/MembershipFormIsland';
 import MembershipStatusIsland, { type MembershipUserData } from '@/components/islands/account/MembershipStatusIsland';
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { fetchUserCommitteesDb, type Committee } from '@/server/actions/user-db.utils';
 import { connection } from 'next/server';
 
@@ -16,8 +15,8 @@ export default async function MembershipPage() {
     await connection();
     
     // NUCLEAR SSR: Fetch all data server-side to prevent layout shifts and flickering.
-    // This follows the Zero-Skeleton standard for a premium, instant feel.
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await getEnrichedSession();
+
     const user = session?.user as MembershipUserData | undefined;
     const isGuest = !user;
     

@@ -2,8 +2,7 @@ import 'server-only';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 import { COUPON_FIELDS } from '@salvemundi/validations/directus/fields';
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { AdminResource } from '@/shared/lib/permissions-config';
 import { hasPermission } from '@/shared/lib/permissions';
 
@@ -23,7 +22,7 @@ export type Coupon = {
 import { type EnrichedUser } from '@/types/auth';
 
 async function checkAccess() {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await getEnrichedSession();
     if (!session?.user) throw new Error('Niet ingelogd');
     
     const user = session.user as unknown as EnrichedUser;

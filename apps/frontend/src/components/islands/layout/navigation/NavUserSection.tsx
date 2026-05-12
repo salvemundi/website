@@ -18,14 +18,11 @@ interface NavUserSectionProps {
 
 export function NavUserSection({ initialSession, canAccessAdmin }: NavUserSectionProps) {
     const searchParams = useSearchParams();
-    const { data: sessionData } = authClient.useSession();
 
-    let session = initialSession;
-    if (sessionData !== undefined) {
-        // Better Auth useSession returns { session, user } or null
-        session = sessionData as ExtendedSession | null;
-    }
-
+    // NUCLEAR SSR: We trust the server-side session as the single source of truth.
+    // This eliminates "stuttering" or flickering to guest state during hydration.
+    // If the user logs in or out, the subsequent redirect/refresh will update the server state.
+    const session = initialSession;
     const user = session?.user ?? null;
     const isAuthenticated = !!user;
 

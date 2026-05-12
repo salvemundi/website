@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import { notFound } from 'next/navigation';
 import ActiviteitAanmeldingenIsland, { type Signup, type AdminEvent } from '@/components/islands/admin/activities/ActiviteitAanmeldingenIsland';
@@ -19,9 +18,7 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
     const id = resolvedParams.id;
     
     // NUCLEAR SSR: All access and permission checks must happen before flushing anything
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
+    const session = await getEnrichedSession();
     if (!session || !session.user) return <AdminUnauthorized title="Activiteit Aanmeldingen" />;
 
     const user = session.user as unknown as EnrichedUser;

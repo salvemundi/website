@@ -14,8 +14,7 @@ import {
 import { getSystemDirectus } from '@/lib/directus';
 import { createItem } from '@directus/sdk';
 import { query } from '@/lib/database';
-import { auth } from '@/server/auth/auth';
-import { headers as nextHeaders } from 'next/headers';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { logAdminAction } from './audit.actions';
 import { 
     fetchUserSignupStatusDb, 
@@ -54,8 +53,7 @@ export async function getReisSiteSettings(): Promise<ReisSiteSettings | null> {
 
 export async function getCurrentUserProfileAction(): Promise<{ success: boolean; data?: Record<string, unknown>; error?: string }> {
     try {
-        const headers = await nextHeaders();
-        const session = await auth.api.getSession({ headers });
+        const session = await getEnrichedSession();
         if (!session || !session.user) return { success: false, error: "Niet ingelogd" };
 
         const userEmail = session.user.email?.toLowerCase();
@@ -120,8 +118,7 @@ export async function getTripParticipantsCount(tripId: number): Promise<number> 
 
 export async function getUserTripSignup(tripId: number): Promise<ReisTripSignup | null> {
     try {
-        const headers = await nextHeaders();
-        const session = await auth.api.getSession({ headers });
+        const session = await getEnrichedSession();
         
         if (!session || !session.user) {
             return null;
@@ -169,7 +166,7 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
     }
 
     const { email } = parsed.data;
-    const session = await auth.api.getSession({ headers: await nextHeaders() });
+    const session = await getEnrichedSession();
 
     const [existingSignups, siteSettings] = await Promise.all([
         getTripSignups(tripId),

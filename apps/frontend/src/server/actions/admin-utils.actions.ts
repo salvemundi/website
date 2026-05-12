@@ -1,23 +1,25 @@
 'use server';
 
-import { auth } from "@/server/auth/auth";
-import { headers } from "next/headers";
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { getPermissions } from '@/shared/lib/permissions';
 import { fetchUserMetadataDb, fetchUserCommitteesDb } from "./user-db.utils";
 import { type EnrichedUser, type ImpersonationInfo } from "@/types/auth";
+import { headers } from 'next/headers';
 
 /**
  * Centraal mechanisme voor admin-toegangscontrole en user-enrichment.
  * Wordt gebruikt in layouts, pages en server actions.
  */
 export async function checkAdminAccess() {
-    const h = await headers();
+    const safeHeaders = new Headers();
+    try {
+        const h = await headers();
+        h.forEach((v, k) => safeHeaders.set(k, v));
+    } catch (_e) { }
     
     try {
-        const session = await auth.api.getSession({
-            headers: h
-        });
-
+        const session = await getEnrichedSession();
+        
         if (!session || !session.user) {
             return { isAuthorized: false, user: null, isIct: false, impersonation: null };
         }
@@ -46,7 +48,7 @@ export async function checkAdminAccess() {
                 // Store granular permissions in the user object for convenience
                 Object.assign(user, perms);
             }
-        } catch {
+        } catch (_e) {
             // Silently fail metadata enrichment
         }
 
@@ -72,7 +74,7 @@ export async function checkAdminAccess() {
                 targetCommittees: user.committees?.map((c) => c.name) || []
             } : null
         };
-    } catch {
+    } catch (_e) {
         return { isAuthorized: false, user: null, isIct: false, impersonation: null };
     }
 }

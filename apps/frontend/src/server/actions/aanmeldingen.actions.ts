@@ -1,7 +1,5 @@
 'use server';
 
-import { auth } from "@/server/auth/auth";
-import { headers } from "next/headers";
 import { revalidateTag, revalidatePath } from "next/cache";
 import { getSystemDirectus } from "@/lib/directus";
 import { getAuthorizedUser, verifyActivityBOLA } from "./activiteiten/auth-check";
@@ -23,10 +21,10 @@ import {
 
 const getNotificationUrl = () => process.env.INTERNAL_NOTIFICATION_API_URL || process.env.NEXT_PUBLIC_NOTIFICATION_API_URL;
 
+import { getEnrichedSession } from "@/server/auth/auth-utils";
+
 async function getSession() {
-    return await auth.api.getSession({
-        headers: await headers()
-    });
+    return await getEnrichedSession();
 }
 
 async function checkAdminAccess() {
@@ -101,7 +99,7 @@ export async function deleteSignupAction(signupId: number, eventId: string | num
 
 export async function searchMembersAction(query: string) {
     const session = await checkAdminAccess();
-    if (!session) return { success: false, error: "Unauthorized", data: [] };
+    if (!session?.user) return { success: false, error: "Unauthorized", data: [] };
 
     if (query.length < 2) return { success: true, data: [] };
 

@@ -1,11 +1,15 @@
-import { auth } from "@/server/auth/auth";
-import type { NextRequest } from "next/server";
+import { getEnrichedSession } from "@/server/auth/auth-utils";
 
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
     try {
-        return await auth.handler(request);
+        const session = await getEnrichedSession();
+
+        return Response.json(session);
     } catch (error) {
-        
-        return new Response(null, { status: 500 });
+        console.error('❌ [GetSession API] CRITICAL ERROR:', error instanceof Error ? error.stack : error);
+        return new Response(JSON.stringify({ error: 'Internal Server Error', details: error instanceof Error ? error.message : String(error) }), { 
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+        });
     }
 }

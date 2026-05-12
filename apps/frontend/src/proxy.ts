@@ -47,23 +47,16 @@ async function proxy(request: NextRequest) {
     const clientIp = forwardedFor ? forwardedFor.split(',')[0].trim() : (request.headers.get('x-real-ip') || 'unknown');
 
     const nextWithNonce = () => {
-        // DETECT STREAMING CONFLICTS:
-        // Node.js 22 + Next.js 15/16 'transformAlgorithm' error occurs when cloning requests with bodies 
-        // or during specific prefetch/streaming states.
         const isMutation = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method);
         const isPrefetch = request.headers.get('x-next-prefetch') === '1' || request.headers.get('purpose') === 'prefetch';
         const isDataRequest = pathname.includes('/_next/data/');
         const isRscRequest = request.headers.has('x-next-rsc');
 
-        // Security: Always ensure downstream services get a trusted IP
-        // We set it in requestHeaders if we can clone, otherwise we rely on fallbacks
         const requestHeaders = new Headers(request.headers);
-        requestHeaders.delete('x-trusted-ip'); // Strip spoofed headers from client
+        requestHeaders.delete('x-trusted-ip'); 
         requestHeaders.set('x-trusted-ip', clientIp);
         requestHeaders.set('x-nonce', nonce);
 
-        // If it's a mutation, prefetch, or RSC request, we avoid cloning the request headers via NextResponse.next({request})
-        // because it triggers an internal 'request.clone()' which fails on the stream controller in Node.js 22.
         if (isMutation || isPrefetch || isDataRequest || isRscRequest) {
             return withSecurity(NextResponse.next());
         }
@@ -73,7 +66,6 @@ async function proxy(request: NextRequest) {
                 request: { headers: requestHeaders }
             }));
         } catch (e) {
-            // Fallback for any other unexpected streaming failures
             return withSecurity(NextResponse.next());
         }
     };
@@ -82,12 +74,6 @@ async function proxy(request: NextRequest) {
 
     const internalToken = process.env.INTERNAL_SERVICE_TOKEN;
     if (internalToken && request.headers.get('authorization') === `Bearer ${internalToken}`) {
-        /**
-         * SECURITY BOUNDARY: Internal Service Token
-         * This token allows bypassing authentication for inter-service calls.
-         * REQUIREMENT: This header MUST be stripped by the edge proxy (Nginx/Cloudflare) 
-         * for all requests originating from the public internet.
-         */
         return nextWithNonce();
     }
     if (pathname === '/api/finance/webhook/mollie' || pathname.startsWith('/api/auth/')) {
@@ -96,7 +82,6 @@ async function proxy(request: NextRequest) {
 
     const disabledRoutes = await getDisabledRoutes();
     if (disabledRoutes.some(r => pathname === r || pathname.startsWith(`${r}/`))) {
-        console.warn(`[Proxy] Route ${pathname} is DISABLED in feature-flags. Rewriting to 404.`);
         return withSecurity(NextResponse.rewrite(new URL('/404', request.url)));
     }
 
@@ -104,6 +89,7 @@ async function proxy(request: NextRequest) {
     if (!isPublic) {
         try {
             const rawCookie = request.headers.get('cookie') || '';
+
             
             const sessionTokenRaw = request.cookies.get('better-auth.session_token')?.value || 
                                 request.cookies.get('better-auth.session-token')?.value ||
@@ -120,14 +106,13 @@ async function proxy(request: NextRequest) {
             
             let hasSession = false;
 
-            // Skip cache if impersonating
             if (sessionToken && !hasTestToken) {
                 const redis = await getRedis();
                 const cached = await redis.get(`session:${sessionToken}`);
                 if (cached) {
                     try {
                         const sessionData = JSON.parse(cached);
-                        if (sessionData && sessionData.user) {
+                        if (sessionData && (sessionData.user || (sessionData.response && sessionData.response.user))) {
                             hasSession = true;
                         }
                     } catch (e) {}
@@ -142,8 +127,9 @@ async function proxy(request: NextRequest) {
                 try {
                     const sessionRes = await fetch(sessionUrl, {
                         headers: {
-                            cookie: rawCookie,
-                            'user-agent': request.headers.get('user-agent') || '',
+                            'cookie': rawCookie,
+                            'user-agent': request.headers.get('user-agent') || 'NextJS-Proxy',
+                            'accept': 'application/json',
                             'origin': publicUrl,
                             'referer': request.headers.get('referer') || publicUrl,
                             'host': host,
@@ -157,17 +143,21 @@ async function proxy(request: NextRequest) {
                         signal: AbortSignal.timeout(10000)
                     });
 
+
+
                     if (sessionRes.ok && sessionRes.status !== 204) {
                         const text = await sessionRes.text();
+
                         if (text && text !== 'null' && text !== '{}') {
                             try {
-                                const sessionData = JSON.parse(text);
+                                let sessionData = JSON.parse(text);
+                                if (sessionData && 'response' in sessionData) {
+                                    sessionData = sessionData.response;
+                                }
+                                
                                 if (sessionData && sessionData.user) {
-                                    console.log(`[Proxy] Session found for user: ${sessionData.user.email}`);
                                     hasSession = true;
                                     
-                                    // If we are on a page with needLogin=true but we HAVE a session, 
-                                    // strip the params to stop the client-side loop.
                                     if (request.nextUrl.searchParams.has('needLogin')) {
                                         const cleanUrl = new URL(request.url);
                                         cleanUrl.searchParams.delete('needLogin');
@@ -196,7 +186,6 @@ async function proxy(request: NextRequest) {
             }
 
             if (hasSession) {
-                // If already has session but URL has needLogin, strip it
                 if (request.nextUrl.searchParams.has('needLogin')) {
                     const cleanUrl = new URL(request.url);
                     cleanUrl.searchParams.delete('needLogin');
@@ -210,10 +199,8 @@ async function proxy(request: NextRequest) {
             const authRedirectUrl = new URL(`/?needLogin=true&callbackURL=${callbackUrl}`, publicUrl);
             return withSecurity(NextResponse.redirect(authRedirectUrl));
 
-            return nextWithNonce();
         } catch (error) {
             console.error('[Proxy] Critical error during auth check:', error instanceof Error ? error.message : 'Unknown error');
-            if (error instanceof Error && error.stack) console.error(error.stack);
             return withSecurity(NextResponse.rewrite(new URL('/404', request.url)));
         }
     }
@@ -222,7 +209,6 @@ async function proxy(request: NextRequest) {
 }
 
 export const config = {
-    // Exclude static files, images, and PWA assets. API/Assets is now protected.
     matcher: ['/((?!_next/static|_next/image|fonts|img|favicon.ico|robots.txt|.well-known|sw.js|manifest.json|manifest.webmanifest|workbox-|logo.svg|icons/|api/assets|api/auth).*)'] };
 
 export { proxy };

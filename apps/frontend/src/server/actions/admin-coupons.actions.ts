@@ -1,7 +1,5 @@
 'use server';
 
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 
 import { getSystemDirectus } from '@/lib/directus';
@@ -16,9 +14,10 @@ import { COUPON_FIELDS } from '@salvemundi/validations/directus/fields';
 import { AdminResource } from '@/shared/lib/permissions-config';
 import { hasPermission } from '@/shared/lib/permissions';
 import { type EnrichedUser } from '@/types/auth';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 
 async function checkAccess() {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await getEnrichedSession();
     if (!session?.user) throw new Error('Niet ingelogd');
     
     const user = session.user as unknown as EnrichedUser;
@@ -100,8 +99,8 @@ export async function createCoupon(formData: FormData): Promise<{ success: boole
         valid_from: validFrom || null,
         valid_until: validUntil || null };
 
-    const session = await auth.api.getSession({ headers: await headers() });
-    if (!session) throw new Error('Unauthorized');
+    const session = await getEnrichedSession();
+    if (!session?.user) throw new Error('Unauthorized');
     try {
         const item = await getSystemDirectus().request(createItem('coupons', payload));
         revalidatePath('/beheer/coupons');

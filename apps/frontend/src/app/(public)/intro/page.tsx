@@ -1,6 +1,5 @@
-import * as nextServer from 'next/server';
-import { headers } from 'next/headers';
-import { auth } from '@/server/auth/auth';
+import { connection } from 'next/server';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { hasParentSignup, getIntroBlogsPublic } from '@/server/actions/intro.actions';
 
 import { IntroStudentIsland } from '@/components/islands/intro/IntroStudentIsland';
@@ -71,11 +70,15 @@ const IntroInfoParent = () => (
 );
 
 export default async function IntroPage() {
-    await nextServer.connection();
+    await connection();
+    
     // NUCLEAR SSR: Fetch all data before flushing any part of the page content
-    const session = await auth.api.getSession({ headers: await headers() });
-    const isAlreadyParent = session ? await hasParentSignup() : false;
-    const isAuthenticated = !!session;
+    const session = await getEnrichedSession();
+    
+    // Cruciale fix: Controleer specifiek of user bestaat, want de Redis plugin 
+    // kan een leeg object {} retourneren!
+    const isAuthenticated = !!session?.user;
+    const isAlreadyParent = isAuthenticated ? await hasParentSignup() : false;
     const blogs = await getIntroBlogsPublic();
 
     return (
@@ -90,7 +93,7 @@ export default async function IntroPage() {
                     </div>
 
                     <div className="flex-1 w-full flex flex-col justify-start">
-                        {isAuthenticated ? (
+                        {isAuthenticated && session?.user ? (
                             isAlreadyParent ? (
                                 <div className="bg-gradient-theme squircle-lg p-6 lg:p-8 shadow-lg text-center">
                                     <h3 className="text-xl lg:text-2xl font-bold text-white mb-4">Je hebt je al aangemeld als Intro Ouder</h3>

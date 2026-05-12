@@ -1,16 +1,12 @@
 'use server';
 
-import { auth } from "@/server/auth/auth";
-import { headers } from "next/headers";
 import { getPermissions } from "@/shared/lib/permissions";
 import { fetchUserCommitteesDb } from "../user-db.utils";
-
 import { type EnrichedUser } from "@/types/auth";
+import { getEnrichedSession } from "@/server/auth/auth-utils";
 
 export async function getAuthorizedUser() {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
+    const session = await getEnrichedSession();
 
     if (!session || !session.user) return null;
 
@@ -55,7 +51,7 @@ export async function verifyActivityBOLA(eventId: number | string) {
     if (isSuperAdmin) return user;
 
     // Granular check: Does the user belong to the committee that owns this event?
-    const activityRes = await dbQuery("SELECT committee_id FROM events WHERE id = ", [eventId]);
+    const activityRes = await dbQuery("SELECT committee_id FROM events WHERE id = $1", [eventId]);
     const activityCommitteeId = activityRes.rows[0]?.committee_id;
     const userCommitteeIds = user.committees?.map(c => Number(c.id)) || [];
 
