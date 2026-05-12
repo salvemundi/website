@@ -1,301 +1,60 @@
 'use server';
 
-import { revalidateTag, revalidatePath } from "next/cache";
-
-
-import {
-    introBlogSchema,
-    introPlanningSchema,
-    type IntroBlog,
-    type IntroPlanningItem
-} from '@salvemundi/validations/schema/intro.zod';
-
-import {
-    getIntroSignupsInternal,
-    getIntroParentSignupsInternal,
-    getIntroBlogsInternal,
-    getIntroPlanningInternal
-} from '@/server/queries/admin-intro.queries';
-
-import { getSystemDirectus } from "@/lib/directus";
-import {
-    deleteItem,
-    updateItem,
-    createItem
-} from '@directus/sdk';
-
-import { AdminResource } from '@/shared/lib/permissions-config';
-import { getRedis } from '@/server/auth/redis-client';
-import { FLAGS_CACHE_KEY } from '@/lib/config/feature-flags';
-import { query } from '@/lib/database';
-import { toLocalISOString } from '@/lib/utils/date-utils';
+import * as signups from './intro/intro-signup.actions';
+import * as blogs from './intro/intro-blog.actions';
+import * as planning from './intro/intro-planning.actions';
+import * as settings from './intro/intro-settings.actions';
 import type { DbIntroSignup, DbIntroParentSignup } from '@salvemundi/validations/directus/schema';
-import { requireAdminResource } from '@/server/auth/auth-utils';
-
-async function checkIntroAdminAccess() {
-    return requireAdminResource(AdminResource.Intro);
-}
-
-
-
-
+import { type IntroBlog, type IntroPlanningItem } from '@salvemundi/validations/schema/intro.zod';
 
 export async function getIntroSignups(): Promise<DbIntroSignup[]> {
-    await checkIntroAdminAccess();
-    const data = await getIntroSignupsInternal();
-    return data as unknown as DbIntroSignup[];
+    return signups.getIntroSignups();
 }
 
-async function genericDelete(collection: string, id: number) {
-    try {
-        await getSystemDirectus().request(deleteItem(collection as never, id));
-        revalidatePath('/beheer/intro');
-        return { success: true };
-    } catch {
-        return { success: false, error: 'Verwijderen mislukt' };
-    }
+export async function deleteIntroSignup(id: number) {
+    return signups.deleteIntroSignup(id);
 }
-
-async function genericUpdate(collection: string, id: number, data: Record<string, unknown>, allowedFields: string[]) {
-    const filteredData = Object.fromEntries(
-        Object.entries(data).filter(([key]) => allowedFields.includes(key))
-    );
-
-    if (Object.keys(filteredData).length === 0) {
-        return { success: false, error: 'Geen geldige velden om bij te werken' };
-    }
-
-    try {
-        await getSystemDirectus().request(updateItem(collection as never, id, filteredData));
-        revalidatePath('/beheer/intro');
-        return { success: true };
-    } catch {
-        return { success: false, error: 'Bijwerken mislukt' };
-    }
-}
-
-export async function deleteIntroSignup(id: number): Promise<{ success: boolean; error?: string }> {
-    await checkIntroAdminAccess();
-    return genericDelete('intro_signups', id);
-}
-
 
 export async function getIntroParentSignups(): Promise<DbIntroParentSignup[]> {
-    await checkIntroAdminAccess();
-    const data = await getIntroParentSignupsInternal();
-    return data as unknown as DbIntroParentSignup[];
+    return signups.getIntroParentSignups();
 }
 
-export async function deleteIntroParentSignup(id: number): Promise<{ success: boolean; error?: string }> {
-    await checkIntroAdminAccess();
-    return genericDelete('intro_parent_signups', id);
+export async function deleteIntroParentSignup(id: number) {
+    return signups.deleteIntroParentSignup(id);
 }
-
 
 export async function getIntroBlogs(): Promise<IntroBlog[]> {
-    await checkIntroAdminAccess();
-    const data = await getIntroBlogsInternal();
-    return data as unknown as IntroBlog[];
+    return blogs.getIntroBlogs();
 }
 
-export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ success: boolean; data?: IntroBlog; error?: string; fieldErrors?: Record<string, string[] | undefined> }> {
-    await checkIntroAdminAccess();
-
-    // Sanitize: Directus returns null for empty fields, but Zod .optional() expects undefined.
-    const sanitized = Object.fromEntries(
-        Object.entries(blog).map(([k, v]) => [k, v === null ? undefined : v])
-    );
-
-    const validated = introBlogSchema.safeParse(sanitized);
-    if (!validated.success) {
-        const fieldErrors = validated.error.flatten().fieldErrors;
-        return {
-            success: false,
-            error: `Validatie mislukt: ${Object.keys(fieldErrors).join(', ')}`,
-            fieldErrors
-        };
-    }
-
-    const { id, ...payload } = validated.data;
-
-    try {
-        let result;
-        const sanitizedPayload = {
-            ...payload,
-            created_at: toLocalISOString(payload.created_at, true)
-        };
-
-        if (id) {
-            result = await getSystemDirectus().request(updateItem('intro_blogs', id, sanitizedPayload));
-        } else {
-            result = await getSystemDirectus().request(createItem('intro_blogs', sanitizedPayload));
-        }
-        revalidatePath('/beheer/intro');
-
-        return {
-            success: true, data: {
-                id: Number(result.id),
-                title: result.title || '',
-                content: result.content || '',
-                blog_type: (result.blog_type || 'update') as IntroBlog['blog_type'],
-                is_published: !!result.is_published,
-                created_at: result.created_at ? toLocalISOString(result.created_at, true) ?? undefined : undefined,
-                slug: result.slug || '',
-                excerpt: result.excerpt || ''
-            }
-        };
-    } catch (error) {
-        console.error('[AdminIntro] Failed to upsert blog:', error);
-        return { success: false, error: 'Opslaan mislukt' };
-    }
+export async function upsertIntroBlog(blog: Partial<IntroBlog>) {
+    return blogs.upsertIntroBlog(blog);
 }
 
-export async function deleteIntroBlog(id: number): Promise<{ success: boolean; error?: string }> {
-    await checkIntroAdminAccess();
-    return genericDelete('intro_blogs', id);
+export async function deleteIntroBlog(id: number) {
+    return blogs.deleteIntroBlog(id);
 }
-
 
 export async function getIntroPlanning(): Promise<IntroPlanningItem[]> {
-    await checkIntroAdminAccess();
-    const data = await getIntroPlanningInternal();
-    return data as unknown as IntroPlanningItem[];
+    return planning.getIntroPlanning();
 }
 
-export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Promise<{ success: boolean; data?: IntroPlanningItem; error?: string; fieldErrors?: Record<string, string[] | undefined> }> {
-    await checkIntroAdminAccess();
-
-    // Sanitize: Directus returns null for empty fields, but Zod .optional() expects undefined.
-    const sanitized = Object.fromEntries(
-        Object.entries(item).map(([k, v]) => [k, v === null ? undefined : v])
-    );
-
-    const validated = introPlanningSchema.safeParse(sanitized);
-    if (!validated.success) {
-        const fieldErrors = validated.error.flatten().fieldErrors;
-        return {
-            success: false,
-            error: `Validatie mislukt: ${Object.keys(fieldErrors).join(', ')}`,
-            fieldErrors
-        };
-    }
-
-    const { id, date, ...rest } = validated.data;
-
-    let day = rest.day;
-    if (date) {
-        try {
-            // Use a more robust way to get the Dutch day name
-            const d = new Date(date);
-            if (!isNaN(d.getTime())) {
-                day = d.toLocaleDateString('nl-NL', { weekday: 'long' });
-            }
-        } catch (error) {
-            console.error('Error calculating day:', error);
-        }
-    }
-
-    // Ensure day is at least an empty string if it's missing, 
-    // but better to throw an error if it's required and we can't calculate it.
-    if (!day && date) {
-        day = 'Onbekend'; // Fallback if calculation fails
-    }
-
-    const payload = { ...rest, date, day };
-
-    try {
-        let result;
-        if (id) {
-            result = await getSystemDirectus().request(updateItem('intro_planning', id, payload));
-        } else {
-            result = await getSystemDirectus().request(createItem('intro_planning', payload));
-        }
-        revalidatePath('/beheer/intro');
-        return {
-            success: true, data: {
-                id: Number(result.id),
-                date: result.date || '',
-                time_start: result.time_start || '',
-                title: result.title || '',
-                description: result.description || '',
-                day: result.day || '',
-                location: result.location
-            }
-        };
-    } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'Onbekende fout';
-        console.error('[AdminIntro] Failed to upsert planning:', error);
-        return { success: false, error: `Opslaan mislukt: ${message}` };
-    }
+export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>) {
+    return planning.upsertIntroPlanning(item);
 }
 
-export async function deleteIntroPlanning(id: number): Promise<{ success: boolean; error?: string }> {
-    await checkIntroAdminAccess();
-    return genericDelete('intro_planning', id);
+export async function deleteIntroPlanning(id: number) {
+    return planning.deleteIntroPlanning(id);
 }
 
-export async function updateIntroSignup(id: number, data: Partial<Record<string, unknown>>): Promise<{ success: boolean; error?: string }> {
-    await checkIntroAdminAccess();
-    return genericUpdate('intro_signups', id, data, ['status', 'payment_status', 'is_member', 'notes', 'checked_in']);
+export async function updateIntroSignup(id: number, data: Partial<Record<string, unknown>>) {
+    return signups.updateIntroSignup(id, data);
 }
 
-export async function updateIntroParentSignup(id: number, data: Partial<Record<string, unknown>>): Promise<{ success: boolean; error?: string }> {
-    await checkIntroAdminAccess();
-    return genericUpdate('intro_parent_signups', id, data, ['status', 'payment_status', 'notes', 'checked_in']);
+export async function updateIntroParentSignup(id: number, data: Partial<Record<string, unknown>>) {
+    return signups.updateIntroParentSignup(id, data);
 }
 
-
-export async function toggleIntroVisibility(): Promise<{ success: boolean; show?: boolean; error?: string }> {
-    await checkIntroAdminAccess();
-    const route = '/intro';
-
-    try {
-        const sql = 'SELECT id, is_active FROM feature_flags WHERE route_match = $1 LIMIT 1';
-        const { rows } = await query(sql, [route]);
-
-        const flag = rows?.[0];
-        const oldStatus = flag ? !!flag.is_active : true;
-        const newStatus = !oldStatus;
-
-        if (flag) {
-            await query('UPDATE feature_flags SET is_active = $1 WHERE id = $2', [newStatus, flag.id]);
-
-        } else {
-            await query('INSERT INTO feature_flags (name, route_match, is_active) VALUES ($1, $2, $3)',
-                ['Intro Inschrijving', route, newStatus]);
-
-        }
-
-        // 1. Immediate clear to disrupt any current stale requests
-        try {
-            const redis = await getRedis();
-            await redis.del(FLAGS_CACHE_KEY);
-
-        } catch {
-
-        }
-
-        // 2. Wait for Directus DB/Cache consistency if other systems read via API
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-
-        revalidateTag('feature_flags', 'max');
-        revalidatePath('/', 'layout');
-        revalidatePath('/beheer/intro');
-
-        // 3. Final clear to ensure concurrent requests that fetched stale data are purged
-        try {
-            const redis = await getRedis();
-            await redis.del(FLAGS_CACHE_KEY);
-
-        } catch {
-
-        }
-
-        return { success: true, show: newStatus };
-    } catch {
-
-        return { success: false, error: 'Bijwerken mislukt' };
-    }
+export async function toggleIntroVisibility() {
+    return settings.toggleIntroVisibility();
 }
-

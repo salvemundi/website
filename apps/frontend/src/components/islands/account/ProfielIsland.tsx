@@ -1,3 +1,4 @@
+"use client";
 import { Mail, Phone, Calendar, Edit2, Save, Loader2, LogOut, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';

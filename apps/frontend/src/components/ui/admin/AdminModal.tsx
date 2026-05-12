@@ -59,11 +59,11 @@ export default function AdminModal({
                 {/* Header */}
                 <div className="p-8 border-b border-[var(--beheer-border)] flex items-center justify-between relative z-10">
                     <div className="space-y-1">
-                        <h2 className="text-xl font-bold text-[var(--beheer-text)] tracking-tight">
+                        <h2 className="text-xl font-semibold text-[var(--beheer-text)] tracking-tight">
                             {title}
                         </h2>
                         {subtitle && (
-                            <p className="text-xs font-semibold text-[var(--beheer-text-muted)] tracking-widest uppercase opacity-60">
+                            <p className="text-xs font-semibold text-[var(--beheer-text-muted)] opacity-60">
                                 {subtitle}
                             </p>
                         )}

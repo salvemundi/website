@@ -11,6 +11,7 @@ export type EnrichedEvent = {
     description?: string;
     image?: string;
     contact?: string;
+    location?: string;
 };
 
 export type EnrichedEventSignup = DbEventSignup & {

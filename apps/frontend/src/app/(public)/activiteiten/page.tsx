@@ -32,7 +32,7 @@ export default async function ActivitiesPage() {
 }
 
 async function ActivitiesContent() {
-    const events = await getActivities().catch(() => []);
+    const events = await getActivities();
     const serverTime = new Date().toISOString();
 
     return (

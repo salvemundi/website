@@ -2,22 +2,11 @@
 
 import { useState, useTransition } from 'react';
 import dynamic from 'next/dynamic';
-import {
-    Plus,
-    X,
-    Camera,
-    Search,
-    Map as MapIcon,
-    Loader2,
-    Globe,
-    Award,
-    TrendingUp,
-    type LucideIcon
-} from 'lucide-react';
+
+
 import { createStickerPublic, uploadFileAction } from '@/server/actions/public/stickers.actions';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
-import MediaAsset from '@/components/ui/media/MediaAsset';
 
 const StickerMap = dynamic(() => import('@/components/ui/maps/StickerMap'), {
     ssr: false,
@@ -26,8 +15,12 @@ const StickerMap = dynamic(() => import('@/components/ui/maps/StickerMap'), {
     )
 });
 
-import { type EnrichedUser } from '@/types/auth';
+import StickerStats from './map/StickerStats';
+import StickerFilters from './map/StickerFilters';
+import StickerActionPanel from './map/StickerActionPanel';
+import AddStickerModal from './map/AddStickerModal';
 
+import { type EnrichedUser } from '@/types/auth';
 import { type StickerPublic } from '@salvemundi/validations';
 
 interface StickerMapIslandProps {
@@ -43,8 +36,6 @@ export default function StickerMapIsland({
     const [stickers, setStickers] = useState(initialStickers);
     const [isPending, startTransition] = useTransition();
     const [isLocating, setIsLocating] = useState(false);
-
-
 
     // UI State
     const [showAddModal, setShowAddModal] = useState(false);
@@ -164,26 +155,8 @@ export default function StickerMapIsland({
 
     return (
         <div className="space-y-8 animate-in fade-in duration-700">
-            {/* Stats Header Area */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <StatCard label="Totaal" value={stickers.length} icon={MapIcon} color="text-purple-500" />
-                <StatCard label="Landen" value={new Set(stickers.map((s: StickerPublic) => s.country?.toLowerCase()).filter(Boolean)).size} icon={Globe} color="text-blue-500" />
-                <StatCard label="Steden" value={new Set(stickers.map((s: StickerPublic) => s.city?.toLowerCase()).filter(Boolean)).size} icon={Award} color="text-green-500" />
-                <StatCard
-                    label="Top Land"
-                    value={(() => {
-                        const counts: Record<string, number> = {};
-                        stickers.forEach(s => {
-                            if (s.country) counts[s.country] = (counts[s.country] || 0) + 1;
-                        });
-                        return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || '..';
-                    })()}
-                    icon={TrendingUp}
-                    color="text-orange-500"
-                />
-            </div>
+            <StickerStats stickers={stickers} />
 
-            {/* Map Container - LOCKED GEOMETRY */}
             <div className="relative group min-h-[600px]">
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-orange-500/10 blur-3xl -z-10 group-hover:from-purple-500/20 group-hover:to-orange-500/20 transition-all duration-1000" />
 
@@ -198,178 +171,33 @@ export default function StickerMapIsland({
 
                 {/* Floating Controls */}
                 <div className="absolute top-4 left-4 right-4 md:right-auto md:w-80 space-y-3 pointer-events-none">
-                    <div className="bg-[var(--bg-card)]/90 backdrop-blur-md rounded-2xl p-4 shadow-2xl pointer-events-auto border border-white/10">
-                        <div className="flex items-center gap-2 mb-3">
-                            <Search className="h-4 w-4 text-[var(--theme-purple)]" />
-                            <h3 className="text-xs font-black uppercase tracking-widest text-[var(--text-main)]">Filteren</h3>
-                        </div>
-                        <div className="space-y-3">
-                            <input
-                                type="text"
-                                placeholder="Land..."
-                                value={filterCountry}
-                                onChange={(e) => setFilterCountry(e.target.value)}
-                                suppressHydrationWarning
-                                className="w-full bg-[var(--bg-main)]/50 border border-[var(--border-color)]/30 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-[var(--theme-purple)]/50 transition-all outline-none"
-                            />
-                            <input
-                                type="text"
-                                placeholder="Stad..."
-                                value={filterCity}
-                                onChange={(e) => setFilterCity(e.target.value)}
-                                suppressHydrationWarning
-                                className="w-full bg-[var(--bg-main)]/50 border border-[var(--border-color)]/30 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-[var(--theme-purple)]/50 transition-all outline-none"
-                            />
-                        </div>
-                    </div>
+                    <StickerFilters
+                        filterCountry={filterCountry}
+                        setFilterCountry={setFilterCountry}
+                        filterCity={filterCity}
+                        setFilterCity={setFilterCity}
+                    />
 
-                    {user ? (
-                        <div className="bg-[var(--bg-card)]/90 backdrop-blur-md rounded-2xl p-4 shadow-2xl pointer-events-auto border border-white/10">
-                            <button
-                                onClick={handlePlaceSticker}
-                                disabled={isLocating}
-                                className="w-full py-3 bg-gradient-to-r from-[var(--theme-purple)] to-orange-500 text-white rounded-xl shadow-lg hover:shadow-xl transition-all font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 disabled:opacity-50"
-                            >
-                                {isLocating ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapIcon className="h-4 w-4" />}
-                                Ik ben hier! 📍
-                            </button>
-                            <p className="text-[9px] text-[var(--text-muted)] mt-2 text-center uppercase font-bold tracking-tighter italic">
-                                Plak een sticker op je huidige GPS locatie
-                            </p>
-                        </div>
-                    ) : (
-                        <div className="bg-orange-500/90 backdrop-blur-md text-white rounded-2xl p-4 shadow-2xl pointer-events-auto flex items-start gap-3 border border-white/20">
-                            <div className="p-2 bg-white/20 rounded-lg">
-                                <Plus className="h-5 w-5" />
-                            </div>
-                            <div>
-                                <p className="text-xs font-black uppercase tracking-tight">Login om ook te plakken!</p>
-                                <p className="text-[10px] opacity-80 mt-1">Alleen leden kunnen nieuwe locaties toevoegen aan de wereldkaart.</p>
-                            </div>
-                        </div>
-                    )}
+                    <StickerActionPanel
+                        user={user}
+                        isLocating={isLocating}
+                        onPlaceSticker={handlePlaceSticker}
+                    />
                 </div>
             </div>
 
-            {/* Add Sticker Modal */}
-            {showAddModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl animate-in fade-in duration-300">
-                    <div className="bg-[var(--bg-card)] rounded-3xl w-full max-w-xl shadow-2xl border border-white/10 overflow-hidden">
-                        <div className="bg-gradient-to-r from-[var(--theme-purple)] to-[var(--theme-purple-dark)] p-6 text-white flex justify-between items-center">
-                            <div>
-                                <h2 className="text-2xl font-black uppercase tracking-tighter italic">Nieuwe Sticker <span className="text-white/70">Plakken</span></h2>
-                                <p className="text-[10px] uppercase tracking-widest font-black opacity-80 mt-1">Locatie geselecteerd op kaart</p>
-                            </div>
-                            <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-white/20 rounded-xl transition-colors">
-                                <X className="h-6 w-6" />
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleSubmit} className="p-8 space-y-6">
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-2 ml-1">Naam van de Locatie</label>
-                                    <input
-                                        required
-                                        type="text"
-                                        placeholder="Bijv. Eiffeltoren, Fontys R10..."
-                                        value={formData.location_name}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, location_name: e.target.value }))}
-                                        suppressHydrationWarning
-                                        className="w-full bg-[var(--bg-main)]/50 border border-[var(--border-color)]/30 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all outline-none"
-                                    />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-2 ml-1">Stad</label>
-                                        <input
-                                            required
-                                            type="text"
-                                            placeholder="Eindhoven"
-                                            value={formData.city}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-                                            suppressHydrationWarning
-                                            className="w-full bg-[var(--bg-main)]/50 border border-[var(--border-color)]/30 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all outline-none"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-2 ml-1">Land</label>
-                                        <input
-                                            required
-                                            type="text"
-                                            placeholder="Nederland"
-                                            value={formData.country}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
-                                            suppressHydrationWarning
-                                            className="w-full bg-[var(--bg-main)]/50 border border-[var(--border-color)]/30 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all outline-none"
-                                        />
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-2 ml-1">Beschrijving</label>
-                                    <textarea
-                                        rows={3}
-                                        placeholder="Wat een mooie plek voor een Salve sticker!"
-                                        value={formData.description}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                                        className="w-full bg-[var(--bg-main)]/50 border border-[var(--border-color)]/30 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all outline-none resize-none"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-2 ml-1">Foto Bewijs</label>
-                                    <div className="relative group/photo">
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleImageChange}
-                                            className="hidden"
-                                            id="photo-upload"
-                                        />
-                                        <label
-                                            htmlFor="photo-upload"
-                                            className="cursor-pointer flex flex-col items-center justify-center w-full h-40 bg-[var(--bg-main)]/30 border-2 border-dashed border-[var(--border-color)]/50 rounded-2xl hover:border-[var(--theme-purple)]/50 hover:bg-[var(--theme-purple)]/5 transition-all group-hover/photo:shadow-inner overflow-hidden"
-                                        >
-                                            {imagePreview ? (
-                                                <MediaAsset asset={imagePreview} className="w-full h-full object-cover" alt="Preview" fill />
-                                            ) : (
-                                                <>
-                                                    <Camera className="h-8 w-8 text-[var(--text-muted)] mb-2" />
-                                                    <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Foto Selecteren</span>
-                                                </>
-                                            )}
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button
-                                type="submit"
-                                disabled={isPending}
-                                className="w-full py-4 bg-gradient-to-r from-[var(--theme-purple)] to-orange-500 text-white rounded-2xl shadow-xl shadow-purple-500/20 hover:shadow-2xl hover:shadow-purple-500/30 transition-all font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
-                            >
-                                {isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Plus className="h-5 w-5" />}
-                                Sticker Registreren
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            )}
+            <AddStickerModal
+                show={showAddModal}
+                onClose={() => setShowAddModal(false)}
+                onSubmit={handleSubmit}
+                isPending={isPending}
+                formData={formData}
+                setFormData={setFormData}
+                handleImageChange={handleImageChange}
+                imagePreview={imagePreview}
+            />
             <AdminToast toast={toast} onClose={hideToast} />
         </div>
     );
 }
 
-function StatCard({ label, value, icon: Icon, color }: { label: string; value: number | string; icon: LucideIcon; color: string }) {
-    return (
-        <div className="bg-[var(--bg-card)] rounded-2xl p-4 shadow-xl border border-white/5 flex items-center justify-between">
-            <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">{label}</p>
-                <p className="text-2xl font-black text-[var(--text-main)] tracking-tighter uppercase">{value}</p>
-            </div>
-            <div className={`p-2 rounded-xl bg-slate-500/10 ${color}`}>
-                <Icon className="h-5 w-5" />
-            </div>
-        </div>
-    );
-}

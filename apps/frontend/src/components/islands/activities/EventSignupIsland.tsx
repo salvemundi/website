@@ -1,17 +1,14 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { signupForActivity } from '@/server/actions/events/public-activiteit.actions';
-import { eventSignupFormSchema, type EventSignupForm } from '@salvemundi/validations/schema/activity.zod';
-import { FormField } from '@/shared/ui/FormField';
-import { Input } from '@/shared/ui/Input';
-import { PhoneInput } from '@/shared/ui/PhoneInput';
-import { Loader2, CheckCircle2, AlertCircle, CreditCard, Send, Users, Ticket, Info } from 'lucide-react';
-import QRDisplay from '@/shared/ui/QRDisplay';
+import { type EventSignupForm } from '@salvemundi/validations/schema/activity.zod';
 import { formatPhoneNumber } from '@/lib/utils/phone-utils';
 import { type EnrichedUser } from '@/types/auth';
+
+import StatusSignedUp from './signup/StatusSignedUp';
+import StatusPast from './signup/StatusPast';
+import SignupFormContent from './signup/SignupFormContent';
 
 interface EventSignupIslandProps {
     id?: number | string;
@@ -59,24 +56,6 @@ export default function EventSignupIsland({
     const isPaid = price > 0;
     const isPast = serverIsPast || clientIsPast;
 
-    const {
-        register,
-        control,
-        handleSubmit,
-        formState: { errors }
-    } = useForm<EventSignupForm>({
-        resolver: zodResolver(eventSignupFormSchema),
-        defaultValues: {
-            event_id: eventId,
-            name: user?.name || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : ''),
-            email: user?.email || '',
-            phoneNumber: formatPhoneNumber(user?.phone_number || ''),
-            website: ''
-        }
-    });
-
-
-
     const onSubmit = async (data: EventSignupForm) => {
         setServerError(null);
 
@@ -102,14 +81,10 @@ export default function EventSignupIsland({
         });
     };
 
-    // Skeletons verwijderd om browser autofill niet te blokkeren. 
-    // Het formulier staat nu direct in de HTML.
-
-
     if (signupStatus.isSignedUp && (signupStatus.paymentStatus === 'paid' || signupStatus.paymentStatus === 'open')) {
         const isPaidStatus = signupStatus.paymentStatus === 'paid';
 
-        const onRetry = async () => {
+        const handleRetry = async () => {
             const urlParams = new URLSearchParams(window.location.search);
             const signupId = signupStatus.signupId || Number(urlParams.get('id'));
 
@@ -132,186 +107,33 @@ export default function EventSignupIsland({
         };
 
         return (
-            <div className={`h-full flex flex-col justify-center space-y-8 p-8 rounded-[2rem] bg-[var(--bg-card)] border ${isPaidStatus ? 'border-[var(--color-success)]/30' : 'border-amber-500/30'} shadow-2xl transition-all duration-500`}>
-                <div className="text-center space-y-4">
-                    <div className={`w-20 h-20 ${isPaidStatus ? 'bg-[var(--color-success)]/10' : 'bg-amber-500/10'} rounded-full flex items-center justify-center mx-auto shadow-inner`}>
-                        {isPaidStatus ? (
-                            <CheckCircle2 className="h-10 w-10 text-[var(--color-success)]" />
-                        ) : (
-                            <CreditCard className="h-10 w-10 text-amber-500" />
-                        )}
-                    </div>
-                    <h3 className="text-3xl font-semibold text-[var(--text-main)] leading-tight">
-                        {isPaidStatus ? '🎉 Aanmelding Definitief!' : '💳 Betaling Gestart'}
-                    </h3>
-                    <p className="text-[var(--text-muted)] font-medium">
-                        {isPaidStatus
-                            ? <>Je bent succesvol aangemeld voor <span className="text-[var(--theme-purple)] font-semibold">{eventName}</span>.</>
-                            : <>Je aanmelding voor <span className="text-[var(--theme-purple)] font-semibold">{eventName}</span> is in afwachting van betaling.</>
-                        }
-                    </p>
-                    {!isPaidStatus && (
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <p className="text-[10px]  font-semibold text-amber-600 tracking-widest bg-amber-500/10 px-4 py-2.5 rounded-xl border border-amber-500/20 inline-block">
-                                    Wachten op bevestiging van betaling...
-                                </p>
-                                <p className="text-[11px] font-bold text-[var(--text-muted)] opacity-70 max-w-xs mx-auto">
-                                    Zodra de betaling is afgerond verschijnt hier je digitale ticket. Dit kan enkele minuten duren.
-                                </p>
-                            </div>
-
-                            <button
-                                onClick={onRetry}
-                                className="w-full h-14 bg-amber-500 text-white font-semibold rounded-2xl shadow-lg shadow-amber-500/20 hover:shadow-xl hover:shadow-amber-500/40 hover:-translate-y-0.5 active:scale-95 transition-all flex items-center justify-center gap-3  text-[10px] tracking-widest"
-                            >
-                                <CreditCard className="h-4 w-4" />
-                                <span>Betaal Nu</span>
-                            </button>
-
-                            {serverError && (
-                                <div className="p-4 rounded-2xl bg-red-50 border border-red-100 flex items-start gap-3 mt-4">
-                                    <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
-                                    <p className="text-xs text-red-700 font-bold italic">{serverError}</p>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
-
-                {isPaidStatus ? (
-                    <div className="relative group p-8 bg-[var(--bg-soft)] rounded-[2.5rem] border border-[var(--border-color)]/60 flex flex-col items-center transition-all hover:bg-[var(--bg-card)] animate-in fade-in zoom-in duration-700">
-                        <div className="p-3 bg-white rounded-3xl shadow-xl ring-1 ring-black/5">
-                            <QRDisplay qrToken={signupStatus.qrToken || 'PENDING_VERIFICATION'} size={240} />
-                        </div>
-                        <div className="mt-6 flex items-center gap-2 text-[10px]  font-semibold text-[var(--text-muted)] opacity-60 tracking-[0.2em]">
-                            <Ticket className="h-3 w-3" /> Toon bij de ingang
-                        </div>
-                    </div>
-                ) : (
-                    <div className="p-8 bg-[var(--bg-soft)]/50 rounded-[2.5rem] border border-dashed border-[var(--border-color)] flex flex-col items-center justify-center space-y-4 opacity-60">
-                        <div className="w-48 h-48 bg-white/5 rounded-3xl flex items-center justify-center border border-[var(--border-color)]/30">
-                            <Ticket className="h-16 w-16 text-[var(--text-muted)] opacity-20" />
-                        </div>
-                        <p className="text-[10px] font-semibold  tracking-widest text-[var(--text-muted)]">Ticket wordt gegenereerd na betaling</p>
-                    </div>
-                )}
-            </div>
+            <StatusSignedUp
+                isPaidStatus={isPaidStatus}
+                eventName={eventName}
+                qrToken={signupStatus.qrToken}
+                onRetry={handleRetry}
+                serverError={serverError}
+            />
         );
     }
 
     if (isPast) {
-        return (
-            <div className="h-full flex flex-col justify-center items-center p-12 rounded-[2.5rem] bg-[var(--bg-soft)]/50 border border-dashed border-[var(--border-color)] text-center space-y-4">
-                <AlertCircle className="h-12 w-12 text-[var(--text-muted)] opacity-20" />
-                <div>
-                    <h3 className="text-xl font-semibold text-[var(--text-muted)] opacity-40  tracking-widest italic">Activiteit Afgelopen</h3>
-                    <p className="text-xs text-[var(--text-muted)] opacity-30 font-bold  tracking-tight max-w-[200px] mx-auto mt-2">Helaas kun je je voor deze activiteit niet meer aanmelden.</p>
-                </div>
-            </div>
-        );
+        return <StatusPast />;
     }
 
     return (
-        <div className={`h-full flex flex-col p-8 rounded-[2rem] bg-[var(--bg-card)] border border-[var(--border-color)] shadow-2xl group transition-all duration-500 hover:shadow-[var(--theme-purple)]/10`}>
-            <div className="flex justify-between items-start mb-8">
-                <div>
-                    <h3 className="text-2xl font-semibold text-[var(--theme-purple)] flex items-center gap-3">
-                        <Users className="h-6 w-6" /> Aanmelden
-                    </h3>
-                    <p className="text-[10px]  font-semibold text-[var(--text-muted)] tracking-[0.2em] mt-1 ml-9">Activiteit Tickets</p>
-                </div>
-                <div className="text-right">
-                    <span className="block text-[10px]  font-semibold text-[var(--text-muted)] tracking-[0.2em] mb-1">Prijs</span>
-                    <span className="text-2xl font-semibold text-[var(--theme-purple)]">€{price.toFixed(2)}</span>
-                </div>
-            </div>
-
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 flex-1 flex flex-col" autoComplete="off">
-
-                <div className="space-y-4 flex-1">
-                    <FormField
-                        id="field-name"
-                        label="Naam"
-                        required
-                        error={errors.name?.message}
-                        labelClassName="text-[10px]  font-semibold text-[var(--theme-purple)]/50 ml-3 tracking-widest"
-                    >
-                        <Input
-                            {...register('name')}
-                            id="field-name"
-                            placeholder="Naam Achternaam"
-                            className="bg-[var(--bg-soft)] border-none rounded-2xl h-14 px-6 focus:ring-2 focus:ring-[var(--theme-purple)]/20 transition-all font-bold text-[var(--text-main)]"
-                        />
-                    </FormField>
-
-                    <FormField
-                        id="field-email"
-                        label="Email"
-                        required
-                        error={errors.email?.message}
-                        labelClassName="text-[10px]  font-semibold text-[var(--theme-purple)]/50 ml-3 tracking-widest"
-                    >
-                        <Input
-                            {...register('email')}
-                            id="field-email"
-                            type="email"
-                            placeholder="voorbeeld@mail.com"
-                            className="bg-[var(--bg-soft)] border-none rounded-2xl h-14 px-6 focus:ring-2 focus:ring-[var(--theme-purple)]/20 transition-all font-bold text-[var(--text-main)]"
-                        />
-                    </FormField>
-
-                    <FormField
-                        id="field-phoneNumber"
-                        label="Telefoonnummer"
-                        required
-                        error={errors.phoneNumber?.message}
-                        labelClassName="text-[10px]  font-semibold text-[var(--theme-purple)]/50 ml-3 tracking-widest"
-                    >
-                        <Controller
-                            name="phoneNumber"
-                            control={control}
-                            render={({ field }) => (
-                                <PhoneInput
-                                    {...field}
-                                    id="field-phoneNumber"
-                                    className="bg-[var(--bg-soft)] border-none rounded-2xl h-14 px-6 focus:ring-2 focus:ring-[var(--theme-purple)]/20 transition-all font-bold text-[var(--text-main)]"
-                                />
-                            )}
-                        />
-                    </FormField>
-                </div>
-
-                {serverError && (
-                    <div className="p-4 rounded-2xl bg-red-50 border border-red-100 flex items-start gap-3">
-                        <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
-                        <p className="text-xs text-red-700 font-bold italic">{serverError}</p>
-                    </div>
-                )}
-
-                <div className="pt-4 space-y-4">
-                    <button
-                        type="submit"
-                        disabled={isPending}
-                        className="w-full relative group h-16 bg-gradient-to-br from-[var(--theme-purple)] via-[var(--color-purple-600)] to-[var(--theme-purple)] bg-[length:200%_auto] hover:bg-[position:right_center] text-white font-black rounded-2xl shadow-xl shadow-[var(--theme-purple)]/20 hover:shadow-2xl hover:shadow-[var(--theme-purple)]/40 hover:-translate-y-1 active:scale-95 transition-all duration-500 disabled:opacity-70"
-                    >
-                        <div className="flex items-center justify-center gap-3">
-                            {isPending ? (
-                                <><Loader2 className="h-6 w-6 animate-spin" /><span className="tracking-widest">VERWERKEN...</span></>
-                            ) : (
-                                <>{isPaid ? <CreditCard className="h-6 w-6" /> : <Send className="h-6 w-6" />}
-                                    <span className="tracking-widest">AANMELDEN (€{price.toFixed(2).replace('.', ',')})</span></>
-                            )}
-                        </div>
-                    </button>
-                    <div className="flex items-center justify-center gap-2 text-[10px] font-black text-[var(--text-muted)] opacity-50 uppercase tracking-tighter">
-                        <Info className="h-3 w-3" /> <span>Beveiligid verwerking & Directe bevestiging</span>
-                    </div>
-                </div>
-                {/* Honeypot at bottom to avoid breaking browser autofill sections */}
-                <input {...register('website')} type="text" className="hidden" tabIndex={-1} autoComplete="off" suppressHydrationWarning />
-            </form>
-        </div>
+        <SignupFormContent
+            onSubmit={onSubmit}
+            isPending={isPending}
+            price={price}
+            initialData={{
+                event_id: eventId,
+                name: user?.name || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : ''),
+                email: user?.email || '',
+                phoneNumber: formatPhoneNumber(user?.phone_number || '')
+            }}
+            serverError={serverError}
+        />
     );
 }
 

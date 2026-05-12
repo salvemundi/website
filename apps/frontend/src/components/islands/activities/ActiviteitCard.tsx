@@ -1,13 +1,14 @@
 'use client';
 
 import React from 'react';
-import MediaAsset from '@/components/ui/media/MediaAsset';
-import { Calendar } from 'lucide-react';
 import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import { formatDate as coreFormatDate } from '@/shared/lib/utils/date';
 import { type MembershipUserData } from '@/components/islands/account/MembershipStatusIsland';
+
+import ActiviteitGridCard from './card/ActiviteitGridCard';
+import ActiviteitListCard from './card/ActiviteitListCard';
 
 interface ActiviteitCardProps {
     id?: number | string;
@@ -106,207 +107,46 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     const end = endTime ? endTime.split(':').slice(0, 2).join(':') : null;
     const timeRange = start ? (end ? `${start} - ${end}` : start) : null;
 
-    if (isListVariant) {
-        return (
-            <div
-                onClick={onShowDetails}
-                className={`group relative z-0 overflow-hidden w-full rounded-2xl bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-0 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 flex flex-col md:flex-row ${isPast ? 'opacity-60 filter grayscale' : ''}`}
-            >
-                {/* Image Section */}
-                <div className="relative w-full md:w-64 aspect-video flex-shrink-0 overflow-hidden">
-                    {image ? (
-                        <MediaAsset
-                            asset={image}
-                            alt={title}
-                            fill
-                            sizes="(max-width: 768px) 100vw, 300px"
-                            className="object-contain"
-                        />
-                    ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-transparent">
-                            <Calendar className="h-8 w-8 text-[var(--theme-purple)]/20" />
-                        </div>
-                    )}
-                </div>
-
-                <div className="p-5 flex-1 flex flex-col">
-                    <div className="relative z-10 flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-8 flex-1">
-                        <div className="flex-1 min-w-[200px]">
-                            <div className="flex items-center gap-2 mb-2">
-                                <span className="text-[10px] uppercase tracking-widest text-[var(--theme-purple)] font-black bg-[var(--theme-purple)]/10 px-2 py-0.5 rounded-md">
-                                    {committeeLabel}
-                                </span>
-                                {onlyMembers && (
-                                    <span className="text-[10px] uppercase tracking-widest text-amber-600 font-black bg-amber-50 px-2 py-0.5 rounded-md">
-                                        Leden
-                                    </span>
-                                )}
-                            </div>
-                            <h3 className="text-xl font-black text-[var(--theme-purple)]/90 leading-tight group-hover:text-[var(--theme-purple)] transition-colors line-clamp-2 break-words" title={title}>
-                                {title}
-                            </h3>
-                            {description && (
-                                <p className="hidden md:block text-[var(--text-muted)] text-sm line-clamp-2 mt-2 leading-relaxed pr-4">
-                                    {description}
-                                </p>
-                            )}
-                            {contact && (
-                                <p className="text-xs text-[var(--text-muted)] mt-2 flex items-center gap-1">
-                                    <span className="font-bold opacity-70">Contact:</span>
-                                    <span>{contact}</span>
-                                </p>
-                            )}
-                        </div>
-
-                        <div className="flex flex-row items-center gap-6 lg:gap-10">
-                            <div className="text-left lg:text-right min-w-[140px] flex-shrink-0">
-                                <p className="text-[10px] font-black text-[var(--theme-purple)]/40 uppercase tracking-widest mb-1 leading-none">Datum & Tijd</p>
-                                <div className="space-y-0.5">
-                                    <p className="text-sm font-bold text-[var(--theme-purple)]/80 whitespace-nowrap">
-                                        {displayDate}
-                                    </p>
-                                    <p className="text-xs font-medium text-[var(--text-muted)] whitespace-nowrap overflow-hidden text-ellipsis max-w-[180px]">
-                                        {timeRange || 'Tijd volgt'} • {location || 'Locatie volgt'}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="bg-[var(--bg-soft)] px-4 py-2 rounded-xl border border-[var(--border-color)] text-center min-w-[80px] ml-auto">
-                                <p className="text-[10px] font-black text-[var(--theme-purple)]/40 uppercase tracking-widest mb-0.5">Prijs</p>
-                                <p className="text-lg font-black text-[var(--theme-purple)]">€{safePrice}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex flex-wrap justify-end gap-2 mt-4 pt-4 border-t border-[var(--border-color)]/10">
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onShowDetails?.();
-                            }}
-                            className="px-4 py-2 text-sm font-semibold rounded-full text-[var(--theme-purple)] hover:bg-[var(--theme-purple)] hover:text-[var(--color-white)] transition"
-                        >
-                            MEER INFO
-                        </button>
-
-                        {!isPast && (
-                            <button
-                                onClick={handleSignupClick}
-                                className={`${cannotSignUp ? 'bg-[var(--color-purple-100)] text-[var(--text-muted)] cursor-not-allowed' : 'bg-[var(--theme-purple)] text-[var(--color-white)] shadow-lg shadow-[var(--theme-purple)]/30 hover:-translate-y-0.5 hover:shadow-xl'} px-4 py-2 text-sm font-semibold rounded-full transition-transform`}
-                                disabled={cannotSignUp}
-                            >
-                                {alreadySignedUp ? 'AL AANGEMELD' : isDeadlinePassed ? 'AANMELDING GESLOTEN' : 'AANMELDEN'}
-                            </button>
-                        )}
-                    </div>
-                </div>
-                <AdminToast toast={toast} onClose={hideToast} />
-            </div>
-        );
-    }
-
-    // Grid Variant
     return (
-        <div
-            onClick={onShowDetails}
-            className={`group relative z-0 overflow-hidden w-full rounded-[1.75rem] bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-0 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 ${isPast ? 'opacity-60 filter grayscale' : ''}`}
-        >
-            <div className="relative z-10 w-full aspect-video mb-0 overflow-hidden">
-                {image ? (
-                    <MediaAsset
-                        asset={image}
-                        alt={title}
-                        fill
-                        sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
-                        className="object-contain"
-                    />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-transparent">
-                        <Calendar className="h-12 w-12 text-[var(--theme-purple)]/20" />
-                    </div>
-                )}
-                {!isPast && (
-                    <div className="absolute top-4 right-4 z-20 flex flex-col gap-2 items-end">
-                        <span className="bg-[var(--theme-purple)] text-[var(--color-white)] text-[10px] font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider backdrop-blur-md">
-                            {committeeLabel}
-                        </span>
-                        {onlyMembers && (
-                            <span className="bg-[var(--theme-warning)] text-[var(--color-white)] text-[10px] font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider backdrop-blur-md">
-                                Leden Alleen
-                            </span>
-                        )}
-                    </div>
-                )}
-            </div>
-
-            <div className="p-5 flex flex-col flex-grow relative z-10 space-y-3">
-                <h3 className="text-xl font-bold text-[var(--theme-purple)]/80 leading-snug line-clamp-2 break-words">
-                    {title}
-                </h3>
-
-                <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2 text-sm text-[var(--theme-purple)]/80 font-bold">
-                        <Calendar className="h-4 w-4" />
-                        <span>{displayDate}</span>
-                    </div>
-                    {timeRange && (
-                        <p className="text-sm text-[var(--text-muted)] ml-6 font-medium">
-                            {timeRange}
-                        </p>
-                    )}
-                </div>
-
-                <p className="text-[var(--text-muted)] text-sm line-clamp-3 leading-relaxed">
-                    {description}
-                </p>
-
-                <div className="flex items-center justify-between pt-4 mt-auto border-t border-[var(--border-color)]">
-                    <div className="flex flex-col">
-                        <span className="text-[10px] uppercase font-bold text-[var(--theme-purple)]/50">Prijs</span>
-                        <span className="text-lg font-bold text-[var(--theme-purple)]/80">€{safePrice}</span>
-                    </div>
-
-                    <div className="flex gap-2">
-                        {!isPast && (
-                            <button
-                                onClick={handleSignupClick}
-                                className={`${cannotSignUp ? 'bg-[var(--theme-purple)]/10 text-[var(--theme-purple)]/40 cursor-not-allowed' : 'bg-[var(--theme-purple)] text-[var(--color-white)] shadow-lg shadow-[var(--theme-purple)]/20 hover:scale-105'} p-2 rounded-full transition-all`}
-                                disabled={cannotSignUp}
-                                title={alreadySignedUp ? 'Al aangemeld' : 'Aanmelden'}
-                            >
-                                {alreadySignedUp ? (
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                        <polyline points="20 6 9 17 4 12" />
-                                    </svg>
-                                ) : (
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                                        <circle cx="9" cy="7" r="4" />
-                                        <line x1="19" y1="8" x2="19" y2="14" />
-                                        <line x1="22" y1="11" x2="16" y2="11" />
-                                    </svg>
-                                )}
-                            </button>
-                        )}
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onShowDetails?.();
-                            }}
-                            className="p-2 rounded-full bg-[var(--bg-soft)] text-[var(--theme-purple)] hover:scale-105 transition-all"
-                            title="Meer info"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="12" cy="12" r="10" />
-                                <line x1="12" y1="16" x2="12" y2="12" />
-                                <line x1="12" y1="8" x2="12.01" y2="8" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
+        <>
+            {isListVariant ? (
+                <ActiviteitListCard
+                    title={title}
+                    image={image ?? null}
+                    displayDate={displayDate}
+                    timeRange={timeRange}
+                    location={location ?? null}
+                    description={description}
+                    safePrice={safePrice}
+                    committeeLabel={committeeLabel}
+                    onlyMembers={onlyMembers}
+                    isPast={isPast}
+                    cannotSignUp={cannotSignUp}
+                    alreadySignedUp={alreadySignedUp}
+                    isDeadlinePassed={isDeadlinePassed}
+                    contact={contact}
+                    handleSignupClick={handleSignupClick}
+                    onShowDetails={onShowDetails}
+                />
+            ) : (
+                <ActiviteitGridCard
+                    title={title}
+                    image={image ?? null}
+                    displayDate={displayDate}
+                    timeRange={timeRange}
+                    description={description}
+                    safePrice={safePrice}
+                    committeeLabel={committeeLabel}
+                    onlyMembers={onlyMembers}
+                    isPast={isPast}
+                    cannotSignUp={cannotSignUp}
+                    alreadySignedUp={alreadySignedUp}
+                    handleSignupClick={handleSignupClick}
+                    onShowDetails={onShowDetails}
+                />
+            )}
             <AdminToast toast={toast} onClose={hideToast} />
-        </div>
+        </>
     );
 };
 
