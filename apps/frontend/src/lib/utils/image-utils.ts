@@ -6,7 +6,7 @@
  */
 export function getImageUrl(
     idOrObject?: string | { id: string } | null, 
-    options?: { width?: number; height?: number; fit?: string }
+    options?: { width?: number; height?: number; fit?: string; quality?: number }
 ): string {
     const DEFAULT_FALLBACK = '/img/newlogo.svg';
 
@@ -24,6 +24,7 @@ export function getImageUrl(
     if (options?.width) params.append('width', options.width.toString());
     if (options?.height) params.append('height', options.height.toString());
     if (options?.fit) params.append('fit', options.fit);
+    if (options?.quality) params.append('quality', options.quality.toString());
     
     const query = params.toString();
     return `/api/assets/${id}${query ? `?${query}` : ''}`;

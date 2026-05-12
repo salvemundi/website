@@ -80,7 +80,7 @@ export default function MediaAsset({
             sizes={sizes}
             priority={priority}
             loading={loading}
-            unoptimized={!shouldOptimize}
+            unoptimized={!shouldOptimize || (!!width && !!height)}
             style={fill ? { objectFit: 'cover' } : undefined}
         />
     );
