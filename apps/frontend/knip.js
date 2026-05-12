@@ -6,7 +6,9 @@ const config = {
   },
   ignoreDependencies: [
     'eslint-config-next',
-    'sharp'
+    'sharp',
+    '@serwist/sw',
+    '@serwist/webpack-plugin'
   ],
   ignoreExportsUsedInFile: true,
 };
