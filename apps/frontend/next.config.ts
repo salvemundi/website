@@ -5,14 +5,11 @@ import withBundleAnalyzer from '@next/bundle-analyzer';
 const nextConfig: NextConfig = {
     output: 'standalone',
     poweredByHeader: false,
-    // @ts-ignore - cacheComponents is a top-level property in Next.js 16
     cacheComponents: false,
     productionBrowserSourceMaps: false,
     serverExternalPackages: ['isomorphic-dompurify', 'jsdom'],
     experimental: {
         serverSourceMaps: true,
-        // webpackBuildWorker: true,
-        // workerThreads: true,
         optimizePackageImports: ['lucide-react', 'date-fns', 'framer-motion']
     },
     staticPageGenerationTimeout: 60,
@@ -47,15 +44,6 @@ const nextConfig: NextConfig = {
     },
     async headers() {
         return [
-            {
-                source: '/_next/static/:path*',
-                headers: [
-                    {
-                        key: 'Cache-Control',
-                        value: 'public, max-age=31536000, immutable',
-                    },
-                ],
-            },
             {
                 source: '/:path*',
                 headers: [
@@ -127,7 +115,9 @@ const withSerwist = withSerwistInit({
     disable: process.env.NODE_ENV !== 'production',
 });
 
-const withAnalyzer = withBundleAnalyzer({ enabled: process.env.ANALYZE === 'true', openAnalyzer: true });
+const withAnalyzer = withBundleAnalyzer({
+    enabled: process.env.ANALYZE === 'true',
+    openAnalyzer: false
+});
 
-// export default nextConfig;
 export default withAnalyzer(withSerwist(nextConfig));

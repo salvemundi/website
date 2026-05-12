@@ -14,12 +14,13 @@ import { type EnrichedUser } from '@/types/auth';
 import { type Committee } from '@/shared/lib/permissions';
 
 export const metadata: Metadata = {
-    title: 'Beheer Sync | SV Salve Mundi' };
+    title: 'Beheer Sync | SV Salve Mundi'
+};
 
 async function checkSyncAccess() {
     const session = await getEnrichedSession();
     if (!session || !session.user) return false;
-    
+
     const user = session.user as unknown as EnrichedUser;
     const memberships = (user.committees as Committee[]) || [];
     return memberships.some((c: Committee) => {
@@ -33,10 +34,9 @@ export default async function AzureSyncPage() {
     const hasAccess = await checkSyncAccess();
     if (!hasAccess) redirect('/beheer');
 
-    // NUCLEAR SSR: Pre-fetch sync status to avoid flickering and empty states
     const statusData = await getSyncStatusAction();
-    const initialStatus = statusData && !('success' in statusData && statusData.success === false) 
-        ? statusData 
+    const initialStatus = statusData && !('success' in statusData && statusData.success === false)
+        ? statusData
         : null;
 
     const issuesCount = (initialStatus?.errorCount || 0) + (initialStatus?.warningCount || 0) + (initialStatus?.missingDataCount || 0);
