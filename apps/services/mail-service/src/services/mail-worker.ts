@@ -87,7 +87,7 @@ export class MailWorkerService {
                         }
                     }
                 }
-            } catch (_error) {
+            } catch (error) {
                 console.error('[MailWorker] Loop Error:', error);
                 await new Promise(resolve => setTimeout(resolve, 5000));
             }

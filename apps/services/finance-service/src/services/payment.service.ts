@@ -182,7 +182,7 @@ export class PaymentService {
                 });
                 fastify.log.info(`[FINANCE] Queued Azure membership update for user ${userId}`);
             }
-        } catch (_error) {
+        } catch (error) {
             fastify.log.error(error, `[FINANCE] Azure sync trigger failed for user ${userId}`);
         }
     }

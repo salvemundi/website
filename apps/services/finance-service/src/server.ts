@@ -44,8 +44,8 @@ const start = async () => {
         CacheInvalidationService.startWorker(fastify.redis);
         DirectusRetryService.startWorker(fastify.redis);
         AzureRetryService.startWorker(fastify.redis);
-    } catch (_error) {
-        fastify.log.error(error);
+    } catch (error) {
+        console.error('Finance Service crashed:', error);
         process.exit(1);
     }
 };

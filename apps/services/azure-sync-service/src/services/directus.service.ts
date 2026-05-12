@@ -128,7 +128,7 @@ export class DirectusService {
                 fields: ['is_active']
             }));
             return items?.[0]?.is_active ?? false;
-        } catch (_error) {
+        } catch (error) {
             console.error(`[DirectusService] Error checking flag ${key}:`, error);
             return false;
         }
@@ -142,7 +142,8 @@ export class DirectusService {
         const formData = new FormData();
 
         // Convert Buffer to Blob for the SDK/FormData
-        const blob = new Blob([buffer], { type: contentType });
+        const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer;
+        const blob = new Blob([arrayBuffer], { type: contentType });
         formData.append('file', blob, filename);
 
         try {
@@ -154,7 +155,7 @@ export class DirectusService {
             }));
 
             return fileId;
-        } catch (_error) {
+        } catch (error) {
             console.error(`[DirectusService] Failed to upload avatar for user ${userId}:`, error);
             throw error;
         }

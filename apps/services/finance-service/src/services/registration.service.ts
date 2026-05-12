@@ -74,7 +74,7 @@ export class RegistrationService {
             // 2. Queue Directus Update for shadow-write and retry-safety
             await DirectusRetryService.queueUpdate(redis, targetCollection, registrationId, updateData);
             log.info(`[RegistrationService] Queued Directus update for ${targetCollection} ${registrationId}`);
-        } catch (_error) {
+        } catch (error) {
             log.error(error, `[RegistrationService] Failed to update registration ${registrationId}`);
             throw error;
         }

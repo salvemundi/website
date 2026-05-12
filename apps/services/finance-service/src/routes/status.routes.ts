@@ -63,8 +63,8 @@ export default async function statusRoutes(fastify: FastifyInstance) {
                 ...transaction,
                 signup_id: transaction.registration || transaction.trip_signup || transaction.pub_crawl_signup
             };
-        } catch (_error) {
-            fastify.log.error(error, `[STATUS] Error fetching status for ${id}`);
+        } catch (error) {
+            console.error(`[STATUS] Error fetching status for ${id}:`, error);
             return reply.status(500).send({ error: 'Internal server error' });
         }
     });

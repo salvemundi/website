@@ -13,7 +13,7 @@ export class AuditService {
                     timestamp: new Date().toISOString()
                 }
             }));
-        } catch (_error) {
+        } catch (error) {
             console.warn('[AuditService] Failed to log action:', error);
         }
     }
