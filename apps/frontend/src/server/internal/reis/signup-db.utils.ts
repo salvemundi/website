@@ -154,37 +154,6 @@ export async function fetchTripSignupActivitiesDb(tripId: number): Promise<(Trip
     }
 }
 
-/**
- * Fetches all signups for a specific activity.
- */
-export async function fetchSignupsByActivityIdDb(activityId: number): Promise<{ id: number; selected_options: unknown; trip_signup_id: { id: number; first_name: string; last_name: string; email: string } }[]> {
-    try {
-        const { rows } = await query(
-            `SELECT sa.id, sa.selected_options, 
-                    ts.id as signup_id, ts.first_name, ts.last_name, ts.email
-             FROM trip_signup_activities sa
-             JOIN trip_signups ts ON sa.trip_signup_id = ts.id
-             WHERE sa.trip_activity_id = $1`,
-            [activityId]
-        );
-        return (rows as RawTripSignupActivityRow[]).map(row => ({
-            id: row.id,
-            selected_options: row.selected_options,
-            trip_signup_id: {
-                id: row.signup_id ?? 0,
-                first_name: row.first_name ?? '',
-                last_name: row.last_name ?? '',
-                email: row.email ?? ''
-            }
-        }));
-    } catch (_error) {
-        return [];
-    }
-}
-
-/**
- * Fetches selected activities for a specific registration.
- */
 export async function fetchSelectedSignupActivitiesDb(signupId: number): Promise<TripSignupActivity[]> {
     try {
         const { rows } = await query(
@@ -197,9 +166,6 @@ export async function fetchSelectedSignupActivitiesDb(signupId: number): Promise
     }
 }
 
-/**
- * Creates a new trip signup directly in the database.
- */
 export async function insertTripSignupDb(payload: Partial<TripSignup>): Promise<number | null> {
     try {
         const fields = Object.keys(payload);
@@ -216,9 +182,6 @@ export async function insertTripSignupDb(payload: Partial<TripSignup>): Promise<
     }
 }
 
-/**
- * Updates a trip signup directly in the database.
- */
 export async function updateTripSignupDb(id: number, data: Partial<TripSignup>): Promise<boolean> {
     try {
         const builder = buildUpdateQuery('trip_signups', id, data);
@@ -231,9 +194,6 @@ export async function updateTripSignupDb(id: number, data: Partial<TripSignup>):
     }
 }
 
-/**
- * Deletes a trip signup directly from the database.
- */
 export async function deleteTripSignupDb(id: number): Promise<boolean> {
     try {
         await query(`DELETE FROM trip_signups WHERE id = $1`, [id]);
@@ -242,3 +202,4 @@ export async function deleteTripSignupDb(id: number): Promise<boolean> {
         return false;
     }
 }
+

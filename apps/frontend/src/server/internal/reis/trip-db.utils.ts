@@ -2,14 +2,10 @@
 
 import 'server-only';
 import { query } from '@/lib/database';
-import { buildUpdateQuery } from '@/lib/database/query-builder';
 import { toLocalISOString } from '@/lib/utils/date-utils';
 import { DbTrip as Trip } from '@salvemundi/validations/directus/schema';
-import { RawTripRow, QueryParam } from './types';
+import { RawTripRow } from './types';
 
-/**
- * Fetches all trips with full details directly from the database for management.
- */
 export async function fetchFullTripsDb(): Promise<Trip[]> {
     try {
         const res = await query(
@@ -35,9 +31,6 @@ export async function fetchFullTripsDb(): Promise<Trip[]> {
     }
 }
 
-/**
- * Fetches all trips directly from the database for the admin selector (summary version).
- */
 export async function fetchAllTripsDb(): Promise<Pick<Trip, 'id' | 'name' | 'start_date' | 'end_date' | 'allow_final_payments' | 'is_bus_trip'>[]> {
     try {
         const res = await query(
@@ -59,9 +52,6 @@ export async function fetchAllTripsDb(): Promise<Pick<Trip, 'id' | 'name' | 'sta
     }
 }
 
-/**
- * Fetches a single trip by ID.
- */
 export async function fetchTripByIdDb(tripId: number): Promise<Trip | null> {
     try {
         const { rows } = await query(
@@ -90,43 +80,6 @@ export async function fetchTripByIdDb(tripId: number): Promise<Trip | null> {
     }
 }
 
-/**
- * Updates a trip's basic information directly in the database.
- */
-export async function updateTripDb(id: number, data: Partial<Trip>): Promise<boolean> {
-    try {
-        const builder = buildUpdateQuery('trips', id, data);
-        if (!builder) return true;
-
-        await query(builder.sql, builder.params as QueryParam[]);
-        return true;
-    } catch (_error) {
-        return false;
-    }
-}
-
-/**
- * Creates a new trip directly in the database.
- */
-export async function createTripDb(data: Partial<Trip>): Promise<number | null> {
-    try {
-        const fields = Object.keys(data);
-        const values = Object.values(data);
-        const placeHolders = fields.map((_, i) => `$${i + 1}`).join(', ');
-
-        const res = await query(
-            `INSERT INTO trips (${fields.join(', ')}) VALUES (${placeHolders}) RETURNING id`,
-            values as QueryParam[]
-        );
-        return res.rows[0]?.id || null;
-    } catch (_error) {
-        return null;
-    }
-}
-
-/**
- * Fetches all published or recently completed trips directly from the database.
- */
 export async function fetchPublicTripsDb(): Promise<Trip[]> {
     try {
         const res = await query(
@@ -154,3 +107,4 @@ export async function fetchPublicTripsDb(): Promise<Trip[]> {
         return [];
     }
 }
+

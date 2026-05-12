@@ -18,6 +18,8 @@ const nextConfig: NextConfig = {
     staticPageGenerationTimeout: 60,
     logging: false,
     images: {
+        formats: ['image/avif', 'image/webp'],
+        minimumCacheTTL: 31536000,
         localPatterns: [
             {
                 pathname: '/api/assets/**',
@@ -45,6 +47,15 @@ const nextConfig: NextConfig = {
     },
     async headers() {
         return [
+            {
+                source: '/_next/static/:path*',
+                headers: [
+                    {
+                        key: 'Cache-Control',
+                        value: 'public, max-age=31536000, immutable',
+                    },
+                ],
+            },
             {
                 source: '/:path*',
                 headers: [
@@ -98,13 +109,14 @@ const nextConfig: NextConfig = {
         ];
     },
     transpilePackages: ['better-auth'],
-    webpack: (config) => {
+    webpack: (config, { isServer }) => {
         config.resolve.fallback = {
             ...config.resolve.fallback,
             fs: false,
             net: false,
             tls: false
         };
+        if (!isServer) { config.resolve.alias['core-js'] = false; }
         return config;
     },
 };

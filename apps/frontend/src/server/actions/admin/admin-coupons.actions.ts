@@ -3,14 +3,7 @@
 import { revalidatePath } from 'next/cache';
 
 import { getSystemDirectus } from '@/lib/directus';
-import {
-    readItems,
-    updateItem,
-    deleteItem,
-    createItem
-} from '@directus/sdk';
-import { COUPON_FIELDS } from '@salvemundi/validations/directus/fields';
-
+import { updateItem, deleteItem, createItem } from '@directus/sdk';
 import { AdminResource } from '@/shared/lib/permissions-config';
 import { hasPermission } from '@/shared/lib/permissions';
 import { type EnrichedUser } from '@/types/auth';
@@ -29,33 +22,6 @@ async function checkAccess() {
 }
 
 import { type Coupon } from '@/components/islands/admin/coupons/coupon-types';
-
-export async function getCoupons(): Promise<Coupon[]> {
-    await checkAccess();
-    try {
-        const items = await getSystemDirectus().request(readItems('coupons', {
-            sort: ['-id'],
-            limit: 500,
-            fields: [...COUPON_FIELDS]
-        }));
-        return (items ?? []).map(i => ({
-            ...i,
-            id: Number(i.id),
-            coupon_code: i.coupon_code || '',
-            discount_type: (i.discount_type || 'percentage') as 'fixed' | 'percentage',
-            discount_value: Number(i.discount_value),
-            usage_count: Number(i.usage_count),
-            usage_limit: i.usage_limit ? Number(i.usage_limit) : null,
-            valid_from: i.valid_from || null,
-            valid_until: i.valid_until || null,
-            is_active: !!i.is_active,
-            date_created: i.date_created || undefined
-        } as Coupon));
-    } catch {
-
-        throw new Error('Kon coupons niet ophalen');
-    }
-}
 
 export async function createCoupon(formData: FormData): Promise<{ success: boolean; data?: Coupon; error?: string; fieldErrors?: Record<string, string[]> }> {
     await checkAccess();
@@ -149,4 +115,5 @@ export async function toggleCouponActive(id: number, currentActive: boolean): Pr
         return { success: false, error: 'Bijwerken mislukt' };
     }
 }
+
 

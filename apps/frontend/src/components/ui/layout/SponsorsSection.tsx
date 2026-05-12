@@ -49,6 +49,7 @@ export const SponsorsSection: React.FC<SponsorsSectionProps> = ({
                                         alt="Sponsor Logo"
                                         height={80}
                                         width={160}
+                                        quality={60}
                                         sizes="(max-width: 768px) 120px, 160px"
                                         className="sponsor-logo h-20 w-auto object-contain transition-all duration-300 hover:scale-110"
                                     />

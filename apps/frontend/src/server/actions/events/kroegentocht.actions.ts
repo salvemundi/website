@@ -10,7 +10,7 @@ import {
 
 
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { revalidateTag, unstable_cache as cacheTag } from 'next/cache';
+import { unstable_cache as cacheTag } from 'next/cache';
 import { cache } from 'react';
 import { logAdminAction } from '@/server/actions/infrastructure/audit.actions';
 
@@ -21,7 +21,6 @@ import {
     deletePubCrawlSignupDb,
     createPubCrawlTicketsDb,
     deletePubCrawlTicketsBySignupIdDb,
-    fetchPubCrawlSignupByIdDb,
     fetchPubCrawlEventsDb
 } from '@/server/internal/kroegentocht-db.utils';
 import { query } from '@/lib/database';
@@ -267,28 +266,5 @@ export async function initiateKroegentochtPayment(formData: unknown) {
 
     } catch {
         return { success: false, error: 'An internal error occurred.' };
-    }
-}
-
-
-
-
-
-
-export async function getKroegentochtStatus(signupId: string) {
-    try {
-        const signup = await fetchPubCrawlSignupByIdDb(parseInt(signupId, 10));
-        if (!signup) return { status: 'error' };
-
-        if (signup.payment_status === 'paid') {
-            revalidateTag(`tickets-${signup.email}`, 'max');
-            return { status: 'paid', signup };
-        } else if (['failed', 'canceled', 'expired'].includes(signup.payment_status)) {
-            return { status: 'failed' };
-        }
-
-        return { status: 'open' };
-    } catch {
-        return { status: 'error' };
     }
 }

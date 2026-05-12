@@ -14,7 +14,7 @@ import { AdminResource } from '@/shared/lib/permissions-config';
  */
 export function isSuperAdmin(committees: Committee[] | null | undefined): boolean {
     if (!committees || !Array.isArray(committees)) return false;
-    
+
     // We use the Committees resource as a general "SuperAdmin" check (ICT & Bestuur only)
     return hasPermission(committees, AdminResource.Committees);
 }
@@ -27,16 +27,6 @@ export function isSuperAdmin(committees: Committee[] | null | undefined): boolea
  */
 export function isMemberAdmin(committees: Committee[] | null | undefined): boolean {
     if (!committees || !Array.isArray(committees)) return false;
-    
-    return hasPermission(committees, AdminResource.Users);
-}
 
-/**
- * Checks if a user is a member of any committee.
- * 
- * @param committees List of committees
- * @returns boolean
- */
-export function isCommitteeMember(committees: Committee[] | null | undefined): boolean {
-    return Array.isArray(committees) && committees.length > 0;
+    return hasPermission(committees, AdminResource.Users);
 }

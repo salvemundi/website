@@ -13,13 +13,7 @@ interface PublicPageShellProps {
     hideHeader?: boolean;
 }
 
-/**
- * Standardized Shell for all Public pages.
- * V7.12 Industrial SSR: Clean architecture, zero layout shift.
- * Hydration-based layout shifts are prevented by keeping the shell minimal.
- */
-export default function PublicPageShell({
-    children }: PublicPageShellProps) {
+export default function PublicPageShell({ children }: PublicPageShellProps) {
     return (
         <div className="w-full">
             {children}

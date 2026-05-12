@@ -37,20 +37,20 @@ export default function MediaAsset({
     priority = false,
     loading,
     unoptimized }: MediaAssetProps) {
-    
+
     if (!asset) return null;
 
     const id = typeof asset === 'string' ? asset : asset?.id;
     const type = typeof asset === 'object' ? asset?.type : null;
-    
+
     const url = getImageUrl(id, { width, height });
     if (!url) return null;
 
     // Detection logic
     const isLocalPreview = typeof id === 'string' && (id.startsWith('data:') || id.startsWith('blob:'));
-    const isVideo = type?.startsWith('video/') || 
-                   (typeof id === 'string' && (id.includes('video') || id.match(/\.(mp4|webm|ogg|mov)$/i)));
-    
+    const isVideo = type?.startsWith('video/') ||
+        (typeof id === 'string' && (id.includes('video') || id.match(/\.(mp4|webm|ogg|mov)$/i)));
+
     // Use unoptimized for local previews or if explicitly requested
     const shouldOptimize = !unoptimized && !isLocalPreview;
 
@@ -80,7 +80,7 @@ export default function MediaAsset({
             sizes={sizes}
             priority={priority}
             loading={loading}
-            unoptimized={!shouldOptimize || (!!width && !!height)}
+            unoptimized={!shouldOptimize}
             style={fill ? { objectFit: 'cover' } : undefined}
         />
     );

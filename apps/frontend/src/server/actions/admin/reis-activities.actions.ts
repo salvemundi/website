@@ -16,7 +16,6 @@ import {
     createTripActivityDb,
     updateTripActivityDb,
     deleteTripActivityDb,
-    fetchSignupsByActivityIdDb
 } from '@/server/internal/reis-db.utils';
 
 
@@ -142,14 +141,5 @@ export async function deleteTripActivity(id: number) {
         const message = error instanceof Error ? error.message : 'Onbekende fout';
 
         return { success: false, error: message };
-    }
-}
-
-export async function getActivitySignups(activityId: number) {
-    await requireAdminResource(AdminResource.Reis);
-    try {
-        return await fetchSignupsByActivityIdDb(activityId);
-    } catch (_error) {
-        return [];
     }
 }

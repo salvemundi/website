@@ -1,14 +1,12 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
-import { ChevronRight, Lock, ExternalLink } from 'lucide-react';
 
 interface TileProps {
-    title?: string; 
-    icon?: React.ReactNode; 
+    title?: string;
+    icon?: React.ReactNode;
     children: React.ReactNode;
-    className?: string; 
+    className?: string;
     actions?: React.ReactNode;
 }
 
@@ -41,49 +39,6 @@ export function Tile({
     );
 }
 
-interface QuickLinkProps {
-    label: string; 
-    subtitle?: string;
-    icon: React.ReactNode; 
-    onClick?: () => void;
-    href?: string; 
-    locked?: boolean; 
-    external?: boolean;
-}
-
-export function QuickLink({
-    label, subtitle, icon, onClick, href, locked, external
-}: QuickLinkProps) {
-    const common = "group flex items-center gap-4 rounded-2xl bg-slate-50 dark:bg-black/20 p-5 transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-purple-300)] border border-slate-200 dark:border-white/10 hover:border-[var(--color-purple-300)] shadow-sm w-full hover:-translate-y-0.5";
-    const inner = (
-        <>
-            <div className="rounded-xl bg-[var(--color-purple-100)] p-2.5 text-[var(--color-purple-700)] dark:text-[var(--color-purple-300)] transition-transform group-hover:scale-110 shadow-sm">
-                {icon}
-            </div>
-            <span className="flex-1 flex items-center justify-between text-sm font-bold text-[var(--color-purple-700)] dark:text-white">
-                <div className="flex flex-col items-start gap-0.5">
-                    <span>{label}</span>
-                    {subtitle && <span className="text-[10px] font-medium text-[var(--color-purple-500)] dark:text-[var(--color-purple-400)] leading-none opacity-80">{subtitle}</span>}
-                </div>
-                <div className="flex items-center gap-2">
-                    {locked && <Lock className="h-3 w-3 opacity-50" />}
-                    {external && <ExternalLink className="h-3 w-3 opacity-50" />}
-                    <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-1" />
-                </div>
-            </span>
-        </>
-    );
-
-    if (href) {
-        return (
-            <Link href={href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined} className={common}>
-                {inner}
-            </Link>
-        );
-    }
-    return <button type="button" onClick={onClick} className={common}>{inner}</button>;
-}
-
 export const formatForBreak = (text: string | null | undefined) => {
     if (!text) return null;
     return text.split('').map((char, i) => (
@@ -93,3 +48,4 @@ export const formatForBreak = (text: string | null | undefined) => {
         </span>
     ));
 };
+

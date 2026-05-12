@@ -3,9 +3,6 @@ import type { Committee } from '@/shared/lib/permissions';
 export const getFinanceServiceUrl = () =>
     process.env.FINANCE_SERVICE_URL;
 
-export const getMailServiceUrl = () =>
-    process.env.MAIL_SERVICE_URL;
-
 export const getInternalHeaders = () => {
     const token = process.env.INTERNAL_SERVICE_TOKEN;
     return {
@@ -25,7 +22,6 @@ export async function checkAdminAccess() {
     if (!session?.user) return null;
 
     const user = session.user;
-    // user is typed from Better-Auth but committees is enriched as Committee[] by our session plugin
     const permissions = (user as { committees?: Committee[] }).committees || [];
     const { isSuperAdmin } = await import('@/lib/auth');
     if (!isSuperAdmin(permissions)) return null;
@@ -49,3 +45,4 @@ export async function fetchWithTimeout(url: string, options: RequestInit & { tim
         throw error;
     }
 }
+

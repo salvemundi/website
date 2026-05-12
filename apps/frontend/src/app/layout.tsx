@@ -17,6 +17,7 @@ import { getImageUrl } from '@/lib/utils/image-utils';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { type ExtendedSession, type ImpersonationInfo } from '@/types/auth';
 import { type Activiteit } from '@salvemundi/validations/schema/activity.zod';
+import { domMax, LazyMotion } from 'framer-motion';
 
 export const viewport: Viewport = {
     themeColor: [
@@ -108,8 +109,8 @@ export default async function RootLayout({
             <body className={`${poppins.variable} antialiased flex flex-col min-h-screen`}>
                 <ImpersonationWrapper impersonation={impersonation} />
                 <HeaderWrapper initialSession={session} isAuthorized={isAuthorized} />
-                <main className="flex-grow min-h-[70vh] pt-[var(--header-total-height,var(--header-height,80px))]">
-                    {children}
+                <main className="flex-grow min-h-[100dvh] pt-[var(--header-total-height,var(--header-height,80px))]">
+                    <LazyMotion features={domMax} strict>{children}</LazyMotion>
                 </main>
                 <FooterWrapper initialSession={session} />
             </body>

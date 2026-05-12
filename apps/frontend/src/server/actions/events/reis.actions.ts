@@ -24,10 +24,6 @@ export async function getUserTripSignup(tripId: number) {
     return queries.getUserTripSignup(tripId);
 }
 
-export async function getTripSignupsInternal(tripId: number) {
-    return queries.getTripSignupsInternal(tripId);
-}
-
 export async function createTripSignup(data: ReisSignupForm, tripId: number) {
     return mutations.createTripSignup(data, tripId);
 }
@@ -35,3 +31,4 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number) {
 export async function revalidateReisAction() {
     return mutations.revalidateReisAction();
 }
+
