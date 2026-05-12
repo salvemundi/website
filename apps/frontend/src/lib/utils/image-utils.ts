@@ -16,7 +16,7 @@ export function getImageUrl(
     if (!id) return DEFAULT_FALLBACK;
 
     // If it's already a full URL, a data URL, or a blob URL, return it as-is
-    if (id.startsWith('http') || id.startsWith('data:') || id.startsWith('blob:')) {
+    if (id.startsWith('/api/assets/') || id.startsWith('http') || id.startsWith('data:') || id.startsWith('blob:')) {
         return id;
     }
 
@@ -28,3 +28,4 @@ export function getImageUrl(
     const query = params.toString();
     return `/api/assets/${id}${query ? `?${query}` : ''}`;
 }
+
