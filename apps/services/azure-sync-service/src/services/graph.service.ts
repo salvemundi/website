@@ -182,7 +182,7 @@ export class GraphService {
                         result.set(res.id, null);
                     }
                 }
-            } catch (_error) {
+            } catch (error) {
                 console.error(`[GraphService] Batch photo fetch failed:`, error);
                 // Fallback: fill remaining with nulls so we don't crash
                 batchIds.forEach(id => { if (!result.has(id)) result.set(id, null); });
@@ -213,7 +213,7 @@ export class GraphService {
             const contentType = response.headers.get('content-type') || 'image/jpeg';
 
             return { buffer, contentType };
-        } catch (_error) {
+        } catch (error) {
             console.error(`[GraphService] Error fetching photo for user ${userId}:`, error);
             return null;
         }

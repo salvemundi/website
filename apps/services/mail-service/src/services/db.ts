@@ -17,7 +17,12 @@ export async function query(text: string, params?: any[]) {
     try {
         const res = await pool.query(text, params);
         return res;
-    } catch (_error) {
+    } catch (error) {
+        console.error('[DB-Query Error]', {
+            message: error instanceof Error ? error.message : 'Unknown error',
+            text,
+            params,
+        });
         throw error;
     }
 }

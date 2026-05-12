@@ -41,7 +41,7 @@ const start = async () => {
         const { ProvisionWorkerService } = await import('./services/provision-worker.js');
         ProvisionWorkerService.start(fastify.redis);
     } catch (_error) {
-        fastify.log.error(error);
+        console.error('Azure Management Service crashed:', _error);
         process.exit(1);
     }
 };

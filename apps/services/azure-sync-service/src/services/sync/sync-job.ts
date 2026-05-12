@@ -98,7 +98,7 @@ export class SyncJob {
                         try {
                             await SyncProcessor.syncUserOptimized(ctx, aUser);
                             status.processed++;
-                        } catch (_error) {
+                        } catch (error) {
                             status.errorCount++; status.processed++;
                             status.errors.push({ email, message: error instanceof Error ? error.message : String(error), timestamp: new Date().toISOString() });
                         }
@@ -122,7 +122,7 @@ export class SyncJob {
             status.active = false; status.status = 'completed'; status.endTime = new Date().toISOString();
             await persistSyncStatus(redis, status);
             await this.logSummary(jobId, status);
-        } catch (_error) {
+        } catch (error) {
             console.error(`[SYNC] [${jobId}] Fatal error:`, error);
             const s = await getSyncStatus(redis);
             s.active = false; s.status = 'failed'; s.endTime = new Date().toISOString();
@@ -176,7 +176,7 @@ export class SyncJob {
             await SyncProcessor.syncUserOptimized(ctx, aUser);
             status.processed++; status.active = false; status.status = 'completed'; status.endTime = new Date().toISOString();
             await persistSyncStatus(redis, status, false);
-        } catch (_error) {
+        } catch (error) {
             status.active = false; status.status = 'failed'; status.endTime = new Date().toISOString(); status.errorCount = 1;
             status.errors.push({ email: aUser.mail || aUser.userPrincipalName, message: error instanceof Error ? error.message : String(error), timestamp: new Date().toISOString() });
             await persistSyncStatus(redis, status, false);

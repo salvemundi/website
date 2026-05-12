@@ -18,7 +18,7 @@ export class TokenService {
                 // console.log('[TokenService] Using cached access token from Redis');
                 return cachedToken;
             }
-        } catch (_error) {
+        } catch (error) {
             console.error('[TokenService] Redis cache read error:', error);
         }
 
@@ -42,7 +42,7 @@ export class TokenService {
         try {
             await redis.set(cacheKey, tokenResponse.token, 'EX', 3000);
             console.log('[TokenService] New token cached in Redis for 50 minutes (3000s buffer)');
-        } catch (_error) {
+        } catch (error) {
             console.error('[TokenService] Redis cache write error:', error);
         }
 

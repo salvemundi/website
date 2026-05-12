@@ -22,7 +22,7 @@ export async function query(text: string, params?: any[]) {
         const duration = Date.now() - start;
         // console.debug(`[DB-Query] Executed in ${duration}ms`, { text, rows: res.rowCount });
         return res;
-    } catch (_error) {
+    } catch (error) {
         console.error('[DB-Query Error]', {
             message: error instanceof Error ? error.message : 'Unknown error',
             text,
