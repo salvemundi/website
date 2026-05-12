@@ -41,8 +41,7 @@ export const SponsorsSection: React.FC<SponsorsSectionProps> = ({
                         <div className="sponsors-scroll-track flex items-center gap-12 whitespace-nowrap">
                             {displaySponsors.map((sponsor, index) => {
                                 const key = `${sponsor.sponsor_id}-${index}`;
-                                const src = getImageUrl(sponsor.image, { width: 300, height: 160 }) || '/img/newlogo.png';
-
+                                const src = getImageUrl(sponsor.image, { width: 300, height: 160, fit: 'contain' }) || '/img/newlogo.png';
                                 const imageContent = (
                                     <Image
                                         src={src}

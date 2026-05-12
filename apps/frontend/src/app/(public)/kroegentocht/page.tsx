@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { getKroegentochtEvent, getKroegentochtTickets } from '@/server/actions/events/kroegentocht.actions';
 import { type PubCrawlTicket } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
@@ -165,5 +166,6 @@ export default async function KroegentochtPage() {
         </PublicPageShell>
     );
 }
+
 
 
