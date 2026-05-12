@@ -21,6 +21,27 @@ export function formatDate(
     }
 }
 
+/**
+ * Formats a date range into a readable format (e.g. 'dd-MM-yyyy t/m dd-MM-yyyy').
+ */
+export function formatDateRange(
+    start: string | Date | number | undefined | null,
+    end: string | Date | number | undefined | null,
+    formatStr: string = 'dd-MM-yyyy'
+): string {
+    if (!start) return 'Datum volgt';
+    const startFormatted = formatDate(start, formatStr);
+    
+    if (!end) return startFormatted;
+    
+    const endFormatted = formatDate(end, formatStr);
+    
+    // If same day, just show one date
+    if (startFormatted === endFormatted) return startFormatted;
+    
+    return `${startFormatted} t/m ${endFormatted}`;
+}
+
 
 
 
