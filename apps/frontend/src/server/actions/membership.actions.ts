@@ -6,9 +6,8 @@ import {
     transactionStatusSchema, 
     type SignupFormData
 } from '@salvemundi/validations/schema/membership.zod';
-import { auth } from '@/server/auth/auth';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { type EnrichedUser } from '@/types/auth';
-import { headers } from 'next/headers';
 import { revalidateTag } from 'next/cache';
 import { rateLimit } from '../utils/ratelimit';
 import { query } from '@/lib/database';
@@ -71,9 +70,7 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
     }
 
 
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
+    const session = await getEnrichedSession();
 
     const user = session?.user as EnrichedUser | undefined;
     const isExpired = user && user.membership_status !== 'active';

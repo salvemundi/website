@@ -11,8 +11,7 @@ import {
 import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 
 
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 
 import { query } from '@/lib/database';
 import { fetchUserPubCrawlSignupsDb } from './kroegentocht-db.utils';
@@ -20,7 +19,7 @@ import { fetchUserEventSignupsDb } from './event-db.utils';
 
 
 export async function getUserEventSignups(): Promise<EventSignup[]> {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await getEnrichedSession();
     const user = session?.user;
 
     const email = user?.email;
@@ -32,6 +31,7 @@ export async function getUserEventSignups(): Promise<EventSignup[]> {
     const parsed = eventSignupSchema.array().safeParse(validRegistrations);
 
     if (!parsed.success) {
+        console.error('[ProfielActions] Failed to parse event signups:', parsed.error);
         throw new Error(`Failed to parse event signups: ${parsed.error.message}`);
     }
 
@@ -40,7 +40,7 @@ export async function getUserEventSignups(): Promise<EventSignup[]> {
 
 
 export async function getUserPubCrawlSignups(): Promise<PubCrawlSignup[]> {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await getEnrichedSession();
     const user = session?.user;
 
     const email = user?.email;
@@ -51,7 +51,7 @@ export async function getUserPubCrawlSignups(): Promise<PubCrawlSignup[]> {
 
 
 export async function getUserTransactions(): Promise<Transaction[]> {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await getEnrichedSession();
     const user = session?.user;
 
     const targetUserId = user?.id;
@@ -68,7 +68,12 @@ export async function getUserTransactions(): Promise<Transaction[]> {
     const mappedRows = res.rows.map(r => ({
         ...r,
         created_at: toLocalISOString(r.created_at),
-        date_created: toLocalISOString(r.date_created)
+        date_created: toLocalISOString(r.date_created),
+        // SQL returns IDs (numbers) but Zod expects expanded objects.
+        // Since the UI doesn't use these fields, we set them to null if they are just IDs.
+        registration: typeof r.registration === 'object' ? r.registration : null,
+        pub_crawl_signup: typeof r.pub_crawl_signup === 'object' ? r.pub_crawl_signup : null,
+        trip_signup: typeof r.trip_signup === 'object' ? r.trip_signup : null
     }));
 
     const parsed = transactionSchema.array().safeParse(mappedRows);
@@ -82,7 +87,7 @@ export async function getUserTransactions(): Promise<Transaction[]> {
 
 
 export async function getWhatsAppGroups(): Promise<WhatsAppGroup[]> {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await getEnrichedSession();
     if (!session?.user) return [];
 
     const res = await query(

@@ -1,7 +1,6 @@
 'use server';
 
-import { auth } from "@/server/auth/auth";
-import { headers } from "next/headers";
+import { getEnrichedSession } from "@/server/auth/auth-utils";
 import { revalidateTag, revalidatePath, unstable_noStore as noStore } from "next/cache";
 import { isSuperAdmin } from "@/lib/auth";
 import { type Committee } from "@/shared/lib/permissions";
@@ -21,7 +20,7 @@ type LogsResponse = { success: true; data: SystemLog[]; totalCount: number } | {
 
 export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' | 'INFO', payload?: unknown) {
     try {
-        const session = await auth.api.getSession({ headers: await headers() });
+        const session = await getEnrichedSession();
         if (!session || !session.user) {
             // Drop unauthenticated logs to prevent VULN-012 (Log Poisoning)
             return;
@@ -52,9 +51,7 @@ export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' |
 }
 
 async function checkAuditAccess() {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
+    const session = await getEnrichedSession();
     if (!session || !session.user) return null;
     
     const user = session.user as { committees?: Committee[] };

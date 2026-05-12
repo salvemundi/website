@@ -4,8 +4,7 @@ import { ReisFormIsland } from '@/components/islands/reis/ReisFormIsland';
 import { ReisInfoIsland } from '@/components/islands/reis/ReisInfoIsland';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { connection } from 'next/server';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 
@@ -25,7 +24,7 @@ export default async function ReisPage() {
     const [trips, siteSettings, session] = await Promise.all([
         getUpcomingTrips(),
         getReisSiteSettings(),
-        auth.api.getSession({ headers: await headers() })
+        getEnrichedSession()
     ]);
 
     const isReisEnabled = siteSettings?.show ?? true;

@@ -1,5 +1,4 @@
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import ActiviteitNieuwIsland from '@/components/islands/admin/activities/ActiviteitNieuwIsland';
 
@@ -33,9 +32,7 @@ async function getCommitteesForUser(user: EnrichedUser, permissions: ReturnType<
 }
 
 export default async function ActivityCreatePage() {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
+    const session = await getEnrichedSession();
 
     if (!session || !session.user) {
         return (

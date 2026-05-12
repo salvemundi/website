@@ -1,8 +1,7 @@
 'use server';
 
-import { auth } from '@/server/auth/auth';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { revalidatePath } from "next/cache";
-import { headers } from 'next/headers';
 
 import { isSuperAdmin } from '@/lib/auth';
 import { getSystemDirectus } from '@/lib/directus';
@@ -37,7 +36,7 @@ const serviceHeaders = (contentType = true) => {
 import { type EnrichedUser } from '@/types/auth';
 
 async function checkAccess() {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await getEnrichedSession();
     if (!session?.user) throw new Error('Niet ingelogd');
     
     const user = session.user as unknown as EnrichedUser;

@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import { notFound } from 'next/navigation';
 import ActiviteitBewerkenIsland from '@/components/islands/admin/activities/ActiviteitBewerkenIsland';
@@ -20,9 +19,7 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
     const resolvedParams = await params;
     const id = resolvedParams.id;
     
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
+    const session = await getEnrichedSession();
     if (!session || !session.user) return <AdminUnauthorized title="Activiteit Bewerken" />;
 
     const user = session.user as unknown as EnrichedUser;

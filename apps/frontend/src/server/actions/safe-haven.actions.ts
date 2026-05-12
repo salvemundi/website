@@ -1,8 +1,7 @@
 'use server';
 
 import { safeHavensSchema, type SafeHaven } from '@salvemundi/validations/schema/safe-havens.zod';
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 
 import { query } from '@/lib/database';
 
@@ -39,7 +38,7 @@ async function fetchSafeHavensFromDirectus(isAuthenticated: boolean): Promise<Sa
 }
 
 export async function getSafeHavens(): Promise<SafeHaven[]> {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await getEnrichedSession();
     const isAuthenticated = !!session?.user;
     return fetchSafeHavensFromDirectus(isAuthenticated);
 }

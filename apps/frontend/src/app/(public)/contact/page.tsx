@@ -2,8 +2,7 @@
 import type { Metadata } from 'next';
 import ContactInfoCard from '@/components/ui/social/ContactInfoCard';
 import { getDocumenten } from '@/server/actions/website.actions';
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 
 // SEO metadata conform de V7 standaard
 export const metadata: Metadata = {
@@ -34,7 +33,7 @@ async function ContactContent() {
     // Haal alle benodigde data op voor de hele pagina (Nuclear SSR)
     const [documenten, session] = await Promise.all([
         getDocumenten(),
-        auth.api.getSession({ headers: await headers() })
+        getEnrichedSession()
     ]);
 
     return (

@@ -1,7 +1,6 @@
 'use server';
 
-import { auth } from "@/server/auth/auth";
-import { headers } from "next/headers";
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { revalidateTag, revalidatePath } from "next/cache";
 
 import { stickerPublicSchema } from "@salvemundi/validations";
@@ -45,9 +44,7 @@ export async function getPublicStickers() {
 }
 
 export async function createStickerPublic(data: Record<string, unknown>) {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
+    const session = await getEnrichedSession();
 
     if (!session?.user) {
         throw new Error('Je moet ingelogd zijn om een sticker toe te voegen.');
@@ -79,7 +76,7 @@ export async function createStickerPublic(data: Record<string, unknown>) {
 }
 
 export async function uploadFileAction(formData: FormData) {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await getEnrichedSession();
     if (!session?.user) {
         throw new Error('Niet geautoriseerd: Je moet ingelogd zijn om bestanden te uploaden.');
     }

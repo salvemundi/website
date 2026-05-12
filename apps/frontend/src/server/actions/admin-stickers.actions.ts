@@ -1,7 +1,6 @@
 'use server';
 
-import { auth } from "@/server/auth/auth";
-import { headers } from "next/headers";
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { revalidateTag, revalidatePath } from "next/cache";
 import { logAdminAction } from "./audit.actions";
 import { isSuperAdmin } from "@/lib/auth";
@@ -12,9 +11,7 @@ import { deleteItem, updateItem } from "@directus/sdk";
 import { type EnrichedUser } from "@/types/auth";
 
 async function requireStickerAdmin() {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
+    const session = await getEnrichedSession();
 
     if (!session?.user) throw new Error('Niet ingelogd');
 

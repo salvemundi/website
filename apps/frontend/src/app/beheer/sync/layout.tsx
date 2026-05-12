@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation';
-import { headers } from 'next/headers';
-import { auth } from '@/server/auth/auth';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import { getPermissions } from '@/shared/lib/permissions';
 import { fetchUserCommitteesDb } from '@/server/actions/user-db.utils';
@@ -10,9 +9,7 @@ export default async function SyncLayout({
     children }: {
     children: React.ReactNode;
 }) {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
+    const session = await getEnrichedSession();
 
     if (!session || !session.user) {
         redirect('/?needLogin=true');

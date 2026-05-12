@@ -1,10 +1,9 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { headers } from 'next/headers';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import CouponManagementIsland from '@/components/islands/admin/coupons/CouponManagementIsland';
-import { auth } from '@/server/auth/auth';
 import { getCoupons } from '@/server/queries/admin-coupon.queries';
 
 export const metadata: Metadata = {
@@ -16,7 +15,7 @@ async function CouponDataLoader() {
 }
 
 export default async function BeheerCouponsPage() {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await getEnrichedSession();
     if (!session?.user) redirect('/?needLogin=true');
 
     return (

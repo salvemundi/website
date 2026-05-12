@@ -1,6 +1,5 @@
 import React from 'react';
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import ActivitiesBannerIsland from '@/components/islands/activities/ActivitiesBannerIsland';
 import ActivitiesProviderIsland from '@/components/islands/activities/ActivitiesProviderIsland';
 import { getActivities } from '@/server/actions/public-activiteit.actions';
@@ -22,7 +21,6 @@ async function ActivitiesListData({ events, serverTime }: { events: (Activiteit 
     return <ActivitiesProviderIsland events={events} serverTime={serverTime} />;
 }
 
-import { connection } from 'next/server';
 
 export default async function ActivitiesPage() {
     return (
@@ -35,10 +33,7 @@ export default async function ActivitiesPage() {
 }
 
 async function ActivitiesContent() {
-    await connection();
-    const session = await auth.api.getSession({
-        headers: await headers()
-    }).catch(() => null);
+    const session = await getEnrichedSession();
 
     const events = await getActivities().catch(() => []);
     const serverTime = new Date().toISOString();

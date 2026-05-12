@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -22,12 +20,12 @@ interface NavigationHeaderProps {
  * Navigation Header Component.
  * Implements the "Nuclear SSR" (Zero-Skeleton) standard.
  */
-const NavigationHeader: React.FC<NavigationHeaderProps> = ({ 
+const NavigationHeader = ({ 
     disabledRoutes = [], 
     initialSession, 
     impersonation,
     isAdmin: initialIsAdmin
-}) => {
+}: NavigationHeaderProps) => {
     const user = initialSession?.user ?? null;
     const isAuthenticated = !!user;
     

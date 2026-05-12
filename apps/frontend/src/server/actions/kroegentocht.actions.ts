@@ -9,8 +9,7 @@ import {
 } from '@salvemundi/validations/schema/pub-crawl.zod';
 
 
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { revalidateTag, unstable_cache as cacheTag } from 'next/cache';
 import { cache } from 'react';
 import { logAdminAction } from './audit.actions';
@@ -150,7 +149,7 @@ export async function initiateKroegentochtPayment(formData: unknown) {
         // The limit of 10 tickets per registration is already enforced by the Zod schema (pubCrawlSignupSchema).
         // Per user request, we allow multiple registrations from the same email.
 
-        const session = await auth.api.getSession({ headers: await headers() });
+        const session = await getEnrichedSession();
         const userId = session?.user?.id;
 
         const signupId = await createPubCrawlSignupDb({

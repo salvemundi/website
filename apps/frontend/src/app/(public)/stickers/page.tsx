@@ -1,7 +1,6 @@
 import React from 'react';
 import { getPublicStickers } from '@/server/actions/stickers.actions';
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import StickerMapIsland from '@/components/islands/stickers/StickerMapIsland';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import { type EnrichedUser } from '@/types/auth';
@@ -26,11 +25,8 @@ export default async function StickersPage() {
 async function StickersContent() {
     await connection();
     // NUCLEAR SSR: Fetch all data before flushing any part of the page content
-    const h = await headers();
     const stickersPromise = getPublicStickers();
-    const sessionPromise = auth.api.getSession({
-        headers: h });
-
+    const sessionPromise = getEnrichedSession();
     const [stickers, session] = await Promise.all([
         stickersPromise,
         sessionPromise.catch(() => null)

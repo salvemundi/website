@@ -7,14 +7,11 @@ export const metadata: Metadata = {
     title: 'WhatsApp Groepen | SV Salve Mundi',
     description: 'Word lid van onze exclusieve WhatsApp groepen voor leden.' };
 
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { redirect } from 'next/navigation';
 
 export default async function WhatsAppGroepenPage() {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
+    const session = await getEnrichedSession();
 
     if (!session || !session.user) {
         redirect('/');

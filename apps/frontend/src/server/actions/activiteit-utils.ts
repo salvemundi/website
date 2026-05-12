@@ -1,5 +1,3 @@
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
 import type { Committee } from '@/shared/lib/permissions';
 
 export const getFinanceServiceUrl = () =>
@@ -15,15 +13,15 @@ export const getInternalHeaders = () => {
         'Authorization': `Bearer ${token}` };
 };
 
+import { getEnrichedSession } from '@/server/auth/auth-utils';
+
 export async function getSession() {
-    return await auth.api.getSession({
-        headers: await headers()
-    });
+    return await getEnrichedSession();
 }
 
 export async function checkAdminAccess() {
     const session = await getSession();
-    if (!session || !session.user) return null;
+    if (!session?.user) return null;
     
     const user = session.user;
     // user is typed from Better-Auth but committees is enriched as Committee[] by our session plugin

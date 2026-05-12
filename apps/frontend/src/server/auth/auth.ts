@@ -4,6 +4,7 @@ import { pool } from "@/lib/database/db";
 import { createRedisSessionPlugin } from "./redis-session-plugin";
 
 export const auth = betterAuth({
+    debug: true,
     database: pool,
     secret: process.env.BETTER_AUTH_SECRET,
     baseURL: process.env.BETTER_AUTH_URL,

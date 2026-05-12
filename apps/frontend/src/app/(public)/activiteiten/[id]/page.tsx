@@ -1,12 +1,11 @@
 import React from 'react';
-import { auth } from '@/server/auth/auth';
-import { type DbEventSignup } from '@salvemundi/validations/directus/schema';
-import { headers } from 'next/headers';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { notFound } from 'next/navigation';
 import { getActivityBySlug, checkUserSignupStatus } from '@/server/actions/public-activiteit.actions';
 import { getSignupStatus } from '@/server/actions/public-activiteit-status.actions';
 import ActivityDetailIsland from '@/components/islands/activities/ActivityDetailIsland';
 import EventSignupIsland from '@/components/islands/activities/EventSignupIsland';
+import { type DbEventSignup } from '@salvemundi/validations/directus/schema';
 import { type MembershipUserData } from '@/components/islands/account/MembershipStatusIsland';
 import { type EnrichedUser } from '@/types/auth';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
@@ -39,9 +38,7 @@ async function ActivityContent({ params, searchParams }: PageProps) {
     // Try By Slug first (which handles id, id-slug, and custom_url)
     const [activity, session] = await Promise.all([
         getActivityBySlug(rawId),
-        auth.api.getSession({
-            headers: await headers()
-        })
+        getEnrichedSession()
     ]);
 
     if (!activity) notFound();
@@ -85,7 +82,7 @@ async function ActivityContent({ params, searchParams }: PageProps) {
                 <BackButton href="/activiteiten" title="Terug naar activiteiten" />
             </div>
 
-            <ActivityDetailIsland activity={activity} isLoggedIn={!!session}>
+            <ActivityDetailIsland activity={activity} isLoggedIn={!!session?.user}>
                 <EventSignupIsland
                     eventId={Number(activity.id)}
                     price={price}

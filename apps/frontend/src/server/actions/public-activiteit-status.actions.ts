@@ -1,8 +1,7 @@
 'use server';
 
-import { auth } from '@/server/auth/auth';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { type EnrichedUser } from '@/types/auth';
-import { headers } from 'next/headers';
 import { unstable_noStore as noStore } from 'next/cache';
 
 import { query } from '@/lib/database';
@@ -138,7 +137,7 @@ export async function getSignupStatus(
 
         if (typeof id === 'string' && /^\d+$/.test(id)) {
             const signupId = parseInt(id);
-            const session = await auth.api.getSession({ headers: await headers() });
+            const session = await getEnrichedSession();
             const user = session?.user as unknown as EnrichedUser | undefined;
             const isAdmin = user?.role === 'admin' || user?.role === '06e78cf9-f9c3-4f9e-a86d-1907de634567'; 
 
@@ -181,7 +180,7 @@ export async function getSignupStatus(
  * Fetches the tickets (signups) for the current logged-in user.
  */
 export async function getMyTickets() {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await getEnrichedSession();
     const email = session?.user?.email;
     if (!email) return [];
 
@@ -239,9 +238,7 @@ export async function getMyTickets() {
  */
 export async function retryActivityPayment(signupId: number) {
     try {
-        const session = await auth.api.getSession({
-            headers: await headers()
-        });
+        const session = await getEnrichedSession();
         const currentUser = session?.user as unknown as EnrichedUser;
         
         const signupRes = await query(

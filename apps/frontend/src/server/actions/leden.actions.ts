@@ -1,8 +1,7 @@
 'use server';
 
 import { z } from "zod";
-import { auth } from "@/server/auth/auth";
-import { headers } from "next/headers";
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { revalidateTag, revalidatePath } from "next/cache";
 import { getSystemDirectus } from "@/lib/directus";
 import { updateUser } from "@directus/sdk";
@@ -23,9 +22,7 @@ const AZURE_SYNC_URL = process.env.AZURE_SYNC_SERVICE_URL;
 const INTERNAL_TOKEN = process.env.INTERNAL_SERVICE_TOKEN;
 
 async function checkAdminAccess() {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
+    const session = await getEnrichedSession();
     if (!session || !session.user) return null;
     
     const { fetchUserCommitteesDb } = await import("./user-db.utils");

@@ -1,6 +1,5 @@
-import { connection } from 'next/server';
-import { auth } from '@/server/auth/auth';
-import { headers } from 'next/headers';
+import React from 'react';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { redirect } from 'next/navigation';
 
 interface SecureLayoutProps {
@@ -12,13 +11,16 @@ interface SecureLayoutProps {
  * Enforces session isolation and prevents build-time prerendering for all protected routes.
  */
 export default async function SecureLayout({ children }: SecureLayoutProps) {
-    await connection();
-    
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
+    const session = await getEnrichedSession();
+
+    const pathname = '/profiel'; // Layout context
+
+    if (session) {
+
+    }
 
     if (!session?.user) {
+
         redirect('/?needLogin=true');
     }
 
