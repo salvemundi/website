@@ -7,13 +7,6 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { formatDate } from '@/shared/lib/utils/date';
 import MediaAsset from '@/components/ui/media/MediaAsset';
 
-/**
- * Public Directus URL for client-side asset loading.
- * Note: We use the public URL here because it's a client component.
- */
-// All assets are now loaded through our local proxy to keep infrastructure private.
-const ASSET_PROXY_URL = '/api/assets';
-
 import { type EnrichedUser } from '@/types/auth';
 
 import { type StickerPublic } from '@salvemundi/validations';
@@ -57,12 +50,12 @@ export default function StickerMap({
             .filter((sticker) => {
                 if (filterCountry && !(sticker.country || '').toLowerCase().includes(filterCountry.toLowerCase())) return false;
                 if (filterCity && !(sticker.city || '').toLowerCase().includes(filterCity.toLowerCase())) return false;
-                
+
                 if (filterUserId) {
                     const ownerId = sticker.user_created?.id;
                     if (ownerId !== filterUserId) return false;
                 }
-                
+
                 if (filterUser) {
                     const u = sticker.user_created;
                     const searchText = u ? `${u.first_name || ''} ${u.last_name || ''} ${u.email || ''}`.toLowerCase() : '';
@@ -101,27 +94,25 @@ export default function StickerMap({
                 {filteredStickers.map((sticker) => {
                     const userObj = sticker.user_created;
                     const isMine = Boolean(user && userObj?.id && String(user.id) === String(userObj.id));
-                    const avatarUrl = userObj?.avatar 
-                        ? `${ASSET_PROXY_URL}/${userObj.avatar}?width=100&height=100&fit=cover` 
-                        : '/img/Logo.png';
+                    const avatarId = userObj?.avatar;
 
                     return (
-                        <Marker 
-                            key={sticker.id} 
-                            latitude={sticker.latitude} 
-                            longitude={sticker.longitude} 
-                            onClick={(e) => { 
-                                e.originalEvent.stopPropagation(); 
-                                setPopupInfo(sticker); 
+                        <Marker
+                            key={sticker.id}
+                            latitude={sticker.latitude}
+                            longitude={sticker.longitude}
+                            onClick={(e) => {
+                                e.originalEvent.stopPropagation();
+                                setPopupInfo(sticker);
                             }}
                         >
                             <div className={`samu-marker ${isMine ? 'samu-marker--mine' : ''} cursor-pointer`}>
-                                <MediaAsset 
-                                    asset={avatarUrl} 
+                                <MediaAsset
+                                    asset={avatarId}
                                     alt="User"
                                     width={24}
                                     height={24}
-                                    className="samu-marker__img" 
+                                    className="samu-marker__img"
                                 />
                                 <span className={`samu-marker__dot ${isMine ? 'samu-marker__dot--mine' : ''}`}></span>
                             </div>
@@ -138,12 +129,12 @@ export default function StickerMap({
                 )}
 
                 {popupInfo && (
-                    <Popup 
-                        latitude={popupInfo.latitude} 
-                        longitude={popupInfo.longitude} 
-                        onClose={() => { setPopupInfo(null); setShowImage(false); }} 
-                        closeButton={false} 
-                        anchor="bottom" 
+                    <Popup
+                        latitude={popupInfo.latitude}
+                        longitude={popupInfo.longitude}
+                        onClose={() => { setPopupInfo(null); setShowImage(false); }}
+                        closeButton={false}
+                        anchor="bottom"
                         className="map-popup-theme"
                     >
                         <div className="map-popup p-4 relative min-w-[280px]">
@@ -156,14 +147,12 @@ export default function StickerMap({
                             </button>
 
                             <div className="flex gap-4 items-center mb-4 pr-6">
-                                <MediaAsset 
-                                    asset={popupInfo.user_created?.avatar 
-                                        ? `${ASSET_PROXY_URL}/${popupInfo.user_created.avatar}?width=80&height=80&fit=cover` 
-                                        : '/img/Logo.png'} 
-                                    alt="avatar" 
+                                <MediaAsset
+                                    asset={popupInfo.user_created?.avatar}
+                                    alt="avatar"
                                     width={48}
                                     height={48}
-                                    className="w-12 h-12 rounded-xl object-cover ring-2 ring-[var(--theme-purple)]/20" 
+                                    className="w-12 h-12 rounded-xl object-cover ring-2 ring-[var(--theme-purple)]/20"
                                 />
                                 <div>
                                     <h3 className="font-black text-[var(--text-main)] leading-tight uppercase tracking-tight">
@@ -185,9 +174,9 @@ export default function StickerMap({
                                 <div className="mt-3">
                                     {showImage ? (
                                         <div className="relative w-full h-48 animate-in zoom-in-95 duration-300">
-                                            <MediaAsset 
-                                                asset={`${ASSET_PROXY_URL}/${popupInfo.image}?width=600&quality=85`} 
-                                                alt="Sticker proof" 
+                                            <MediaAsset
+                                                asset={popupInfo.image}
+                                                alt="Sticker proof"
                                                 fill
                                                 className="rounded-xl shadow-lg border border-[var(--border-color)]/30 object-cover"
                                             />
@@ -222,3 +211,6 @@ export default function StickerMap({
         </div>
     );
 }
+
+
+

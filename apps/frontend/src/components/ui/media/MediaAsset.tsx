@@ -43,7 +43,7 @@ export default function MediaAsset({
     const id = typeof asset === 'string' ? asset : asset?.id;
     const type = typeof asset === 'object' ? asset?.type : null;
     
-    const url = getImageUrl(id);
+    const url = getImageUrl(id, { width, height });
     if (!url) return null;
 
     // Detection logic
@@ -85,3 +85,4 @@ export default function MediaAsset({
         />
     );
 }
+
