@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
 import { pool } from "@/lib/database/db";
-import { createRedisSessionPlugin } from "./redis-session-plugin";
+import { createRedisSessionPlugin } from "@/server/auth/redis-session-plugin";
 
 export const auth = betterAuth({
     debug: true,

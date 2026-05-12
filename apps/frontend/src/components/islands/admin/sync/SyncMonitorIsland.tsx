@@ -21,16 +21,17 @@ function FilterTab({ active, label, count, onClick, color = 'indigo' }: FilterTa
         blue: 'bg-[var(--theme-info)] text-white shadow-lg shadow-[var(--theme-info)]/20',
         red: 'bg-[var(--beheer-inactive)] text-white shadow-lg shadow-[var(--beheer-inactive)]/20',
         slate: 'bg-[var(--beheer-text-muted)] text-white shadow-lg shadow-[var(--beheer-text-muted)]/20',
-        purple: 'bg-[var(--beheer-accent)] text-white shadow-[var(--shadow-glow)]' };
+        purple: 'bg-[var(--beheer-accent)] text-white shadow-[var(--shadow-glow)]'
+    };
 
     return (
         <button
             onClick={onClick}
-            className={`w-full px-3 py-2 rounded-xl text-[11px] font-semibold transition-all whitespace-nowrap flex items-center justify-between border ${
-                active 
-                    ? `${colorVariants[color]} border-transparent shadow-sm` 
-                    : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] border-[var(--beheer-border)]/50 hover:border-[var(--beheer-accent)]/30 hover:text-[var(--beheer-text)]'
-            }`}
+            className={`w-full px-3 py-2 rounded-xl text-[11px] font-semibold transition-all whitespace-nowrap flex items-center justify-between border ${active
+                // eslint-disable-next-line security/detect-object-injection
+                ? `${colorVariants[color]} border-transparent shadow-sm`
+                : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] border-[var(--beheer-border)]/50 hover:border-[var(--beheer-accent)]/30 hover:text-[var(--beheer-text)]'
+                }`}
         >
             <span>{label}</span>
             <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${active ? 'bg-white/20' : 'bg-[var(--beheer-border)]/30'}`}>
@@ -41,10 +42,10 @@ function FilterTab({ active, label, count, onClick, color = 'indigo' }: FilterTa
 }
 
 export default function SyncMonitorIsland() {
-    const { 
-        status, resultFilter, setResultFilter, lastUpdated 
+    const {
+        status, resultFilter, setResultFilter, lastUpdated
     } = useSync();
-    
+
     const [mounted, setMounted] = useState(false);
     const [showStack, setShowStack] = useState(false);
 
@@ -52,9 +53,6 @@ export default function SyncMonitorIsland() {
         setMounted(true);
     }, []);
 
-    const isRunning = status?.active || status?.status === 'running' || status?.status === 'starting';
-    
-    // Nuclear SSR: Calculate progress in frontend since backend doesn't send it correctly
     const processed = (status?.processed as number) || 0;
     const total = (status?.total as number) || 0;
     const progress = total > 0 ? (processed / total) * 100 : 0;
@@ -74,7 +72,7 @@ export default function SyncMonitorIsland() {
                     </div>
                 </div>
             </div>
-            
+
             {status?.fatalError && (
                 <div className="mb-8 p-5 bg-[var(--theme-error)]/5 border border-[var(--theme-error)]/10 rounded-2xl">
                     <div className="flex items-start gap-4">
@@ -86,16 +84,16 @@ export default function SyncMonitorIsland() {
                             <p className="text-[11px] font-semibold text-[var(--beheer-text)]/80 mt-1">
                                 {status.fatalError.message}
                             </p>
-                            
+
                             {status.fatalError.stack && (
                                 <div className="mt-4">
-                                    <button 
+                                    <button
                                         onClick={() => setShowStack(!showStack)}
                                         className="text-[11px] font-semibold text-[var(--theme-error)] hover:underline transition-colors flex items-center gap-1"
                                     >
                                         {showStack ? 'Verberg details' : 'Bekijk technische details (Stack Trace)'}
                                     </button>
-                                    
+
                                     {showStack && (
                                         <div className="mt-3 p-4 bg-black/5 dark:bg-white/5 rounded-xl border border-[var(--beheer-border)] overflow-x-auto custom-scrollbar">
                                             <pre className="text-[10px] text-[var(--beheer-text-muted)] font-mono leading-relaxed">
@@ -118,7 +116,7 @@ export default function SyncMonitorIsland() {
                         <span className="text-[11px] font-semibold text-[var(--beheer-accent)]">{Math.round(progress || 0)}%</span>
                     </div>
                     <div className="h-3 w-full bg-[var(--beheer-card-soft)] rounded-full overflow-hidden border border-[var(--beheer-border)]/20 shadow-inner">
-                        <div 
+                        <div
                             className="h-full bg-gradient-to-r from-[var(--beheer-accent)] to-[var(--theme-info)] transition-all duration-500 relative"
                             style={{ width: `${progress}%` }}
                         >
@@ -138,15 +136,15 @@ export default function SyncMonitorIsland() {
                 </div>
 
                 <div className="min-h-[300px] border-t border-[var(--beheer-border)]/30 pt-8">
-                    <SyncLogs 
-                        status={status || { 
-                            successfulUsers: [], createdUsers: [], warnings: [], 
-                            missingData: [], errors: [], excludedUsers: [], 
-                            processed: 0, total: 0, successCount: 0, errorCount: 0, 
-                            warningCount: 0, missingDataCount: 0, excludedCount: 0 
-                        }} 
-                        resultFilter={resultFilter || 'all'} 
-                        setResultFilter={setResultFilter} 
+                    <SyncLogs
+                        status={status || {
+                            successfulUsers: [], createdUsers: [], warnings: [],
+                            missingData: [], errors: [], excludedUsers: [],
+                            processed: 0, total: 0, successCount: 0, errorCount: 0,
+                            warningCount: 0, missingDataCount: 0, excludedCount: 0
+                        }}
+                        resultFilter={resultFilter || 'all'}
+                        setResultFilter={setResultFilter}
                     />
                 </div>
             </div>

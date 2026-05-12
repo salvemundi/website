@@ -26,7 +26,7 @@ export default function MemberActivitiesTab({ signups }: Props) {
         if (!dateString) return 'Onbekend';
         try {
             return format(new Date(dateString), 'd MMMM yyyy', { locale: nl });
-        } catch (e) {
+        } catch (_error) {
             return 'Onbekend';
         }
     };
@@ -37,7 +37,7 @@ export default function MemberActivitiesTab({ signups }: Props) {
                 <h3 className="text-xl font-semibold text-[var(--beheer-text)] leading-tight">Activiteiten Historie</h3>
                 <p className="text-xs text-[var(--beheer-text-muted)] font-semibold mt-1 opacity-60">Recente inschrijvingen voor activiteiten</p>
             </div>
-            
+
             {signups.length === 0 ? (
                 <div className="py-20 text-center">
                     <History className="h-12 w-12 text-[var(--beheer-text-muted)] opacity-20 mx-auto mb-4" />

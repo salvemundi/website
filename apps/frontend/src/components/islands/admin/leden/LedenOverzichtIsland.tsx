@@ -10,7 +10,7 @@ import {
     Loader2
 } from 'lucide-react';
 import { downloadCSV } from '@/lib/utils/export';
-import { sendMembershipReminderAction } from '@/server/actions/leden.actions';
+import { sendMembershipReminderAction } from '@/server/actions/admin/leden.actions';
 import { format, startOfDay } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
@@ -27,12 +27,12 @@ interface LedenOverzichtIslandProps {
     initialTotalCount?: number;
 }
 
-export default function LedenOverzichtIsland({ 
-    initialMembers = [], 
+export default function LedenOverzichtIsland({
+    initialMembers = [],
     initialTotalCount = 0
 }: LedenOverzichtIslandProps) {
     const { toast, showToast, hideToast } = useAdminToast();
-    const [isPending, _startTransition] = useTransition();
+    const [isPending] = useTransition();
     const [searchQuery, setSearchQuery] = useState('');
     const [isSendingReminder, setIsSendingReminder] = useState(false);
     const [activeTab, setActiveTab] = useState<'active' | 'inactive'>('active');
@@ -43,10 +43,10 @@ export default function LedenOverzichtIsland({
             // Robust check: handle both string and Date objects
             const expiryDate = new Date(m.membership_expiry);
             if (isNaN(expiryDate.getTime())) return false;
-            
+
             const today = startOfDay(new Date());
             return startOfDay(expiryDate) >= today;
-        } catch {
+        } catch (_error) {
             return false;
         }
     };
@@ -58,13 +58,13 @@ export default function LedenOverzichtIsland({
         return members.filter(m => {
             const active = isMembershipActive(m);
             const matchesTab = activeTab === 'active' ? active : !active;
-            
+
             if (!searchQuery) return matchesTab;
 
             const searchLower = searchQuery.toLowerCase();
             const fullName = `${m.first_name} ${m.last_name}`.toLowerCase();
             const email = (m.email || '').toLowerCase();
-            
+
             return matchesTab && (fullName.includes(searchLower) || email.includes(searchLower));
         });
     }, [members, activeTab, searchQuery]);
@@ -73,14 +73,14 @@ export default function LedenOverzichtIsland({
         if (!dateString) return 'Onbekend';
         try {
             return format(new Date(dateString), 'dd-MM-yyyy', { locale: nl });
-        } catch {
+        } catch (_error) {
             return 'Onbekend';
         }
     };
 
     const handleSendReminder = async () => {
         if (!confirm('Herinnering sturen naar alle leden (binnen 30 dagen verlenging)?')) return;
-        
+
         setIsSendingReminder(true);
         const res = await sendMembershipReminderAction(30);
         if (res.success) {
@@ -133,7 +133,7 @@ export default function LedenOverzichtIsland({
 
             <AdminStatsBar stats={adminStats} />
 
-            <LedenFilters 
+            <LedenFilters
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
                 activeTab={activeTab}
@@ -142,13 +142,13 @@ export default function LedenOverzichtIsland({
             />
 
             <div className="w-full">
-                <LedenTable 
+                <LedenTable
                     members={filteredMembers}
                     formatDate={formatDate}
                     isMembershipActive={isMembershipActive}
                 />
             </div>
-            
+
             <AdminToast toast={toast} onClose={hideToast} />
         </>
     );

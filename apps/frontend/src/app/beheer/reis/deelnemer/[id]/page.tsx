@@ -4,9 +4,15 @@ import ReisDeelnemerDetailIsland from '@/components/islands/admin/ReisDeelnemerD
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 import { Trip, TripActivity } from '@salvemundi/validations/schema/admin-reis.zod';
+import { getTripSignup, getTripSignupActivitiesAction } from '@/server/actions/admin/reis-signups.actions';
 
 interface PageProps {
     params: Promise<{ id: string }>;
+}
+
+interface RawSignupActivity {
+    trip_signup_id: number | { id: number };
+    trip_activity_id: number | { id: number };
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -25,7 +31,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
                 title: `Deelnemer: ${signup[0].first_name} ${signup[0].last_name} | SV Salve Mundi`
             };
         }
-    } catch {}
+    } catch (_error) {
+        // Silent catch for metadata resilience
+    }
 
     return { title: 'Deelnemer Details | SV Salve Mundi' };
 }
@@ -36,13 +44,13 @@ export default async function DeelnemerDetailPage({ params }: PageProps) {
 
     // NUCLEAR SSR: Fetch participant and trip data before flushing ANY part of the page
     const signup = await getTripSignup(signupId);
-    
     if (!signup || !signup.trip_id) {
         notFound();
     }
 
-    const tripId = signup.trip_id;
-
+    const tripId = (signup.trip_id && typeof signup.trip_id === 'object')
+        ? (signup.trip_id as { id: number }).id
+        : (signup.trip_id as number);
     // Fetch related data (trips for dropdown, activities for trip, and selected activities)
     const [trips, activities, signupActivities] = await Promise.all([
         getSystemDirectus().request(readItems('trips', {
@@ -56,28 +64,23 @@ export default async function DeelnemerDetailPage({ params }: PageProps) {
         })),
         getTripSignupActivitiesAction(tripId)
     ]);
-    
-    // Filter signupActivities for this specific participant
-    const participantActivities = signupActivities
-        .filter((sa: Record<string, any>) => {
-            const saSignupId = (sa.trip_signup_id && typeof sa.trip_signup_id === 'object') ? sa.trip_signup_id.id : sa.trip_signup_id;
+
+    // Filter signupActivities for this specific participant with type safety
+    const participantActivities = (signupActivities as unknown as RawSignupActivity[])
+        .filter((sa) => {
+            const saSignupId = typeof sa.trip_signup_id === 'object' ? sa.trip_signup_id.id : sa.trip_signup_id;
             return saSignupId === signupId;
         })
-        .map((a: Record<string, any>) => typeof a.trip_activity_id === 'object' ? a.trip_activity_id.id : a.trip_activity_id);
+        .map((sa) => typeof sa.trip_activity_id === 'object' ? sa.trip_activity_id.id : sa.trip_activity_id);
 
     return (
         <div className="w-full">
-            <ReisDeelnemerDetailIsland 
+            <ReisDeelnemerDetailIsland
                 initialSignup={signup}
                 trips={trips as unknown as Trip[]}
                 allActivities={activities as unknown as TripActivity[]}
-                initialSelectedActivities={participantActivities}
+                initialSelectedActivities={participantActivities as number[]}
             />
         </div>
     );
 }
-
-
-import { getTripSignup, getTripSignupActivitiesAction } from '@/server/actions/reis-admin-signups.actions';
-
-

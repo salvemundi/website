@@ -2,7 +2,7 @@
 
 import SignupForm from '@/components/islands/admin/kroegentocht/SignupForm';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
-import { getPubCrawlSignup } from '@/server/actions/admin-kroegentocht.actions';
+import { getPubCrawlSignup } from '@/server/actions/admin/admin-kroegentocht.actions';
 import { notFound } from 'next/navigation';
 import { unstable_noStore as noStore } from 'next/cache';
 

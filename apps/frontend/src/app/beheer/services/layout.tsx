@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import { getPermissions } from '@/shared/lib/permissions';
-import { fetchUserCommitteesDb } from '@/server/actions/user-db.utils';
+import { fetchUserCommitteesDb } from '@/server/internal/user-db.utils';
 
 import { type EnrichedUser } from '@/types/auth';
 

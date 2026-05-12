@@ -10,7 +10,7 @@ export class TokenService {
 
     static async getAccessToken(redis: Redis): Promise<string> {
         const cacheKey = 'mail_service_access_token';
-        
+
         // 1. Check Redis for a valid cached token
         try {
             const cachedToken = await redis.get(cacheKey);
@@ -18,8 +18,8 @@ export class TokenService {
                 // console.log('[TokenService] Using cached access token from Redis');
                 return cachedToken;
             }
-        } catch (err) {
-            console.error('[TokenService] Redis cache read error:', err);
+        } catch (_error) {
+            console.error('[TokenService] Redis cache read error:', error);
         }
 
         console.log('[TokenService] Cache miss or expired. Fetching fresh token from Azure...');
@@ -37,13 +37,13 @@ export class TokenService {
         }
 
         const tokenResponse = await this.credential.getToken('https://graph.microsoft.com/.default');
-        
+
         // 3. Save to Redis with 50-minute TTL (3000 seconds) for safe margin
         try {
             await redis.set(cacheKey, tokenResponse.token, 'EX', 3000);
             console.log('[TokenService] New token cached in Redis for 50 minutes (3000s buffer)');
-        } catch (err) {
-            console.error('[TokenService] Redis cache write error:', err);
+        } catch (_error) {
+            console.error('[TokenService] Redis cache write error:', error);
         }
 
         return tokenResponse.token;

@@ -23,12 +23,12 @@ export default async function provisioningRoutes(fastify: FastifyInstance) {
                 dateOfBirth
             });
 
-            return reply.status(202).send({ 
-                success: true, 
-                message: 'Provisioning task queued successfully. The account will be created and welcome email sent shortly.' 
+            return reply.status(202).send({
+                success: true,
+                message: 'Provisioning task queued successfully. The account will be created and welcome email sent shortly.'
             });
-        } catch (err: any) {
-            fastify.log.error(`[PROVISIONING] Failed for ${email}:`, err.message);
+        } catch (error: any) {
+            fastify.log.error(`[PROVISIONING] Failed for ${email}:`, error.message);
             return reply.status(500).send({ error: 'Failed to queue provisioning task' });
         }
     });

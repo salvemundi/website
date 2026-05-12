@@ -33,17 +33,16 @@ interface Props {
 export default function AdminActivitiesIsland({
     initialEvents = [],
     committees = [],
-    userCommittees = [],
     permissions
 }: Props) {
     const router = useRouter();
-    const { toast, showToast, hideToast } = useAdminToast();
-    const [events, setEvents] = useState(initialEvents);
+    const { toast, hideToast } = useAdminToast();
+    const [events] = useState(initialEvents);
     const [searchQuery, setSearchQuery] = useState('');
     const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>('all');
     const [selectedCommittee, setSelectedCommittee] = useState<string>('all');
     const [pageSize, setPageSize] = useState<number | -1>(10);
-    const [isPending, startTransition] = useTransition();
+    const [isPending] = useTransition();
 
     const handleFilterChange = (newFilter: 'all' | 'upcoming' | 'past') => setFilter(newFilter);
 

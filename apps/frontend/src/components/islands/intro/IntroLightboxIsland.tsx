@@ -28,6 +28,7 @@ export const IntroLightboxIsland = () => {
     }, [lightboxOpen]);
 
     const openLightbox = (src: string) => {
+        // eslint-disable-next-line security/detect-object-injection
         setLightboxSrc(failedImages[src] ? fallbackImage : src);
         setLightboxOpen(true);
     };

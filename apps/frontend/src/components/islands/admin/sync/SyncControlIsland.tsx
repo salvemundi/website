@@ -8,14 +8,14 @@ interface Props {
     tasks?: Record<string, unknown>[];
 }
 
-export default function SyncControlIsland({ tasks = [] }: Props) {
-    const { 
+export default function SyncControlIsland({ tasks: _tasks = [] }: Props) {
+    const {
         isStartingSync, isStopping, isResetting, isUserSyncLoading,
         selectedSyncFields, toggleField, forceLink, setForceLink,
         activeOnly, setActiveOnly, handleFullSync, handleStopSync, handleResetSync,
-        userId, setUserId, handleUserSync, syncFieldOptions, status 
+        userId, setUserId, handleUserSync, syncFieldOptions, status
     } = useSync();
-    
+
     return (
         <div className="flex flex-col gap-6 mb-8">
             <div className="bg-[var(--beheer-card-bg)] p-6 rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] shadow-sm">

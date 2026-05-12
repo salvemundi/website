@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { getImageUrl } from '@/lib/utils/image-utils';
+import MediaAsset from '@/components/ui/media/MediaAsset';
 import { 
     Search, 
     Trash2, 
@@ -117,9 +119,11 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                                             {!sticker.image ? (
                                                 <ImageIcon className="h-4 w-4 opacity-30" />
                                             ) : (
-                                                <img 
-                                                    src={`${ASSET_URL}/${sticker.image}?width=100&height=100&fit=cover`} 
+                                                <MediaAsset 
+                                                    asset={getImageUrl(sticker.image, { width: 100, height: 100, fit: 'cover' }) || ''} 
                                                     alt="Sticker"
+                                                    width={48}
+                                                    height={48}
                                                     className="w-full h-full object-cover rounded-[var(--beheer-radius)]"
                                                 />
                                             )}
@@ -166,11 +170,14 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                     onClick={() => setSelectedImage(null)}
                 >
                      <div className="relative max-w-4xl max-h-[90vh] animate-in zoom-in-95 duration-300">
-                        <img 
-                            src={selectedImage} 
-                            alt="Sticker Full" 
-                            className="rounded-[var(--beheer-radius)] shadow-2xl border border-[var(--beheer-border)] max-w-full max-h-[85vh] object-contain"
-                        />
+                        <div className="relative w-full h-full min-h-[50vh] min-w-[50vw]">
+                            <MediaAsset 
+                                asset={selectedImage} 
+                                alt="Sticker Full" 
+                                fill
+                                className="rounded-[var(--beheer-radius)] shadow-2xl border border-[var(--beheer-border)] object-contain"
+                            />
+                        </div>
                         <button 
                             className="absolute -top-4 -right-4 bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] p-2 rounded-full shadow-lg hover:text-[var(--beheer-accent)] transition-colors border border-[var(--beheer-border)]"
                             onClick={() => setSelectedImage(null)}

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { X, Check, Loader2, User, UserPlus, XCircle, CheckCircle } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { createManualSignupAction } from '@/server/actions/aanmeldingen.actions';
+import { createManualSignupAction } from '@/server/actions/admin/aanmeldingen.actions';
 import { UserBasic } from '@salvemundi/validations';
 import UserSearch from '@/components/ui/admin/UserSearch';
 
@@ -13,18 +13,16 @@ interface ManualSignupModalProps {
     onClose: () => void;
     eventId: string | number;
     eventName: string;
-    eventPrice: number;
 }
 
 
-export default function ManualSignupModal({ isOpen, onClose, eventId, eventName, eventPrice }: ManualSignupModalProps) {
+export default function ManualSignupModal({ isOpen, onClose, eventId, eventName }: ManualSignupModalProps) {
     const [activeTab, setActiveTab] = useState<'member' | 'guest'>('member');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
     // Member specific state
-    const [memberResults, setMemberResults] = useState<UserBasic[]>([]);
     const [selectedMember, setSelectedMember] = useState<UserBasic | null>(null);
 
     // Guest specific state
@@ -43,7 +41,6 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName,
         setIsLoading(false);
         setError(null);
         setSuccessMessage(null);
-        setMemberResults([]);
         setSelectedMember(null);
         setGuestName('');
         setGuestEmail('');
@@ -52,7 +49,6 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName,
 
     const handleMemberSelect = (user: UserBasic) => {
         setSelectedMember(user);
-        setMemberResults([]);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {

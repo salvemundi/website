@@ -2,7 +2,7 @@ import React from 'react';
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { getSyncStatusAction } from '@/server/actions/azure-sync/sync-monitoring.actions';
+import { getSyncStatusAction } from '@/server/actions/infrastructure/azure-sync/sync-monitoring.actions';
 
 // Modular Islands
 import SyncControlIsland from '@/components/islands/admin/sync/SyncControlIsland';

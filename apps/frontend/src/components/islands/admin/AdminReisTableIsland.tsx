@@ -4,7 +4,7 @@ import React, { useState, useTransition, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { format } from 'date-fns';
 import type { Trip, TripSignup, TripSignupActivity, TripActivity } from '@salvemundi/validations/schema/admin-reis.zod';
-import { updateTripSignup, updateSignupActivities } from '@/server/actions/reis-admin-signups.actions';
+import { updateTripSignup, updateSignupActivities } from '@/server/actions/admin/reis-signups.actions';
 import { Users, UserCheck, UserX, CreditCard, Banknote } from 'lucide-react';
 import ReisManagementHeader from '@/components/admin/reis/ReisManagementHeader';
 import ReisFilters from '@/components/admin/reis/ReisFilters';
@@ -41,13 +41,13 @@ interface AdminReisTableIslandProps {
  * AdminReisTableIsland: Beheerpaneel voor reisaanmeldingen.
  * Refactored naar < 300 regels door extractie van acties, export en utils.
  */
-export default function AdminReisTableIsland({ 
+export default function AdminReisTableIsland({
     title,
     backHref,
-    initialSignups = [], 
-    initialSignupActivities = {}, 
+    initialSignups = [],
+    initialSignupActivities = {},
     allTripActivities = [],
-    trip, 
+    trip,
     trips = [],
     stats
 }: AdminReisTableIslandProps) {
@@ -94,7 +94,7 @@ export default function AdminReisTableIsland({
     };
 
     const handleToggleActivity = (id: number) => {
-        setSelectedActivities(prev => 
+        setSelectedActivities(prev =>
             prev.includes(id) ? prev.filter(aid => aid !== id) : [...prev, id]
         );
     };
@@ -108,19 +108,19 @@ export default function AdminReisTableIsland({
                 showToast(res.error || 'Fout bij het opslaan', 'error');
                 return;
             }
-            
+
             const actRes = await updateSignupActivities(selectedSignup.id, selectedActivities);
             if (!actRes.success) {
                 showToast(actRes.error || 'Fout bij bijwerken activiteiten', 'error');
             }
 
             showToast('Wijzigingen opgeslagen', 'success');
-            
+
             const updatedData = Object.fromEntries(formData.entries());
             const id = Number(updatedData.id);
-            
-            const updateFunction = (s: TripSignup) => s.id === id ? { 
-                ...s, 
+
+            const updateFunction = (s: TripSignup) => s.id === id ? {
+                ...s,
                 ...updatedData,
                 willing_to_drive: updatedData.willing_to_drive === 'on' || updatedData.willing_to_drive === 'true',
                 deposit_paid: updatedData.deposit_paid === 'on' || updatedData.deposit_paid === 'true',
@@ -175,7 +175,7 @@ export default function AdminReisTableIsland({
 
     return (
         <div className="space-y-4">
-            <ReisManagementHeader 
+            <ReisManagementHeader
                 title={title}
                 backHref={backHref}
                 trips={trips}
@@ -186,7 +186,7 @@ export default function AdminReisTableIsland({
             />
 
             <div className="px-6 sm:px-12 py-8 flex flex-col gap-8">
-                <ReisFilters 
+                <ReisFilters
                     searchQuery={searchQuery}
                     onSearchChange={setSearchQuery}
                     statusFilter={statusFilter}
@@ -196,7 +196,7 @@ export default function AdminReisTableIsland({
                     stats={displayStats}
                 />
 
-                <ReisTable 
+                <ReisTable
                     filteredSignups={filteredSignups}
                     selectedSignupId={selectedSignup?.id || null}
                     onOpenSignup={openSignup}

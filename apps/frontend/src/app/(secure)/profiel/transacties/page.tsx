@@ -1,6 +1,6 @@
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { TransactionsIsland } from '@/components/islands/account/TransactionsIsland';
-import { getUserTransactions } from '@/server/actions/profiel.actions';
+import { getUserTransactions } from '@/server/actions/profile/profiel.actions';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import BackButton from '@/components/ui/navigation/BackButton';
 

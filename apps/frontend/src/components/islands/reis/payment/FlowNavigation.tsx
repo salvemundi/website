@@ -1,14 +1,11 @@
 import React from 'react';
 import { ChevronRight, CreditCard, ChevronLeft } from 'lucide-react';
-import { type Trip } from '@salvemundi/validations/schema/admin-reis.zod';
-
 interface FlowNavigationProps {
     step: number;
     loading: boolean;
     isProcessing: boolean;
     isValid?: boolean;
     paymentType: 'deposit' | 'final';
-    trip: Trip;
     onPrevious: () => void;
     onNext: () => void;
     onPayment: () => void;
@@ -20,7 +17,6 @@ export function FlowNavigation({
     isProcessing, 
     isValid = true,
     paymentType, 
-    trip, 
     onPrevious, 
     onNext, 
     onPayment 

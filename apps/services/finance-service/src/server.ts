@@ -40,12 +40,12 @@ const start = async () => {
         const { CacheInvalidationService } = await import('./services/cache-invalidation.js');
         const { DirectusRetryService } = await import('./services/directus-retry.service.js');
         const { AzureRetryService } = await import('./services/azure-retry.service.js');
-        
+
         CacheInvalidationService.startWorker(fastify.redis);
         DirectusRetryService.startWorker(fastify.redis);
         AzureRetryService.startWorker(fastify.redis);
-    } catch (err) {
-        fastify.log.error(err);
+    } catch (_error) {
+        fastify.log.error(error);
         process.exit(1);
     }
 };

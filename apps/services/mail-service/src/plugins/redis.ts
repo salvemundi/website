@@ -3,12 +3,12 @@ import { Redis } from 'ioredis';
 
 export default fp(async (fastify) => {
     const redisUrl = process.env.REDIS_URL || 'redis://v7-core-redis:6379';
-    
+
     const client = new Redis(redisUrl, {
         maxRetriesPerRequest: null,
     });
 
-    client.on('error', (err: Error) => fastify.log.error(err, 'Redis Client Error'));
+    client.on('error', (error: Error) => fastify.log.error(error, 'Redis Client Error'));
 
     fastify.decorate('redis', client);
 

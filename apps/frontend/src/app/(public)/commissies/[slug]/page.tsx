@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import { CommitteeDetail } from '@/components/ui/committees/CommitteeDetail';
-import { getCommitteeBySlug } from '@/server/actions/committees.actions';
+import { getCommitteeBySlug } from '@/server/actions/public/committees.actions';
 import BackButton from '@/components/ui/navigation/BackButton';
 
 export const metadata: Metadata = {

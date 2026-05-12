@@ -53,7 +53,7 @@ export default function KroegentochtTicketsIsland({ initialTickets = [], userEma
             const qrDataUrl = await generateQRCode(ticket.qr_token);
             const qrImg = new Image();
             qrImg.crossOrigin = "anonymous";
-            
+
             await new Promise((resolve, reject) => {
                 qrImg.onload = () => {
                     const qrSize = 400;
@@ -73,7 +73,7 @@ export default function KroegentochtTicketsIsland({ initialTickets = [], userEma
             link.href = canvas.toDataURL('image/png');
             link.click();
             showToast('Ticket succesvol gegenereerd', 'success');
-        } catch (e) {
+        } catch {
             showToast('Er is een fout opgetreden bij het genereren van je ticket.', 'error');
         }
     };
@@ -96,15 +96,15 @@ export default function KroegentochtTicketsIsland({ initialTickets = [], userEma
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {tickets.map((ticket, i) => (
-                    <div 
-                        key={ticket.id} 
+                    <div
+                        key={ticket.id}
                         className="group relative bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/10 p-6 transition-all hover:shadow-md hover:border-[var(--color-purple-theme)]/30"
                     >
                         <div className="flex flex-col items-center">
                             <div className="bg-white p-2 rounded-xl shadow-sm">
                                 <QRDisplay qrToken={ticket.qr_token} size={180} />
                             </div>
-                            
+
                             <div className="mt-6 w-full space-y-2">
                                 <div className="flex justify-between items-end border-b border-slate-200 dark:border-white/10 pb-2">
                                     <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Deelnemer</span>

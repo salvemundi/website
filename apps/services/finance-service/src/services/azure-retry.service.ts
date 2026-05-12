@@ -36,7 +36,7 @@ export class AzureRetryService {
      */
     static async startWorker(redis: Redis) {
         console.log('[AzureRetry] Starting Azure Update Worker Loop...');
-        
+
         while (!this.shouldStop) {
             try {
                 const now = Date.now();
@@ -49,18 +49,18 @@ export class AzureRetryService {
 
                 for (const taskStr of taskStrings) {
                     const task: AzureUpdateTask = JSON.parse(taskStr);
-                    
+
                     try {
                         await this.processUpdate(task);
-                        
+
                         if (task.triggerSync) {
                             await this.triggerSync(task.entraId);
                         }
-                        
+
                         await redis.zrem(this.QUEUE_KEY, taskStr);
                         console.log(`[AzureRetry] Successfully updated Azure user ${task.entraId}`);
-                    } catch (err: any) {
-                        console.error(`[AzureRetry] Failed attempt ${task.retries + 1} for ${task.entraId}: ${err.message}`);
+                    } catch (error: any) {
+                        console.error(`[AzureRetry] Failed attempt ${task.retries + 1} for ${task.entraId}: ${error.message}`);
                         await redis.zrem(this.QUEUE_KEY, taskStr);
 
                         if (task.retries < task.maxRetries) {
@@ -72,8 +72,8 @@ export class AzureRetryService {
                     }
                 }
                 await new Promise(resolve => setTimeout(resolve, 2000));
-            } catch (err: any) {
-                console.error(`[AzureRetry] Worker loop error: ${err.message}`);
+            } catch (error: any) {
+                console.error(`[AzureRetry] Worker loop error: ${error.message}`);
                 await new Promise(resolve => setTimeout(resolve, 10000));
             }
         }

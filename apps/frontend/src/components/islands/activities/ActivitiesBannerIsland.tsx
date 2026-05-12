@@ -12,7 +12,7 @@ export default function ActivitiesBannerIsland({ events, serverTime }: Activitie
     const upcomingEvent = useMemo(() => {
         const now = serverTime ? new Date(serverTime) : new Date();
         const allEvents = events || [];
-        
+
         // 1. Try finding the next upcoming event
         const upcoming = allEvents
             .filter(e => {
@@ -20,24 +20,24 @@ export default function ActivitiesBannerIsland({ events, serverTime }: Activitie
                 return eventDateTime >= now.getTime();
             })
             .sort((a, b) => e_to_time(a) - e_to_time(b));
-            
+
         if (upcoming.length > 0) return upcoming[0];
-        
+
         // 2. Fallback: Show the most recent past event to maintain geometry (Zero-Drift)
         return allEvents.sort((a, b) => e_to_time(b) - e_to_time(a))[0] || null;
 
         function e_to_time(e: Activiteit) {
             const datePart = e.datum_start.split('T')[0];
             return e.event_time
-                    ? new Date(`${datePart}T${e.event_time}`).getTime()
-                    : new Date(e.datum_start).getTime();
+                ? new Date(`${datePart}T${e.event_time}`).getTime()
+                : new Date(e.datum_start).getTime();
         }
     }, [events, serverTime]);
 
     if (!upcomingEvent) return null;
-    
+
     const datePart = upcomingEvent.datum_start.split('T')[0];
-    
+
     return (
         <div className="relative w-full flex justify-center py-4">
             <FlipClock
@@ -46,8 +46,7 @@ export default function ActivitiesBannerIsland({ events, serverTime }: Activitie
                     : upcomingEvent.datum_start
                 }
                 title={upcomingEvent.titel}
-                href={(upcomingEvent as any).custom_url || `/activiteiten/${slugify(upcomingEvent.titel || '')}`}
-                serverTime={serverTime}
+                href={(upcomingEvent as Activiteit & { custom_url?: string }).custom_url || `/activiteiten/${slugify(upcomingEvent.titel || '')}`} serverTime={serverTime}
             />
         </div>
     );

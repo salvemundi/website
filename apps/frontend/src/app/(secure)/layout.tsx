@@ -13,14 +13,7 @@ interface SecureLayoutProps {
 export default async function SecureLayout({ children }: SecureLayoutProps) {
     const session = await getEnrichedSession();
 
-    const pathname = '/profiel'; // Layout context
-
-    if (session) {
-
-    }
-
     if (!session?.user) {
-
         redirect('/?needLogin=true');
     }
 

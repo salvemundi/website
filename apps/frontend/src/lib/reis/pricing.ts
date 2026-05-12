@@ -36,13 +36,13 @@ export function calculateTripPricing(
         
         // Add sub-option prices if any
         if (activity.options && Array.isArray(activity.options)) {
-            activity.options.forEach(opt => {
-                const optId = opt.id;
-                // Note: options in activity are objects with {id, name, price}
-                if (optId && sel.options[optId]) {
-                    total += Number(opt.price || 0);
-                }
-            });
+                const optionsMap = new Map(Object.entries(sel.options || {}));
+                activity.options.forEach(opt => {
+                    const optId = opt.id;
+                    if (optId && optionsMap.get(optId)) {
+                        total += Number(opt.price || 0);
+                    }
+                });
         }
         return sum + total;
     }, 0);

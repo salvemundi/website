@@ -36,8 +36,10 @@ export async function GET(
     try {
         const res = await fetchWithRetry(url, {
             headers: {
-                Authorization: `Bearer ${token}` },
-            cache: 'no-store' });
+                Authorization: `Bearer ${token}`
+            },
+            cache: 'no-store'
+        });
 
         if (!res.ok) {
             console.error(`Directus error for asset ${id}: ${res.status}`);
@@ -56,9 +58,12 @@ export async function GET(
             status: 200,
             headers: {
                 'Content-Type': contentType,
-                'Cache-Control': 'public, max-age=31536000, immutable' } });
-    } catch (error: any) {
-        console.error(`Critical error fetching asset ${id}:`, error.message);
+                'Cache-Control': 'public, max-age=31536000, immutable'
+            }
+        });
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(`Critical error fetching asset ${id}:`, errorMessage);
         return new Response(null, { status: 500 });
     }
 }

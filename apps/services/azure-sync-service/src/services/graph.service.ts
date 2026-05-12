@@ -55,7 +55,7 @@ export class GraphService {
         console.log(`[GraphService] getAllUsers started`);
         let allUsers: AzureUser[] = [];
         const client = this.getClient(token);
-        
+
         const fetchWithRetry = async (url: string, selectFields?: string, top: number = 100, retries = 3): Promise<any> => {
             const isFullUrl = url.startsWith('http');
             for (let i = 0; i < retries; i++) {
@@ -66,10 +66,10 @@ export class GraphService {
                         request = request.top(top);
                     }
                     return await request.get();
-                } catch (err: any) {
-                    if (i === retries - 1) throw err;
+                } catch (error: any) {
+                    if (i === retries - 1) throw error;
                     const delay = Math.pow(2, i) * 1000;
-                    console.warn(`[GraphService] Request failed (Status ${err.statusCode}), retrying in ${delay}ms...`);
+                    console.warn(`[GraphService] Request failed (Status ${error.statusCode}), retrying in ${delay}ms...`);
                     await new Promise(resolve => setTimeout(resolve, delay));
                 }
             }
@@ -111,12 +111,12 @@ export class GraphService {
                 .select('id')
                 .get();
             return (response.value || []).map((o: any) => o.id);
-        } catch (err: any) {
-            if (err.statusCode === 403 || err.message?.includes('Insufficient privileges')) {
+        } catch (error: any) {
+            if (error.statusCode === 403 || error.message?.includes('Insufficient privileges')) {
                 console.warn(`[GraphService] Insufficient privileges to read owners of group ${groupId}. Returning empty list.`);
                 return [];
             }
-            throw err;
+            throw error;
         }
     }
 
@@ -144,8 +144,8 @@ export class GraphService {
                 const owners = await this.getGroupOwners(id, token);
 
                 result.set(id, { members, owners });
-            } catch (err: any) {
-                console.error(`[GraphService] Failed to fetch details for group ${id}:`, err.message);
+            } catch (error: any) {
+                console.error(`[GraphService] Failed to fetch details for group ${id}:`, error.message);
                 result.set(id, { members: [], owners: [] });
             }
         }
@@ -172,7 +172,7 @@ export class GraphService {
 
             try {
                 const batchResponse = await client.api('/$batch').post({ requests });
-                
+
                 for (const res of batchResponse.responses) {
                     if (res.status === 200) {
                         const buffer = Buffer.from(res.body, 'base64');
@@ -182,8 +182,8 @@ export class GraphService {
                         result.set(res.id, null);
                     }
                 }
-            } catch (err) {
-                console.error(`[GraphService] Batch photo fetch failed:`, err);
+            } catch (_error) {
+                console.error(`[GraphService] Batch photo fetch failed:`, error);
                 // Fallback: fill remaining with nulls so we don't crash
                 batchIds.forEach(id => { if (!result.has(id)) result.set(id, null); });
             }
@@ -213,8 +213,8 @@ export class GraphService {
             const contentType = response.headers.get('content-type') || 'image/jpeg';
 
             return { buffer, contentType };
-        } catch (err) {
-            console.error(`[GraphService] Error fetching photo for user ${userId}:`, err);
+        } catch (_error) {
+            console.error(`[GraphService] Error fetching photo for user ${userId}:`, error);
             return null;
         }
     }

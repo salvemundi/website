@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { Trip, TripSignup } from '@salvemundi/validations/schema/admin-reis.zod';
-import { updateSignupStatus, deleteTripSignup } from '@/server/actions/reis-admin-signups.actions';
-import { sendPaymentEmail } from '@/server/actions/reis-admin-mail.actions';
+import { updateSignupStatus, deleteTripSignup } from '@/server/actions/admin/reis-signups.actions';
+import { sendPaymentEmail } from '@/server/actions/admin/reis-mail.actions';
 
 import { type ToastType } from '@/components/ui/admin/AdminToast';
 
@@ -9,7 +9,7 @@ import { type ToastType } from '@/components/ui/admin/AdminToast';
  * Hook voor het beheren van reisaanmelding acties (status wijzigen, verwijderen, emails sturen).
  */
 export function useReisActions(
-    initialSignups: TripSignup[], 
+    initialSignups: TripSignup[],
     trip: Trip,
     showToast: (message: string, type: ToastType) => void
 ) {
@@ -28,19 +28,19 @@ export function useReisActions(
             if (res.success) {
                 const updatedStatus = newStatus as TripSignup['status'];
                 setSignups(prev => prev.map(s => s.id === id ? { ...s, status: updatedStatus } : s));
-                
+
                 if (onUpdateSelected) {
                     const currentSignup = signups.find(s => s.id === id);
                     if (currentSignup) {
                         onUpdateSelected({ ...currentSignup, status: updatedStatus });
                     }
                 }
-                
+
                 showToast(`Status succesvol bijgewerkt naar ${newStatus}`, 'success');
             } else {
                 showToast(res.error || 'Fout bij bijwerken status.', 'error');
             }
-        } catch (error) {
+        } catch {
             showToast('Fout bij bijwerken status.', 'error');
         } finally {
             setActionStates(prev => {
@@ -64,7 +64,7 @@ export function useReisActions(
             } else {
                 showToast(res.error || 'Fout bij verwijderen aanmelding.', 'error');
             }
-        } catch (error) {
+        } catch {
             showToast('Fout bij verwijderen aanmelding.', 'error');
         } finally {
             setActionStates(prev => {
@@ -104,7 +104,7 @@ export function useReisActions(
                     ...s,
                     [paymentType === 'deposit' ? 'deposit_email_sent' : 'final_email_sent']: true
                 } : s;
-                
+
                 setSignups(prev => prev.map(update));
                 if (onUpdateSelected) {
                     onUpdateSelected(update(signup));

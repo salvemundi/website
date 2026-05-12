@@ -1,8 +1,8 @@
 import 'server-only';
 import { requireAdminResource } from '@/server/auth/auth-utils';
 import { AdminResource } from '@/shared/lib/permissions-config';
-import { fetchFullTripsDb, fetchTripActivitiesByTripIdDb } from '@/server/actions/reis-db.utils';
-import { 
+import { fetchFullTripsDb, fetchTripActivitiesByTripIdDb } from '@/server/internal/reis-db.utils';
+import {
     tripSchema,
     type Trip,
     type TripActivity
@@ -21,9 +21,9 @@ export async function getTrips(): Promise<Trip[]> {
         const parsed = z.array(tripSchema).safeParse(sanitized);
 
         if (!parsed.success) {
-            
+
             // Fallback to sanitized raw if validation fails slightly, to keep UI working
-            return sanitized as Trip[]; 
+            return sanitized as Trip[];
         }
 
         return parsed.data;

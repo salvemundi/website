@@ -2,6 +2,7 @@
 
 import { Upload, X, Save, Loader2, Eye, Check } from 'lucide-react';
 import { useRef } from 'react';
+import MediaAsset from '@/components/ui/media/MediaAsset';
 
 interface TripFormSidebarProps {
     isAdding: boolean;
@@ -54,7 +55,7 @@ export default function TripFormSidebar({
                         </div>
                     ) : (
                         <div className="relative group overflow-hidden rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 h-[160px] flex items-center justify-center">
-                            <img src={imagePreview} alt="Preview" className="w-full h-full object-contain transition-transform duration-700" />
+                            <MediaAsset asset={imagePreview} alt="Preview" fill className="object-contain transition-transform duration-700" />
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                                 <button type="button" onClick={() => fileInputRef.current?.click()} className="bg-white text-slate-900 p-2.5 rounded-xl hover:scale-110 transition shadow-xl cursor-pointer"><Upload className="h-4 w-4" /></button>
                                 <button type="button" onClick={onRemoveImage} className="bg-red-500 text-white p-2.5 rounded-xl hover:scale-110 transition shadow-xl cursor-pointer"><X className="h-4 w-4" /></button>
@@ -71,38 +72,37 @@ export default function TripFormSidebar({
                     <Eye className="h-4 w-4 text-[var(--beheer-accent)]" />
                     <h2 className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text)]">Instellingen</h2>
                 </div>
-                    <div className="space-y-3">
-                        <label className="relative flex items-center gap-4 bg-[var(--beheer-card-soft)]/30 p-3 rounded-xl border border-[var(--beheer-border)]/30 cursor-pointer group transition-all hover:bg-[var(--beheer-card-soft)]/50">
-                            <div className="relative flex items-center justify-center">
-                                <input type="checkbox" name="registration_open" checked={registrationOpen} onChange={(e) => setRegistrationOpen(e.target.checked)} className="peer sr-only" />
-                                <div className="w-5 h-5 border-2 border-[var(--beheer-border)] rounded peer-checked:border-[var(--beheer-accent)] peer-checked:bg-[var(--beheer-accent)] transition-all"></div>
-                                <Check className="absolute h-3 w-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
-                            </div>
-                            <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest group-hover:text-[var(--beheer-text)] transition-colors">Inschrijving Open</span>
-                            {isAutoOpen && (
-                                <div className="ml-auto px-2 py-0.5 bg-emerald-500/10 text-emerald-500 rounded-md text-[8px] font-black uppercase tracking-tighter border border-emerald-500/20">
-                                    Auto-Open Actief
-                                </div>
-                            )}
-                        </label>
-
-                        <label className="relative flex items-center gap-4 bg-[var(--beheer-card-soft)]/30 p-3 rounded-xl border border-[var(--beheer-border)]/30 cursor-pointer group transition-all hover:bg-[var(--beheer-card-soft)]/50">
-                            <div className="relative flex items-center justify-center">
-                                <input type="checkbox" name="allow_final_payments" checked={allowFinalPayments} onChange={(e) => setAllowFinalPayments(e.target.checked)} className="peer sr-only" />
-                                <div className="w-5 h-5 border-2 border-[var(--beheer-border)] rounded peer-checked:border-[var(--beheer-accent)] peer-checked:bg-[var(--beheer-accent)] transition-all"></div>
-                                <Check className="absolute h-3 w-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
-                            </div>
-                            <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest group-hover:text-[var(--beheer-text)] transition-colors">Restbetalingen Aan</span>
-                        </label>
-
-                        {allowFinalPayments && (
-                            <div className="px-4 py-3 bg-amber-500/10 border border-amber-500/20 rounded-xl">
-                                <p className="text-[9px] font-bold text-amber-600 uppercase tracking-widest leading-relaxed">
-                                    Let op: Het inschakelen van restbetalingen sluit automatisch nieuwe inschrijvingen voor deze reis.
-                                </p>
+                <div className="space-y-3 p-4">
+                    <label className="relative flex items-center gap-4 bg-[var(--beheer-card-soft)]/30 p-3 rounded-xl border border-[var(--beheer-border)]/30 cursor-pointer group transition-all hover:bg-[var(--beheer-card-soft)]/50">
+                        <div className="relative flex items-center justify-center">
+                            <input type="checkbox" name="registration_open" checked={registrationOpen} onChange={(e) => setRegistrationOpen(e.target.checked)} className="peer sr-only" />
+                            <div className="w-5 h-5 border-2 border-[var(--beheer-border)] rounded peer-checked:border-[var(--beheer-accent)] peer-checked:bg-[var(--beheer-accent)] transition-all"></div>
+                            <Check className="absolute h-3 w-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
+                        </div>
+                        <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest group-hover:text-[var(--beheer-text)] transition-colors">Inschrijving Open</span>
+                        {isAutoOpen && (
+                            <div className="ml-auto px-2 py-0.5 bg-emerald-500/10 text-emerald-500 rounded-md text-[8px] font-black uppercase tracking-tighter border border-emerald-500/20">
+                                Auto-Open Actief
                             </div>
                         )}
-                    </div>
+                    </label>
+
+                    <label className="relative flex items-center gap-4 bg-[var(--beheer-card-soft)]/30 p-3 rounded-xl border border-[var(--beheer-border)]/30 cursor-pointer group transition-all hover:bg-[var(--beheer-card-soft)]/50">
+                        <div className="relative flex items-center justify-center">
+                            <input type="checkbox" name="allow_final_payments" checked={allowFinalPayments} onChange={(e) => setAllowFinalPayments(e.target.checked)} className="peer sr-only" />
+                            <div className="w-5 h-5 border-2 border-[var(--beheer-border)] rounded peer-checked:border-[var(--beheer-accent)] peer-checked:bg-[var(--beheer-accent)] transition-all"></div>
+                            <Check className="absolute h-3 w-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
+                        </div>
+                        <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest group-hover:text-[var(--beheer-text)] transition-colors">Restbetalingen Aan</span>
+                    </label>
+
+                    {allowFinalPayments && (
+                        <div className="px-4 py-3 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                            <p className="text-[9px] font-bold text-amber-600 uppercase tracking-widest leading-relaxed">
+                                Let op: Het inschakelen van restbetalingen sluit automatisch nieuwe inschrijvingen voor deze reis.
+                            </p>
+                        </div>
+                    )}
 
                     <label className="relative flex items-center gap-4 bg-[var(--beheer-card-soft)]/30 p-3 rounded-xl border border-[var(--beheer-border)]/30 cursor-pointer group transition-all hover:bg-[var(--beheer-card-soft)]/50">
                         <div className="relative flex items-center justify-center">
@@ -113,21 +113,22 @@ export default function TripFormSidebar({
                         <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest group-hover:text-[var(--beheer-text)] transition-colors">Busreis (Rijbewijs)</span>
                     </label>
                 </div>
+            </div>
 
             {/* Actions */}
             <div className="space-y-3">
-                <button 
-                    type="submit" 
-                    disabled={pending} 
+                <button
+                    type="submit"
+                    disabled={pending}
                     className="w-full bg-[var(--beheer-accent)] text-white px-8 py-4 rounded-xl font-semibold tracking-widest text-[10px] shadow-lg hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 group border border-white/10"
                 >
                     {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 group-hover:scale-110 transition-transform" />}
                     <span>{pending ? 'Bezig...' : isAdding ? 'Reis Aanmaken' : 'Wijzigingen Opslaan'}</span>
                 </button>
-                
-                <button 
-                    type="button" 
-                    onClick={onCancel} 
+
+                <button
+                    type="button"
+                    onClick={onCancel}
                     className="w-full px-8 py-4 rounded-xl font-semibold tracking-widest text-[10px] border border-[var(--beheer-border)] text-[var(--beheer-text)] hover:bg-[var(--beheer-card-soft)] transition-all cursor-pointer"
                 >
                     Annuleren

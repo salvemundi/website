@@ -30,7 +30,7 @@ export class DirectusService {
     static async updateUser(id: string, data: Partial<DirectusUser>) {
         return await getDirectusClient().request(updateUser(id, data));
     }
-    
+
     static async createUser(data: Partial<DirectusUser>) {
         return await getDirectusClient().request(createUser(data));
     }
@@ -113,7 +113,7 @@ export class DirectusService {
 
     static async getPaidEventSignups(eventId: number): Promise<EventSignup[]> {
         return await getDirectusClient().request(readItems('event_signups', {
-            filter: { 
+            filter: {
                 event_id: { _eq: eventId },
                 payment_status: { _eq: 'paid' }
             },
@@ -128,8 +128,8 @@ export class DirectusService {
                 fields: ['is_active']
             }));
             return items?.[0]?.is_active ?? false;
-        } catch (err) {
-            console.error(`[DirectusService] Error checking flag ${key}:`, err);
+        } catch (_error) {
+            console.error(`[DirectusService] Error checking flag ${key}:`, error);
             return false;
         }
     }
@@ -140,7 +140,7 @@ export class DirectusService {
     static async uploadUserAvatar(userId: string, buffer: Buffer, filename: string, contentType: string) {
         const client = getDirectusClient();
         const formData = new FormData();
-        
+
         // Convert Buffer to Blob for the SDK/FormData
         const blob = new Blob([buffer], { type: contentType });
         formData.append('file', blob, filename);
@@ -154,9 +154,9 @@ export class DirectusService {
             }));
 
             return fileId;
-        } catch (err) {
-            console.error(`[DirectusService] Failed to upload avatar for user ${userId}:`, err);
-            throw err;
+        } catch (_error) {
+            console.error(`[DirectusService] Failed to upload avatar for user ${userId}:`, error);
+            throw error;
         }
     }
 }

@@ -16,7 +16,7 @@ interface ExpandedTripSignupActivity {
 export function generateReisCSVData(
     signups: TripSignup[], 
     signupActivitiesMap: Record<number, TripSignupActivity[]>, 
-    trip: Trip
+    _trip: Trip
 ) {
     return signups.map(signup => {
         const idDoc = signup.id_document || '';

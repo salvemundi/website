@@ -35,7 +35,7 @@ export class DirectusRetryService {
      */
     static async startWorker(redis: Redis) {
         console.log('[DirectusRetry] Starting Directus Update Worker Loop...');
-        
+
         while (!this.shouldStop) {
             try {
                 const now = Date.now();
@@ -48,13 +48,13 @@ export class DirectusRetryService {
 
                 for (const taskStr of taskStrings) {
                     const task: DirectusUpdateTask = JSON.parse(taskStr);
-                    
+
                     try {
                         await this.processUpdate(task);
                         await redis.zrem(this.QUEUE_KEY, taskStr);
                         console.log(`[DirectusRetry] Successfully processed update for ${task.collection}/${task.id}`);
-                    } catch (err: any) {
-                        console.error(`[DirectusRetry] Failed attempt ${task.retries + 1} for ${task.collection}/${task.id}: ${err.message}`);
+                    } catch (error: any) {
+                        console.error(`[DirectusRetry] Failed attempt ${task.retries + 1} for ${task.collection}/${task.id}: ${error.message}`);
                         await redis.zrem(this.QUEUE_KEY, taskStr);
 
                         if (task.retries < task.maxRetries) {
@@ -62,7 +62,7 @@ export class DirectusRetryService {
                             // Exponential Backoff
                             const backoffSec = Math.min(3600, 10 * Math.pow(2, task.retries - 1)); // Max 1 hour
                             const nextAttempt = Date.now() + (backoffSec * 1000);
-                            
+
                             await redis.zadd(this.QUEUE_KEY, nextAttempt, JSON.stringify(task));
                         } else {
                             console.error(`[DirectusRetry] Max retries reached for ${task.collection}/${task.id}. Dropping task.`);
@@ -70,8 +70,8 @@ export class DirectusRetryService {
                     }
                 }
                 await new Promise(resolve => setTimeout(resolve, 1000));
-            } catch (err: any) {
-                console.error(`[DirectusRetry] Worker loop error: ${err.message}`);
+            } catch (error: any) {
+                console.error(`[DirectusRetry] Worker loop error: ${error.message}`);
                 await new Promise(resolve => setTimeout(resolve, 5000));
             }
         }
@@ -84,7 +84,7 @@ export class DirectusRetryService {
     private static async processUpdate(task: DirectusUpdateTask) {
         const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL!;
         const directusToken = process.env.DIRECTUS_STATIC_TOKEN!;
-        
+
         const directus = createDirectus<any>(directusUrl)
             .with(staticToken(directusToken))
             .with(rest());

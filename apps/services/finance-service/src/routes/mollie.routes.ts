@@ -22,8 +22,8 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
         const queryTokenRaw = request.query?.token;
         const queryToken = Array.isArray(queryTokenRaw) ? queryTokenRaw[0] : queryTokenRaw;
 
-        const isAuthorized = timingSafeCompare(headerSecret || '', webhookSecret) || 
-                            timingSafeCompare(queryToken || '', webhookSecret);
+        const isAuthorized = timingSafeCompare(headerSecret || '', webhookSecret) ||
+            timingSafeCompare(queryToken || '', webhookSecret);
 
         if (!isAuthorized) {
             return reply.status(401).send({ error: 'Unauthorized' });
@@ -70,8 +70,8 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
             }
 
             return { success: true };
-        } catch (err: any) {
-            fastify.log.error(`[FINANCE] Error processing webhook ${id}:`, err);
+        } catch (error: any) {
+            fastify.log.error(`[FINANCE] Error processing webhook ${id}:`, error);
             return reply.status(500).send({ error: 'Internal processing error' });
         }
     });

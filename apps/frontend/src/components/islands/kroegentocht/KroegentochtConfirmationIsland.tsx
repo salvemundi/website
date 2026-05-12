@@ -1,18 +1,16 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { getKroegentochtStatus } from '@/server/actions/kroegentocht.actions';
+import { useSearchParams } from 'next/navigation';
+import { getKroegentochtStatus } from '@/server/actions/events/kroegentocht.actions';
 import { CheckCircle2, XCircle, Loader2, Home, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 export default function KroegentochtConfirmationIsland() {
-    const router = useRouter();
     const searchParams = useSearchParams();
     const signupId = searchParams.get('id');
     
     const [status, setStatus] = useState<'loading' | 'paid' | 'failed' | 'open'>('loading');
-    const [signupData, setSignupData] = useState<any>(null);
     const [attempts, setAttempts] = useState(0);
 
     useEffect(() => {
@@ -26,7 +24,6 @@ export default function KroegentochtConfirmationIsland() {
             
             if (result.status === 'paid') {
                 setStatus('paid');
-                setSignupData(result.signup);
             } else if (result.status === 'failed' || result.status === 'error') {
                 setStatus('failed');
             } else {

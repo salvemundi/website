@@ -7,7 +7,7 @@ import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
 import { DateInput } from '@/shared/ui/DateInput';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
-import { validateCouponAction, initiateMembershipPaymentAction } from '@/server/actions/membership.actions';
+import { validateCouponAction, initiateMembershipPaymentAction } from '@/server/actions/profile/membership.actions';
 import { signupSchema, type SignupFormData } from '@salvemundi/validations/schema/membership.zod';
 import { calculateDiscountedPrice } from '@/shared/lib/price-utils';
 import AdminToast from '@/components/ui/admin/AdminToast';
@@ -27,7 +27,6 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
         control,
         handleSubmit,
         watch,
-        setValue,
         formState: { errors }
     } = useForm<SignupFormData>({
         resolver: zodResolver(signupSchema),
@@ -42,7 +41,6 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
     });
 
     const couponValue = watch('coupon');
-    const telefoonValue = watch('telefoon');
 
     const handleCouponCheck = async () => {
         if (!couponValue) return;

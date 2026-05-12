@@ -2,8 +2,8 @@ import { GraphService } from '../graph.service.js';
 import { TokenService } from '../token.service.js';
 import { Redis } from 'ioredis';
 import { query } from '../../plugins/db.js';
-import { 
-    SyncStatus, SyncOptions, SyncContext, 
+import {
+    SyncStatus, SyncOptions, SyncContext,
     SYNC_REDIS_KEY, SYNC_ABORT_KEY, GROUP_ACTIVE_LID,
     getInitialStatus
 } from './sync-types.js';
@@ -40,7 +40,7 @@ export class SyncJob {
 
         try {
             const token = await TokenService.getAccessToken(redis);
-            
+
             // 2. PRE-FETCH DATA
             if (!options.silent) console.log(`[SYNC] [${jobId}] Step 1: Fetching users & group data...`);
             const [azureUsers, { committees, committeeCache, committeeByIdCache }, { allLeden, userCacheByEntra }, { membershipCache }] = await Promise.all([
@@ -98,9 +98,9 @@ export class SyncJob {
                         try {
                             await SyncProcessor.syncUserOptimized(ctx, aUser);
                             status.processed++;
-                        } catch (err) {
+                        } catch (_error) {
                             status.errorCount++; status.processed++;
-                            status.errors.push({ email, message: err instanceof Error ? err.message : String(err), timestamp: new Date().toISOString() });
+                            status.errors.push({ email, message: error instanceof Error ? error.message : String(error), timestamp: new Date().toISOString() });
                         }
                     }
                 }));
@@ -122,7 +122,7 @@ export class SyncJob {
             status.active = false; status.status = 'completed'; status.endTime = new Date().toISOString();
             await persistSyncStatus(redis, status);
             await this.logSummary(jobId, status);
-        } catch (error) {
+        } catch (_error) {
             console.error(`[SYNC] [${jobId}] Fatal error:`, error);
             const s = await getSyncStatus(redis);
             s.active = false; s.status = 'failed'; s.endTime = new Date().toISOString();
@@ -176,7 +176,7 @@ export class SyncJob {
             await SyncProcessor.syncUserOptimized(ctx, aUser);
             status.processed++; status.active = false; status.status = 'completed'; status.endTime = new Date().toISOString();
             await persistSyncStatus(redis, status, false);
-        } catch (error) {
+        } catch (_error) {
             status.active = false; status.status = 'failed'; status.endTime = new Date().toISOString(); status.errorCount = 1;
             status.errors.push({ email: aUser.mail || aUser.userPrincipalName, message: error instanceof Error ? error.message : String(error), timestamp: new Date().toISOString() });
             await persistSyncStatus(redis, status, false);
@@ -192,6 +192,6 @@ export class SyncJob {
                 duration_ms: status.startTime ? (Date.now() - new Date(status.startTime).getTime()) : null
             })
         ]);
-        try { await query(`DELETE FROM system_logs WHERE created_at < NOW() - INTERVAL '90 days'`); } catch {}
+        try { await query(`DELETE FROM system_logs WHERE created_at < NOW() - INTERVAL '90 days'`); } catch (_error) { }
     }
 }

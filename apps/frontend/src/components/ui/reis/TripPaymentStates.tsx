@@ -53,7 +53,7 @@ export function TripWaitlisted() {
             </h2>
             
             <p className="text-[var(--text-muted)] max-w-md mx-auto mb-10 font-medium text-balance">
-                Je staat momenteel op de wachtlijst voor deze reis. Je kunt pas betalen zodra er een plek vrijkomt en je status is aangepast naar 'Geregistreerd'.
+                Je staat momenteel op de wachtlijst voor deze reis. Je kunt pas betalen zodra er een plek vrijkomt en je status is aangepast naar &apos;Geregistreerd&apos;.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">

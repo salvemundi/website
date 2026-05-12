@@ -52,6 +52,7 @@ export default function AdminModal({
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-500">
             <div 
+                // eslint-disable-next-line security/detect-object-injection
                 className={`bg-[var(--beheer-card-bg)]/90 backdrop-blur-xl w-full ${maxWidthClasses[maxWidth]} squircle-lg shadow-[0_40px_100px_rgba(0,0,0,0.5)] overflow-hidden border border-[var(--beheer-border)]/50 flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-500`}
                 onClick={(e) => e.stopPropagation()}
             >

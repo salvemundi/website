@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { getRedis } from './redis-client';
+import { getRedis } from '@/server/auth/redis-client';
 
 /**
  * Clears the current user's session cache in Redis.
@@ -8,9 +8,9 @@ import { getRedis } from './redis-client';
 export async function clearSessionCache() {
     try {
         const cookieStore = await cookies();
-        const sessionToken = cookieStore.get('better-auth.session-token')?.value || 
-                           cookieStore.get('__Secure-better-auth.session-token')?.value;
-                           
+        const sessionToken = cookieStore.get('better-auth.session-token')?.value ||
+            cookieStore.get('__Secure-better-auth.session-token')?.value;
+
         if (sessionToken) {
             const redis = await getRedis();
             await redis.del(`session:${sessionToken}`);

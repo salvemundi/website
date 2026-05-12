@@ -14,9 +14,9 @@ export class EventListenerService {
 
         try {
             await redis.xgroup('CREATE', this.STREAM_KEY, this.GROUP_NAME, '0', 'MKSTREAM');
-        } catch (err: any) {
-            if (!err.message.includes('BUSYGROUP')) {
-                console.error('[AzureEventListener] Error creating consumer group:', err);
+        } catch (error: any) {
+            if (!error.message.includes('BUSYGROUP')) {
+                console.error('[AzureEventListener] Error creating consumer group:', error);
             }
         }
 
@@ -35,14 +35,14 @@ export class EventListenerService {
                             for (let i = 0; i < fields.length; i += 2) {
                                 data[fields[i]] = fields[i + 1];
                             }
-                            
+
                             await this.handleEvent(redis, { id, data });
                             await redis.xack(this.STREAM_KEY, this.GROUP_NAME, id);
                         }
                     }
                 }
-            } catch (err: any) {
-                console.error('[AzureEventListener] Loop Error:', err.message);
+            } catch (error: any) {
+                console.error('[AzureEventListener] Loop Error:', error.message);
                 await new Promise(resolve => setTimeout(resolve, 5000));
             }
         }
@@ -55,7 +55,7 @@ export class EventListenerService {
 
             if (rawData.event === 'PAYMENT_SUCCESS') {
                 const data = PaymentSuccessEventSchema.parse(rawData);
-                
+
                 if (data.registrationType === 'membership') {
                     if (data.userId) {
                         // 1. Existing user: Membership Renewal / Extension
@@ -85,7 +85,7 @@ export class EventListenerService {
                             });
 
                             if (!res.ok) throw new Error(`Management service error: ${await res.text()}`);
-                            
+
                             await AuditService.logMembershipProvisioning(data.email, data.firstName || '', data.lastName || '', data.paymentId);
                             console.log(`[AzureEventListener] Triggered new user provisioning for ${data.email}`);
                         } else {
@@ -96,8 +96,8 @@ export class EventListenerService {
                     console.log(`[AzureEventListener] Ignored PAYMENT_SUCCESS for non-membership type: ${data.registrationType}`);
                 }
             }
-        } catch (err: any) {
-            console.error('[AzureEventListener] Error handling event:', err.message);
+        } catch (error: any) {
+            console.error('[AzureEventListener] Error handling event:', error.message);
         }
     }
 

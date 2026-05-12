@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { type Committee } from '@salvemundi/validations/schema/committees.zod';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { Mail, Users, History, LayoutGrid } from 'lucide-react';
@@ -48,21 +49,21 @@ export const CommitteeDetail: React.FC<CommitteeDetailProps> = ({ committee }) =
                         )}
                         
                         {isBestuur ? (
-                            <a 
+                            <Link 
                                 href="/commissies/oud-besturen"
                                 className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-[var(--border-color)]/50 px-8 py-3 text-lg font-bold text-[var(--text-muted)] hover:text-[var(--text-main)] hover:border-[var(--border-color)] transition-all"
                             >
                                 <History className="h-5 w-5" />
                                 Geschiedenis
-                            </a>
+                            </Link>
                         ) : (
-                            <a 
+                            <Link 
                                 href="/contact"
                                 className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-[var(--border-color)]/50 px-8 py-3 text-lg font-bold text-[var(--text-muted)] hover:text-[var(--text-main)] hover:border-[var(--border-color)] transition-all"
                             >
                                 <LayoutGrid className="h-5 w-5" />
                                 Andere vragen?
-                            </a>
+                            </Link>
                         )}
                     </div>
                 </div>

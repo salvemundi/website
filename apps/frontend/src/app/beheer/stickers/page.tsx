@@ -1,21 +1,16 @@
-import { getStickers } from '@/server/actions/admin-stickers.actions';
+import { getStickers } from '@/server/actions/admin/admin-stickers.actions';
 import StickerManagementIsland from '@/components/islands/admin/StickerManagementIsland';
-import { checkAdminAccess } from '@/server/actions/admin-utils.actions';
+import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 
 export const metadata = {
     title: 'Sticker Beheer | SV Salve Mundi',
-    description: 'Beheer en modereer stickerlocaties.' };
+    description: 'Beheer en modereer stickerlocaties.'
+};
 
-/**
- * StickersAdminPage: Ultra-PPR Modernization.
- * Wrapped in AdminPageShell for instant header rendering.
- * Uses Zero-Drift masking via StickerManagementIsland.
- */
 export default async function StickersAdminPage() {
     const { user: _user } = await checkAdminAccess();
 
-    // NUCLEAR SSR: Fetch stickers at the top level
     const stickers = await getStickers();
 
     const publishedCount = stickers.filter(s => s.status === 'published').length;

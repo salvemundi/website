@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createTripSignup } from '@/server/actions/reis.actions';
+import { createTripSignup } from '@/server/actions/events/reis.actions';
 import { type ReisTrip, reisSignupFormSchema, type ReisSignupForm } from '@salvemundi/validations/schema/reis.zod';
 import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
@@ -68,7 +68,8 @@ export function ReisRegistrationForm({
             email: currentUser?.email || '',
             phone_number: formatPhoneNumber(currentUser?.phone_number),
             date_of_birth: formatDateForInput(currentUser?.date_of_birth),
-            terms_accepted: false }
+            terms_accepted: false
+        }
     });
 
     const firstName = watch('first_name');
@@ -91,7 +92,7 @@ export function ReisRegistrationForm({
             } else {
                 setIsSuccess(true);
                 showToast('Je bent succesvol ingeschreven!', 'success');
-                
+
                 if (currentUser && onRefresh) {
                     setTimeout(() => {
                         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -108,10 +109,9 @@ export function ReisRegistrationForm({
 
     if (isSuccess) {
         return (
-            <RegistrationSuccess 
-                currentUser={currentUser} 
+            <RegistrationSuccess
+                currentUser={currentUser}
                 email={pendingData?.email}
-                onReset={() => setIsSuccess(false)} 
             />
         );
     }
@@ -138,11 +138,11 @@ export function ReisRegistrationForm({
 
     return (
         <>
-            <NameConfirmModal 
-                isOpen={showNameConfirm} 
-                name={firstName} 
-                onConfirm={confirmAndSubmit} 
-                onCancel={() => setShowNameConfirm(false)} 
+            <NameConfirmModal
+                isOpen={showNameConfirm}
+                name={firstName}
+                onConfirm={confirmAndSubmit}
+                onCancel={() => setShowNameConfirm(false)}
             />
 
             <form
@@ -246,7 +246,7 @@ export function ReisRegistrationForm({
                     </FormField>
                 </div>
 
-                <label 
+                <label
                     htmlFor="terms_accepted"
                     className="flex items-start gap-3 text-theme-text dark:text-white mt-2 cursor-pointer group"
                 >

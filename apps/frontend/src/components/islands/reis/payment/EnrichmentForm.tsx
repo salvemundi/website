@@ -19,8 +19,7 @@ interface EnrichmentFormProps {
 }
 
 export function EnrichmentForm({ trip }: EnrichmentFormProps) {
-    const { register, control, watch, formState: { errors } } = useFormContext<ReisPaymentEnrichment>();
-    const idDocument = watch('id_document');
+    const { register, control, formState: { errors } } = useFormContext<ReisPaymentEnrichment>();
 
     return (
         <div className="space-y-6">

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import MediaAsset from '@/components/ui/media/MediaAsset';
 
 interface AvatarPreviewModalProps {
     preview: string;
@@ -24,10 +25,11 @@ export default function AvatarPreviewModal({
                 <h3 className="text-2xl font-black text-white mb-6">Nieuwe profielfoto</h3>
                 
                 <div className="relative h-48 w-48 rounded-full overflow-hidden border-4 border-[var(--color-purple-500)] shadow-[0_0_30px_rgba(168,85,247,0.3)] mb-8">
-                    <img 
-                        src={preview} 
+                    <MediaAsset 
+                        asset={preview} 
                         alt="Preview" 
-                        className="h-full w-full object-cover"
+                        fill
+                        className="object-cover"
                     />
                 </div>
 

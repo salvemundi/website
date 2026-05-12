@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { submitIntroParentSignup } from '@/server/actions/intro.actions';
+import { submitIntroParentSignup } from '@/server/actions/public/intro.actions';
 import { FormField } from '@/shared/ui/FormField';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { Heart } from 'lucide-react';
@@ -30,7 +30,8 @@ export const IntroParentIsland = ({ userName, userEmail, initialPhone }: IntroPa
         resolver: zodResolver(introParentSignupFormSchema),
         defaultValues: {
             telefoonnummer: formatPhoneNumber(initialPhone),
-            motivation: '' }
+            motivation: ''
+        }
     });
 
     const onSubmit = async (data: IntroParentSignupForm) => {
@@ -45,8 +46,8 @@ export const IntroParentIsland = ({ userName, userEmail, initialPhone }: IntroPa
             } else {
                 setError(result.error || 'Er is een fout opgetreden.');
             }
-        } catch (err) {
-            const message = err instanceof Error ? err.message : 'Er is een fout opgetreden bij het versturen van je aanmelding.';
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Er is een fout opgetreden bij het versturen van je aanmelding.';
             setError(message);
         } finally {
             setIsSubmitting(false);

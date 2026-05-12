@@ -5,6 +5,7 @@ import Map, { Marker, Popup, NavigationControl, GeolocateControl } from 'react-m
 import { MapPin, Camera, X } from 'lucide-react';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { formatDate } from '@/shared/lib/utils/date';
+import MediaAsset from '@/components/ui/media/MediaAsset';
 
 /**
  * Public Directus URL for client-side asset loading.
@@ -115,11 +116,12 @@ export default function StickerMap({
                             }}
                         >
                             <div className={`samu-marker ${isMine ? 'samu-marker--mine' : ''} cursor-pointer`}>
-                                <img 
-                                    src={avatarUrl} 
-                                    className="samu-marker__img" 
+                                <MediaAsset 
+                                    asset={avatarUrl} 
                                     alt="User"
-                                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/img/Logo.png'; }} 
+                                    width={24}
+                                    height={24}
+                                    className="samu-marker__img" 
                                 />
                                 <span className={`samu-marker__dot ${isMine ? 'samu-marker__dot--mine' : ''}`}></span>
                             </div>
@@ -154,11 +156,13 @@ export default function StickerMap({
                             </button>
 
                             <div className="flex gap-4 items-center mb-4 pr-6">
-                                <img 
-                                    src={popupInfo.user_created?.avatar 
+                                <MediaAsset 
+                                    asset={popupInfo.user_created?.avatar 
                                         ? `${ASSET_PROXY_URL}/${popupInfo.user_created.avatar}?width=80&height=80&fit=cover` 
                                         : '/img/Logo.png'} 
                                     alt="avatar" 
+                                    width={48}
+                                    height={48}
                                     className="w-12 h-12 rounded-xl object-cover ring-2 ring-[var(--theme-purple)]/20" 
                                 />
                                 <div>
@@ -180,11 +184,12 @@ export default function StickerMap({
                             {popupInfo.image && (
                                 <div className="mt-3">
                                     {showImage ? (
-                                        <div className="relative animate-in zoom-in-95 duration-300">
-                                            <img 
-                                                src={`${ASSET_PROXY_URL}/${popupInfo.image}?width=600&quality=85`} 
+                                        <div className="relative w-full h-48 animate-in zoom-in-95 duration-300">
+                                            <MediaAsset 
+                                                asset={`${ASSET_PROXY_URL}/${popupInfo.image}?width=600&quality=85`} 
                                                 alt="Sticker proof" 
-                                                className="w-full rounded-xl shadow-lg border border-[var(--border-color)]/30"
+                                                fill
+                                                className="rounded-xl shadow-lg border border-[var(--border-color)]/30 object-cover"
                                             />
                                         </div>
                                     ) : (

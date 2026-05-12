@@ -29,21 +29,20 @@ export default function ActivitySelector({ activities, selectedSelections, onCha
         const selection = selectedSelections.find(s => s.activityId === activityId);
         if (!selection) return;
 
-        const currentOptions = selection.options || {};
-        const isAlreadySelected = !!currentOptions[optionId];
-
-        let newOptions = { ...currentOptions };
+        const optionsMap = new Map(Object.entries(selection.options || {}));
+        const isAlreadySelected = optionsMap.has(optionId);
 
         if (isAlreadySelected) {
-            delete newOptions[optionId];
+            optionsMap.delete(optionId);
         } else {
             // If single select (maxSelections === 1), clear others
             if (maxSelections === 1) {
-                newOptions = { [optionId]: true };
-            } else {
-                newOptions[optionId] = true;
+                optionsMap.clear();
             }
+            optionsMap.set(optionId, true);
         }
+
+        const newOptions = Object.fromEntries(optionsMap.entries());
 
         onChange(selectedSelections.map(s => 
             s.activityId === activityId ? { ...s, options: newOptions } : s
@@ -115,7 +114,7 @@ export default function ActivitySelector({ activities, selectedSelections, onCha
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                         {activity.options?.map((opt, idx) => {
                                             const optId = opt.id || `opt-${idx}`;
-                                            const isOptSelected = !!selection?.options?.[optId];
+                                            const isOptSelected = selection?.options ? !!new Map(Object.entries(selection.options)).get(optId) : false;
                                             return (
                                                 <button
                                                     key={optId}

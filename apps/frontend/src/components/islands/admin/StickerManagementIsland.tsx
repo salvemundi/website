@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { 
-    MapPin, 
+import {
+    MapPin,
     AlertCircle
 } from 'lucide-react';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
-import { deleteSticker, updateSticker } from '@/server/actions/admin-stickers.actions';
+import { deleteSticker, updateSticker } from '@/server/actions/admin/admin-stickers.actions';
 import StickersTable from '@/components/admin/stickers/StickersTable';
 import { type StickerPublic } from '@salvemundi/validations';
 
@@ -27,8 +27,8 @@ export default function StickerManagementIsland({
             await deleteSticker(id);
             setStickers(prev => prev.filter(s => s.id !== id));
             showToast('Sticker succesvol verwijderd', 'success');
-        } catch (err) {
-            showToast('Fout bij verwijderen: ' + err, 'error');
+        } catch (error) {
+            showToast('Fout bij verwijderen: ' + error, 'error');
         }
     };
 
@@ -37,8 +37,8 @@ export default function StickerManagementIsland({
             await updateSticker(id, { status: 'published' });
             setStickers(prev => prev.map(s => s.id === id ? { ...s, status: 'published' } : s));
             showToast('Sticker succesvol gepubliceerd', 'success');
-        } catch (err) {
-            showToast('Fout bij publiceren: ' + err, 'error');
+        } catch (error) {
+            showToast('Fout bij publiceren: ' + error, 'error');
         }
     };
 
@@ -54,9 +54,9 @@ export default function StickerManagementIsland({
                 </div>
 
                 {stickers.length > 0 ? (
-                    <StickersTable 
-                        stickers={stickers} 
-                        onDelete={handleDelete} 
+                    <StickersTable
+                        stickers={stickers}
+                        onDelete={handleDelete}
                         onApprove={handleApprove}
                     />
                 ) : (
@@ -67,7 +67,7 @@ export default function StickerManagementIsland({
                     </div>
                 )}
             </div>
-            
+
             <AdminToast toast={toast} onClose={hideToast} />
         </div>
     );

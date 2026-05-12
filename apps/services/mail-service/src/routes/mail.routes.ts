@@ -43,8 +43,8 @@ export default async function mailRoutes(fastify: FastifyInstance) {
             await MailWorkerService.queueMail(fastify.redis, to, templateId, data);
 
             return { success: true, message: 'Email queued for delivery' };
-        } catch (err: any) {
-            fastify.log.error(`[MAIL] Failed to queue email to ${to}:`, err);
+        } catch (error: any) {
+            fastify.log.error(`[MAIL] Failed to queue email to ${to}:`, error);
             return reply.status(500).send({ error: 'Failed to queue email' });
         }
     });

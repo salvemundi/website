@@ -1,4 +1,4 @@
-import { auth } from "./auth";
+import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { hasPermission } from "@/shared/lib/permissions";
 import { AdminResource } from "@/shared/lib/permissions-config";
@@ -26,7 +26,7 @@ export async function requireAdminResource(resource: AdminResource) {
     // Fallback: Als ze om een of andere reden niet in de sessie zitten (bijv. cache miss),
     // halen we ze handmatig op via de 'Db' variant die geen extra Zod-stripping doet.
     if (!committees || !Array.isArray(committees)) {
-        const { fetchUserCommitteesDb } = await import("../actions/user-db.utils");
+        const { fetchUserCommitteesDb } = await import("@/server/internal/user-db.utils");
         committees = await fetchUserCommitteesDb(user.id);
         // Injecteer ze terug in het object voor de huidige request context
         user.committees = committees;

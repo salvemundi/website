@@ -3,7 +3,6 @@
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { Loader2, Edit, Trash2, ChevronDown, Bus, Briefcase, CheckCircle2, Clock, XCircle, List } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { TripSignup, TripSignupActivity } from '@salvemundi/validations/schema/admin-reis.zod';
@@ -41,7 +40,6 @@ export default function ReisTableRow({
     allowFinalPayments: _allowFinalPayments,
     isBusTrip = false
 }: ReisTableRowProps) {
-    const router = useRouter();
 
     return (
         <div 

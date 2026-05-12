@@ -5,10 +5,9 @@ import { type EnrichedUser } from '@/types/auth';
 interface RegistrationSuccessProps {
     currentUser: EnrichedUser | null;
     email?: string;
-    onReset?: () => void;
 }
 
-export function RegistrationSuccess({ currentUser, email, onReset }: RegistrationSuccessProps) {
+export function RegistrationSuccess({ currentUser, email }: RegistrationSuccessProps) {
     return (
         <div className="flex flex-col items-center justify-center py-10 px-4 text-center bg-theme-purple/5 rounded-2xl border border-theme-purple/10">
             <div className="w-16 h-16 bg-theme-purple/20 rounded-full flex items-center justify-center mb-4">

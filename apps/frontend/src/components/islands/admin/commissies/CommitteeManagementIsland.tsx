@@ -2,8 +2,9 @@
 
 import { useState, useCallback, useMemo, useTransition } from 'react';
 import {
-    Users, 
-    RefreshCw } from 'lucide-react';
+    Users,
+    RefreshCw
+} from 'lucide-react';
 import type { Committee, CommitteeMember } from '@/server/queries/admin-commissies.queries';
 import {
     getCommittees,
@@ -11,13 +12,15 @@ import {
     addCommitteeMember,
     removeCommitteeMember,
     toggleCommitteeLeader,
-    updateCommitteeDetails } from '@/server/actions/admin-committees.actions';
+    updateCommitteeDetails
+} from '@/server/actions/admin/admin-committees.actions';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 
 import CommitteeSidebar from './CommitteeSidebar';
 import CommitteeDetail from './CommitteeDetail';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
+import type { UserBasic } from '@/server/internal/user-db.utils';
 
 const STANDARD_COMMITTEES = [
     'feestcommissie', 'mediacommissie', 'introcommissie', 'kascommissie',
@@ -37,7 +40,7 @@ interface Props {
 export default function CommitteeManagementIsland({ initialCommittees, totalUniqueMembers, initialMembers = [] }: Props) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [committees, setCommittees] = useState<Committee[]>(initialCommittees);
-    
+
     // NUCLEAR SSR: Default to the first committee to avoid empty mount states
     const [selected, setSelected] = useState<Committee | null>(initialCommittees[0] || null);
     const [members, setMembers] = useState<CommitteeMember[]>(initialMembers);
@@ -89,7 +92,7 @@ export default function CommitteeManagementIsland({ initialCommittees, totalUniq
             setEditDesc(c.description || '');
             setAddError(null);
             setNewMemberEmail('');
-            
+
             try {
                 const m = await getCommitteeMembers(c.id.toString()).catch(() => []);
                 setMembers(m);
@@ -97,9 +100,9 @@ export default function CommitteeManagementIsland({ initialCommittees, totalUniq
                 showToast('Fout bij ophalen leden', 'error');
             }
         });
-    }, []);
+    }, [showToast]);
 
-    const handleAddMember = async (user: any) => {
+    const handleAddMember = async (user: UserBasic) => {
         if (!selected?.azure_group_id || !user.email) return;
         setAddingMember(true);
         setAddError(null);
@@ -119,12 +122,12 @@ export default function CommitteeManagementIsland({ initialCommittees, totalUniq
     const handleRemoveMember = async (member: CommitteeMember) => {
         if (!selected?.azure_group_id) return;
         if (!confirm(`Weet je zeker dat je ${member.displayName} wilt verwijderen?`)) return;
-        
+
         // Optimistic UI Update
         const previousMembers = [...members];
         setMembers(prev => prev.filter(m => m.entraId !== member.entraId));
         setActionLoading(`remove-${member.entraId}`);
-        
+
         const res = await removeCommitteeMember(selected!.azure_group_id!, member.entraId, member.isLeader);
         if (res.success) {
             showToast('Lid succesvol verwijderd uit de commissie', 'success');
@@ -166,7 +169,8 @@ export default function CommitteeManagementIsland({ initialCommittees, totalUniq
         setSavingDetail(true);
         const res = await updateCommitteeDetails(selected.id.toString(), {
             short_description: editShortDesc,
-            description: editDesc });
+            description: editDesc
+        });
         if (res.success) {
             setSelected(prev => prev ? { ...prev, short_description: editShortDesc, description: editDesc } : prev);
             setEditingDetail(false);
@@ -177,7 +181,6 @@ export default function CommitteeManagementIsland({ initialCommittees, totalUniq
         setSavingDetail(false);
     };
 
-    // Admin stats logic moved to Hero/Toolbar actions
     const toolbarActions = (
         <div className="flex items-center gap-6">
             <div className="hidden md:flex items-center gap-4 bg-[var(--beheer-card-soft)] px-4 py-2 rounded-2xl border border-[var(--beheer-border)]/50 shadow-sm">
@@ -195,7 +198,7 @@ export default function CommitteeManagementIsland({ initialCommittees, totalUniq
                     </span>
                 </div>
             </div>
-            
+
             <button
                 onClick={handleRefresh}
                 disabled={refreshing}
@@ -209,7 +212,7 @@ export default function CommitteeManagementIsland({ initialCommittees, totalUniq
 
     return (
         <div className="min-h-screen bg-[var(--bg-main)]">
-            <AdminToolbar 
+            <AdminToolbar
                 title="Commissies"
                 subtitle="Beheer commissies, leden en Azure-groepen"
                 backHref="/beheer"
@@ -218,7 +221,7 @@ export default function CommitteeManagementIsland({ initialCommittees, totalUniq
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-8 items-start">
                 <div className="lg:col-span-4">
-                    <CommitteeSidebar 
+                    <CommitteeSidebar
                         committees={filteredCommittees}
                         selectedId={selected?.id || null}
                         onSelect={handleSelectCommittee}
@@ -239,7 +242,7 @@ export default function CommitteeManagementIsland({ initialCommittees, totalUniq
                             </p>
                         </div>
                     ) : (
-                        <CommitteeDetail 
+                        <CommitteeDetail
                             selected={selected}
                             members={members}
                             isUpdating={isPending}

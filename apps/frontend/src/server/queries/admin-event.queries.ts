@@ -10,6 +10,62 @@ import { type DbEventSignup } from '@salvemundi/validations/directus/schema';
  * by avoiding headers() or other request-bound context.
  */
 
+interface DbEventRow {
+    id: string | number;
+    name: string | null;
+    description: string | null;
+    location: string | null;
+    event_date: string | Date | null;
+    event_date_end: string | Date | null;
+    image: string | null;
+    image_type: string | null;
+    status: string | null;
+    price_members: string | number | null;
+    price_non_members: string | number | null;
+    max_sign_ups: string | number | null;
+    only_members: boolean | null;
+    registration_deadline: string | Date | null;
+    contact: string | null;
+    event_time: string | null;
+    event_time_end: string | null;
+    committee_id: string | number | null;
+    committee_name: string | null;
+    description_logged_in: string | null;
+    publish_date: string | Date | null;
+    custom_url: string | null;
+    signup_count?: string | number;
+}
+
+const mapRowToActiviteitData = (item: DbEventRow) => {
+    const safeISO = (d: string | Date | null | undefined, includeTime = false) => {
+        return toLocalISOString(d, includeTime);
+    };
+
+    return {
+        id: String(item.id ?? ''),
+        titel: item.name ?? '',
+        beschrijving: item.description ?? null,
+        locatie: item.location ?? null,
+        datum_start: safeISO(item.event_date) || toLocalISOString(new Date()),
+        datum_eind: safeISO(item.event_date_end),
+        afbeelding_id: item.image ? { id: item.image, type: item.image_type ?? undefined } : null,
+        status: item.status ?? undefined,
+        price_members: item.price_members != null ? Number(item.price_members) : 0,
+        price_non_members: item.price_non_members != null ? Number(item.price_non_members) : 0,
+        max_sign_ups: item.max_sign_ups != null ? Number(item.max_sign_ups) : null,
+        only_members: item.only_members ?? false,
+        registration_deadline: safeISO(item.registration_deadline),
+        contact: item.contact ?? null,
+        event_time: item.event_time ?? null,
+        event_time_end: item.event_time_end ?? null,
+        committee_id: item.committee_id ? Number(item.committee_id) : null,
+        committee_name: item.committee_name || null,
+        description_logged_in: item.description_logged_in || null,
+        publish_date: safeISO(item.publish_date),
+        custom_url: item.custom_url || null
+    };
+};
+
 export async function getActivitiesInternal(onlyPublished = true): Promise<Activiteit[]> {
     const sql = `
         SELECT e.*, c.name as committee_name, f.type as image_type
@@ -21,35 +77,7 @@ export async function getActivitiesInternal(onlyPublished = true): Promise<Activ
     `;
     const { rows } = await query(sql);
 
-    const mappedData = rows.map((item) => {
-        const safeISO = (d: string | Date | null | undefined, includeTime = false) => {
-            return toLocalISOString(d, includeTime);
-        };
-        
-        return {
-            id: String(item.id ?? ''),
-            titel: item.name ?? '',
-            beschrijving: item.description ?? null,
-            locatie: item.location ?? null,
-            datum_start: safeISO(item.event_date) || toLocalISOString(new Date()),
-            datum_eind: safeISO(item.event_date_end),
-            afbeelding_id: item.image ? { id: item.image, type: item.image_type } : null,
-            status: item.status ?? undefined,
-            price_members: item.price_members != null ? Number(item.price_members) : 0,
-            price_non_members: item.price_non_members != null ? Number(item.price_non_members) : 0,
-            max_sign_ups: item.max_sign_ups != null ? Number(item.max_sign_ups) : null,
-            only_members: item.only_members ?? false,
-            registration_deadline: safeISO(item.registration_deadline),
-            contact: item.contact ?? null,
-            event_time: item.event_time ?? null,
-            event_time_end: item.event_time_end ?? null,
-            committee_id: item.committee_id ? Number(item.committee_id) : null,
-            committee_name: item.committee_name || null,
-            description_logged_in: item.description_logged_in || null,
-            publish_date: safeISO(item.publish_date),
-            custom_url: item.custom_url || null
-        };
-    });
+    const mappedData = (rows as DbEventRow[]).map(mapRowToActiviteitData);
 
     const parsed = activitiesSchema.safeParse(mappedData);
     if (!parsed.success) {
@@ -71,35 +99,11 @@ export async function getActivityByIdInternal(id: string): Promise<Activiteit | 
         LIMIT 1
     `;
     const { rows } = await query(sql, [id]);
-    
-    const item = rows?.[0];
+
+    const item = (rows as DbEventRow[])?.[0];
     if (!item) return null;
 
-        const safeISO = (d: string | Date | null | undefined, includeTime = false) => {
-            return toLocalISOString(d, includeTime);
-        };
-
-    const mapped = {
-        id: String(item.id ?? ''),
-        titel: item.name ?? '',
-        beschrijving: item.description ?? null,
-        locatie: item.location ?? null,
-        datum_start: safeISO(item.event_date) || toLocalISOString(new Date()),
-        datum_eind: safeISO(item.event_date_end),
-        afbeelding_id: item.image ? { id: item.image, type: item.image_type } : null,
-        status: item.status ?? undefined,
-        price_members: item.price_members != null ? Number(item.price_members) : 0,
-        price_non_members: item.price_non_members != null ? Number(item.price_non_members) : 0,
-        max_sign_ups: item.max_sign_ups != null ? Number(item.max_sign_ups) : null,
-        only_members: item.only_members ?? false,
-        registration_deadline: safeISO(item.registration_deadline),
-        contact: item.contact ?? null,
-        event_time: item.event_time ?? null,
-        event_time_end: item.event_time_end ?? null,
-        committee_id: item.committee_id ? Number(item.committee_id) : null,
-        committee_name: item.committee_name || null,
-        description_logged_in: item.description_logged_in || null,
-        publish_date: safeISO(item.publish_date) };
+    const mapped = mapRowToActiviteitData(item);
 
     const parsed = activitiesSchema.element.safeParse(mapped);
     if (!parsed.success) {
@@ -112,12 +116,12 @@ export async function getActivityByIdInternal(id: string): Promise<Activiteit | 
 export async function getActivityBySlugInternal(slug: string): Promise<Activiteit | null> {
     const { slugify } = await import('@/shared/lib/utils/slug');
     const activities = await getActivitiesInternal(false); // Get all to be sure
-    
+
     return activities.find(a => {
         const genSlug = slugify(a.titel);
         const dateStr = a.datum_start.split('T')[0];
         const genSlugWithDate = `${genSlug}-${dateStr}`;
-        
+
         return genSlug === slug || genSlugWithDate === slug || a.id === slug;
     }) || null;
 }
@@ -135,12 +139,13 @@ export async function getActivitySignupsInternal(eventId: string): Promise<DbEve
         ORDER BY calculated_is_member DESC, es.created_at DESC
     `;
     const { rows } = await query(sql, [eventId]);
-    
+
     // Map back to ensure compatibility with existing components that expect is_member
-    return rows.map(r => ({
+    return (rows as Record<string, unknown>[]).map((r) => ({
         ...r,
-        is_member: r.calculated_is_member
-    }));
+        id: r.id != null ? Number(r.id) : null,
+        is_member: Boolean(r.calculated_is_member)
+    } as DbEventSignup));
 }
 
 /**
@@ -150,7 +155,7 @@ export async function getActivitySignupsInternal(eventId: string): Promise<DbEve
 export async function getActivitiesWithSignupCountsInternal(search?: string, filter: 'all' | 'upcoming' | 'past' = 'all'): Promise<(Activiteit & { signup_count: number })[]> {
     let whereClause = "WHERE 1=1";
     const params: (string | number | boolean | null)[] = [];
-    
+
     if (filter === 'upcoming') {
         whereClause += " AND e.event_date >= NOW()";
     } else if (filter === 'past') {
@@ -174,23 +179,18 @@ export async function getActivitiesWithSignupCountsInternal(search?: string, fil
         ${whereClause}
         ORDER BY e.event_date DESC
     `;
-    
+
     const { rows } = await query(sql, params);
-    
-    const { toLocalISOString } = await import('@/lib/utils/date-utils');
-    return rows.map(r => ({
-        ...r,
-        id: Number(r.id),
-        event_date: toLocalISOString(r.event_date),
-        event_date_end: toLocalISOString(r.event_date_end),
-        registration_deadline: toLocalISOString(r.registration_deadline, true),
-        created_at: toLocalISOString(r.created_at, true),
-        updated_at: toLocalISOString(r.updated_at, true),
-        price_members: r.price_members ? Number(r.price_members) : 0,
-        price_non_members: r.price_non_members ? Number(r.price_non_members) : 0,
-        max_sign_ups: r.max_sign_ups ? Number(r.max_sign_ups) : null,
-        committee_id: r.committee_id ? Number(r.committee_id) : null,
-        signup_count: Number(r.signup_count || 0),
-        image: r.image ? { id: r.image, type: r.image_type } : null // Map to object for AdminActivitySchema compatibility
-    }));
+
+    return (rows as DbEventRow[]).map((r: DbEventRow) => {
+        // Map database row using identical logic as other methods
+        const mappedData = mapRowToActiviteitData(r);
+
+        // Zod validation isn't strictly necessary here if we trust the map, 
+        // but we cast correctly for the frontend.
+        return {
+            ...mappedData,
+            signup_count: Number(r.signup_count || 0)
+        } as Activiteit & { signup_count: number };
+    });
 }

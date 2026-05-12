@@ -1,8 +1,8 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { triggerFullSyncAction, triggerUserSyncAction } from '@/server/actions/azure-sync/sync-tasks.actions';
-import { getSyncStatusAction, stopSyncAction, resetSyncStatusAction } from '@/server/actions/azure-sync/sync-monitoring.actions';
+import { triggerFullSyncAction, triggerUserSyncAction } from '@/server/actions/infrastructure/azure-sync/sync-tasks.actions';
+import { getSyncStatusAction, stopSyncAction, resetSyncStatusAction } from '@/server/actions/infrastructure/azure-sync/sync-monitoring.actions';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import AdminToast from '@/components/ui/admin/AdminToast';
 
@@ -53,7 +53,7 @@ const SyncContext = createContext<SyncContextType | undefined>(undefined);
 
 export function SyncProvider({ children, initialStatus }: { children: ReactNode, initialStatus: SyncStatus | null }) {
     const { toast, showToast, hideToast } = useAdminToast();
-    
+
     // Nuclear SSR: Initialize status directly. If null, we'll handle the empty state in the UI.
     const [status, setStatus] = useState<SyncStatus | null>(initialStatus);
     const [isStartingSync, setIsStartingSync] = useState(false);
@@ -87,7 +87,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
                     setLastUpdated(new Date());
                 }
             }
-        } catch (err: unknown) {
+        } catch (_error: unknown) {
             // Background errors remain silent to avoid interrupting the user, 
             // but the status object will contain error details if the action fails.
         }
@@ -104,11 +104,11 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
         let timeout: ReturnType<typeof setTimeout>;
         const isRunning = status?.active || status?.status === 'running' || status?.status === 'starting';
         const shouldPoll = isRunning || isStartingSync;
-        
+
         const poll = async () => {
             if (!shouldPoll) return;
             await fetchStatus();
-            timeout = setTimeout(poll, 5000); 
+            timeout = setTimeout(poll, 5000);
         };
 
         if (shouldPoll) {
@@ -132,7 +132,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
                 showToast('Azure synchronisatie gestart', 'success');
                 fetchStatus();
             }
-        } catch (err: unknown) {
+        } catch (_error: unknown) {
             showToast('Netwerkfout bij het starten van de sync.', 'error');
         } finally {
             setIsStartingSync(false);
@@ -149,7 +149,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
                 showToast('Synchronisatie afgebroken', 'info');
                 fetchStatus();
             }
-        } catch (err: unknown) {
+        } catch (_error: unknown) {
             showToast('Netwerkfout bij het stoppen van de sync.', 'error');
         } finally {
             setIsStopping(false);
@@ -166,7 +166,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
                 showToast('Synchronisatie status gereset naar Idle', 'success');
                 fetchStatus();
             }
-        } catch (err: unknown) {
+        } catch (_error: unknown) {
             showToast('Netwerkfout bij het resetten van de sync.', 'error');
         } finally {
             setIsResetting(false);
@@ -186,7 +186,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
                 setUserId('');
                 fetchStatus();
             }
-        } catch (err: unknown) {
+        } catch (_error: unknown) {
             showToast('Netwerkfout bij het synchroniseren van de gebruiker.', 'error');
         } finally {
             setIsUserSyncLoading(false);
@@ -194,7 +194,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
     };
 
     const toggleField = (id: string) => {
-        setSelectedSyncFields(prev => 
+        setSelectedSyncFields(prev =>
             prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]
         );
     };

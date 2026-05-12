@@ -31,14 +31,11 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
         if (!editingPlanning) return;
 
         // Clean up empty strings to avoid Zod validation errors on the server
-        const sanitized = { ...editingPlanning };
-        (Object.keys(sanitized) as (keyof typeof sanitized)[]).forEach(key => {
-            if (sanitized[key] === '') {
-                delete sanitized[key];
-            }
-        });
+        const sanitized = Object.fromEntries(
+            Object.entries(editingPlanning).filter(([_, value]) => value !== '')
+        );
 
-        await onSave(sanitized);
+        await onSave(sanitized as Partial<IntroPlanningItem>);
         setEditingPlanning(null);
     };
 
@@ -159,18 +156,19 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                 const dayOrder = ['maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag', 'zondag'];
                 const byDay = planning.reduce((acc, item) => {
                     const key = (item.day || 'overig').toLowerCase();
-                    if (!acc[key]) acc[key] = [];
-                    acc[key].push(item);
+                    if (!acc.has(key)) acc.set(key, []);
+                    acc.get(key)!.push(item);
                     return acc;
-                }, {} as Record<string, IntroPlanningItem[]>);
-                const sorted = Object.keys(byDay).sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b));
+                }, new Map<string, IntroPlanningItem[]>());
+
+                const sorted = Array.from(byDay.keys()).sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b));
                 return (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {sorted.map(day => (
                             <div key={day} className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] p-6 shadow-sm">
                                 <h3 className="font-semibold text-[var(--beheer-accent)] text-xs mb-6 capitalize pb-3 border-b border-[var(--beheer-border)]">{day}</h3>
                                 <div className="space-y-3">
-                                    {byDay[day].sort((a, b) => (a.time_start || '').localeCompare(b.time_start || '')).map(item => (
+                                    {(byDay.get(day) || []).sort((a, b) => (a.time_start || '').localeCompare(b.time_start || '')).map(item => (
                                         <div key={item.id} className="group bg-[var(--beheer-card-soft)] rounded-xl p-4 border border-transparent hover:border-[var(--beheer-accent)]/20 transition-all">
                                             <div className="flex items-start justify-between gap-2">
                                                 <div>

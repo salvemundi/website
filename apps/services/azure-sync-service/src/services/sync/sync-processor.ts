@@ -12,14 +12,14 @@ export class SyncProcessor {
     static async syncUserOptimized(ctx: SyncContext & { membershipMap: Map<string, Map<number, boolean>> }, aUser: AzureUser) {
         const email = (aUser.mail || aUser.userPrincipalName).toLowerCase();
         const changes: { field: string; old: any; new: any }[] = [];
-        
+
         let dUser = ctx.userCacheByEntra.get(aUser.id);
-        
+
         // OPTIMIZATION: If not found by Entra ID, try to link by email if forceLink is enabled
         if (!dUser && ctx.options.forceLink) {
             // Find in pre-cached users by email
             const existingByEmail = Array.from(ctx.userCacheByEntra.values()).find(u => u.email?.toLowerCase() === email);
-            
+
             if (existingByEmail) {
                 console.log(`[SYNC] Linking existing user ${email} to Entra ID ${aUser.id}`);
                 await DirectusService.updateUser(existingByEmail.id, { entra_id: aUser.id });
@@ -32,7 +32,7 @@ export class SyncProcessor {
         if (!dUser) {
             const csa = aUser.customSecurityAttributes?.SalveMundiLidmaatschap;
             const phone = aUser.mobilePhone || '';
-            
+
             let dob: string | undefined = undefined;
             if (csa?.Geboortedatum) {
                 dob = sanitizeAzureDate(csa.Geboortedatum.includes('-') ? csa.Geboortedatum : parseAzureDate(csa.Geboortedatum)) || undefined;
@@ -70,7 +70,7 @@ export class SyncProcessor {
                 ctx.status.createdCount++;
                 changes.push({ field: 'User', old: 'Bestaat niet', new: 'Nieuw lid aangemaakt' });
                 ctx.status.createdUsers.push({ email, changes: [...changes] });
-            } catch (err: any) {
+            } catch (error: any) {
                 // If creation fails due to email already existing (and forceLink was false), log it as an error
                 throw new Error(`Kon gebruiker ${email} niet aanmaken. Bestaat waarschijnlijk al zonder Entra ID. Gebruik 'Forceer Entra Link' om ze te koppelen.`);
             }
@@ -177,7 +177,7 @@ export class SyncProcessor {
             if (shouldSync) {
                 // Use pre-fetched batch photo if available
                 let photo = ctx.photoCache?.get(aUser.id);
-                
+
                 // Fallback to individual fetch if cache is missing (e.g. single user sync)
                 if (photo === undefined) {
                     photo = await GraphService.getUserPhoto(aUser.id, ctx.token);
@@ -197,9 +197,9 @@ export class SyncProcessor {
                 ctx.status.successCount++;
                 ctx.processedEmails.add(email);
             }
-            
-            ctx.status.successfulUsers.push({ 
-                email, 
+
+            ctx.status.successfulUsers.push({
+                email,
                 changes
             });
         }

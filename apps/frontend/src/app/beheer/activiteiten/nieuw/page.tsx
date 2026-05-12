@@ -3,30 +3,36 @@ import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import ActiviteitNieuwIsland from '@/components/islands/admin/activities/ActiviteitNieuwIsland';
 
 import { getPermissions } from '@/shared/lib/permissions';
-import { fetchUserCommitteesDb } from '@/server/actions/user-db.utils';
+import { fetchUserCommitteesDb } from '@/server/internal/user-db.utils';
 import { query } from '@/lib/database';
 
 import { type EnrichedUser } from '@/types/auth';
 
-async function getCommitteesForUser(user: EnrichedUser, permissions: ReturnType<typeof getPermissions>) {
+// Add the explicit return type here
+async function getCommitteesForUser(
+    user: EnrichedUser,
+    permissions: ReturnType<typeof getPermissions>
+): Promise<{ id: number; name: string }[]> {
     const memberships = user.committees || [];
     const isPowerful = permissions.isLeader || permissions.isICT;
 
     try {
         if (isPowerful) {
             const { rows } = await query('SELECT id, name FROM committees ORDER BY name ASC');
-            return rows;
+            // Cast the raw rows to the expected shape
+            return rows as { id: number; name: string }[];
         } else {
             if (memberships.length === 0) return [];
-            
+
             const committeeIds = memberships.map((m) => m.id).filter(Boolean);
             if (committeeIds.length === 0) return [];
 
             const placeholders = committeeIds.map((_, i) => `$${i + 1}`).join(', ');
             const { rows } = await query(`SELECT id, name FROM committees WHERE id IN (${placeholders}) ORDER BY name ASC`, committeeIds);
-            return rows;
+            // Cast the raw rows to the expected shape
+            return rows as { id: number; name: string }[];
         }
-    } catch {
+    } catch (_error) {
         return [];
     }
 }
@@ -36,7 +42,7 @@ export default async function ActivityCreatePage() {
 
     if (!session || !session.user) {
         return (
-            <AdminUnauthorized 
+            <AdminUnauthorized
                 title="Activiteit Aanmaken"
                 description="Je moet ingelogd zijn met een Salve Mundi account om activiteiten te kunnen aanmaken."
             />
@@ -49,7 +55,7 @@ export default async function ActivityCreatePage() {
 
     if (!permissions.canAccessActivitiesEdit) {
         return (
-            <AdminUnauthorized 
+            <AdminUnauthorized
                 title="Activiteit Aanmaken"
                 description="Je hebt geen rechten om activiteiten aan te maken. Alleen commissieleiders en beheer hebben deze rechten."
             />

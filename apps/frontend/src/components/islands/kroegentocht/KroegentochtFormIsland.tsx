@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useTransition, useEffect, useRef } from 'react';
+import React, { useTransition, useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
-import { initiateKroegentochtPayment } from '@/server/actions/kroegentocht.actions';
+import { initiateKroegentochtPayment } from '@/server/actions/events/kroegentocht.actions';
 import { 
     type PubCrawlEvent, 
     pubCrawlSignupFormSchema, 
@@ -47,7 +47,6 @@ export default function KroegentochtFormIsland({
 }: KroegentochtFormIslandProps) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [isPending, startTransition] = useTransition();
-    const errorRef = useRef<HTMLDivElement>(null);
 
     const {
         register,

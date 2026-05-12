@@ -1,4 +1,3 @@
-import React from 'react';
 import {
     Home,
     CalendarDays,
@@ -47,8 +46,5 @@ export const IconMap = {
 
 export type IconName = keyof typeof IconMap;
 
-interface DynamicIconProps extends React.ComponentProps<typeof Home> {
-    name: IconName | string;
-}
 
 

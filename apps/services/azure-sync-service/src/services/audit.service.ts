@@ -13,13 +13,13 @@ export class AuditService {
                     timestamp: new Date().toISOString()
                 }
             }));
-        } catch (e) {
-            console.warn('[AuditService] Failed to log action:', e);
+        } catch (_error) {
+            console.warn('[AuditService] Failed to log action:', error);
         }
     }
 
     static async logMembershipRenewal(email: string, userId?: string, paymentId?: string) {
-        await this.logSystemAction('membership_ renewal', 'SUCCESS', {
+        await this.logSystemAction('membership_renewal', 'SUCCESS', {
             lid: email,
             email: email,
             user_id: userId,

@@ -7,10 +7,10 @@ import AdminReisTableIsland from '@/components/islands/admin/AdminReisTableIslan
 import { Ticket, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getReisSiteSettings } from '@/server/actions/reis.actions';
-import { checkAdminAccess } from '@/server/actions/admin-utils.actions';
-import { getAdminTrips, getAdminTripById } from '@/server/actions/reis-admin-core.actions';
-import { getTripSignups, getTripSignupActivitiesAction } from '@/server/actions/reis-admin-signups.actions';
+import { getReisSiteSettings } from '@/server/actions/events/reis.actions';
+import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
+import { getAdminTrips, getAdminTripById } from '@/server/actions/admin/reis-core.actions';
+import { getTripSignups, getTripSignupActivitiesAction } from '@/server/actions/admin/reis-signups.actions';
 import { getTripActivities } from '@/server/queries/admin-reis.queries';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import type { Trip, TripSignup, TripSignupActivity, TripActivity } from '@salvemundi/validations';
@@ -24,16 +24,16 @@ interface AdminReisPageProps {
 export async function generateMetadata({ searchParams }: AdminReisPageProps): Promise<Metadata> {
     const resolvedSearchParams = await searchParams;
     const tripIdParam = typeof resolvedSearchParams.tripId === 'string' ? resolvedSearchParams.tripId : undefined;
-    
+
     let title = 'Beheer Reis | SV Salve Mundi';
-    
+
     if (tripIdParam) {
         try {
-            const trip = await getAdminTripById(Number(tripIdParam));
-            if (trip) {
+            const trip = await getAdminTripById(Number(tripIdParam)) as unknown as Trip;
+            if (trip && trip.name) {
                 title = `${trip.name} - Aanmeldingen | SV Salve Mundi`;
             }
-        } catch {
+        } catch (_error) {
             // Fallback to default
         }
     }
@@ -41,12 +41,6 @@ export async function generateMetadata({ searchParams }: AdminReisPageProps): Pr
     return { title };
 }
 
-/**
- * AdminReisPage: Zero-Drift Modernization.
- * Migrated to AdminPageShell for consistent sidebar/toolbar rendering.
- * All data is pre-fetched on the server-side before flushing content to the client 
- * to ensure maximum stability and zero layout shift.
- */
 export default async function AdminReisPage({ searchParams }: AdminReisPageProps) {
     const { user: _user } = await checkAdminAccess();
     const resolvedSearchParams = await searchParams;
@@ -56,13 +50,13 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
     let trips: Trip[] = [];
     let _reisSettings = { show: true };
     let errorMsg: string | null = null;
-    
+
     try {
         const [tripsRes, settingsRes] = await Promise.all([
             getAdminTrips(),
             getReisSiteSettings()
         ]);
-        
+
         trips = (tripsRes as unknown as Trip[]) || [];
         _reisSettings = settingsRes || { show: true };
     } catch (e: unknown) {
@@ -71,7 +65,7 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
 
     if (errorMsg === 'Forbidden: Reis Admin rechten vereist voor reisbeheer' || errorMsg === 'Niet geautoriseerd') {
         return (
-            <AdminUnauthorized 
+            <AdminUnauthorized
                 title="Geen Toegang"
                 description={errorMsg}
             />
@@ -100,7 +94,7 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
     let signups: TripSignup[] = [];
     let allSignupSelections: TripSignupActivity[] = [];
     let allTripActivities: TripActivity[] = [];
-    
+
     try {
         const [sRes, saRes, activitiesRes] = await Promise.all([
             getTripSignups(activeTrip.id as number),
@@ -131,7 +125,8 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
         confirmed: signups.filter((s) => s.status === 'confirmed').length,
         waitlist: signups.filter((s) => s.status === 'waitlist').length,
         depositPaid: signups.filter((s) => s.deposit_paid).length,
-        fullPaid: signups.filter((s) => s.full_payment_paid).length };
+        fullPaid: signups.filter((s) => s.full_payment_paid).length
+    };
 
     return (
         <AdminPageShell
@@ -164,8 +159,8 @@ function NoTripsView() {
                 </div>
                 <h2 className="text-3xl font-bold text-[var(--beheer-text)] tracking-tight mb-2">Geen reizen gevonden</h2>
                 <p className="text-[var(--beheer-text-muted)] font-medium text-base mb-8">Er zijn momenteel geen actieve of geplande reizen in het systeem.</p>
-                
-                <Link 
+
+                <Link
                     href="/beheer/reis/instellingen"
                     className="inline-flex items-center gap-2 px-8 py-3 bg-[var(--beheer-accent)] text-white rounded-xl font-semibold tracking-widest text-base shadow-lg transition-all hover:scale-[1.02] active:scale-95 group"
                 >

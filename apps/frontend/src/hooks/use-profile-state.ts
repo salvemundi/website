@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { updateProfileSchema } from '@salvemundi/validations/schema/profiel.zod';
-import { updateUserProfile, uploadUserAvatar } from '@/server/actions/profiel-update.actions';
+import { updateUserProfile, uploadUserAvatar } from '@/server/actions/profile/profiel-update.actions';
 import { z } from 'zod';
 import { type SessionUser } from '@/lib/profile-admin.utils';
 
@@ -16,7 +16,7 @@ export type PhoneFormData = z.infer<typeof phoneFormSchema>;
 
 interface UseProfileStateProps {
     user: SessionUser;
-    refetch: () => Promise<any>;
+    refetch: () => Promise<void>;
     showToast: (message: string, type: 'success' | 'error') => void;
 }
 
@@ -103,10 +103,10 @@ export function useProfileState({ user, refetch, showToast }: UseProfileStatePro
         startUpdateTransition(async () => {
             addOptimisticUpdate({ avatar: preview, image: preview });
             setPendingAvatar(null);
-            
+
             const formData = new FormData();
             formData.append('file', file);
-            
+
             const result = await uploadUserAvatar(formData);
             if (result.success) {
                 await refetch();

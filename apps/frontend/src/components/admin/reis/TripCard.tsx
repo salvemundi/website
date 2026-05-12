@@ -2,6 +2,7 @@
 
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
+import Image from 'next/image';
 import { Edit2, Trash2, Calendar, Users, DollarSign, ImageIcon, Loader2 } from 'lucide-react';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import type { Trip } from '@salvemundi/validations/schema/admin-reis.zod';
@@ -49,10 +50,11 @@ export default function TripCard({ trip, onEdit, onDelete, isDeleting }: TripCar
                 )}
                 
                 {trip.image ? (
-                    <img 
+                    <Image 
                         src={getImageUrl(trip.image, { width: 600, height: 400, fit: 'cover' }) || '/img/newlogo.png'} 
                         alt={trip.name}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        fill
+                        className="object-cover transition-transform duration-700 group-hover:scale-110"
                     />
                 ) : (
                     <div className="text-[var(--text-muted)] opacity-30">

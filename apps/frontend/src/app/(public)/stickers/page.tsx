@@ -1,5 +1,5 @@
 import React from 'react';
-import { getPublicStickers } from '@/server/actions/stickers.actions';
+import { getPublicStickers } from '@/server/actions/public/stickers.actions';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import StickerMapIsland from '@/components/islands/stickers/StickerMapIsland';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';

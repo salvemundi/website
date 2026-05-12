@@ -7,29 +7,25 @@ import type { IconName } from '@/lib/utils/icons';
 import { HeaderShell } from './navigation/HeaderShell';
 import { NavUserSection } from './navigation/NavUserSection';
 import { MobileNav } from './navigation/MobileNav';
-import { type ImpersonationInfo, type ExtendedSession } from '@/types/auth';
+import { type ExtendedSession } from '@/types/auth';
 
 interface NavigationHeaderProps {
     disabledRoutes?: string[];
     initialSession?: ExtendedSession | null;
-    impersonation?: ImpersonationInfo | null;
     isAdmin?: boolean;
 }
 
 /**
  * Navigation Header Component.
- * Implements the "Nuclear SSR" (Zero-Skeleton) standard.
  */
-const NavigationHeader = ({ 
-    disabledRoutes = [], 
-    initialSession, 
-    impersonation,
+const NavigationHeader = ({
+    disabledRoutes = [],
+    initialSession,
     isAdmin: initialIsAdmin
 }: NavigationHeaderProps) => {
     const user = initialSession?.user ?? null;
     const isAuthenticated = !!user;
-    
-    // Prioritize the passed isAdmin flag from checkAdminAccess (database source of truth)
+
     const canAccessAdmin = !!(initialIsAdmin || user?.isAdmin || user?.isICT || user?.canAccessIntro);
 
     const navItems = ([
@@ -53,12 +49,12 @@ const NavigationHeader = ({
                     <div className="flex items-center gap-3">
                         <Link href="/" className="group flex items-center gap-3 shrink-0 transition-transform duration-300 hover:scale-[1.03] active:scale-95">
                             <div className="relative w-12 h-12 shrink-0">
-                                <Image 
-                                    src="/img/newlogo.svg" 
-                                    alt="Salve Mundi Logo" 
-                                    fill 
-                                    className="object-contain" 
-                                    priority 
+                                <Image
+                                    src="/img/newlogo.svg"
+                                    alt="Salve Mundi Logo"
+                                    fill
+                                    className="object-contain"
+                                    priority
                                 />
                             </div>
                             <div className="hidden text-left @[1024px]:block whitespace-nowrap shrink-0 transition-all duration-300">
@@ -84,14 +80,14 @@ const NavigationHeader = ({
 
                     {/* Right Actions */}
                     <div className="flex items-center justify-end gap-3 shrink-0 flex-nowrap">
-                        <NavUserSection 
+                        <NavUserSection
                             initialSession={initialSession}
                             canAccessAdmin={canAccessAdmin}
                         />
-                        
+
                         <ThemeToggle />
 
-                        <MobileNav 
+                        <MobileNav
                             user={user}
                             isAuthenticated={isAuthenticated}
                             navItems={navItems}

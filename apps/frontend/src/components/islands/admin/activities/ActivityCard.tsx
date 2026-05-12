@@ -12,7 +12,7 @@ import {
 import { AdminActivity } from '@salvemundi/validations';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import BannerAsset from '@/components/ui/media/BannerAsset';
+import MediaAsset from '@/components/ui/media/MediaAsset';
 
 interface Props {
     event?: AdminActivity;
@@ -25,7 +25,6 @@ interface Props {
 export default function ActivityCard({
     event,
     canEdit = false,
-    isPending = false,
     onViewSignups = () => {},
     onEdit = () => {} }: Props) {
     if (!event) return null;
@@ -46,7 +45,7 @@ export default function ActivityCard({
             <div className="relative w-full md:w-48 lg:w-56 min-h-[160px] md:min-h-full bg-[var(--beheer-card-soft)]/50 flex-shrink-0 border-r border-[var(--beheer-border)]">
                 <div className="absolute inset-0 p-4">
                     <div className="relative w-full h-full">
-                        <BannerAsset
+                        <MediaAsset
                             asset={event.image}
                             alt={event.name}
                             fill

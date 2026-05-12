@@ -36,8 +36,8 @@ export class EventHandlers {
         const baseUrl = process.env.PUBLIC_URL || 'https://salvemundi.nl';
         if (data.registrationId && data.accessToken) {
             const path = data.registrationType === 'membership' || (data as any).isContribution ? '/lidmaatschap/bevestiging' :
-                         data.registrationType === 'trip_signup' ? '/reis/bevestiging' :
-                         '/activiteiten/bevestiging';
+                data.registrationType === 'trip_signup' ? '/reis/bevestiging' :
+                    '/activiteiten/bevestiging';
             mailData.confirmationUrl = `${baseUrl}${path}?id=${data.registrationId}&t=${data.accessToken}`;
         }
 
@@ -99,7 +99,7 @@ export class EventHandlers {
             });
             const json = await res.json() as { data: unknown[] };
             return (json?.data?.length ?? 0) > 0;
-        } catch { return false; }
+        } catch (_error) { return false; }
     }
 
     private static async enrichMembershipRenewal(mailData: any, data: any, url: string, token: string, baseUrl: string) {
@@ -114,7 +114,7 @@ export class EventHandlers {
             if (!mailData.confirmationUrl && data.paymentId) {
                 mailData.confirmationUrl = `${baseUrl}/lidmaatschap/bevestiging?transaction_id=${data.paymentId}&t=${data.accessToken || ''}`;
             }
-        } catch {}
+        } catch (_error) { }
     }
 
     private static async preparePubCrawlTickets(data: any, url: string, token: string) {
@@ -140,14 +140,14 @@ export class EventHandlers {
                 totalTickets: tickets.length,
                 hasAccount: await this.checkUserHasAccount(url, token, data.email)
             };
-        } catch { return null; }
+        } catch (_error) { return null; }
     }
 
     private static async enrichGenericEvent(mailData: any, data: any, url: string, token: string) {
         try {
             const collection = data.registrationType === 'trip_signup' ? 'trip_signups' : 'event_signups';
             const fields = data.registrationType === 'trip_signup' ? 'trip_id,first_name' : 'event_id,first_name,qr_token';
-            
+
             const signupRes = await fetch(`${url}/items/${collection}/${data.registrationId}?fields=${fields}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -163,7 +163,7 @@ export class EventHandlers {
                 });
                 mailData.eventName = (await eventRes.json() as any)?.data?.name || mailData.eventName;
             }
-        } catch {}
+        } catch (_error) { }
     }
 
     private static async fetchPubCrawlTicketsDb(signupId: string | number, expectedCount: number) {
@@ -181,6 +181,6 @@ export class EventHandlers {
                 errorCorrectionLevel: 'M', width: 300, margin: 2,
                 color: { dark: '#5e2b52', light: '#ffffff' }
             });
-        } catch { return ''; }
+        } catch (_error) { return ''; }
     }
 }

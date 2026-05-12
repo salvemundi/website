@@ -1,5 +1,5 @@
 import 'server-only';
-import { getRedis } from '../auth/redis-client';
+import { getRedis } from '@/server/auth/redis-client';
 import { headers } from 'next/headers';
 
 /**

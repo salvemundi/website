@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircle, Home, User, XCircle, Loader2, AlertTriangle } from 'lucide-react';
-import { getTransactionStatusAction } from '@/server/actions/membership.actions';
+import { getTransactionStatusAction } from '@/server/actions/profile/membership.actions';
 
 interface ConfirmationIslandProps {
     transactionId: string | null;
@@ -12,7 +12,7 @@ interface ConfirmationIslandProps {
     initialUserId?: string | null;
 }
 
-export default function ConfirmationIsland({ transactionId, type, initialStatus, initialUserId }: ConfirmationIslandProps) {
+export default function ConfirmationIsland({ transactionId, type, initialStatus, initialUserId: _initialUserId }: ConfirmationIslandProps) {
     const router = useRouter();
     const [status, setStatus] = useState<'loading' | 'paid' | 'open' | 'failed' | 'error'>(initialStatus || (transactionId ? 'loading' : 'paid'));
     const [retryCount, setRetryCount] = useState(0);

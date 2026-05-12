@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Calendar, ChevronRight, CreditCard } from 'lucide-react';
+import { Calendar, ChevronRight, CreditCard, Plane } from 'lucide-react';
 import { format, isBefore, startOfDay } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { Tile } from './ProfielUI';
@@ -11,7 +11,10 @@ import { slugify } from '@/shared/lib/utils/slug';
 import { type EventSignup } from '@salvemundi/validations/schema/profiel.zod';
 import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 
-type EnrichedSignup = (EventSignup & { _type: 'event' }) | (PubCrawlSignup & { _type: 'pub_crawl' });
+type EnrichedSignup =
+    | (EventSignup & { _type: 'event' })
+    | (PubCrawlSignup & { _type: 'pub_crawl' })
+    | { _type: 'trip'; id: number; trip_id: { name: string; date_start?: string } };
 
 interface ProfielSignupsProps {
     filteredSignups?: EnrichedSignup[];
@@ -22,7 +25,7 @@ interface ProfielSignupsProps {
 export default function ProfielSignups({
     filteredSignups = [],
     showPastEvents = false,
-    setShowPastEvents = () => {}
+    setShowPastEvents = () => { }
 }: ProfielSignupsProps) {
     return (
         <Tile
@@ -33,19 +36,19 @@ export default function ProfielSignups({
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => setShowPastEvents((v) => !v)}
-                        className="inline-flex items-center justify-center rounded-xl bg-[var(--color-purple-50)] px-4 py-2 text-[10px] font-black uppercase text-[var(--color-purple-700)] hover:bg-[var(--color-purple-100)] transition border border-[var(--color-purple-100)] disabled:opacity-50"
+                        className="inline-flex items-center justify-center rounded-xl bg-[var(--color-purple-50)] px-4 py-2 text-base font-bold text-[var(--color-purple-700)] hover:bg-[var(--color-purple-100)] transition border border-[var(--color-purple-100)] disabled:opacity-50"
                     >
                         {showPastEvents ? "Verberg oude" : "Toon oude"}
                     </button>
                     <Link
                         href="/profiel/tickets"
-                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-purple-50)] px-4 py-2 text-[10px] font-black uppercase text-[var(--color-purple-700)] hover:bg-[var(--color-purple-100)] transition border border-[var(--color-purple-100)]"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-purple-50)] px-4 py-2 text-base font-bold text-[var(--color-purple-700)] hover:bg-[var(--color-purple-100)] transition border border-[var(--color-purple-100)]"
                     >
                         Tickets <ChevronRight className="h-3 w-3" />
                     </Link>
                     <Link
                         href="/activiteiten"
-                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-purple-500)] px-4 py-2 text-[10px] font-black uppercase text-white hover:bg-[var(--color-purple-600)] transition shadow-lg"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-purple-500)] px-4 py-2 text-base font-bold text-white hover:bg-[var(--color-purple-600)] transition shadow-lg"
                     >
                         Kalender <ChevronRight className="h-3 w-3" />
                     </Link>
@@ -56,41 +59,47 @@ export default function ProfielSignups({
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
                     {filteredSignups.map((signup: EnrichedSignup) => {
                         const isEvent = signup._type === 'event';
-                        const eventData = isEvent ? signup.event_id : signup.pub_crawl_event_id;
-                        
-                        // Type guard to ensure we have an object with a name and date info
-                        const isExpanded = (data: any): data is { name: string; event_date?: string | null; date?: string | null } => {
+                        const isTrip = signup._type === 'trip';
+
+                        const eventData = isEvent ? signup.event_id : isTrip ? signup.trip_id : signup.pub_crawl_event_id;
+
+                        // Type guard replaced 'any' with 'unknown' for zero warning compliance
+                        const isExpanded = (data: unknown): data is { name: string; event_date?: string | null; date?: string | null; date_start?: string | null } => {
                             return typeof data === 'object' && data !== null && 'name' in data;
                         };
 
                         if (!isExpanded(eventData)) return null;
 
-                        const eventDateStr = isEvent ? eventData.event_date : eventData.date;
-                        const detailHref = isEvent ? `/activiteiten/${slugify(eventData.name)}` : `/kroegentocht`;
-                        const icon = isEvent ? <Calendar className="h-7 w-7" /> : <CreditCard className="h-7 w-7" />;
+                        const eventDateStr = isEvent ? eventData.event_date : isTrip ? eventData.date_start : eventData.date;
+                        const detailHref = isEvent
+                            ? `/activiteiten/${slugify(eventData.name)}`
+                            : isTrip
+                                ? `/reis`
+                                : `/kroegentocht`;
 
-                        if (!eventData) return null;
+                        const icon = isTrip ? <Plane className="h-7 w-7" /> : isEvent ? <Calendar className="h-7 w-7" /> : <CreditCard className="h-7 w-7" />;
 
                         const isPast = (() => {
                             try {
                                 if (!eventDateStr) return false;
                                 return isBefore(startOfDay(new Date(eventDateStr)), startOfDay(new Date()));
-                            } catch { return false; }
+                            } catch {
+                                return false;
+                            }
                         })();
 
                         return (
                             <Link
                                 key={`${signup._type}-${signup.id}`}
                                 href={detailHref}
-                                className={`group h-full flex items-center justify-between gap-4 rounded-3xl p-5 text-left transition-all border shadow-sm ${
-                                    isPast 
-                                    ? "bg-slate-50 dark:bg-black/10 opacity-60 grayscale border-slate-200 dark:border-white/5" 
+                                className={`group h-full flex items-center justify-between gap-4 rounded-3xl p-5 text-left transition-all border shadow-sm ${isPast
+                                    ? "bg-slate-50 dark:bg-black/10 opacity-60 grayscale border-slate-200 dark:border-white/5"
                                     : "bg-slate-50 dark:bg-black/20 border-slate-200 dark:border-white/10 hover:shadow-lg hover:-translate-y-0.5"
-                                }`}
+                                    }`}
                             >
                                 <div className="flex items-center gap-4">
                                     <div className="shrink-0 h-16 w-16 flex items-center justify-center rounded-2xl bg-[var(--color-purple-100)] text-[var(--color-purple-500)] shadow-sm">
-                                         {icon}
+                                        {icon}
                                     </div>
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-2">
@@ -98,7 +107,7 @@ export default function ProfielSignups({
                                                 {eventData.name}
                                             </h3>
                                         </div>
-                                        <p className="mt-1 flex items-center gap-2 text-xs font-bold text-[var(--text-muted)]">
+                                        <p className="mt-1 flex items-center gap-2 text-base font-bold text-[var(--text-muted)]">
                                             <Calendar className="h-3.5 w-3.5" />
                                             {eventDateStr && format(new Date(eventDateStr), "d MMM yyyy", { locale: nl })}
                                         </p>
@@ -114,12 +123,12 @@ export default function ProfielSignups({
                     <p className="text-[var(--color-purple-700)] dark:text-white font-bold text-lg mb-2">
                         Je bent nog niet aangemeld voor activiteiten.
                     </p>
-                    <p className="text-[var(--text-muted)] text-sm mb-6">
+                    <p className="text-[var(--text-muted)] text-base mb-6">
                         Bekijk de kalender om aankomende activiteiten te ontdekken
                     </p>
                     <Link
                         href="/activiteiten"
-                        className="inline-flex items-center gap-2 rounded-full bg-[var(--color-purple-500)] px-8 py-3 text-sm font-bold text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
+                        className="inline-flex items-center gap-2 rounded-full bg-[var(--color-purple-500)] px-8 py-3 text-base font-bold text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
                     >
                         Ontdek activiteiten
                     </Link>
@@ -128,4 +137,3 @@ export default function ProfielSignups({
         </Tile>
     );
 }
-

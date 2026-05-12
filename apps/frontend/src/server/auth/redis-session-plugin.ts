@@ -1,6 +1,6 @@
 import type { BetterAuthPlugin, Session, User } from "better-auth";
 import { Pool } from "pg";
-import { getRedis } from "./redis-client";
+import { getRedis } from "@/server/auth/redis-client";
 import { getPermissions, type UserPermissions, type Committee } from "@/shared/lib/permissions";
 
 type ExtendedUser = User & Omit<UserPermissions, 'isICT'> & {
@@ -73,10 +73,10 @@ function extractHeadersSafely(ctx: unknown): Headers | null {
             const h = (ctx.req as { headers?: Record<string, string> }).headers;
             if (h && typeof h === 'object') return new Headers(h);
         }
-        
 
-    } catch (e) {
-        console.error('❌ [RedisPlugin] extractHeadersSafely - Error:', e);
+
+    } catch (error) {
+        console.error('❌ [RedisPlugin] extractHeadersSafely - Error:', error);
     }
 
     return null;
@@ -95,8 +95,8 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                             const isMatch = typeof path === 'string' && path.includes("get-session");
                             if (isMatch) { /* Matcher hit for path: path */ }
                             return isMatch;
-                        } catch (e) {
-                            console.error('❌ [RedisPlugin] BeforeMatcher Error:', e);
+                        } catch (error) {
+                            console.error('❌ [RedisPlugin] BeforeMatcher Error:', error);
                             return false;
                         }
                     },
@@ -123,7 +123,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                             if (cached) {
                                 const parsed = JSON.parse(cached);
                                 const finalSession = parsed.response ? parsed.response : parsed;
-                                
+
                                 // Ensure user exists in finalSession
                                 if (!finalSession || !finalSession.user) {
                                     return;
@@ -166,7 +166,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                             }
 
                             if (sessionData && typeof sessionData === 'object' && 'response' in sessionData) {
-                                sessionData = (sessionData as any).response;
+                                sessionData = (sessionData as { response: ExtendedSession }).response;
                             }
 
                             if (!sessionData || typeof sessionData !== 'object' || !('user' in sessionData) || !sessionData.user) {
@@ -196,7 +196,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                             if (!requestHeaders) {
                                 return { response: sessionData };
                             }
-                            
+
                             const cookies = requestHeaders.get("cookie") || "";
                             const testToken = cookies.split("directus_test_token=")?.[1]?.split(";")?.[0];
                             const isAdmin = sessionWithUser.user.isAdmin || sessionWithUser.user.isICT;
@@ -275,15 +275,15 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                 }
                             }
 
-                            const token = requestHeaders.get("authorization")?.split(" ")[1] || 
-                                         requestHeaders.get("cookie")?.split("better-auth.session-token=")?.[1]?.split(";")?.[0] || 
-                                         requestHeaders.get("cookie")?.split("better-auth.session_token=")?.[1]?.split(";")?.[0];
-                                         
+                            const token = requestHeaders.get("authorization")?.split(" ")[1] ||
+                                requestHeaders.get("cookie")?.split("better-auth.session-token=")?.[1]?.split(";")?.[0] ||
+                                requestHeaders.get("cookie")?.split("better-auth.session_token=")?.[1]?.split(";")?.[0];
+
                             if (token && !sessionWithUser.impersonatedBy) {
                                 try {
                                     const redis = await getRedis();
                                     await redis.set(`session:${token}`, JSON.stringify(sessionWithUser), 'EX', 300);
-                                } catch (_e) { 
+                                } catch (_e) {
                                     // Silent fail for cache
                                 }
                             }
@@ -292,7 +292,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                 response: sessionWithUser
                             };
                         } catch (_e) {
-                            return returned; 
+                            return returned;
                         }
                     }
                 }

@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
 import ConfirmationIsland from '@/components/islands/membership/ConfirmationIsland';
-import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { getTransactionStatusAction } from '@/server/actions/membership.actions';
+import { getTransactionStatusAction } from '@/server/actions/profile/membership.actions';
 
 interface PageProps {
     searchParams: Promise<{ id?: string; transaction_id?: string; t?: string; type?: string }>;
@@ -17,8 +16,6 @@ export default async function LidmaatschapConfirmationPage({ searchParams }: Pag
     const identifier = t || transaction_id || id;
 
     if (!identifier) notFound();
-
-    const session = await getEnrichedSession();
 
     // NUCLEAR SSR: Fetch initial status server-side to prevent layout shift
     const initialStatusRes = await getTransactionStatusAction(identifier);

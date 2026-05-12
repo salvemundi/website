@@ -1,20 +1,14 @@
 /**
  * Utility to build a dynamic PostgreSQL UPDATE query.
- * 
- * @param table The table name
- * @param id The ID of the record to update
- * @param data Object containing fields to update
- * @param allowedFields List of fields allowed to be updated (for security)
- * @returns { sql: string, params: any[] }
  */
 export function buildUpdateQuery(
     table: string,
     id: number | string,
-    data: Record<string, any>,
+    data: Record<string, unknown>, // Gewijzigd: unknown is veiliger dan any
     allowedFields?: string[]
 ) {
     const fields: string[] = [];
-    const params: any[] = [];
+    const params: unknown[] = []; // Gewijzigd: unknown[] voldoet aan de Zero Warning Policy
     let paramIndex = 1;
 
     for (const [key, value] of Object.entries(data)) {

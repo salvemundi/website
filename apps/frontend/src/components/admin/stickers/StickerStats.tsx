@@ -1,22 +1,27 @@
 'use client';
 
-import { 
-    MapPin, 
-    Globe, 
-    Award, 
-    TrendingUp 
+import {
+    MapPin,
+    Globe,
+    Award,
+    TrendingUp
 } from 'lucide-react';
 
+interface Sticker {
+    country?: string | null;
+    city?: string | null;
+}
+
 interface StickerStatsProps {
-    stickers: any[];
+    stickers: Sticker[];
 }
 
 export default function StickerStats({ stickers }: StickerStatsProps) {
     const total = stickers.length;
-    
+
     const countries = new Set(stickers.map(s => s.country?.toLowerCase()).filter(Boolean)).size;
     const cities = new Set(stickers.map(s => s.city?.toLowerCase()).filter(Boolean)).size;
-    
+
     // Top country calculation
     const countryCounts: Record<string, number> = {};
     stickers.forEach(s => {
@@ -24,37 +29,37 @@ export default function StickerStats({ stickers }: StickerStatsProps) {
             countryCounts[s.country] = (countryCounts[s.country] || 0) + 1;
         }
     });
-    
+
     const topCountry = Object.entries(countryCounts)
         .sort((a, b) => b[1] - a[1])[0] || ['N/A', 0];
 
     const stats = [
-        { 
-            label: 'Totaal Stickers', 
-            value: total, 
-            icon: MapPin, 
-            color: 'text-purple-500', 
-            bg: 'bg-purple-500/10' 
+        {
+            label: 'Totaal stickers',
+            value: total,
+            icon: MapPin,
+            color: 'text-purple-500',
+            bg: 'bg-purple-500/10'
         },
-        { 
-            label: 'Landen', 
-            value: countries, 
-            icon: Globe, 
-            color: 'text-blue-500', 
-            bg: 'bg-blue-500/10' 
+        {
+            label: 'Landen',
+            value: countries,
+            icon: Globe,
+            color: 'text-blue-500',
+            bg: 'bg-blue-500/10'
         },
-        { 
-            label: 'Steden', 
-            value: cities, 
-            icon: Award, 
-            color: 'text-green-500', 
-            bg: 'bg-green-500/10' 
+        {
+            label: 'Steden',
+            value: cities,
+            icon: Award,
+            color: 'text-green-500',
+            bg: 'bg-green-500/10'
         },
-        { 
-            label: 'Top Land', 
-            value: topCountry[0], 
-            icon: TrendingUp, 
-            color: 'text-amber-500', 
+        {
+            label: 'Top land',
+            value: topCountry[0],
+            icon: TrendingUp,
+            color: 'text-amber-500',
             bg: 'bg-amber-500/10',
             subtitle: `${topCountry[1]} stickers`
         }
@@ -69,13 +74,13 @@ export default function StickerStats({ stickers }: StickerStatsProps) {
                             <stat.icon className="h-6 w-6" />
                         </div>
                         {stat.subtitle && (
-                            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">
+                            <span className="text-base font-semibold text-[var(--text-muted)]">
                                 {stat.subtitle}
                             </span>
                         )}
                     </div>
                     <div>
-                        <p className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-1">{stat.label}</p>
+                        <p className="text-base font-bold text-[var(--text-muted)] mb-1">{stat.label}</p>
                         <p className="text-3xl font-black text-[var(--text-main)] tracking-tighter transition-all group-hover:text-[var(--theme-purple)]">
                             {stat.value}
                         </p>

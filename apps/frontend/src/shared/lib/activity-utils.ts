@@ -8,7 +8,7 @@
 export const buildCommitteeEmail = (name?: string | null): string | undefined => {
     if (!name) return undefined;
     const normalized = name.toLowerCase();
-    
+
     // Explicit mappings for known committees
     if (normalized.includes('feest')) return 'feest@salvemundi.nl';
     if (normalized.includes('activiteit')) return 'activiteiten@salvemundi.nl';
@@ -27,7 +27,7 @@ export const buildCommitteeEmail = (name?: string | null): string | undefined =>
         .replace(/commissie|committee/g, '') // Remove these common words
         .replace(/[^a-z0-9]+/g, '') // Remove non-alphanumeric
         .trim();
-        
+
     if (!slug) return undefined;
     return `${slug}@salvemundi.nl`;
 };
@@ -40,14 +40,14 @@ export const formatDutchDate = (dateStr?: string | null): string | null => {
     try {
         const date = new Date(dateStr);
         if (isNaN(date.getTime())) return dateStr;
-        
+
         return new Intl.DateTimeFormat('nl-NL', {
             weekday: 'long',
             day: 'numeric',
             month: 'long',
             year: 'numeric'
         }).format(date);
-    } catch {
+    } catch (_error) {
         return dateStr;
     }
 };

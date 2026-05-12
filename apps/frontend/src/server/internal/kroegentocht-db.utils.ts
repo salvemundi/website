@@ -1,0 +1,341 @@
+'use server';
+
+import 'server-only';
+import { query } from '@/lib/database';
+import {
+    type PubCrawlEvent,
+    type PubCrawlSignup,
+    type PubCrawlTicket
+} from '@salvemundi/validations/schema/pub-crawl.zod';
+
+export type EnrichedPubCrawlSignup = PubCrawlSignup & {
+    pub_crawl_event_id: {
+        id: string | number;
+        name: string;
+        date?: string;
+        description?: string;
+        image?: string;
+    };
+    tickets?: PubCrawlTicket[];
+    amount_tickets: number;
+};
+
+// --- Database Row Interfaces to enforce 'No ANY' ---
+interface DbPubCrawlEventRow {
+    id: number;
+    name: string;
+    date: string | Date | null;
+    description: string | null;
+    image: string | null;
+}
+
+interface DbPubCrawlSignupRow {
+    id: number;
+    pub_crawl_event_id: number;
+    name: string;
+    email: string;
+    association?: string | null;
+    amount_tickets: number;
+    name_initials?: string | unknown[] | null;
+    payment_status: string;
+    mollie_id?: string | null;
+    directus_relations?: string | null;
+    created_at?: string | Date;
+}
+
+interface DbPubCrawlTicketRow {
+    id: number;
+    signup_id: number;
+    name: string;
+    initial: string;
+    qr_token: string;
+    checked_in: boolean;
+    checked_in_at?: string | Date | null;
+}
+
+interface JoinedSignupRow extends DbPubCrawlSignupRow {
+    event_name: string;
+    event_date: string | Date | null;
+    event_description: string | null;
+    event_image: string | null;
+}
+// ---------------------------------------------------
+
+type QueryParam = string | number | boolean | object | null | undefined;
+
+/**
+ * Fetches all pub crawl events.
+ */
+export async function fetchPubCrawlEventsDb(): Promise<PubCrawlEvent[]> {
+    const res = await query(
+        `SELECT * FROM pub_crawl_events ORDER BY date DESC LIMIT 100`,
+        []
+    );
+
+    const { toLocalISOString } = await import('@/lib/utils/date-utils');
+    return (res.rows as DbPubCrawlEventRow[]).map((raw) => ({
+        ...raw,
+        date: toLocalISOString(raw.date) ?? undefined,
+        price: 1,
+        max_tickets_per_person: 10
+    })) as unknown as PubCrawlEvent[];
+}
+
+/**
+ * Fetches signups for a specific event.
+ */
+export async function fetchPubCrawlSignupsDb(eventId: number): Promise<(PubCrawlSignup & { participants: { name: string, initial: string }[] })[]> {
+    const signupRes = await query(
+        `SELECT * FROM pub_crawl_signups WHERE pub_crawl_event_id = $1 ORDER BY id DESC LIMIT 1000`,
+        [eventId]
+    );
+
+    return (signupRes.rows as DbPubCrawlSignupRow[]).map(raw => {
+        let participants: { name: string, initial: string }[] = [];
+
+        if (raw.name_initials) {
+            if (Array.isArray(raw.name_initials)) {
+                participants = raw.name_initials as { name: string, initial: string }[];
+            } else if (typeof raw.name_initials === 'string') {
+                try {
+                    const parsed = JSON.parse(raw.name_initials) as unknown;
+                    participants = Array.isArray(parsed) ? (parsed as { name: string, initial: string }[]) : [(parsed as { name: string, initial: string })];
+                } catch (_error) {
+                    // Silent fail for JSON parse is okay as it's data-level
+                }
+            }
+        }
+
+        return {
+            ...raw,
+            participants
+        };
+    }) as unknown as (PubCrawlSignup & { participants: { name: string, initial: string }[] })[];
+}
+
+/**
+ * Fetches a single signup by ID with event details.
+ */
+export async function fetchPubCrawlSignupByIdDb(signupId: number): Promise<EnrichedPubCrawlSignup | null> {
+    const res = await query(
+        `SELECT s.*, e.name as event_name, e.date as event_date, e.description as event_description, e.image as event_image
+         FROM pub_crawl_signups s
+         JOIN pub_crawl_events e ON s.pub_crawl_event_id = e.id
+         WHERE s.id = $1 
+         LIMIT 1`,
+        [signupId]
+    );
+
+    if (res.rowCount === 0) return null;
+
+    const signup = res.rows[0] as JoinedSignupRow;
+    const ticketRes = await query(
+        `SELECT * FROM pub_crawl_tickets WHERE signup_id = $1 ORDER BY id ASC`,
+        [signupId]
+    );
+
+    let participants: { name: string, initial: string }[] = [];
+    if (signup.name_initials) {
+        if (Array.isArray(signup.name_initials)) {
+            participants = signup.name_initials as { name: string, initial: string }[];
+        } else if (typeof signup.name_initials === 'string') {
+            try {
+                const parsed = JSON.parse(signup.name_initials) as unknown;
+                participants = Array.isArray(parsed) ? (parsed as { name: string, initial: string }[]) : [(parsed as { name: string, initial: string })];
+            } catch (_error) { }
+        }
+    }
+
+    // Expliciet mappen van tickets om de "Missing properties" TypeScript fout te voorkomen
+    const tickets: PubCrawlTicket[] = ((ticketRes.rows as DbPubCrawlTicketRow[]) || []).map((t, i) => {
+        const p = participants.find((_, idx) => idx === i);
+        return {
+            id: t.id,
+            signup_id: t.signup_id,
+            qr_token: t.qr_token,
+            checked_in: !!t.checked_in,
+            checked_in_at: t.checked_in_at ? String(t.checked_in_at) : null,
+            name: p?.name || t.name,
+            initial: p?.initial || t.initial
+        };
+    });
+
+    const { toLocalISOString } = await import('@/lib/utils/date-utils');
+    return {
+        ...signup,
+        pub_crawl_event_id: {
+            id: signup.pub_crawl_event_id,
+            name: signup.event_name,
+            date: toLocalISOString(signup.event_date) ?? undefined,
+            description: signup.event_description ?? undefined,
+            image: signup.event_image ?? undefined
+        },
+        tickets
+    } as unknown as EnrichedPubCrawlSignup;
+}
+
+/**
+ * Fetches all tickets for a specific event.
+ */
+export async function fetchPubCrawlTicketsDb(eventId: number): Promise<PubCrawlTicket[]> {
+    const res = await query(
+        `SELECT t.* FROM pub_crawl_tickets t
+             JOIN pub_crawl_signups s ON t.signup_id = s.id
+             WHERE s.pub_crawl_event_id = $1`,
+        [eventId]
+    );
+
+    return (res.rows as DbPubCrawlTicketRow[]).map(t => ({
+        id: t.id,
+        signup_id: t.signup_id,
+        name: t.name,
+        initial: t.initial,
+        qr_token: t.qr_token,
+        checked_in: !!t.checked_in,
+        checked_in_at: t.checked_in_at ? String(t.checked_in_at) : null
+    }));
+}
+
+export async function getPubCrawlTicketCountDb(eventId: number): Promise<number> {
+    const res = await query(
+        `SELECT SUM(amount_tickets) as total FROM pub_crawl_signups 
+         WHERE pub_crawl_event_id = $1 AND payment_status = 'paid'`,
+        [eventId]
+    );
+    const totalRaw = (res.rows[0] as { total?: string | null })?.total;
+    return parseInt(totalRaw || '0', 10);
+}
+
+/**
+ * Gets the total number of tickets sold for a specific user (by email) for a specific event.
+ */
+export async function getPubCrawlTicketCountByEmailDb(eventId: number, email: string): Promise<number> {
+    const res = await query(
+        `SELECT SUM(amount_tickets) as total FROM pub_crawl_signups 
+         WHERE pub_crawl_event_id = $1 AND LOWER(email) = LOWER($2) AND payment_status != 'failed'`,
+        [eventId, email]
+    );
+    const totalRaw = (res.rows[0] as { total?: string | null })?.total;
+    return parseInt(totalRaw || '0', 10);
+}
+
+
+/**
+ * Fetches signups for a specific user.
+ */
+export async function fetchUserPubCrawlSignupsDb(email: string): Promise<EnrichedPubCrawlSignup[]> {
+    try {
+        const res = await query(
+            `SELECT s.*, e.name as event_name, e.date as event_date, e.description as event_description, e.image as event_image
+             FROM pub_crawl_signups s
+             JOIN pub_crawl_events e ON s.pub_crawl_event_id = e.id
+             WHERE LOWER(s.email) = LOWER($1)
+             ORDER BY s.created_at DESC`,
+            [email]
+        );
+        const { toLocalISOString } = await import('@/lib/utils/date-utils');
+        return (res.rows as JoinedSignupRow[]).map(row => ({
+            ...row,
+            pub_crawl_event_id: {
+                id: row.pub_crawl_event_id,
+                name: row.event_name,
+                date: toLocalISOString(row.event_date) ?? undefined,
+                description: row.event_description ?? undefined,
+                image: row.event_image ?? undefined
+            }
+        })) as unknown as EnrichedPubCrawlSignup[];
+    } catch (_error) {
+        return [];
+    }
+}
+
+/**
+ * Creates a new pub crawl signup.
+ */
+export async function createPubCrawlSignupDb(data: {
+    name: string;
+    email: string;
+    association?: string;
+    amount_tickets: number;
+    name_initials?: string;
+    pub_crawl_event_id: number;
+    payment_status?: string;
+    directus_relations?: string | null;
+}): Promise<number> {
+    try {
+        const res = await query(
+            `INSERT INTO pub_crawl_signups 
+             (name, email, association, amount_tickets, name_initials, pub_crawl_event_id, payment_status, directus_relations, created_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+             RETURNING id`,
+            [
+                data.name,
+                data.email,
+                data.association ?? null,
+                data.amount_tickets,
+                data.name_initials ?? null,
+                data.pub_crawl_event_id,
+                data.payment_status ?? 'open',
+                data.directus_relations ?? null,
+            ]
+        );
+
+        const id = (res.rows[0] as { id?: number })?.id;
+        if (!id) throw new Error('Insert failed');
+        return id;
+    } catch (error) {
+        throw error;
+    }
+}
+
+/**
+ * Creates multiple tickets in a single batch.
+ */
+export async function createPubCrawlTicketsDb(signupId: number, tickets: { name: string, initial: string, qr_token: string }[]): Promise<void> {
+    if (tickets.length === 0) return;
+
+    try {
+        const values: QueryParam[] = [];
+        const placeHolders = tickets.map((t, i) => {
+            const offset = i * 4;
+            values.push(signupId, t.name, t.initial, t.qr_token);
+            return `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, NOW())`;
+        }).join(', ');
+
+        await query(
+            `INSERT INTO pub_crawl_tickets (signup_id, name, initial, qr_token, created_at)
+             VALUES ${placeHolders}`,
+            values
+        );
+    } catch (error) {
+        throw error;
+    }
+}
+
+export async function deletePubCrawlTicketsBySignupIdDb(signupId: number): Promise<void> {
+    await query(`DELETE FROM pub_crawl_tickets WHERE signup_id = $1`, [signupId]);
+}
+
+export async function updatePubCrawlSignupDb(id: number, data: Partial<PubCrawlSignup>): Promise<void> {
+    const keys = Object.keys(data);
+    if (keys.length === 0) return;
+
+    const setClauses = keys.map((k, i) => `${k} = $${i + 2}`).join(', ');
+    const values = Object.values(data) as QueryParam[];
+
+    await query(
+        `UPDATE pub_crawl_signups SET ${setClauses} WHERE id = $1`,
+        [id, ...values]
+    );
+}
+
+export async function deletePubCrawlSignupDb(id: number): Promise<void> {
+    await query(`DELETE FROM pub_crawl_signups WHERE id = $1`, [id]);
+}
+
+export async function updatePubCrawlTicketDb(id: number, data: { name: string, initial: string }): Promise<void> {
+    await query(
+        `UPDATE pub_crawl_tickets SET name = $1, initial = $2 WHERE id = $3`,
+        [data.name, data.initial, id]
+    );
+}

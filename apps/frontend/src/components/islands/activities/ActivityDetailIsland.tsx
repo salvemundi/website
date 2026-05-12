@@ -4,8 +4,7 @@ import { SafeHtml } from '@/components/ui/security/SafeHtml';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 import { type Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { buildCommitteeEmail, formatDutchDate, formatTime } from '@/shared/lib/activity-utils';
-import BannerAsset from '@/components/ui/media/BannerAsset';
-import { getImageUrl } from '@/lib/utils/image-utils';
+import MediaAsset from '@/components/ui/media/MediaAsset';
 
 interface ActivityDetailIslandProps {
     activity?: Activiteit;
@@ -14,7 +13,6 @@ interface ActivityDetailIslandProps {
 }
 
 export default function ActivityDetailIsland({ activity, isLoggedIn = false, children }: ActivityDetailIslandProps) {
-    const imageUrl = activity?.afbeelding_id ? getImageUrl(activity.afbeelding_id) : '/img/backgrounds/Kroto2025.jpg';
 
     const committeeEmail = activity?.contact?.includes('@') 
         ? activity.contact 
@@ -30,7 +28,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
             {activity?.afbeelding_id ? (
                 <div className="relative h-[45vh] min-h-[400px] w-full overflow-hidden bg-[var(--bg-soft)]">
                     {activity && (
-                        <BannerAsset
+                        <MediaAsset
                             asset={activity.afbeelding_id}
                             alt={activity.titel}
                             fill

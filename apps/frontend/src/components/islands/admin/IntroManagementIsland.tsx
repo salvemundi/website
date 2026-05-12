@@ -21,7 +21,7 @@ import {
     deleteIntroBlog,
     getIntroPlanning,
     upsertIntroPlanning,
-    deleteIntroPlanning } from '@/server/actions/admin-intro.actions';
+    deleteIntroPlanning } from '@/server/actions/admin/admin-intro.actions';
 import { type DbIntroSignup as IntroSignupRow, type DbIntroParentSignup as IntroParentRow } from '@salvemundi/validations/directus/schema';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import AdminToast from '@/components/ui/admin/AdminToast';

@@ -7,7 +7,7 @@ import { ReisSignupStatus } from './ReisSignupStatus';
 import { ReisRegistrationForm } from './ReisRegistrationForm';
 import { RefreshCcw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { revalidateReisAction } from '@/server/actions/reis.actions';
+import { revalidateReisAction } from '@/server/actions/events/reis.actions';
 
 import { type EnrichedUser } from '@/types/auth';
 
@@ -22,19 +22,19 @@ interface ReisFormIslandProps {
     initialUser?: EnrichedUser | null;
 }
 
-export function ReisFormIsland({ 
-    nextTrip, 
-    userSignup, 
-    canSignUp, 
+export function ReisFormIsland({
+    nextTrip,
+    userSignup,
+    canSignUp,
     registrationStartText,
-    initialUser 
+    initialUser
 }: ReisFormIslandProps) {
     const { data: session } = authClient.useSession();
     const router = useRouter();
-    
+
     // We prioritize the server-provided user to avoid any flicker.
     const currentUser = (initialUser || session?.user || null) as EnrichedUser | null;
-    
+
     const [refreshing, setRefreshing] = useState(false);
 
     const handleRefresh = async () => {
@@ -42,13 +42,13 @@ export function ReisFormIsland({
         try {
             // Force a server-side revalidation of the path
             await revalidateReisAction();
-            
+
             // Re-fetch the session client-side to ensure no stale auth state
             await authClient.getSession();
 
             // Trigger the server component to re-render with fresh data
             router.refresh();
-        } catch (error) {
+        } catch (_error) {
             // Silently fail on background refresh
         } finally {
             // Keep the spinner going for a moment to indicate activity
@@ -60,7 +60,7 @@ export function ReisFormIsland({
         <section className="w-full lg:w-1/2 bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl shadow-2xl p-6 sm:p-10 relative overflow-hidden group">
             {/* Decorative background element */}
             <div className="absolute -top-24 -right-24 w-48 h-48 bg-theme-purple/5 rounded-full blur-3xl group-hover:bg-theme-purple/10 transition-colors duration-700" />
-            
+
             <div className="relative z-10">
                 <div className="flex justify-between items-start mb-8 sm:mb-10">
                     <div className="space-y-1">

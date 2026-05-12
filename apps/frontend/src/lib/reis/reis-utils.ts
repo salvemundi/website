@@ -23,9 +23,10 @@ export function mapActivityOptionIdToName(optId: string, metaOptions: ActivityOp
     if (typeof optId === 'string' && optId.startsWith('opt-')) {
         const indexStr = optId.split('-')[1];
         const index = parseInt(indexStr);
-        
-        if (!isNaN(index) && metaOptions[index]) {
-            return metaOptions[index].name || optId;
+
+        if (!isNaN(index) && index >= 0 && index < metaOptions.length) {
+            const option = metaOptions.find((_, i) => i === index);
+            return option?.name || optId;
         }
     }
 
@@ -45,7 +46,7 @@ export function parseActivityOptions(options: unknown): ActivityOption[] {
     if (typeof options === 'string') {
         try {
             return JSON.parse(options) as ActivityOption[];
-        } catch {
+        } catch (_error) {
             return [];
         }
     }
@@ -62,7 +63,7 @@ export function parseSelectedOptions(selected: unknown): Record<string, boolean>
         try {
             const parsed = JSON.parse(selected);
             return (typeof parsed === 'object' && parsed !== null) ? parsed : {};
-        } catch {
+        } catch (_error) {
             return {};
         }
     }

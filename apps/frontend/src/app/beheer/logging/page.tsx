@@ -22,7 +22,7 @@ import {
     getAuditSettingsAction, 
     getSystemLogsAction, 
     getQueueStatusAction 
-} from '@/server/actions/audit.actions';
+} from '@/server/actions/infrastructure/audit.actions';
 
 /**
  * AuditLoggingPage: Nuclear SSR Modernization.

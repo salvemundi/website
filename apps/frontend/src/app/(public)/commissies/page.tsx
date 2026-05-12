@@ -6,7 +6,7 @@ export const metadata: Metadata = {
     title: 'Commissies | SV Salve Mundi',
     description: 'Ontdek onze commissies en het team dat SV Salve Mundi draaiende houdt.' };
 
-import { getCommittees } from '@/server/actions/committees.actions';
+import { getCommittees } from '@/server/actions/public/committees.actions';
 
 import { connection } from 'next/server';
 

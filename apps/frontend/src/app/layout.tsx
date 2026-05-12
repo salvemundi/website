@@ -4,14 +4,16 @@ import './globals.css';
 import NavigationHeader from '@/components/islands/layout/NavigationHeader';
 import FooterIsland from '@/components/islands/layout/FooterIsland';
 import ImpersonationBanner from '@/components/ui/admin/ImpersonationBanner';
-import { getDocumenten, getDisabledRoutes } from '@/server/actions/website.actions';
-import { getCommittees } from '@/server/actions/committees.actions';
-import { checkAdminAccess } from '@/server/actions/admin-utils.actions';
+import { getDocumenten, getDisabledRoutes } from '@/server/actions/public/website.actions';
+import { getCommittees } from '@/server/actions/public/committees.actions';
+import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
 import { headers } from 'next/headers';
 import { connection } from 'next/server';
-import { getHeroBanners, getUpcomingActiviteiten } from '@/server/actions/home.actions';
+import { getHeroBanners, getUpcomingActiviteiten } from '@/server/actions/public/home.actions';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
+import { type ExtendedSession, type ImpersonationInfo } from '@/types/auth';
+import { type Activiteit } from '@salvemundi/validations/schema/activity.zod';
 
 export const viewport: Viewport = {
     themeColor: [
@@ -102,7 +104,7 @@ export default async function RootLayout({
             </head>
             <body className={`${poppins.variable} antialiased flex flex-col min-h-screen`}>
                 <ImpersonationWrapper impersonation={impersonation} />
-                <HeaderWrapper initialSession={session} impersonation={impersonation} isAuthorized={isAuthorized} />
+                <HeaderWrapper initialSession={session} isAuthorized={isAuthorized} />
                 <main className="flex-grow min-h-[70vh] pt-[var(--header-total-height,var(--header-height,80px))]">
                     {children}
                 </main>
@@ -126,7 +128,7 @@ async function HeadPreloads() {
 
         const criticalImages = [
             ...(banners[0]?.afbeelding_id ? [getImageUrl(banners[0].afbeelding_id, { width: 1200, height: 800, fit: 'cover' })] : []),
-            ...activities.slice(0, 2).map((a: any) => a.afbeelding_id ? getImageUrl(a.afbeelding_id, { width: 400, height: 300, fit: 'cover' }) : null).filter(Boolean)
+            ...activities.slice(0, 2).map((a: Activiteit) => a.afbeelding_id ? getImageUrl(a.afbeelding_id, { width: 400, height: 300, fit: 'cover' }) : null).filter(Boolean)
         ];
 
         return (
@@ -136,7 +138,7 @@ async function HeadPreloads() {
                 ))}
             </>
         );
-    } catch {
+    } catch (_error) {
         return null;
     }
 }
@@ -144,7 +146,7 @@ async function HeadPreloads() {
 
 
 
-async function HeaderWrapper({ initialSession, impersonation, isAuthorized }: { initialSession: any, impersonation: any, isAuthorized: boolean }) {
+async function HeaderWrapper({ initialSession, isAuthorized }: { initialSession: ExtendedSession | null, isAuthorized: boolean }) {
     await connection();
     try {
         const disabledRoutes = await getDisabledRoutes();
@@ -153,24 +155,22 @@ async function HeaderWrapper({ initialSession, impersonation, isAuthorized }: { 
             <NavigationHeader
                 disabledRoutes={disabledRoutes}
                 initialSession={initialSession}
-                impersonation={impersonation}
                 isAdmin={isAuthorized}
             />
         );
-    } catch (e) {
+    } catch (_error) {
         /* Header wrapper fail */
         return (
-             <NavigationHeader
+            <NavigationHeader
                 disabledRoutes={[]}
                 initialSession={null}
-                impersonation={null}
                 isAdmin={false}
             />
         );
     }
 }
 
-async function FooterWrapper({ initialSession }: { initialSession: any }) {
+async function FooterWrapper({ initialSession }: { initialSession: ExtendedSession | null }) {
     await connection();
     try {
         const [documents, disabledRoutes, committees] = await Promise.all([
@@ -187,8 +187,8 @@ async function FooterWrapper({ initialSession }: { initialSession: any }) {
                 initialSession={initialSession}
             />
         );
-    } catch (e) {
-        console.error('[RootLayout] FooterWrapper fail:', e instanceof Error ? e.message : 'Unknown error');
+    } catch (error) {
+        console.error('[RootLayout] FooterWrapper fail:', error instanceof Error ? error.message : 'Unknown error');
         return (
             <FooterIsland
                 documents={[]}
@@ -200,16 +200,16 @@ async function FooterWrapper({ initialSession }: { initialSession: any }) {
     }
 }
 
-async function ImpersonationWrapper({ impersonation }: { impersonation: any }) {
+async function ImpersonationWrapper({ impersonation }: { impersonation: ImpersonationInfo | null }) {
     await connection();
-    if (!impersonation) return null;
+
+    if (!impersonation || !impersonation.targetName) return null;
 
     return (
         <ImpersonationBanner
             targetName={impersonation.targetName}
             adminName={impersonation.name}
-            committees={impersonation.targetCommittees}
-            isNormallyAdmin={impersonation.isNormallyAdmin}
+            committees={impersonation.targetCommittees ?? []}
         />
     );
 }

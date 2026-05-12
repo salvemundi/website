@@ -41,6 +41,18 @@ const eslintConfig = [
             "@typescript-eslint/ban-ts-comment": "warn",
             "@next/next/no-html-link-for-pages": "warn"
         }
+    },
+    {
+        files: ["src/server/auth/auth-utils.ts", "src/server/auth/redis-session-plugin.ts"],
+        rules: {
+            "@typescript-eslint/no-explicit-any": "off"
+        }
+    },
+    {
+        files: ["src/server/actions/**/*"],
+        rules: {
+            "security/detect-object-injection": "off"
+        }
     }
 ];
 

@@ -12,7 +12,7 @@ import {
     Phone
 } from 'lucide-react';
 
-import { getSafeHavens } from '@/server/actions/safe-haven.actions';
+import { getSafeHavens } from '@/server/actions/public/safe-haven.actions';
 import SafeHavenCard from '@/components/ui/social/SafeHavenCard';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
@@ -168,7 +168,7 @@ async function SafeHavensContent() {
                                     Onderwerpen
                                 </h2>
                                 <p className="mt-2 text-sm text-theme-muted">
-                                    Onder andere bij de volgende thema's:
+                                    Onder andere bij de volgende thema&apos;s:
                                 </p>
                             </div>
 

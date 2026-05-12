@@ -1,8 +1,7 @@
 import React from 'react';
-import { getEnrichedSession } from '@/server/auth/auth-utils';
 import ActivitiesBannerIsland from '@/components/islands/activities/ActivitiesBannerIsland';
 import ActivitiesProviderIsland from '@/components/islands/activities/ActivitiesProviderIsland';
-import { getActivities } from '@/server/actions/public-activiteit.actions';
+import { getActivities } from '@/server/actions/events/public-activiteit.actions';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -33,8 +32,6 @@ export default async function ActivitiesPage() {
 }
 
 async function ActivitiesContent() {
-    const session = await getEnrichedSession();
-
     const events = await getActivities().catch(() => []);
     const serverTime = new Date().toISOString();
 

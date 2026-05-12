@@ -3,7 +3,7 @@
 import React, { useState, useTransition } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { signupForActivity } from '@/server/actions/public-activiteit.actions';
+import { signupForActivity } from '@/server/actions/events/public-activiteit.actions';
 import { eventSignupFormSchema, type EventSignupForm } from '@salvemundi/validations/schema/activity.zod';
 import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
@@ -43,14 +43,13 @@ export default function EventSignupIsland({
 
     const [isPending, startTransition] = useTransition();
     const [serverError, setServerError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<string | null>(verifiedPaymentStatus === 'paid' ? 'Betaling geslaagd! Je bent nu aangemeld.' : null);
-    
+
     const [signupStatus, setSignupStatus] = useState<{
         isSignedUp: boolean;
         paymentStatus?: 'paid' | 'open' | 'failed' | 'canceled';
         qrToken?: string;
         signupId?: number;
-    }>({ 
+    }>({
         isSignedUp: initialIsSignedUp || verifiedPaymentStatus === 'paid' || verifiedPaymentStatus === 'open',
         paymentStatus: verifiedPaymentStatus || undefined,
         qrToken: initialQrToken,
@@ -64,7 +63,6 @@ export default function EventSignupIsland({
         register,
         control,
         handleSubmit,
-        reset,
         formState: { errors }
     } = useForm<EventSignupForm>({
         resolver: zodResolver(eventSignupFormSchema),
@@ -73,7 +71,8 @@ export default function EventSignupIsland({
             name: user?.name || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : ''),
             email: user?.email || '',
             phoneNumber: formatPhoneNumber(user?.phone_number || ''),
-            website: '' }
+            website: ''
+        }
     });
 
 
@@ -91,9 +90,8 @@ export default function EventSignupIsland({
                     // Voor gratis events: ga naar de bevestigingspagina zodat men de QR-code ziet
                     window.location.href = `/activiteiten/bevestiging?id=${result.signupId}&transactionId=${result.qrToken}`;
                 } else {
-                    setSuccess(result.message || 'Aanmelding geslaagd!');
-                    setSignupStatus({ 
-                        isSignedUp: true, 
+                    setSignupStatus({
+                        isSignedUp: true,
                         paymentStatus: isPaid ? 'open' : 'paid',
                         signupId: 'signupId' in result ? Number(result.signupId) : undefined
                     });
@@ -110,25 +108,25 @@ export default function EventSignupIsland({
 
     if (signupStatus.isSignedUp && (signupStatus.paymentStatus === 'paid' || signupStatus.paymentStatus === 'open')) {
         const isPaidStatus = signupStatus.paymentStatus === 'paid';
-        
+
         const onRetry = async () => {
             const urlParams = new URLSearchParams(window.location.search);
             const signupId = signupStatus.signupId || Number(urlParams.get('id'));
-            
+
             if (!signupId || isNaN(signupId)) {
                 setServerError("Kon aanmeldings-ID niet vinden voor herbetaling.");
                 return;
             }
 
             try {
-                const { retryActivityPayment } = await import('@/server/actions/public-activiteit-status.actions');
+                const { retryActivityPayment } = await import('@/server/actions/events/public-activiteit-status.actions');
                 const result = await retryActivityPayment(signupId);
                 if (result.success && result.checkoutUrl) {
                     window.location.href = result.checkoutUrl;
                 } else {
                     setServerError(result.error || "Herbetaling mislukt.");
                 }
-            } catch (err) {
+            } catch (_error) {
                 setServerError("Er is een fout opgetreden bij het herstarten van de betaling.");
             }
         };
@@ -147,7 +145,7 @@ export default function EventSignupIsland({
                         {isPaidStatus ? '🎉 Aanmelding Definitief!' : '💳 Betaling Gestart'}
                     </h3>
                     <p className="text-[var(--text-muted)] font-medium">
-                        {isPaidStatus 
+                        {isPaidStatus
                             ? <>Je bent succesvol aangemeld voor <span className="text-[var(--theme-purple)] font-semibold">{eventName}</span>.</>
                             : <>Je aanmelding voor <span className="text-[var(--theme-purple)] font-semibold">{eventName}</span> is in afwachting van betaling.</>
                         }
@@ -162,7 +160,7 @@ export default function EventSignupIsland({
                                     Zodra de betaling is afgerond verschijnt hier je digitale ticket. Dit kan enkele minuten duren.
                                 </p>
                             </div>
-                            
+
                             <button
                                 onClick={onRetry}
                                 className="w-full h-14 bg-amber-500 text-white font-semibold rounded-2xl shadow-lg shadow-amber-500/20 hover:shadow-xl hover:shadow-amber-500/40 hover:-translate-y-0.5 active:scale-95 transition-all flex items-center justify-center gap-3  text-[10px] tracking-widest"
@@ -232,10 +230,10 @@ export default function EventSignupIsland({
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 flex-1 flex flex-col" autoComplete="off">
 
                 <div className="space-y-4 flex-1">
-                    <FormField 
+                    <FormField
                         id="field-name"
-                        label="Naam" 
-                        required 
+                        label="Naam"
+                        required
                         error={errors.name?.message}
                         labelClassName="text-[10px]  font-semibold text-[var(--theme-purple)]/50 ml-3 tracking-widest"
                     >
@@ -247,10 +245,10 @@ export default function EventSignupIsland({
                         />
                     </FormField>
 
-                    <FormField 
+                    <FormField
                         id="field-email"
-                        label="Email" 
-                        required 
+                        label="Email"
+                        required
                         error={errors.email?.message}
                         labelClassName="text-[10px]  font-semibold text-[var(--theme-purple)]/50 ml-3 tracking-widest"
                     >
@@ -263,10 +261,10 @@ export default function EventSignupIsland({
                         />
                     </FormField>
 
-                    <FormField 
+                    <FormField
                         id="field-phoneNumber"
-                        label="Telefoonnummer" 
-                        required 
+                        label="Telefoonnummer"
+                        required
                         error={errors.phoneNumber?.message}
                         labelClassName="text-[10px]  font-semibold text-[var(--theme-purple)]/50 ml-3 tracking-widest"
                     >
@@ -302,7 +300,7 @@ export default function EventSignupIsland({
                                 <><Loader2 className="h-6 w-6 animate-spin" /><span className="tracking-widest">VERWERKEN...</span></>
                             ) : (
                                 <>{isPaid ? <CreditCard className="h-6 w-6" /> : <Send className="h-6 w-6" />}
-                                <span className="tracking-widest">AANMELDEN (€{price.toFixed(2).replace('.', ',')})</span></>
+                                    <span className="tracking-widest">AANMELDEN (€{price.toFixed(2).replace('.', ',')})</span></>
                             )}
                         </div>
                     </button>

@@ -44,16 +44,16 @@ export class RegistrationService {
 
         if (registrationType === 'trip_signup' && paymentType) {
             if (paymentType === 'deposit') {
-                updateData = { 
-                    deposit_paid: true, 
-                    deposit_paid_at: new Date().toISOString() 
+                updateData = {
+                    deposit_paid: true,
+                    deposit_paid_at: new Date().toISOString()
                 };
                 sqlQuery = 'UPDATE trip_signups SET deposit_paid = true, deposit_paid_at = NOW() WHERE id = $1';
                 sqlParams = [registrationId];
             } else if (paymentType === 'final') {
-                updateData = { 
-                    full_payment_paid: true, 
-                    full_payment_paid_at: new Date().toISOString() 
+                updateData = {
+                    full_payment_paid: true,
+                    full_payment_paid_at: new Date().toISOString()
                 };
                 sqlQuery = 'UPDATE trip_signups SET full_payment_paid = true, full_payment_paid_at = NOW() WHERE id = $1';
                 sqlParams = [registrationId];
@@ -74,9 +74,9 @@ export class RegistrationService {
             // 2. Queue Directus Update for shadow-write and retry-safety
             await DirectusRetryService.queueUpdate(redis, targetCollection, registrationId, updateData);
             log.info(`[RegistrationService] Queued Directus update for ${targetCollection} ${registrationId}`);
-        } catch (err) {
-            log.error(err, `[RegistrationService] Failed to update registration ${registrationId}`);
-            throw err;
+        } catch (_error) {
+            log.error(error, `[RegistrationService] Failed to update registration ${registrationId}`);
+            throw error;
         }
     }
 }

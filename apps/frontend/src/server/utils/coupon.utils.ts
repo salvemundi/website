@@ -57,7 +57,7 @@ export async function getValidCoupon(code: string): Promise<CouponValidationResu
 
         // 2. Date Validation Logic
         const now = new Date();
-        
+
         if (coupon.valid_from && new Date(coupon.valid_from) > now) {
             return { valid: false, error: 'Deze coupon is nog niet geldig' };
         }
@@ -73,10 +73,7 @@ export async function getValidCoupon(code: string): Promise<CouponValidationResu
 
         return {
             valid: true,
-            coupon: {
-                ...coupon,
-                discount_value: Number(coupon.discount_value)
-            }
+            coupon: coupon as CouponData,
         };
     } catch (error) {
         console.error('[CouponUtils] Database error during validation:', error);

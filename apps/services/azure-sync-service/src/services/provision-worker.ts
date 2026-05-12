@@ -43,18 +43,18 @@ export class ProvisionWorkerService {
 
                     try {
                         console.log(`[ProvisionWorker] Provisioning user ${task.userId}...`);
-                        
+
                         // 1. Get Azure Token
                         const token = await TokenService.getAccessToken(redis);
-                        
+
                         // 2. Perform individual sync/provisioning
                         await SyncJob.syncByEntraId(redis, task.userId, token);
 
                         // Success -> Remove
                         await redis.zrem(this.QUEUE_KEY, taskJson);
                         console.log(`[ProvisionWorker] Successfully provisioned user ${task.userId}`);
-                    } catch (err: any) {
-                        console.error(`[ProvisionWorker] Failed provisioning for user ${task.userId}:`, err.message);
+                    } catch (error: any) {
+                        console.error(`[ProvisionWorker] Failed provisioning for user ${task.userId}:`, error.message);
 
                         task.retries += 1;
                         await redis.zrem(this.QUEUE_KEY, taskJson);
@@ -68,8 +68,8 @@ export class ProvisionWorkerService {
                         }
                     }
                 }
-            } catch (err: any) {
-                console.error('[ProvisionWorker] Loop Error:', err.message);
+            } catch (error: any) {
+                console.error('[ProvisionWorker] Loop Error:', error.message);
                 await new Promise(resolve => setTimeout(resolve, 5000));
             }
         }

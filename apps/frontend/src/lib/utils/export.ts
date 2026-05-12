@@ -27,7 +27,8 @@ export function downloadCSV(data: Record<string, unknown>[], filename: string) {
     csvRows.push(headers.join(',')); // Add header row
 
     for (const row of data) {
-        const values = headers.map(header => escapeCSVValue(row[header]));
+        const rowMap = new Map(Object.entries(row));
+        const values = headers.map(header => escapeCSVValue(rowMap.get(header)));
         csvRows.push(values.join(','));
     }
 

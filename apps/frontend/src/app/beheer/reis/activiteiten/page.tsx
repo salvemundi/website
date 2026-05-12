@@ -4,17 +4,26 @@ import { getTrips, getTripActivities } from '@/server/queries/admin-reis.queries
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 import { notFound } from 'next/navigation';
+import { getTripSignupActivitiesAction } from '@/server/actions/admin/reis-signups.actions';
 
 interface PageProps {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
+interface Signup {
+    id: number;
+    trip_activity_id: number | { id: number };
+    trip_signup_id?: { id?: number; first_name: string; last_name: string; email: string };
+    selected_options?: string | Record<string, boolean> | string[];
+    [key: string]: unknown;
+}
+
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
     const resolvedSearchParams = await searchParams;
     const tripIdParam = typeof resolvedSearchParams.tripId === 'string' ? resolvedSearchParams.tripId : undefined;
-    
-    let title = 'Trip Activiteiten Beheer | SV Salve Mundi';
-    
+
+    let title = 'Reis activiteiten beheer | SV Salve Mundi';
+
     if (tripIdParam) {
         try {
             const trip = await getSystemDirectus().request(readItems('trips', {
@@ -25,7 +34,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
             if (trip && trip[0]) {
                 title = `${trip[0].name} - Activiteiten | SV Salve Mundi`;
             }
-        } catch {}
+        } catch (_error) { }
     }
 
     return { title };
@@ -35,13 +44,14 @@ export default async function ReisActiviteitenPage({ searchParams }: PageProps) 
     const resolvedSearchParams = await searchParams;
     const tripIdParam = typeof resolvedSearchParams.tripId === 'string' ? resolvedSearchParams.tripId : undefined;
 
-    // NUCLEAR SSR: Fetch all data before flushing ANY part of the page
     const trips = await getTrips();
 
     if (!trips || trips.length === 0) {
         return (
             <div className="container mx-auto px-4 py-20 text-center">
-                <p className="text-[var(--beheer-text-muted)] font-black tracking-widest text-base">Geen reizen gevonden.</p>
+                <p className="text-[var(--beheer-text-muted)] font-bold text-base">
+                    Geen reizen gevonden.
+                </p>
             </div>
         );
     }
@@ -53,33 +63,44 @@ export default async function ReisActiviteitenPage({ searchParams }: PageProps) 
         notFound();
     }
 
-    // Parallel fetch activities and all their signups for this trip using direct-database action
     const [activities, allSignups] = await Promise.all([
         getTripActivities(activeTripId),
         getTripSignupActivitiesAction(activeTripId)
     ]);
 
-    // Group signups by activityId
-    const signupsByActivity: Record<number, any[]> = {};
-    (allSignups || []).forEach((s: any) => {
-        const activityId = typeof s.trip_activity_id === 'object' ? s.trip_activity_id.id : s.trip_activity_id;
-        if (!signupsByActivity[activityId]) signupsByActivity[activityId] = [];
-        signupsByActivity[activityId].push(s);
+    const signupsByActivity = new Map<number, Signup[]>();
+
+    (allSignups as unknown as Signup[] || []).forEach((s) => {
+        const activityId = (s.trip_activity_id && typeof s.trip_activity_id === 'object')
+            ? s.trip_activity_id.id
+            : (s.trip_activity_id as number);
+
+        if (!signupsByActivity.has(activityId)) {
+            signupsByActivity.set(activityId, []);
+        }
+
+        signupsByActivity.get(activityId)?.push(s);
     });
 
+    const signupsByActivityObj = Object.fromEntries(signupsByActivity.entries()) as unknown as Record<number, Signup[]>;
+
     return (
-        <div className="w-full">
-            <ReisActiviteitenIsland 
-                initialTrips={trips} 
+        <div className="w-full space-y-8 animate-in fade-in duration-500">
+            <div className="flex flex-col gap-2">
+                <h1 className="text-4xl font-black text-[var(--beheer-text)] tracking-tighter italic">
+                    Reis <span className="text-[var(--beheer-accent)]">activiteiten</span>
+                </h1>
+                <p className="text-base font-medium text-[var(--beheer-text-muted)]">
+                    Beheer de activiteiten en inschrijvingen voor {activeTrip.name}.
+                </p>
+            </div>
+
+            <ReisActiviteitenIsland
+                initialTrips={trips}
                 initialActivities={activities}
                 initialSelectedTripId={activeTripId}
-                initialSignupsByActivity={signupsByActivity}
+                initialSignupsByActivity={signupsByActivityObj}
             />
         </div>
     );
 }
-
-
-import { getTripSignupActivitiesAction } from '@/server/actions/reis-admin-signups.actions';
-
-

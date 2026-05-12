@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { type Coupon } from './coupon-types';
 import { getComputedCouponStatus } from '@/lib/coupons';
-import { createCoupon, deleteCoupon, toggleCouponActive } from '@/server/actions/admin-coupons.actions';
+import { createCoupon, deleteCoupon, toggleCouponActive } from '@/server/actions/admin/admin-coupons.actions';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import AdminModal from '@/components/ui/admin/AdminModal';
 import CouponRow from './CouponRow';

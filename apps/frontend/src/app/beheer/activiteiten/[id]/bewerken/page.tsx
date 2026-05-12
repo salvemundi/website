@@ -7,7 +7,7 @@ import ActiviteitBewerkenIsland from '@/components/islands/admin/activities/Acti
 import { getActivityByIdInternal } from '@/server/queries/admin-event.queries';
 import { query } from '@/lib/database';
 import { getPermissions } from '@/shared/lib/permissions';
-import { fetchUserCommitteesDb } from '@/server/actions/user-db.utils';
+import { fetchUserCommitteesDb } from '@/server/internal/user-db.utils';
 import { type EnrichedUser } from '@/types/auth';
 import { type AdminActivity } from "@salvemundi/validations";
 import { type Committee } from '@/shared/lib/permissions';

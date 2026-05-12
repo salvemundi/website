@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { Search, Loader2, Check, User, X } from 'lucide-react';
 import { useDebounce } from '@/hooks/use-debounce';
-import { searchMembersAction } from '@/server/actions/aanmeldingen.actions';
-import { type UserBasic } from '@salvemundi/validations';
+import { searchMembersAction } from '@/server/actions/admin/aanmeldingen.actions';
+import { type UserBasic } from '@/server/internal/user-db.utils';
 import { cn } from '@/lib/utils/cn';
 
 interface UserSearchProps {
@@ -15,9 +15,9 @@ interface UserSearchProps {
     disabled?: boolean;
 }
 
-export default function UserSearch({ 
-    onSelect, 
-    placeholder = "Zoek lid op naam of email...", 
+export default function UserSearch({
+    onSelect,
+    placeholder = "Zoek lid op naam of email...",
     className,
     autoFocus = false,
     disabled = false
@@ -58,7 +58,7 @@ export default function UserSearch({
                 } else {
                     setResults([]);
                 }
-            } catch (err) {
+            } catch (_error) {
                 setResults([]);
             } finally {
                 setIsLoading(false);
@@ -94,13 +94,13 @@ export default function UserSearch({
                     className="beheer-input !pl-11 pr-12 py-4 text-xs font-semibold placeholder:text-[var(--beheer-text-muted)] placeholder:opacity-40 focus:ring-4 focus:ring-[var(--beheer-accent)]/10"
                     autoComplete="off"
                 />
-                
+
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
                     {isLoading && (
                         <Loader2 className="h-4 w-4 animate-spin text-[var(--beheer-accent)]" />
                     )}
                     {!isLoading && query && (
-                        <button 
+                        <button
                             type="button"
                             onClick={() => { setQuery(''); setResults([]); }}
                             className="p-1 hover:bg-[var(--beheer-card-soft)] rounded-lg text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] transition-all"
@@ -114,7 +114,7 @@ export default function UserSearch({
             {isOpen && (query.length >= 2) && (
                 <div className="absolute z-[100] mt-3 w-full bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300 backdrop-blur-xl">
                     <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-[var(--beheer-accent)]/30 to-transparent" />
-                    
+
                     {results.length > 0 ? (
                         <div className="max-h-72 overflow-y-auto custom-scrollbar p-2">
                             <div className="px-3 py-2 mb-1">

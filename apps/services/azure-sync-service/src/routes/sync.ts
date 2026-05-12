@@ -34,16 +34,16 @@ export default async function syncRoutes(fastify: FastifyInstance) {
             const options = azureSyncRunSchema.parse(request.body || {});
 
             // Start sync job asynchronously (Fire-and-forget)
-            SyncJob.run(fastify.redis, options).catch(err => {
-                fastify.log.error(`[SYNC] Full job failed: ${err.message}`);
+            SyncJob.run(fastify.redis, options).catch(error => {
+                fastify.log.error(`[SYNC] Full job failed: ${error.message}`);
             });
 
             return { message: 'Sync job started' };
-        } catch (err: any) {
-            fastify.log.error(`[SYNC] Failed to start job: ${err.stack || err.message}`);
+        } catch (error: any) {
+            fastify.log.error(`[SYNC] Failed to start job: ${error.stack || error.message}`);
             return reply.status(500).send({
                 error: 'Failed to start sync job',
-                details: err.message || String(err)
+                details: error.message || String(error)
             });
         }
     });
@@ -61,11 +61,11 @@ export default async function syncRoutes(fastify: FastifyInstance) {
 
             await SyncJob.syncByEntraId(fastify.redis, userId, accessToken, options);
             return { message: `Sync for Entra ID ${userId} completed` };
-        } catch (err: any) {
-            fastify.log.error(`[SYNC] Failed to sync user ${userId}: ${err.stack || err.message || err}`);
+        } catch (error: any) {
+            fastify.log.error(`[SYNC] Failed to sync user ${userId}: ${error.stack || error.message || error}`);
             return reply.status(500).send({
                 error: 'Failed to sync user',
-                details: err.message || (typeof err === 'object' ? JSON.stringify(err) : String(err))
+                details: error.message || (typeof error === 'object' ? JSON.stringify(error) : String(error))
             });
         }
     });
@@ -81,8 +81,8 @@ export default async function syncRoutes(fastify: FastifyInstance) {
                 fastify.redis.del(SYNC_ABORT_KEY)
             ]);
             return { message: 'Sync status reset to idle' };
-        } catch (err: any) {
-            fastify.log.error(`[SYNC] Failed to reset status: ${err.message}`);
+        } catch (error: any) {
+            fastify.log.error(`[SYNC] Failed to reset status: ${error.message}`);
             return reply.status(500).send({ error: 'Failed to reset sync status' });
         }
     });

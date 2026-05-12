@@ -1,4 +1,4 @@
-import { getKroegentochtEvent, getKroegentochtTickets } from '@/server/actions/kroegentocht.actions';
+import { getKroegentochtEvent, getKroegentochtTickets } from '@/server/actions/events/kroegentocht.actions';
 import { type PubCrawlTicket } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import KroegentochtFormIsland from '@/components/islands/kroegentocht/KroegentochtFormIsland';
@@ -11,12 +11,6 @@ import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 export const metadata = {
     title: 'Kroegentocht | SV Salve Mundi',
     description: 'Schrijf je in voor de gezelligste kroegentocht van Eindhoven!' };
-
-async function TicketsSection({ userEmail }: { userEmail: string }) {
-    const tickets = await getKroegentochtTickets(userEmail);
-    if (tickets.length === 0) return null;
-    return <KroegentochtTicketsIsland initialTickets={tickets} userEmail={userEmail} />;
-}
 
 async function RegistrationSection() {
     const [event, session] = await Promise.all([

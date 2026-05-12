@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useOptimistic, useTransition } from 'react';
 import { Search, Download, UserPlus, Users, UserCheck } from 'lucide-react';
-import { deleteSignupAction, toggleCheckInAction } from '@/server/actions/aanmeldingen.actions';
+import { deleteSignupAction, toggleCheckInAction } from '@/server/actions/admin/aanmeldingen.actions';
 import ManualSignupModal from './ManualSignupModal';
 import { useRouter } from 'next/navigation';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
@@ -57,7 +57,7 @@ export default function ActiviteitAanmeldingenIsland({
 }) {
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
-    const [isPending, startTransition] = useTransition();
+    const [_isPending, startTransition] = useTransition();
     const [searchQuery, setSearchQuery] = useState('');
     const [isManualModalOpen, setIsManualModalOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState<number | null>(null);
@@ -209,7 +209,6 @@ export default function ActiviteitAanmeldingenIsland({
                     onClose={() => setIsManualModalOpen(false)}
                     eventId={event.id}
                     eventName={event.name}
-                    eventPrice={event.price_members || 0}
                 />
 
                 {/* Table Section */}

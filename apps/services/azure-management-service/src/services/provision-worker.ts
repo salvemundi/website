@@ -35,7 +35,7 @@ export class ProvisionWorkerService {
      */
     static async start(redis: Redis) {
         console.log('[ProvisionWorker] Starting worker loop...');
-        
+
         while (!this.shouldStop) {
             try {
                 // 1. Fetch tasks that are due
@@ -62,13 +62,13 @@ export class ProvisionWorkerService {
                         };
 
                         const upnPrefix = `${normalize(task.firstName)}.${normalize(task.lastName)}`.replace(/\.+/g, '.').replace(/^\.|\.$/g, '');
-                        
+
                         // 2. Create User in Azure
                         const token = await TokenService.getAccessToken();
                         const upn = await GraphService.generateUniqueUpn(upnPrefix, token);
-                        
+
                         console.log(`[ProvisionWorker] Provisioning ${task.email} as ${upn}...`);
-                        
+
                         const formatLocalDate = (date: Date) => {
                             return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
                         };
@@ -89,7 +89,7 @@ export class ProvisionWorkerService {
                         );
 
                         console.log(`[ProvisionWorker] Azure account created for ${task.email}`);
-                        
+
                         // 2.1 Add to 'Leden_Actief_Lidmaatschap' group
                         const activeGroupId = process.env.AZURE_ACTIVE_LID_GROUP_ID || '2e17c12a-28d6-49ae-981a-8b5b8d88db8a';
                         try {
@@ -107,7 +107,7 @@ export class ProvisionWorkerService {
                                 method: 'POST',
                                 headers: { 'Authorization': `Bearer ${process.env.INTERNAL_SERVICE_TOKEN}` }
                             });
-                            
+
                             if (!syncRes.ok) {
                                 const errorText = await syncRes.text();
                                 throw new Error(`Sync service failed: ${errorText}`);
@@ -117,7 +117,7 @@ export class ProvisionWorkerService {
 
                         // 4. Queue Welcome Email (ONLY after azure + sync success)
                         console.log(`[ProvisionWorker] Sending combined welcome & payment email to ${task.email}...`);
-                        
+
                         const mailRes = await fetch(`${process.env.MAIL_SERVICE_URL}/api/mail/send`, {
                             method: 'POST',
                             headers: {
@@ -142,11 +142,11 @@ export class ProvisionWorkerService {
 
                         // Success -> Remove task
                         await redis.zrem(this.QUEUE_KEY, taskJson);
-                    } catch (err: any) {
-                        console.error(`[ProvisionWorker] Failed for ${task.email}:`, err.message);
+                    } catch (error: any) {
+                        console.error(`[ProvisionWorker] Failed for ${task.email}:`, error.message);
 
                         // If user already exists, we consider it "Success" (or at least done)
-                        if (err.message?.includes('already exists') || err.status === 409) {
+                        if (error.message?.includes('already exists') || error.status === 409) {
                             console.log(`[ProvisionWorker] User ${task.email} already exists. Removing task.`);
                             await redis.zrem(this.QUEUE_KEY, taskJson);
                             continue;
@@ -175,10 +175,10 @@ export class ProvisionWorkerService {
                                         body: JSON.stringify({
                                             type: 'system_provisioning_failed',
                                             status: 'ERROR',
-                                            payload: { 
-                                                email: task.email, 
-                                                name: `${task.firstName} ${task.lastName}`, 
-                                                error: err.message,
+                                            payload: {
+                                                email: task.email,
+                                                name: `${task.firstName} ${task.lastName}`,
+                                                error: error.message,
                                                 timestamp: new Date().toISOString()
                                             }
                                         })

@@ -23,8 +23,8 @@ export async function generateQRCode(data: string): Promise<string> {
             color: { dark: '#7B2CBF', light: '#FFFFFF' }
         });
         return dataUrl;
-    } catch (err) {
-        
+    } catch (_error) {
+
         throw new Error('Failed to generate QR code');
     }
 }

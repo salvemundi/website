@@ -2,7 +2,7 @@
 
 import React, { useTransition } from 'react';
 import DeletionTimer from '@/components/ui/account/DeletionTimer';
-import { initiateMembershipPaymentAction } from '@/server/actions/membership.actions';
+import { initiateMembershipPaymentAction } from '@/server/actions/profile/membership.actions';
 import type { SignupFormData } from '@salvemundi/validations/schema/membership.zod';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
