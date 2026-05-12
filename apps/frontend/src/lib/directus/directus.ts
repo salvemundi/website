@@ -7,9 +7,9 @@ const directusUrl = process.env.DIRECTUS_SERVICE_URL!;
 
 export class DirectusError extends Error {
     constructor(
-        message: string, 
-        public status?: number, 
-        public code?: string, 
+        message: string,
+        public status?: number,
+        public code?: string,
         public url?: string
     ) {
         super(message);
@@ -20,16 +20,16 @@ export class DirectusError extends Error {
 /**
  * Log a DirectusError to the system_logs table for monitoring.
  */
-async function logDirectusError(err: DirectusError) {
+async function logDirectusError(error: DirectusError) {
     try {
         await insertSystemLogInternal({
             type: 'system_error_directus',
             status: 'ERROR',
             payload: {
-                message: err.message,
-                status: err.status,
-                code: err.code,
-                url: err.url,
+                message: error.message,
+                status: error.status,
+                code: error.code,
+                url: error.url,
                 timestamp: new Date().toISOString()
             }
         });
@@ -42,33 +42,29 @@ async function logDirectusError(err: DirectusError) {
  * Fetch with a simple retry mechanism for transient network errors.
  */
 export async function fetchWithRetry(
-    url: string, 
-    init: RequestInit, 
-    retries = 2, 
+    url: string,
+    init: RequestInit,
+    retries = 2,
     backoff = 300
 ): Promise<Response> {
     for (let i = 0; i <= retries; i++) {
         try {
             const response = await fetch(url, init);
-            
-            // Only retry on 5xx or specific network failures. 
-            // 4xx (like 404 or 401) are intentional and should not be retried.
+
             if (response.ok || response.status < 500) {
                 return response;
             }
-            
+
             throw new Error(`Server responded with ${response.status}`);
-        } catch (err) {
-            const error = err instanceof Error ? err : new Error(String(err));
+        } catch (e: unknown) {
+            const error = e instanceof Error ? e : new Error(String(e));
             const isLastRetry = i === retries;
             const isTimeout = error.name === 'TimeoutError' || error.name === 'AbortError' || error.message?.includes('timeout');
-            
-            // We only retry on timeouts or server errors
+
             if (isLastRetry || (!isTimeout && !error.message?.includes('Server responded with 5'))) {
-                throw err;
+                throw error;
             }
-            
-            // Wait before retrying (exponential-ish backoff)
+
             await new Promise(res => setTimeout(res, backoff * (i + 1)));
         }
     }
@@ -84,7 +80,7 @@ export function getSystemDirectus() {
         globals: {
             fetch: async (url, options) => {
                 const urlStr = url.toString();
-                
+
                 const nextOptions = (options as { next?: { revalidate?: number | false; tags?: string[] } })?.next || {};
                 const tags: string[] = nextOptions.tags || [];
 
@@ -93,36 +89,35 @@ export function getSystemDirectus() {
 
                 if (revalidate === undefined) {
                     if (urlStr.includes('/items/Stickers') || urlStr.includes('/items/feature_flags')) {
-                        revalidate = 1; // Tier 1: Critical
+                        revalidate = 1;
                     } else if (urlStr.includes('/items/events') || urlStr.includes('/items/news')) {
-                        revalidate = 60; // Tier 2: Fast
+                        revalidate = 60;
                     } else if (
-                        urlStr.includes('/items/hero_banners') || 
-                        urlStr.includes('/items/sponsors') || 
+                        urlStr.includes('/items/hero_banners') ||
+                        urlStr.includes('/items/sponsors') ||
                         urlStr.includes('/items/committees')
                     ) {
-                        revalidate = 3600; // Tier 3: Stable
+                        revalidate = 3600;
                     } else {
-                        revalidate = 300; // Default: 5 minutes
+                        revalidate = 300;
                     }
                 }
 
                 if (urlStr.includes('/items/Stickers') && !tags.includes('stickers')) tags.push('stickers');
                 if (urlStr.includes('/items/feature_flags') && !tags.includes('feature_flags')) tags.push('feature_flags');
                 if ((urlStr.includes('/items/trip_signups') || urlStr.includes('/items/trips')) && !tags.includes('reis-status')) tags.push('reis-status');
-                
-                // Events tagging for targeted revalidation
+
                 if (urlStr.includes('/items/events')) {
                     if (!tags.includes('events')) tags.push('events');
-                    
+
                     const pathMatch = urlStr.match(/\/items\/events\/(\d+|[0-9a-f-]+)/);
-                    if (pathMatch) {
+                    if (pathMatch && pathMatch[1]) {
                         const id = pathMatch[1];
                         if (!tags.includes(`event_${id}`)) tags.push(`event_${id}`);
-                    } 
+                    }
                     else if (urlStr.includes('filter') && urlStr.includes('id') && urlStr.includes('_eq')) {
                         const filterMatch = urlStr.match(/filter\[id\]\[_eq\]=(\d+|[0-9a-f-]+)/);
-                        if (filterMatch) {
+                        if (filterMatch && filterMatch[1]) {
                             const id = filterMatch[1];
                             if (!tags.includes(`event_${id}`)) tags.push(`event_${id}`);
                         }
@@ -138,12 +133,14 @@ export function getSystemDirectus() {
                     next: {
                         ...nextOptions,
                         tags,
-                        revalidate: revalidate },
-                    signal: controller.signal };
+                        revalidate
+                    },
+                    signal: controller.signal
+                };
 
                 try {
                     const response = await fetchWithRetry(urlStr, requestInit);
-                    
+
                     if (!response.ok && response.status >= 500) {
                         const error = new DirectusError(
                             `Directus server error (${response.status}) at ${urlStr}`,
@@ -154,26 +151,26 @@ export function getSystemDirectus() {
                         await logDirectusError(error);
                         throw error;
                     }
-                    
+
                     return response;
-                } catch (err) {
-                    const error = err instanceof Error ? err : new Error(String(err));
+                } catch (e: unknown) {
+                    const error = e instanceof Error ? e : new Error(String(e));
+
                     if (error.name === 'TimeoutError' || error.name === 'AbortError' || error.message?.includes('timeout')) {
-                        const error = new DirectusError(
+                        const timeoutError = new DirectusError(
                             `Service timeout (15s) for ${urlStr}. The service might be under heavy load or unreachable via VPN.`,
                             504,
                             'TIMEOUT',
                             urlStr
                         );
-                        await logDirectusError(error);
-                        throw error;
+                        await logDirectusError(timeoutError);
+                        throw timeoutError;
                     }
-                    
-                    if (err instanceof DirectusError) throw err;
-                    
-                    const errorMsg = err instanceof Error ? err.message : String(err);
+
+                    if (e instanceof DirectusError) throw e;
+
                     const errorObj = new DirectusError(
-                        errorMsg || 'Unknown network error during Directus fetch',
+                        error.message || 'Unknown network error during Directus fetch',
                         500,
                         'FETCH_ERROR',
                         urlStr
@@ -189,5 +186,3 @@ export function getSystemDirectus() {
         .with(staticToken(process.env.DIRECTUS_STATIC_TOKEN!))
         .with(rest());
 }
-
-// getUserDirectus deleted as per "no user token" policy.

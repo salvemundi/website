@@ -9,7 +9,7 @@ declare module 'fastify' {
 }
 
 export default fp(async (fastify: FastifyInstance) => {
-    // DB_URL should be provided in .env (e.g. postgresql://user:pass@host:port/db)
+    // DB_URL should be provided in .env (error.g. postgresql://user:pass@host:port/db)
     const pool = new Pool({
         connectionString: process.env.DB_URL
     });
@@ -18,9 +18,9 @@ export default fp(async (fastify: FastifyInstance) => {
         await pool.query('SELECT NOW()'); // Verify connection
         fastify.decorate('db', pool);
         fastify.log.info('[FINANCE] Database pool initialized');
-    } catch (err: any) {
-        fastify.log.error(`[FINANCE] Error connecting database: ${err.message}`);
-        throw err;
+    } catch (error: any) {
+        fastify.log.error(`[FINANCE] Error connecting database: ${error.message}`);
+        throw error;
     }
 
     fastify.addHook('onClose', async (instance) => {

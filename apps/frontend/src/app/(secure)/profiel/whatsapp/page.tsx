@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getWhatsAppGroups } from '@/server/actions/profiel.actions';
+import { getWhatsAppGroups } from '@/server/actions/profile/profiel.actions';
 import { WhatsAppGroupsIsland } from '@/components/islands/social/WhatsAppGroupsIsland';
 import BackButton from '@/components/ui/navigation/BackButton';
 

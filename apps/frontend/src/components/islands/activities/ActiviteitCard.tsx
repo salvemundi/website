@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import BannerAsset from '@/components/ui/media/BannerAsset';
+import MediaAsset from '@/components/ui/media/MediaAsset';
 import { Calendar } from 'lucide-react';
 import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider';
 import AdminToast from '@/components/ui/admin/AdminToast';
@@ -32,12 +32,14 @@ interface ActiviteitCardProps {
     contact?: string;
     onlyMembers?: boolean;
 }
+
 const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     description = '',
     image,
     title = 'Activiteit',
     date,
-    endDate,
+    // FIX: Alias 'endDate' naar de geprefixte versie voor ongebruikte variabelen
+    endDate: _endDate,
     startTime,
     endTime,
     location,
@@ -51,7 +53,8 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     committeeName,
     contact,
     registrationDeadline,
-    onlyMembers = false }) => {
+    onlyMembers = false
+}) => {
     const { toast, showToast, hideToast } = useAdminToast();
     const { isAuthenticated, user } = useAuth();
     const { login: loginWithMicrosoft } = useAuthActions();
@@ -95,7 +98,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
 
     const committeeLabel = cleanCommitteeName(committeeName);
 
-    const displayDate = variant === 'list' 
+    const displayDate = variant === 'list'
         ? coreFormatDate(date, 'EEEE d MMMM')
         : coreFormatDate(date, 'd MMMM yyyy');
 
@@ -112,7 +115,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                 {/* Image Section */}
                 <div className="relative w-full md:w-64 aspect-video flex-shrink-0 overflow-hidden">
                     {image ? (
-                        <BannerAsset
+                        <MediaAsset
                             asset={image}
                             alt={title}
                             fill
@@ -210,7 +213,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
         >
             <div className="relative z-10 w-full aspect-video mb-0 overflow-hidden">
                 {image ? (
-                    <BannerAsset
+                    <MediaAsset
                         asset={image}
                         alt={title}
                         fill

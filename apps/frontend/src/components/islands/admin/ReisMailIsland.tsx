@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
-    Users, 
+import {
+    Users,
     DollarSign,
     UserCheck,
     Clock
@@ -13,7 +13,7 @@ import {
 import {
     sendBulkTripEmail,
     sendBulkPaymentEmails
-} from '@/server/actions/reis-admin-mail.actions';
+} from '@/server/actions/admin/reis-mail.actions';
 import type { Trip, TripSignup } from '@salvemundi/validations/schema/admin-reis.zod';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
@@ -64,23 +64,23 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
             const matchesSearch = `${s.first_name} ${s.last_name} ${s.email}`.toLowerCase().includes(searchTerm.toLowerCase());
             const matchesStatus = filterStatus === 'all' || s.status === filterStatus;
             const matchesRole = filterRole === 'all' || s.role === filterRole;
-            const matchesPayment = 
+            const matchesPayment =
                 filterPayment === 'all' ? true :
-                filterPayment === 'unpaid' ? (!s.deposit_paid && !s.full_payment_paid) :
-                filterPayment === 'deposit_paid' ? (s.deposit_paid && !s.full_payment_paid) :
-                filterPayment === 'full_paid' ? s.full_payment_paid : true;
-            
+                    filterPayment === 'unpaid' ? (!s.deposit_paid && !s.full_payment_paid) :
+                        filterPayment === 'deposit_paid' ? (s.deposit_paid && !s.full_payment_paid) :
+                            filterPayment === 'full_paid' ? s.full_payment_paid : true;
+
             return matchesSearch && matchesStatus && matchesRole && matchesPayment;
         });
     }, [signups, searchTerm, filterStatus, filterRole, filterPayment]);
 
     const handleSend = async () => {
         if (filteredRecipients.length === 0) return;
-        
-        const confirmMsg = emailType === 'custom' 
+
+        const confirmMsg = emailType === 'custom'
             ? `Weet je zeker dat je deze email wilt sturen naar ${filteredRecipients.length} deelnemers?`
             : `Weet je zeker dat je een ${emailType === 'deposit_request' ? 'aanbetaling' : 'restbetaling'} verzoek wilt sturen naar ${filteredRecipients.length} deelnemers?`;
-            
+
         if (!confirm(confirmMsg)) return;
 
         setSending(true);
@@ -102,8 +102,8 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
                 }
             } else {
                 const res = await sendBulkPaymentEmails(
-                    selectedTripId, 
-                    filteredRecipients.map(r => r.id), 
+                    selectedTripId,
+                    filteredRecipients.map(r => r.id),
                     emailType === 'deposit_request' ? 'deposit' : 'final'
                 );
                 if (res.success) {
@@ -132,7 +132,7 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
 
     return (
         <>
-            <AdminToolbar 
+            <AdminToolbar
                 title="Bulk Mail"
                 subtitle="Verstuur e-mails naar groepen reizigers"
                 backHref="/beheer/reis"
@@ -149,7 +149,7 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
                 <AdminStatsBar stats={adminStats} />
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                    <MailFilters 
+                    <MailFilters
                         trips={trips}
                         selectedTripId={selectedTripId}
                         onTripChange={handleTripChange}
@@ -164,7 +164,7 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
                         filteredCount={filteredRecipients.length}
                     />
 
-                    <MailEditor 
+                    <MailEditor
                         emailType={emailType}
                         subject={subject}
                         setSubject={setSubject}

@@ -15,10 +15,12 @@ export class EventListenerService {
 
         try {
             await redis.xgroup('CREATE', this.STREAM_KEY, this.GROUP_NAME, '0', 'MKSTREAM');
-        } catch (err) {
-            const error = err instanceof Error ? err : new Error(String(err));
-            if (!error.message.includes('BUSYGROUP')) {
+        } catch (error: unknown) {
+            // We gebruiken 'error' direct. De herdeclaratie 'const error =' is verwijderd om TS2492 te voorkomen.
+            if (error instanceof Error && !error.message.includes('BUSYGROUP')) {
                 console.error('[MailEventListener] Error creating consumer group:', error);
+            } else if (!(error instanceof Error)) {
+                console.error('[MailEventListener] Unexpected error type during group creation:', String(error));
             }
         }
 
@@ -43,9 +45,12 @@ export class EventListenerService {
                         }
                     }
                 }
-            } catch (err) {
-                const error = err instanceof Error ? err : new Error(String(err));
-                console.error('[MailEventListener] Loop Error:', error.message);
+            } catch (error: unknown) {
+                // Volledige naleving van de "Zero-Any Policy": we casten niet naar any, maar gebruiken de message veilig.
+                const message = error instanceof Error ? error.message : String(error);
+                console.error('[MailEventListener] Loop Error:', message);
+
+                // Voorkom CPU-spike bij constante fouten
                 await new Promise(resolve => setTimeout(resolve, 5000));
             }
         }
@@ -68,9 +73,9 @@ export class EventListenerService {
             } else if (payload.event === 'ACTIVITY_SIGNUP_SUCCESS') {
                 await EventHandlers.handleActivitySignup(redis, payload);
             }
-        } catch (err) {
-            const error = err instanceof Error ? err : new Error(String(err));
-            console.error('[MailEventListener] Error handling event:', error.message);
+        } catch (error: unknown) {
+            const messageStr = error instanceof Error ? error.message : String(error);
+            console.error('[MailEventListener] Error handling event:', messageStr);
         }
     }
 

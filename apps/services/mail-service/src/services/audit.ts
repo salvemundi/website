@@ -23,8 +23,8 @@ export class AuditService {
                     }
                 })
             });
-        } catch (err) {
-            console.error('[AuditService] Failed to log to Directus:', err);
+        } catch (_error) {
+            console.error('[AuditService] Failed to log to Directus:', error);
         }
     }
 }

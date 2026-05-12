@@ -1,7 +1,7 @@
 
 import type { Metadata } from 'next';
 import ContactInfoCard from '@/components/ui/social/ContactInfoCard';
-import { getDocumenten } from '@/server/actions/website.actions';
+import { getDocumenten } from '@/server/actions/public/website.actions';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 
 // SEO metadata conform de V7 standaard

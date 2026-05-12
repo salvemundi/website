@@ -31,7 +31,7 @@ export class MailerService {
      */
     private static async renderTemplate(templateId: string, data: Record<string, unknown>): Promise<string> {
         const templatePath = path.join(__dirname, '../templates', `${templateId}.hbs`);
-        
+
         if (!fs.existsSync(templatePath)) {
             throw new Error(`Template not found: ${templateId}`);
         }
@@ -114,10 +114,11 @@ export class MailerService {
 
             console.log(`[MailerService] Successfully dispatched to ${to}`);
             return true;
-        } catch (error) {
-            const err = error instanceof Error ? error : new Error(String(error));
-            console.error(`[MailerService] Failed to send email:`, err.message);
-            throw err;
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.error(`[MailerService] Failed to send email:`, errorMessage);
+
+            throw error;
         }
     }
 }

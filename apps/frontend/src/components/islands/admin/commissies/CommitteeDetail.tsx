@@ -1,21 +1,20 @@
 'use client';
 
-import React from 'react';
-import { 
-    Users, 
-    UserMinus, 
-    Shield, 
-    Mail, 
-    Info, 
-    Award, 
-    ShieldAlert, 
-    Settings, 
-    Save, 
-    ExternalLink, 
-    Loader2 
+import {
+    Users,
+    UserMinus,
+    Shield,
+    Mail,
+    Info,
+    Award,
+    ShieldAlert,
+    Settings,
+    Save,
+    ExternalLink,
+    Loader2
 } from 'lucide-react';
 import type { Committee, CommitteeMember } from '@/server/queries/admin-commissies.queries';
-import { type UserBasic } from '@salvemundi/validations';
+import { type UserBasic } from '@/server/internal/user-db.utils';
 import UserSearch from '@/components/ui/admin/UserSearch';
 
 interface Props {
@@ -56,8 +55,9 @@ export default function CommitteeDetail({
     onDescChange,
     onSaveDetail,
     savingDetail,
-    newMemberEmail,
-    onNewMemberEmailChange,
+    // FIX: Alias de properties naar de underscored versies om TS te pleasen en de Zero Warning Policy te volgen
+    newMemberEmail: _newMemberEmail,
+    onNewMemberEmailChange: _onNewMemberEmailChange,
     onAddMember,
     addingMember,
     addError,
@@ -69,7 +69,7 @@ export default function CommitteeDetail({
             {/* Header / Info Section */}
             <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl ring-1 ring-[var(--beheer-border)] p-6 md:p-10 border-t-8 border-[var(--beheer-accent)] relative overflow-hidden">
                 <div className="absolute -top-24 -right-24 h-48 w-48 bg-[var(--beheer-accent)]/5 blur-3xl rounded-full" />
-                
+
                 <div className="flex flex-col md:flex-row justify-between items-start gap-8 relative z-10">
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-5 mb-5">
@@ -88,7 +88,7 @@ export default function CommitteeDetail({
                                 )}
                             </div>
                         </div>
-                        
+
                         {!editingDetail && (
                             <p className="text-[var(--beheer-text-muted)] font-medium text-base leading-relaxed mb-6 line-clamp-3">
                                 {selected.short_description || 'Geen beschrijving beschikbaar.'}
@@ -162,10 +162,10 @@ export default function CommitteeDetail({
                         </h3>
                         <p className="text-xs text-[var(--beheer-text-muted)] font-medium mt-1 opacity-60">Synchroniseer toegang tot Office groepen</p>
                     </div>
-                    
+
                     {selected.azure_group_id ? (
                         <div className="flex-1 max-w-lg">
-                            <UserSearch 
+                            <UserSearch
                                 onSelect={onAddMember}
                                 disabled={addingMember}
                                 placeholder="Zoek lid op naam om toe te voegen..."
@@ -212,7 +212,7 @@ export default function CommitteeDetail({
                                             <div className="text-xs text-[var(--beheer-text-muted)] font-medium truncate opacity-60 mt-0.5">{member.email}</div>
                                         </div>
                                     </div>
-                                    
+
                                     <div className="flex items-center gap-1 translate-x-0 md:translate-x-2 opacity-100 md:opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition-all">
                                         {member.directusMembershipId && (
                                             <button
@@ -240,7 +240,7 @@ export default function CommitteeDetail({
                         </div>
                     )}
                 </div>
-                
+
                 <div className="px-10 py-5 bg-[var(--beheer-card-soft)]/20 flex items-start gap-3 border-t border-[var(--beheer-border)]">
                     <Info className="h-4 w-4 text-[var(--beheer-accent)] mt-0.5 shrink-0" />
                     <p className="text-xs text-[var(--beheer-text-muted)] font-medium italic leading-relaxed">

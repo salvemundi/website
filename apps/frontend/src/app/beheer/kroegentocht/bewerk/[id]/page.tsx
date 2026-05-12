@@ -1,5 +1,5 @@
 import EventForm from '@/components/islands/admin/kroegentocht/EventForm';
-import { getPubCrawlEvent } from '@/server/actions/admin-kroegentocht.actions';
+import { getPubCrawlEvent } from '@/server/actions/admin/admin-kroegentocht.actions';
 import { notFound } from 'next/navigation';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 

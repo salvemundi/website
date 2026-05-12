@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { submitIntroSignup } from '@/server/actions/intro.actions';
+import { submitIntroSignup } from '@/server/actions/public/intro.actions';
 import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
 import { DateInput } from '@/shared/ui/DateInput';
@@ -31,7 +31,8 @@ export const IntroStudentIsland = () => {
             email: '',
             telefoonnummer: '',
             favorieteGif: '',
-            website: '' }
+            website: ''
+        }
     });
 
     const onSubmit = async (data: IntroSignupForm) => {

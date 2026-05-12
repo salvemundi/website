@@ -1,18 +1,18 @@
 'use client';
 
 import React, { useState } from 'react';
-import { 
-    Calendar, 
-    Phone, 
-    Clock, 
-    Hash, 
-    Shield, 
-    Edit, 
-    Loader2, 
-    Save, 
-    Award, 
-    User as UserIcon, 
-    Layers 
+import {
+    Calendar,
+    Phone,
+    Clock,
+    Hash,
+    Shield,
+    Edit,
+    Loader2,
+    Save,
+    Award,
+    User as UserIcon,
+    Layers
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
@@ -51,12 +51,12 @@ interface Props {
     onUpdateProfile: (data: Partial<Member>) => Promise<boolean>;
 }
 
-export default function MemberProfileTab({ 
-    member, 
-    realCommittees, 
-    otherGroups, 
-    isAdmin, 
-    onUpdateProfile 
+export default function MemberProfileTab({
+    member,
+    realCommittees,
+    otherGroups,
+    isAdmin,
+    onUpdateProfile
 }: Props) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [isEditing, setIsEditing] = useState(false);
@@ -64,7 +64,8 @@ export default function MemberProfileTab({
         first_name: member.first_name || '',
         last_name: member.last_name || '',
         phone_number: member.phone_number || '',
-        date_of_birth: member.date_of_birth || '' });
+        date_of_birth: member.date_of_birth || ''
+    });
     const [saving, setSaving] = useState(false);
 
     const handleSave = async () => {
@@ -83,7 +84,7 @@ export default function MemberProfileTab({
         if (!dateString) return 'Onbekend';
         try {
             return format(new Date(dateString), 'd MMMM yyyy', { locale: nl });
-        } catch {
+        } catch (_error) {
             return 'Onbekend';
         }
     };

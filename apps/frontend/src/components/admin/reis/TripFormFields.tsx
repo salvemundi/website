@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import MediaAsset from '@/components/ui/media/MediaAsset';
 import { Upload, Image as ImageIcon } from 'lucide-react';
 import { getImageUrl } from '@/lib/utils/image-utils';
 
@@ -72,7 +73,7 @@ export function ReisImageUpload({ defaultValue, name }: { defaultValue?: string 
                 
                 {currentImage ? (
                     <div className="absolute inset-0">
-                        <img src={currentImage} alt="Preview" className="w-full h-full object-contain transition-opacity group-hover:opacity-40" />
+                        <MediaAsset asset={currentImage} alt="Preview" fill className="object-contain transition-opacity group-hover:opacity-40" />
                         <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                             <Upload className="h-6 w-6 text-[var(--beheer-text)] mb-1" />
                             <span className="text-[9px] font-black uppercase tracking-widest text-[var(--beheer-text)]">Wijzigen</span>

@@ -16,7 +16,7 @@ export function formatDate(
         if (isNaN(d.getTime())) return 'Datum volgt';
 
         return format(d, formatStr, { locale: nl });
-    } catch {
+    } catch (_error) {
         return 'Datum volgt';
     }
 }
@@ -31,14 +31,14 @@ export function formatDateRange(
 ): string {
     if (!start) return 'Datum volgt';
     const startFormatted = formatDate(start, formatStr);
-    
+
     if (!end) return startFormatted;
-    
+
     const endFormatted = formatDate(end, formatStr);
-    
+
     // If same day, just show one date
     if (startFormatted === endFormatted) return startFormatted;
-    
+
     return `${startFormatted} t/m ${endFormatted}`;
 }
 
@@ -54,7 +54,7 @@ export function isEventPast(dateStr?: string): boolean {
     try {
         const date = parseISO(dateStr);
         return date < new Date();
-    } catch {
+    } catch (_error) {
         return false;
     }
 }

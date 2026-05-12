@@ -30,7 +30,7 @@ export async function getDashboardStatsInternal(): Promise<DashboardStats> {
                 (SELECT COUNT(*) FROM "Stickers") as stickers_total,
                 (SELECT COUNT(*) FROM "Stickers" WHERE date_created >= $2) as stickers_recent
         `;
-        
+
         const { rows: basicRows } = await query(basicSql, [today, lastWeek]);
         const b = basicRows[0];
 
@@ -47,7 +47,7 @@ export async function getDashboardStatsInternal(): Promise<DashboardStats> {
             )
         `;
         const { rows: pcRows } = await query(pcSql, [now.toISOString()]);
-        
+
         // Active Trip Signups
         const tripSql = `
             SELECT COUNT(*) as count 
@@ -78,8 +78,8 @@ export async function getDashboardStatsInternal(): Promise<DashboardStats> {
         };
 
         return DashboardStatsSchema.parse(stats);
-    } catch {
-        
+    } catch (_error) {
+
         return {
             totalMembers: 0,
             upcomingEventsCount: 0,
@@ -111,7 +111,7 @@ export async function getRecentActivitiesInternal(): Promise<RecentActivity[]> {
             LIMIT 4
         `;
         const { rows } = await query(sql);
-        
+
         const mapped = rows.map(r => ({
             id: Number(r.id),
             name: r.name,
@@ -120,8 +120,8 @@ export async function getRecentActivitiesInternal(): Promise<RecentActivity[]> {
         }));
 
         return z.array(RecentActivitySchema).parse(mapped);
-    } catch {
-        
+    } catch (_error) {
+
         return [];
     }
 }

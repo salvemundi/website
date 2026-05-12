@@ -1,20 +1,21 @@
 'use client';
 
 import React, { useState, useMemo, useOptimistic, useTransition } from 'react';
-import { 
-    User as UserIcon, 
-    History, 
-    Settings, 
-    Mail 
+import {
+    User as UserIcon,
+    History,
+    Settings,
+    Mail
 } from 'lucide-react';
-import { 
-    manageAzureMembershipAction, 
-    updateMemberProfileAction, 
+import {
+    manageAzureMembershipAction,
+    updateMemberProfileAction,
     renewMembershipAction,
-    provisionAzureAccountAction 
-} from '@/server/actions/leden.actions';
-import { triggerUserSyncAction } from '@/server/actions/azure-sync/sync-tasks.actions';
+    provisionAzureAccountAction
+} from '@/server/actions/admin/leden.actions';
+import { triggerUserSyncAction } from '@/server/actions/infrastructure/azure-sync/sync-tasks.actions';
 import { getImageUrl } from '@/lib/utils/image-utils';
+import MediaAsset from '@/components/ui/media/MediaAsset';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import { type AdminMember, type CommitteeMembership, type AdminSignup } from '@salvemundi/validations';
@@ -34,9 +35,9 @@ interface Props {
     isAdmin?: boolean;
 }
 
-export default function LedenDetailIsland({ 
-    member = {} as AdminMember, 
-    initialMemberships = [], 
+export default function LedenDetailIsland({
+    member = {} as AdminMember,
+    initialMemberships = [],
     signups = [],
     allCommittees = [],
     isAdmin = false
@@ -47,7 +48,7 @@ export default function LedenDetailIsland({
     const [isActionInProgress, setIsActionInProgress] = useState<string | null>(null);
     const [localMember, setLocalMember] = useState(member);
     // Optimistic memberships
-    const [optimisticMemberships, setOptimisticMemberships] = useOptimistic(
+    const [optimisticMemberships, _setOptimisticMemberships] = useOptimistic(
         initialMemberships,
         (state: CommitteeMembership[], { action, membership }: { action: 'add' | 'remove' | 'toggle', membership: CommitteeMembership }) => {
             if (action === 'add') return [...state, membership];
@@ -81,14 +82,14 @@ export default function LedenDetailIsland({
         try {
             const expiryDate = new Date(localMember.membership_expiry);
             if (isNaN(expiryDate.getTime())) return false;
-            
+
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             const expiryComp = new Date(expiryDate);
             expiryComp.setHours(0, 0, 0, 0);
-            
+
             return expiryComp >= today;
-        } catch {
+        } catch (_error) {
             return false;
         }
     }, [localMember.membership_expiry]);
@@ -98,7 +99,7 @@ export default function LedenDetailIsland({
         if (cleanData.first_name === null) delete cleanData.first_name;
         if (cleanData.last_name === null) delete cleanData.last_name;
         if (cleanData.phone_number === null) delete cleanData.phone_number;
-        
+
         const res = await updateMemberProfileAction(localMember.id, cleanData as Parameters<typeof updateMemberProfileAction>[1]);
         if (res.success) {
             setLocalMember(prev => ({ ...prev, ...data }));
@@ -117,9 +118,9 @@ export default function LedenDetailIsland({
 
         setIsActionInProgress(`${action}-${azureGroupId}`);
         startTransition(async () => {
-             const res = await manageAzureMembershipAction(localMember.entra_id!, azureGroupId, action, localMember.id);
-             if (!res.success) showToast(res.error || "Fout bij het bijwerken van lidmaatschap", "error");
-             else showToast(`Lidmaatschap succesvol ${action === 'add' ? 'toegevoegd' : 'verwijderd'}`, "success");
+            const res = await manageAzureMembershipAction(localMember.entra_id!, azureGroupId, action, localMember.id);
+            if (!res.success) showToast(res.error || "Fout bij het bijwerken van lidmaatschap", "error");
+            else showToast(`Lidmaatschap succesvol ${action === 'add' ? 'toegevoegd' : 'verwijderd'}`, "success");
         });
         setIsActionInProgress(null);
     };
@@ -155,90 +156,95 @@ export default function LedenDetailIsland({
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-7xl overflow-x-hidden">
-                <>
-                    {/* Header info */}
-                    <div className="flex flex-col md:flex-row md:items-center gap-8 mb-12">
-                        <div className="relative group">
-                            <div className="h-28 w-28 rounded-[2rem] bg-[var(--beheer-accent)]/10 flex items-center justify-center text-[var(--beheer-accent)] font-semibold text-4xl shadow-2xl border border-[var(--beheer-border)] transition-transform group-hover:scale-105 duration-500">
-                                {localMember.avatar ? (
-                                    <img src={getImageUrl(localMember.avatar, { width: 150, height: 150, fit: 'cover' }) || ''} alt="avatar" className="h-full w-full object-cover rounded-[2rem]" />
-                                ) : (
-                                    <>{localMember.first_name?.[0]}{localMember.last_name?.[0]}</>
-                                )}
-                            </div>
+            <>
+                {/* Header info */}
+                <div className="flex flex-col md:flex-row md:items-center gap-8 mb-12">
+                    <div className="relative group">
+                        <div className="h-28 w-28 rounded-[2rem] bg-[var(--beheer-accent)]/10 flex items-center justify-center text-[var(--beheer-accent)] font-semibold text-4xl shadow-2xl border border-[var(--beheer-border)] transition-transform group-hover:scale-105 duration-500">
+                            {localMember.avatar ? (
+                                <MediaAsset
+                                    asset={getImageUrl(localMember.avatar, { width: 150, height: 150, fit: 'cover' }) || ''}
+                                    alt="avatar"
+                                    width={112}
+                                    height={112}
+                                    className="h-full w-full object-cover rounded-[2rem]"
+                                />
+                            ) : (
+                                <>{localMember.first_name?.[0]}{localMember.last_name?.[0]}</>
+                            )}
                         </div>
-                        <div className="space-y-3">
-                            <h1 className="text-4xl font-semibold text-[var(--beheer-text)] leading-none">
-                                {localMember.first_name} {localMember.last_name}
-                            </h1>
-                            <div className="flex flex-wrap items-center gap-4">
-                                <span className="text-[var(--beheer-text-muted)] font-semibold flex items-center gap-2 text-xs opacity-70">
-                                    <Mail className="h-4 w-4 text-[var(--beheer-accent)]" /> {localMember.email}
-                                </span>
-                                <div suppressHydrationWarning className={`px-4 py-1.5 rounded-full text-[10px] font-semibold shadow-sm border ${isMembershipActive
-                                        ? 'bg-green-500/10 text-green-500 border-green-500/20'
-                                        : 'bg-red-500/10 text-red-500 border-red-500/20'
-                                    }`}>
-                                    {isMembershipActive ? 'Actief Lidmaatschap' : 'Lidmaatschap Verlopen'}
-                                </div>
+                    </div>
+                    <div className="space-y-3">
+                        <h1 className="text-4xl font-semibold text-[var(--beheer-text)] leading-none">
+                            {localMember.first_name} {localMember.last_name}
+                        </h1>
+                        <div className="flex flex-wrap items-center gap-4">
+                            <span className="text-[var(--beheer-text-muted)] font-semibold flex items-center gap-2 text-xs opacity-70">
+                                <Mail className="h-4 w-4 text-[var(--beheer-accent)]" /> {localMember.email}
+                            </span>
+                            <div suppressHydrationWarning className={`px-4 py-1.5 rounded-full text-[10px] font-semibold shadow-sm border ${isMembershipActive
+                                ? 'bg-green-500/10 text-green-500 border-green-500/20'
+                                : 'bg-red-500/10 text-red-500 border-red-500/20'
+                                }`}>
+                                {isMembershipActive ? 'Actief Lidmaatschap' : 'Lidmaatschap Verlopen'}
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    {/* Tabs Navigation */}
-                    <div className="flex flex-wrap gap-0 border-b border-[var(--beheer-border)] mb-10">
-                        {[
-                            { id: 'profiel', label: 'Profiel', icon: UserIcon },
-                            { id: 'activiteiten', label: 'Activiteiten', icon: History },
-                            { id: 'beheer', label: 'Beheer', icon: Settings, adminOnly: true }
-                        ].map(tab => (
-                            (!tab.adminOnly || isAdmin) && (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                                    className={`flex items-center gap-3 px-8 py-5 font-semibold text-xs transition-all border-b-2 ${
-                                        activeTab === tab.id 
-                                            ? 'text-[var(--beheer-accent)] border-[var(--beheer-accent)]' 
-                                            : 'text-[var(--beheer-text-muted)] border-transparent hover:text-[var(--beheer-text)]'
+                {/* Tabs Navigation */}
+                <div className="flex flex-wrap gap-0 border-b border-[var(--beheer-border)] mb-10">
+                    {[
+                        { id: 'profiel', label: 'Profiel', icon: UserIcon },
+                        { id: 'activiteiten', label: 'Activiteiten', icon: History },
+                        { id: 'beheer', label: 'Beheer', icon: Settings, adminOnly: true }
+                    ].map(tab => (
+                        (!tab.adminOnly || isAdmin) && (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                                className={`flex items-center gap-3 px-8 py-5 font-semibold text-xs transition-all border-b-2 ${activeTab === tab.id
+                                    ? 'text-[var(--beheer-accent)] border-[var(--beheer-accent)]'
+                                    : 'text-[var(--beheer-text-muted)] border-transparent hover:text-[var(--beheer-text)]'
                                     }`}
-                                >
-                                    <tab.icon className="h-4 w-4" /> {tab.label}
-                                </button>
-                            )
-                        ))}
-                    </div>
+                            >
+                                <tab.icon className="h-4 w-4" /> {tab.label}
+                            </button>
+                        )
+                    ))}
+                </div>
 
-                    {/* Tab Content */}
-                    <div className="min-h-[400px]">
-                        {activeTab === 'profiel' && (
-                            <MemberProfileTab 
-                                member={localMember} 
-                                memberships={optimisticMemberships}
-                                realCommittees={realCommittees}
-                                otherGroups={otherGroups}
-                                isAdmin={isAdmin}
-                                onUpdateProfile={handleUpdateProfile}
-                            />
-                        )}
+                {/* Tab Content */}
+                <div className="min-h-[400px]">
+                    {activeTab === 'profiel' && (
+                        <MemberProfileTab
+                            member={localMember}
+                            memberships={optimisticMemberships}
+                            realCommittees={realCommittees}
+                            otherGroups={otherGroups}
+                            isAdmin={isAdmin}
+                            onUpdateProfile={handleUpdateProfile}
+                        />
+                    )}
 
-                        {activeTab === 'activiteiten' && (
-                            <MemberActivitiesTab signups={signups} />
-                        )}
+                    {activeTab === 'activiteiten' && (
+                        <MemberActivitiesTab signups={signups} />
+                    )}
 
-                        {activeTab === 'beheer' && isAdmin && (
-                            <MemberAdminTab 
-                                member={localMember}
-                                optimisticMemberships={optimisticMemberships}
-                                availableCommittees={availableCommittees}
-                                onProvision={handleProvisionAzure}
-                                onMembershipChange={handleMembershipChange}
-                                onRenew={handleRenewMembership}
-                                onSync={handleForceSync}
-                                isActionInProgress={isActionInProgress}
-                            />
-                        )}
-                    </div>
-                </>
+                    {activeTab === 'beheer' && isAdmin && (
+                        <MemberAdminTab
+                            member={localMember}
+                            optimisticMemberships={optimisticMemberships}
+                            availableCommittees={availableCommittees}
+                            onProvision={handleProvisionAzure}
+                            onMembershipChange={handleMembershipChange}
+                            onRenew={handleRenewMembership}
+                            onSync={handleForceSync}
+                            isActionInProgress={isActionInProgress}
+                        />
+                    )}
+                </div>
+            </>
             <AdminToast toast={toast} onClose={hideToast} />
         </div>
     );

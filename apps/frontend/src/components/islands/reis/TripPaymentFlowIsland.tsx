@@ -5,22 +5,22 @@ import { z } from 'zod';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle } from 'lucide-react';
-import { 
-    type Trip, 
-    type TripSignup, 
-    type TripActivity, 
-    type TripSignupActivity 
+import {
+    type Trip,
+    type TripSignup,
+    type TripActivity,
+    type TripSignupActivity
 } from '@salvemundi/validations/schema/admin-reis.zod';
-import { 
+import {
     reisPaymentEnrichmentSchema,
-    type ReisPaymentEnrichment 
+    type ReisPaymentEnrichment
 } from '@salvemundi/validations/schema/reis.zod';
 import ActivitySelector from './ActivitySelector';
-import { 
-    updateSignupDetails, 
-    syncSignupActivities, 
-    initiateTripPaymentAction 
-} from '@/server/actions/reis-payment.actions';
+import {
+    updateSignupDetails,
+    syncSignupActivities,
+    initiateTripPaymentAction
+} from '@/server/actions/events/reis-payment.actions';
 import { calculateTripPricing, type ActivitySelection } from '@/lib/reis/pricing';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -41,13 +41,13 @@ interface TripPaymentFlowProps {
     token?: string;
 }
 
-export default function TripPaymentFlowIsland({ 
-    signup, 
-    trip, 
-    allActivities, 
-    selectedActivities, 
+export default function TripPaymentFlowIsland({
+    signup,
+    trip,
+    allActivities,
+    selectedActivities,
     paymentType,
-    token 
+    token
 }: TripPaymentFlowProps) {
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
@@ -62,7 +62,7 @@ export default function TripPaymentFlowIsland({
             if (!trip.is_bus_trip && data.document_expiry_date && trip.end_date) {
                 const expiry = new Date(data.document_expiry_date);
                 const tripEnd = new Date(trip.end_date);
-                
+
                 // Lower bound: must be at least end of trip
                 if (expiry < tripEnd) {
                     ctx.addIssue({
@@ -101,12 +101,13 @@ export default function TripPaymentFlowIsland({
             allergies: localSignup.allergies || '',
             special_notes: localSignup.special_notes || '',
             willing_to_drive: localSignup.willing_to_drive || false,
-            is_bus_trip: trip.is_bus_trip ?? false },
+            is_bus_trip: trip.is_bus_trip ?? false
+        },
         mode: 'onChange',
         shouldUnregister: true
     });
 
-    const { handleSubmit, watch, getValues, trigger, formState: { isValid } } = methods;
+    const { watch, getValues, trigger, formState: { isValid } } = methods;
     const firstName = watch('first_name');
 
     const [activitySelections, setActivitySelections] = useState<{ activityId: number, options: Record<string, boolean> }[]>(
@@ -139,7 +140,7 @@ export default function TripPaymentFlowIsland({
                     setLoading(false);
                     return;
                 }
-                
+
                 // Show confirmation modal for the name
                 setShowNameConfirm(true);
                 setLoading(false);
@@ -161,7 +162,7 @@ export default function TripPaymentFlowIsland({
             }
 
             setStep(step + 1);
-        } catch (err) {
+        } catch (_error) {
             setError('Er is een onverwachte fout opgetreden. Probeer het later opnieuw.');
         } finally {
             setLoading(false);
@@ -179,11 +180,11 @@ export default function TripPaymentFlowIsland({
                 setLoading(false);
                 return;
             }
-            
+
             // Sync local state so Step 3 and back-navigation show updated data
             setLocalSignup({ ...localSignup, ...formData });
             setStep(2);
-        } catch (err) {
+        } catch (_error) {
             setError('Fout bij opslaan gegevens.');
         } finally {
             setLoading(false);
@@ -202,7 +203,7 @@ export default function TripPaymentFlowIsland({
                 setError(res.error || 'Betaalsessie starten mislukt.');
                 setIsProcessing(false);
             }
-        } catch (err) {
+        } catch (_error) {
             setError('Fout bij verbinden met betaalservice.');
             setIsProcessing(false);
         }
@@ -221,13 +222,13 @@ export default function TripPaymentFlowIsland({
                                 transition={{ duration: 0.2 }}
                             >
                                 {step === 1 && (
-                                    <EnrichmentForm 
-                                        trip={trip} 
+                                    <EnrichmentForm
+                                        trip={trip}
                                     />
                                 )}
 
                                 {step === 2 && (
-                                    <ActivitySelector 
+                                    <ActivitySelector
                                         activities={allActivities}
                                         selectedSelections={activitySelections}
                                         onChange={setActivitySelections}
@@ -235,10 +236,9 @@ export default function TripPaymentFlowIsland({
                                 )}
 
                                 {step === 3 && (
-                                    <PaymentSummary 
-                                        signup={localSignup}
-                                        pricing={pricing} 
-                                        paymentType={paymentType} 
+                                    <PaymentSummary
+                                        pricing={pricing}
+                                        paymentType={paymentType}
                                     />
                                 )}
 
@@ -250,7 +250,7 @@ export default function TripPaymentFlowIsland({
                     <div className="mt-4">
                         <AnimatePresence>
                             {error && (
-                                <motion.div 
+                                <motion.div
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: 10 }}
@@ -265,13 +265,12 @@ export default function TripPaymentFlowIsland({
                             )}
                         </AnimatePresence>
 
-                        <FlowNavigation 
+                        <FlowNavigation
                             step={step}
                             loading={loading}
                             isProcessing={isProcessing}
                             isValid={isValid}
                             paymentType={paymentType}
-                            trip={trip}
                             onPrevious={() => setStep(step - 1)}
                             onNext={handleNext}
                             onPayment={handleStartPayment}
@@ -280,8 +279,8 @@ export default function TripPaymentFlowIsland({
                 </form>
             </div>
 
-            <NameConfirmModal 
-                isOpen={showNameConfirm} 
+            <NameConfirmModal
+                isOpen={showNameConfirm}
                 name={firstName}
                 onConfirm={confirmNameAndProceed}
                 onCancel={() => setShowNameConfirm(false)}

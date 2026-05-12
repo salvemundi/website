@@ -4,7 +4,7 @@ import { TokenService } from '../services/token.service.js';
 import { GraphService } from '../services/graph.service.js';
 
 export default async function userRoutes(fastify: FastifyInstance) {
-    
+
     // Middleware-like check for internal service token
     fastify.addHook('preHandler', async (request, reply) => {
         const rawAuthHeader = request.headers['authorization'];
@@ -26,9 +26,9 @@ export default async function userRoutes(fastify: FastifyInstance) {
             const token = await TokenService.getAccessToken();
             await GraphService.updateUser(entraId, token, { displayName, phoneNumber, dateOfBirth, membershipExpiry, originalPaymentDate });
             return { success: true, message: 'User updated in Microsoft Entra ID' };
-        } catch (err: any) {
-            fastify.log.error(`[USERS] Failed to update user ${entraId}:`, err.message);
-            return reply.status(500).send({ error: 'Failed to update user in Azure AD', details: err.message });
+        } catch (error: any) {
+            fastify.log.error(`[USERS] Failed to update user ${entraId}:`, error.message);
+            return reply.status(500).send({ error: 'Failed to update user in Azure AD', details: error.message });
         }
     });
 
@@ -40,9 +40,9 @@ export default async function userRoutes(fastify: FastifyInstance) {
             const token = await TokenService.getAccessToken();
             const groups = await GraphService.getUserGroups(entraId, token);
             return { success: true, groups };
-        } catch (err: any) {
-            fastify.log.error(`[USERS] Failed to fetch groups for user ${entraId}:`, err.message);
-            return reply.status(500).send({ error: 'Failed to fetch groups', details: err.message });
+        } catch (error: any) {
+            fastify.log.error(`[USERS] Failed to fetch groups for user ${entraId}:`, error.message);
+            return reply.status(500).send({ error: 'Failed to fetch groups', details: error.message });
         }
     });
 
@@ -62,9 +62,9 @@ export default async function userRoutes(fastify: FastifyInstance) {
             await GraphService.updateUserPhoto(entraId, buffer, token);
 
             return { success: true, message: 'Photo updated in Microsoft Entra ID' };
-        } catch (err: any) {
-            fastify.log.error(`[USERS] Failed to update photo for user ${entraId}:`, err.message);
-            return reply.status(500).send({ error: 'Failed to update photo in Azure AD', details: err.message });
+        } catch (error: any) {
+            fastify.log.error(`[USERS] Failed to update photo for user ${entraId}:`, error.message);
+            return reply.status(500).send({ error: 'Failed to update photo in Azure AD', details: error.message });
         }
     });
 }

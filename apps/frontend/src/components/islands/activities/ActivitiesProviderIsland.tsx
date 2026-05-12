@@ -28,29 +28,6 @@ export default function ActivitiesProviderIsland({
     const [selectedDay, setSelectedDay] = useState<Date | null>(null);
     const [currentDate, setCurrentDate] = useState(serverTime ? new Date(serverTime) : new Date());
 
-    const upcomingEvent = useMemo(() => {
-        const now = serverTime ? new Date(serverTime) : new Date();
-        return events
-            .filter(e => {
-                const eventDate = e.datum_start;
-                const eventDateTime = (e.event_time && eventDate.length <= 10)
-                    ? new Date(`${eventDate}T${e.event_time}`)
-                    : new Date(eventDate);
-                return eventDateTime >= now;
-            })
-            .sort((a, b) => {
-                const aDate = a.datum_start;
-                const bDate = b.datum_start;
-                const aDateTime = (a.event_time && aDate.length <= 10)
-                    ? new Date(`${aDate}T${a.event_time}`).getTime()
-                    : new Date(aDate).getTime();
-                const bDateTime = (b.event_time && bDate.length <= 10)
-                    ? new Date(`${bDate}T${b.event_time}`).getTime()
-                    : new Date(bDate).getTime();
-                return aDateTime - bDateTime;
-            })[0];
-    }, [events, serverTime]);
-
     const filteredEvents = useMemo(() => {
         let filtered = events;
         if (!showPastActivities) {
@@ -67,13 +44,10 @@ export default function ActivitiesProviderIsland({
             });
         }
 
-        // We no longer remove the featured upcoming event from the list.
-        // Users found it confusing when an activity was in the banner but missing from the list.
-
         return filtered.sort((a, b) => {
             const aDate = a.datum_start;
             const bDate = b.datum_start;
-            
+
             const aDateTime = (a.event_time && aDate.length <= 10)
                 ? new Date(`${aDate}T${a.event_time}`).getTime()
                 : new Date(aDate).getTime();
@@ -82,10 +56,10 @@ export default function ActivitiesProviderIsland({
                 : new Date(bDate).getTime();
             return showPastActivities ? bDateTime - aDateTime : aDateTime - bDateTime;
         });
-    }, [events, showPastActivities, serverTime, upcomingEvent]);
+    }, [events, showPastActivities, serverTime]);
 
     const handleShowDetails = useCallback((activity: Activiteit) => {
-        const act = activity as any;
+        const act = activity as Activiteit & { custom_url?: string };
         if (act.custom_url) {
             router.push(act.custom_url);
             return;
@@ -108,105 +82,105 @@ export default function ActivitiesProviderIsland({
     return (
         <div className="relative w-full flex flex-col">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-                        <h2 className="text-3xl font-bold text-[var(--theme-purple)] dark:text-[var(--text-main)]">
-                            {showPastActivities ? 'Alle Activiteiten' : 'Komende Activiteiten'}
-                        </h2>
+                <h2 className="text-3xl font-bold text-[var(--theme-purple)] dark:text-[var(--text-main)]">
+                    {showPastActivities ? 'Alle Activiteiten' : 'Komende Activiteiten'}
+                </h2>
 
-                        <div className="flex flex-wrap items-center gap-3">
-                            <div className="flex rounded-lg bg-[var(--bg-card)] overflow-hidden shadow-sm border border-[var(--border-color)]">
-                                <button
-                                    onClick={() => setViewMode('list')}
-                                    className={`px-4 py-2 text-sm font-semibold transition-all ${viewMode === 'list'
-                                        ? 'bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] shadow-sm'
-                                        : 'text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/5'
-                                        }`}
-                                >
-                                    Lijst
-                                </button>
-                                <button
-                                    onClick={() => setViewMode('grid')}
-                                    className={`px-4 py-2 text-sm font-semibold transition-all ${viewMode === 'grid'
-                                        ? 'bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] shadow-sm'
-                                        : 'text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/5'
-                                        }`}
-                                >
-                                    Kaarten
-                                </button>
-                                <button
-                                    onClick={() => setViewMode('calendar')}
-                                    className={`px-4 py-2 text-sm font-semibold transition-all ${viewMode === 'calendar'
-                                        ? 'bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] shadow-sm'
-                                        : 'text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/5'
-                                        }`}
-                                >
-                                    Kalender
-                                </button>
-                            </div>
-
-                            <button
-                                onClick={() => setShowPastActivities(!showPastActivities)}
-                                className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all border w-[160px] text-center ${showPastActivities
-                                    ? 'bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] border-[var(--theme-purple)]/20 shadow-sm'
-                                    : 'bg-[var(--bg-card)] text-[var(--theme-purple)] border-[var(--border-color)] hover:bg-[var(--theme-purple)]/5'
-                                    }`}
-                            >
-                                {showPastActivities ? 'Verberg Afgelopen' : 'Toon Afgelopen'}
-                            </button>
-                        </div>
+                <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex rounded-lg bg-[var(--bg-card)] overflow-hidden shadow-sm border border-[var(--border-color)]">
+                        <button
+                            onClick={() => setViewMode('list')}
+                            className={`px-4 py-2 text-base font-semibold transition-all ${viewMode === 'list'
+                                ? 'bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] shadow-sm'
+                                : 'text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/5'
+                                }`}
+                        >
+                            Lijst
+                        </button>
+                        <button
+                            onClick={() => setViewMode('grid')}
+                            className={`px-4 py-2 text-base font-semibold transition-all ${viewMode === 'grid'
+                                ? 'bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] shadow-sm'
+                                : 'text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/5'
+                                }`}
+                        >
+                            Kaarten
+                        </button>
+                        <button
+                            onClick={() => setViewMode('calendar')}
+                            className={`px-4 py-2 text-base font-semibold transition-all ${viewMode === 'calendar'
+                                ? 'bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] shadow-sm'
+                                : 'text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/5'
+                                }`}
+                        >
+                            Kalender
+                        </button>
                     </div>
 
-                    <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
-                        {selectedDay && (
-                            <aside className="lg:w-96 xl:w-[28rem] space-y-6">
-                                <DayDetails
+                    <button
+                        onClick={() => setShowPastActivities(!showPastActivities)}
+                        className={`px-4 py-2 text-base font-semibold rounded-lg transition-all border w-[180px] text-center ${showPastActivities
+                            ? 'bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] border-[var(--theme-purple)]/20 shadow-sm'
+                            : 'bg-[var(--bg-card)] text-[var(--theme-purple)] border-[var(--border-color)] hover:bg-[var(--theme-purple)]/5'
+                            }`}
+                    >
+                        {showPastActivities ? 'Verberg afgelopen' : 'Toon afgelopen'}
+                    </button>
+                </div>
+            </div>
+
+            <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
+                {selectedDay && (
+                    <aside className="lg:w-96 xl:w-[28rem] space-y-6">
+                        <DayDetails
+                            selectedDay={selectedDay}
+                            activities={events}
+                            onClose={() => setSelectedDay(null)}
+                            onEventClick={handleShowDetails}
+                        />
+                    </aside>
+                )}
+
+                <div className="flex-1 space-y-6">
+                    {viewMode === 'calendar' && (
+                        <>
+                            <div className="hidden lg:block">
+                                <CalendarView
+                                    currentDate={currentDate}
+                                    events={filteredEvents}
                                     selectedDay={selectedDay}
-                                    activities={events}
-                                    onClose={() => setSelectedDay(null)}
+                                    onSelectDay={setSelectedDay}
                                     onEventClick={handleShowDetails}
+                                    onPrevMonth={() => setCurrentDate(subMonths(currentDate, 1))}
+                                    onNextMonth={() => setCurrentDate(addMonths(currentDate, 1))}
+                                    onGoToDate={(d: Date) => setCurrentDate(d)}
                                 />
-                            </aside>
-                        )}
-
-                        <div className="flex-1 space-y-6">
-                            {viewMode === 'calendar' && (
-                                <>
-                                    <div className="hidden lg:block">
-                                        <CalendarView
-                                            currentDate={currentDate}
-                                            events={filteredEvents}
-                                            selectedDay={selectedDay}
-                                            onSelectDay={setSelectedDay}
-                                            onEventClick={handleShowDetails}
-                                            onPrevMonth={() => setCurrentDate(subMonths(currentDate, 1))}
-                                            onNextMonth={() => setCurrentDate(addMonths(currentDate, 1))}
-                                            onGoToDate={(d: Date) => setCurrentDate(d)}
-                                        />
-                                    </div>
-                                    <div className="lg:hidden">
-                                        <EventList
-                                            events={filteredEvents}
-                                            onEventClick={handleShowDetails}
-                                        />
-                                    </div>
-                                </>
-                            )}
-
-                            {viewMode === 'list' && (
+                            </div>
+                            <div className="lg:hidden">
                                 <EventList
                                     events={filteredEvents}
                                     onEventClick={handleShowDetails}
                                 />
-                            )}
+                            </div>
+                        </>
+                    )}
 
-                            {viewMode === 'grid' && (
-                                <EventList
-                                    events={filteredEvents}
-                                    onEventClick={handleShowDetails}
-                                    variant="grid"
-                                />
-                            )}
-                        </div>
-                    </div>
+                    {viewMode === 'list' && (
+                        <EventList
+                            events={filteredEvents}
+                            onEventClick={handleShowDetails}
+                        />
+                    )}
+
+                    {viewMode === 'grid' && (
+                        <EventList
+                            events={filteredEvents}
+                            onEventClick={handleShowDetails}
+                            variant="grid"
+                        />
+                    )}
+                </div>
+            </div>
         </div>
     );
 }

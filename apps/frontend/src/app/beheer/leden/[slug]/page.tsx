@@ -9,11 +9,11 @@ import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 // Correct Directus SDK imports
 import { type EnrichedUser } from '@/types/auth';
 import { type Committee } from '@/shared/lib/permissions';
-import { 
-    type DbDirectusUser, 
-    type DbCommitteeMember, 
-    type DbEventSignup, 
-    type DbCommittee as DbCommitteeSchema 
+import {
+    type DbDirectusUser,
+    type DbCommitteeMember,
+    type DbEventSignup,
+    type DbCommittee as DbCommitteeSchema
 } from '@salvemundi/validations/directus/schema';
 
 export default async function LidDetailPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -33,7 +33,7 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
 
     if (!hasPriv) {
         return (
-            <AdminUnauthorized 
+            <AdminUnauthorized
                 title="Lid Detail"
                 description="Je hebt geen rechten om persoonsgegevens van dit lid te bekijken. Dit is een beperkte sectie voor het Bestuur en ICT."
             />
@@ -45,19 +45,19 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
         // NUCLEAR SSR: Sequential fetch because we need the ID from the slug
         const memberResult = await getSystemDirectus().request(
             readUsers({
-                filter: { 
+                filter: {
                     _or: [
                         { email: { _istarts_with: decodedSlug + '@' } },
                         { email: { _istarts_with: decodedSlug.replace(/-/g, '.') + '@' } }
                     ]
-                }, 
+                },
                 fields: ['id', 'first_name', 'last_name', 'email', 'date_of_birth', 'membership_expiry', 'status', 'phone_number', 'avatar', 'entra_id'],
                 limit: 100
             })
         ) as DbDirectusUser[];
 
         if (!memberResult || memberResult.length === 0) return notFound();
-        
+
         // Find exact match by comparing the normalized prefix (dots converted to dashes)
         const memberData = memberResult.find((u) => {
             const emailPrefix = (u.email || '').split('@')[0].toLowerCase();
@@ -67,7 +67,7 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
 
         if (!memberData) return notFound();
         if (memberData.status === 'rejected') return notFound();
-        
+
         const id = memberData.id;
 
         const [userCommitteesResult, signupsResult, allCommitteesResult] = await Promise.allSettled([
@@ -127,7 +127,7 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
                     if (data.success && Array.isArray(data.groups)) {
                         const userAzureGroupIds = data.groups.map((g: { id: string }) => g.id.toLowerCase());
                         const matchedGroups = HARDCODED_AZURE_GROUPS.filter(hg => userAzureGroupIds.includes(hg.id.toLowerCase()));
-                        
+
                         const fakeMemberships = matchedGroups.map(match => ({
                             id: `azure-mock-${match.id}`, // temporary distinct ID
                             is_leader: false,
@@ -142,8 +142,8 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
                         userCommittees = [...userCommittees, ...fakeMemberships as unknown as DbCommitteeMember[]];
                     }
                 }
-            } catch (err) {
-                console.error("[LidDetailPage] Failed fetching external Azure groups:", err);
+            } catch (error) {
+                console.error("[LidDetailPage] Failed fetching external Azure groups:", error);
             }
         }
 
@@ -153,9 +153,9 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
                 backHref="/beheer/leden"
             >
                 <div className="container mx-auto px-4 py-8 max-w-7xl">
-                    <LedenDetailIsland 
-                        member={memberData as unknown as Member} 
-                        initialMemberships={userCommittees as unknown as CommitteeMembership[]} 
+                    <LedenDetailIsland
+                        member={memberData as unknown as Member}
+                        initialMemberships={userCommittees as unknown as CommitteeMembership[]}
                         signups={signups as unknown as Signup[]}
                         allCommittees={allCommittees.map(c => ({
                             id: String(c.id),
@@ -168,10 +168,19 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
                 </div>
             </AdminPageShell>
         );
-    } catch (e: unknown) {
-        if (e && typeof e === 'object' && 'digest' in e && typeof (e as { digest?: string }).digest === 'string' && (e as { digest: string }).digest.startsWith('NEXT_')) throw e;
-        console.error("[LidDetailPage] Error loading member:", e);
-        return notFound();
+    } catch (error: unknown) {
+        // Laat Next.js interne flow-errors (redirect, notFound) netjes door
+        if (
+            error &&
+            typeof error === 'object' &&
+            'digest' in error &&
+            typeof (error as { digest?: string }).digest === 'string' &&
+            (error as { digest: string }).digest.startsWith('NEXT_')
+        ) {
+            throw error;
+        }
+        console.error("[LidDetailPage] Error loading member:", error);
+        notFound();
     }
 }
 

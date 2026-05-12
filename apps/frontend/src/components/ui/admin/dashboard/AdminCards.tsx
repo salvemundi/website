@@ -11,16 +11,16 @@ interface CardProps {
 }
 
 const getColorClasses = (colorClass: string = 'purple') => {
-    const colors: Record<string, string> = {
-        purple: 'text-[var(--beheer-accent)] bg-[var(--beheer-accent)]/10 border-[var(--beheer-accent)]/20',
-        blue: 'text-blue-500 bg-blue-500/10 border-blue-500/20',
-        red: 'text-red-500 bg-red-500/10 border-red-500/20',
-        green: 'text-green-500 bg-green-500/10 border-green-500/20',
-        orange: 'text-orange-500 bg-orange-500/10 border-orange-500/20',
-        teal: 'text-teal-500 bg-teal-500/10 border-teal-500/20',
-        amber: 'text-amber-500 bg-amber-500/10 border-amber-500/20'
-    };
-    return colors[colorClass] || colors.purple;
+    const colors = new Map<string, string>([
+        ['purple', 'text-[var(--beheer-accent)] bg-[var(--beheer-accent)]/10 border-[var(--beheer-accent)]/20'],
+        ['blue', 'text-blue-500 bg-blue-500/10 border-blue-500/20'],
+        ['red', 'text-red-500 bg-red-500/10 border-red-500/20'],
+        ['green', 'text-green-500 bg-green-500/10 border-green-500/20'],
+        ['orange', 'text-orange-500 bg-orange-500/10 border-orange-500/20'],
+        ['teal', 'text-teal-500 bg-teal-500/10 border-teal-500/20'],
+        ['amber', 'text-amber-500 bg-amber-500/10 border-amber-500/20']
+    ]);
+    return colors.get(colorClass) || colors.get('purple')!;
 };
 
 /**
@@ -34,7 +34,7 @@ export function ActionCard({
     value,
     icon,
     href,
-    pulse = false,
+    pulse: _pulse = false,
     colorClass = 'purple',
     disabled = false,
     isExternal = false
@@ -62,7 +62,7 @@ export function ActionCard({
             {/* Left: Icon (Optional) */}
             {icon && (
                 <div className={`p-3 rounded-xl transition-colors ${colorStyle} group-hover:bg-opacity-20 shrink-0`}>
-                    {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any>, { className: 'h-6 w-6' }) : icon}
+                    {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<{ className?: string }>, { className: 'h-6 w-6' }) : icon}
                 </div>
             )}
 

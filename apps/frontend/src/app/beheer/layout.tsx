@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { connection } from 'next/server';
-import { checkAdminAccess } from '@/server/actions/admin-utils.actions';
+import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
 
 interface BeheerLayoutProps {
     children: React.ReactNode;

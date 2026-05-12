@@ -7,7 +7,6 @@ import Link from 'next/link';
 interface AdminUnauthorizedProps {
     title?: string;
     description?: string;
-    backHref?: string;
 }
 
 /**
@@ -17,7 +16,6 @@ interface AdminUnauthorizedProps {
 export default function AdminUnauthorized({
     title = 'Geen toegang',
     description = 'Je hebt geen rechten om deze sectie te bekijken. Neem contact op met de ICT-commissie als je denkt dat dit een fout is.',
-    backHref = '/beheer'
 }: AdminUnauthorizedProps) {
     return (
         <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center select-none pt-20">

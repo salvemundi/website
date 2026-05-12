@@ -6,7 +6,7 @@ interface PageProps {
     searchParams: Promise<{ id?: string; transaction_id?: string; t?: string }>;
 }
 
-import { getSignupStatus } from '@/server/actions/public-activiteit-status.actions';
+import { getSignupStatus } from '@/server/actions/events/public-activiteit-status.actions';
 import { type SignupData } from '@/components/islands/activities/ConfirmationIsland';
 
 

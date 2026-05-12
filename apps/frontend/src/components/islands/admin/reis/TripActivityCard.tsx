@@ -7,7 +7,7 @@ import {
     Trash2, 
     LayoutGrid 
 } from 'lucide-react';
-import { getImageUrl } from '@/lib/utils/image-utils';
+import MediaAsset from '@/components/ui/media/MediaAsset';
 
 import { type TripActivity } from '@salvemundi/validations/schema/admin-reis.zod';
 
@@ -24,7 +24,7 @@ export default function TripActivityCard({ activity, onEdit, onDelete, onViewSig
             {/* Visual Header */}
             {activity.image ? (
                 <div className="relative h-48 bg-slate-900 overflow-hidden">
-                    <img src={getImageUrl(activity.image, { width: 400, height: 200, fit: 'cover' }) || ''} alt={activity.name} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-1000" />
+                    <MediaAsset asset={activity.image} alt={activity.name} fill className="object-cover group-hover:scale-110 transition-transform duration-1000" />
                     <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-[9px] font-semibold tracking-widest shadow-lg ${activity.is_active ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
                         {activity.is_active ? 'Actief' : 'Inactief'}
                     </div>

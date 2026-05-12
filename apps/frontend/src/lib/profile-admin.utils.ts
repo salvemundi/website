@@ -45,19 +45,19 @@ export function mergeUserData(sUser: SessionUser | null | undefined, initialUser
         membership_status: initialUser?.membership_status ?? sUser.membership_status,
         membership_expiry: initialUser?.membership_expiry ?? sUser.membership_expiry,
         date_of_birth: initialUser?.date_of_birth ?? sUser.date_of_birth,
-        entra_id: initialUser?.entra_id ?? sUser.entra_id 
+        entra_id: initialUser?.entra_id ?? sUser.entra_id
     };
 
     // Enrich name if missing on client
     if (!mergedUser.name && (mergedUser.first_name || mergedUser.last_name)) {
         mergedUser.name = `${mergedUser.first_name || ''} ${mergedUser.last_name || ''}`.trim();
     }
-    
+
     // Merge committees from initialUser if missing in session
     if (!mergedUser.committees && initialUser?.committees) {
         mergedUser.committees = initialUser.committees;
     }
-    
+
     return mergedUser;
 }
 
@@ -108,12 +108,12 @@ export function calculateMembershipStatus(user: SessionUser) {
  * Filters and merges event and pub crawl signups.
  */
 export function filterProfileSignups(
-    eventSignups: EventSignup[], 
-    pubCrawlSignups: PubCrawlSignup[], 
+    eventSignups: EventSignup[],
+    pubCrawlSignups: PubCrawlSignup[],
     showPastEvents: boolean
 ) {
     const todayStart = startOfDay(new Date());
-    
+
     const allSignups = [
         ...(eventSignups || []).map(s => ({ ...s, _type: 'event' as const })),
         ...(pubCrawlSignups || []).map(s => ({ ...s, _type: 'pub_crawl' as const }))
@@ -137,7 +137,7 @@ export function filterProfileSignups(
                 eventDate = startOfDay(new Date(dateVal));
             }
             return !isBefore(eventDate, todayStart);
-        } catch {
+        } catch (_error) {
             return true;
         }
     });

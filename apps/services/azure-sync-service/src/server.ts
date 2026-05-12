@@ -46,8 +46,8 @@ const start = async () => {
         // Start the Nightly Full Sync Job
         const { FullSyncJob } = await import('./services/full-sync.job.js');
         FullSyncJob.start(fastify.redis);
-    } catch (err) {
-        fastify.log.error(err);
+    } catch (_error) {
+        fastify.log.error(error);
         process.exit(1);
     }
 };

@@ -4,24 +4,26 @@ import { getEnrichedSession } from '@/server/auth/auth-utils';
 import IntroManagementIsland from '@/components/islands/admin/IntroManagementIsland';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import { getPermissions } from '@/shared/lib/permissions';
-import { fetchUserCommitteesDb } from '@/server/actions/user-db.utils';
+import { fetchUserCommitteesDb } from '@/server/internal/user-db.utils';
 import {
     getIntroSignups,
     getIntroParentSignups,
     getIntroBlogs,
-    getIntroPlanning } from '@/server/actions/admin-intro.actions';
-import { getIntroSettings } from '@/server/actions/intro.actions';
+    getIntroPlanning
+} from '@/server/actions/admin/admin-intro.actions';
+import { getIntroSettings } from '@/server/actions/public/intro.actions';
 
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import IntroVisibilityIsland from '@/components/islands/admin/intro/IntroVisibilityIsland';
 
 export const metadata: Metadata = {
-    title: 'Intro Beheer | SV Salve Mundi' };
+    title: 'Intro Beheer | SV Salve Mundi'
+};
 
 
 export default async function BeheerIntroPage() {
     const session = await getEnrichedSession();
-    
+
     if (!session?.user) redirect('/?needLogin=true');
 
     const userCommittees = await fetchUserCommitteesDb(session.user.id).catch(() => []);
@@ -29,7 +31,7 @@ export default async function BeheerIntroPage() {
 
     if (!permissions.canAccessIntro) {
         return (
-            <AdminUnauthorized 
+            <AdminUnauthorized
                 title="Introductie Beheer"
                 description="Je hebt geen rechten om de introductie te beheren. Alleen de Introductiecommissie, het Bestuur en ICT hebben deze rechten."
             />

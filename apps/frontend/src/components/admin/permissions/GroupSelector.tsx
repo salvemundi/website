@@ -1,69 +1,92 @@
 'use client';
 
-import { Check, EyeOff } from 'lucide-react';
+import React from 'react';
+import { Users, ChevronRight, Shield } from 'lucide-react';
+
+interface Group {
+    id: string | number;
+    name: string;
+    description?: string | null;
+    permissions_count?: number;
+}
 
 interface GroupSelectorProps {
-    pageKey: string;
-    selectedTokens: string[];
-    allCommittees: any[];
-    showAllGroups: boolean;
-    onToggleToken: (pageKey: string, token: string) => void;
+    groups: Group[];
+    selectedGroupId: string | number | null;
+    onSelectGroup: (id: string | number) => void;
 }
 
 export default function GroupSelector({
-    pageKey,
-    selectedTokens,
-    allCommittees,
-    showAllGroups,
-    onToggleToken
+    groups,
+    selectedGroupId,
+    onSelectGroup
 }: GroupSelectorProps) {
-    const visibleGroups = allCommittees.filter(c => c.is_visible !== false);
-    const hiddenGroups = allCommittees.filter(c => c.is_visible === false);
-    const displayedGroups = showAllGroups ? allCommittees : visibleGroups;
-
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between mb-4">
-                <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Beschikbare Groepen</p>
-                {!showAllGroups && hiddenGroups.length > 0 && (
-                    <p className="text-[9px] text-[var(--text-light)] italic">
-                        (+ {hiddenGroups.length} verborgen groepen)
-                    </p>
-                )}
+            <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-[var(--beheer-text)] flex items-center gap-2">
+                    <Users className="h-5 w-5 text-[var(--beheer-accent)]" />
+                    Groepen
+                </h2>
+                <span className="text-base font-medium text-[var(--beheer-text-muted)]">
+                    {groups.length} beschikbare groepen
+                </span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
-                {displayedGroups.map(committee => {
-                    const isSelected = selectedTokens.includes(committee.token);
-                    const isHidden = !committee.is_visible;
+            <div className="grid grid-cols-1 gap-3">
+                {groups.map((group) => {
+                    const isActive = selectedGroupId === group.id;
 
                     return (
                         <button
-                            key={committee.id}
-                            onClick={() => onToggleToken(pageKey, committee.token)}
-                            className={`flex items-center justify-between px-3 py-2 rounded-xl border text-[11px] font-bold transition-all active:scale-95 text-left ${
-                                isSelected
-                                ? 'bg-[var(--theme-purple)]/10 border-[var(--theme-purple)] text-[var(--theme-purple)] shadow-sm'
-                                : isHidden
-                                ? 'bg-[var(--bg-main)]/50 border-dashed border-[var(--border-color)]/50 text-[var(--text-light)]/50'
-                                : 'bg-[var(--bg-card)] border-[var(--border-color)] text-[var(--text-subtle)] hover:border-[var(--theme-purple)]/50 hover:text-[var(--text-main)]'
-                            }`}
+                            key={group.id}
+                            onClick={() => onSelectGroup(group.id)}
+                            className={`flex items-center gap-4 p-5 rounded-[var(--beheer-radius)] border text-left transition-all ${isActive
+                                    ? 'bg-[var(--beheer-accent)]/5 border-[var(--beheer-accent)] shadow-sm'
+                                    : 'bg-[var(--beheer-card-bg)] border-[var(--beheer-border)] hover:border-[var(--beheer-accent)]/50'
+                                }`}
                         >
-                            <span className="truncate pr-1" title={committee.name}>{committee.name}</span>
-                            <div className="flex items-center gap-1 shrink-0">
-                                {isHidden && <EyeOff className="h-2.5 w-2.5 opacity-50" />}
-                                {isSelected && <Check className="h-3 w-3" />}
+                            <div className={`p-3 rounded-xl transition-colors ${isActive
+                                    ? 'bg-[var(--beheer-accent)] text-white'
+                                    : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)]'
+                                }`}>
+                                <Users className="h-5 w-5" />
+                            </div>
+
+                            <div className="flex-1 min-w-0">
+                                <h3 className="text-base font-bold text-[var(--beheer-text)] truncate">
+                                    {group.name}
+                                </h3>
+                                {group.description && (
+                                    <p className="text-base text-[var(--beheer-text-muted)] truncate">
+                                        {group.description}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="flex items-center gap-4">
+                                {group.permissions_count !== undefined && (
+                                    <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--beheer-card-soft)] border border-[var(--beheer-border)] text-sm font-bold text-[var(--beheer-text-muted)]">
+                                        <Shield className="h-3.5 w-3.5" />
+                                        <span>{group.permissions_count} permissies</span>
+                                    </div>
+                                )}
+                                <ChevronRight className={`h-5 w-5 transition-transform ${isActive ? 'translate-x-1 text-[var(--beheer-accent)]' : 'text-[var(--beheer-border)]'
+                                    }`} />
                             </div>
                         </button>
                     );
                 })}
+
+                {groups.length === 0 && (
+                    <div className="p-12 text-center border-2 border-dashed border-[var(--beheer-border)] rounded-[var(--beheer-radius)]">
+                        <Users className="h-12 w-12 mx-auto mb-4 opacity-20 text-[var(--beheer-text-muted)]" />
+                        <p className="text-base font-bold text-[var(--beheer-text-muted)]">
+                            Geen groepen gevonden
+                        </p>
+                    </div>
+                )}
             </div>
-            
-            {displayedGroups.length === 0 && (
-                <p className="text-center py-4 text-xs text-[var(--text-muted)] italic">
-                    Geen groepen gevonden om weer te geven.
-                </p>
-            )}
         </div>
     );
 }

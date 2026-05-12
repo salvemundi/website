@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { 
-    Search, 
-    Download, 
-    ChevronDown, 
-    Edit, 
-    Trash2, 
-    UserCheck, 
+import {
+    Search,
+    Download,
+    ChevronDown,
+    Edit,
+    Trash2,
+    UserCheck,
     Heart,
     Save,
     X
@@ -102,8 +102,8 @@ export default function IntroParentsTab({ parents, onDelete, onUpdate, onExport,
                                 const isExpanded = expandedRows.includes(p.id);
                                 return (
                                     <React.Fragment key={p.id}>
-                                        <tr 
-                                            onClick={() => toggleExpand(p.id)} 
+                                        <tr
+                                            onClick={() => toggleExpand(p.id)}
                                             className="hover:bg-[var(--beheer-accent)]/[0.02] cursor-pointer transition-colors group"
                                         >
                                             <td className="px-8 py-5">
@@ -129,14 +129,14 @@ export default function IntroParentsTab({ parents, onDelete, onUpdate, onExport,
                                             </td>
                                             <td className="px-12 py-5 text-right">
                                                 <div className="flex justify-end items-center gap-3">
-                                                    <ActionButton 
-                                                        icon={Edit} 
-                                                        onClick={(e) => startEdit(e, p)} 
-                                                        title="Bewerken" 
+                                                    <ActionButton
+                                                        icon={Edit}
+                                                        onClick={(e) => startEdit(e, p)}
+                                                        title="Bewerken"
                                                     />
-                                                    <ActionButton 
-                                                        icon={Trash2} 
-                                                        onClick={(e) => { e.stopPropagation(); onDelete(p.id); }} 
+                                                    <ActionButton
+                                                        icon={Trash2}
+                                                        onClick={(e) => { e.stopPropagation(); onDelete(p.id); }}
                                                         variant="danger"
                                                         disabled={deletingId === p.id}
                                                         title="Verwijderen"
@@ -152,83 +152,83 @@ export default function IntroParentsTab({ parents, onDelete, onUpdate, onExport,
                                                 <td colSpan={5} className="px-12 py-10">
                                                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 text-sm font-medium text-[var(--beheer-text-muted)]">
                                                         <div className="lg:col-span-2 space-y-8">
-                                                        {editingId === p.id ? (
-                                                            <div className="space-y-6">
-                                                                <div className="flex items-center justify-between">
-                                                                    <p className="text-xs font-semibold text-[var(--beheer-accent)]">Ouder Bewerken</p>
-                                                                    <div className="flex gap-2">
-                                                                        <Button onClick={() => handleSaveEdit(p.id)} variant="success" icon={Save}>Opslaan</Button>
-                                                                        <Button onClick={() => setEditingId(null)} variant="ghost" icon={X}>Annuleren</Button>
+                                                            {editingId === p.id ? (
+                                                                <div className="space-y-6">
+                                                                    <div className="flex items-center justify-between">
+                                                                        <p className="text-xs font-semibold text-[var(--beheer-accent)]">Ouder Bewerken</p>
+                                                                        <div className="flex gap-2">
+                                                                            <Button onClick={() => handleSaveEdit(p.id)} variant="success" icon={Save}>Opslaan</Button>
+                                                                            <Button onClick={() => setEditingId(null)} variant="ghost" icon={X}>Annuleren</Button>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                                                        <div className="flex flex-col gap-2">
+                                                                            <span className="opacity-50 text-[9px]">Voornaam</span>
+                                                                            <input type="text" value={editData.first_name || ''} onChange={e => setEditData({ ...editData, first_name: e.target.value })} className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-lg px-3 py-2 text-[var(--beheer-text)] text-xs font-semibold focus:ring-2 focus:ring-[var(--beheer-accent)] outline-none" />
+                                                                        </div>
+                                                                        <div className="flex flex-col gap-2">
+                                                                            <span className="opacity-50 text-[9px]">Achternaam</span>
+                                                                            <input type="text" value={editData.last_name || ''} onChange={e => setEditData({ ...editData, last_name: e.target.value })} className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-lg px-3 py-2 text-[var(--beheer-text)] text-xs font-semibold focus:ring-2 focus:ring-[var(--beheer-accent)] outline-none" />
+                                                                        </div>
+                                                                        <div className="flex flex-col gap-2">
+                                                                            <span className="opacity-50 text-[9px]">Email</span>
+                                                                            <input type="email" value={editData.email || ''} onChange={e => setEditData({ ...editData, email: e.target.value })} className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-lg px-3 py-2 text-[var(--beheer-text)] text-xs font-semibold focus:ring-2 focus:ring-[var(--beheer-accent)] outline-none" />
+                                                                        </div>
+                                                                        <div className="flex flex-col gap-2">
+                                                                            <span className="opacity-50 text-[9px]">Telefoon</span>
+                                                                            <PhoneInput
+                                                                                value={editData.phone_number || ''}
+                                                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditData({ ...editData, phone_number: e.target.value })}
+                                                                                className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-lg px-3 py-2 text-[var(--beheer-text)] text-xs font-semibold focus:ring-2 focus:ring-[var(--beheer-accent)] outline-none"
+                                                                            />
+                                                                        </div>
+                                                                        <div className="flex flex-col gap-2 sm:col-span-2">
+                                                                            <span className="opacity-50 text-[9px]">Motivatie</span>
+                                                                            <textarea
+                                                                                value={editData.motivation || ''}
+                                                                                onChange={e => setEditData({ ...editData, motivation: e.target.value })}
+                                                                                className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-lg px-3 py-2 text-[var(--beheer-text)] text-xs font-semibold focus:ring-2 focus:ring-[var(--beheer-accent)] outline-none min-h-[100px] resize-none"
+                                                                            />
+                                                                        </div>
                                                                     </div>
                                                                 </div>
-                                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                                                    <div className="flex flex-col gap-2">
-                                                                        <span className="opacity-50 text-[9px]">Voornaam</span>
-                                                                        <input type="text" value={editData.first_name || ''} onChange={e => setEditData({...editData, first_name: e.target.value})} className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-lg px-3 py-2 text-[var(--beheer-text)] text-xs font-semibold focus:ring-2 focus:ring-[var(--beheer-accent)] outline-none" />
+                                                            ) : (
+                                                                <div className="space-y-4">
+                                                                    <div className="flex items-center justify-between">
+                                                                        <p className="text-xs font-semibold text-[var(--beheer-accent)]">Extra Informatie</p>
+                                                                        <Button onClick={() => startEdit({ stopPropagation: () => { } } as React.MouseEvent, p)} variant="ghost" icon={Edit}>
+                                                                            Bewerken
+                                                                        </Button>
                                                                     </div>
-                                                                    <div className="flex flex-col gap-2">
-                                                                        <span className="opacity-50 text-[9px]">Achternaam</span>
-                                                                        <input type="text" value={editData.last_name || ''} onChange={e => setEditData({...editData, last_name: e.target.value})} className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-lg px-3 py-2 text-[var(--beheer-text)] text-xs font-semibold focus:ring-2 focus:ring-[var(--beheer-accent)] outline-none" />
-                                                                    </div>
-                                                                    <div className="flex flex-col gap-2">
-                                                                        <span className="opacity-50 text-[9px]">Email</span>
-                                                                        <input type="email" value={editData.email || ''} onChange={e => setEditData({...editData, email: e.target.value})} className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-lg px-3 py-2 text-[var(--beheer-text)] text-xs font-semibold focus:ring-2 focus:ring-[var(--beheer-accent)] outline-none" />
-                                                                    </div>
-                                                                    <div className="flex flex-col gap-2">
-                                                                        <span className="opacity-50 text-[9px]">Telefoon</span>
-                                                                        <PhoneInput 
-                                                                            value={editData.phone_number || ''} 
-                                                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditData({...editData, phone_number: e.target.value})} 
-                                                                            className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-lg px-3 py-2 text-[var(--beheer-text)] text-xs font-semibold focus:ring-2 focus:ring-[var(--beheer-accent)] outline-none" 
-                                                                        />
-                                                                    </div>
-                                                                    <div className="flex flex-col gap-2 sm:col-span-2">
-                                                                        <span className="opacity-50 text-[9px]">Motivatie</span>
-                                                                        <textarea 
-                                                                            value={editData.motivation || ''} 
-                                                                            onChange={e => setEditData({...editData, motivation: e.target.value})} 
-                                                                            className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-lg px-3 py-2 text-[var(--beheer-text)] text-xs font-semibold focus:ring-2 focus:ring-[var(--beheer-accent)] outline-none min-h-[100px] resize-none"
-                                                                        />
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        ) : (
-                                                            <div className="space-y-4">
-                                                                <div className="flex items-center justify-between">
-                                                                    <p className="text-xs font-semibold text-[var(--beheer-accent)]">Extra Informatie</p>
-                                                                    <Button onClick={() => startEdit({ stopPropagation: () => {} } as React.MouseEvent, p)} variant="ghost" icon={Edit}>
-                                                                        Bewerken
-                                                                    </Button>
-                                                                </div>
-                                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                                    <div className="flex flex-col gap-1">
-                                                                        <span className="opacity-50">Aangemeld op</span>
-                                                                        <span className="text-[var(--beheer-text)] text-sm font-semibold">{p.created_at ? formatDate(p.created_at) : '-'}</span>
-                                                                    </div>
+                                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                                        <div className="flex flex-col gap-1">
+                                                                            <span className="opacity-50">Aangemeld op</span>
+                                                                            <span className="text-[var(--beheer-text)] text-sm font-semibold">{p.created_at ? formatDate(p.created_at) : '-'}</span>
+                                                                        </div>
                                                                         <div className="flex flex-col gap-1">
                                                                             <span className="opacity-50">Status</span>
                                                                             <span className="text-[var(--beheer-text)] text-sm font-semibold">
                                                                                 {p.status === 'approved' ? 'Goedgekeurd' : 'Geregistreerd'}
                                                                             </span>
                                                                         </div>
-                                                                </div>
-                                                                {p.motivation && (
-                                                                    <div className="mt-6 space-y-4">
-                                                                        <p className="text-xs font-semibold text-[var(--beheer-accent)]">Motivatie</p>
-                                                                        <div className="bg-white/5 p-6 rounded-2xl border border-[var(--beheer-border)]/20">
-                                                                            <p className="text-sm font-medium text-[var(--beheer-text)] leading-relaxed italic">
-                                                                                "{p.motivation}"
-                                                                            </p>
-                                                                        </div>
                                                                     </div>
-                                                                )}
-                                                            </div>
-                                                        )}
-                                                            </div>
+                                                                    {p.motivation && (
+                                                                        <div className="mt-6 space-y-4">
+                                                                            <p className="text-xs font-semibold text-[var(--beheer-accent)]">Motivatie</p>
+                                                                            <div className="bg-white/5 p-6 rounded-2xl border border-[var(--beheer-border)]/20">
+                                                                                <p className="text-sm font-medium text-[var(--beheer-text)] leading-relaxed italic">
+                                                                                    &quot;{p.motivation}&quot;
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                         <div className="space-y-6 lg:border-l lg:border-[var(--beheer-border)]/10 lg:pl-12">
                                                             <p className="text-xs font-semibold text-[var(--beheer-accent)]">Beheer Acties</p>
                                                             <div className="flex flex-col gap-3">
-                                                                <Button 
+                                                                <Button
                                                                     onClick={() => onUpdate(p.id, { approved: !p.approved, status: !p.approved ? 'approved' : 'registered' })}
                                                                     variant={p.approved ? 'success' : 'secondary'}
                                                                     icon={UserCheck}

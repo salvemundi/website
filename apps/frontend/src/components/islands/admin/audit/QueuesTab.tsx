@@ -13,12 +13,13 @@ export default function QueuesTab({ queueData }: QueuesTabProps) {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {['new_users', 'sync_existing'].map(qKey => {
+                // eslint-disable-next-line security/detect-object-injection
                 const q = queueData?.[qKey];
                 return (
                     <div key={qKey} className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] shadow-xl overflow-hidden">
                         <div className="p-6 border-b border-[var(--beheer-border)]/50 flex justify-between items-center bg-[var(--beheer-card-soft)]/30">
                             <div>
-                                <h3 className="text-sm font-semibold text-[var(--beheer-text)] tracking-tight">
+                                <h3 className="text-base font-semibold text-[var(--beheer-text)] tracking-tight">
                                     {qKey === 'new_users' ? 'Nieuwe Leden Wachtrij' : 'Sync Wachtrij'}
                                 </h3>
                                 <p className="text-xs font-medium text-[var(--beheer-text-muted)] mt-1 opacity-50">

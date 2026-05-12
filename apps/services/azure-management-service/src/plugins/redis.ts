@@ -14,7 +14,7 @@ export default fp(async (fastify: FastifyInstance) => {
         maxRetriesPerRequest: null
     });
 
-    client.on('error', (err: Error) => fastify.log.error(err, 'Redis Client Error'));
+    client.on('error', (error: Error) => fastify.log.error(error, 'Redis Client Error'));
 
     fastify.decorate('redis', client);
 

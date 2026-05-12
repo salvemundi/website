@@ -39,6 +39,11 @@ export default function AdminToolbar({
                             <h1 className="text-xl md:text-2xl font-semibold text-[var(--beheer-text)] tracking-tight leading-tight">
                                 {title}
                             </h1>
+                            {subtitle && (
+                                <p className="text-sm text-[var(--beheer-text-muted)] font-medium leading-tight mt-0.5">
+                                    {subtitle}
+                                </p>
+                            )}
                         </div>
                     </div>
 

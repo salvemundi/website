@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-    Activity, 
-    CheckCircle2, 
-    AlertCircle, 
-    Zap, 
-    RefreshCw, 
-    ShieldCheck, 
+import {
+    Activity,
+    CheckCircle2,
+    AlertCircle,
+    Zap,
+    RefreshCw,
+    ShieldCheck,
     Clock,
     XCircle,
     CalendarClock,
@@ -16,8 +16,8 @@ import {
     Database,
     RefreshCcw
 } from 'lucide-react';
-import { getServicesStatusAction, type ServiceStatus } from '@/server/actions/services-status.actions';
-import { toggleAutomationSetting, type AutomationSetting } from '@/server/actions/admin-automation.actions';
+import { getServicesStatusAction, type ServiceStatus } from '@/server/actions/infrastructure/services-status.actions';
+import { toggleAutomationSetting, type AutomationSetting } from '@/server/actions/admin/admin-automation.actions';
 import AdminVisibilityToggle from '@/components/ui/admin/AdminVisibilityToggle';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
@@ -29,7 +29,7 @@ interface Props {
     initialAutomationSettings?: AutomationSetting[];
 }
 
-export default function SystemManagementIsland({ 
+export default function SystemManagementIsland({
     initialStatuses = [],
     initialAutomationSettings = []
 }: Props) {
@@ -47,7 +47,7 @@ export default function SystemManagementIsland({
             const data = await getServicesStatusAction();
             setStatuses(data);
             setLastUpdated(new Date());
-        } catch {
+        } catch (_error) {
             // Background update errors are handled by data absence
         } finally {
             setIsRefreshing(false);
@@ -64,7 +64,7 @@ export default function SystemManagementIsland({
         try {
             const res = await toggleAutomationSetting(key);
             if (res.success) {
-                setAutomationSettings(prev => prev.map(s => 
+                setAutomationSettings(prev => prev.map(s =>
                     s.id === key ? { ...s, isActive: !s.isActive } : s
                 ));
                 const setting = automationSettings.find(s => s.id === key);
@@ -100,8 +100,8 @@ export default function SystemManagementIsland({
                         onClick={() => setActiveTab('status')}
                         className={cn(
                             "flex-1 sm:flex-none px-6 py-2.5 text-[10px] font-semibold rounded-xl transition-all flex items-center justify-center gap-2.5",
-                            activeTab === 'status' 
-                                ? "bg-[var(--beheer-card-bg)] text-[var(--beheer-accent)] shadow-sm border border-[var(--beheer-border)]" 
+                            activeTab === 'status'
+                                ? "bg-[var(--beheer-card-bg)] text-[var(--beheer-accent)] shadow-sm border border-[var(--beheer-border)]"
                                 : "text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] hover:bg-[var(--beheer-card-bg)]/40"
                         )}
                     >
@@ -112,8 +112,8 @@ export default function SystemManagementIsland({
                         onClick={() => setActiveTab('automation')}
                         className={cn(
                             "flex-1 sm:flex-none px-6 py-2.5 text-[10px] font-semibold rounded-xl transition-all flex items-center justify-center gap-2.5",
-                            activeTab === 'automation' 
-                                ? "bg-[var(--beheer-card-bg)] text-[var(--beheer-accent)] shadow-sm border border-[var(--beheer-border)]" 
+                            activeTab === 'automation'
+                                ? "bg-[var(--beheer-card-bg)] text-[var(--beheer-accent)] shadow-sm border border-[var(--beheer-border)]"
                                 : "text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] hover:bg-[var(--beheer-card-bg)]/40"
                         )}
                     >
@@ -144,7 +144,7 @@ export default function SystemManagementIsland({
                             </div>
                         ) : (
                             statuses.map((service) => (
-                                <div 
+                                <div
                                     key={service.name}
                                     className="bg-[var(--beheer-card-bg)] rounded-[2.5rem] p-8 border border-[var(--beheer-border)] shadow-sm hover:shadow-md transition-all relative overflow-hidden group"
                                 >
@@ -191,7 +191,7 @@ export default function SystemManagementIsland({
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
                         {automationSettings.map((setting) => (
-                            <div 
+                            <div
                                 key={setting.id}
                                 className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[2.5rem] p-8 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group"
                             >
@@ -199,13 +199,13 @@ export default function SystemManagementIsland({
                                     <div className="flex items-center gap-4 mb-6">
                                         <div className={cn(
                                             "p-4 rounded-2xl transition-all group-hover:scale-110",
-                                            setting.isActive 
-                                                ? "bg-emerald-500/10 text-emerald-500" 
+                                            setting.isActive
+                                                ? "bg-emerald-500/10 text-emerald-500"
                                                 : "bg-rose-500/10 text-rose-500"
                                         )}>
-                                            {setting.id === 'mail_expiry_check' ? <CalendarClock className="h-6 w-6" /> : 
-                                             setting.id === 'auto_sync_nightly' ? <RefreshCcw className="h-6 w-6" /> :
-                                             <BellRing className="h-6 w-6" />}
+                                            {setting.id === 'mail_expiry_check' ? <CalendarClock className="h-6 w-6" /> :
+                                                setting.id === 'auto_sync_nightly' ? <RefreshCcw className="h-6 w-6" /> :
+                                                    <BellRing className="h-6 w-6" />}
                                         </div>
                                         <h3 className="font-semibold text-base text-[var(--beheer-text)]">
                                             {setting.name}
@@ -215,7 +215,7 @@ export default function SystemManagementIsland({
                                         {setting.description}
                                     </p>
                                 </div>
-                                
+
                                 <div className="flex items-center justify-between pt-6 border-t border-[var(--beheer-border)]/50">
                                     <div className="flex items-center gap-3">
                                         <div className={cn(
@@ -229,7 +229,7 @@ export default function SystemManagementIsland({
                                             {setting.isActive ? 'Actief' : 'Gepauzeerd'}
                                         </span>
                                     </div>
-                                    <AdminVisibilityToggle 
+                                    <AdminVisibilityToggle
                                         label="System Toggle"
                                         isVisible={setting.isActive}
                                         onToggle={() => handleToggleAutomation(setting.id)}
@@ -247,7 +247,7 @@ export default function SystemManagementIsland({
                                 <div>
                                     <h4 className="font-semibold text-sm text-[var(--beheer-accent)] mb-3">Systeem Veiligheids Protocol</h4>
                                     <p className="text-[var(--beheer-text-muted)] text-xs leading-relaxed max-w-3xl font-medium opacity-90">
-                                        Deze toggles beheren kritieke achtergrondprocessen. Wijzigingen treden onmiddellijk in werking. 
+                                        Deze toggles beheren kritieke achtergrondprocessen. Wijzigingen treden onmiddellijk in werking.
                                         De **Nachtelijke Sync** draait dagelijks om 03:00 en zorgt dat alle Azure-rechten in de cockpit up-to-date zijn.
                                         Schakel processen alleen uit bij onderhoud of debugging om data-inconsistentie te voorkomen.
                                     </p>

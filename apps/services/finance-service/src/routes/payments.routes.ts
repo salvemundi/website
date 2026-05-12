@@ -8,22 +8,24 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
      * POST /api/payments/create
      * Creates a new Mollie payment and stores a transaction record.
      */
-    fastify.post<{ Body: {
-        amount: number;
-        description: string;
-        registrationId: string | number;
-        registrationType: string;
-        email: string;
-        firstName: string;
-        lastName: string;
-        phoneNumber?: string;
-        dateOfBirth?: string;
-        isContribution?: boolean;
-        isNewMember?: boolean;
-        userId?: string | null;
-        redirectUrl: string;
-        couponCode?: string | null;
-    } }>('/create', async (request, reply) => {
+    fastify.post<{
+        Body: {
+            amount: number;
+            description: string;
+            registrationId: string | number;
+            registrationType: string;
+            email: string;
+            firstName: string;
+            lastName: string;
+            phoneNumber?: string;
+            dateOfBirth?: string;
+            isContribution?: boolean;
+            isNewMember?: boolean;
+            userId?: string | null;
+            redirectUrl: string;
+            couponCode?: string | null;
+        }
+    }>('/create', async (request, reply) => {
         const {
             amount,
             description,
@@ -47,9 +49,9 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
 
         try {
             const mollie = getMollieClient();
-            
-            const webhookUrl = process.env.PUBLIC_URL && !process.env.PUBLIC_URL.includes('localhost') 
-                ? `${process.env.PUBLIC_URL}/api/finance/webhook/mollie` 
+
+            const webhookUrl = process.env.PUBLIC_URL && !process.env.PUBLIC_URL.includes('localhost')
+                ? `${process.env.PUBLIC_URL}/api/finance/webhook/mollie`
                 : undefined;
 
             console.log(`[FINANCE] Creating Mollie payment with webhookUrl: ${webhookUrl}`);
@@ -155,9 +157,9 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
             }
 
             return { checkoutUrl: payment._links?.checkout?.href, mollie_id: payment.id, access_token: accessToken };
-        } catch (err: any) {
-            fastify.log.error({ err, message: err?.message, code: err?.code, detail: err?.detail }, '[FINANCE] Error creating payment');
-            return reply.status(500).send({ error: 'Failed to create payment', message: err.message });
+        } catch (error: any) {
+            fastify.log.error({ error, message: error?.message, code: error?.code, detail: error?.detail }, '[FINANCE] Error creating payment');
+            return reply.status(500).send({ error: 'Failed to create payment', message: error.message });
         }
     });
 
@@ -187,7 +189,7 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
             // Note: In a real system, we would call a centralized "finalizePayment" function.
             // Here we'll rely on the azure-sync-service listener to pick up the change or 
             // the webhook handler to have published a success event that we now 'validate'.
-            
+
             // To be robust, we publish the success event NOW because it was skipped during webhook.
             const result = await fastify.db.query(`SELECT * FROM transactions WHERE mollie_id = $1`, [mollieId]);
             const tx = result.rows[0];
@@ -207,9 +209,9 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 paymentId: tx.mollie_id,
                 email: tx.email || metadata?.email,
                 registrationId: tx.registration || tx.trip_signup || tx.pub_crawl_signup,
-                registrationType: tx.product_type === 'pub_crawl' ? 'pub_crawl_signup' : 
-                                 tx.product_type === 'trip' ? 'trip_signup' : 
-                                 tx.product_type === 'event' ? 'event_signup' : tx.product_type,
+                registrationType: tx.product_type === 'pub_crawl' ? 'pub_crawl_signup' :
+                    tx.product_type === 'trip' ? 'trip_signup' :
+                        tx.product_type === 'event' ? 'event_signup' : tx.product_type,
                 isContribution: tx.product_type === 'membership',
                 isNewMember: !tx.user_id && tx.product_type === 'membership',
                 accessToken: tx.access_token,
@@ -224,9 +226,9 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
             fastify.log.info(`[FINANCE] Manually approved and published success event for ${mollieId}`);
 
             return { success: true };
-        } catch (err: any) {
-            fastify.log.error(`[FINANCE] Approval failed for ${mollieId}:`, err);
-            return reply.status(500).send({ error: 'Approval failed', message: err.message });
+        } catch (error: any) {
+            fastify.log.error(`[FINANCE] Approval failed for ${mollieId}:`, error);
+            return reply.status(500).send({ error: 'Approval failed', message: error.message });
         }
     });
 }

@@ -1,6 +1,6 @@
 import { connection } from 'next/server';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { hasParentSignup, getIntroBlogsPublic } from '@/server/actions/intro.actions';
+import { hasParentSignup, getIntroBlogsPublic } from '@/server/actions/public/intro.actions';
 
 import { IntroStudentIsland } from '@/components/islands/intro/IntroStudentIsland';
 import { IntroParentIsland } from '@/components/islands/intro/IntroParentIsland';

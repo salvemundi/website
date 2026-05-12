@@ -34,7 +34,7 @@ export class MailWorkerService {
      */
     static async startWorker(redis: Redis) {
         console.log('[MailWorker] Started background worker loop.');
-        
+
         while (!this.shouldStop) {
             try {
                 // 1. Fetch tasks that are due (score <= now)
@@ -48,15 +48,15 @@ export class MailWorkerService {
 
                 for (const taskJson of tasks) {
                     if (this.shouldStop) break;
-                    
+
                     const task: MailTask = JSON.parse(taskJson);
-                    
+
                     try {
                         console.log(`[MailWorker] Processing mail to ${task.to}...`);
-                        
+
                         // 2. Attempt dispatch
                         const success = await MailerService.send(redis, task.to, task.templateId, task.data);
-                        
+
                         if (success) {
                             await redis.zrem(this.QUEUE_KEY, taskJson);
                             await AuditService.logMail(task.to, task.templateId, 'SUCCESS');
@@ -65,7 +65,7 @@ export class MailWorkerService {
                         }
                     } catch (error: any) {
                         console.error(`[MailWorker] Failed dispatch to ${task.to}:`, error.message);
-                        
+
                         // 3. Handle Retry (Exponential Backoff with 60s base)
                         task.retries += 1;
                         if (task.retries >= task.maxRetries) {
@@ -78,17 +78,17 @@ export class MailWorkerService {
                             // At retry 38, delay is ~24 hours.
                             const delay = 60000 * Math.pow(task.retries, 2);
                             const newScore = Date.now() + delay;
-                            
+
                             // Remove old and add updated
                             await redis.zrem(this.QUEUE_KEY, taskJson);
                             await redis.zadd(this.QUEUE_KEY, newScore, JSON.stringify(task));
-                            
+
                             console.log(`[MailWorker] Retrying in ${delay / 1000}s (Attempt ${task.retries}).`);
                         }
                     }
                 }
-            } catch (err) {
-                console.error('[MailWorker] Loop Error:', err);
+            } catch (_error) {
+                console.error('[MailWorker] Loop Error:', error);
                 await new Promise(resolve => setTimeout(resolve, 5000));
             }
         }

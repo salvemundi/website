@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     const querySecret = searchParams.get('secret');
 
     const isAuthenticated = (token && (
-        timingSafeCompare(authHeader || '', `Bearer ${token}`) || 
+        timingSafeCompare(authHeader || '', `Bearer ${token}`) ||
         timingSafeCompare(querySecret || '', token)
     ));
 

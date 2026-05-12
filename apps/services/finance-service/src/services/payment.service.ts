@@ -171,19 +171,19 @@ export class PaymentService {
             const directus = createDirectus(directusUrl).with(staticToken(directusToken)).with(rest());
 
             const user = await directus.request(readUser(userId, { fields: ['id', 'entra_id'] }));
-            
+
             if (user?.entra_id) {
                 const now = new Date();
                 const expiry = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
-                
+
                 await AzureRetryService.queueUpdate(fastify.redis, user.entra_id, {
                     membershipExpiry: expiry.toISOString().split('T')[0],
                     originalPaymentDate: now.toISOString().split('T')[0]
                 });
                 fastify.log.info(`[FINANCE] Queued Azure membership update for user ${userId}`);
             }
-        } catch (err) {
-            fastify.log.error(err, `[FINANCE] Azure sync trigger failed for user ${userId}`);
+        } catch (_error) {
+            fastify.log.error(error, `[FINANCE] Azure sync trigger failed for user ${userId}`);
         }
     }
 }

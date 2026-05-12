@@ -1,7 +1,7 @@
 import 'server-only';
 import { query } from '@/lib/database';
-import { 
-    type IntroBlog, 
+import {
+    type IntroBlog,
     type IntroPlanningItem,
     introBlogSchema,
     introPlanningSchema,
@@ -31,9 +31,10 @@ export async function getIntroStatsInternal() {
             signups: Number(stats?.signups ?? 0),
             parents: Number(stats?.parents ?? 0),
             blogs: Number(stats?.blogs ?? 0),
-            planning: Number(stats?.planning ?? 0) };
-    } catch (e) {
-        console.error('[AdminIntroQueries] getIntroStatsInternal failed:', e);
+            planning: Number(stats?.planning ?? 0)
+        };
+    } catch (error) {
+        console.error('[AdminIntroQueries] getIntroStatsInternal failed:', error);
         return { signups: 0, parents: 0, blogs: 0, planning: 0 };
     }
 }
@@ -42,15 +43,15 @@ export async function getIntroSignupsInternal() {
     try {
         const sql = 'SELECT * FROM intro_signups ORDER BY id DESC LIMIT 1000';
         const { rows } = await query(sql);
-        
+
         const parsed = z.array(introSignupDbSchema).safeParse(rows);
         if (!parsed.success) {
             console.error('[AdminIntroQueries] getIntroSignupsInternal validation failed:', parsed.error);
             return rows; // Fallback to raw rows for now, but logged
         }
         return parsed.data;
-    } catch (e) {
-        console.error('[AdminIntroQueries] getIntroSignupsInternal failed:', e);
+    } catch (error) {
+        console.error('[AdminIntroQueries] getIntroSignupsInternal failed:', error);
         throw new Error('Kon aanmeldingen niet ophalen');
     }
 }
@@ -66,8 +67,8 @@ export async function getIntroParentSignupsInternal() {
             return rows;
         }
         return parsed.data;
-    } catch (e) {
-        console.error('[AdminIntroQueries] getIntroParentSignupsInternal failed:', e);
+    } catch (error) {
+        console.error('[AdminIntroQueries] getIntroParentSignupsInternal failed:', error);
         throw new Error('Kon ouder-aanmeldingen niet ophalen');
     }
 }
@@ -76,7 +77,7 @@ export async function getIntroBlogsInternal(): Promise<IntroBlog[]> {
     try {
         const sql = 'SELECT * FROM intro_blogs ORDER BY id DESC LIMIT 200';
         const { rows } = await query(sql);
-        
+
         const mapped = rows.map(i => ({
             ...i,
             id: Number(i.id),
@@ -88,12 +89,12 @@ export async function getIntroBlogsInternal(): Promise<IntroBlog[]> {
 
         const parsed = z.array(introBlogSchema).safeParse(mapped);
         if (!parsed.success) {
-            
+
             return mapped as IntroBlog[];
         }
         return parsed.data;
-    } catch (e) {
-        console.error('[AdminIntroQueries] getIntroBlogsInternal failed:', e);
+    } catch (error) {
+        console.error('[AdminIntroQueries] getIntroBlogsInternal failed:', error);
         throw new Error('Kon blogs niet ophalen');
     }
 }
@@ -102,7 +103,7 @@ export async function getIntroPlanningInternal(): Promise<IntroPlanningItem[]> {
     try {
         const sql = 'SELECT * FROM intro_planning ORDER BY date ASC, time_start ASC LIMIT 200';
         const { rows } = await query(sql);
-        
+
         const mapped = rows.map(i => ({
             ...i,
             id: Number(i.id),
@@ -114,12 +115,12 @@ export async function getIntroPlanningInternal(): Promise<IntroPlanningItem[]> {
 
         const parsed = z.array(introPlanningSchema).safeParse(mapped);
         if (!parsed.success) {
-            
+
             return mapped as IntroPlanningItem[];
         }
         return parsed.data;
-    } catch (e) {
-        console.error('[AdminIntroQueries] getIntroPlanningInternal failed:', e);
+    } catch (error) {
+        console.error('[AdminIntroQueries] getIntroPlanningInternal failed:', error);
         throw new Error('Kon planning niet ophalen');
     }
 }

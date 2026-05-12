@@ -1,5 +1,5 @@
 import React from 'react';
-import { getIntroBlogBySlug } from '@/server/actions/intro.actions';
+import { getIntroBlogBySlug } from '@/server/actions/public/intro.actions';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import { notFound } from 'next/navigation';
 import { Calendar, ArrowLeft } from 'lucide-react';

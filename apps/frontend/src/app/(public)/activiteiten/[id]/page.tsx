@@ -1,8 +1,8 @@
 import React from 'react';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { notFound } from 'next/navigation';
-import { getActivityBySlug, checkUserSignupStatus } from '@/server/actions/public-activiteit.actions';
-import { getSignupStatus } from '@/server/actions/public-activiteit-status.actions';
+import { getActivityBySlug, checkUserSignupStatus } from '@/server/actions/events/public-activiteit.actions';
+import { getSignupStatus } from '@/server/actions/events/public-activiteit-status.actions';
 import ActivityDetailIsland from '@/components/islands/activities/ActivityDetailIsland';
 import EventSignupIsland from '@/components/islands/activities/EventSignupIsland';
 import { type DbEventSignup } from '@salvemundi/validations/directus/schema';

@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { 
-    Search, 
-    Download, 
-    Trash2, 
-    Edit, 
-    Mail 
+import {
+    Search,
+    Download,
+    Trash2,
+    Edit,
+    Mail
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { downloadCSV } from '@/lib/utils/export';
@@ -32,22 +32,22 @@ interface SignupListProps {
 
 export default function SignupList({
     signups,
-    eventId,
+    eventId: _eventId,
     eventName,
     onDelete,
     onEdit
 }: SignupListProps) {
     const [searchQuery, setSearchQuery] = useState('');
-    const [showAll, setShowAll] = useState(false);
+    const [showAll] = useState(false);
 
     const filteredSignups = signups.filter(s => {
-        const matchesSearch = 
+        const matchesSearch =
             s.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             s.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             s.association?.toLowerCase().includes(searchQuery.toLowerCase());
-        
+
         const matchesStatus = showAll || s.payment_status === 'paid';
-        
+
         return matchesSearch && matchesStatus;
     });
 
@@ -146,7 +146,7 @@ export default function SignupList({
                                     // Robust participant parsing
                                     let participants = signup.participants || [];
                                     if (typeof participants === 'string') {
-                                        try { participants = JSON.parse(participants); } catch { participants = []; }
+                                        try { participants = JSON.parse(participants); } catch (_error) { participants = []; }
                                     }
                                     if (!Array.isArray(participants)) participants = [];
 
@@ -160,7 +160,7 @@ export default function SignupList({
                                                             {signup.email}
                                                         </a>
                                                     </div>
-                                                    
+
                                                     {participants.length > 0 && (
                                                         <div className="mt-1.5 flex flex-wrap gap-1.5">
                                                             {participants.map((p, i) => {
@@ -197,13 +197,13 @@ export default function SignupList({
                                             </td>
                                             <td className="px-6 py-3 text-right">
                                                 <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button 
+                                                    <button
                                                         onClick={() => signup.id && onEdit(signup.id)}
                                                         className="p-1.5 rounded-md hover:bg-[var(--theme-purple)]/10 text-[var(--text-muted)] hover:text-[var(--theme-purple)] transition-all"
                                                     >
                                                         <Edit className="h-3.5 w-3.5" />
                                                     </button>
-                                                    <button 
+                                                    <button
                                                         onClick={() => signup.id && onDelete(signup.id)}
                                                         className="p-1.5 rounded-md hover:bg-red-500/10 text-[var(--text-muted)] hover:text-red-500 transition-all"
                                                     >

@@ -11,21 +11,21 @@ export class EventReminderJob {
      */
     static async start(redis: Redis) {
         console.log('[EventReminderJob] Starting daily monitoring loop...');
-        
+
         while (!this.shouldStop) {
             try {
                 // 1. Run the check
                 await this.runCheck(redis);
-                
+
                 // 2. Wait until next day at 09:00
                 const now = new Date();
                 const nextRun = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 9, 30, 0); // Offset from Expiry job
                 const delay = nextRun.getTime() - now.getTime();
-                
+
                 console.log(`[EventReminderJob] Next check scheduled in ${Math.round(delay / 1000 / 60 / 60)} hours.`);
                 await new Promise(resolve => setTimeout(resolve, delay));
-            } catch (err: any) {
-                console.error('[EventReminderJob] Loop Error:', err.message);
+            } catch (error: any) {
+                console.error('[EventReminderJob] Loop Error:', error.message);
                 await new Promise(resolve => setTimeout(resolve, 60000));
             }
         }
@@ -39,7 +39,7 @@ export class EventReminderJob {
             console.log('[EventReminderJob] Automated event reminders are DISABLED via feature flag. Skipping run.');
             return;
         }
-        
+
         const upcomingEvents = await DirectusService.getUpcomingEvents(3);
         console.log(`[EventReminderJob] Found ${upcomingEvents.length} events scheduled in 3 days.`);
 
@@ -55,7 +55,7 @@ export class EventReminderJob {
 
     private static async notifyParticipant(redis: Redis, event: Event, signup: EventSignup) {
         const redisKey = `${this.REDIS_PREFIX}${signup.id}:reminder_3d`;
-        
+
         // Already notified?
         const exists = await redis.get(redisKey);
         if (exists) return;
@@ -88,8 +88,8 @@ export class EventReminderJob {
             if (response.ok) {
                 await redis.set(redisKey, '1', 'EX', 86400 * 30); // Cache for a month
             }
-        } catch (err: any) {
-            console.error(`[EventReminderJob] Error notifying ${signup.participant_email}:`, err.message);
+        } catch (error: any) {
+            console.error(`[EventReminderJob] Error notifying ${signup.participant_email}:`, error.message);
         }
     }
 

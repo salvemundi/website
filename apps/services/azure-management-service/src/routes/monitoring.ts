@@ -42,8 +42,8 @@ export default async function monitoringRoutes(fastify: FastifyInstance) {
                 timestamp: new Date().toISOString(),
                 uptime: process.uptime()
             };
-        } catch (err: any) {
-            fastify.log.error('[MONITORING] Failed to fetch queue status:', err.message);
+        } catch (error: any) {
+            fastify.log.error('[MONITORING] Failed to fetch queue status:', error.message);
             return reply.status(500).send({ error: 'Internal Server Error' });
         }
     });

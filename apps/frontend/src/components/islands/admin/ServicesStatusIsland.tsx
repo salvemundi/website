@@ -1,18 +1,18 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { 
-    Activity, 
-    CheckCircle2, 
-    AlertCircle, 
-    Zap, 
-    RefreshCw, 
-    ShieldCheck, 
-    Server, 
+import {
+    Activity,
+    CheckCircle2,
+    AlertCircle,
+    Zap,
+    RefreshCw,
+    ShieldCheck,
+    Server,
     Clock,
     XCircle
 } from 'lucide-react';
-import { getServicesStatusAction, type ServiceStatus } from '@/server/actions/services-status.actions';
+import { getServicesStatusAction, type ServiceStatus } from '@/server/actions/infrastructure/services-status.actions';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import { formatDate } from '@/shared/lib/utils/date';
 
@@ -20,7 +20,7 @@ interface Props {
     initialStatuses?: ServiceStatus[];
 }
 
-export default function ServicesStatusIsland({ 
+export default function ServicesStatusIsland({
     initialStatuses = []
 }: Props) {
     const [statuses, setStatuses] = useState<ServiceStatus[]>(initialStatuses);
@@ -33,7 +33,7 @@ export default function ServicesStatusIsland({
             const data = await getServicesStatusAction();
             setStatuses(data);
             setLastUpdated(new Date());
-        } catch {
+        } catch (_error) {
             // Background update errors are handled by data absence
         } finally {
             setIsRefreshing(false);
@@ -58,29 +58,29 @@ export default function ServicesStatusIsland({
     };
 
     const adminStats = useMemo(() => [
-        { 
-            label: 'Systemen', 
-            value: statuses.length, 
-            icon: Server, 
-            trend: 'Totaal' 
+        {
+            label: 'Systemen',
+            value: statuses.length,
+            icon: Server,
+            trend: 'Totaal'
         },
-        { 
-            label: 'Gezond', 
-            value: statuses.filter(s => s.status === 'online').length, 
-            icon: ShieldCheck, 
-            trend: 'Healthy' 
+        {
+            label: 'Gezond',
+            value: statuses.filter(s => s.status === 'online').length,
+            icon: ShieldCheck,
+            trend: 'Healthy'
         },
-        { 
-            label: 'Issue', 
-            value: statuses.filter(s => s.status !== 'online').length, 
-            icon: AlertCircle, 
-            trend: 'Errors' 
+        {
+            label: 'Issue',
+            value: statuses.filter(s => s.status !== 'online').length,
+            icon: AlertCircle,
+            trend: 'Errors'
         },
-        { 
-            label: 'Uptime', 
-            value: '99.9%', 
-            icon: Activity, 
-            trend: 'Rolling' 
+        {
+            label: 'Uptime',
+            value: '99.9%',
+            icon: Activity,
+            trend: 'Rolling'
         },
     ], [statuses]);
 
@@ -107,7 +107,7 @@ export default function ServicesStatusIsland({
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
                     {statuses.map((service) => (
-                        <div 
+                        <div
                             key={service.name}
                             className="bg-[var(--beheer-card-bg)] rounded-[2.5rem] p-8 border border-[var(--beheer-border)] shadow-sm hover:shadow-md transition-all relative overflow-hidden group"
                         >

@@ -57,7 +57,7 @@ export function MobileNav({ user, isAuthenticated, navItems, canAccessAdmin }: O
                 {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
 
-            <MobileMenu 
+            <MobileMenu
                 isOpen={menuOpen}
                 onClose={() => setMenuOpen(false)}
                 user={user}

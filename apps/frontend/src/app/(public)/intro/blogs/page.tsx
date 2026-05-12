@@ -1,5 +1,5 @@
 import React from 'react';
-import { getAllIntroBlogsPublic } from '@/server/actions/intro.actions';
+import { getAllIntroBlogsPublic } from '@/server/actions/public/intro.actions';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import { IntroBlogGrid } from '@/components/islands/intro/IntroBlogGrid';
 import { Newspaper, ArrowLeft } from 'lucide-react';

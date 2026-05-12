@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import ImpersonateIsland from '@/components/islands/admin/ImpersonateIsland';
-import { checkAdminAccess } from '@/server/actions/admin-utils.actions';
+import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
 import { redirect } from 'next/navigation';
 
 export const metadata = {

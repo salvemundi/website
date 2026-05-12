@@ -11,8 +11,8 @@ const pool = new Pool({
     port: Number(process.env.DB_PORT) || 5432,
 });
 
-pool.on('error', (err) => {
-    console.error('[DB-Plugin] Unexpected error on idle client', err);
+pool.on('error', (error) => {
+    console.error('[DB-Plugin] Unexpected error on idle client', error);
 });
 
 export async function query(text: string, params?: any[]) {
@@ -22,13 +22,13 @@ export async function query(text: string, params?: any[]) {
         const duration = Date.now() - start;
         // console.debug(`[DB-Query] Executed in ${duration}ms`, { text, rows: res.rowCount });
         return res;
-    } catch (e) {
+    } catch (_error) {
         console.error('[DB-Query Error]', {
-            message: e instanceof Error ? e.message : 'Unknown error',
+            message: error instanceof Error ? error.message : 'Unknown error',
             text,
             params,
         });
-        throw e;
+        throw error;
     }
 }
 

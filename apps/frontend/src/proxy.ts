@@ -5,7 +5,6 @@ import { PUBLIC_ROUTES } from '@/lib/config/routes';
 import { getRedis } from '@/server/auth/redis-client';
 import { getDisabledRoutes } from '@/lib/config/feature-flags';
 
-
 /**
  * Direct Provider Proxy (V7)
  */
@@ -36,13 +35,14 @@ async function proxy(request: NextRequest) {
         res.headers.set('X-Content-Type-Options', 'nosniff');
         res.headers.set('X-Frame-Options', 'DENY');
         res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-        
+
         if (!origin.includes('localhost')) {
             res.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
         }
-        
+
         return res;
     };
+
     const forwardedFor = request.headers.get('x-forwarded-for');
     const clientIp = forwardedFor ? forwardedFor.split(',')[0].trim() : (request.headers.get('x-real-ip') || 'unknown');
 
@@ -53,26 +53,27 @@ async function proxy(request: NextRequest) {
         const isRscRequest = request.headers.has('x-next-rsc');
 
         const requestHeaders = new Headers(request.headers);
-        requestHeaders.delete('x-trusted-ip'); 
+        requestHeaders.delete('x-trusted-ip');
         requestHeaders.set('x-trusted-ip', clientIp);
         requestHeaders.set('x-nonce', nonce);
 
         if (isMutation || isPrefetch || isDataRequest || isRscRequest) {
             return withSecurity(NextResponse.next());
         }
-        
+
         try {
             return withSecurity(NextResponse.next({
                 request: { headers: requestHeaders }
             }));
-        } catch (e) {
+        } catch (error) {
+            console.error('[Proxy] Failed to inject request headers:', error);
             return withSecurity(NextResponse.next());
         }
     };
 
     const publicUrl = process.env.PUBLIC_URL || origin;
-
     const internalToken = process.env.INTERNAL_SERVICE_TOKEN;
+
     if (internalToken && request.headers.get('authorization') === `Bearer ${internalToken}`) {
         return nextWithNonce();
     }
@@ -86,24 +87,24 @@ async function proxy(request: NextRequest) {
     }
 
     const isPublic = PUBLIC_ROUTES.some(r => pathname === r || pathname.startsWith(`${r}/`));
+
     if (!isPublic) {
         try {
             const rawCookie = request.headers.get('cookie') || '';
 
-            
-            const sessionTokenRaw = request.cookies.get('better-auth.session_token')?.value || 
-                                request.cookies.get('better-auth.session-token')?.value ||
-                                request.cookies.get('__Secure-better-auth.session_token')?.value ||
-                                request.cookies.get('__Secure-better-auth.session-token')?.value ||
-                                rawCookie.split('better-auth.session_token=')[1]?.split(';')[0]?.trim() ||
-                                rawCookie.split('better-auth.session-token=')[1]?.split(';')[0]?.trim();
-            
+            const sessionTokenRaw = request.cookies.get('better-auth.session_token')?.value ||
+                request.cookies.get('better-auth.session-token')?.value ||
+                request.cookies.get('__Secure-better-auth.session_token')?.value ||
+                request.cookies.get('__Secure-better-auth.session-token')?.value ||
+                rawCookie.split('better-auth.session_token=')[1]?.split(';')[0]?.trim() ||
+                rawCookie.split('better-auth.session-token=')[1]?.split(';')[0]?.trim();
+
             const testTokenRaw = request.cookies.get('directus_test_token')?.value ||
-                                rawCookie.split('directus_test_token=')[1]?.split(';')[0]?.trim();
-            
+                rawCookie.split('directus_test_token=')[1]?.split(';')[0]?.trim();
+
             const hasTestToken = !!testTokenRaw;
             const sessionToken = sessionTokenRaw?.split('.')[0];
-            
+
             let hasSession = false;
 
             if (sessionToken && !hasTestToken) {
@@ -115,7 +116,9 @@ async function proxy(request: NextRequest) {
                         if (sessionData && (sessionData.user || (sessionData.response && sessionData.response.user))) {
                             hasSession = true;
                         }
-                    } catch (e) {}
+                    } catch (parseErr) {
+                        console.error('[Proxy] Failed to parse Redis session cache:', parseErr);
+                    }
                 }
             }
 
@@ -123,7 +126,7 @@ async function proxy(request: NextRequest) {
                 const host = request.headers.get('host') || 'localhost:3000';
                 const internalBase = process.env.NEXT_APP_INTERNAL_URL || origin;
                 const sessionUrl = new URL('/api/auth/get-session', internalBase);
-                
+
                 try {
                     const sessionRes = await fetch(sessionUrl, {
                         headers: {
@@ -143,8 +146,6 @@ async function proxy(request: NextRequest) {
                         signal: AbortSignal.timeout(10000)
                     });
 
-
-
                     if (sessionRes.ok && sessionRes.status !== 204) {
                         const text = await sessionRes.text();
 
@@ -154,10 +155,10 @@ async function proxy(request: NextRequest) {
                                 if (sessionData && 'response' in sessionData) {
                                     sessionData = sessionData.response;
                                 }
-                                
+
                                 if (sessionData && sessionData.user) {
                                     hasSession = true;
-                                    
+
                                     if (request.nextUrl.searchParams.has('needLogin')) {
                                         const cleanUrl = new URL(request.url);
                                         cleanUrl.searchParams.delete('needLogin');
@@ -179,10 +180,14 @@ async function proxy(request: NextRequest) {
                                     });
                                     return response;
                                 }
-                            } catch (e) {}
+                            } catch (parseErr) {
+                                console.error('[Proxy] Failed to parse session text response:', parseErr);
+                            }
                         }
                     }
-                } catch (fetchError) {}
+                } catch (fetchError) {
+                    console.error('[Proxy] Fetch error retrieving session from internal API:', fetchError);
+                }
             }
 
             if (hasSession) {
@@ -209,6 +214,7 @@ async function proxy(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/((?!_next/static|_next/image|fonts|img|favicon.ico|robots.txt|.well-known|sw.js|manifest.json|manifest.webmanifest|workbox-|logo.svg|icons/|api/assets|api/auth).*)'] };
+    matcher: ['/((?!_next/static|_next/image|fonts|img|favicon.ico|robots.txt|.well-known|sw.js|manifest.json|manifest.webmanifest|workbox-|logo.svg|icons/|api/assets|api/auth).*)']
+};
 
 export { proxy };

@@ -4,7 +4,7 @@ import { ChevronRight } from 'lucide-react';
 import type { HeroBanner } from '@salvemundi/validations/schema/home.zod';
 import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { getImageUrl } from '@/lib/utils/image-utils';
-import { formatDate, formatDateRange } from '@/shared/lib/utils/date';
+import { formatDateRange } from '@/shared/lib/utils/date';
 import { HeroCarousel } from './HeroCarousel';
 import { slugify } from '@/shared/lib/utils/slug';
 import { type ExtendedSession } from '@/types/auth';

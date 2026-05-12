@@ -1,5 +1,5 @@
 import { query } from "@/lib/database";
-import { getPermissions } from "@/shared/lib/permissions";
+import { getPermissions, type Committee } from "@/shared/lib/permissions";
 import { createDirectus, rest, staticToken, readMe } from "@directus/sdk";
 import { type ExtendedSession } from "@/types/auth";
 
@@ -15,10 +15,10 @@ export async function canUserImpersonate(userId: string): Promise<boolean> {
              WHERE m.user_id = $1`,
             [userId]
         );
-        
-        const perms = getPermissions(rows);
+
+        const perms = getPermissions(rows as Committee[]);
         return perms.isICT || perms.isLeader || perms.isAdmin;
-    } catch {
+    } catch (_error) {
         return false;
     }
 }
@@ -27,7 +27,7 @@ export async function canUserImpersonate(userId: string): Promise<boolean> {
  * Performs the actual user swap in the session object based on a Directus token.
  */
 export async function performImpersonationSwap(
-    session: ExtendedSession, 
+    session: ExtendedSession,
     testToken: string
 ): Promise<ExtendedSession> {
     const directusUrl = process.env.DIRECTUS_SERVICE_URL;
@@ -58,7 +58,7 @@ export async function performImpersonationSwap(
         const targetLastName = (targetUserRes.last_name as string) || (dbUser.last_name as string) || '';
         const targetName = `${targetFirstName} ${targetLastName}`.trim() || targetEmail;
 
-        const { rows: targetCommittees } = await query(
+        const { rows: targetCommitteesRows } = await query(
             `SELECT c.id, c.name, c.azure_group_id, m.is_leader 
              FROM committee_members m 
              JOIN committees c ON m.committee_id = c.id 
@@ -66,11 +66,12 @@ export async function performImpersonationSwap(
             [targetUserRes.id]
         );
 
+        const targetCommittees = targetCommitteesRows as Committee[];
         const targetPerms = getPermissions(targetCommittees);
-        
+
         // Deep clone session to avoid side effects
         const sessionWithImpersonation = JSON.parse(JSON.stringify(session)) as ExtendedSession;
-        
+
         // Store original admin context
         sessionWithImpersonation.impersonatedBy = {
             id: session.user.id,
@@ -96,7 +97,7 @@ export async function performImpersonationSwap(
         sessionWithImpersonation.session.userId = targetUserRes.id as string;
 
         return sessionWithImpersonation;
-    } catch {
+    } catch (_error) {
         return session;
     }
 }
@@ -114,16 +115,17 @@ export async function enrichSession(session: ExtendedSession): Promise<ExtendedS
             [session.user.id]
         );
 
-        const perms = getPermissions(rows);
+        const committees = rows as Committee[];
+        const perms = getPermissions(committees);
         const enrichedSession = JSON.parse(JSON.stringify(session)) as ExtendedSession;
         enrichedSession.user = {
             ...session.user,
             ...perms,
-            committees: rows
+            committees: committees
         };
 
         return enrichedSession;
-    } catch {
+    } catch (_error) {
         return session;
     }
 }

@@ -3,23 +3,24 @@ import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import MembershipFormIsland from '@/components/islands/membership/MembershipFormIsland';
 import MembershipStatusIsland, { type MembershipUserData } from '@/components/islands/account/MembershipStatusIsland';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { fetchUserCommitteesDb, type Committee } from '@/server/actions/user-db.utils';
+import { fetchUserCommitteesDb, type Committee } from '@/server/internal/user-db.utils';
 import { connection } from 'next/server';
 
 export const metadata = {
     title: 'Word Lid | Salve Mundi',
-    description: 'Beheer je lidmaatschap bij Salve Mundi.' };
+    description: 'Beheer je lidmaatschap bij Salve Mundi.'
+};
 
 
 export default async function MembershipPage() {
     await connection();
-    
+
     // NUCLEAR SSR: Fetch all data server-side to prevent layout shifts and flickering.
     const session = await getEnrichedSession();
 
     const user = session?.user as MembershipUserData | undefined;
     const isGuest = !user;
-    
+
     let committees: Committee[] = [];
     if (user) {
         try {
@@ -60,7 +61,7 @@ export default async function MembershipPage() {
                                     WAAROM WORDEN LID?
                                 </h2>
                                 <p className="text-lg opacity-80 leading-relaxed font-medium">
-                                    Als lid van Salve Mundi krijg je toegang tot exclusieve activiteiten en workshops. 
+                                    Als lid van Salve Mundi krijg je toegang tot exclusieve activiteiten en workshops.
                                     Word vandaag lid!
                                 </p>
                             </div>

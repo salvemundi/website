@@ -2,16 +2,15 @@
 
 import { useTransition } from 'react';
 import { Shield, X, User } from 'lucide-react';
-import { clearImpersonateToken } from '@/server/actions/impersonation.actions';
+import { clearImpersonateToken } from '@/server/actions/admin/impersonation.actions';
 
 interface Props {
     targetName: string;
     adminName: string;
     committees: string[];
-    isNormallyAdmin: boolean;
 }
 
-export default function ImpersonationBanner({ targetName, adminName, committees, isNormallyAdmin }: Props) {
+export default function ImpersonationBanner({ targetName, adminName, committees }: Props) {
     const [isPending, startTransition] = useTransition();
 
     const handleStop = () => {

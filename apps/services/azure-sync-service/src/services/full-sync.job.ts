@@ -10,21 +10,21 @@ export class FullSyncJob {
      */
     static async start(redis: Redis) {
         console.log('[FullSyncJob] Starting nightly synchronization loop...');
-        
+
         while (!this.shouldStop) {
             try {
                 // 1. Calculate delay until next 03:00 AM
                 const now = new Date();
                 const nextRun = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 3, 0, 0);
-                
+
                 // If it's already past 03:00 today, schedule for tomorrow
                 if (now >= nextRun) {
                     nextRun.setDate(nextRun.getDate() + 1);
                 }
-                
+
                 const delay = nextRun.getTime() - now.getTime();
                 console.log(`[FullSyncJob] Next full sync scheduled in ${Math.round(delay / 1000 / 60 / 60)} hours (at ${nextRun.toISOString()}).`);
-                
+
                 await new Promise(resolve => setTimeout(resolve, delay));
                 if (this.shouldStop) break;
 
@@ -37,13 +37,13 @@ export class FullSyncJob {
 
                 // 3. Trigger the sync job in "silent" mode (only default fields, no redundant logs)
                 console.log('[FullSyncJob] Triggering automated nightly sync...');
-                await SyncJob.run(redis, { 
+                await SyncJob.run(redis, {
                     fields: ['status', 'membership_status', 'membership_expiry', 'committees'],
-                    silent: true 
+                    silent: true
                 });
-                
-            } catch (err: any) {
-                console.error('[FullSyncJob] Loop Error:', err.message);
+
+            } catch (error: any) {
+                console.error('[FullSyncJob] Loop Error:', error.message);
                 await new Promise(resolve => setTimeout(resolve, 300000)); // Retry in 5 min on fatal error
             }
         }

@@ -24,12 +24,12 @@ import { type EnrichedUser } from '@/types/auth';
 async function checkAccess() {
     const session = await getEnrichedSession();
     if (!session?.user) throw new Error('Niet ingelogd');
-    
+
     const user = session.user as unknown as EnrichedUser;
     if (!hasPermission(user.committees, AdminResource.Coupons)) {
         throw new Error('Geen toegang: onvoldoende rechten voor coupon beheer');
     }
-    
+
     return session;
 }
 
@@ -50,8 +50,8 @@ export async function getCoupons(): Promise<Coupon[]> {
             usage_count: Number(i.usage_count || 0),
             is_active: !!i.is_active
         })) as Coupon[];
-    } catch {
-        
+    } catch (_error) {
+
         return [];
     }
 }

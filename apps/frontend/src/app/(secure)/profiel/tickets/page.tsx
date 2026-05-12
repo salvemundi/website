@@ -1,4 +1,4 @@
-import { getMyTickets } from '@/server/actions/public-activiteit-status.actions';
+import { getMyTickets } from '@/server/actions/events/public-activiteit-status.actions';
 import TicketListIsland from '@/components/islands/activities/TicketListIsland';
 import BackButton from '@/components/ui/navigation/BackButton';
 

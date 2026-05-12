@@ -10,21 +10,21 @@ export class ExpiryCheckJob {
      */
     static async start(redis: Redis) {
         console.log('[ExpiryCheckJob] Starting daily monitoring loop...');
-        
+
         while (!this.shouldStop) {
             try {
                 // 1. Run the check
                 await this.runCheck(redis);
-                
+
                 // 2. Wait 24 hours before next run (or check every hour but skip if already run today)
                 const now = new Date();
                 const nextRun = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 9, 0, 0); // Next day at 09:00
                 const delay = nextRun.getTime() - now.getTime();
-                
+
                 console.log(`[ExpiryCheckJob] Next check scheduled in ${Math.round(delay / 1000 / 60 / 60)} hours.`);
                 await new Promise(resolve => setTimeout(resolve, delay));
-            } catch (err: any) {
-                console.error('[ExpiryCheckJob] Loop Error:', err.message);
+            } catch (error: any) {
+                console.error('[ExpiryCheckJob] Loop Error:', error.message);
                 await new Promise(resolve => setTimeout(resolve, 60000)); // Retry in 1 min
             }
         }
@@ -38,7 +38,7 @@ export class ExpiryCheckJob {
             console.log('[ExpiryCheckJob] Automated membership emails are DISABLED via feature flag. Skipping run.');
             return;
         }
-        
+
         const members = await DirectusService.getAllUsers();
         const now = new Date();
         const todayStr = now.toISOString().split('T')[0];
@@ -65,13 +65,13 @@ export class ExpiryCheckJob {
     private static async notifyMember(redis: Redis, member: any, milestone: string) {
         const year = new Date().getFullYear();
         const redisKey = `${this.REDIS_PREFIX}${member.id}:${milestone}:${year}`;
-        
+
         // Already notified for this milestone this year?
         const exists = await redis.get(redisKey);
         if (exists) return;
 
         const templateId = milestone === 'expired' ? 'membership_expired' : 'membership_reminder';
-        
+
         try {
             const mailUrl = process.env.MAIL_SERVICE_URL;
             const token = process.env.INTERNAL_SERVICE_TOKEN;
@@ -104,8 +104,8 @@ export class ExpiryCheckJob {
             } else {
                 console.error(`[ExpiryCheckJob] Failed to send ${templateId} to ${member.email}:`, response.statusText);
             }
-        } catch (err: any) {
-            console.error(`[ExpiryCheckJob] Error triggering mail for ${member.email}:`, err.message);
+        } catch (error: any) {
+            console.error(`[ExpiryCheckJob] Error triggering mail for ${member.email}:`, error.message);
         }
     }
 

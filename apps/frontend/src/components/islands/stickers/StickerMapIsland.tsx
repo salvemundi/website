@@ -14,9 +14,10 @@ import {
     TrendingUp,
     type LucideIcon
 } from 'lucide-react';
-import { createStickerPublic, uploadFileAction } from '@/server/actions/stickers.actions';
+import { createStickerPublic, uploadFileAction } from '@/server/actions/public/stickers.actions';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
+import MediaAsset from '@/components/ui/media/MediaAsset';
 
 const StickerMap = dynamic(() => import('@/components/ui/maps/StickerMap'), {
     ssr: false,
@@ -52,7 +53,7 @@ export default function StickerMapIsland({
     // Filters
     const [filterCountry, setFilterCountry] = useState('');
     const [filterCity, setFilterCity] = useState('');
-    const [filterUser, setFilterUser] = useState('');
+    const [filterUser] = useState('');
 
     // Form State
     const [formData, setFormData] = useState({
@@ -95,7 +96,7 @@ export default function StickerMapIsland({
                         city,
                         country
                     }));
-                } catch (err) {
+                } catch (_error) {
 
                 }
 
@@ -155,8 +156,8 @@ export default function StickerMapIsland({
                 setFormData({ location_name: '', description: '', city: '', country: '', image: null });
                 setImagePreview(null);
                 showToast('Sticker succesvol toegevoegd! 🎨', 'success');
-            } catch (err) {
-                showToast('Fout bij toevoegen: ' + err, 'error');
+            } catch (error) {
+                showToast('Fout bij toevoegen: ' + error, 'error');
             }
         });
     };
@@ -330,7 +331,7 @@ export default function StickerMapIsland({
                                             className="cursor-pointer flex flex-col items-center justify-center w-full h-40 bg-[var(--bg-main)]/30 border-2 border-dashed border-[var(--border-color)]/50 rounded-2xl hover:border-[var(--theme-purple)]/50 hover:bg-[var(--theme-purple)]/5 transition-all group-hover/photo:shadow-inner overflow-hidden"
                                         >
                                             {imagePreview ? (
-                                                <img src={imagePreview} className="w-full h-full object-cover" alt="Preview" />
+                                                <MediaAsset asset={imagePreview} className="w-full h-full object-cover" alt="Preview" fill />
                                             ) : (
                                                 <>
                                                     <Camera className="h-8 w-8 text-[var(--text-muted)] mb-2" />

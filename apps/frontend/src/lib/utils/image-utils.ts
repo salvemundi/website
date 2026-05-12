@@ -15,6 +15,11 @@ export function getImageUrl(
     const id = typeof idOrObject === 'string' ? idOrObject : idOrObject.id;
     if (!id) return DEFAULT_FALLBACK;
 
+    // If it's already a full URL, a data URL, or a blob URL, return it as-is
+    if (id.startsWith('http') || id.startsWith('data:') || id.startsWith('blob:')) {
+        return id;
+    }
+
     const params = new URLSearchParams();
     if (options?.width) params.append('width', options.width.toString());
     if (options?.height) params.append('height', options.height.toString());

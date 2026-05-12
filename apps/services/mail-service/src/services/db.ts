@@ -17,8 +17,8 @@ export async function query(text: string, params?: any[]) {
     try {
         const res = await pool.query(text, params);
         return res;
-    } catch (e) {
-        throw e;
+    } catch (_error) {
+        throw error;
     }
 }
 

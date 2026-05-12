@@ -38,10 +38,10 @@ export default async function statusRoutes(fastify: FastifyInstance) {
                 try {
                     const mollie = getMollieClient();
                     const livePayment = await mollie.payments.get(transaction.mollie_id);
-                    
+
                     if (livePayment.status !== transaction.payment_status) {
                         fastify.log.info(`[STATUS] Live status mismatch for ${transaction.mollie_id}: DB=${transaction.payment_status}, Mollie=${livePayment.status}. Triggering finalization.`);
-                        
+
                         const { PaymentService } = await import('../services/payment.service.js');
                         await PaymentService.finalizePayment(
                             fastify,
@@ -50,7 +50,7 @@ export default async function statusRoutes(fastify: FastifyInstance) {
                             livePayment.metadata,
                             transaction.access_token
                         );
-                        
+
                         transaction.payment_status = livePayment.status;
                         transaction.updated_at = new Date();
                     }
@@ -63,8 +63,8 @@ export default async function statusRoutes(fastify: FastifyInstance) {
                 ...transaction,
                 signup_id: transaction.registration || transaction.trip_signup || transaction.pub_crawl_signup
             };
-        } catch (err) {
-            fastify.log.error(err, `[STATUS] Error fetching status for ${id}`);
+        } catch (_error) {
+            fastify.log.error(error, `[STATUS] Error fetching status for ${id}`);
             return reply.status(500).send({ error: 'Internal server error' });
         }
     });

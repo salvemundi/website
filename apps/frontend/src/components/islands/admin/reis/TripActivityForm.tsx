@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-    Plus, 
-    Save, 
-    X, 
-    Loader2, 
-    Euro, 
-    List, 
-    Trash2 
+import {
+    Plus,
+    Save,
+    X,
+    Loader2,
+    Euro,
+    List,
+    Trash2
 } from 'lucide-react';
 import { Field, inputClass } from './TripTabComponents';
 import { type ActivityOption } from '@/lib/reis';
@@ -31,11 +31,11 @@ export default function TripActivityForm({ activity, onSave, onCancel, pending }
         price: opt.price || 0
     }));
     const [options, setOptions] = useState<ActivityOption[]>(initialOptions);
-    
+
     // Sync options if activity prop changes (e.g. after failed submission with initialData)
     useEffect(() => {
         if (activity?.options) {
-            setOptions(activity.options.map((opt: any) => ({
+            setOptions((activity.options as ActivityOption[]).map((opt) => ({
                 id: opt.id || '',
                 name: opt.name || '',
                 price: opt.price || 0
@@ -47,6 +47,7 @@ export default function TripActivityForm({ activity, onSave, onCancel, pending }
     const removeOption = (idx: number) => setOptions(options.filter((_, i) => i !== idx));
     const updateOption = (idx: number, field: keyof ActivityOption, value: string) => {
         const newOpts = [...options];
+        // eslint-disable-next-line security/detect-object-injection
         newOpts[idx] = { ...newOpts[idx], [field]: field === 'price' ? parseFloat(value) || 0 : value };
         setOptions(newOpts);
     };
@@ -60,7 +61,7 @@ export default function TripActivityForm({ activity, onSave, onCancel, pending }
     return (
         <div className="bg-[var(--beheer-card-bg)] rounded-3xl border border-[var(--beheer-border)] p-8 mb-10 shadow-2xl overflow-hidden relative group/form">
             <div className="absolute -top-24 -right-24 w-48 h-48 bg-[var(--beheer-accent)]/5 rounded-full blur-3xl group-hover/form:bg-[var(--beheer-accent)]/10 transition-colors duration-700" />
-            
+
             <div className="flex items-center justify-between mb-8 relative z-10">
                 <h2 className="text-xl font-semibold text-[var(--beheer-text)] tracking-tight flex items-center gap-3">
                     <div className="p-2.5 bg-[var(--beheer-accent)]/10 rounded-xl text-[var(--beheer-accent)] shadow-sm">

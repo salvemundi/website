@@ -2,15 +2,13 @@ import React from 'react';
 import { CreditCard } from 'lucide-react';
 import { TripPricingResult } from '@/lib/reis/pricing';
 
-import { type TripSignup } from '@salvemundi/validations/schema/admin-reis.zod';
 
 interface PaymentSummaryProps {
-    signup: TripSignup;
     pricing: TripPricingResult;
     paymentType: 'deposit' | 'final';
 }
 
-export function PaymentSummary({ signup, pricing, paymentType }: PaymentSummaryProps) {
+export function PaymentSummary({ pricing, paymentType }: PaymentSummaryProps) {
     return (
         <div className="space-y-8">
             <div className="text-center">

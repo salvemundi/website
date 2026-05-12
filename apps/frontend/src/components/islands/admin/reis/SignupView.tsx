@@ -4,12 +4,12 @@ import React from 'react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import type { TripSignup } from '@salvemundi/validations/schema/admin-reis.zod';
-import { 
-    User, 
-    Mail, 
-    Phone, 
-    Calendar, 
-    FileText, 
+import {
+    User,
+    Mail,
+    Phone,
+    Calendar,
+    FileText,
     AlertCircle,
     CreditCard,
     CheckCircle2,
@@ -49,10 +49,10 @@ export default function SignupView({ signup, isBusTrip }: SignupViewProps) {
                         <ViewField label="Naam" value={`${signup.first_name} ${signup.last_name}`} icon={User} />
                         <ViewField label="Email" value={signup.email} icon={Mail} />
                         <ViewField label="Telefoon" value={signup.phone_number || 'Niet opgegeven'} icon={Phone} />
-                        <ViewField 
-                            label="Geb. Datum" 
-                            value={signup.date_of_birth ? format(new Date(signup.date_of_birth), 'd MMMM yyyy', { locale: nl }) : 'Niet opgegeven'} 
-                            icon={Calendar} 
+                        <ViewField
+                            label="Geb. Datum"
+                            value={signup.date_of_birth ? format(new Date(signup.date_of_birth), 'd MMMM yyyy', { locale: nl }) : 'Niet opgegeven'}
+                            icon={Calendar}
                         />
                     </div>
                 </section>
@@ -75,10 +75,10 @@ export default function SignupView({ signup, isBusTrip }: SignupViewProps) {
                             <>
                                 <ViewField label="ID Type" value={signup.id_document === 'passport' ? 'Paspoort' : signup.id_document === 'id_card' ? 'ID Kaart' : 'Niet opgegeven'} icon={FileText} />
                                 <ViewField label="ID Nummer" value={signup.document_number || 'Niet opgegeven'} icon={Briefcase} />
-                                <ViewField 
-                                    label="Vervaldatum" 
-                                    value={signup.document_expiry_date ? format(new Date(signup.document_expiry_date), 'd MMM yyyy', { locale: nl }) : 'Niet opgegeven'} 
-                                    icon={Calendar} 
+                                <ViewField
+                                    label="Vervaldatum"
+                                    value={signup.document_expiry_date ? format(new Date(signup.document_expiry_date), 'd MMM yyyy', { locale: nl }) : 'Niet opgegeven'}
+                                    icon={Calendar}
                                 />
                                 <ViewField label="Extra Koffer" value={signup.extra_luggage ? 'Ja' : 'Nee'} icon={Briefcase} />
                             </>
@@ -106,17 +106,17 @@ export default function SignupView({ signup, isBusTrip }: SignupViewProps) {
                             <span className="text-[9px] font-semibold text-[var(--beheer-text-muted)] opacity-50">Rol</span>
                             <span className="text-[10px] font-semibold text-[var(--beheer-text)]">{signup.role === 'crew' ? 'Crew' : 'Reguliere Reiziger'}</span>
                         </div>
-                        
+
                         <div className="pt-2 space-y-2 border-t border-white/5">
-                            <PaymentStatus 
-                                label="Aanbetaling" 
-                                isPaid={!!signup.deposit_paid} 
-                                date={signup.deposit_paid_at} 
+                            <PaymentStatus
+                                label="Aanbetaling"
+                                isPaid={!!signup.deposit_paid}
+                                date={signup.deposit_paid_at}
                             />
-                            <PaymentStatus 
-                                label="Restbetaling" 
-                                isPaid={!!signup.full_payment_paid} 
-                                date={signup.full_payment_paid_at} 
+                            <PaymentStatus
+                                label="Restbetaling"
+                                isPaid={!!signup.full_payment_paid}
+                                date={signup.full_payment_paid_at}
                             />
                         </div>
                     </div>
@@ -147,7 +147,7 @@ export default function SignupView({ signup, isBusTrip }: SignupViewProps) {
     );
 }
 
-function ViewField({ label, value, icon: Icon }: { label: string; value: string; icon: React.ComponentType<any> }) {
+function ViewField({ label, value, icon: Icon }: { label: string; value: string; icon: React.ComponentType<{ className?: string }> }) {
     return (
         <div className="flex items-center justify-between gap-4 py-1.5 border-b border-white/5 last:border-0">
             <div className="flex items-center gap-2">

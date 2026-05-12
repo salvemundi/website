@@ -2,7 +2,7 @@ import React from 'react';
 import { type Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { Calendar, Tag, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
-import { formatDate, formatDateRange } from '@/shared/lib/utils/date';
+import { formatDateRange } from '@/shared/lib/utils/date';
 import { cn } from '@/lib/utils/cn';
 
 interface EventCardProps {

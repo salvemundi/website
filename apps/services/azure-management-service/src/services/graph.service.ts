@@ -82,9 +82,9 @@ export class GraphService {
                 if (!response.value || response.value.length === 0) {
                     return candidateUpn;
                 }
-            } catch (err: any) {
-                console.error(`[GraphService] Error verifying UPN ${candidateUpn}:`, err.message);
-                throw err;
+            } catch (error: any) {
+                console.error(`[GraphService] Error verifying UPN ${candidateUpn}:`, error.message);
+                throw error;
             }
 
             counter++;
@@ -213,7 +213,7 @@ export class GraphService {
         const response = await client.api(`/users/${entraId}/memberOf`)
             .select('id,displayName')
             .get();
-        
+
         return response.value || [];
     }
 

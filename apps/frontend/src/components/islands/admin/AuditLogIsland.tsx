@@ -1,17 +1,17 @@
 'use client';
 
 import React, { useState } from 'react';
-import { 
+import {
     Clock, Server, RefreshCw, History, Shield
 } from 'lucide-react';
-import { 
-    approveSignupAction, 
+import {
+    approveSignupAction,
     rejectSignupAction,
     updateAuditSettingsAction,
     getSystemLogsAction,
     bulkApproveSignupsAction,
     bulkRejectSignupsAction
-} from '@/server/actions/audit.actions';
+} from '@/server/actions/infrastructure/audit.actions';
 import { type PendingSignup, type QueueInfo, type SystemLog } from '@salvemundi/validations';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
@@ -36,26 +36,26 @@ interface AuditLogIslandProps {
 export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [activeTab, setActiveTab] = useState<'pending' | 'admin_logs' | 'system_logs' | 'queues'>('pending');
-    
+
     const [signups, setSignups] = useState<PendingSignup[]>(initialData.signups);
     const [adminLogs, setAdminLogs] = useState<SystemLog[]>(initialData.adminLogs);
     const [systemLogs, setSystemLogs] = useState<SystemLog[]>(initialData.systemLogs);
     const [adminLogsTotalCount, setAdminLogsTotalCount] = useState(initialData.adminLogsTotal);
     const [systemLogsTotalCount, setSystemLogsTotalCount] = useState(initialData.systemLogsTotal);
     const [queueData, _setQueueData] = useState<Record<string, QueueInfo>>(initialData.queueData);
-    
+
     const [isProcessing, setIsProcessing] = useState<string | null>(null);
     const [isBulkProcessing, setIsBulkProcessing] = useState<'approve' | 'reject' | null>(null);
     const [manualApproval, setManualApproval] = useState(initialData.manualApproval);
-    
+
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-    
+
     const refreshLogs = async () => {
         const [adminLogsRes, systemLogsRes] = await Promise.all([
             getSystemLogsAction(50, 'admin'),
             getSystemLogsAction(50, 'system')
         ]);
-        
+
         if (adminLogsRes.success) {
             setAdminLogs(adminLogsRes.data);
             setAdminLogsTotalCount(adminLogsRes.totalCount);
@@ -223,12 +223,12 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                         <div className="flex items-center gap-2">
                             <Shield className={`h-3.5 w-3.5 ${manualApproval ? 'text-amber-500' : 'text-green-500'}`} />
                             <span className="text-[11px] font-semibold text-[var(--beheer-text)] leading-tight">
-                                {manualApproval 
+                                {manualApproval
                                     ? "Handmatige goedkeuring is ACTIEF. Alle aanmeldingen moeten worden goedgekeurd."
                                     : "Automatische goedkeuring is ACTIEF. Aanmeldingen worden direct verwerkt."}
                             </span>
                         </div>
-                        <button 
+                        <button
                             onClick={toggleManualApproval}
                             className={`relative inline-flex h-5 w-10 shrink-0 items-center rounded-full transition-all focus:outline-none ${manualApproval ? 'bg-amber-500' : 'bg-green-500'}`}
                         >
@@ -238,7 +238,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                 </div>
 
                 {activeTab === 'pending' && (
-                    <PendingTab 
+                    <PendingTab
                         isProcessing={isProcessing}
                         isBulkProcessing={isBulkProcessing}
                         filteredSignups={filteredSignups}
@@ -254,7 +254,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                 )}
 
                 {activeTab === 'admin_logs' && (
-                    <LogsTab 
+                    <LogsTab
                         logs={adminLogs}
                         onRefresh={refreshLogs}
                         title="Beheerder Acties"
@@ -262,7 +262,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                 )}
 
                 {activeTab === 'system_logs' && (
-                    <LogsTab 
+                    <LogsTab
                         logs={systemLogs}
                         onRefresh={refreshLogs}
                         title="Systeem Events"
@@ -278,7 +278,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                 )}
 
                 {activeTab === 'queues' && (
-                    <QueuesTab 
+                    <QueuesTab
                         queueData={queueData}
                     />
                 )}

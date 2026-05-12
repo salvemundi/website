@@ -40,8 +40,8 @@ const start = async () => {
         // Start the Provisioning Worker
         const { ProvisionWorkerService } = await import('./services/provision-worker.js');
         ProvisionWorkerService.start(fastify.redis);
-    } catch (err) {
-        fastify.log.error(err);
+    } catch (_error) {
+        fastify.log.error(error);
         process.exit(1);
     }
 };

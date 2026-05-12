@@ -10,17 +10,18 @@ import { query } from '@/lib/database';
 
 
 export const metadata = {
-    title: 'Leden Beheer | SV Salve Mundi' };
+    title: 'Leden Beheer | SV Salve Mundi'
+};
 
 export default async function LedenBeheerPage() {
     const session = await getEnrichedSession();
-    
+
     if (!session || !session.user) return <AdminUnauthorized />;
 
     const user = session.user as unknown as EnrichedUser;
     if (!isMemberAdmin(user.committees)) {
         return (
-            <AdminUnauthorized 
+            <AdminUnauthorized
                 title="Leden Beheer"
                 description="Je hebt geen rechten om (persoons)gegevens van leden te bekijken."
             />
@@ -38,7 +39,8 @@ export default async function LedenBeheerPage() {
         ORDER BY last_name ASC, first_name ASC
     `;
     const { rows } = await query(sql, EXCLUDED_EMAILS);
-    members = rows;
+
+    members = rows as unknown as Member[];
     totalCount = rows.length;
 
     return (
@@ -47,9 +49,9 @@ export default async function LedenBeheerPage() {
             subtitle="Beheer alle Salve Mundi leden en lidmaatschappen"
             backHref="/beheer"
         >
-            <LedenOverzichtIsland 
-                initialMembers={members} 
-                initialTotalCount={totalCount} 
+            <LedenOverzichtIsland
+                initialMembers={members}
+                initialTotalCount={totalCount}
             />
         </AdminPageShell>
     );

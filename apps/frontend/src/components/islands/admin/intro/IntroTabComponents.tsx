@@ -31,19 +31,19 @@ export function Button({
     disabled?: boolean;
     className?: string;
 }) {
-    const variants = {
-        primary: 'bg-[var(--beheer-accent)] text-white shadow-[var(--shadow-glow)] hover:opacity-90',
-        secondary: 'bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] hover:border-[var(--beheer-accent)]/50',
-        danger: 'bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20',
-        success: 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500/20',
-        ghost: 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] hover:bg-[var(--beheer-card-soft)]'
-    };
+    const variants = new Map<string, string>([
+        ['primary', 'bg-[var(--beheer-accent)] text-white shadow-[var(--shadow-glow)] hover:opacity-90'],
+        ['secondary', 'bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] hover:border-[var(--beheer-accent)]/50'],
+        ['danger', 'bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20'],
+        ['success', 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500/20'],
+        ['ghost', 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] hover:bg-[var(--beheer-card-soft)]']
+    ]);
 
     return (
         <button
             onClick={onClick}
             disabled={disabled || loading}
-            className={`flex items-center justify-center gap-2 px-6 py-3 rounded-[var(--beheer-radius)] text-sm font-semibold transition-all active:scale-95 disabled:opacity-50 ${variants[variant]} ${className}`}
+            className={`flex items-center justify-center gap-2 px-6 py-3 rounded-[var(--beheer-radius)] text-sm font-semibold transition-all active:scale-95 disabled:opacity-50 ${variants.get(variant) || ''} ${className}`}
         >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : Icon && <Icon className="h-4 w-4" />}
             {children}
@@ -66,18 +66,18 @@ export function ActionButton({
     loading?: boolean;
     title?: string;
 }) {
-    const variants = {
-        accent: 'text-[var(--beheer-accent)] bg-[var(--beheer-accent)]/5 border-[var(--beheer-accent)]/10 hover:bg-[var(--beheer-accent)]/10 hover:border-[var(--beheer-accent)]/20',
-        danger: 'text-red-500 bg-red-500/5 border-red-500/10 hover:bg-red-500/10 hover:border-red-500/20',
-        muted: 'text-[var(--beheer-text-muted)] bg-[var(--beheer-text-muted)]/5 border-[var(--beheer-text-muted)]/10 hover:bg-[var(--beheer-text-muted)]/10 hover:border-[var(--beheer-text-muted)]/20'
-    };
+    const variants = new Map<string, string>([
+        ['accent', 'text-[var(--beheer-accent)] bg-[var(--beheer-accent)]/5 border-[var(--beheer-accent)]/10 hover:bg-[var(--beheer-accent)]/10 hover:border-[var(--beheer-accent)]/20'],
+        ['danger', 'text-red-500 bg-red-500/5 border-red-500/10 hover:bg-red-500/10 hover:border-red-500/20'],
+        ['muted', 'text-[var(--beheer-text-muted)] bg-[var(--beheer-text-muted)]/5 border-[var(--beheer-text-muted)]/10 hover:bg-[var(--beheer-text-muted)]/10 hover:border-[var(--beheer-text-muted)]/20']
+    ]);
 
     return (
         <button
             onClick={onClick}
             disabled={disabled || loading}
             title={title}
-            className={`p-2.5 rounded-xl border transition-all active:scale-90 disabled:opacity-50 ${variants[variant]}`}
+            className={`p-2.5 rounded-xl border transition-all active:scale-90 disabled:opacity-50 ${variants.get(variant) || ''}`}
         >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Icon className="h-4 w-4" />}
         </button>
