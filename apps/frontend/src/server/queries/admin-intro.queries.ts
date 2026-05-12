@@ -10,35 +10,6 @@ import {
 } from '@salvemundi/validations/schema/intro.zod';
 import { z } from 'zod';
 
-/**
- * PURE QUERIES: No 'use server' and No headers() calls.
- * Safe to use in both Server Component renders and Server Actions.
- */
-
-export async function getIntroStatsInternal() {
-    try {
-        const sql = `
-            SELECT 
-                (SELECT COUNT(*) FROM intro_signups) as signups,
-                (SELECT COUNT(*) FROM intro_parent_signups) as parents,
-                (SELECT COUNT(*) FROM intro_blogs) as blogs,
-                (SELECT COUNT(*) FROM intro_planning) as planning
-        `;
-        const { rows } = await query(sql);
-        const stats = rows[0];
-
-        return {
-            signups: Number(stats?.signups ?? 0),
-            parents: Number(stats?.parents ?? 0),
-            blogs: Number(stats?.blogs ?? 0),
-            planning: Number(stats?.planning ?? 0)
-        };
-    } catch (error) {
-        console.error('[AdminIntroQueries] getIntroStatsInternal failed:', error);
-        return { signups: 0, parents: 0, blogs: 0, planning: 0 };
-    }
-}
-
 export async function getIntroSignupsInternal() {
     try {
         const sql = 'SELECT * FROM intro_signups ORDER BY id DESC LIMIT 1000';
@@ -47,7 +18,7 @@ export async function getIntroSignupsInternal() {
         const parsed = z.array(introSignupDbSchema).safeParse(rows);
         if (!parsed.success) {
             console.error('[AdminIntroQueries] getIntroSignupsInternal validation failed:', parsed.error);
-            return rows; // Fallback to raw rows for now, but logged
+            return rows;
         }
         return parsed.data;
     } catch (error) {
@@ -124,3 +95,4 @@ export async function getIntroPlanningInternal(): Promise<IntroPlanningItem[]> {
         throw new Error('Kon planning niet ophalen');
     }
 }
+

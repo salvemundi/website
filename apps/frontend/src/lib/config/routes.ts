@@ -11,7 +11,8 @@ export const ROUTES = {
     ACCOUNT: '/profiel',
     STICKERS: '/stickers',
     SAFE_HAVENS: '/safe-havens',
-    ADMIN: '/beheer' } as const;
+    ADMIN: '/beheer'
+} as const;
 
 // De routes die zonder inloggen toegankelijk zijn (de (public) groep in src/app)
 export const PUBLIC_ROUTES: string[] = [
@@ -25,9 +26,8 @@ export const PUBLIC_ROUTES: string[] = [
     ROUTES.PUB_CRAWL,
     ROUTES.INTRO,
     ROUTES.TRIP,
-    '/commissies/oud-besturen', 
+    '/commissies/oud-besturen',
     '/api/assets',
     '/404'
 ];
 
-export type Route = (typeof ROUTES)[keyof typeof ROUTES];

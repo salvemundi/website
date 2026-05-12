@@ -13,8 +13,7 @@ import type {
 } from '@/server/queries/admin-commissies.queries';
 import {
     getCommittees as getCommitteesQuery,
-    getCommitteeMembers as getCommitteeMembersQuery,
-    countUniqueCommitteeMembers as getUniqueCommitteeMembersCountQuery
+    getCommitteeMembers as getCommitteeMembersQuery
 } from '@/server/queries/admin-commissies.queries';
 import {
     updateCommitteeDetailsSchema,
@@ -60,11 +59,6 @@ export async function getCommittees(): Promise<Committee[]> {
 export async function getCommitteeMembers(committeeId: string): Promise<CommitteeMember[]> {
     await checkAccess();
     return getCommitteeMembersQuery(committeeId);
-}
-
-export async function getUniqueCommitteeMembersCount(): Promise<number> {
-    await checkAccess();
-    return getUniqueCommitteeMembersCountQuery();
 }
 
 export async function updateCommitteeDetails(
@@ -215,3 +209,4 @@ export async function toggleCommitteeLeader(
 
     return { success: true };
 }
+

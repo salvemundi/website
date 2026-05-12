@@ -57,8 +57,6 @@ export async function query<R extends QueryResultRow = QueryResultRow>(text: str
                 hint: pgError.hint
             });
 
-            // NEAT FIX: If we are in a CI build environment with dummy credentials,
-            // return an empty result instead of crashing the entire build process.
             if (process.env.DB_USER === 'dummy') {
                 console.warn('[DB-Query] Build-time DB connection failure detected. Returning empty result.');
                 return { rows: [], rowCount: 0, command: '', oid: 0, fields: [] };
@@ -70,4 +68,4 @@ export async function query<R extends QueryResultRow = QueryResultRow>(text: str
     throw new Error('[DB-Query] Unexpected end of function');
 }
 
-export default pool;
+

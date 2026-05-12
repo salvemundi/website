@@ -11,9 +11,6 @@ export {
     deletePubCrawlSignupDb
 } from './kroegentocht/signup-db.utils';
 export {
-    fetchPubCrawlTicketsDb,
-    getPubCrawlTicketCountDb,
-    getPubCrawlTicketCountByEmailDb,
     createPubCrawlTicketsDb,
     deletePubCrawlTicketsBySignupIdDb,
     updatePubCrawlTicketDb

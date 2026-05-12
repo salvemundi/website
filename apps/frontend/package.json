@@ -45,19 +45,14 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@better-auth/cli": "^1.4.19",
     "@eslint/eslintrc": "3.3.0",
     "@next/bundle-analyzer": "^16.2.4",
     "@playwright/test": "^1.59.1",
     "@serwist/next": "^9.5.7",
-    "@serwist/precaching": "^9.5.7",
-    "@serwist/sw": "^9.5.7",
-    "@serwist/webpack-plugin": "^9.5.7",
     "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^22.19.13",
     "@types/pg": "^8.16.0",
     "@types/qrcode": "^1.5.6",
-    "@types/qrcode.react": "^3.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@typescript-eslint/eslint-plugin": "^8.59.2",
@@ -69,19 +64,16 @@
     "eslint-plugin-unused-imports": "^4.4.1",
     "jscpd": "^4.1.0",
     "knip": "^6.12.2",
-    "playwright": "^1.59.1",
     "postcss": "^8.5.6",
-    "serwist": "^9.5.7",
     "tailwindcss": "^4.2.1",
-    "tsx": "^4.21.0",
     "typescript": "5.7.3",
     "unlighthouse": "^0.17.9"
   },
   "browserslist": [
-    "chrome >= 110",
-    "firefox >= 110",
-    "safari >= 16.4",
-    "edge >= 110",
-    "not dead"
+    ">0.3%",
+    "defaults",
+    "not dead",
+    "not op_mini all",
+    "not IE 11"
   ]
 }

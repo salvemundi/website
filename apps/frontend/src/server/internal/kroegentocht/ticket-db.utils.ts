@@ -1,55 +1,6 @@
 import { query } from '@/lib/database';
-import { type PubCrawlTicket } from '@salvemundi/validations/schema/pub-crawl.zod';
-import { type DbPubCrawlTicketRow, type QueryParam } from './types';
+import { type QueryParam } from './types';
 
-/**
- * Fetches all tickets for a specific event.
- */
-export async function fetchPubCrawlTicketsDb(eventId: number): Promise<PubCrawlTicket[]> {
-    const res = await query(
-        `SELECT t.* FROM pub_crawl_tickets t
-             JOIN pub_crawl_signups s ON t.signup_id = s.id
-             WHERE s.pub_crawl_event_id = $1`,
-        [eventId]
-    );
-
-    return (res.rows as DbPubCrawlTicketRow[]).map(t => ({
-        id: t.id,
-        signup_id: t.signup_id,
-        name: t.name,
-        initial: t.initial,
-        qr_token: t.qr_token,
-        checked_in: !!t.checked_in,
-        checked_in_at: t.checked_in_at ? String(t.checked_in_at) : null
-    }));
-}
-
-export async function getPubCrawlTicketCountDb(eventId: number): Promise<number> {
-    const res = await query(
-        `SELECT SUM(amount_tickets) as total FROM pub_crawl_signups 
-         WHERE pub_crawl_event_id = $1 AND payment_status = 'paid'`,
-        [eventId]
-    );
-    const totalRaw = (res.rows[0] as { total?: string | null })?.total;
-    return parseInt(totalRaw || '0', 10);
-}
-
-/**
- * Gets the total number of tickets sold for a specific user (by email) for a specific event.
- */
-export async function getPubCrawlTicketCountByEmailDb(eventId: number, email: string): Promise<number> {
-    const res = await query(
-        `SELECT SUM(amount_tickets) as total FROM pub_crawl_signups 
-         WHERE pub_crawl_event_id = $1 AND LOWER(email) = LOWER($2) AND payment_status != 'failed'`,
-        [eventId, email]
-    );
-    const totalRaw = (res.rows[0] as { total?: string | null })?.total;
-    return parseInt(totalRaw || '0', 10);
-}
-
-/**
- * Creates multiple tickets in a single batch.
- */
 export async function createPubCrawlTicketsDb(signupId: number, tickets: { name: string, initial: string, qr_token: string }[]): Promise<void> {
     if (tickets.length === 0) return;
 
@@ -81,3 +32,4 @@ export async function updatePubCrawlTicketDb(id: number, data: { name: string, i
         [data.name, data.initial, id]
     );
 }
+
