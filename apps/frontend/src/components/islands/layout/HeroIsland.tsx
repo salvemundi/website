@@ -5,7 +5,10 @@ import type { HeroBanner } from '@salvemundi/validations/schema/home.zod';
 import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { formatDateRange } from '@/shared/lib/utils/date';
-import { HeroCarousel } from './HeroCarousel';
+import dynamic from 'next/dynamic';
+
+const HeroCarousel = dynamic(() => import('./HeroCarousel').then(mod => mod.HeroCarousel));
+
 import { slugify } from '@/shared/lib/utils/slug';
 import { type ExtendedSession } from '@/types/auth';
 

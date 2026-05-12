@@ -2,7 +2,10 @@ import type { Metadata, Viewport } from 'next';
 import { Poppins } from 'next/font/google';
 import './globals.css';
 import NavigationHeader from '@/components/islands/layout/NavigationHeader';
-import FooterIsland from '@/components/islands/layout/FooterIsland';
+import dynamic from 'next/dynamic';
+
+const FooterIsland = dynamic(() => import('@/components/islands/layout/FooterIsland'));
+
 import ImpersonationBanner from '@/components/ui/admin/ImpersonationBanner';
 import { getDocumenten, getDisabledRoutes } from '@/server/actions/public/website.actions';
 import { getCommittees } from '@/server/actions/public/committees.actions';

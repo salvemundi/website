@@ -28,7 +28,8 @@ export function HeroCarousel({ slideUrls }: HeroCarouselProps) {
                     alt="Salve Mundi"
                     fill
                     priority
-                    sizes="100vw"
+                    fetchPriority="high"
+                    sizes="(max-width: 640px) 100vw, (max-width: 768px) 80vw, 50vw"
                     className="object-cover object-center"
                 />
             </div>
@@ -52,7 +53,8 @@ export function HeroCarousel({ slideUrls }: HeroCarouselProps) {
                                     alt={`Sfeerimpressie ${index + 1}`}
                                     fill
                                     priority={index === 0} // Only preload the FIRST slide
-                                    sizes="100vw"
+                                    fetchPriority={index === 0 ? 'high' : undefined}
+                                    sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 600px"
                                     className="object-cover object-center"
                                 />
                             </div>

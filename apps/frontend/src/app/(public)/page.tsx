@@ -2,9 +2,13 @@ import { getHeroBanners, getUpcomingActiviteiten, getSponsors } from '@/server/a
 import { HeroIsland } from '@/components/islands/layout/HeroIsland';
 import { EventsSection } from '@/components/ui/activities/EventsSection';
 import { WhySalveMundiSection } from '@/components/ui/membership/WhySalveMundiSection';
-import { JoinSectionIsland } from '@/components/islands/membership/JoinSectionIsland';
-import { SponsorsSection } from '@/components/ui/layout/SponsorsSection';
-import { PwaInstallToast } from '@/components/ui/layout/PwaInstallToast';
+import dynamic from 'next/dynamic';
+
+const JoinSectionIsland = dynamic(() => import('@/components/islands/membership/JoinSectionIsland').then(mod => mod.JoinSectionIsland));
+const SponsorsSection = dynamic(() => import('@/components/ui/layout/SponsorsSection').then(mod => mod.SponsorsSection));
+
+import { PwaInstallIsland } from '@/components/islands/layout/PwaInstallIsland';
+
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import type { Metadata } from 'next';
 
@@ -27,15 +31,11 @@ export default async function HomePage() {
 async function HomeContent() {
     await connection();
 
-    // We handelen de sessie expliciet af met een veilige fallback, 
-    // zodat gasten de homepagina altijd kunnen zien, zelfs bij een Redis hik.
     const session = await getEnrichedSession().catch((error) => {
         console.error('[HomeContent] Kon sessie niet ophalen:', error);
         return null;
     });
 
-    // Nuclear SSR: Geen try-catch meer die fouten stilletjes verbergt.
-    // Als de database onbereikbaar is, crasht dit gecontroleerd naar de global error.tsx
     const [banners, heroActivities, activities, sponsors] = await Promise.all([
         getHeroBanners(),
         getUpcomingActiviteiten(1),
@@ -52,7 +52,7 @@ async function HomeContent() {
             <WhySalveMundiSection />
             <JoinSectionIsland serverUser={user} />
             <SponsorsSection sponsors={sponsors} />
-            <PwaInstallToast />
+            <PwaInstallIsland />
         </>
     );
 }

@@ -41,18 +41,30 @@ export function HeaderShell({ children, mobileMenu }: HeaderShellProps) {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // Height calculation (CSS variables)
+    // Height calculation (CSS variables) - Optimized to avoid forced reflows
     useEffect(() => {
         const el = headerRef.current;
         if (!el) return;
+
         const applyHeight = (h: number) => {
-            document.documentElement.style.setProperty('--header-height', `${h}px`);
+            // Gebruik requestAnimationFrame om style updates te batchen
+            requestAnimationFrame(() => {
+                document.documentElement.style.setProperty('--header-height', `${Math.round(h)}px`);
+            });
         };
+
+        // Initiële meting
         applyHeight(el.offsetHeight || 80);
         
-        const ro = new ResizeObserver(() => {
-            applyHeight(el.offsetHeight || 80);
+        const ro = new ResizeObserver((entries) => {
+            const entry = entries[0];
+            if (entry) {
+                // Gebruik de data uit de observer entry in plaats van el.offsetHeight te pollen
+                const height = entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height;
+                applyHeight(height);
+            }
         });
+
         ro.observe(el);
         return () => ro.disconnect();
     }, []);
