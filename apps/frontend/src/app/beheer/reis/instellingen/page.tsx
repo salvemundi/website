@@ -4,23 +4,7 @@ import ReisInstellingenIsland from '@/components/islands/admin/ReisInstellingenI
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import { getSystemDirectus } from '@/lib/directus';
 import { readSingleton } from '@directus/sdk';
-import { query } from '@/lib/database';
-import { type Trip } from '@salvemundi/validations/schema/admin-reis.zod';
-
-async function getTripsInternal(): Promise<Trip[]> {
-    const { rows } = await query('SELECT * FROM "Reis" ORDER BY date_created DESC');
-    return rows.map(r => ({
-        ...r,
-        id: Number(r.id),
-        base_price: Number(r.base_price),
-        deposit_amount: Number(r.deposit_amount),
-        registration_open: Boolean(r.registration_open),
-        max_participants: Number(r.max_participants),
-        crew_discount: Number(r.crew_discount),
-        is_bus_trip: Boolean(r.is_bus_trip),
-        allow_final_payments: Boolean(r.allow_final_payments)
-    })) as Trip[];
-}
+import { getTrips } from '@/server/queries/admin-reis.queries';
 
 interface ReisSettings {
     show: boolean;
@@ -28,7 +12,7 @@ interface ReisSettings {
 }
 
 export default async function ReisInstellingenPage() {
-    const trips = await getTripsInternal();
+    const trips = await getTrips();
 
     const directus = getSystemDirectus();
     const settings = await directus.request<ReisSettings>(

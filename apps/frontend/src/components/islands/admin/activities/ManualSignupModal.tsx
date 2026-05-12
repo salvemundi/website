@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Check, Loader2, User, UserPlus, XCircle, CheckCircle } from 'lucide-react';
+import { X, Loader2, User, UserPlus, XCircle, CheckCircle } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createManualSignupAction } from '@/server/actions/admin/aanmeldingen.actions';
 import { UserBasic } from '@salvemundi/validations';
-import UserSearch from '@/components/ui/admin/UserSearch';
+
+import MemberTab from './manual/MemberTab';
+import GuestTab from './manual/GuestTab';
 
 interface ManualSignupModalProps {
     isOpen: boolean;
@@ -181,89 +183,20 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
 
                             <form onSubmit={handleSubmit} className="space-y-8" autoComplete="off">
                                 {activeTab === 'member' ? (
-                                    <div className="space-y-4">
-                                        <label className="block text-[10px] font-semibold text-[var(--beheer-text-muted)]  tracking-widest mb-2 ml-1">
-                                            Zoek bestaand lid
-                                        </label>
-                                        {selectedMember ? (
-                                            <div className="group relative overflow-hidden p-5 bg-gradient-to-br from-[var(--beheer-card-soft)] to-transparent border border-[var(--beheer-border)] rounded-2xl animate-in zoom-in-95 duration-300">
-                                                <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <div className="bg-[var(--beheer-accent)]/10 p-1.5 rounded-lg">
-                                                        <Check className="h-3 w-3 text-[var(--beheer-accent)]" />
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-5">
-                                                    <div className="h-14 w-14 flex items-center justify-center bg-[var(--beheer-accent)] text-white text-lg font-semibold rounded-2xl shadow-lg ring-4 ring-[var(--beheer-accent)]/5">
-                                                        {selectedMember.first_name?.[0]}{selectedMember.last_name?.[0]}
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <p className="font-semibold text-[var(--beheer-text)] text-sm  tracking-tight">
-                                                            {selectedMember.first_name} {selectedMember.last_name}
-                                                        </p>
-                                                        <p className="text-[10px] font-bold text-[var(--beheer-text-muted)]  tracking-widest mt-1">{selectedMember.email}</p>
-                                                    </div>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setSelectedMember(null)}
-                                                        className="w-10 h-10 flex items-center justify-center rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all active:scale-90 border border-red-500/20"
-                                                        title="Selectie wissen"
-                                                    >
-                                                        <X className="h-4 w-4" />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                        <UserSearch 
-                                            onSelect={handleMemberSelect}
-                                            placeholder="TYP NAAM OM TE ZOEKEN..."
-                                            autoFocus
-                                        />
-                                        )}
-                                    </div>
+                                    <MemberTab
+                                        selectedMember={selectedMember}
+                                        onSelect={handleMemberSelect}
+                                        onClear={() => setSelectedMember(null)}
+                                    />
                                 ) : (
-                                    // Guest Form with sleek inputs
-                                    <div className="space-y-6">
-                                        <div className="grid grid-cols-1 gap-6">
-                                            <div className="group">
-                                                <label className="block text-[10px] font-semibold text-[var(--beheer-text-muted)]  tracking-widest mb-2.5 ml-1 group-focus-within:text-[var(--beheer-accent)] transition-colors">Naam Gast *</label>
-                                                <input
-                                                    suppressHydrationWarning
-                                                    type="text"
-                                                    required
-                                                    value={guestName}
-                                                    onChange={(e) => setGuestName(e.target.value)}
-                                                    className="beheer-input h-14 text-[10px] font-semibold  tracking-[0.2em]"
-                                                    placeholder="VOLLEDIGE NAAM"
-                                                    autoComplete="off"
-                                                />
-                                            </div>
-                                            <div className="group">
-                                                <label className="block text-[10px] font-semibold text-[var(--beheer-text-muted)]  tracking-widest mb-2.5 ml-1 group-focus-within:text-[var(--beheer-accent)] transition-colors">E-mailadres *</label>
-                                                <input
-                                                    suppressHydrationWarning
-                                                    type="email"
-                                                    required
-                                                    value={guestEmail}
-                                                    onChange={(e) => setGuestEmail(e.target.value)}
-                                                    className="beheer-input h-14 text-[10px] font-semibold  tracking-[0.2em]"
-                                                    placeholder="EMAIL@VOORBEELD.NL"
-                                                    autoComplete="off"
-                                                />
-                                            </div>
-                                            <div className="group">
-                                                <label className="block text-[10px] font-semibold text-[var(--beheer-text-muted)]  tracking-widest mb-2.5 ml-1 group-focus-within:text-[var(--beheer-accent)] transition-colors">Telefoonnummer</label>
-                                                <input
-                                                    suppressHydrationWarning
-                                                    type="tel"
-                                                    value={guestPhone}
-                                                    onChange={(e) => setGuestPhone(e.target.value)}
-                                                    className="beheer-input h-14 text-[10px] font-semibold  tracking-[0.2em]"
-                                                    placeholder="OPTIONEEL"
-                                                    autoComplete="off"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <GuestTab
+                                        name={guestName}
+                                        email={guestEmail}
+                                        phone={guestPhone}
+                                        onNameChange={setGuestName}
+                                        onEmailChange={setGuestEmail}
+                                        onPhoneChange={setGuestPhone}
+                                    />
                                 )}
 
                                 {/* Footer Actions */}
