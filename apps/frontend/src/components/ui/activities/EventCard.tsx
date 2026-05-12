@@ -2,7 +2,7 @@ import React from 'react';
 import { type Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { Calendar, Tag, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
-import { formatDate } from '@/shared/lib/utils/date';
+import { formatDate, formatDateRange } from '@/shared/lib/utils/date';
 import { cn } from '@/lib/utils/cn';
 
 interface EventCardProps {
@@ -33,7 +33,7 @@ export const EventCard: React.FC<EventCardProps> = ({
     };
     const displayCategory = cleanCategory(rawCategory);
 
-    const displayDate = date || formatDate(activity?.datum_start || new Date());
+    const displayDate = date || formatDateRange(activity?.datum_start, activity?.datum_eind);
 
     return (
         <Link
