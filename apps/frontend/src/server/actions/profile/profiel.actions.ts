@@ -3,13 +3,60 @@
 import {
     type Transaction,
     type WhatsAppGroup,
+    type EventSignup,
+    eventSignupSchema,
     transactionSchema,
     whatsappGroupSchema
 } from '@salvemundi/validations/schema/profiel.zod';
+import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-
 import { query } from '@/lib/database';
+import { fetchUserEventSignupsDb } from '@/server/internal/event-db.utils';
+import { fetchUserPubCrawlSignupsDb } from '@/server/internal/kroegentocht-db.utils';
+import { type z } from 'zod';
+
+/**
+ * Helper to safely parse an array of items. 
+ * If the whole array fails, it attempts to parse item by item to recover valid data.
+ */
+function safeParseArray<T>(schema: z.ZodType<T>, data: unknown[], context: string): T[] {
+    const parsed = schema.array().safeParse(data);
+    if (parsed.success) return parsed.data;
+
+    console.error(`[${context}] Validation failed, attempting recovery:`, parsed.error);
+
+    // Fallback: Parse item by item and filter out invalid ones
+    return data.map(item => {
+        const itemParsed = schema.safeParse(item);
+        if (itemParsed.success) return itemParsed.data;
+        console.warn(`[${context}] Skipping invalid item:`, itemParsed.error);
+        return null;
+    }).filter((item): item is T => item !== null);
+}
+
+export async function getUserEventSignups(): Promise<EventSignup[]> {
+    const session = await getEnrichedSession();
+    const user = session?.user;
+
+    const email = user?.email;
+    if (!email) return [];
+
+    const registrations = await fetchUserEventSignupsDb(email);
+    // Ensure all registrations have an ID before parsing
+    const validRegistrations = registrations.filter(r => r.id !== null);
+    return safeParseArray(eventSignupSchema, validRegistrations, 'ProfielActions:EventSignups');
+}
+
+export async function getUserPubCrawlSignups(): Promise<PubCrawlSignup[]> {
+    const session = await getEnrichedSession();
+    const user = session?.user;
+
+    const email = user?.email;
+    if (!email) return [];
+
+    return await fetchUserPubCrawlSignupsDb(email);
+}
 
 export async function getUserTransactions(): Promise<Transaction[]> {
     const session = await getEnrichedSession();
@@ -30,18 +77,13 @@ export async function getUserTransactions(): Promise<Transaction[]> {
         ...r,
         created_at: toLocalISOString(r.created_at),
         date_created: toLocalISOString(r.date_created),
-        registration: typeof r.registration === 'object' ? r.registration : null,
-        pub_crawl_signup: typeof r.pub_crawl_signup === 'object' ? r.pub_crawl_signup : null,
-        trip_signup: typeof r.trip_signup === 'object' ? r.trip_signup : null
+        // Handle potentially missing or incorrect nested objects in JSONB columns
+        registration: (r.registration && typeof r.registration === 'object' && 'id' in r.registration) ? r.registration : null,
+        pub_crawl_signup: (r.pub_crawl_signup && typeof r.pub_crawl_signup === 'object' && 'id' in r.pub_crawl_signup) ? r.pub_crawl_signup : null,
+        trip_signup: (r.trip_signup && typeof r.trip_signup === 'object' && 'id' in r.trip_signup) ? r.trip_signup : null
     }));
 
-    const parsed = transactionSchema.array().safeParse(mappedRows);
-
-    if (!parsed.success) {
-        throw new Error(`Failed to parse transactions: ${parsed.error.message}`);
-    }
-
-    return parsed.data;
+    return safeParseArray(transactionSchema, mappedRows, 'ProfielActions:Transactions');
 }
 
 
@@ -56,13 +98,7 @@ export async function getWhatsAppGroups(): Promise<WhatsAppGroup[]> {
          ORDER BY id ASC`
     );
 
-    const parsed = whatsappGroupSchema.array().safeParse(res.rows);
-
-    if (!parsed.success) {
-        throw new Error(`Failed to parse WhatsApp groups: ${parsed.error.message}`);
-    }
-
-    return parsed.data;
+    return safeParseArray(whatsappGroupSchema, res.rows, 'ProfielActions:WhatsAppGroups');
 }
 
 

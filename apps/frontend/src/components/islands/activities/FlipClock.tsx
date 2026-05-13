@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 
 interface FlipClockProps {
     targetDate: string;
@@ -13,11 +13,13 @@ interface FlipClockProps {
 const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href, serverTime }) => {
     const [timeOffset, setTimeOffset] = useState<number | null>(null);
 
-    const calculateTimeLeft = useCallback(() => {
+    const calculateTimeLeft = useCallback((manualNow?: number) => {
         const now = new Date();
-        const adjustedNow = timeOffset !== null ? now.getTime() + timeOffset : now.getTime();
+        const adjustedNow = manualNow !== undefined 
+            ? manualNow 
+            : (timeOffset !== null ? now.getTime() + timeOffset : now.getTime());
         const difference = +new Date(targetDate) - adjustedNow;
-        
+
         if (isNaN(difference) || difference <= 0) {
             return { days: 0, hours: 0, minutes: 0, seconds: 0 };
         }
@@ -30,7 +32,10 @@ const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href, serverTi
         };
     }, [targetDate, timeOffset]);
 
-    const [timeLeft, setTimeLeft] = useState(() => calculateTimeLeft());
+    const [timeLeft, setTimeLeft] = useState(() => {
+        const initialNow = serverTime ? new Date(serverTime).getTime() : undefined;
+        return calculateTimeLeft(initialNow);
+    });
 
     useEffect(() => {
         // Calculate the offset between server and client time once
@@ -42,6 +47,13 @@ const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href, serverTi
             setTimeOffset(0);
         }
     }, [serverTime]);
+
+    useEffect(() => {
+        // Update timeLeft immediately after timeOffset is calculated
+        if (timeOffset !== null) {
+            setTimeLeft(calculateTimeLeft());
+        }
+    }, [timeOffset, calculateTimeLeft]);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -56,7 +68,7 @@ const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href, serverTi
         };
 
         document.addEventListener('visibilitychange', handleVisibilityChange);
-        
+
         return () => {
             clearInterval(timer);
             document.removeEventListener('visibilitychange', handleVisibilityChange);
@@ -77,7 +89,7 @@ const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href, serverTi
                     </p>
                 </div>
             )}
-            
+
             <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-3">
                 <FlipBlock value={timeLeft.days} label="Dagen" />
                 <span className="text-xl sm:text-3xl lg:text-4xl font-black text-[var(--theme-purple)]/20 pb-6">-</span>
@@ -90,7 +102,7 @@ const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href, serverTi
 
             {href && !isLive && (
                 <div className="mt-8">
-                    <a 
+                    <a
                         href={href}
                         className="group relative inline-flex items-center gap-2 px-8 py-4 bg-[var(--color-purple-600)] hover:bg-[var(--color-purple-700)] text-white font-black uppercase tracking-widest rounded-2xl transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1 overflow-hidden"
                     >
@@ -131,26 +143,25 @@ const FlipBlock: React.FC<FlipBlockProps> = ({ value, label }) => {
 const FlipDigit: React.FC<{ digit: number }> = ({ digit }) => {
     return (
         <div className="relative w-8 h-16 sm:w-14 sm:h-28 lg:w-16 lg:h-32 overflow-hidden"
-             style={{ 
+            style={{
                 maskImage: 'linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)',
                 WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)'
-             }}>
+            }}>
             <AnimatePresence mode="popLayout" initial={false}>
-                <motion.div
+                <m.div
                     key={digit}
                     initial={{ y: '-100%', opacity: 0 }}
                     animate={{ y: '0%', opacity: 1 }}
                     exit={{ y: '100%', opacity: 0 }}
                     transition={{
-                        y: { type: "spring", stiffness: 100, damping: 20, mass: 1 },
-                        opacity: { duration: 0.3 }
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 30
                     }}
-                    className="absolute inset-0 flex items-center justify-center"
+                    className="absolute inset-0 flex items-center justify-center font-black text-4xl sm:text-5xl md:text-6xl leading-none text-[var(--text-main)]"
                 >
-                    <span suppressHydrationWarning className="text-4xl sm:text-6xl lg:text-8xl font-black font-mono text-[var(--color-purple-800)] dark:text-[var(--color-purple-300)]">
-                        {digit}
-                    </span>
-                </motion.div>
+                    {digit}
+                </m.div>
             </AnimatePresence>
         </div>
     );

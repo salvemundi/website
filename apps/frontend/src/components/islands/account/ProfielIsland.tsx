@@ -1,174 +1,148 @@
-"use client";
-import { Mail, Phone, Calendar, Edit2, Save, Loader2, LogOut, X } from 'lucide-react';
-import { format } from 'date-fns';
-import { nl } from 'date-fns/locale';
-import { Tile, formatForBreak } from './profile/ProfielUI';
-import { formatPhoneNumber } from '@/lib/utils/phone-utils';
-import { authClient } from '@/lib/auth';
-import { useRouter } from 'next/navigation';
-import { UseFormRegister, UseFormHandleSubmit, FieldErrors, UseFormReset } from 'react-hook-form';
+'use client';
 
-interface ProfielDetailsProps {
-    user?: {
-        email?: string | null;
-        fontys_email?: string | null;
-        phone_number?: string | null;
-        date_of_birth?: string | null;
-    };
-    isEditingPhoneNumber?: boolean;
-    setIsEditingPhoneNumber?: (val: boolean) => void;
-    registerPhone?: UseFormRegister<{ phone_number?: string | null }>;
-    handleSubmitPhone?: UseFormHandleSubmit<{ phone_number?: string | null }>;
-    onSavePhone?: (data: { phone_number?: string | null }) => void;
-    resetPhone?: UseFormReset<{ phone_number?: string | null }>;
-    phoneErrors?: FieldErrors<{ phone_number?: string | null }>;
-    isPending?: boolean;
+import React, { useMemo, useState } from 'react';
+import { authClient } from '@/lib/auth';
+import { type EventSignup } from '@salvemundi/validations/schema/profiel.zod';
+import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
+import AdminToast from '@/components/ui/admin/AdminToast';
+import { useAdminToast } from '@/hooks/use-admin-toast';
+
+// Refactored Modules
+import { 
+    mergeUserData, 
+    calculateMembershipStatus, 
+    filterProfileSignups, 
+    type SessionUser 
+} from '@/lib/profile-admin.utils';
+import { useProfileState } from '@/hooks/use-profile-state';
+import AvatarPreviewModal from './profile/AvatarPreviewModal';
+
+import ProfielHeader from './profile/ProfielHeader';
+import ProfielDetails from './profile/ProfielDetails';
+import ProfielGaming from './profile/ProfielGaming';
+import ProfielQuickLinks from './profile/ProfielQuickLinks';
+import ProfielSignups from './profile/ProfielSignups';
+
+interface ProfielIslandProps {
+    initialSignups?: EventSignup[];
+    pubCrawlSignups?: PubCrawlSignup[];
+    user?: SessionUser;
 }
 
-export default function ProfielDetails({
-    user = {},
-    isEditingPhoneNumber = false,
-    setIsEditingPhoneNumber = () => { },
-    registerPhone = (() => ({})) as unknown as UseFormRegister<{ phone_number?: string | null }>,
-    handleSubmitPhone = (() => () => { }) as unknown as UseFormHandleSubmit<{ phone_number?: string | null }>,
-    onSavePhone = () => { },
-    resetPhone = () => { },
-    phoneErrors = {},
-    isPending = false
-}: ProfielDetailsProps) {
-    const router = useRouter();
+/**
+ * ProfielIsland: Centraal dashboard voor gebruikersprofielen.
+ * Nu onder de 300 regels door extractie van logica en componenten.
+ */
+export const ProfielIsland: React.FC<ProfielIslandProps> = ({ 
+    initialSignups = [], 
+    pubCrawlSignups = [], 
+    user: initialUser = {} as SessionUser 
+}) => {
+    const { toast, showToast, hideToast } = useAdminToast();
+    const { data: session, refetch } = authClient.useSession();
 
-    const handleLogout = async () => {
-        try {
-            await authClient.signOut();
-            if (typeof window !== 'undefined') {
-                window.location.href = '/?noAuto=true';
-            } else {
-                router.push('/');
-            }
-        } catch (error) {
-            console.error('Logout failed:', error);
-        }
-    };
+    // 1. User Data Syncing
+    const user = useMemo<SessionUser>(() => {
+        return mergeUserData(session?.user as SessionUser, initialUser);
+    }, [session?.user, initialUser]);
+    
+    // 2. Profile Actions & State Hook
+    const {
+        optimisticUser,
+        isPending,
+        isEditingMinecraft, setIsEditingMinecraft,
+        isEditingPhoneNumber, setIsEditingPhoneNumber,
+        pendingAvatar,
+        minecraftForm,
+        phoneForm,
+        onSaveMinecraft,
+        onSavePhone,
+        onAvatarChange,
+        cancelAvatarUpload,
+        confirmAvatarUpload
+    } = useProfileState({ user, refetch, showToast });
 
-    const logoutButton = (
-        <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-base font-semibold text-red-500 bg-red-500/5 hover:bg-red-500/10 border border-red-500/10 transition-all active:scale-95 group cursor-pointer"
-        >
-            <LogOut className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
-            <span>Uitloggen</span>
-        </button>
-    );
+    // 3. UI State
+    const [showPastEvents, setShowPastEvents] = useState(false);
+
+    // 4. Derived Values
+    const filteredSignups = useMemo(() => {
+        return filterProfileSignups(initialSignups, pubCrawlSignups, showPastEvents);
+    }, [initialSignups, pubCrawlSignups, showPastEvents]);
+
+    const membershipStatus = useMemo(() => {
+        return calculateMembershipStatus(optimisticUser);
+    }, [optimisticUser]);
 
     return (
-        <Tile
-            title="Mijn gegevens"
-            icon={<Mail className="h-5 w-5" />}
-            className="h-fit"
-            actions={logoutButton}
-        >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex items-center gap-4 rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm">
-                    <div className="shrink-0 rounded-xl bg-[var(--color-purple-100)] p-3 text-[var(--color-purple-600)] shadow-sm">
-                        <Mail className="h-5 w-5" />
-                    </div>
-                    <div className="min-w-0 flex-1 overflow-hidden">
-                        <p className="text-base text-[var(--color-purple-400)] font-semibold mb-1">
-                            E-mailadres
-                        </p>
-                        <p className="font-semibold text-[var(--color-purple-700)] dark:text-white break-words text-base leading-tight">
-                            {formatForBreak(user.email) || 'Geen e-mail'}
-                        </p>
-                    </div>
-                </div>
-
-                {user.fontys_email && (
-                    <div className="flex items-center gap-4 rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm">
-                        <div className="shrink-0 rounded-xl bg-[var(--color-purple-100)] p-3 text-[var(--color-purple-600)] shadow-sm">
-                            <Mail className="h-5 w-5" />
-                        </div>
-                        <div className="min-w-0 flex-1 overflow-hidden">
-                            <p className="text-base text-[var(--color-purple-400)] font-semibold mb-1">
-                                Fontys e-mail
-                            </p>
-                            <p className="font-semibold text-[var(--color-purple-700)] dark:text-white break-words text-base leading-tight">
-                                {formatForBreak(user.fontys_email)}
-                            </p>
-                        </div>
-                    </div>
-                )}
-
-                <div className="rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm relative group">
-                    <div className="flex items-center justify-between gap-2 mb-3">
-                        <p className="text-base font-semibold text-[var(--color-purple-400)] text-left">
-                            Telefoonnummer
-                        </p>
-                        {!isEditingPhoneNumber && (
-                            <button
-                                onClick={() => setIsEditingPhoneNumber(true)}
-                                className="text-[var(--text-muted)] hover:text-[var(--color-purple-500)] p-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                            >
-                                <Edit2 className="h-3.5 w-3.5" />
-                            </button>
-                        )}
-                    </div>
-                    <div className="flex items-center gap-4 min-w-0">
-                        <div className="shrink-0 rounded-xl bg-[var(--color-purple-100)] p-3 text-[var(--color-purple-600)] shadow-sm">
-                            <Phone className="h-5 w-5" />
-                        </div>
-                        {isEditingPhoneNumber ? (
-                            <form onSubmit={handleSubmitPhone(onSavePhone)} className="flex flex-col w-full gap-2" autoComplete="off">
-                                <div className="flex w-full items-center gap-2">
-                                    <input
-                                        {...registerPhone("phone_number")}
-                                        type="tel"
-                                        className={`flex-1 min-w-0 bg-white dark:bg-black/40 border ${phoneErrors.phone_number ? 'border-red-500 ring-1 ring-red-500' : 'border-slate-300 dark:border-white/20'} rounded-lg px-3 py-1.5 text-base font-medium focus:ring-2 focus:ring-[var(--color-purple-500)] focus:border-transparent outline-none`}
-                                        placeholder="0612345678"
-                                    />
-                                    <button
-                                        type="submit"
-                                        disabled={isPending}
-                                        className="shrink-0 p-1.5 bg-[var(--color-purple-500)] text-white rounded-lg hover:bg-[var(--color-purple-600)] transition-colors cursor-pointer"
-                                    >
-                                        {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            resetPhone();
-                                            setIsEditingPhoneNumber(false);
-                                        }}
-                                        className="shrink-0 p-1.5 bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-white rounded-lg hover:bg-slate-300 transition-colors cursor-pointer"
-                                    >
-                                        <X className="h-4 w-4" />
-                                    </button>
-                                </div>
-                            </form>
-                        ) : (
-                            <p className="font-semibold text-[var(--color-purple-700)] dark:text-white text-base">
-                                {formatPhoneNumber(user.phone_number) || "Niet ingesteld"}
-                            </p>
-                        )}
-                    </div>
-                </div>
-
-                <div className="rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm">
-                    <div className="flex items-center justify-between gap-2 mb-3">
-                        <p className="text-base font-semibold text-[var(--color-purple-400)] text-left">
-                            Geboortedatum
-                        </p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <div className="shrink-0 rounded-xl bg-[var(--color-purple-100)] p-3 text-[var(--color-purple-600)] shadow-sm">
-                            <Calendar className="h-5 w-5" />
-                        </div>
-                        <p className="font-semibold text-[var(--color-purple-700)] dark:text-white text-base">
-                            {user.date_of_birth ? format(new Date(user.date_of_birth), "d MMMM yyyy", { locale: nl }) : "Niet ingesteld"}
-                        </p>
-                    </div>
-                </div>
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+            {/* Left Column */}
+            <div className="md:col-span-12 lg:col-span-4 flex flex-col gap-6">
+                <ProfielHeader 
+                    user={{ 
+                        ...optimisticUser, 
+                        committees: (optimisticUser.committees || []).map(c => ({
+                            ...c,
+                            name: c.name || 'Onbekende Commissie',
+                            is_leader: !!c.is_leader
+                        })), 
+                        onAvatarChange 
+                    }} 
+                    membershipStatus={membershipStatus} 
+                />
+                <ProfielGaming 
+                    user={optimisticUser}
+                    isEditingMinecraft={isEditingMinecraft}
+                    setIsEditingMinecraft={setIsEditingMinecraft}
+                    registerMinecraft={minecraftForm.register}
+                    handleSubmitMinecraft={minecraftForm.handleSubmit}
+                    onSaveMinecraft={onSaveMinecraft}
+                    resetMinecraft={minecraftForm.reset}
+                    minecraftErrors={minecraftForm.formState.errors}
+                    isPending={isPending}
+                />
             </div>
-        </Tile>
+
+            {/* Right Column */}
+            <div className="md:col-span-12 lg:col-span-8 flex flex-col gap-6">
+                <ProfielDetails 
+                    user={optimisticUser}
+                    isEditingPhoneNumber={isEditingPhoneNumber}
+                    setIsEditingPhoneNumber={setIsEditingPhoneNumber}
+                    registerPhone={phoneForm.register}
+                    handleSubmitPhone={phoneForm.handleSubmit}
+                    onSavePhone={onSavePhone}
+                    resetPhone={phoneForm.reset}
+                    phoneErrors={phoneForm.formState.errors}
+                    isPending={isPending}
+                />
+                <ProfielQuickLinks 
+                    user={optimisticUser}
+                    canAccessAdmin={!!(optimisticUser.isAdmin || optimisticUser.isICT)}
+                    isICT={!!optimisticUser.isICT}
+                />
+            </div>
+
+            {/* Bottom Column: Signups */}
+            <div className="md:col-span-12">
+                <ProfielSignups 
+                    filteredSignups={filteredSignups}
+                    showPastEvents={showPastEvents}
+                    setShowPastEvents={setShowPastEvents}
+                />
+            </div>
+            
+            <AdminToast toast={toast} onClose={hideToast} />
+
+            {/* Avatar Preview Modal */}
+            {pendingAvatar && (
+                <AvatarPreviewModal 
+                    preview={pendingAvatar.preview}
+                    isPending={isPending}
+                    onConfirm={confirmAvatarUpload}
+                    onCancel={cancelAvatarUpload}
+                />
+            )}
+        </div>
     );
-}
+};

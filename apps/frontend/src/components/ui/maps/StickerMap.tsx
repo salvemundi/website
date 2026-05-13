@@ -110,8 +110,8 @@ export default function StickerMap({
                                 <MediaAsset
                                     asset={avatarId}
                                     alt="User"
-                                    width={24}
-                                    height={24}
+                                    width={128}
+                                    height={128}
                                     className="samu-marker__img"
                                 />
                                 <span className={`samu-marker__dot ${isMine ? 'samu-marker__dot--mine' : ''}`}></span>
@@ -150,8 +150,8 @@ export default function StickerMap({
                                 <MediaAsset
                                     asset={popupInfo.user_created?.avatar}
                                     alt="avatar"
-                                    width={48}
-                                    height={48}
+                                    width={128}
+                                    height={128}
                                     className="w-12 h-12 rounded-xl object-cover ring-2 ring-[var(--theme-purple)]/20"
                                 />
                                 <div>

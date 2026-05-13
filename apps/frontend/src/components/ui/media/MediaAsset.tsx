@@ -20,6 +20,8 @@ interface MediaAssetProps {
     loading?: 'lazy' | 'eager';
     /** Skip Next.js optimization (useful for local previews/blobs) */
     unoptimized?: boolean;
+    /** How the image should fit in its container */
+    objectFit?: 'cover' | 'contain' | 'none' | 'scale-down' | 'fill';
 }
 
 /**
@@ -36,7 +38,8 @@ export default function MediaAsset({
     sizes,
     priority = false,
     loading,
-    unoptimized }: MediaAssetProps) {
+    unoptimized,
+    objectFit = 'cover' }: MediaAssetProps) {
 
     if (!asset) return null;
 
@@ -64,7 +67,7 @@ export default function MediaAsset({
                 muted
                 playsInline
                 aria-label={alt}
-                style={fill ? { objectFit: 'cover' } : undefined}
+                style={fill ? { objectFit } : undefined}
             />
         );
     }
@@ -81,7 +84,7 @@ export default function MediaAsset({
             priority={priority}
             loading={loading}
             unoptimized={!shouldOptimize}
-            style={fill ? { objectFit: 'cover' } : undefined}
+            style={fill ? { objectFit } : undefined}
         />
     );
 }

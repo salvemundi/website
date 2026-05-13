@@ -1,0 +1,130 @@
+'use client';
+
+import React from 'react';
+import Link from 'next/link';
+import { Calendar, ChevronRight, CreditCard } from 'lucide-react';
+import { format, isBefore, startOfDay } from 'date-fns';
+import { nl } from 'date-fns/locale';
+import { Tile } from './ProfielUI';
+import { slugify } from '@/shared/lib/utils/slug';
+
+import { type EventSignup } from '@salvemundi/validations/schema/profiel.zod';
+import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
+
+type EnrichedSignup = (EventSignup & { _type: 'event' }) | (PubCrawlSignup & { _type: 'pub_crawl' });
+
+interface ProfielSignupsProps {
+    filteredSignups?: EnrichedSignup[];
+    showPastEvents?: boolean;
+    setShowPastEvents?: (val: boolean | ((v: boolean) => boolean)) => void;
+}
+
+export default function ProfielSignups({
+    filteredSignups = [],
+    showPastEvents = false,
+    setShowPastEvents = () => {}
+}: ProfielSignupsProps) {
+    return (
+        <Tile
+            title="Mijn aanmeldingen"
+            icon={<Calendar className="h-5 w-5" />}
+            className="h-fit"
+            actions={
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => setShowPastEvents((v) => !v)}
+                        className="inline-flex items-center justify-center rounded-xl bg-[var(--color-purple-50)] px-4 py-2 text-[10px] font-black uppercase text-[var(--color-purple-700)] hover:bg-[var(--color-purple-100)] transition border border-[var(--color-purple-100)] disabled:opacity-50"
+                    >
+                        {showPastEvents ? "Verberg oude" : "Toon oude"}
+                    </button>
+                    <Link
+                        href="/profiel/tickets"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-purple-50)] px-4 py-2 text-[10px] font-black uppercase text-[var(--color-purple-700)] hover:bg-[var(--color-purple-100)] transition border border-[var(--color-purple-100)]"
+                    >
+                        Tickets <ChevronRight className="h-3 w-3" />
+                    </Link>
+                    <Link
+                        href="/activiteiten"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-purple-500)] px-4 py-2 text-[10px] font-black uppercase text-white hover:bg-[var(--color-purple-600)] transition shadow-lg"
+                    >
+                        Kalender <ChevronRight className="h-3 w-3" />
+                    </Link>
+                </div>
+            }
+        >
+            {filteredSignups.length > 0 ? (
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+                    {filteredSignups.map((signup: EnrichedSignup) => {
+                        const isEvent = signup._type === 'event';
+                        const eventData = isEvent ? signup.event_id : signup.pub_crawl_event_id;
+                        
+                        // Type guard to ensure we have an object with a name and date info
+                        const isExpanded = (data: unknown): data is { name: string; event_date?: string | null; date?: string | null } => {
+                            return typeof data === 'object' && data !== null && 'name' in (data as Record<string, unknown>);
+                        };
+
+                        if (!isExpanded(eventData)) return null;
+
+                        const eventDateStr = isEvent ? eventData.event_date : eventData.date;
+                        const detailHref = isEvent ? `/activiteiten/${slugify(eventData.name)}` : `/kroegentocht`;
+                        const icon = isEvent ? <Calendar className="h-7 w-7" /> : <CreditCard className="h-7 w-7" />;
+
+                        if (!eventData) return null;
+
+                        const isPast = (() => {
+                            try {
+                                if (!eventDateStr) return false;
+                                return isBefore(startOfDay(new Date(eventDateStr)), startOfDay(new Date()));
+                            } catch { return false; }
+                        })();
+
+                        return (
+                            <Link
+                                key={`${signup._type}-${signup.id}`}
+                                href={detailHref}
+                                className={`group h-full flex items-center justify-between gap-4 rounded-3xl p-5 text-left transition-all border shadow-sm ${
+                                    isPast 
+                                    ? "bg-slate-50 dark:bg-black/10 opacity-60 grayscale border-slate-200 dark:border-white/5" 
+                                    : "bg-slate-50 dark:bg-black/20 border-slate-200 dark:border-white/10 hover:shadow-lg hover:-translate-y-0.5"
+                                }`}
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="shrink-0 h-16 w-16 flex items-center justify-center rounded-2xl bg-[var(--color-purple-100)] text-[var(--color-purple-500)] shadow-sm">
+                                         {icon}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <div className="flex items-center gap-2">
+                                            <h3 className="text-lg font-bold text-[var(--color-purple-700)] dark:text-white line-clamp-1">
+                                                {eventData.name}
+                                            </h3>
+                                        </div>
+                                        <p className="mt-1 flex items-center gap-2 text-xs font-bold text-[var(--text-muted)]">
+                                            <Calendar className="h-3.5 w-3.5" />
+                                            {eventDateStr && format(new Date(eventDateStr), "d MMM yyyy", { locale: nl })}
+                                        </p>
+                                    </div>
+                                </div>
+                                <ChevronRight className="h-6 w-6 shrink-0 text-[var(--color-purple-200)] transition-transform group-hover:translate-x-1" />
+                            </Link>
+                        );
+                    })}
+                </div>
+            ) : (
+                <div className="rounded-3xl border-2 border-dashed border-slate-300 dark:border-white/20 bg-slate-50 dark:bg-black/10 p-12 text-center shadow-inner">
+                    <p className="text-[var(--color-purple-700)] dark:text-white font-bold text-lg mb-2">
+                        Je bent nog niet aangemeld voor activiteiten.
+                    </p>
+                    <p className="text-[var(--text-muted)] text-sm mb-6">
+                        Bekijk de kalender om aankomende activiteiten te ontdekken
+                    </p>
+                    <Link
+                        href="/activiteiten"
+                        className="inline-flex items-center gap-2 rounded-full bg-[var(--color-purple-500)] px-8 py-3 text-sm font-bold text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
+                    >
+                        Ontdek activiteiten
+                    </Link>
+                </div>
+            )}
+        </Tile>
+    );
+}

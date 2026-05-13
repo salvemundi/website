@@ -3,6 +3,7 @@ import ActivitiesBannerIsland from '@/components/islands/activities/ActivitiesBa
 import ActivitiesProviderIsland from '@/components/islands/activities/ActivitiesProviderIsland';
 import { getActivities } from '@/server/actions/events/public-activiteit.actions';
 import { Metadata } from 'next';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 
 export const metadata: Metadata = {
     title: 'Activiteiten | Salve Mundi',
@@ -22,17 +23,20 @@ async function ActivitiesListData({ events, serverTime }: { events: (Activiteit 
 
 
 export default async function ActivitiesPage() {
+    const session = await getEnrichedSession();
+    const email = session?.user?.email;
+
     return (
         <div className="min-h-screen bg-[var(--bg-main)]">
             {/* Semantic SEO Heading - Hidden but present for standards */}
             <h1 className="sr-only">Activiteiten Salve Mundi</h1>
-            <ActivitiesContent />
+            <ActivitiesContent email={email} />
         </div>
     );
 }
 
-async function ActivitiesContent() {
-    const events = await getActivities();
+async function ActivitiesContent({ email }: { email?: string }) {
+    const events = await getActivities(email);
     const serverTime = new Date().toISOString();
 
     return (

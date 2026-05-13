@@ -1,17 +1,26 @@
 export const dynamic = 'force-dynamic';
+import nextDynamic from 'next/dynamic';
 import { getKroegentochtEvent, getKroegentochtTickets } from '@/server/actions/events/kroegentocht.actions';
 import { type PubCrawlTicket } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import KroegentochtFormIsland from '@/components/islands/kroegentocht/KroegentochtFormIsland';
-import KroegentochtTicketsIsland from '@/components/islands/kroegentocht/KroegentochtTicketsIsland';
 import { Info, MapPin, Calendar, Clock, Users, Mail, ShieldAlert } from 'lucide-react';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 import { formatDate } from '@/shared/lib/utils/date';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 
+// Dynamic Imports (met alias nextDynamic om conflict met 'export const dynamic' te voorkomen)
+const KroegentochtFormIsland = nextDynamic(() => import('@/components/islands/kroegentocht/KroegentochtFormIsland'), {
+    ssr: true,
+    loading: () => <div className="h-96 animate-pulse bg-slate-100 dark:bg-white/5 rounded-3xl" />
+});
+const KroegentochtTicketsIsland = nextDynamic(() => import('@/components/islands/kroegentocht/KroegentochtTicketsIsland'), {
+    ssr: true
+});
+
 export const metadata = {
     title: 'Kroegentocht | SV Salve Mundi',
-    description: 'Schrijf je in voor de gezelligste kroegentocht van Eindhoven!' };
+    description: 'Schrijf je in voor de gezelligste kroegentocht van Eindhoven!'
+};
 
 async function RegistrationSection() {
     const [event, session] = await Promise.all([
@@ -49,7 +58,7 @@ async function RegistrationSection() {
             <div className="w-full lg:w-1/2">
                 <KroegentochtFormIsland event={event} initialUser={session?.user} />
             </div>
-            
+
             <div className="w-full lg:w-1/2 flex flex-col gap-6">
                 <section className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-lg">
                     <h2 className="text-xl sm:text-2xl font-black text-[var(--color-purple-theme)] mb-6 flex items-center gap-3">
@@ -75,7 +84,7 @@ async function RegistrationSection() {
                         <Calendar className="w-7 h-7" />
                         Activiteit Details
                     </h2>
-                    
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div className="flex items-start gap-3">
                             <Clock className="w-5 h-5 text-purple-600 shrink-0 mt-1" />
@@ -117,7 +126,7 @@ async function RegistrationSection() {
                     </h2>
                     <ul className="space-y-4">
                         <li className="flex items-start gap-3 text-sm">
-                            <span className="text-lg">👥</span> 
+                            <span className="text-lg">👥</span>
                             <span className="text-slate-600 dark:text-slate-400">Je hoeft <strong>geen lid</strong> te zijn om deel te nemen.</span>
                         </li>
                         <li className="flex items-start gap-3 text-sm">
@@ -166,6 +175,3 @@ export default async function KroegentochtPage() {
         </PublicPageShell>
     );
 }
-
-
-

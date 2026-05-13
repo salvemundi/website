@@ -8,16 +8,10 @@ interface SponsorsSectionProps {
     sponsors?: Sponsor[];
 }
 
-/**
- * UI Component voor de sponsoren-sectie op de homepagina.
- * V7.13 Nuclear SSR: Restored interactivity and premium styling.
- */
 export const SponsorsSection: React.FC<SponsorsSectionProps> = ({
     sponsors = []
 }) => {
     const hasSponsors = sponsors.length > 0;
-
-    // 20× dupliceren voor een naadloze oneindige CSS scroll-animatie.
     const displaySponsors = Array.from({ length: 20 }, () => sponsors).flat();
 
     return (
@@ -48,7 +42,7 @@ export const SponsorsSection: React.FC<SponsorsSectionProps> = ({
                                         alt="Sponsor Logo"
                                         height={80}
                                         width={160}
-                                        quality={60}
+                                        quality={80}
                                         sizes="(max-width: 768px) 120px, 160px"
                                         className="sponsor-logo h-20 w-auto object-contain transition-all duration-300 hover:scale-110"
                                     />

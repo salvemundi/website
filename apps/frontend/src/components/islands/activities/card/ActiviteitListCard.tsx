@@ -54,7 +54,7 @@ export default function ActiviteitListCard({
                         alt={title}
                         fill
                         sizes="(max-width: 768px) 100vw, 300px"
-                        className="object-contain"
+                        objectFit="contain"
                     />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center bg-transparent">

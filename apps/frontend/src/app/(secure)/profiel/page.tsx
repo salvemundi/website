@@ -1,6 +1,9 @@
-import ProfielDetails from '@/components/islands/account/ProfielIsland';
+import React from 'react';
+import { ProfielIsland } from '@/components/islands/account/ProfielIsland';
+import { getUserEventSignups, getUserPubCrawlSignups } from '@/server/actions/profile/profiel.actions';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
+import { type SessionUser } from '@/lib/profile-admin.utils';
 
 export const metadata = {
     title: 'Mijn Profiel | SV Salve Mundi',
@@ -8,13 +11,21 @@ export const metadata = {
 };
 
 export default async function ProfielPage() {
-    const { user: enrichedUser } = await checkAdminAccess();
+    const [eventSignups, pubCrawlSignups, { user: enrichedUser }] = await Promise.all([
+        getUserEventSignups(),
+        getUserPubCrawlSignups(),
+        checkAdminAccess()
+    ]);
 
     return (
         <PublicPageShell title="Mijn Profiel">
             <div className="container mx-auto px-4 py-12 max-w-7xl">
                 {enrichedUser && (
-                    <ProfielDetails user={enrichedUser} />
+                    <ProfielIsland 
+                        user={enrichedUser as SessionUser} 
+                        initialSignups={eventSignups}
+                        pubCrawlSignups={pubCrawlSignups}
+                    />
                 )}
             </div>
         </PublicPageShell>
