@@ -10,7 +10,7 @@ import {
     Search,
     X
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import QRDisplay from '@/shared/ui/QRDisplay';
 import { formatDate } from '@/shared/lib/utils/date';
 
@@ -130,7 +130,7 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
                     {selectedTicket && (
                         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 isolate">
                             {/* Backdrop */}
-                            <motion.div 
+                            <m.div 
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
@@ -139,7 +139,7 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
                             />
                             
                             {/* Modal Content */}
-                            <motion.div 
+                            <m.div 
                                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -177,7 +177,7 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
                                         </div>
                                     </div>
                                 </div>
-                            </motion.div>
+                            </m.div>
                         </div>
                     )}
                 </AnimatePresence>,

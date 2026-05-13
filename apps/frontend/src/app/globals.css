@@ -41,8 +41,9 @@
    --theme-bg: var(--bg-main);
 
    /* Layout & Containers */
-   --max-w-app: 100%;
-   --header-padding: clamp(1rem, 4vw, 3rem);
+   --max-w-app: 80rem;
+   --header-padding: clamp(1rem, 5vw, 2.5rem);
+   --beheer-container-px: clamp(1rem, 3vw, 2rem);
 
    /* Purple Palette */
    --color-purple-50: #f4e9f3;
@@ -119,7 +120,7 @@
    /* Layout */
    --header-height: 80px;
    --impersonation-banner-height: 0px;
-   --header-total-height: calc(var(--impersonation-banner-height) + var(--header-height));
+   --header-total-height: calc(var(--impersonation-banner-height, 0px) + var(--header-height, 80px));
 
    /* Typography Scale & Family */
    --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
@@ -132,6 +133,17 @@
    --font-size-3xl: 1.875rem;
    --font-size-4xl: 2.25rem;
    --font-size-5xl: 3rem;
+}
+
+@utility admin-container {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    max-width: var(--max-w-app);
+    padding-left: var(--spacing-4);
+    @media (min-width: 1024px) { padding-left: var(--spacing-6); }
+    padding-right: var(--spacing-4);
+    @media (min-width: 1024px) { padding-right: var(--spacing-6); }
 }
 
 @utility pt-safe { padding-top: env(safe-area-inset-top, 0px); }

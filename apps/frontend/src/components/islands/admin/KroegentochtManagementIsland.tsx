@@ -160,53 +160,55 @@ export default function KroegentochtManagementIsland({
                 }
             />
 
-            <div className="container mx-auto px-4 py-8 max-w-7xl">
+            <div className="admin-container py-4 md:py-8">
+                <div className="flex flex-col">
 
-                {error && (
-                    <div className="mb-8 p-4 bg-red-500/10 border border-red-500/50 rounded-[var(--beheer-radius)] text-red-500 text-base font-semibold flex items-center gap-3">
-                        <AlertCircle className="h-5 w-5" />
-                        {error}
-                        <button onClick={handleRefresh} className="ml-auto underline">Probeer opnieuw</button>
-                    </div>
-                )}
+                    {error && (
+                        <div className="mb-8 p-4 bg-red-500/10 border border-red-500/50 rounded-[var(--beheer-radius)] text-red-500 text-base font-semibold flex items-center gap-3">
+                            <AlertCircle className="h-5 w-5" />
+                            {error}
+                            <button onClick={handleRefresh} className="ml-auto underline">Probeer opnieuw</button>
+                        </div>
+                    )}
 
-                {selectedEvent ? (
-                    <div className="space-y-8">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <Beer className="h-6 w-6 text-[var(--theme-purple)]" />
-                                <h2 className="text-2xl font-semibold text-[var(--text-main)] tracking-tight">
-                                    {selectedEvent.name}
-                                </h2>
+                    {selectedEvent ? (
+                        <div className="space-y-8">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <Beer className="h-6 w-6 text-[var(--theme-purple)]" />
+                                    <h2 className="text-2xl font-semibold text-[var(--text-main)] tracking-tight">
+                                        {selectedEvent.name}
+                                    </h2>
+                                </div>
+                                <Link
+                                    href={`/beheer/kroegentocht/bewerk/${selectedEvent.id}`}
+                                    className="flex items-center gap-2 px-4 py-2 bg-[var(--bg-main)]/50 border border-[var(--border-color)] rounded-[var(--radius-xl)] text-base font-semibold text-[var(--text-subtle)] hover:border-[var(--theme-purple)]/50 transition-all"
+                                >
+                                    <Settings className="h-4 w-4" />
+                                    Event Details
+                                </Link>
                             </div>
-                            <Link
-                                href={`/beheer/kroegentocht/bewerk/${selectedEvent.id}`}
-                                className="flex items-center gap-2 px-4 py-2 bg-[var(--bg-main)]/50 border border-[var(--border-color)] rounded-[var(--radius-xl)] text-base font-semibold text-[var(--text-subtle)] hover:border-[var(--theme-purple)]/50 transition-all"
-                            >
-                                <Settings className="h-4 w-4" />
-                                Event Details
-                            </Link>
-                        </div>
 
-                        <AdminStatsBar stats={adminStats} />
+                            <AdminStatsBar stats={adminStats} />
 
-                        <div className={`transition-opacity duration-300 ${isPending ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
-                            <SignupList
-                                signups={signups}
-                                eventId={selectedEvent.id}
-                                eventName={selectedEvent.name}
-                                onDelete={handleDeleteSignup}
-                                onEdit={(id) => router.push(`/beheer/kroegentocht/deelnemer/${id}`)}
-                            />
+                            <div className={`transition-opacity duration-300 ${isPending ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+                                <SignupList
+                                    signups={signups}
+                                    eventId={selectedEvent.id}
+                                    eventName={selectedEvent.name}
+                                    onDelete={handleDeleteSignup}
+                                    onEdit={(id) => router.push(`/beheer/kroegentocht/deelnemer/${id}`)}
+                                />
+                            </div>
                         </div>
-                    </div>
-                ) : (
-                    <div className="text-center py-20 bg-[var(--bg-card)]/40 rounded-[var(--radius-2xl)] border-2 border-dashed border-[var(--border-color)]/30">
-                        <AlertCircle className="h-16 w-16 text-[var(--text-muted)] opacity-20 mx-auto mb-4" />
-                        <h2 className="text-xl font-semibold text-[var(--text-main)] tracking-tight">Geen Event Geselecteerd</h2>
-                        <p className="text-base text-[var(--text-subtle)] mt-2">Kies een event hierboven om de data te bekijken.</p>
-                    </div>
-                )}
+                    ) : (
+                        <div className="text-center py-20 bg-[var(--bg-card)]/40 rounded-[var(--radius-2xl)] border-2 border-dashed border-[var(--border-color)]/30">
+                            <AlertCircle className="h-16 w-16 text-[var(--text-muted)] opacity-20 mx-auto mb-4" />
+                            <h2 className="text-xl font-semibold text-[var(--text-main)] tracking-tight">Geen Event Geselecteerd</h2>
+                            <p className="text-base text-[var(--text-subtle)] mt-2">Kies een event hierboven om de data te bekijken.</p>
+                        </div>
+                    )}
+                </div>
             </div>
             <AdminToast toast={toast} onClose={hideToast} />
         </>

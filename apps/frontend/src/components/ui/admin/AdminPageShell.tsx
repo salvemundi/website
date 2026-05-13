@@ -8,6 +8,7 @@ interface AdminPageShellProps {
     actions?: React.ReactNode;
     children: React.ReactNode;
     hideToolbar?: boolean;
+    centered?: boolean;
 }
 
 /**
@@ -20,22 +21,27 @@ export default function AdminPageShell({
     backHref,
     actions,
     children,
-    hideToolbar = false
+    hideToolbar = false,
+    centered = false
 }: AdminPageShellProps) {
     return (
         <div className="w-full">
             {!hideToolbar && (
-                <AdminToolbar 
-                    title={title}
-                    subtitle={subtitle}
-                    backHref={backHref}
-                    actions={actions}
-                />
+                <>
+                    <AdminToolbar 
+                        title={title}
+                        subtitle={subtitle}
+                        backHref={backHref}
+                        actions={actions}
+                        centered={centered}
+                    />
+                    <div className="admin-container py-4 md:py-8">
+                        {children}
+                    </div>
+                </>
             )}
-            
-            <div className="container mx-auto px-2 sm:px-4 py-4 md:py-8 max-w-7xl">
-                {children}
-            </div>
+
+            {hideToolbar && children}
         </div>
     );
 }

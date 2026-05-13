@@ -32,8 +32,19 @@ export async function requireAdminResource(resource: AdminResource) {
 
 export async function getEnrichedSession(): Promise<{ user: EnrichedUser; session: Session } | null> {
     try {
+        if (!auth || !auth.api) {
+            console.error('❌ [AuthUtils] Better Auth instance or API is undefined');
+            return null;
+        }
+
+        const h = await headers();
+        if (!h) {
+            console.error('❌ [AuthUtils] Headers are undefined');
+            return null;
+        }
+
         const session = await auth.api.getSession({
-            headers: await headers()
+            headers: h
         }) as any;
 
         if (session && typeof session === 'object' && 'response' in session) {
@@ -41,7 +52,7 @@ export async function getEnrichedSession(): Promise<{ user: EnrichedUser; sessio
         }
         return session as { user: EnrichedUser; session: Session } | null;
     } catch (error) {
-        console.error(error);
+        console.error('❌ [AuthUtils] Error in getEnrichedSession:', error);
         return null;
     }
 }

@@ -7,6 +7,7 @@ interface AdminToolbarProps {
     subtitle?: string;
     backHref?: string;
     actions?: React.ReactNode;
+    centered?: boolean;
 }
 
 /**
@@ -17,15 +18,16 @@ export default function AdminToolbar({
     title,
     subtitle,
     backHref,
-    actions
+    actions,
+    centered = false
 }: AdminToolbarProps) {
     return (
         <header 
-            className="bg-[var(--beheer-card-bg)] border-b border-[var(--beheer-border)] sticky top-[var(--header-total-height,80px)] z-30 w-full transition-all"
+            className="bg-[var(--beheer-card-bg)] border-b border-[var(--beheer-border)] sticky top-[var(--header-total-height)] z-30 w-full transition-all"
         >
-            <div className="container mx-auto px-2 sm:px-4 py-4 max-w-7xl">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div className="flex items-center gap-4">
+            <div className="admin-container py-4">
+                <div className={`flex flex-col ${centered ? 'items-center text-center mx-auto' : 'md:flex-row justify-between items-start md:items-center'} gap-4`}>
+                    <div className={`flex items-center gap-4 ${centered ? 'flex-col' : ''}`}>
                         {backHref && (
                             <Link 
                                 href={backHref} 
@@ -35,7 +37,7 @@ export default function AdminToolbar({
                                 <ChevronLeft className="h-4 w-4" />
                             </Link>
                         )}
-                        <div className="flex flex-col">
+                        <div className={`flex flex-col ${centered ? 'items-center' : ''}`}>
                             <h1 className="text-xl md:text-2xl font-semibold text-[var(--beheer-text)] tracking-tight leading-tight">
                                 {title}
                             </h1>

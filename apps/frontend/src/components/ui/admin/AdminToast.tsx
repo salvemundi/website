@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, XCircle, AlertCircle, Loader2 } from 'lucide-react';
 
 export type ToastType = 'success' | 'error' | 'info' | 'loading';
@@ -21,7 +21,7 @@ export default function AdminToast({ toast, onClose }: AdminToastProps) {
     return (
         <AnimatePresence>
             {toast && (
-                <motion.div 
+                <m.div 
                     initial={{ opacity: 0, scale: 0.9, y: 50, x: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
                     exit={{ opacity: 0, scale: 0.9, y: 20, transition: { duration: 0.2 } }}
@@ -75,7 +75,7 @@ export default function AdminToast({ toast, onClose }: AdminToastProps) {
                             </button>
                         )}
                     </div>
-                </motion.div>
+                </m.div>
             )}
         </AnimatePresence>
     );

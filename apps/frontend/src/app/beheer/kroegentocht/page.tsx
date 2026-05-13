@@ -1,6 +1,7 @@
 import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
 import { unstable_noStore as noStore } from 'next/cache';
 import { getPubCrawlEvents, getKroegentochtSettings, getPubCrawlSignups } from '@/server/actions/admin/admin-kroegentocht.actions';
+import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import KroegentochtManagementIsland from '@/components/islands/admin/KroegentochtManagementIsland';
 
 export const metadata = {
@@ -22,13 +23,18 @@ export default async function KroegentochtPage() {
     const initialSignups = initialEvent ? await getPubCrawlSignups(Number(initialEvent.id)).catch(() => []) : [];
 
     return (
-        <div className="w-full">
+        <AdminPageShell
+            title="Kroegentocht Beheer"
+            subtitle="Beheer aanmeldingen, tickets en event instellingen"
+            backHref="/beheer"
+            hideToolbar={true}
+        >
             <KroegentochtManagementIsland 
                 initialEvents={events} 
                 initialSettings={settings} 
                 initialSignups={initialSignups}
             />
-        </div>
+        </AdminPageShell>
     );
 }
 

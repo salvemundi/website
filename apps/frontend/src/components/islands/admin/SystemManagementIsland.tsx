@@ -92,7 +92,7 @@ export default function SystemManagementIsland({
     };
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="admin-container py-8">
             {/* Header Actions */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-8 mt-4">
                 <div className="flex bg-[var(--beheer-card-soft)] p-1.5 rounded-2xl border border-[var(--beheer-border)] gap-1 w-full sm:w-auto">

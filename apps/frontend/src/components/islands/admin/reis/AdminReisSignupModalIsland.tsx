@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import type { Trip, TripSignup, TripActivity } from '@salvemundi/validations/schema/admin-reis.zod';
 import { Users, Edit2, Trash2, X, Save, Loader2, Ticket } from 'lucide-react';
 import SignupForm from './SignupForm';
@@ -50,7 +50,7 @@ export default function AdminReisSignupModalIsland({
         <AnimatePresence>
             <div className="fixed inset-0 z-[100000] flex items-start justify-center p-4 sm:p-6 overflow-y-auto isolate custom-scrollbar">
                 {/* Background Overlay */}
-                <motion.div 
+                <m.div 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -60,7 +60,7 @@ export default function AdminReisSignupModalIsland({
                 />
                 
                 {/* Modal Container */}
-                <motion.div 
+                <m.div 
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ 
                         opacity: 1, 
@@ -209,7 +209,7 @@ export default function AdminReisSignupModalIsland({
                             </div>
                         )}
                     </div>
-                </motion.div>
+                </m.div>
             </div>
         </AnimatePresence>,
         document.body
