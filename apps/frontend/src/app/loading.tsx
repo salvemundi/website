@@ -27,7 +27,7 @@ export default function GlobalLoading() {
     if (status === 'instant') return null;
 
     return (
-        <div className="fixed inset-0 z-[9999] flex min-h-[100dvh] w-screen flex-col items-center justify-center gap-6 bg-[var(--bg-main)]">
+        <div className="relative flex flex-1 w-full flex-col items-center justify-center gap-6">
             <style dangerouslySetInnerHTML={{
                 __html: `
                 @keyframes deterministic-fade-in {
