@@ -1,3 +1,4 @@
+import { safeConsoleError } from '../utils/logger.js';
 import { ClientSecretCredential } from '@azure/identity';
 import { Redis } from 'ioredis';
 

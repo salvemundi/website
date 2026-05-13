@@ -1,3 +1,4 @@
+import { safeConsoleError } from '../utils/logger.js';
 import { Redis } from 'ioredis';
 import { ProvisionWorkerService } from './provision-worker.js';
 import { AuditService } from './audit.service.js';
