@@ -1,3 +1,4 @@
+import { safeConsoleError } from '../utils/logger.js';
 import pkg from 'pg';
 const { Pool } = pkg;
 
@@ -18,7 +19,7 @@ export async function query(text: string, params?: any[]) {
         const res = await pool.query(text, params);
         return res;
     } catch (error) {
-        console.error('[DB-Query Error]', {
+        safeConsoleError('[DB-Query Error]', {
             message: error instanceof Error ? error.message : 'Unknown error',
             text,
             params,

@@ -1,3 +1,4 @@
+import { safeConsoleError } from '../../utils/logger.js';
 import { GraphService } from '../graph.service.js';
 import { TokenService } from '../token.service.js';
 import { Redis } from 'ioredis';
@@ -123,7 +124,7 @@ export class SyncJob {
             await persistSyncStatus(redis, status);
             await this.logSummary(jobId, status);
         } catch (error) {
-            console.error(`[SYNC] [${jobId}] Fatal error:`, error);
+            safeConsoleError(`[SYNC] [${jobId}] Fatal error:`, error);
             const s = await getSyncStatus(redis);
             s.active = false; s.status = 'failed'; s.endTime = new Date().toISOString();
             s.fatalError = { message: error instanceof Error ? error.message : String(error) };
@@ -193,7 +194,7 @@ export class SyncJob {
             })
         ]);
         try { await query(`DELETE FROM system_logs WHERE created_at < NOW() - INTERVAL '90 days'`); } catch (error) {
-            console.error(`[SyncJob][logSummary] Error while cleaning up old logs:`, error);
+            safeConsoleError(`[SyncJob][logSummary] Error while cleaning up old logs:`, error);
         }
     }
 }

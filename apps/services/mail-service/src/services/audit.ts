@@ -1,3 +1,4 @@
+import { safeConsoleError } from '../utils/logger.js';
 const DIRECTUS_URL = process.env.DIRECTUS_SERVICE_URL!;
 const STATIC_TOKEN = process.env.DIRECTUS_STATIC_TOKEN!;
 
@@ -24,7 +25,7 @@ export class AuditService {
                 })
             });
         } catch (error) {
-            console.error('[AuditService] Failed to log to Directus:', error);
+            safeConsoleError('[AuditService] Failed to log to Directus:', error);
         }
     }
 }

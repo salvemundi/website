@@ -1,5 +1,5 @@
 'use server';
-
+import { safeConsoleError } from '@/server/utils/logger';
 import { getRedis } from "@/server/auth/redis-client";
 import { checkSyncAccess, AZURE_SYNC_URL, INTERNAL_TOKEN } from "@/server/actions/infrastructure/azure-sync/sync-access";
 
@@ -12,7 +12,7 @@ export async function getSyncStatusAction() {
     }
 
     if (!AZURE_SYNC_URL) {
-        console.error("[SYNC-ACTION] AZURE_SYNC_SERVICE_URL is not configured.");
+        safeConsoleError("[SYNC-ACTION] AZURE_SYNC_SERVICE_URL is not configured.");
         return { success: false, error: "Systeemfout: Sync service URL niet geconfigureerd." };
     }
 
@@ -25,14 +25,14 @@ export async function getSyncStatusAction() {
         });
 
         if (!res.ok) {
-            console.error(`[SYNC-ACTION] GET /status failed: ${res.status}`);
+            safeConsoleError(`[SYNC-ACTION] GET /status failed: ${res.status}`);
             return { success: false, error: "Status service onbeschikbaar" };
         }
 
         return await res.json();
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Kon status niet ophalen.';
-        console.error(`[SYNC-ACTION] Connection error to ${AZURE_SYNC_URL}/api/sync/status:`, message);
+        safeConsoleError(`[SYNC-ACTION] Connection error to ${AZURE_SYNC_URL}/api/sync/status:`, message);
         return { success: false, error: "Kon status niet ophalen." };
     }
 }
@@ -59,7 +59,7 @@ export async function stopSyncAction() {
         return { success: true };
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Onbekende fout';
-        console.error("[SYNC-ACTION] Stop sync failed:", message);
+        safeConsoleError("[SYNC-ACTION] Stop sync failed:", message);
         return { success: false, error: message };
     }
 }
@@ -83,7 +83,7 @@ export async function resetSyncStatusAction() {
         return { success: true };
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Onbekende fout';
-        console.error("[SYNC-ACTION] Reset sync failed:", message);
+        safeConsoleError("[SYNC-ACTION] Reset sync failed:", message);
         return { success: false, error: message };
     }
 }

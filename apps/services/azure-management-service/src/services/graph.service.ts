@@ -1,3 +1,4 @@
+import { safeConsoleError } from '../utils/logger.js';
 import { Client } from '@microsoft/microsoft-graph-client';
 import 'isomorphic-fetch';
 import crypto from 'crypto';
@@ -83,7 +84,7 @@ export class GraphService {
                     return candidateUpn;
                 }
             } catch (error: any) {
-                console.error(`[GraphService][generateUniqueUpn] Error verifying UPN ${candidateUpn}:`, error.message);
+                safeConsoleError(`[GraphService][generateUniqueUpn] Error verifying UPN ${candidateUpn}:`, error.message);
                 throw error;
             }
 

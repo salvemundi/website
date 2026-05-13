@@ -1,3 +1,4 @@
+import { safeConsoleError } from '../utils/logger.js';
 import { Redis } from 'ioredis';
 import { createDirectus, rest, staticToken, updateItem } from '@directus/sdk';
 
@@ -54,7 +55,7 @@ export class DirectusRetryService {
                         await redis.zrem(this.QUEUE_KEY, taskStr);
                         console.log(`[DirectusRetry] Successfully processed update for ${task.collection}/${task.id}`);
                     } catch (error: any) {
-                        console.error(`[DirectusRetry] Failed attempt ${task.retries + 1} for ${task.collection}/${task.id}: ${error.message}`);
+                        safeConsoleError(`[DirectusRetry] Failed attempt ${task.retries + 1} for ${task.collection}/${task.id}: ${error.message}`);
                         await redis.zrem(this.QUEUE_KEY, taskStr);
 
                         if (task.retries < task.maxRetries) {
@@ -65,13 +66,13 @@ export class DirectusRetryService {
 
                             await redis.zadd(this.QUEUE_KEY, nextAttempt, JSON.stringify(task));
                         } else {
-                            console.error(`[DirectusRetry] Max retries reached for ${task.collection}/${task.id}. Dropping task.`);
+                            safeConsoleError(`[DirectusRetry] Max retries reached for ${task.collection}/${task.id}. Dropping task.`);
                         }
                     }
                 }
                 await new Promise(resolve => setTimeout(resolve, 1000));
             } catch (error: any) {
-                console.error(`[DirectusRetry] Worker loop error: ${error.message}`);
+                safeConsoleError(`[DirectusRetry] Worker loop error: ${error.message}`);
                 await new Promise(resolve => setTimeout(resolve, 5000));
             }
         }

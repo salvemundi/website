@@ -1,3 +1,4 @@
+import { safeConsoleError } from '../utils/logger.js';
 import { Redis } from 'ioredis';
 import { SyncJob } from './sync/sync-job.js';
 import { TokenService } from './token.service.js';
@@ -54,7 +55,7 @@ export class ProvisionWorkerService {
                         await redis.zrem(this.QUEUE_KEY, taskJson);
                         console.log(`[ProvisionWorker] Successfully provisioned user ${task.userId}`);
                     } catch (error: any) {
-                        console.error(`[ProvisionWorker] Failed provisioning for user ${task.userId}:`, error.message);
+                        safeConsoleError(`[ProvisionWorker] Failed provisioning for user ${task.userId}:`, error.message);
 
                         task.retries += 1;
                         await redis.zrem(this.QUEUE_KEY, taskJson);
@@ -64,12 +65,12 @@ export class ProvisionWorkerService {
                             await redis.zadd(this.QUEUE_KEY, Date.now() + delay, JSON.stringify(task));
                             console.log(`[ProvisionWorker] Retrying in ${delay / 1000}s (Attempt ${task.retries}).`);
                         } else {
-                            console.error(`[ProvisionWorker] MAX RETRIES reached for user ${task.userId}. Dropping task.`);
+                            safeConsoleError(`[ProvisionWorker] MAX RETRIES reached for user ${task.userId}. Dropping task.`);
                         }
                     }
                 }
             } catch (error: any) {
-                console.error('[ProvisionWorker] Loop Error:', error.message);
+                safeConsoleError('[ProvisionWorker] Loop Error:', error.message);
                 await new Promise(resolve => setTimeout(resolve, 5000));
             }
         }

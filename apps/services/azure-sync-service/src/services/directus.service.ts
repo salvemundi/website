@@ -1,3 +1,4 @@
+import { safeConsoleError } from '../utils/logger.js';
 import { getDirectusClient } from '../config/directus.js';
 import { updateItem, readItems, createItem, deleteItem, readUsers, updateUser, createUser, uploadFiles } from '@directus/sdk';
 import { DirectusUser, Committee, CommitteeMember, Event, EventSignup, FeatureFlag } from '../types/schema.js';
@@ -129,7 +130,7 @@ export class DirectusService {
             }));
             return items?.[0]?.is_active ?? false;
         } catch (error) {
-            console.error(`[DirectusService] Error checking flag ${key}:`, error);
+            safeConsoleError(`[DirectusService] Error checking flag ${key}:`, error);
             return false;
         }
     }
@@ -156,7 +157,7 @@ export class DirectusService {
 
             return fileId;
         } catch (error) {
-            console.error(`[DirectusService] Failed to upload avatar for user ${userId}:`, error);
+            safeConsoleError(`[DirectusService] Failed to upload avatar for user ${userId}:`, error);
             throw error;
         }
     }

@@ -1,3 +1,4 @@
+import { safeConsoleError } from '../utils/logger.js';
 import { Redis } from 'ioredis';
 import { MailWorkerService } from './mail-worker.js';
 import { PaymentSuccessEventSchema, ActivitySignupEventSchema } from '@salvemundi/validations';
@@ -115,7 +116,7 @@ export class EventHandlers {
                 mailData.confirmationUrl = `${baseUrl}/lidmaatschap/bevestiging?transaction_id=${data.paymentId}&t=${data.accessToken || ''}`;
             }
         } catch (error) {
-            console.error(`[MailService][EventHandlers][enrichMembershipRenewal] Error while enriching membership renewal:`, error);
+            safeConsoleError(`[MailService][EventHandlers][enrichMembershipRenewal] Error while enriching membership renewal:`, error);
         }
     }
 
@@ -166,7 +167,7 @@ export class EventHandlers {
                 mailData.eventName = (await eventRes.json() as any)?.data?.name || mailData.eventName;
             }
         } catch (error) {
-            console.error(`[MailService][EventHandlers][enrichGenericEvent] Error while enriching generic event:`, error);
+            safeConsoleError(`[MailService][EventHandlers][enrichGenericEvent] Error while enriching generic event:`, error);
         }
     }
 

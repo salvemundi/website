@@ -21,7 +21,7 @@ export class EventListenerService {
             if (error instanceof Error && !error.message.includes('BUSYGROUP')) {
                 safeConsoleError('[MailEventListener] Error creating consumer group:', error);
             } else if (!(error instanceof Error)) {
-                console.error('[MailEventListener] Unexpected error type during group creation:', String(error));
+                safeConsoleError('[MailEventListener] Unexpected error type during group creation:', String(error));
             }
         }
 
@@ -49,7 +49,7 @@ export class EventListenerService {
             } catch (error: unknown) {
                 // Volledige naleving van de "Zero-Any Policy": we casten niet naar any, maar gebruiken de message veilig.
                 const message = error instanceof Error ? error.message : String(error);
-                console.error('[MailEventListener] Loop Error:', message);
+                safeConsoleError('[MailEventListener] Loop Error:', message);
 
                 // Voorkom CPU-spike bij constante fouten
                 await new Promise(resolve => setTimeout(resolve, 5000));
@@ -76,7 +76,7 @@ export class EventListenerService {
             }
         } catch (error: unknown) {
             const messageStr = error instanceof Error ? error.message : String(error);
-            console.error('[MailEventListener] Error handling event:', messageStr);
+            safeConsoleError('[MailEventListener] Error handling event:', messageStr);
         }
     }
 
