@@ -47,7 +47,7 @@ export default function ActiviteitGridCard({
                         alt={title}
                         fill
                         sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
-                        className="object-contain"
+                        objectFit="contain"
                     />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center bg-transparent">

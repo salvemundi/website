@@ -24,8 +24,13 @@ export async function HeroIsland({ banners = [], activiteiten = [], initialSessi
     const slideUrls = banners.length
         ? banners
             .sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))
-            .map((b) => getImageUrl(b.afbeelding_id, { width: 1200, height: 800, fit: 'cover' }))
-        : [getImageUrl(null)];
+            .map((b) => getImageUrl(b.afbeelding_id, {
+                width: 1920,
+                height: 1080,
+                fit: 'cover',
+                quality: 90
+            }))
+        : [getImageUrl(null, { width: 1920, height: 1080, quality: 90 })];
 
     const nextEvent = (() => {
         if (!activiteiten.length) return null;

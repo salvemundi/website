@@ -1,13 +1,13 @@
 'use client';
 
 import React from 'react';
-import { 
-    Calendar, 
-    Users, 
-    Edit, 
-    Eye, 
-    MapPin, 
-    Euro 
+import {
+    Calendar,
+    Users,
+    Edit,
+    Eye,
+    MapPin,
+    Euro
 } from 'lucide-react';
 import { AdminActivity } from '@salvemundi/validations';
 import { format } from 'date-fns';
@@ -25,8 +25,8 @@ interface Props {
 export default function ActivityCard({
     event,
     canEdit = false,
-    onViewSignups = () => {},
-    onEdit = () => {} }: Props) {
+    onViewSignups = () => { },
+    onEdit = () => { } }: Props) {
     if (!event) return null;
     const eventDate = new Date(event.event_date);
     const isPast = eventDate < new Date();
@@ -49,7 +49,8 @@ export default function ActivityCard({
                             asset={event.image}
                             alt={event.name}
                             fill
-                            className="object-cover drop-shadow-md"
+                            objectFit="contain"
+                            className="drop-shadow-md"
                         />
                     </div>
                 </div>

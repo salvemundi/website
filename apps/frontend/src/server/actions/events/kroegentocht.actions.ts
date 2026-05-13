@@ -2,7 +2,6 @@
 
 import {
     type PubCrawlTicket,
-    type PubCrawlEvent,
     pubCrawlEventSchema,
     pubCrawlTicketSchema,
     pubCrawlSignupSchema
@@ -11,7 +10,6 @@ import {
 
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { unstable_cache as cacheTag } from 'next/cache';
-import { cache } from 'react';
 import { logAdminAction } from '@/server/actions/infrastructure/audit.actions';
 
 import { getSystemDirectus } from '@/lib/directus';
@@ -55,7 +53,12 @@ async function fetchWithTimeout(url: string, options: RequestInit & { timeout?: 
     }
 }
 
-export const getKroegentochtEvent = cache(async (): Promise<PubCrawlEvent | null> => {
+export async function getKroegentochtEvent() {
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
+        console.log('[Kroegentocht-Action] getKroegentochtEvent called during build. Returning null.');
+        return null;
+    }
+
     return await cacheTag(
         async () => {
             const { toLocalISOString } = await import('@/lib/utils/date-utils');
@@ -93,7 +96,7 @@ export const getKroegentochtEvent = cache(async (): Promise<PubCrawlEvent | null
             revalidate: 3600 // 1 hour backup revalidation
         }
     )();
-});
+}
 
 export async function getKroegentochtTickets(email: string): Promise<PubCrawlTicket[]> {
     try {

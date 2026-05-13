@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { authClient } from '@/lib/auth';
 import type { EnrichedUser } from '@/types/auth';
@@ -9,24 +9,13 @@ interface JoinSectionIslandProps {
     serverUser?: EnrichedUser | null;
 }
 
-/**
- * JoinSectionIsland: Identity-aware membership CTA.
- */
 export const JoinSectionIsland: React.FC<JoinSectionIslandProps> = ({
-    serverUser = undefined
+    serverUser = null
 }) => {
-    const [mounted, setMounted] = useState(false);
-    useEffect(() => { setMounted(true); }, []);
+    const { data: session } = authClient.useSession();
+    const user = (session?.user as unknown as EnrichedUser) ?? serverUser;
 
-    const { data: session, isPending: clientPending } = authClient.useSession();
-
-    const user = serverUser !== undefined
-        ? serverUser
-        : (session?.user as unknown as EnrichedUser ?? null);
-
-    const isAuthenticating = serverUser === undefined && clientPending;
-
-    if (!mounted || isAuthenticating || user?.membership_status === 'active') return null;
+    if (user?.membership_status === 'active') return null;
 
     const isRenewal = !!user && !!user.membership_expiry && user.membership_status !== 'active';
 
@@ -62,4 +51,4 @@ export const JoinSectionIsland: React.FC<JoinSectionIslandProps> = ({
             </div>
         </section>
     );
-}
+};

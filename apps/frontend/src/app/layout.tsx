@@ -118,10 +118,6 @@ export default async function RootLayout({
     );
 }
 
-/**
- * ASSET HINTING: Fetch critical above-the-fold content paths early.
- * This runs in parallel with the Page fetch.
- */
 async function HeadPreloads() {
     await connection();
     try {
@@ -163,7 +159,6 @@ async function HeaderWrapper({ initialSession, isAuthorized }: { initialSession:
             />
         );
     } catch (_error) {
-        /* Header wrapper fail */
         return (
             <NavigationHeader
                 disabledRoutes={[]}
