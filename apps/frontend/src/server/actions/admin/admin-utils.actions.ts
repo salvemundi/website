@@ -5,6 +5,7 @@ import { getPermissions } from '@/shared/lib/permissions';
 import { fetchUserMetadataDb, fetchUserCommitteesDb } from "@/server/internal/user-db.utils";
 import { type EnrichedUser, type ImpersonationInfo } from "@/types/auth";
 import { headers } from 'next/headers';
+import { safeConsoleError } from '@/server/utils/logger';
 
 /**
  * Centraal mechanisme voor admin-toegangscontrole en user-enrichment.
@@ -15,11 +16,14 @@ export async function checkAdminAccess() {
     try {
         const h = await headers();
         h.forEach((v, k) => safeHeaders.set(k, v));
-    } catch (_e) { }
-    
+    } catch (error) {
+        safeConsoleError(`[AdminUtilsActions][checkAdminAccess] Failed to fetch headers:`, error);
+        return { isAuthorized: false, user: null, isIct: false, impersonation: null };
+    }
+
     try {
         const session = await getEnrichedSession();
-        
+
         if (!session || !session.user) {
             return { isAuthorized: false, user: null, isIct: false, impersonation: null };
         }
@@ -48,8 +52,8 @@ export async function checkAdminAccess() {
                 // Store granular permissions in the user object for convenience
                 Object.assign(user, perms);
             }
-        } catch (_e) {
-            // Silently fail metadata enrichment
+        } catch (error) {
+            safeConsoleError(`[AdminUtilsActions][checkAdminAccess] Error while enriching user:`, error);
         }
 
         if (!user.name && (user.first_name || user.last_name)) {
@@ -74,7 +78,8 @@ export async function checkAdminAccess() {
                 targetCommittees: user.committees?.map((c) => c.name) || []
             } : null
         };
-    } catch (_e) {
+    } catch (error) {
+        safeConsoleError(`[AdminUtilsActions][checkAdminAccess] Error in checkAdminAccess:`, error);
         return { isAuthorized: false, user: null, isIct: false, impersonation: null };
     }
 }

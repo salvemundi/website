@@ -10,7 +10,7 @@ import {
 
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { unstable_cache as cacheTag } from 'next/cache';
-import { logAdminAction } from '@/server/actions/infrastructure/audit.actions';
+import { logAdminAction } from '@/server/actions/infrastructure/audit.actions'; import { safeConsoleError } from '@/server/utils/logger';;
 
 import { getSystemDirectus } from '@/lib/directus';
 import { createItem, updateItem, deleteItem } from '@directus/sdk';
@@ -85,8 +85,8 @@ export async function getKroegentochtEvent() {
 
             const parsed = pubCrawlEventSchema.safeParse(event);
             if (!parsed.success) {
-                console.error('[Kroegentocht-Action] Validation failed:', parsed.error.format());
-                return null; // Return null if invalid data, but we've logged the error
+                safeConsoleError('[Kroegentocht-Action][getKroegentochtEvent] Validation failed:', parsed.error.format());
+                return null;
             }
             return parsed.data;
         },
@@ -120,8 +120,9 @@ export async function getKroegentochtTickets(email: string): Promise<PubCrawlTic
 
         const parsed = items.map((t) => pubCrawlTicketSchema.safeParse(t).data).filter((t): t is PubCrawlTicket => !!t);
         return parsed;
-    } catch (_error) {
-        return [];
+    } catch (error: unknown) {
+        safeConsoleError(`[Kroegentocht-Action][getKroegentochtTickets] Failed to fetch tickets:`, error);
+        throw new Error('Kon tickets niet ophalen');
     }
 }
 
@@ -184,8 +185,8 @@ export async function initiateKroegentochtPayment(formData: unknown) {
                         initial: name.substring(0, 1).toUpperCase()
                     }));
             }
-        } catch (_error) {
-            // Final fallback
+        } catch (error: unknown) {
+            safeConsoleError('[Kroegentocht-Action][initiateKroegentochtPayment] Failed to parse participants data:', error);
             participantsData = [];
         }
 
@@ -261,13 +262,16 @@ export async function initiateKroegentochtPayment(formData: unknown) {
         try {
             await deletePubCrawlTicketsBySignupIdDb(signupId);
             await deletePubCrawlSignupDb(signupId);
-            getSystemDirectus().request(deleteItem('pub_crawl_signups', signupId)).catch(() => { });
-        } catch (_error) {
+            getSystemDirectus().request(deleteItem('pub_crawl_signups', signupId)).catch((error) => {
+                safeConsoleError(`[Kroegentocht-Action][initiateKroegentochtPayment] Failed to delete signup ${signupId}:`, error);
+            });
+        } catch (error: unknown) {
+            safeConsoleError(`[Kroegentocht-Action][initiateKroegentochtPayment] Failed to delete signup ${signupId}:`, error);
         }
 
         return { success: false, error: 'Failed to initiate payment. Please try again later.' };
-
-    } catch {
+    } catch (error: unknown) {
+        safeConsoleError('[Kroegentocht-Action][initiateKroegentochtPayment] Failed to initiate payment:', error);
         return { success: false, error: 'An internal error occurred.' };
     }
 }

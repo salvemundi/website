@@ -4,6 +4,7 @@ import { getPermissions } from "@/shared/lib/permissions";
 import { type AuthContext, type ExtendedSession } from "./types";
 import { extractHeadersSafely } from "./utils";
 import { getImpersonatedUser } from "./impersonation";
+import { safeConsoleError } from '@/server/utils/logger';
 
 export async function beforeHandler(ctx: AuthContext) {
     try {
@@ -29,7 +30,8 @@ export async function beforeHandler(ctx: AuthContext) {
 
             return { response: finalSession };
         }
-    } catch (_e) {
+    } catch (error) {
+        safeConsoleError(`[redis-session/handlers.ts][beforeHandler] Error in beforeHandler:`, error);
         return;
     }
 }
@@ -42,7 +44,8 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
         if (returned && typeof returned === 'object' && 'clone' in returned) {
             try {
                 sessionData = await (returned as Response).clone().json();
-            } catch (_e) {
+            } catch (error) {
+                safeConsoleError(`[redis-session/handlers.ts][afterHandler] Error cloning response:`, error);
                 return returned;
             }
         } else {
@@ -106,11 +109,14 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
             try {
                 const redis = await getRedis();
                 await redis.set(`session:${token}`, JSON.stringify(sessionWithUser), 'EX', 300);
-            } catch (_e) { }
+            } catch (error) {
+                safeConsoleError(`[redis-session/handlers.ts][afterHandler] Error while caching session:`, error);
+            }
         }
 
         return { response: sessionWithUser };
-    } catch (_e) {
+    } catch (error) {
+        safeConsoleError(`[redis-session/handlers.ts][afterHandler] Error in afterHandler:`, error);
         return returned;
     }
 }

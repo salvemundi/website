@@ -9,7 +9,7 @@ import {
 import { getSystemDirectus } from '@/lib/directus';
 import { createItem } from '@directus/sdk';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { logAdminAction } from '@/server/actions/infrastructure/audit.actions';
+import { logAdminAction } from '@/server/actions/infrastructure/audit.actions'; import { safeConsoleError } from '@/server/utils/logger';;
 import {
     fetchUserSignupStatusDb,
     insertTripSignupDb,
@@ -194,7 +194,9 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
                     if (matchesTrip && (matchesUser || matchesEmail)) {
                         return { success: true };
                     }
-                } catch (_error) { }
+                } catch (error: unknown) {
+                    safeConsoleError(`[Reis-Mutations-Action][createTripSignup] Failed to fetch user signup status:`, error);
+                }
             }
 
             await deleteTripSignupDb(signupId);
@@ -221,10 +223,13 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
                     siteUrl: siteUrl
                 }
             })
-        }).catch(() => { });
+        }).catch((error: unknown) => {
+            safeConsoleError(`[Reis-Mutations-Action][createTripSignup] Failed to send trip signup email:`, error);
+        });
 
         return { success: true };
-    } catch (_error) {
+    } catch (error: unknown) {
+        safeConsoleError(`[Reis-Mutations-Action][createTripSignup] Failed to create trip signup:`, error);
         return { success: false, message: 'Interne serverfout tijdens inschrijving.' };
     } finally {
         const currentToken = await redis.get(lockKey);
@@ -242,7 +247,8 @@ export async function revalidateReisAction() {
         revalidatePath('/reis');
         revalidatePath('/beheer/reis');
         return { success: true };
-    } catch (_error) {
+    } catch (error: unknown) {
+        safeConsoleError(`[Reis-Mutations-Action][revalidateReisAction] Failed to revalidate reis:`, error);
         return { success: false };
     }
 }

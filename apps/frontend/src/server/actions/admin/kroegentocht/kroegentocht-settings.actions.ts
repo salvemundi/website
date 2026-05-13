@@ -6,6 +6,7 @@ import { getRedis } from '@/server/auth/redis-client';
 import { FLAGS_CACHE_KEY } from '@/lib/config/feature-flags';
 import { query } from '@/lib/database';
 import { requireKroegAdmin } from './kroegentocht-event.actions';
+import { safeConsoleError } from '@/server/utils/logger';
 
 export async function toggleKroegentochtVisibility(): Promise<{ success: boolean; show?: boolean; error?: string }> {
     await requireKroegAdmin();
@@ -29,7 +30,9 @@ export async function toggleKroegentochtVisibility(): Promise<{ success: boolean
         try {
             const redis = await getRedis();
             await redis.del(FLAGS_CACHE_KEY);
-        } catch (_error) { }
+        } catch (error) {
+            safeConsoleError(`[Kroegentocht-Action][toggleKroegentochtVisibility] Failed to delete feature flag cache:`, error);
+        }
 
         await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -39,10 +42,13 @@ export async function toggleKroegentochtVisibility(): Promise<{ success: boolean
         try {
             const redis = await getRedis();
             await redis.del(FLAGS_CACHE_KEY);
-        } catch (_error) { }
+        } catch (error) {
+            safeConsoleError(`[Kroegentocht-Action][toggleKroegentochtVisibility] Failed to delete feature flag cache:`, error);
+        }
 
         return { success: true, show: newStatus };
-    } catch {
+    } catch (error) {
+        safeConsoleError(`[Kroegentocht-Action][toggleKroegentochtVisibility] Failed to toggle visibility:`, error);
         return { success: false, error: 'Bijwerken mislukt' };
     }
 }
@@ -54,7 +60,8 @@ export async function getKroegentochtSettings() {
         const { rows } = await query('SELECT is_active FROM feature_flags WHERE route_match = $1 LIMIT 1', ['/kroegentocht']);
         const isVisible = rows && rows.length > 0 ? !!rows[0].is_active : true;
         return { show: isVisible };
-    } catch (_error) {
+    } catch (error) {
+        safeConsoleError(`[Kroegentocht-Action][getKroegentochtSettings] Failed to fetch settings:`, error);
         return { show: true };
     }
 }

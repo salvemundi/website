@@ -12,7 +12,7 @@ const pool = new Pool({
 });
 
 pool.on('error', (error) => {
-    console.error('[DB-Plugin] Unexpected error on idle client', error);
+    safeConsoleError('[DB-Plugin] Unexpected error on idle client', error);
 });
 
 export async function query(text: string, params?: any[]) {

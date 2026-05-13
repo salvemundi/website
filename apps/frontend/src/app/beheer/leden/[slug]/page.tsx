@@ -15,6 +15,7 @@ import {
     type DbEventSignup,
     type DbCommittee as DbCommitteeSchema
 } from '@salvemundi/validations/directus/schema';
+import { safeConsoleError } from '@/server/utils/logger';
 
 export default async function LidDetailPage({ params }: { params: Promise<{ slug: string }> }) {
     const resolvedParams = await params;
@@ -143,7 +144,7 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
                     }
                 }
             } catch (error) {
-                console.error("[LidDetailPage] Failed fetching external Azure groups:", error);
+                safeConsoleError("[LidDetailPage][LidDetailPage] Failed fetching external Azure groups:", error);
             }
         }
 
@@ -179,7 +180,7 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
         ) {
             throw error;
         }
-        console.error("[LidDetailPage] Error loading member:", error);
+        safeConsoleError("[LidDetailPage][LidDetailPage] Error loading member:", error);
         notFound();
     }
 }

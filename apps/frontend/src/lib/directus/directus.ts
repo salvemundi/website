@@ -2,6 +2,7 @@ import 'server-only';
 import { createDirectus, rest, staticToken } from '@directus/sdk';
 import { type DirectusSchema } from '@salvemundi/validations/directus/schema';
 import { insertSystemLogInternal } from '@/server/queries/audit.queries';
+import { safeConsoleError } from '@/server/utils/logger';
 
 const directusUrl = process.env.DIRECTUS_SERVICE_URL!;
 
@@ -34,7 +35,7 @@ async function logDirectusError(error: DirectusError) {
             }
         });
     } catch (logErr) {
-        console.error('[DirectusLog] Failed to persist error log:', logErr);
+        safeConsoleError('[DirectusLog] Failed to persist error log:', logErr);
     }
 }
 

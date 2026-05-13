@@ -9,6 +9,7 @@ import { formatPhoneNumber } from '@/lib/utils/phone-utils';
 import { authClient } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import { UseFormRegister, UseFormHandleSubmit, FieldErrors } from 'react-hook-form';
+import { safeConsoleError } from '@/server/utils/logger';
 
 interface ProfielDetailsProps {
     user?: {
@@ -30,11 +31,11 @@ interface ProfielDetailsProps {
 export default function ProfielDetails({
     user = {},
     isEditingPhoneNumber = false,
-    setIsEditingPhoneNumber = () => {},
-    registerPhone = (() => ({ name: 'phone_number', onBlur: async () => {}, onChange: async () => {}, ref: () => {} })) as unknown as UseFormRegister<{ phone_number?: string | null }>,
+    setIsEditingPhoneNumber = () => { },
+    registerPhone = (() => ({ name: 'phone_number', onBlur: async () => { }, onChange: async () => { }, ref: () => { } })) as unknown as UseFormRegister<{ phone_number?: string | null }>,
     handleSubmitPhone = (() => () => { }) as unknown as UseFormHandleSubmit<{ phone_number?: string | null }>,
-    onSavePhone = () => {},
-    resetPhone: _resetPhone = () => {},
+    onSavePhone = () => { },
+    resetPhone: _resetPhone = () => { },
     phoneErrors = {},
     isPending = false
 }: ProfielDetailsProps) {
@@ -49,7 +50,7 @@ export default function ProfielDetails({
                 router.push('/');
             }
         } catch (error) {
-            console.error('Logout failed:', error);
+            safeConsoleError('[ProfielDetails][handleLogout] Logout function failed:', error);
         }
     };
 
@@ -64,9 +65,9 @@ export default function ProfielDetails({
     );
 
     return (
-        <Tile 
-            title="Mijn gegevens" 
-            icon={<Mail className="h-5 w-5" />} 
+        <Tile
+            title="Mijn gegevens"
+            icon={<Mail className="h-5 w-5" />}
             className="h-fit"
             actions={logoutButton}
         >
@@ -122,9 +123,9 @@ export default function ProfielDetails({
                         {isEditingPhoneNumber ? (
                             <form onSubmit={handleSubmitPhone(onSavePhone)} className="flex flex-col w-full gap-2" autoComplete="off">
                                 <div className="flex w-full items-center gap-2">
-                                    <input 
+                                    <input
                                         {...registerPhone("phone_number")}
-                                        type="tel" 
+                                        type="tel"
                                         className={`flex-1 min-w-0 bg-white dark:bg-black/40 border ${phoneErrors.phone_number ? 'border-red-500 ring-1 ring-red-500' : 'border-slate-300 dark:border-white/20'} rounded-lg px-3 py-1.5 text-sm font-medium focus:ring-2 focus:ring-[var(--color-purple-500)] focus:border-transparent outline-none`}
                                         placeholder="0612345678"
                                     />

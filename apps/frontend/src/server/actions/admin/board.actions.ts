@@ -1,5 +1,6 @@
 import { query } from '@/lib/database';
 import { boardHistorySchema, type Board } from '@salvemundi/validations/schema/board.zod';
+import { safeConsoleError } from '@/server/utils/logger';
 export async function getBoardHistory(): Promise<Board[]> {
 
     const sql = `
@@ -39,14 +40,14 @@ export async function getBoardHistory(): Promise<Board[]> {
         const parsed = boardHistorySchema.safeParse(rows);
 
         if (!parsed.success) {
-            console.error('[BoardActions] Zod validation failed');
+            safeConsoleError('[BoardActions][getBoardHistory] Zod validation failed', parsed.error);
             return [];
         }
 
         return parsed.data;
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Onbekende fout';
-        console.error('[BoardActions] SQL Query failed:', message);
+        safeConsoleError('[BoardActions][getBoardHistory] SQL Query failed:', message);
         return [];
     }
 }

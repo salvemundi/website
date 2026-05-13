@@ -4,7 +4,7 @@ import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 
 // V7 Specifics
 import AdminReisTableIsland from '@/components/islands/admin/AdminReisTableIsland';
-import { Ticket, Plus } from 'lucide-react';
+import { Ticket, Plus, Mail, Edit2 } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getReisSiteSettings } from '@/server/actions/events/reis.actions';
@@ -133,19 +133,63 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
             title={`Reis Beheer — ${activeTrip.name}`}
             subtitle="Beheer aanmeldingen, activiteiten en instellingen voor deze reis"
             backHref="/beheer"
-            hideToolbar={true}
+            actions={
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+                    <div className="hidden xl:flex items-center gap-4 bg-[var(--beheer-card-soft)] px-4 py-2 rounded-2xl border border-[var(--beheer-border)]/50 shadow-sm">
+                        <div className="flex flex-col items-center px-2">
+                            <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1">Aanmeldingen</span>
+                            <span className="text-sm font-bold text-[var(--beheer-text)] leading-none">{stats.total}</span>
+                        </div>
+                        <div className="w-px h-6 bg-[var(--beheer-border)]/20" />
+                        <div className="flex flex-col items-center px-2">
+                            <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1">Bevestigd</span>
+                            <span className="text-sm font-bold text-[var(--beheer-active)] leading-none">{stats.confirmed}</span>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        {/* Trip Switcher - Logic moves here */}
+                        <div className="relative group min-w-[160px]">
+                            <select
+                                defaultValue={activeTripId}
+                                // This is a bit tricky in a Server Component without a client wrapper for the select
+                                // But we can use a client component for just the switcher if needed
+                                className="beheer-select w-full pr-8 py-1.5 text-xs font-semibold"
+                            >
+                                {trips.map(t => (
+                                    <option key={t.id} value={t.id}>{t.name}</option>
+                                ))}
+                            </select>
+                            {/* Note: Switcher logic will need a small client wrapper or we use the one in the island */}
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                            <Link
+                                href="/beheer/reis/mail"
+                                className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-xl text-[11px] font-semibold hover:border-[var(--beheer-accent)]/50 transition-all shadow-sm"
+                            >
+                                <Mail className="h-3.5 w-3.5 text-[var(--beheer-accent)]" />
+                                Email
+                            </Link>
+                            <Link
+                                href="/beheer/reis/instellingen"
+                                className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-xl text-[11px] font-semibold hover:border-[var(--beheer-accent)]/50 transition-all shadow-sm"
+                            >
+                                <Edit2 className="h-3.5 w-3.5" />
+                                Instellingen
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            }
         >
-            <div className="pb-8 space-y-2">
+            <div className="pb-8">
                 <AdminReisTableIsland
-                    title={`Reis Beheer — ${activeTrip.name}`}
-                    subtitle="Beheer aanmeldingen, activiteiten en instellingen voor deze reis"
-                    backHref="/beheer"
+                    title={activeTrip.name}
+                    trip={activeTrip as Trip}
                     initialSignups={signups}
                     initialSignupActivities={activitiesMap}
                     allTripActivities={allTripActivities}
-                    trip={activeTrip as Trip}
-                    trips={trips}
-                    stats={stats}
                 />
             </div>
         </AdminPageShell>

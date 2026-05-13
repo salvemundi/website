@@ -34,7 +34,6 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
             const formData: SignupFormData = {
                 voornaam: user.first_name,
                 achternaam: user.last_name || '',
-                tussenvoegsel: '',
                 email: user.email,
                 telefoon: user.phone_number || '',
                 geboortedatum: user.date_of_birth || '',

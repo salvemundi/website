@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { fetchWithRetry } from '@/lib/directus/directus';
+import { logInternalError } from '@/server/utils/logger';
 
-/**
- * Proxy route voor Directus assets.
- * Hiermee kunnen we afbeeldingen ophalen via de interne Directus URL (v7-core-directus)
- * met de DIRECTUS_STATIC_TOKEN, zonder dat de Public rol in Directus rechten nodig heeft.
- */
+export const runtime = 'nodejs';
 
-// Strikte validatie: de ID móét een UUID zijn om Path Traversal / LFI te voorkomen.
 const assetIdSchema = z.string().uuid();
 
 export async function GET(
@@ -16,9 +12,8 @@ export async function GET(
     { params }: { params: Promise<{ id: string }> }
 ) {
     const { id } = await params;
-
-    // Valideer de ID
     const validated = assetIdSchema.safeParse(id);
+
     if (!validated.success) {
         return new NextResponse('Invalid Asset ID', { status: 400 });
     }
@@ -35,24 +30,17 @@ export async function GET(
 
     try {
         const res = await fetchWithRetry(url, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            },
+            headers: { Authorization: `Bearer ${token}` },
             cache: 'no-store'
         });
 
         if (!res.ok) {
-            console.error(`Directus error for asset ${id}: ${res.status}`);
+            logInternalError(`Asset Route Error: ${res.status}`, { id });
             return new Response(null, { status: res.status });
         }
 
         const contentType = res.headers.get('content-type') || 'application/octet-stream';
         const arrayBuffer = await res.arrayBuffer();
-
-        if (arrayBuffer.byteLength === 0) {
-            console.warn(`Empty buffer for asset ${id}`);
-            return new Response(null, { status: 404 });
-        }
 
         return new Response(arrayBuffer, {
             status: 200,
@@ -63,7 +51,7 @@ export async function GET(
         });
     } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error(`Critical error fetching asset ${id}:`, errorMessage);
+        logInternalError(`Critical asset fetch error: ${errorMessage}`, { id });
         return new Response(null, { status: 500 });
     }
 }

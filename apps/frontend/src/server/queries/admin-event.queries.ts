@@ -3,6 +3,7 @@ import { query } from '@/lib/database';
 import { toLocalISOString } from '@/lib/utils/date-utils';
 import { activitiesSchema, type Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { type DbEventSignup } from '@salvemundi/validations/directus/schema';
+import { safeConsoleError } from '@/server/utils/logger';
 
 /**
  * Pure database queries for event management.
@@ -111,8 +112,7 @@ export async function getActivitiesInternal(onlyPublished = true): Promise<Activ
 
     const parsed = activitiesSchema.safeParse(mappedData);
     if (!parsed.success) {
-        // Log validation error but return mapped data if possible for limited UI resilience
-        console.error('[Validation Error] getActivitiesInternal:', parsed.error);
+        safeConsoleError('[Validation Error] getActivitiesInternal:', parsed.error);
         return mappedData as Activiteit[];
     }
 
@@ -137,7 +137,7 @@ export async function getActivityByIdInternal(id: string): Promise<Activiteit | 
 
     const parsed = activitiesSchema.element.safeParse(mapped);
     if (!parsed.success) {
-        console.error('[Validation Error] getActivityByIdInternal:', parsed.error);
+        safeConsoleError('[Validation Error] getActivityByIdInternal:', parsed.error);
         return mapped as Activiteit;
     }
     return parsed.data;

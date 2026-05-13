@@ -4,6 +4,7 @@ import { query } from '@/lib/database';
 import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
 import { revalidatePath } from 'next/cache';
 import { isSuperAdmin } from '@/lib/auth/auth-utils';
+import { safeConsoleError } from '@/server/utils/logger';
 
 export type AutomationSetting = {
     id: string;
@@ -56,7 +57,7 @@ export async function getSystemAutomationSettings(): Promise<{ success: boolean;
             }))
         };
     } catch (error: unknown) {
-        console.error('[Automation] Failed to fetch settings:', error);
+        safeConsoleError('[Automation] Failed to fetch settings:', error);
         return { success: false, error: 'Ophalen automatisering instellingen mislukt' };
     }
 }

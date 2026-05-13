@@ -8,8 +8,6 @@ import {
     ChevronDown
 } from 'lucide-react';
 import { deleteTripActivity, createTripActivity, updateTripActivity } from '@/server/actions/admin/reis-activities.actions';
-import AdminToolbar from '@/components/ui/admin/AdminToolbar';
-import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 
 import { useAdminToast } from '@/hooks/use-admin-toast';
@@ -60,10 +58,10 @@ export default function ReisActiviteitenIsland({
         let res;
         if (editingActivity?.id) {
             formData.set('id', editingActivity.id.toString());
-            res = await updateTripActivity({}, formData);
+            res = await updateTripActivity(formData);
         } else {
             formData.set('trip_id', selectedTripId.toString());
-            res = await createTripActivity({}, formData);
+            res = await createTripActivity(formData);
         }
 
         if (res.success) {
@@ -95,46 +93,37 @@ export default function ReisActiviteitenIsland({
     const _totalSignups = Object.values(signupsByActivity).reduce((acc, curr) => acc + curr.length, 0);
     const _avgPrice = activities.length > 0 ? (activities.reduce((acc, curr) => acc + (curr.price || 0), 0) / activities.length).toFixed(2) : '0.00';
 
-    const adminStats = [
-        { label: 'Activiteiten', value: activities.length, icon: Layers, theme: 'blue' },
-        { label: 'Actief', value: activities.filter(a => a.is_active).length, icon: Layers, theme: 'emerald' },
-    ];
 
     const _activeTrip = initialTrips.find(t => t.id === selectedTripId) || initialTrips[0];
 
     return (
-        <>
-            <AdminToolbar
-                actions={
-                    <>
-                        <div className="relative group min-w-[240px]">
-                            <select
-                                value={selectedTripId}
-                                onChange={handleTripChange}
-                                className="w-full pl-4 pr-10 py-3 bg-[var(--bg-main)]/40 dark:bg-black/20 backdrop-blur-sm border-0 ring-1 ring-[var(--beheer-border)]/40 text-[var(--beheer-text)] rounded-xl text-sm font-semibold tracking-tight focus:ring-2 focus:ring-[var(--beheer-accent)] focus:bg-[var(--bg-main)]/80 transition-all appearance-none cursor-pointer shadow-inner outline-none"
-                            >
-                                {initialTrips.map(trip => (
-                                    <option key={trip.id} value={trip.id} className="bg-[var(--beheer-card-bg)] text-base font-semibold">{trip.name}</option>
-                                ))}
-                            </select>
-                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)] transition-colors">
-                                <ChevronDown className="h-4 w-4" />
-                            </div>
-                        </div>
-
-                        <button
-                            onClick={() => setEditingActivity({})}
-                            className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[var(--beheer-accent)] hover:opacity-90 text-white rounded-xl font-semibold text-base shadow-lg transition-all active:scale-95 flex items-center gap-2 group border border-white/10"
+        <div className="w-full">
+            <div className="flex flex-col gap-8">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+                    <div className="relative group min-w-[240px]">
+                        <select
+                            value={selectedTripId}
+                            onChange={handleTripChange}
+                            className="beheer-select w-full pr-10 py-2.5 text-xs font-semibold"
                         >
-                            <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform" />
-                            <span>Nieuwe Activiteit</span>
-                        </button>
-                    </>
-                }
-            />
+                            {initialTrips.map(trip => (
+                                <option key={trip.id} value={trip.id}>{trip.name}</option>
+                            ))}
+                        </select>
+                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--beheer-text-muted)] opacity-40 group-hover:text-[var(--beheer-accent)] pointer-events-none" />
+                    </div>
 
-            <div className="admin-container py-8">
-                <AdminStatsBar stats={adminStats} />
+                    <button
+                        onClick={() => setEditingActivity({})}
+                        className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[var(--beheer-accent)] text-white rounded-xl font-semibold text-xs shadow-lg hover:opacity-90 transition-all active:scale-95 border border-white/10"
+                    >
+                        <Plus className="h-3.5 w-3.5" />
+                        <span>Nieuwe Activiteit</span>
+                    </button>
+                </div>
+
+
+
 
                 {/* Form Section */}
                 {editingActivity && (
@@ -182,14 +171,11 @@ export default function ReisActiviteitenIsland({
                     />
                 )}
 
-                {/* Toast Notification */}
-                {toast && (
-                    <AdminToast
-                        toast={toast}
-                        onClose={hideToast}
-                    />
-                )}
             </div>
-        </>
+            <AdminToast
+                toast={toast}
+                onClose={hideToast}
+            />
+        </div>
     );
 }

@@ -8,6 +8,7 @@ import { Pool } from "pg";
 import { getRedis } from "@/server/auth/redis-client";
 import { isSuperAdmin } from "@/lib/auth/auth-utils";
 import { checkAdminAccess } from "@/server/actions/admin/admin-utils.actions";
+import { safeConsoleError } from '@/server/utils/logger';
 
 const pool = new Pool({
     user: process.env.DB_USER,
@@ -63,7 +64,7 @@ export async function setImpersonateToken(token: string) {
                 [targetUser.id]
             );
         } catch (error) {
-            console.error('[Impersonation] Failed to fetch target user committees:', error);
+            safeConsoleError('[Impersonation] Failed to fetch target user committees:', error);
         }
 
         const fullName = `${targetUser.first_name || ''} ${targetUser.last_name || ''}`.trim();
@@ -84,7 +85,7 @@ export async function setImpersonateToken(token: string) {
             name: fullName || targetUser.email || 'Onbekende gebruiker'
         };
     } catch (error) {
-        console.error('[Impersonation] Error setting token:', error);
+        safeConsoleError('[Impersonation] Error setting token:', error);
         return { success: false, error: "Deze token bestaat niet of is verlopen." };
     }
 }

@@ -10,6 +10,7 @@ import { triggerUserSyncAction } from '@/server/actions/infrastructure/azure-syn
 import { clearSessionCache } from '@/server/auth/session-utils';
 import { getAuthorizedUser } from '@/server/actions/events/activiteiten/auth-check';
 import sharp from 'sharp';
+import { safeConsoleError } from '@/server/utils/logger';
 
 export async function updateUserProfile(data: z.infer<typeof updateProfileSchema>) {
     const user = await getAuthorizedUser();
@@ -34,8 +35,7 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
 
     try {
         const entraId = user.entra_id;
-        
-        // Phase 1: Entra ID (Phone Number) - THE SOURCE OF TRUTH
+
         if (parsed.data.phone_number && entraId) {
             const azureRes = await fetch(`${AZURE_MGMT_URL}/api/users/${entraId}`, {
                 method: 'PATCH',
@@ -47,18 +47,19 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
             });
 
             if (!azureRes.ok) {
-                const errorData = await azureRes.json().catch(() => ({}));
-                return { 
-                    success: false, 
-                    error: `Azure AD update mislukt: ${errorData.details || 'Ongeldig telefoonnummer of service onbeschikbaar.'}` 
+                const errorData = await azureRes.json().catch((_error: unknown) => ({}));
+                console.log(errorData)
+                return {
+                    success: false,
+                    error: `Azure AD update mislukt: ${errorData.details || 'Ongeldig telefoonnummer of service onbeschikbaar.'}`
                 };
             }
-            
-            // Directus update via Sync task (Azure -> Directus)
-            await triggerUserSyncAction(entraId).catch(() => {});
+
+            await triggerUserSyncAction(entraId).catch((error: unknown) => {
+                safeConsoleError(`[SYNC-ACTION] Error triggering sync:`, error);
+            });
         }
 
-        // Phase 2: Directus Only Fields (Minecraft)
         const directusOnlyData: Record<string, unknown> = {};
         if (parsed.data.minecraft_username !== undefined) {
             directusOnlyData.minecraft_username = parsed.data.minecraft_username;
@@ -79,9 +80,6 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
     }
 }
 
-/**
- * Upload a new avatar to Azure AD, then sync to Directus.
- */
 export async function uploadUserAvatar(formData: FormData) {
     const user = await getAuthorizedUser();
 
@@ -100,7 +98,6 @@ export async function uploadUserAvatar(formData: FormData) {
         return { success: false, error: 'Geen bestand geselecteerd.' };
     }
 
-    // Basic validation
     if (!file.type.startsWith('image/')) {
         return { success: false, error: 'Alleen afbeeldingen zijn toegestaan.' };
     }
@@ -114,18 +111,16 @@ export async function uploadUserAvatar(formData: FormData) {
     }
 
     try {
-        // Step 1: Compress & Resize with sharp
         const arrayBuffer = await file.arrayBuffer();
         const inputBuffer = Buffer.from(arrayBuffer);
-        
+
         const compressedBuffer = await sharp(inputBuffer)
             .resize(648, 648, { fit: 'cover', position: 'center' })
             .jpeg({ quality: 80 })
             .toBuffer();
 
-        // Step 2: Forward to Azure Management Service
         const azureFormData = new FormData();
-        azureFormData.append('file', new Blob([compressedBuffer], { type: 'image/jpeg' }), 'avatar.jpg');
+        azureFormData.append('file', new Blob([new Uint8Array(compressedBuffer)], { type: 'image/jpeg' }), 'avatar.jpg');
 
         const azureRes = await fetch(`${AZURE_MGMT_URL}/api/users/${entraId}/photo`, {
             method: 'PUT',
@@ -136,22 +131,27 @@ export async function uploadUserAvatar(formData: FormData) {
         });
 
         if (!azureRes.ok) {
-            const errorData = await azureRes.json().catch(() => ({}));
-            console.error('[AvatarUpload] Azure error:', errorData);
+            const errorData = await azureRes.json().catch((error: unknown) => {
+                safeConsoleError('[AvatarUpload] Azure response was geen geldige JSON:', error);
+                return null;
+            });
+
+            const safeErrorCode = errorData?.error?.code || errorData?.code || azureRes.status;
+            const safeErrorMessage = errorData?.error?.message || errorData?.message || 'Onbekende Azure fout';
+
+            safeConsoleError(`[AvatarUpload] Azure API Error [${safeErrorCode}]:`, safeErrorMessage);
+
             return { success: false, error: 'Fout bij opslaan in Microsoft Entra ID.' };
         }
 
-        // Step 3: Trigger Sync Task (Azure -> Directus)
-        // We wait for the sync to complete so the UI can refresh with the new image
-        // Only sync the profile_photo field to avoid accidental updates to other fields
         await triggerUserSyncAction(entraId, { fields: ['profile_photo'] });
 
         await clearSessionCache();
 
         revalidatePath('/profiel');
         return { success: true };
-    } catch (err: unknown) {
-        console.error('[AvatarUpload] Error:', err);
+    } catch (error: unknown) {
+        safeConsoleError('[AvatarUpload] Error:', error);
         return { success: false, error: 'Uploaden van profielfoto mislukt.' };
     }
 }

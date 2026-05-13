@@ -19,7 +19,7 @@ export class TokenService {
                 return cachedToken;
             }
         } catch (error) {
-            console.error('[TokenService] Redis cache read error:', error);
+            safeConsoleError('[TokenService] Redis cache read error:', error);
         }
 
         console.log('[TokenService] Cache miss or expired. Fetching fresh token from Azure...');
@@ -43,7 +43,7 @@ export class TokenService {
             await redis.set(cacheKey, tokenResponse.token, 'EX', 3000);
             console.log('[TokenService] New token cached in Redis for 50 minutes (3000s buffer)');
         } catch (error) {
-            console.error('[TokenService] Redis cache write error:', error);
+            safeConsoleError('[TokenService] Redis cache write error:', error);
         }
 
         return tokenResponse.token;

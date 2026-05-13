@@ -16,7 +16,7 @@ export default function ReisInstellingenIsland({
     initialSettings
 }: ReisInstellingenIslandProps) {
     return (
-        <div className="admin-container py-8 space-y-8">
+        <div className="w-full space-y-8">
             <div className="bg-[var(--beheer-card-bg)] rounded-3xl border border-[var(--beheer-border)] p-8 shadow-sm">
                 <h2 className="text-2xl font-bold text-[var(--beheer-text)] mb-4 tracking-tight">
                     Reis <span className="text-[var(--beheer-accent)]">Instellingen</span>

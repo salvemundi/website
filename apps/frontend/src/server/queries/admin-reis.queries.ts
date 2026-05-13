@@ -8,6 +8,7 @@ import {
     type TripActivity
 } from '@salvemundi/validations/schema/admin-reis.zod';
 import { z } from 'zod';
+import { safeConsoleError } from '@/server/utils/logger';
 
 /**
  * Shared query logic for trips in the admin panel.
@@ -28,7 +29,7 @@ export async function getTrips(): Promise<Trip[]> {
 
         return parsed.data;
     } catch (error) {
-        console.error('[AdminReisQueries] Failed to fetch trips:', error);
+        safeConsoleError('[AdminReisQueries] Failed to fetch trips:', error);
         return [];
     }
 }
@@ -43,7 +44,7 @@ export async function getTripActivities(tripId: number): Promise<TripActivity[]>
         const activities = await fetchTripActivitiesByTripIdDb(tripId);
         return activities as TripActivity[];
     } catch (error) {
-        console.error('[AdminReisQueries] Failed to fetch trip activities:', error);
+        safeConsoleError('[AdminReisQueries] Failed to fetch trip activities:', error);
         return [];
     }
 }

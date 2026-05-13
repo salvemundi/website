@@ -1,22 +1,18 @@
 'use server';
 
-import { revalidateTag, revalidatePath } from "next/cache";
 import { getSystemDirectus } from "@/lib/directus";
 import { getAuthorizedUser, verifyActivityBOLA } from "@/server/actions/events/activiteiten/auth-check";
+import { logAdminAction } from '@/server/actions/infrastructure/audit.actions';
+import { deleteEventSignupDb, updateEventSignupDb } from "@/server/internal/event-db.utils";
+import { safeConsoleError } from '@/server/utils/logger';
 import {
-    deleteItem,
     createItem,
-    updateItem,
-    readUsers
+    deleteItem,
+    readUsers,
+    updateItem
 } from "@directus/sdk";
-import { USER_BASIC_FIELDS, type UserBasic } from "@salvemundi/validations";
-import { updateEventSignupDb, deleteEventSignupDb } from "@/server/internal/event-db.utils";
-import { logAdminAction } from "@/server/actions/infrastructure/audit.actions";
-import {
-    deleteSignupSchema,
-    createManualSignupSchema,
-    toggleCheckInSchema
-} from "@salvemundi/validations";
+import { createManualSignupSchema, deleteSignupSchema, toggleCheckInSchema, USER_BASIC_FIELDS, type UserBasic } from "@salvemundi/validations";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 
 const getNotificationUrl = () => process.env.INTERNAL_NOTIFICATION_API_URL || process.env.NEXT_PUBLIC_NOTIFICATION_API_URL;
@@ -46,8 +42,8 @@ async function sendCancellationEmail(email: string, eventName: string) {
                 html: `Dear member,<br/><br/>You have been signed off from the activity: <strong>${eventName}</strong>.<br/><br/>Kind regards,<br/>The Salve Mundi Team`
             })
         });
-    } catch (_error) {
-
+    } catch (error) {
+        safeConsoleError('[Aanmeldingen.actions - sendCancellationEmail] Fout opgetreden:', error);
     }
 }
 
@@ -170,7 +166,7 @@ export async function createManualSignupAction(
             revalidatePath('/beheer/activiteiten');
             return { success: true };
         } catch (error) {
-            console.error('[CMS Sync] Directus createItem failed (signup):', error);
+            safeConsoleError('[CMS Sync] Directus createItem failed (signup):', error);
             await logAdminAction('activity_signup_failed', 'ERROR', {
                 error: error instanceof Error ? error.message : JSON.stringify(error),
                 payload: payload

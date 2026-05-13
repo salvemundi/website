@@ -25,6 +25,7 @@ import {
 import EventDropdown from '@/components/islands/admin/kroegentocht/EventDropdown';
 import SignupList from '@/components/islands/admin/kroegentocht/SignupList';
 import { type PubCrawlEvent, type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
+import { safeConsoleError } from '@/server/utils/logger';
 
 interface ExtendedSignup extends PubCrawlSignup {
     participants?: { name: string; initial: string }[];
@@ -51,7 +52,6 @@ export default function KroegentochtManagementIsland({
     const [error, setError] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
 
-    // Wrapped in useCallback for Zero Warning Policy compliance
     const loadSignups = useCallback(async (eventId: number | string) => {
         setError(null);
         startTransition(async () => {
@@ -59,7 +59,7 @@ export default function KroegentochtManagementIsland({
                 const data = await getPubCrawlSignups(Number(eventId));
                 setSignups(data);
             } catch (error) {
-                console.error('[Kroegentocht] Error loading signups:', error);
+                safeConsoleError('[KroegentochtManagementIsland][loadSignups] Error loading signups:', error);
                 showToast('Fout bij het laden van aanmeldingen. Probeer het opnieuw.', 'error');
                 setError('Kon gegevens niet ophalen van de server.');
             }
@@ -73,7 +73,6 @@ export default function KroegentochtManagementIsland({
         }
     };
 
-    // Fixed dependencies for Zero Warning Policy compliance
     useEffect(() => {
         if (selectedEvent && signups.length === 0 && initialSignups.length === 0) {
             loadSignups(selectedEvent.id);
@@ -160,7 +159,7 @@ export default function KroegentochtManagementIsland({
                 }
             />
 
-            <div className="admin-container py-4 md:py-8">
+            <div className="w-full py-4 md:py-8">
                 <div className="flex flex-col">
 
                     {error && (

@@ -10,6 +10,7 @@ import { getIntroPlanningInternal } from '@/server/queries/admin-intro.queries';
 import { getSystemDirectus } from "@/lib/directus";
 import { updateItem, createItem } from '@directus/sdk';
 import { checkIntroAdminAccess, genericDelete } from './intro-signup.actions';
+import { safeConsoleError } from '@/server/utils/logger';
 
 export async function getIntroPlanning(): Promise<IntroPlanningItem[]> {
     await checkIntroAdminAccess();
@@ -44,7 +45,7 @@ export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Pro
                 day = d.toLocaleDateString('nl-NL', { weekday: 'long' });
             }
         } catch (error) {
-            console.error('Error calculating day:', error);
+            safeConsoleError('Error calculating day:', error);
         }
     }
 
@@ -75,7 +76,7 @@ export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Pro
         };
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Onbekende fout';
-        console.error('[AdminIntro] Failed to upsert planning:', error);
+        safeConsoleError('[AdminIntro] Failed to upsert planning:', error);
         return { success: false, error: `Opslaan mislukt: ${message}` };
     }
 }

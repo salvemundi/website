@@ -2,6 +2,7 @@
 
 import { committeesSchema, type Committee } from '@salvemundi/validations/schema/committees.zod';
 import { query } from '@/lib/database';
+import { safeConsoleError } from '@/server/utils/logger';
 
 export async function getCommittees(): Promise<Committee[]> {
     try {
@@ -36,13 +37,13 @@ export async function getCommittees(): Promise<Committee[]> {
         const parsed = committeesSchema.safeParse(committeesWithMembers);
 
         if (!parsed.success) {
-            console.error('[Validation Error] getCommittees:', JSON.stringify(parsed.error.format(), null, 2));
+            safeConsoleError('[Committees] Failed to fetch committees:', parsed.error.format());
             return [];
         }
 
         return parsed.data;
     } catch (error: unknown) {
-        console.error('[Committees] Failed to fetch committees:', error);
+        safeConsoleError('[Committees] Failed to fetch committees:', error);
         return [];
     }
 }
@@ -95,7 +96,7 @@ export async function getCommitteeBySlug(slug: string): Promise<Committee | null
         const parsed = committeesSchema.element.safeParse(rows[0]);
         return parsed.success ? parsed.data : null;
     } catch (error: unknown) {
-        console.error('[Committees] Failed to fetch committee by slug:', error);
+        safeConsoleError('[Committees] Failed to fetch committee by slug:', error);
         return null;
     }
 }

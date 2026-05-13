@@ -2,9 +2,6 @@
 
 import { useState, useTransition, useMemo } from 'react';
 import {
-    Users,
-    UserCheck,
-    UserMinus,
     Bell,
     Download,
     Loader2
@@ -13,7 +10,6 @@ import { downloadCSV } from '@/lib/utils/export';
 import { sendMembershipReminderAction } from '@/server/actions/admin/leden.actions';
 import { format, startOfDay } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import LedenFilters from './LedenFilters';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
@@ -24,12 +20,10 @@ export type Member = AdminMember;
 
 interface LedenOverzichtIslandProps {
     initialMembers?: Member[];
-    initialTotalCount?: number;
 }
 
 export default function LedenOverzichtIsland({
-    initialMembers = [],
-    initialTotalCount = 0
+    initialMembers = []
 }: LedenOverzichtIslandProps) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [isPending] = useTransition();
@@ -52,7 +46,6 @@ export default function LedenOverzichtIsland({
     };
 
     const members = initialMembers;
-    const totalCount = initialTotalCount;
 
     const filteredMembers = useMemo(() => {
         return members.filter(m => {
@@ -101,14 +94,7 @@ export default function LedenOverzichtIsland({
         downloadCSV(data, `Leden_${format(new Date(), 'yyyy-MM-dd')}.csv`);
     };
 
-    const activeCount = members.filter(m => isMembershipActive(m)).length;
-    const inactiveCount = members.filter(m => !isMembershipActive(m)).length;
 
-    const adminStats = [
-        { label: 'Totaal', value: totalCount, icon: Users, trend: 'Accounts' },
-        { label: 'Actief', value: activeCount, icon: UserCheck, trend: 'Leden' },
-        { label: 'Verlopen', value: inactiveCount, icon: UserMinus, trend: 'Niet Actief' },
-    ];
 
     return (
         <>
@@ -131,7 +117,7 @@ export default function LedenOverzichtIsland({
                 </button>
             </div>
 
-            <AdminStatsBar stats={adminStats} />
+
 
             <LedenFilters
                 searchQuery={searchQuery}

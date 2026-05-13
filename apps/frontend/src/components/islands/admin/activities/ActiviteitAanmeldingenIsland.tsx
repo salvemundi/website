@@ -1,12 +1,10 @@
 'use client';
 
 import { useState, useMemo, useOptimistic, useTransition } from 'react';
-import { Search, Download, UserPlus, Users, UserCheck } from 'lucide-react';
+import { Search, Download, UserPlus } from 'lucide-react';
 import { deleteSignupAction, toggleCheckInAction } from '@/server/actions/admin/aanmeldingen.actions';
 import ManualSignupModal from './ManualSignupModal';
 import { useRouter } from 'next/navigation';
-import AdminToolbar from '@/components/ui/admin/AdminToolbar';
-import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 
@@ -104,15 +102,6 @@ export default function ActiviteitAanmeldingenIsland({
         });
     }, [optimisticSignups, searchQuery]);
 
-    // 3. Stats Calculation
-    const stats = useMemo(() => {
-        const base = searchQuery ? filteredSignups : (initialSignups || []);
-        return {
-            total: base.length,
-            checkedIn: base.filter(s => s.checked_in).length,
-        };
-    }, [filteredSignups, searchQuery, initialSignups]);
-
     // 4. Action Handlers
     async function handleToggleCheckIn(signupId: number, currentCheckedIn: boolean) {
         const newValue = !currentCheckedIn;
@@ -144,65 +133,46 @@ export default function ActiviteitAanmeldingenIsland({
         setIsDeleting(null);
     }
 
-    const adminStats = [
-        { label: 'Aanmeldingen', value: stats.total, icon: Users },
-        { 
-            label: 'Plekken over', 
-            value: event.max_sign_ups 
-                ? `${event.max_sign_ups - stats.total} van de ${event.max_sign_ups}` 
-                : '∞', 
-            icon: Users
-        },
-        { label: 'Ingecheckt via ticket', value: stats.checkedIn, icon: UserCheck },
-    ];
 
     return (
-        <>
-            <AdminToolbar 
-                title={event.name}
-                subtitle="Deelnemerslijst en inchecken"
-                backHref="/beheer/activiteiten"
-                actions={
-                    <>
+        <div className="w-full">
+            <div className="flex flex-col gap-8">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+                    <div className="flex items-center gap-1.5 order-2 sm:order-1">
                         <button
                             onClick={() => exportSignupsToCSV(filteredSignups, event.name)}
                             disabled={filteredSignups.length === 0}
-                            className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-xs font-semibold tracking-widest hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50"
+                            className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-xl text-xs font-semibold hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
                         >
-                            <Download className="h-4 w-4" />
+                            <Download className="h-3.5 w-3.5" />
                             Exporteer
                         </button>
                         {canAccessEdit && (
                             <button
                                 onClick={() => setIsManualModalOpen(true)}
-                                className="flex items-center justify-center gap-2 px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] bg-[var(--beheer-accent)] text-white font-semibold text-xs tracking-widest rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95"
+                                className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[var(--beheer-accent)] text-white font-semibold text-xs rounded-xl shadow-lg hover:opacity-90 transition-all active:scale-95 border border-white/10"
                             >
-                                <UserPlus className="h-4 w-4" />
+                                <UserPlus className="h-3.5 w-3.5" />
                                 Handmatig
                             </button>
                         )}
-                    </>
-                }
-            />
-
-            <div className="admin-container py-8">
-                <AdminStatsBar stats={adminStats} />
-
-                {/* Search Bar */}
-                <div className="mb-10 relative group max-w-xl">
-                    <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none z-20">
-                        <Search className="h-4 w-4 text-[var(--beheer-text-muted)] group-focus-within:text-[var(--beheer-accent)] transition-colors" />
                     </div>
-                    <input
-                        type="text"
-                        placeholder="Zoek op naam, email of telefoon..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        autoComplete="off"
-                        suppressHydrationWarning
-                        className="w-full pl-11 pr-5 py-3 rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] placeholder:text-[var(--beheer-text-muted)] focus:ring-2 focus:ring-[var(--beheer-accent)]/20 focus:border-[var(--beheer-accent)] outline-none transition-all shadow-sm font-bold tracking-widest text-[10px]"
-                    />
+
+                    {/* Search Bar */}
+                    <div className="relative group w-full sm:w-[320px] order-1 sm:order-2">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--beheer-text-muted)] opacity-40 group-focus-within:text-[var(--beheer-accent)] group-focus-within:opacity-100 transition-all" />
+                        <input
+                            type="text"
+                            placeholder="Zoek deelnemers..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="beheer-input w-full pl-11! pr-4 py-2"
+                        />
+                    </div>
                 </div>
+
+
+
 
                 <ManualSignupModal
                     isOpen={isManualModalOpen}
@@ -235,6 +205,6 @@ export default function ActiviteitAanmeldingenIsland({
                 </div>
             </div>
             <AdminToast toast={toast} onClose={hideToast} />
-        </>
+        </div>
     );
 }

@@ -1,11 +1,7 @@
 import 'server-only';
 import { query } from '@/lib/database';
 import { type PendingSignup } from '@salvemundi/validations/schema/audit.zod';
-
-/**
- * SQL-First queries for Audit and Logging.
- * Bypasses Directus API for immediate consistency and better performance.
- */
+import { safeConsoleError } from '@/server/utils/logger';
 
 export interface SystemLog {
     id: string;
@@ -69,7 +65,7 @@ export async function getPendingSignupsInternal(): Promise<PendingSignup[]> {
 
         return result;
     } catch (error: unknown) {
-        console.error('[AuditQueries] Failed to fetch pending signups:', error);
+        safeConsoleError('[AuditQueries] Failed to fetch pending signups:', error);
         return [];
     }
 }
@@ -112,7 +108,7 @@ export async function getSystemLogsInternal(limit: number = 50, source: 'admin' 
 
         return { logs, totalCount };
     } catch (error: unknown) {
-        console.error('[AuditQueries] Failed to fetch system logs:', error);
+        safeConsoleError('[AuditQueries] Failed to fetch system logs:', error);
         return { logs: [], totalCount: 0 };
     }
 }
@@ -139,6 +135,6 @@ export async function insertSystemLogInternal(data: {
         `;
         await query(sql, [data.type, data.status, payloadStr]);
     } catch (error: unknown) {
-        console.error('[AuditQueries] Failed to insert system log:', error);
+        safeConsoleError('[AuditQueries] Failed to insert system log:', error);
     }
 }

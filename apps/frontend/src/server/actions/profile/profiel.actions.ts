@@ -14,6 +14,7 @@ import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { query } from '@/lib/database';
 import { fetchUserEventSignupsDb } from '@/server/internal/event-db.utils';
 import { fetchUserPubCrawlSignupsDb } from '@/server/internal/kroegentocht-db.utils';
+import { safeConsoleError } from '@/server/utils/logger';
 import { type z } from 'zod';
 
 /**
@@ -24,13 +25,13 @@ function safeParseArray<T>(schema: z.ZodType<T>, data: unknown[], context: strin
     const parsed = schema.array().safeParse(data);
     if (parsed.success) return parsed.data;
 
-    console.error(`[${context}] Validation failed, attempting recovery:`, parsed.error);
+    safeConsoleError(`[${context}] Validation failed, attempting recovery:`, parsed.error);
 
     // Fallback: Parse item by item and filter out invalid ones
     return data.map(item => {
         const itemParsed = schema.safeParse(item);
         if (itemParsed.success) return itemParsed.data;
-        console.warn(`[${context}] Skipping invalid item:`, itemParsed.error);
+        safeConsoleError(`[${context}] Skipping invalid item:`, itemParsed.error);
         return null;
     }).filter((item): item is T => item !== null);
 }

@@ -21,6 +21,7 @@ import {
 } from '@/server/internal/event-db.utils';
 import { fetchUserPubCrawlSignupsDb } from '@/server/internal/kroegentocht-db.utils';
 import { getFinanceServiceUrl, getInternalHeaders, fetchWithTimeout } from '@/server/internal/activiteit-utils';
+import { safeConsoleError } from '@/server/utils/logger';
 
 /**
  * Fetches all published activities directly from the database (SQL-first).
@@ -41,8 +42,8 @@ export async function getActivities(email?: string): Promise<(Activiteit & { is_
             ...activity,
             is_signed_up: signedUpEventIds.has(Number(activity.id)) || ((activity as unknown as { type?: string }).type === 'pub_crawl' && signedUpPubCrawlIds.has(Number(activity.id)))
         }));
-    } catch (error) {
-        console.error('[Error] Failed to fetch user signups for activities:', error);
+    } catch (error: unknown) {
+        safeConsoleError('[Error] Failed to fetch user signups for activities:', error);
         return activities;
     }
 }
@@ -98,8 +99,9 @@ export async function checkUserSignupStatus(eventId: number, email: string, user
             };
         }
         return { isSignedUp: false };
-    } catch (_error) {
-        return { isSignedUp: false };
+    } catch (error) {
+        safeConsoleError('[Error] Failed to check user signup status:', error);
+        throw new Error('Er is een fout opgetreden bij het controleren van uw inschrijving');
     }
 }
 
@@ -192,10 +194,15 @@ export async function signupForActivity(data: EventSignupForm) {
 
             try {
                 await deleteEventSignupDb(signupId);
-                getSystemDirectus().request(deleteItem('event_signups', signupId)).catch(() => { });
-            } catch (_error) { }
+                getSystemDirectus().request(deleteItem('event_signups', signupId)).catch((error: unknown) => {
+                    safeConsoleError(`[Public-Activiteit-Action][signupForActivity] Failed to delete signup ${signupId}:`, error);
+                });
+            } catch (error: unknown) {
+                safeConsoleError(`[Public-Activiteit-Action][signupForActivity] Failed to delete signup ${signupId}:`, error);
+                throw new Error('Er is een fout opgetreden bij het aanmelden voor deze activiteit');
+            }
 
-            return { success: false, error: 'Could not create payment for this signup.' };
+            return { success: false, error: 'Er is een fout opgetreden bij het aanmelden voor deze activiteit' };
         } else {
             const { getRedis } = await import('@/server/auth/redis-client');
             const redis = await getRedis();

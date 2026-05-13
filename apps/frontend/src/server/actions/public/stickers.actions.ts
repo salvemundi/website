@@ -7,6 +7,7 @@ import { stickerPublicSchema } from "@salvemundi/validations";
 
 import { query } from '@/lib/database';
 import { z } from 'zod';
+import { safeConsoleError } from '@/server/utils/logger';
 
 const stickerListSchema = z.array(stickerPublicSchema);
 
@@ -69,9 +70,10 @@ export async function createStickerPublic(data: Record<string, unknown>) {
         revalidatePath('/beheer/stickers');
         revalidatePath('/stickers');
         revalidateTag('stickers', 'max');
-        return result;
-    } catch (_error) {
-        throw new Error('Kon sticker niet opslaan.');
+        return { success: true, data: result };
+    } catch (error) {
+        safeConsoleError(`[stickers.actions.ts][createStickerPublic] Error while creating sticker:`, error);
+        return { success: false, error: 'Kon sticker niet opslaan.' };
     }
 }
 
@@ -93,7 +95,8 @@ export async function uploadFileAction(formData: FormData) {
         const result = await directus.request(uploadFiles(formData));
         const fileObj = Array.isArray(result) ? result[0] : result;
         return fileObj?.id || null;
-    } catch (_error) {
-        throw new Error('Foto upload mislukt op de server.');
+    } catch (error) {
+        safeConsoleError(`[stickers.actions.ts][uploadFileAction] Error while uploading file:`, error);
+        return { success: false, error: 'Foto upload mislukt op de server.' };
     }
 }

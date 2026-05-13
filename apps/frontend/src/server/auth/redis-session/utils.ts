@@ -1,6 +1,5 @@
-/**
- * Safely extracts headers from various Better Auth context shapes without triggering SSR crashes.
- */
+import { safeConsoleError } from '@/server/utils/logger';
+
 export function extractHeadersSafely(ctx: unknown): Headers | null {
     if (!ctx || typeof ctx !== 'object') {
         return null;
@@ -27,7 +26,7 @@ export function extractHeadersSafely(ctx: unknown): Headers | null {
             if (h && typeof h === 'object') return new Headers(h);
         }
     } catch (error) {
-        console.error('❌ [RedisPlugin] extractHeadersSafely - Error:', error);
+        safeConsoleError('[RedisPlugin] extractHeadersSafely - Error:', error);
     }
 
     return null;

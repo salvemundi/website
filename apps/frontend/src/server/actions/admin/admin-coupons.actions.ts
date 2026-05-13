@@ -22,6 +22,7 @@ async function checkAccess() {
 }
 
 import { type Coupon } from '@/components/islands/admin/coupons/coupon-types';
+import { safeConsoleError } from '@/server/utils/logger';
 
 export async function createCoupon(formData: FormData): Promise<{ success: boolean; data?: Coupon; error?: string; fieldErrors?: Record<string, string[]> }> {
     await checkAccess();
@@ -86,7 +87,8 @@ export async function createCoupon(formData: FormData): Promise<{ success: boole
         };
 
         return { success: true, data: newCoupon };
-    } catch {
+    } catch (error) {
+        safeConsoleError(`[AdminCoupons] Failed to create coupon`, error);
         // Directus SDK errors might contain more info, but for simplicity:
         return { success: false, error: 'Aanmaken mislukt (controleer op unieke code of velden)' };
     }
@@ -98,8 +100,8 @@ export async function deleteCoupon(id: number): Promise<{ success: boolean; erro
         await getSystemDirectus().request(deleteItem('coupons', id));
         revalidatePath('/beheer/coupons');
         return { success: true };
-    } catch {
-
+    } catch (error) {
+        safeConsoleError(`[AdminCoupons] Failed to delete coupon`, error);
         return { success: false, error: 'Verwijderen mislukt (wordt mogelijk nog gebruikt)' };
     }
 }
@@ -110,8 +112,8 @@ export async function toggleCouponActive(id: number, currentActive: boolean): Pr
         await getSystemDirectus().request(updateItem('coupons', id, { is_active: !currentActive }));
         revalidatePath('/beheer/coupons');
         return { success: true };
-    } catch {
-
+    } catch (error) {
+        safeConsoleError(`[AdminCoupons] Failed to toggle coupon`, error);
         return { success: false, error: 'Bijwerken mislukt' };
     }
 }

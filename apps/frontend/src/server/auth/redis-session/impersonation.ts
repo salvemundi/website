@@ -2,6 +2,7 @@ import { Pool } from "pg";
 import { getRedis } from "@/server/auth/redis-client";
 import { getPermissions } from "@/shared/lib/permissions";
 import { type ExtendedUser } from "./types";
+import { safeConsoleError } from '@/server/utils/logger';
 
 export async function getImpersonatedUser(testToken: string, pool: Pool): Promise<ExtendedUser | null> {
     try {
@@ -65,7 +66,7 @@ export async function getImpersonatedUser(testToken: string, pool: Pool): Promis
         await redis.set(cacheKey, JSON.stringify(targetUser), 'EX', 3600);
         return targetUser;
     } catch (error) {
-        console.error('❌ [RedisPlugin] Impersonation Error:', error);
+        safeConsoleError('[RedisPlugin] Impersonation Error:', error);
         return null;
     }
 }

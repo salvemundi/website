@@ -192,6 +192,8 @@ export class SyncJob {
                 duration_ms: status.startTime ? (Date.now() - new Date(status.startTime).getTime()) : null
             })
         ]);
-        try { await query(`DELETE FROM system_logs WHERE created_at < NOW() - INTERVAL '90 days'`); } catch (_error) { }
+        try { await query(`DELETE FROM system_logs WHERE created_at < NOW() - INTERVAL '90 days'`); } catch (error) {
+            console.error(`[SyncJob][logSummary] Error while cleaning up old logs:`, error);
+        }
     }
 }

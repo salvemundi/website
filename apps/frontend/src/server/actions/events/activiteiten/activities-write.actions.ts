@@ -12,7 +12,7 @@ import {
 import {
     activityAdminSchema
 } from "@salvemundi/validations";
-import { logAdminAction } from "@/server/actions/infrastructure/audit.actions";
+import { logAdminAction } from '@/server/actions/infrastructure/audit.actions'; import { safeConsoleError } from '@/server/utils/logger';;
 import { deleteEventDb } from "@/server/internal/event-db.utils";
 import { ensureActivitiesEdit, verifyActivityBOLA } from "@/server/actions/events/activiteiten/auth-check";
 
@@ -74,7 +74,9 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
         try {
             const res = await getSystemDirectus().request(uploadFiles(fileData));
             imageId = res.id;
-        } catch { }
+        } catch (error: unknown) {
+            safeConsoleError(`[Activities-Write-Action][createActivityAction] Failed to upload image:`, error);
+        }
     }
 
     const rawData: Record<string, unknown> = {};
@@ -134,8 +136,8 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
         revalidatePath('/beheer');
 
         return { success: true, id: newItem.id };
-    } catch (error) {
-        console.error('[CMS Sync] Directus createItem failed:', error);
+    } catch (error: unknown) {
+        safeConsoleError('[CMS Sync] Directus createItem failed:', error);
         await logAdminAction('activity_create_failed', 'ERROR', {
             error: error instanceof Error ? error.message : JSON.stringify(error),
             payload: directusPayload
@@ -147,7 +149,7 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
 export async function updateActivityAction(eventId: number, prevState: unknown, formData: FormData) {
     try {
         await verifyActivityBOLA(eventId);
-    } catch (error) {
+    } catch (error: unknown) {
         return { success: false, error: error instanceof Error ? error.message : "Unauthorized" };
     }
 
@@ -235,7 +237,7 @@ export async function updateActivityAction(eventId: number, prevState: unknown, 
 
             return { success: true };
         } catch (error) {
-            console.error('[CMS Sync] Directus updateItem failed:', error);
+            safeConsoleError('[CMS Sync] Directus updateItem failed:', error);
             await logAdminAction('activity_update_failed', 'ERROR', {
                 id: eventId,
                 error: error instanceof Error ? error.message : JSON.stringify(error)

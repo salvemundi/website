@@ -6,7 +6,7 @@ import { revalidateTag, revalidatePath } from "next/cache";
 import { getSystemDirectus } from "@/lib/directus";
 import { updateUser } from "@directus/sdk";
 import { isMemberAdmin } from "@/lib/auth";
-import { logAdminAction } from "@/server/actions/infrastructure/audit.actions";
+import { logAdminAction } from '@/server/actions/infrastructure/audit.actions'; import { safeConsoleError } from '@/server/utils/logger';;
 
 const updateMemberSchema = z.object({
     first_name: z.string().min(1).optional(),
@@ -84,7 +84,7 @@ export async function manageAzureMembershipAction(userId: string, azureGroupId: 
 
         return { success: true };
     } catch (error) {
-        console.error(`[LedenActions] Failed to manage Azure membership for ${directusUserId}:`, error);
+        safeConsoleError(`[LedenActions][manageAzureMembershipAction] Failed to manage Azure membership for ${directusUserId}:`, error);
         return { success: false, error: "Er is een fout opgetreden bij het bijwerken in Azure." };
     }
 }
@@ -111,7 +111,8 @@ export async function sendMembershipReminderAction(daysBeforeExpiry: number = 30
 
         const data = await res.json();
         return { success: true, count: data.sent || 0 };
-    } catch {
+    } catch (error) {
+        safeConsoleError(`[LedenActions][sendMembershipReminderAction] Failed to send membership reminder`, error);
         return { success: false, error: "Interne serverfout bij het versturen van herinneringen." };
     }
 }
@@ -156,7 +157,9 @@ export async function updateMemberProfileAction(
                     phoneNumber: payload.phone_number,
                     dateOfBirth: payload.date_of_birth
                 })
-            }).catch(() => { });
+            }).catch((error: unknown) => {
+                safeConsoleError(`[LedenActions][updateMemberProfileAction] Failed to update profile for ${directusUserId}`, error);
+            });
         }
 
         const emailSlugForUpdate = (await (await import("@/lib/database")).query('SELECT email FROM directus_users WHERE id = $1 LIMIT 1', [directusUserId])).rows?.[0]?.email?.split('@')[0]?.replace(/\./g, '-') ?? directusUserId;
@@ -170,7 +173,7 @@ export async function updateMemberProfileAction(
 
         return { success: true };
     } catch (error) {
-        console.error(`[LedenActions] Failed to update profile for ${directusUserId}:`, error);
+        safeConsoleError(`[LedenActions][updateMemberProfileAction] Failed to update profile for ${directusUserId}:`, error);
         return { success: false, error: 'Opslaan mislukt' };
     }
 }
@@ -218,14 +221,18 @@ export async function renewMembershipAction(
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${INTERNAL_TOKEN}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ userId: user.entra_id })
-                }).catch(() => { });
+                }).catch((error: unknown) => {
+                    safeConsoleError(`[LedenActions][renewMembershipAction] Failed to add user to group for ${directusUserId}`, error);
+                });
             }
         }
 
         if (AZURE_SYNC_URL && INTERNAL_TOKEN) {
             fetch(`${AZURE_SYNC_URL}/api/sync/run/${encodeURIComponent(directusUserId)}`, {
                 method: 'POST'
-            }).catch(() => { });
+            }).catch((error: unknown) => {
+                safeConsoleError(`[LedenActions][renewMembershipAction] Failed to sync user for ${directusUserId}`, error);
+            });
         }
 
         const renewSlug = user.email?.split('@')[0]?.replace(/\./g, '-') ?? directusUserId;
@@ -241,14 +248,11 @@ export async function renewMembershipAction(
 
         return { success: true, newExpiry: newExpiryStr };
     } catch (error) {
-        console.error(`[LedenActions] Failed to renew membership for ${directusUserId}:`, error);
+        safeConsoleError(`[LedenActions][renewMembershipAction] Failed to renew membership for ${directusUserId}:`, error);
         return { success: false, error: 'Er is een fout opgetreden' };
     }
 }
 
-/**
- * Provisions a member in Azure AD if they don't have an account yet.
- */
 export async function provisionAzureAccountAction(directusUserId: string) {
     const admin = await checkAdminAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
@@ -277,6 +281,7 @@ export async function provisionAzureAccountAction(directusUserId: string) {
 
         if (!res.ok) {
             const errData = await res.json().catch(() => ({ error: 'Onbekende fout' }));
+            safeConsoleError(`[LedenActions][provisionAzureAccountAction] Failed to provision Azure account for ${directusUserId}:`, errData);
             return { success: false, error: errData.error || "Azure provisioning mislukt." };
         }
 
@@ -291,8 +296,8 @@ export async function provisionAzureAccountAction(directusUserId: string) {
 
         return { success: true };
     } catch (error) {
-        console.error(`[LedenActions] Failed to provision Azure account for ${directusUserId}:`, error);
-        return { success: false, error: "Interne fout bij provisioning." };
+        safeConsoleError(`[LedenActions][provisionAzureAccountAction] Failed to provision Azure account for ${directusUserId}:`, error);
+        return { success: false, error: "Er is een fout opgetreden bij het aanmaken van het Azure account." };
     }
 }
 

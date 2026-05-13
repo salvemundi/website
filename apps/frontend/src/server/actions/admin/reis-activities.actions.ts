@@ -17,16 +17,15 @@ import {
     updateTripActivityDb,
     deleteTripActivityDb,
 } from '@/server/internal/reis-db.utils';
+import { safeConsoleError } from '@/server/utils/logger';
 
-
-
-export async function createTripActivity(prevState: unknown, formData: FormData) {
+export async function createTripActivity(formData: FormData) {
     await requireAdminResource(AdminResource.Reis);
 
     const rawData: Record<string, unknown> = {};
     formData.forEach((value, key) => {
         if (key === 'options') {
-            try { rawData[key] = JSON.parse(value as string); } catch (_error) { rawData[key] = []; }
+            try { rawData[key] = JSON.parse(value as string); } catch (error) { safeConsoleError(`[ReisActivities][createTripActivity] Failed to parse options for ${key}:`, error); rawData[key] = []; }
         } else if (key === 'price' || key === 'display_order' || key === 'max_participants' || key === 'max_selections' || key === 'trip_id') {
             rawData[key] = value === '' ? null : (key === 'price' ? parseFloat(value as string) : parseInt(value as string));
         } else if (key === 'is_active') {
@@ -50,8 +49,8 @@ export async function createTripActivity(prevState: unknown, formData: FormData)
         const newId = await createTripActivityDb(validated.data);
         if (!newId) throw new Error('Database insert failed');
 
-        getSystemDirectus().request(createItem('trip_activities', validated.data)).catch(() => {
-
+        getSystemDirectus().request(createItem('trip_activities', validated.data)).catch((error) => {
+            safeConsoleError(`[ReisActivities][createTripActivity] Failed to create trip activity ${newId}:`, error);
         });
 
         revalidateTag('trip_activities', 'max');
@@ -68,7 +67,7 @@ export async function createTripActivity(prevState: unknown, formData: FormData)
     }
 }
 
-export async function updateTripActivity(prevState: unknown, formData: FormData) {
+export async function updateTripActivity(formData: FormData) {
     await requireAdminResource(AdminResource.Reis);
 
     const id = parseInt(formData.get('id') as string);
@@ -77,7 +76,7 @@ export async function updateTripActivity(prevState: unknown, formData: FormData)
     const rawData: Record<string, unknown> = {};
     formData.forEach((value, key) => {
         if (key === 'options') {
-            try { rawData[key] = JSON.parse(value as string); } catch (_error) { rawData[key] = []; }
+            try { rawData[key] = JSON.parse(value as string); } catch (error) { safeConsoleError(`[ReisActivities][updateTripActivity] Failed to parse options for ${key}:`, error); rawData[key] = []; }
         } else if (key === 'price' || key === 'display_order' || key === 'max_participants' || key === 'max_selections' || key === 'trip_id') {
             rawData[key] = value === '' ? null : (key === 'price' ? parseFloat(value as string) : parseInt(value as string));
         } else if (key === 'is_active') {
@@ -101,8 +100,8 @@ export async function updateTripActivity(prevState: unknown, formData: FormData)
         const success = await updateTripActivityDb(id, validated.data);
         if (!success) throw new Error('Database update failed');
 
-        getSystemDirectus().request(updateItem('trip_activities', id, validated.data)).catch(() => {
-
+        getSystemDirectus().request(updateItem('trip_activities', id, validated.data)).catch((error) => {
+            safeConsoleError(`[ReisActivities][updateTripActivity] Failed to update trip activity ${id}:`, error);
         });
 
         revalidateTag('trip_activities', 'max');
@@ -126,8 +125,8 @@ export async function deleteTripActivity(id: number) {
         const success = await deleteTripActivityDb(id);
         if (!success) throw new Error('Database delete failed');
 
-        getSystemDirectus().request(deleteItem('trip_activities', id)).catch(() => {
-
+        getSystemDirectus().request(deleteItem('trip_activities', id)).catch((error) => {
+            safeConsoleError(`[ReisActivities][deleteTripActivity] Failed to delete trip activity ${id}:`, error);
         });
 
         revalidateTag('trip_activities', 'default');

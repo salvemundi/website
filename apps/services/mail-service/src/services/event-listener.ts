@@ -18,7 +18,7 @@ export class EventListenerService {
         } catch (error: unknown) {
             // We gebruiken 'error' direct. De herdeclaratie 'const error =' is verwijderd om TS2492 te voorkomen.
             if (error instanceof Error && !error.message.includes('BUSYGROUP')) {
-                console.error('[MailEventListener] Error creating consumer group:', error);
+                safeConsoleError('[MailEventListener] Error creating consumer group:', error);
             } else if (!(error instanceof Error)) {
                 console.error('[MailEventListener] Unexpected error type during group creation:', String(error));
             }

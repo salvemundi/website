@@ -45,7 +45,7 @@ const start = async () => {
         DirectusRetryService.startWorker(fastify.redis);
         AzureRetryService.startWorker(fastify.redis);
     } catch (error) {
-        console.error('Finance Service crashed:', error);
+        safeConsoleError('Finance Service crashed:', error);
         process.exit(1);
     }
 };

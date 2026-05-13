@@ -83,7 +83,7 @@ export class GraphService {
                     return candidateUpn;
                 }
             } catch (error: any) {
-                console.error(`[GraphService] Error verifying UPN ${candidateUpn}:`, error.message);
+                console.error(`[GraphService][generateUniqueUpn] Error verifying UPN ${candidateUpn}:`, error.message);
                 throw error;
             }
 

@@ -19,6 +19,7 @@ import {
 import { fetchPubCrawlEventsDb } from '@/server/internal/kroegentocht-db.utils';
 import { requireAdminResource } from '@/server/auth/auth-utils';
 import { AdminResource } from '@/shared/lib/permissions-config';
+import { safeConsoleError } from '@/server/utils/logger';
 
 export async function requireKroegAdmin() {
     return requireAdminResource(AdminResource.Kroegentocht);
@@ -28,7 +29,8 @@ export async function getPubCrawlEvents(): Promise<PubCrawlEvent[]> {
     await requireKroegAdmin();
     try {
         return await fetchPubCrawlEventsDb();
-    } catch (_error) {
+    } catch (error) {
+        safeConsoleError(`[Kroegentocht-Action][getPubCrawlEvents] Failed to fetch events:`, error);
         throw new Error('Kon events niet ophalen');
     }
 }
@@ -41,7 +43,8 @@ export async function getPubCrawlEvent(id: string | number): Promise<PubCrawlEve
         }));
         const event = item as unknown as PubCrawlEvent;
         return pubCrawlEventSchema.parse(event);
-    } catch (_error) {
+    } catch (error) {
+        safeConsoleError(`[Kroegentocht-Action][getPubCrawlEvent] Failed to fetch event ${id}:`, error);
         throw new Error('Kon event niet ophalen');
     }
 }
@@ -67,7 +70,7 @@ export async function upsertPubCrawlEvent(data: Partial<PubCrawlEvent>) {
         return { success: true };
     } catch (e: unknown) {
         const message = e instanceof Error ? e.message : 'Onbekende fout';
-        console.error('[Kroegentocht-Action] Upsert failed:', message);
+        safeConsoleError(`[Kroegentocht-Action][upsertPubCrawlEvent] Failed to upsert event:`, e);
         throw new Error('Opslaan van event mislukt: ' + message);
     }
 }
@@ -78,7 +81,8 @@ export async function uploadPubCrawlImage(formData: FormData) {
         const client = getSystemDirectus();
         const response = await client.request(uploadFiles(formData));
         return response;
-    } catch (_error) {
+    } catch (error) {
+        safeConsoleError(`[Kroegentocht-Action][uploadPubCrawlImage] Failed to upload image:`, error);
         throw new Error('Afbeelding uploaden mislukt');
     }
 }

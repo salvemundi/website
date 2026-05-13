@@ -114,7 +114,9 @@ export class EventHandlers {
             if (!mailData.confirmationUrl && data.paymentId) {
                 mailData.confirmationUrl = `${baseUrl}/lidmaatschap/bevestiging?transaction_id=${data.paymentId}&t=${data.accessToken || ''}`;
             }
-        } catch (_error) { }
+        } catch (error) {
+            console.error(`[MailService][EventHandlers][enrichMembershipRenewal] Error while enriching membership renewal:`, error);
+        }
     }
 
     private static async preparePubCrawlTickets(data: any, url: string, token: string) {
@@ -163,7 +165,9 @@ export class EventHandlers {
                 });
                 mailData.eventName = (await eventRes.json() as any)?.data?.name || mailData.eventName;
             }
-        } catch (_error) { }
+        } catch (error) {
+            console.error(`[MailService][EventHandlers][enrichGenericEvent] Error while enriching generic event:`, error);
+        }
     }
 
     private static async fetchPubCrawlTicketsDb(signupId: string | number, expectedCount: number) {

@@ -18,6 +18,7 @@ import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { type ExtendedSession, type ImpersonationInfo } from '@/types/auth';
 import { type Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { domMax, LazyMotion } from 'framer-motion';
+import { safeConsoleError } from '@/server/utils/logger';
 
 export const viewport: Viewport = {
     themeColor: [
@@ -100,7 +101,7 @@ export default async function RootLayout({
                     nonce={nonce}
                     suppressHydrationWarning
                     dangerouslySetInnerHTML={{
-                        __html: `(function(){try{if(localStorage.theme==='light'){document.documentElement.classList.remove('dark')}}catch(_){}})()`
+                        __html: `(function(){try{if(localStorage.theme==='light'){document.documentElement.classList.remove('dark')}}catch(error){}})()`
                     }}
                 />
                 <link rel="preload" as="image" href="/img/newlogo.png" />
@@ -187,7 +188,7 @@ async function FooterWrapper({ initialSession }: { initialSession: ExtendedSessi
             />
         );
     } catch (error) {
-        console.error('[RootLayout] FooterWrapper fail:', error instanceof Error ? error.message : 'Unknown error');
+        safeConsoleError('[RootLayout] FooterWrapper fail:', error);
         return (
             <FooterIsland
                 documents={[]}

@@ -25,13 +25,14 @@ import {
     createItem
 } from '@directus/sdk';
 import { normalizeDate } from '@/lib/utils/date-utils';
+import { safeConsoleError } from '@/server/utils/logger';
 
 export async function getTripSignups(tripId: number) {
     await requireAdminResource(AdminResource.Reis);
     try {
         return await fetchAllTripSignupsDb(tripId);
-    } catch (_error) {
-
+    } catch (error) {
+        safeConsoleError(`[ReisSignups][getTripSignups] Failed to fetch trip signups for trip ${tripId}:`, error);
         return [];
     }
 }
@@ -40,8 +41,8 @@ export async function getTripSignup(id: number): Promise<TripSignup | null> {
     await requireAdminResource(AdminResource.Reis);
     try {
         return await fetchTripSignupByIdDb(id);
-    } catch (_error) {
-
+    } catch (error) {
+        safeConsoleError(`[ReisSignups][getTripSignup] Failed to fetch trip signup for ID ${id}:`, error);
         return null;
     }
 }
@@ -59,8 +60,8 @@ export async function updateSignupStatus(signupId: number, status: string) {
         if (!success) throw new Error('Database update mislukt');
 
         // Shadow Write (Directus)
-        getSystemDirectus().request(updateItem('trip_signups', signupId, { status })).catch(() => {
-
+        getSystemDirectus().request(updateItem('trip_signups', signupId, { status })).catch((error) => {
+            safeConsoleError(`[ReisSignups][updateSignupStatus] Failed to update trip signup ${signupId}:`, error);
         });
 
         // 4. Trigger Email if status changed TO confirmed
@@ -76,8 +77,8 @@ export async function updateSignupStatus(signupId: number, status: string) {
                     if (trip?.name) {
                         tripName = trip.name;
                     }
-                } catch (_error) {
-                    // Fallback to default
+                } catch (error) {
+                    safeConsoleError(`[ReisSignups][updateSignupStatus] Failed to fetch trip ${signup.trip_id}:`, error);
                 }
 
                 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://salvemundi.nl';
@@ -103,7 +104,9 @@ export async function updateSignupStatus(signupId: number, status: string) {
                             isGuest: isGuest
                         }
                     })
-                }).catch(() => { });
+                }).catch((error) => {
+                    safeConsoleError(`[ReisSignups][updateSignupStatus] Failed to send status update email for trip ${signup.trip_id} signup ${signupId}:`, error);
+                });
             }
         }
 
@@ -114,8 +117,8 @@ export async function updateSignupStatus(signupId: number, status: string) {
         revalidatePath('/reis');
 
         return { success: true };
-    } catch {
-
+    } catch (error) {
+        safeConsoleError(`[ReisSignups][updateSignupStatus] Failed to update trip signup ${signupId}:`, error);
         return { success: false, error: 'Update mislukt' };
     }
 }
@@ -127,8 +130,8 @@ export async function deleteTripSignup(signupId: number) {
         const success = await deleteTripSignupDb(signupId);
         if (!success) throw new Error('Database delete mislukt');
 
-        getSystemDirectus().request(deleteItem('trip_signups', signupId)).catch(() => {
-
+        getSystemDirectus().request(deleteItem('trip_signups', signupId)).catch((error) => {
+            safeConsoleError(`[ReisSignups][deleteTripSignup] Failed to delete trip signup ${signupId}:`, error);
         });
 
         const { revalidatePath, revalidateTag } = await import('next/cache');
@@ -176,8 +179,8 @@ export async function updateTripSignup(prevState: unknown, formData: FormData) {
         const success = await updateTripSignupDb(id, validated.data);
         if (!success) throw new Error('Database update mislukt');
 
-        getSystemDirectus().request(updateItem('trip_signups', id, validated.data)).catch(() => {
-
+        getSystemDirectus().request(updateItem('trip_signups', id, validated.data)).catch((error) => {
+            safeConsoleError(`[ReisSignups][updateTripSignup] Failed to update trip signup ${id}:`, error);
         });
 
         const { revalidatePath, revalidateTag } = await import('next/cache');
@@ -188,8 +191,8 @@ export async function updateTripSignup(prevState: unknown, formData: FormData) {
         revalidatePath('/reis');
 
         return { success: true };
-    } catch {
-
+    } catch (error) {
+        safeConsoleError(`[ReisSignups][updateTripSignup] Failed to update trip signup ${id}:`, error);
         return { success: false, error: 'Update mislukt' };
     }
 }
@@ -206,8 +209,8 @@ export async function getSignupActivities(signupId: number) {
         }
 
         return parsed.data;
-    } catch (_error) {
-
+    } catch (error) {
+        safeConsoleError(`[ReisSignups][getSignupActivities] Failed to fetch signup activities for signup ${signupId}:`, error);
         return [];
     }
 }
@@ -259,8 +262,8 @@ export async function getTripSignupActivitiesAction(tripId: number) {
     await requireAdminResource(AdminResource.Reis);
     try {
         return await fetchTripSignupActivitiesDb(tripId);
-    } catch (_error) {
-
+    } catch (error) {
+        safeConsoleError(`[ReisSignups][getTripSignupActivitiesAction] Failed to fetch trip signup activities for trip ${tripId}:`, error);
         return [];
     }
 }

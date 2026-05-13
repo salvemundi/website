@@ -4,6 +4,7 @@ import type { NextRequest } from 'next/server';
 import { PUBLIC_ROUTES } from '@/lib/config/routes';
 import { getRedis } from '@/server/auth/redis-client';
 import { getDisabledRoutes } from '@/lib/config/feature-flags';
+import { safeConsoleError } from '@/server/utils/logger';
 
 /**
  * Direct Provider Proxy (V7)
@@ -66,7 +67,7 @@ async function proxy(request: NextRequest) {
                 request: { headers: requestHeaders }
             }));
         } catch (error) {
-            console.error('[Proxy] Failed to inject request headers:', error);
+            safeConsoleError('[Proxy] Failed to inject request headers:', error);
             return withSecurity(NextResponse.next());
         }
     };
@@ -117,7 +118,7 @@ async function proxy(request: NextRequest) {
                             hasSession = true;
                         }
                     } catch (parseErr) {
-                        console.error('[Proxy] Failed to parse Redis session cache:', parseErr);
+                        safeConsoleError('[Proxy] Failed to parse Redis session cache:', parseErr)
                     }
                 }
             }
@@ -181,12 +182,12 @@ async function proxy(request: NextRequest) {
                                     return response;
                                 }
                             } catch (parseErr) {
-                                console.error('[Proxy] Failed to parse session text response:', parseErr);
+                                safeConsoleError('[Proxy] Failed to parse session text response:', parseErr);
                             }
                         }
                     }
                 } catch (fetchError) {
-                    console.error('[Proxy] Fetch error retrieving session from internal API:', fetchError);
+                    safeConsoleError('[Proxy] Fetch error retrieving session from internal API:', fetchError);
                 }
             }
 
@@ -205,7 +206,7 @@ async function proxy(request: NextRequest) {
             return withSecurity(NextResponse.redirect(authRedirectUrl));
 
         } catch (error) {
-            console.error('[Proxy] Critical error during auth check:', error instanceof Error ? error.message : 'Unknown error');
+            safeConsoleError('[Proxy] Critical error during auth check:', error);
             return withSecurity(NextResponse.rewrite(new URL('/404', request.url)));
         }
     }

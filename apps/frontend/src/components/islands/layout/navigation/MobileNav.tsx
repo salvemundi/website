@@ -7,6 +7,7 @@ import { authClient } from '@/lib/auth';
 import type { IconName } from '@/lib/utils/icons';
 import MobileMenu from './MobileMenu';
 import { type EnrichedUser } from '@/types/auth';
+import { safeConsoleError } from '@/server/utils/logger';
 
 interface MobileNavProps {
     user: EnrichedUser | null;
@@ -31,7 +32,7 @@ export function MobileNav({ user, isAuthenticated, navItems, canAccessAdmin }: O
                 router.push('/');
             }
         } catch (error) {
-            console.error('Logout failed:', error);
+            safeConsoleError('[MobileNav][onLogout] Logout function failed:', error);
         }
     };
 

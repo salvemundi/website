@@ -8,11 +8,9 @@ import { getSystemDirectus } from '@/lib/directus';
 import { updateItem, readUsers } from '@directus/sdk';
 import { USER_ID_FIELDS } from '@salvemundi/validations/directus/fields';
 import type {
-    Committee,
     CommitteeMember
 } from '@/server/queries/admin-commissies.queries';
 import {
-    getCommittees as getCommitteesQuery,
     getCommitteeMembers as getCommitteeMembersQuery
 } from '@/server/queries/admin-commissies.queries';
 import {
@@ -34,6 +32,7 @@ const serviceHeaders = (contentType = true) => {
 };
 
 import { type EnrichedUser } from '@/types/auth';
+import { safeConsoleError } from '@/server/utils/logger';
 
 async function checkAccess() {
     const session = await getEnrichedSession();
@@ -45,15 +44,6 @@ async function checkAccess() {
     }
 
     return session;
-}
-
-/**
- * SERVER ACTIONS: Exposable to Client Components.
- */
-
-export async function getCommittees(): Promise<Committee[]> {
-    await checkAccess();
-    return getCommitteesQuery();
 }
 
 export async function getCommitteeMembers(committeeId: string): Promise<CommitteeMember[]> {
@@ -76,8 +66,8 @@ export async function updateCommitteeDetails(
         revalidatePath(`/beheer/commissies/${committeeId}`);
         revalidatePath('/beheer/commissies');
         return { success: true };
-    } catch {
-
+    } catch (error) {
+        safeConsoleError(`[AdminCommittees] Failed to update committee details for ${committeeId}:`, error);
         return { success: false, error: 'Opslaan mislukt' };
     }
 }
@@ -109,12 +99,12 @@ export async function addCommitteeMember(
         body: JSON.stringify({ userId: user.entra_id })
     });
     if (!azRes.ok) {
-        const _error = await azRes.json().catch(() => ({}));
-
+        const error = await azRes.json().catch(() => ({}));
+        safeConsoleError(`[AdminCommittees] Failed to add committee member ${userEmail}:`, error);
         return { success: false, error: 'Bewerking in Azure mislukt. Probeer het later opnieuw.' };
     }
 
-    await triggerUserSyncAction(user.entra_id);
+    await triggerUserSyncAction(user.entra_id).catch(() => { });
 
     return { success: true };
 }
@@ -138,14 +128,15 @@ export async function removeCommitteeMember(
         }).then(async (r) => {
             if (!r.ok) {
                 const body = await r.json().catch(() => ({}));
+                safeConsoleError(`[Azure] Failed to remove owner ${entraId} from ${azureGroupId}:`, body);
                 if (body.details?.includes('at least one owner')) {
-                    console.warn(`[Azure] Could not remove last owner ${entraId} from ${azureGroupId}. This is expected if they are the only leader left.`);
+                    safeConsoleError(`[Azure] Could not remove last owner ${entraId} from ${azureGroupId}:`, {});
                 } else {
-                    console.error(`[Azure] Failed to remove owner ${entraId} from ${azureGroupId}:`, body);
+                    safeConsoleError(`[Azure] Failed to remove owner ${entraId} from ${azureGroupId}:`, body);
                 }
             }
-        }).catch((error) => {
-            console.error(`[Azure] Fetch error removing owner ${entraId}:`, error);
+        }).catch((error: unknown) => {
+            safeConsoleError(`[Azure] Fetch error removing owner ${entraId}:`, error);
         });
     }
 
@@ -156,8 +147,8 @@ export async function removeCommitteeMember(
     });
 
     if (!azRes.ok) {
-        const _error = await azRes.json().catch(() => ({}));
-
+        const error = await azRes.json().catch(() => ({}));
+        safeConsoleError(`[Azure] Failed to remove member ${entraId} from ${azureGroupId}:`, error);
         return { success: false, error: 'Verwijderen uit Azure groep mislukt.' };
     }
 
@@ -181,8 +172,8 @@ export async function toggleCommitteeLeader(
     try {
         await getSystemDirectus().request(updateItem('committee_members', membershipId, { is_leader: !currentIsLeader }));
         revalidatePath('/beheer/commissies');
-    } catch {
-
+    } catch (error) {
+        safeConsoleError(`[AdminCommittees] Failed to toggle leader for membership ${membershipId}:`, error);
         return { success: false, error: 'Bijwerken mislukt' };
     }
 
@@ -198,14 +189,17 @@ export async function toggleCommitteeLeader(
         }).then(async (r) => {
             if (!r.ok) {
                 const body = await r.json().catch(() => ({}));
+                safeConsoleError(`[Azure] Failed to toggle leader in Azure for ${entraId}:`, body);
                 if (body.details?.includes('at least one owner')) {
-                    console.warn(`[Azure] Could not remove last owner ${entraId} from ${azureGroupId}.`);
-                } else {
-                    console.error(`[Azure] Failed to toggle leader in Azure for ${entraId}:`, body);
+                    safeConsoleError(`[Azure] Could not remove last owner ${entraId} from ${azureGroupId}:`, {});
                 }
             }
-        }).catch(() => { });
+        }).catch((error: unknown) => {
+            safeConsoleError(`[Azure] Failed to toggle leader in Azure for ${entraId}:`, error);
+        });
     }
+
+    await triggerUserSyncAction(entraId).catch(() => { });
 
     return { success: true };
 }

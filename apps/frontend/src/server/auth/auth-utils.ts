@@ -4,6 +4,7 @@ import { hasPermission } from "@/shared/lib/permissions";
 import { AdminResource } from "@/shared/lib/permissions-config";
 import { type Session } from "better-auth";
 import { type EnrichedUser } from "@/types/auth";
+import { safeConsoleError } from '../utils/logger';
 
 export async function requireAdminResource(resource: AdminResource) {
     const session = await getEnrichedSession();
@@ -33,13 +34,13 @@ export async function requireAdminResource(resource: AdminResource) {
 export async function getEnrichedSession(): Promise<{ user: EnrichedUser; session: Session } | null> {
     try {
         if (!auth || !auth.api) {
-            console.error('❌ [AuthUtils] Better Auth instance or API is undefined');
+            safeConsoleError('[AuthUtils] Better Auth instance or API is undefined', undefined);
             return null;
         }
 
         const h = await headers();
         if (!h) {
-            console.error('❌ [AuthUtils] Headers are undefined');
+            safeConsoleError('[AuthUtils] Headers are undefined', undefined);
             return null;
         }
 
@@ -52,7 +53,7 @@ export async function getEnrichedSession(): Promise<{ user: EnrichedUser; sessio
         }
         return session as { user: EnrichedUser; session: Session } | null;
     } catch (error) {
-        console.error('❌ [AuthUtils] Error in getEnrichedSession:', error);
+        safeConsoleError('[AuthUtils] Error in getEnrichedSession:', error);
         return null;
     }
 }

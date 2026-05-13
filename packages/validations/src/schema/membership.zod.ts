@@ -6,7 +6,6 @@ import { dateOfBirthSchema, phoneNumberSchema } from './shared.zod.js';
  */
 export const signupSchema = z.object({
     voornaam: z.string().min(1, 'Voornaam is verplicht'),
-    tussenvoegsel: z.string().optional(),
     achternaam: z.string().min(1, 'Achternaam is verplicht'),
     email: z.string().email('Ongeldig e-mailadres'),
     geboortedatum: dateOfBirthSchema,
