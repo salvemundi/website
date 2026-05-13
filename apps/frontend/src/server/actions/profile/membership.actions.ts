@@ -14,6 +14,7 @@ import { query } from '@/lib/database';
 import { getExpandedEnv } from '@/server/utils/env';
 import { getValidCoupon } from '@/server/utils/coupon.utils';
 import { normalizeDate } from '@/lib/utils/date-utils';
+import { safeConsoleError } from '@/server/utils/logger';
 
 const getFinanceServiceUrl = () =>
     getExpandedEnv('FINANCE_SERVICE_URL');
@@ -129,7 +130,7 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
 
         return { success: false, error: 'Er is een fout opgetreden bij het aanmaken van de betaling.' };
     } catch (error) {
-        console.error('[MembershipActions] Payment initiation failed:', error);
+        safeConsoleError('[MembershipActions] Payment initiation failed:', error);
         return { success: false, error: 'Kan geen verbinding maken met betaalservice' };
     }
 }
@@ -167,7 +168,7 @@ export async function getTransactionStatusAction(transactionId: string) {
 
         return { status: 'open', user_id: transaction.user_id };
     } catch (error) {
-        console.error('[MembershipActions] Status check failed:', error);
+        safeConsoleError('[MembershipActions] Status check failed:', error);
         return { status: 'error', user_id: null };
     }
 }

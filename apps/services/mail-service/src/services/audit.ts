@@ -1,5 +1,5 @@
-const DIRECTUS_URL = process.env.DIRECTUS_SERVICE_URL || 'http://v7-core-directus:8055';
-const STATIC_TOKEN = process.env.DIRECTUS_STATIC_TOKEN;
+const DIRECTUS_URL = process.env.DIRECTUS_SERVICE_URL!;
+const STATIC_TOKEN = process.env.DIRECTUS_STATIC_TOKEN!;
 
 export class AuditService {
     static async logMail(to: string, templateId: string, status: 'SUCCESS' | 'FAILED', error?: string) {
@@ -23,7 +23,7 @@ export class AuditService {
                     }
                 })
             });
-        } catch (_error) {
+        } catch (error) {
             console.error('[AuditService] Failed to log to Directus:', error);
         }
     }

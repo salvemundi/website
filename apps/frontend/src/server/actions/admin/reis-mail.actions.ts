@@ -2,6 +2,8 @@
 
 import { requireAdminResource } from '@/server/auth/auth-utils';
 import { AdminResource } from '@/shared/lib/permissions-config';
+import { error } from 'console';
+import { logAdminAction } from '@/server/actions/infrastructure/audit.actions'; import { safeConsoleError } from '@/server/utils/logger';;
 
 const FINANCE_URL = process.env.FINANCE_SERVICE_URL;
 const INTERNAL_SERVICE_TOKEN = process.env.INTERNAL_SERVICE_TOKEN;
@@ -31,16 +33,16 @@ export async function sendPaymentEmail(signupId: number, tripId: number, payment
         });
 
         if (!response.ok) {
-            const _errorData = await response.json().catch(() => ({}));
-
-            throw new Error('De betaalservice gaf een fout terug.');
+            safeConsoleError(`[ReisMail][sendPaymentEmail] Failed to send payment request email:`, error instanceof Error ? error.message : 'Unknown API Error');
+            await logAdminAction('mail_error', 'ERROR', { context: 'ReisMail', errorMessage: error instanceof Error ? error.message : String(error) });
+            return { success: false, error: error instanceof Error ? error.message : 'Onbekende fout' };
         }
 
         return { success: true };
     } catch (error) {
-        const message = error instanceof Error ? error.message : 'Onbekende fout';
-
-        return { success: false, error: message };
+        safeConsoleError(`[ReisMail][sendPaymentEmail] Failed to send payment email for trip ${tripId} signup ${signupId}:`, error);
+        await logAdminAction('mail_error', 'ERROR', { context: 'ReisMail', errorMessage: error instanceof Error ? error.message : String(error) });
+        return { success: false, error: error instanceof Error ? error.message : 'Onbekende fout' };
     }
 }
 
@@ -77,14 +79,16 @@ export async function sendBulkTripEmail(data: {
         });
 
         if (!response.ok) {
-            const _err = await response.json().catch(() => ({}));
-
-            throw new Error('De e-mailservice gaf een fout terug.');
+            const errorData = await response.json().catch(() => ({}));
+            safeConsoleError(`[ReisMail][sendBulkTripEmail] Failed to send bulk trip email for trip ${data.tripId}:`, errorData);
+            await logAdminAction('mail_error', 'ERROR', { context: 'ReisMail', errorMessage: error instanceof Error ? error.message : String(error) });
+            return { success: false, error: error instanceof Error ? error.message : 'Onbekende fout' };
         }
 
         return { success: true };
     } catch (error) {
-
+        safeConsoleError(`[ReisMail][sendBulkTripEmail] Failed to send bulk trip email for trip ${data.tripId}:`, error);
+        await logAdminAction('mail_error', 'ERROR', { context: 'ReisMail', errorMessage: error instanceof Error ? error.message : String(error) });
         return { success: false, error: error instanceof Error ? error.message : 'Verzenden mislukt' };
     }
 }
@@ -105,7 +109,9 @@ export async function sendBulkPaymentEmails(tripId: number, signupIds: number[],
             } else {
                 results.failCount++;
             }
-        } catch (_error) {
+        } catch (error) {
+            safeConsoleError(`[ReisMail][sendBulkPaymentEmails] Failed to send payment email for trip ${tripId} signup ${signupId}:`, error);
+            await logAdminAction('mail_error', 'ERROR', { context: 'ReisMail', errorMessage: error instanceof Error ? error.message : String(error) });
             results.failCount++;
         }
     }

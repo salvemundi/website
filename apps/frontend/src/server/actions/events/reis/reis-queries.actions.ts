@@ -15,6 +15,7 @@ import {
     fetchAllTripSignupsDb
 } from '@/server/internal/reis-db.utils';
 import { fetchUserProfileByEmailDb } from '@/server/internal/user-db.utils';
+import { safeConsoleError } from '@/server/utils/logger';
 
 export async function getReisSiteSettings(): Promise<ReisSiteSettings | null> {
     const { rows } = await query('SELECT is_active, message FROM feature_flags WHERE name = $1 LIMIT 1', ['trip_registration']);
@@ -44,7 +45,8 @@ export async function getCurrentUserProfileAction(): Promise<{ success: boolean;
         }
 
         return { success: true, data: user };
-    } catch {
+    } catch (error: unknown) {
+        safeConsoleError(`[Reis-Queries-Action][getCurrentUserProfileAction] Failed to get user profile:`, error);
         return { success: false, error: "Profiel ophalen mislukt" };
     }
 }
@@ -54,7 +56,7 @@ export async function getUpcomingTrips(): Promise<ReisTrip[]> {
 
     const parsed = reisTripSchema.array().safeParse(data ?? []);
     if (!parsed.success) {
-        console.error('[Validation Error] getUpcomingTrips:', parsed.error);
+        safeConsoleError(`[Reis-Queries-Action][getUpcomingTrips] Failed to parse trips:`, parsed.error);
         return (data ?? []) as ReisTrip[];
     }
 
@@ -86,7 +88,8 @@ export async function getTripParticipantsCount(tripId: number): Promise<number> 
             [tripId]
         );
         return rows?.[0]?.count || 0;
-    } catch (_error) {
+    } catch (error: unknown) {
+        safeConsoleError(`[Reis-Queries-Action][getTripParticipantsCount] Failed to fetch trip participants count:`, error);
         return 0;
     }
 }
@@ -101,18 +104,17 @@ export async function getUserTripSignup(tripId: number): Promise<ReisTripSignup 
 
         const userId = session.user.id;
         return await fetchUserSignupStatusDb(userId, tripId);
-    } catch (_error) {
+    } catch (error: unknown) {
+        safeConsoleError(`[Reis-Queries-Action][getUserTripSignup] Failed to fetch user trip signup:`, error);
         return null;
     }
 }
 
-/**
- * Fetches all signups for a specific trip.
- */
 export async function getTripSignupsInternal(tripId: number): Promise<ReisTripSignup[]> {
     try {
         return await fetchAllTripSignupsDb(tripId);
-    } catch (_error) {
-        return [];
+    } catch (error: unknown) {
+        safeConsoleError(`[Reis-Queries-Action][getTripSignupsInternal] Failed to fetch trip signups:`, error);
+        return []
     }
 }

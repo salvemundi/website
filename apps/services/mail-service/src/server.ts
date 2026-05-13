@@ -55,7 +55,7 @@ const start = async () => {
         const { EventListenerService } = await import('./services/event-listener.js');
         EventListenerService.start(fastify.redis);
     } catch (error) {
-        console.error('Mail Service crashed:', error);
+        safeConsoleError('Mail Service crashed:', error);
         process.exit(1);
     }
 };

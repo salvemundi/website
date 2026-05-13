@@ -20,6 +20,7 @@ import {
 } from "@/server/queries/admin-dashboard.queries";
 import { getPermissions, type UserPermissions } from '@/shared/lib/permissions';
 import { checkAdminAccess } from "@/server/actions/admin/admin-utils.actions";
+import { safeConsoleError } from '@/server/utils/logger';
 
 /**
  * Haalt de specifieke permissies op voor de huidige gebruiker t.b.v. het admin dashboard.
@@ -114,7 +115,8 @@ export async function getUpcomingBirthdays(): Promise<Birthday[]> {
         }));
 
         return z.array(BirthdaySchema).parse(result);
-    } catch (_error) {
+    } catch (error) {
+        safeConsoleError(`[DashboardActions][getUpcomingBirthdays] Error while fetching birthdays:`, error);
         return [];
     }
 }
@@ -157,7 +159,8 @@ export async function getTopStickers(): Promise<TopSticker[]> {
             count: Number(r.count)
         }));
         return z.array(TopStickerSchema).parse(result);
-    } catch (_error) {
+    } catch (error) {
+        safeConsoleError(`[DashboardActions][getTopStickers] Error while fetching top stickers:`, error);
         return [];
     }
 }

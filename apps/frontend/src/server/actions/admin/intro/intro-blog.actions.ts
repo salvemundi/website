@@ -11,6 +11,7 @@ import { getSystemDirectus } from "@/lib/directus";
 import { updateItem, createItem } from '@directus/sdk';
 import { toLocalISOString } from '@/lib/utils/date-utils';
 import { checkIntroAdminAccess, genericDelete } from './intro-signup.actions';
+import { safeConsoleError } from '@/server/utils/logger';
 
 export async function getIntroBlogs(): Promise<IntroBlog[]> {
     await checkIntroAdminAccess();
@@ -64,7 +65,7 @@ export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ succe
             }
         };
     } catch (error) {
-        console.error('[AdminIntro] Failed to upsert blog:', error);
+        safeConsoleError('[AdminIntro] Failed to upsert blog:', error);
         return { success: false, error: 'Opslaan mislukt' };
     }
 }

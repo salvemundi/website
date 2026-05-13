@@ -21,6 +21,7 @@ import { toLocalISOString } from '@/lib/utils/date-utils';
 import MediaAsset from '@/components/ui/media/MediaAsset';
 
 import { type PubCrawlEvent } from '@salvemundi/validations/schema/pub-crawl.zod';
+import { safeConsoleError } from '@/server/utils/logger';
 
 interface EventFormProps {
     event?: PubCrawlEvent;
@@ -74,7 +75,7 @@ export default function EventForm({ event }: EventFormProps) {
                 router.refresh();
             } catch (error) {
                 const message = error instanceof Error ? error.message : 'Fout bij opslaan';
-                console.error('[EventForm] Save error:', message);
+                safeConsoleError(`[EventForm][EventForm.handleSubmit] Error:`, error);
                 showToast(message, 'error');
             }
         });

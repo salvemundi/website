@@ -198,8 +198,8 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
     ];
 
     return (
-        <div className="admin-container py-8">
-            <div className="space-y-6 mt-4">
+        <div className="w-full">
+            <div className="flex flex-col gap-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex gap-1 bg-[var(--beheer-card-soft)] p-1 rounded-2xl w-fit border border-[var(--beheer-border)]">
                         {[

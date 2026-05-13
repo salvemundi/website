@@ -32,12 +32,12 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
         resolver: zodResolver(signupSchema),
         defaultValues: {
             voornaam: '',
-            tussenvoegsel: '',
             achternaam: '',
             email: '',
             geboortedatum: '',
             telefoon: '',
-            coupon: '' }
+            coupon: ''
+        }
     });
 
     const couponValue = watch('coupon');
@@ -70,7 +70,7 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
                 window.location.href = result.checkoutUrl;
             } else if (result.errors) {
                 // Handle Zod server-side errors if any returned
-                
+
             } else {
                 showToast(result.error || 'Er ging iets mis', 'error');
             }
@@ -105,7 +105,7 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
                         )}
                     />
                 </FormField>
-                <FormField id="field-achternaam" label="Achternaam" required error={errors.achternaam?.message}>
+                <FormField id="field-achternaam" label="Achternaam (incl. tussenvoegsel)" required error={errors.achternaam?.message}>
                     <Controller
                         name="achternaam"
                         control={control}
@@ -120,21 +120,6 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
                     />
                 </FormField>
             </div>
-
-            <FormField id="field-tussenvoegsel" label="Tussenvoegsel" error={errors.tussenvoegsel?.message}>
-                <Controller
-                    name="tussenvoegsel"
-                    control={control}
-                    render={({ field }) => (
-                        <Input
-                            {...field}
-                            id="field-tussenvoegsel"
-                            autoComplete="additional-name"
-                            suppressHydrationWarning
-                        />
-                    )}
-                />
-            </FormField>
 
             <FormField id="field-email" label="E-mailadres" required error={errors.email?.message}>
                 <Controller

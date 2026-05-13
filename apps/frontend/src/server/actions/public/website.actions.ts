@@ -6,6 +6,8 @@ import { DOCUMENT_FIELDS } from '@salvemundi/validations/directus/fields';
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 import { getDisabledRoutes } from '@/lib/config/feature-flags';
+import { safeConsoleError } from '@/server/utils/logger';
+
 export { getDisabledRoutes };
 
 
@@ -24,8 +26,8 @@ export async function getDocumenten(): Promise<Document[]> {
         }
 
         return parsed.data;
-    } catch (_error) {
-
+    } catch (error) {
+        safeConsoleError(`[website.actions.ts][getDocumenten] Error while fetching documents:`, error);
         return [];
     }
 }

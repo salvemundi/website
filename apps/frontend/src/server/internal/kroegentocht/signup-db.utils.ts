@@ -7,6 +7,7 @@ import {
     type EnrichedPubCrawlSignup,
     type QueryParam
 } from './types';
+import { safeConsoleError } from '@/server/utils/logger';
 
 /**
  * Fetches signups for a specific event.
@@ -69,7 +70,9 @@ export async function fetchPubCrawlSignupByIdDb(signupId: number): Promise<Enric
             try {
                 const parsed = JSON.parse(signup.name_initials) as unknown;
                 participants = Array.isArray(parsed) ? (parsed as { name: string, initial: string }[]) : [(parsed as { name: string, initial: string })];
-            } catch (_error) { }
+            } catch (error) {
+                safeConsoleError(`[signup-db.utils.ts][fetchPubCrawlSignupByIdDb] Error parsing name_initials:`, error);
+            }
         }
     }
 

@@ -6,6 +6,7 @@ import { getRedis } from '@/server/auth/redis-client';
 import { FLAGS_CACHE_KEY } from '@/lib/config/feature-flags';
 import { query } from '@/lib/database';
 import { checkIntroAdminAccess } from './intro-signup.actions';
+import { safeConsoleError } from '@/server/utils/logger';
 
 export async function toggleIntroVisibility(): Promise<{ success: boolean; show?: boolean; error?: string }> {
     await checkIntroAdminAccess();
@@ -29,7 +30,9 @@ export async function toggleIntroVisibility(): Promise<{ success: boolean; show?
         try {
             const redis = await getRedis();
             await redis.del(FLAGS_CACHE_KEY);
-        } catch { }
+        } catch (error) {
+            safeConsoleError(`[IntroSettings][toggleIntroVisibility] Failed to delete feature flag cache:`, error);
+        }
 
         await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -40,10 +43,13 @@ export async function toggleIntroVisibility(): Promise<{ success: boolean; show?
         try {
             const redis = await getRedis();
             await redis.del(FLAGS_CACHE_KEY);
-        } catch { }
+        } catch (error) {
+            safeConsoleError(`[IntroSettings][toggleIntroVisibility] Failed to delete feature flag cache:`, error);
+        }
 
         return { success: true, show: newStatus };
-    } catch {
+    } catch (error) {
+        safeConsoleError(`[IntroSettings][toggleIntroVisibility] Failed to toggle intro visibility:`, error);
         return { success: false, error: 'Bijwerken mislukt' };
     }
 }

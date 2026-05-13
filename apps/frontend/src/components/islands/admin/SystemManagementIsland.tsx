@@ -92,49 +92,47 @@ export default function SystemManagementIsland({
     };
 
     return (
-        <div className="admin-container py-8">
-            {/* Header Actions */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-8 mt-4">
-                <div className="flex bg-[var(--beheer-card-soft)] p-1.5 rounded-2xl border border-[var(--beheer-border)] gap-1 w-full sm:w-auto">
+        <div className="w-full">
+            <div className="flex flex-col gap-8">
+                {/* Header Actions */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+                    <div className="flex bg-[var(--beheer-card-soft)] p-1.5 rounded-2xl border border-[var(--beheer-border)] gap-1 w-full sm:w-auto">
+                        <button
+                            onClick={() => setActiveTab('status')}
+                            className={cn(
+                                "flex-1 sm:flex-none px-6 py-2.5 text-[10px] font-semibold rounded-xl transition-all flex items-center justify-center gap-2.5",
+                                activeTab === 'status'
+                                    ? "bg-[var(--beheer-card-bg)] text-[var(--beheer-accent)] shadow-sm border border-[var(--beheer-border)]"
+                                    : "text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] hover:bg-[var(--beheer-card-bg)]/40"
+                            )}
+                        >
+                            <Activity className="h-3.5 w-3.5" />
+                            Status
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('automation')}
+                            className={cn(
+                                "flex-1 sm:flex-none px-6 py-2.5 text-[10px] font-semibold rounded-xl transition-all flex items-center justify-center gap-2.5",
+                                activeTab === 'automation'
+                                    ? "bg-[var(--beheer-card-bg)] text-[var(--beheer-accent)] shadow-sm border border-[var(--beheer-border)]"
+                                    : "text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] hover:bg-[var(--beheer-card-bg)]/40"
+                            )}
+                        >
+                            <Settings2 className="h-3.5 w-3.5" />
+                            Automatisering
+                        </button>
+                    </div>
+
                     <button
-                        onClick={() => setActiveTab('status')}
-                        className={cn(
-                            "flex-1 sm:flex-none px-6 py-2.5 text-[10px] font-semibold rounded-xl transition-all flex items-center justify-center gap-2.5",
-                            activeTab === 'status'
-                                ? "bg-[var(--beheer-card-bg)] text-[var(--beheer-accent)] shadow-sm border border-[var(--beheer-border)]"
-                                : "text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] hover:bg-[var(--beheer-card-bg)]/40"
-                        )}
+                        onClick={fetchStatus}
+                        disabled={isRefreshing}
+                        className="flex items-center justify-center gap-2 px-8 py-3 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-2xl text-[10px] font-semibold hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
                     >
-                        <Activity className="h-3.5 w-3.5" />
-                        Status
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('automation')}
-                        className={cn(
-                            "flex-1 sm:flex-none px-6 py-2.5 text-[10px] font-semibold rounded-xl transition-all flex items-center justify-center gap-2.5",
-                            activeTab === 'automation'
-                                ? "bg-[var(--beheer-card-bg)] text-[var(--beheer-accent)] shadow-sm border border-[var(--beheer-border)]"
-                                : "text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] hover:bg-[var(--beheer-card-bg)]/40"
-                        )}
-                    >
-                        <Settings2 className="h-3.5 w-3.5" />
-                        Automatisering
+                        <RefreshCw className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin")} />
+                        Update Status
                     </button>
                 </div>
 
-                <button
-                    onClick={fetchStatus}
-                    disabled={isRefreshing}
-                    className="flex items-center justify-center gap-2 px-8 py-3 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-2xl text-[10px] font-semibold hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
-                >
-                    <RefreshCw className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin")} />
-                    Update Status
-                </button>
-            </div>
-
-
-
-            <div className="mt-8">
                 {activeTab === 'status' ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
                         {statuses.length === 0 ? (
@@ -180,7 +178,6 @@ export default function SystemManagementIsland({
                                         )}
                                     </div>
 
-                                    {/* Background Pattern */}
                                     <div className="absolute -right-10 -bottom-10 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity">
                                         <Activity className="h-48 w-48" />
                                     </div>

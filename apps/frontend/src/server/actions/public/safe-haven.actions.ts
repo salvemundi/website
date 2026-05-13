@@ -4,6 +4,7 @@ import { safeHavensSchema, type SafeHaven } from '@salvemundi/validations/schema
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 
 import { query } from '@/lib/database';
+import { safeConsoleError } from '@/server/utils/logger';
 
 
 async function fetchSafeHavensFromDirectus(isAuthenticated: boolean): Promise<SafeHaven[]> {
@@ -27,13 +28,13 @@ async function fetchSafeHavensFromDirectus(isAuthenticated: boolean): Promise<Sa
 
         const parsed = safeHavensSchema.safeParse(mappedData);
         if (!parsed.success) {
-            throw new Error(`Safe Haven parsing error: ${parsed.error.message}`);
+            safeConsoleError('[safe-haven.actions.ts][fetchSafeHavensFromDirectus] Validation failed:', parsed.error);
+            return [];
         }
 
         return parsed.data;
     } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'Onbekende DB fout';
-        console.error('[Safe Haven Action] Error:', message);
+        safeConsoleError('[safe-haven.actions.ts][fetchSafeHavensFromDirectus] Error:', error);
         throw new Error('Kon Safe Havens niet ophalen');
     }
 }

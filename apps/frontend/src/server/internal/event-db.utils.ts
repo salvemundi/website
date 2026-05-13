@@ -1,6 +1,7 @@
 import { query } from '@/lib/database';
 import { buildUpdateQuery } from '@/lib/database/query-builder';
 import { type DbEventSignup } from '@salvemundi/validations/directus/schema';
+import { safeConsoleError } from '@/server/utils/logger';
 
 type QueryParam = string | number | boolean | object | null | undefined;
 
@@ -27,25 +28,16 @@ interface DbJoinedEventSignupRow extends Omit<DbEventSignup, 'event_id'> {
     image: string | null;
     contact: string | null;
 }
-// ----------------------------------
-
-/**
- * Event Operations
- */
 
 export async function deleteEventDb(id: number): Promise<boolean> {
     try {
         const { rowCount } = await query(`DELETE FROM events WHERE id = $1`, [id]);
         return (rowCount ?? 0) > 0;
     } catch (error: unknown) {
-        console.error(`[EventDb] Failed to update event ${id}:`, error);
+        safeConsoleError(`[event-db.utils.ts][deleteEventDb] Failed to delete event ${id}:`, error);
         return false;
     }
 }
-
-/**
- * Event Signup Operations
- */
 
 export async function createEventSignupDb(data: Partial<DbEventSignup>): Promise<number | null> {
     try {
@@ -75,7 +67,7 @@ export async function createEventSignupDb(data: Partial<DbEventSignup>): Promise
         const { rows } = await query(sql, params);
         return (rows[0] as { id?: number })?.id || null;
     } catch (error: unknown) {
-        console.error('[EventDb] Failed to create event:', error);
+        safeConsoleError('[event-db.utils.ts][createEventSignupDb] Failed to create event signup:', error);
         return null;
     }
 }
@@ -90,7 +82,7 @@ export async function updateEventSignupDb(id: number, data: Partial<DbEventSignu
         const { rows } = await query(builder.sql, builder.params as QueryParam[]);
         return rows.length > 0;
     } catch (error: unknown) {
-        console.error(`[EventDb] Failed to update event signup ${id}:`, error);
+        safeConsoleError('[event-db.utils.ts][updateEventSignupDb] Failed to update event signup:', error);
         return false;
     }
 }
@@ -100,14 +92,11 @@ export async function deleteEventSignupDb(id: number): Promise<boolean> {
         const { rowCount } = await query(`DELETE FROM event_signups WHERE id = $1`, [id]);
         return (rowCount ?? 0) > 0;
     } catch (error: unknown) {
-        console.error(`[EventDb] Failed to update event ${id}:`, error);
+        safeConsoleError('[event-db.utils.ts][deleteEventSignupDb] Failed to delete event signup:', error);
         return false;
     }
 }
 
-/**
- * Fetches multiple event signups for a user (consistent with fetchUserEventSignupsDb)
- */
 export async function fetchUserEventSignupsDb(email: string): Promise<EnrichedEventSignup[]> {
     try {
         const sql = `
@@ -134,14 +123,11 @@ export async function fetchUserEventSignupsDb(email: string): Promise<EnrichedEv
             }
         })) as unknown as EnrichedEventSignup[];
     } catch (error: unknown) {
-        console.error('[EventDb] Failed to fetch user signups:', error);
+        safeConsoleError('[event-db.utils.ts][fetchUserEventSignupsDb] Failed to fetch user signups:', error);
         return [];
     }
 }
 
-/**
- * Fetches a single event signup by ID with event details.
- */
 export async function fetchEventSignupByIdDb(id: number): Promise<EnrichedEventSignup | null> {
     try {
         const sql = `
@@ -170,7 +156,7 @@ export async function fetchEventSignupByIdDb(id: number): Promise<EnrichedEventS
             }
         } as unknown as EnrichedEventSignup;
     } catch (error: unknown) {
-        console.error('[EventDb] Failed to fetch event signup:', error);
+        safeConsoleError('[event-db.utils.ts][fetchEventSignupByIdDb] Failed to fetch event signup:', error);
         return null;
     }
 }

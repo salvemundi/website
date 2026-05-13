@@ -2,12 +2,6 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-    Users,
-    DollarSign,
-    UserCheck,
-    Clock
-} from 'lucide-react';
 
 
 import {
@@ -15,15 +9,13 @@ import {
     sendBulkPaymentEmails
 } from '@/server/actions/admin/reis-mail.actions';
 import type { Trip, TripSignup } from '@salvemundi/validations/schema/admin-reis.zod';
-import AdminToolbar from '@/components/ui/admin/AdminToolbar';
-import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
-import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 
 // Modular Components
 import { TypeTab } from '@/components/admin/reis/MailComponents';
 import MailFilters from '@/components/admin/reis/MailFilters';
 import MailEditor from '@/components/admin/reis/MailEditor';
+import AdminToast from '@/components/ui/admin/AdminToast';
 
 interface ReisMailIslandProps {
     trips: Trip[];
@@ -119,34 +111,16 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
         }
     };
 
-    const confirmedCount = initialSignups.filter(s => s.status === 'confirmed').length;
-    const waitlistCount = initialSignups.filter(s => s.status === 'waitlist').length;
-    const unpaidCount = initialSignups.filter(s => !s.full_payment_paid).length;
-
-    const adminStats = [
-        { label: 'Deelnemers', value: initialSignups.length, icon: Users, trend: 'Totaal' },
-        { label: 'Bevestigd', value: confirmedCount, icon: UserCheck, trend: 'Zeker' },
-        { label: 'Wachtlijst', value: waitlistCount, icon: Clock, trend: 'Standby' },
-        { label: 'Niet Betaald', value: unpaidCount, icon: DollarSign, trend: 'Openstaand' },
-    ];
-
     return (
-        <>
-            <AdminToolbar
-                title="Bulk Mail"
-                subtitle="Verstuur e-mails naar groepen reizigers"
-                backHref="/beheer/reis"
-                actions={
-                    <div className="flex bg-[var(--beheer-card-soft)] p-1 rounded-xl border border-[var(--beheer-border)] shadow-inner">
+        <div className="w-full">
+            <div className="flex flex-col gap-8">
+                <div className="flex justify-center">
+                    <div className="flex bg-[var(--beheer-card-soft)] p-1 rounded-2xl border border-[var(--beheer-border)] shadow-sm">
                         <TypeTab active={emailType === 'custom'} onClick={() => setEmailType('custom')}>Custom</TypeTab>
                         <TypeTab active={emailType === 'deposit_request'} onClick={() => setEmailType('deposit_request')}>Deposit</TypeTab>
                         <TypeTab active={emailType === 'final_request'} onClick={() => setEmailType('final_request')}>Final</TypeTab>
                     </div>
-                }
-            />
-
-            <div className="admin-container py-8">
-                <AdminStatsBar stats={adminStats} />
+                </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     <MailFilters
@@ -177,6 +151,6 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
                 </div>
             </div>
             <AdminToast toast={toast} onClose={hideToast} />
-        </>
+        </div>
     );
 }

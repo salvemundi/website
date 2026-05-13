@@ -16,6 +16,7 @@ import { query } from '@/lib/database';
 import { insertSystemLogInternal } from '@/server/queries/audit.queries';
 import { revalidatePath } from 'next/cache';
 import { normalizeDate } from '@/lib/utils/date-utils';
+import { safeConsoleError } from '@/server/utils/logger';
 
 const getMailUrl = () => process.env.MAIL_SERVICE_URL;
 
@@ -37,8 +38,8 @@ export async function getIntroSettings() {
             show: data?.is_active ?? false,
             disabled_message: data?.message ?? 'De inschrijvingen voor de introweek zijn momenteel gesloten.'
         };
-    } catch (_error) {
-
+    } catch (error) {
+        safeConsoleError(`[IntroActions][getIntroSettings] Error while fetching intro settings:`, error);
         return { show: false, disabled_message: 'De inschrijvingen voor de introweek zijn momenteel gesloten.' };
     }
 }
@@ -96,7 +97,7 @@ async function checkParentSignupInternal(): Promise<{ exists: boolean; record?: 
 
         return { exists: false };
     } catch (error) {
-        console.error('[hasParentSignup] Directus check failed:', error);
+        safeConsoleError('[hasParentSignup] Directus check failed:', error);
         return { exists: false };
     }
 }
@@ -123,7 +124,7 @@ export async function submitIntroSignup(data: IntroSignupForm): Promise<{ succes
 
     const payload = {
         first_name: parsed.data.voornaam,
-        last_name: `${parsed.data.tussenvoegsel ? parsed.data.tussenvoegsel + ' ' : ''}${parsed.data.achternaam}`.trim(),
+        last_name: parsed.data.achternaam,
         date_of_birth: parsed.data.geboortedatum,
         email: parsed.data.email,
         phone_number: parsed.data.telefoonnummer,
@@ -132,8 +133,8 @@ export async function submitIntroSignup(data: IntroSignupForm): Promise<{ succes
 
     try {
         await getSystemDirectus().request(createItem('intro_signups', payload));
-    } catch (_error) {
-
+    } catch (error) {
+        safeConsoleError(`[intro.actions.ts][submitIntroSignup] Error while submitting intro signup:`, error);
         throw new Error('Er is een fout opgetreden bij je inschrijving');
     }
 
@@ -150,7 +151,9 @@ export async function submitIntroSignup(data: IntroSignupForm): Promise<{ succes
                 phone: payload.phone_number
             }
         })
-    }).catch(() => { });
+    }).catch((error) => {
+        safeConsoleError(`[intro.actions.ts][submitIntroSignup] Error while triggering mail microservice:`, error);
+    });
     return { success: true };
 }
 
@@ -159,8 +162,9 @@ export async function getIntroBlogsPublic(): Promise<IntroBlog[]> {
         const sql = 'SELECT * FROM intro_blogs WHERE is_published = true ORDER BY id DESC LIMIT 6';
         const { rows } = await query(sql);
         return rows as unknown as IntroBlog[];
-    } catch (_error) {
-        return [];
+    } catch (error) {
+        safeConsoleError(`[intro.actions.ts][getIntroBlogsPublic] Error while fetching intro blogs:`, error);
+        throw new Error('Er is een fout opgetreden bij het ophalen van de intro blogs');
     }
 }
 
@@ -169,8 +173,9 @@ export async function getAllIntroBlogsPublic(): Promise<IntroBlog[]> {
         const sql = 'SELECT * FROM intro_blogs WHERE is_published = true ORDER BY id DESC';
         const { rows } = await query(sql);
         return rows as unknown as IntroBlog[];
-    } catch (_error) {
-        return [];
+    } catch (error) {
+        safeConsoleError(`[intro.actions.ts][getAllIntroBlogsPublic] Error while fetching all intro blogs:`, error);
+        throw new Error('Er is een fout opgetreden bij het ophalen van de intro blogs');
     }
 }
 
@@ -179,8 +184,9 @@ export async function getIntroBlogBySlug(slug: string): Promise<IntroBlog | null
         const sql = 'SELECT * FROM intro_blogs WHERE slug = $1 AND is_published = true LIMIT 1';
         const { rows } = await query(sql, [slug]);
         return (rows[0] as unknown as IntroBlog) || null;
-    } catch (_error) {
-        return null;
+    } catch (error) {
+        safeConsoleError(`[intro.actions.ts][getIntroBlogBySlug] Error while fetching intro blog by slug:`, error);
+        throw new Error('Er is een fout opgetreden bij het ophalen van de intro blog');
     }
 }
 
@@ -209,7 +215,8 @@ export async function submitIntroParentSignup(data: IntroParentSignupForm): Prom
                     user_id: session.user.id
                 }));
             } catch (error) {
-                console.error('[IntroParentSignup] Failed to fix User ID link:', error);
+                safeConsoleError(`[intro.actions.ts][submitIntroParentSignup] Failed to fix User ID link:`, error);
+                return { success: false, error: 'Er is een fout opgetreden bij het verwerken van uw aanmelding' };
             }
         }
         return { success: true };
@@ -248,13 +255,13 @@ export async function submitIntroParentSignup(data: IntroParentSignupForm): Prom
         }
 
         const error = e as DirectusError;
-        console.error('[IntroParentSignup] Error details:', {
+        safeConsoleError('[intro.actions.ts][submitIntroParentSignup] Error details:', {
             message: error.message,
             status: error.status,
             code: error.code,
             response: error.response?.data || error.response
         });
-        throw new Error(`Er is een fout opgetreden tijdens de intro-ouder inschrijving: ${error.message || 'Onbekende fout'}`);
+        return { success: false, error: 'Er is een fout opgetreden bij uw aanmelding' };
     }
 }
 

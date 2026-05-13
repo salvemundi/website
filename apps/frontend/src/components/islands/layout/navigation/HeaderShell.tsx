@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils/cn';
 import { authClient } from '@/lib/auth';
+import { safeConsoleError } from '@/server/utils/logger';
 
 interface HeaderShellProps {
     children: React.ReactNode;
@@ -28,7 +29,7 @@ export function HeaderShell({ children, mobileMenu }: HeaderShellProps) {
             authClient.signIn.social({ 
                 provider: 'microsoft', 
                 callbackURL
-            }).catch(console.error);
+            }).catch(err => safeConsoleError('[HeaderShell][useEffect:Auto-login] Error during social sign-in', err));
         }
     }, [searchParams, pathname, router]);
  

@@ -21,6 +21,7 @@ import {
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { getRedis } from '@/server/auth/redis-client';
 import { normalizeDate } from '@/lib/utils/date-utils';
+import { safeConsoleError } from '@/server/utils/logger';
 
 /**
  * Validates if the current request has access to a signup.
@@ -131,13 +132,13 @@ export async function updateSignupDetails(signupId: number, data: ReisPaymentEnr
         // Shadow Write (Directus)
         const { getSystemDirectus } = await import('@/lib/directus');
         const { updateItem } = await import('@directus/sdk');
-        getSystemDirectus().request(updateItem('trip_signups', signupId, dbData)).catch(() => {
-
+        getSystemDirectus().request(updateItem('trip_signups', signupId, dbData)).catch((error: unknown) => {
+            safeConsoleError(`[Reis-Payment-Action][updateSignupDetails] Failed to update signup ${signupId}:`, error);
         });
 
         return { success: true };
-    } catch {
-
+    } catch (error: unknown) {
+        safeConsoleError(`[Reis-Payment-Action][updateSignupDetails] Failed to update signup ${signupId}:`, error);
         return { success: false, error: 'Opslaan mislukt door een serverfout.' };
     }
 }
@@ -235,7 +236,7 @@ export async function initiateTripPaymentAction(signupId: number, paymentType: '
 
     } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error('[REIS_PAYMENT] Exception in initiateTripPaymentAction:', error);
+        safeConsoleError('[REIS_PAYMENT] Exception in initiateTripPaymentAction:', error);
         return { success: false, error: `Interne fout bij starten betaling: ${errorMessage}` };
     }
 }

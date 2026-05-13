@@ -16,7 +16,7 @@ export class EventListenerService {
             await redis.xgroup('CREATE', this.STREAM_KEY, this.GROUP_NAME, '0', 'MKSTREAM');
         } catch (error: any) {
             if (!error.message.includes('BUSYGROUP')) {
-                console.error('[AzureEventListener] Error creating consumer group:', error);
+                safeConsoleError('[AzureEventListener] Error creating consumer group:', error);
             }
         }
 

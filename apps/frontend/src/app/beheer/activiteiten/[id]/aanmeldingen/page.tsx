@@ -66,12 +66,39 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
             directus_relations: s.directus_relations as unknown as Signup['directus_relations']
         }));
 
+        const totalSignups = signups.length;
+        const checkedInCount = signups.filter(s => s.checked_in).length;
+        const spotsLeft = event.max_sign_ups ? event.max_sign_ups - totalSignups : null;
+
         return (
             <AdminPageShell
                 title="Aanmeldingen"
                 subtitle={`Lijst van deelnemers voor "${event.name}"`}
                 backHref={`/beheer/activiteiten`}
-                hideToolbar={true}
+                actions={
+                    <div className="flex items-center gap-4">
+                        <div className="hidden md:flex items-center gap-4 bg-[var(--beheer-card-soft)] px-4 py-2 rounded-2xl border border-[var(--beheer-border)]/50 shadow-sm">
+                            <div className="flex flex-col items-center px-2">
+                                <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1">Totaal</span>
+                                <span className="text-sm font-bold text-[var(--beheer-text)] leading-none">{totalSignups}</span>
+                            </div>
+                            <div className="w-px h-6 bg-[var(--beheer-border)]/20" />
+                            <div className="flex flex-col items-center px-2">
+                                <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1">Ingecheckt</span>
+                                <span className="text-sm font-bold text-[var(--beheer-active)] leading-none">{checkedInCount}</span>
+                            </div>
+                            {spotsLeft !== null && (
+                                <>
+                                    <div className="w-px h-6 bg-[var(--beheer-border)]/20" />
+                                    <div className="flex flex-col items-center px-2">
+                                        <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1">Plekken over</span>
+                                        <span className="text-sm font-bold text-[var(--beheer-text)] leading-none">{spotsLeft}</span>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                }
             >
                 <div className="pb-20">
                     <ActiviteitAanmeldingenIsland

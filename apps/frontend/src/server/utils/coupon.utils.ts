@@ -1,5 +1,6 @@
 import 'server-only';
 import { query } from '@/lib/database/db';
+import { safeConsoleError } from '@/server/utils/logger';
 
 export interface CouponData {
     id: string;
@@ -76,7 +77,7 @@ export async function getValidCoupon(code: string): Promise<CouponValidationResu
             coupon: coupon as CouponData,
         };
     } catch (error) {
-        console.error('[CouponUtils] Database error during validation:', error);
+        safeConsoleError('[CouponUtils] Database error during validation:', error);
         return { valid: false, error: 'Fout bij raadplegen van de database' };
     }
 }

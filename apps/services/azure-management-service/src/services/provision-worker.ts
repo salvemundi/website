@@ -96,9 +96,9 @@ export class ProvisionWorkerService {
                             console.log(`[ProvisionWorker] Adding user to group ${activeGroupId}...`);
                             await GraphService.addGroupMember(activeGroupId, result.id, token);
                         } catch (groupErr: any) {
-                            console.error(`[ProvisionWorker] Failed to add user to active lid group: ${groupErr.message}`);
+                            console.error(`[ProvisionWorker][addGroupMember] Failed to add user to active lid group: ${groupErr.message}`);
                             // We don't fail the whole task if this fails, but it's worth logging
-                        }
+                        } 
 
                         // 3. Sync to Directus (Strict Seqential: Sync BEFORE Mail)
                         if (process.env.AZURE_SYNC_SERVICE_URL) {
@@ -138,16 +138,16 @@ export class ProvisionWorkerService {
                         });
 
                         if (!mailRes.ok) throw new Error(`Mail service failed: ${mailRes.statusText}`);
-                        console.log(`[ProvisionWorker] Welcome email successful for ${task.email}`);
+                        console.log(`[ProvisionWorker][${task.email}] Welcome email successful.`);
 
                         // Success -> Remove task
                         await redis.zrem(this.QUEUE_KEY, taskJson);
                     } catch (error: any) {
-                        console.error(`[ProvisionWorker] Failed for ${task.email}:`, error.message);
+                        console.error(`[ProvisionWorker][${task.email}] Failed:`, error.message);
 
                         // If user already exists, we consider it "Success" (or at least done)
                         if (error.message?.includes('already exists') || error.status === 409) {
-                            console.log(`[ProvisionWorker] User ${task.email} already exists. Removing task.`);
+                            console.log(`[ProvisionWorker][${task.email}] User already exists. Removing task.`);
                             await redis.zrem(this.QUEUE_KEY, taskJson);
                             continue;
                         }
@@ -160,7 +160,7 @@ export class ProvisionWorkerService {
                             const delay = 30000 * Math.pow(task.retries, 2); // 30s, 2m, 4.5m...
                             await redis.zadd(this.QUEUE_KEY, Date.now() + delay, JSON.stringify(task));
                         } else {
-                            console.error(`[ProvisionWorker] Max retries reached for ${task.email}`);
+                            console.error(`[ProvisionWorker][${task.email}] Max retries reached.`);
                             // Graceful failure logging: create a system_log in Directus
                             try {
                                 const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL;
@@ -185,13 +185,13 @@ export class ProvisionWorkerService {
                                     });
                                 }
                             } catch (logErr) {
-                                console.error(`[ProvisionWorker] Failed to write system_logs for dead-letter ${task.email}`, logErr);
+                                console.error(`[ProvisionWorker][${task.email}] Failed to write system_logs for dead-letter.`);
                             }
                         }
                     }
                 }
             } catch (loopErr: any) {
-                console.error('[ProvisionWorker] Loop Error:', loopErr.message);
+                console.error('[ProvisionWorker][loop] Loop Error:', loopErr.message);
                 await new Promise(resolve => setTimeout(resolve, 5000));
             }
         }

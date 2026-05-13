@@ -2,30 +2,24 @@
 
 import React, { useEffect } from 'react';
 import { AlertTriangle, RefreshCcw, Home } from 'lucide-react';
+import { safeConsoleError } from '@/server/utils/logger';
 import BackButton from '@/components/ui/navigation/BackButton';
 
-/**
- * Specialized error boundary for the membership page.
- * Designed to be minimal and consistent with the site's design language.
- */
 export default function MembershipError({
     error,
     reset }: {
-    error: Error & { digest?: string };
-    reset: () => void;
-}) {
+        error: Error & { digest?: string };
+        reset: () => void;
+    }) {
     useEffect(() => {
-        // Essential logging for server-side error tracking
-        console.error('[Membership Error]', error);
+        safeConsoleError('[Membership][MembershipError] Error:', error);
     }, [error]);
 
     return (
         <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center py-20">
             <div className="relative mb-8 pt-10">
-                {/* Standard project glow effect */}
                 <div className="absolute inset-x-0 top-0 h-40 w-40 mx-auto blur-3xl bg-[var(--color-purple-500)]/10 rounded-full pointer-events-none" />
-                
-                {/* Icon Container matching GlobalError and NotFound patterns */}
+
                 <div className="relative rounded-3xl bg-[var(--bg-card)] p-6 shadow-2xl border border-[var(--border-color)]/20 text-[var(--color-purple-500)] inline-block">
                     <AlertTriangle className="h-16 w-16" />
                 </div>
@@ -34,9 +28,9 @@ export default function MembershipError({
             <h1 className="text-4xl font-black text-[var(--text-main)] mb-3 tracking-tight uppercase">
                 Er is iets misgegaan
             </h1>
-            
+
             <p className="text-[var(--text-muted)] max-w-lg mx-auto mb-10 font-medium leading-relaxed">
-                Onze servers konden je lidmaatschapsgegevens niet ophalen. 
+                Onze servers konden je lidmaatschapsgegevens niet ophalen.
                 Probeer de pagina te herladen of controleer je internetverbinding.
             </p>
 
@@ -49,10 +43,10 @@ export default function MembershipError({
                     Opnieuw Proberen
                 </button>
 
-                <BackButton 
-                    href="/" 
-                    text="Terug naar Home" 
-                    icon={Home} 
+                <BackButton
+                    href="/"
+                    text="Terug naar Home"
+                    icon={Home}
                     className="rounded-full px-8 py-3.5"
                 />
             </div>

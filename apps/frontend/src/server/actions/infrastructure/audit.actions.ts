@@ -1,6 +1,5 @@
 'use server';
-
-import { getEnrichedSession } from "@/server/auth/auth-utils";
+import { safeConsoleError } from '@/server/utils/logger';
 import { revalidateTag, revalidatePath, unstable_noStore as noStore } from "next/cache";
 import { isSuperAdmin } from "@/lib/auth";
 import { type Committee } from "@/shared/lib/permissions";
@@ -12,15 +11,18 @@ import {
     type SystemLog
 } from "@/server/queries/audit.queries";
 import { type PendingSignup } from "@salvemundi/validations/schema/audit.zod";
-
+import { getEnrichedSession } from "@/server/auth/auth-utils";
 import { type EnrichedUser } from "@/types/auth";
+import { sanitizePayload } from "@/server/utils/log-sanitizer";
 
 type ActionResponse<T> = { success: true; data: T } | { success: false; error: string };
 type LogsResponse = { success: true; data: SystemLog[]; totalCount: number } | { success: false; error: string };
 
+
 export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' | 'INFO', payload?: unknown) {
     try {
         const session = await getEnrichedSession();
+        const safePayload = sanitizePayload(payload as Record<string, unknown>);
         if (!session || !session.user) {
             // Drop unauthenticated logs to prevent VULN-012 (Log Poisoning)
             return;
@@ -29,7 +31,7 @@ export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' |
         const user = session.user as unknown as EnrichedUser;
 
         // Prevent VULN-008 (Payload Bloat)
-        const payloadStr = JSON.stringify(payload || {});
+        const payloadStr = JSON.stringify(safePayload);
         if (payloadStr.length > 15000) {
             console.warn('[AuditActions] Log payload too large, dropping.');
             return;
@@ -46,7 +48,7 @@ export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' |
             }
         });
     } catch (error) {
-        console.error('[AuditActions] Failed to log admin action:', error);
+        safeConsoleError('[AuditActions] Failed to log admin action:', error);
     }
 }
 
@@ -70,7 +72,7 @@ export async function getPendingSignupsAction(): Promise<ActionResponse<PendingS
         const aggregated = await getPendingSignupsInternal();
         return { success: true, data: aggregated };
     } catch (error) {
-        console.error('[AuditActions] Failed to fetch pending signups:', error);
+        safeConsoleError('[AuditActions] Failed to fetch pending signups:', error);
         return { success: false, error: "Kon inschrijvingen niet ophalen." };
     }
 }
@@ -99,8 +101,8 @@ export async function approveSignupAction(id: string, type: string) {
 
         revalidatePath('/beheer/logging');
         return { success: true };
-    } catch (error) {
-        console.error(`[AuditActions] Failed to approve signup ${id}:`, error);
+    } catch (error: unknown) {
+        safeConsoleError(`[AuditActions] Failed to approve signup ${id}:`, error);
         return { success: false, error: "Goedkeuren mislukt." };
     }
 }
@@ -120,8 +122,8 @@ export async function rejectSignupAction(id: string, type: string) {
 
         revalidatePath('/beheer/logging');
         return { success: true };
-    } catch {
-
+    } catch (error: unknown) {
+        safeConsoleError(`[AuditActions] Failed to reject signup ${id}:`, error);
         return { success: false, error: "Afwijzen mislukt." };
     }
 }
@@ -135,8 +137,8 @@ export async function getAuditSettingsAction() {
 
         const flag = rows?.[0];
         return { success: true, data: { manual_approval: !!flag?.is_active } };
-    } catch (_error) {
-
+    } catch (error: unknown) {
+        safeConsoleError(`[AuditActions] Failed to fetch audit settings:`, error);
         return { success: true, data: { manual_approval: false } };
     }
 }
@@ -165,8 +167,8 @@ export async function updateAuditSettingsAction(manualApproval: boolean) {
 
         revalidateTag('audit_settings', 'max');
         return { success: true };
-    } catch {
-
+    } catch (error: unknown) {
+        safeConsoleError(`[AuditActions] Failed to update audit settings:`, error);
         return { success: false, error: "Bijwerken instellingen mislukt." };
     }
 }
@@ -178,8 +180,8 @@ export async function getSystemLogsAction(limit: number = 50, source: 'admin' | 
     try {
         const result = await getSystemLogsInternal(limit, source);
         return { success: true, data: result.logs, totalCount: result.totalCount };
-    } catch (error) {
-        console.error('[AuditActions] Failed to fetch system logs:', error);
+    } catch (error: unknown) {
+        safeConsoleError('[AuditActions] Failed to fetch system logs:', error);
         return { success: false, error: "Kon logs niet ophalen." };
     }
 }

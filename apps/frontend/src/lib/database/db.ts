@@ -1,5 +1,6 @@
 import 'server-only';
 import { Pool, type QueryResult, type QueryResultRow } from 'pg';
+import { safeConsoleError } from '@/server/utils/logger';
 
 
 
@@ -22,7 +23,7 @@ const poolConfig = {
 if (!globalThis._pgPool) {
     globalThis._pgPool = new Pool(poolConfig);
     globalThis._pgPool.on('error', (error) => {
-        console.error('[DB-Pool] Unexpected error on idle client', error);
+        safeConsoleError('[DB-Pool] Unexpected error on idle client', error);
     });
 }
 
@@ -49,7 +50,7 @@ export async function query<R extends QueryResultRow = QueryResultRow>(text: str
             }
             const pgError = error as PgError;
 
-            console.error('[DB-Query Error]', {
+            safeConsoleError('[DB-Query Error]', {
                 message: errorMessage,
                 code: errorCode,
                 text,

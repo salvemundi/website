@@ -18,6 +18,7 @@ export const metadata: Metadata = {
 
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { connection } from 'next/server';
+import { safeConsoleError } from '@/server/utils/logger';
 
 export default async function HomePage() {
     return (
@@ -31,7 +32,7 @@ async function HomeContent() {
     await connection();
 
     const session = await getEnrichedSession().catch((error) => {
-        console.error('[HomeContent] Kon sessie niet ophalen:', error);
+        safeConsoleError('[HomePage][HomeContent] Kon sessie niet ophalen:', error);
         return null;
     });
 

@@ -35,7 +35,10 @@ export async function triggerFullSyncAction(options?: { fields: string[]; forceL
         clearTimeout(timeoutId);
 
         if (!res.ok) {
-            const errorData = await res.json().catch(() => ({ error: 'Sync service onbeschikbaar' }));
+            const errorData = await res.json().catch((error) => {
+                console.error(`[SYNC-ACTION] Error parsing sync response:`, error);
+                return { error: 'Sync service onbeschikbaar' };
+            });
             console.error(`[SYNC-ACTION] POST /run failed: ${res.status}`, errorData);
             return {
                 success: false,
@@ -106,7 +109,10 @@ export async function triggerUserSyncAction(userId: string, options?: { fields: 
         clearTimeout(timeoutId);
 
         if (!res.ok) {
-            const errorData = await res.json().catch(() => ({ error: 'Sync service onbeschikbaar' }));
+            const errorData = await res.json().catch((error) => {
+                console.error(`[SYNC-ACTION] Error parsing sync response:`, error);
+                return { error: 'Sync service onbeschikbaar' };
+            });
             console.error(`[SYNC-ACTION] POST /run/:id failed: ${res.status}`, errorData);
             return {
                 success: false,

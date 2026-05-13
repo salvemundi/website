@@ -9,6 +9,7 @@ import {
     introParentSignupDbSchema
 } from '@salvemundi/validations/schema/intro.zod';
 import { z } from 'zod';
+import { safeConsoleError } from '@/server/utils/logger';
 
 export async function getIntroSignupsInternal() {
     try {
@@ -17,12 +18,12 @@ export async function getIntroSignupsInternal() {
 
         const parsed = z.array(introSignupDbSchema).safeParse(rows);
         if (!parsed.success) {
-            console.error('[AdminIntroQueries] getIntroSignupsInternal validation failed:', parsed.error);
+            safeConsoleError('[AdminIntroQueries][getIntroSignupsInternal] validation failed:', parsed.error);
             return rows;
         }
         return parsed.data;
     } catch (error) {
-        console.error('[AdminIntroQueries] getIntroSignupsInternal failed:', error);
+        safeConsoleError('[AdminIntroQueries][getIntroSignupsInternal] failed:', error);
         throw new Error('Kon aanmeldingen niet ophalen');
     }
 }
@@ -34,12 +35,12 @@ export async function getIntroParentSignupsInternal() {
 
         const parsed = z.array(introParentSignupDbSchema).safeParse(rows);
         if (!parsed.success) {
-            console.error('[AdminIntroQueries] getIntroParentSignupsInternal validation failed:', parsed.error);
+            safeConsoleError('[AdminIntroQueries][getIntroParentSignupsInternal] validation failed:', parsed.error);
             return rows;
         }
         return parsed.data;
     } catch (error) {
-        console.error('[AdminIntroQueries] getIntroParentSignupsInternal failed:', error);
+        safeConsoleError('[AdminIntroQueries][getIntroParentSignupsInternal] failed:', error);
         throw new Error('Kon ouder-aanmeldingen niet ophalen');
     }
 }
@@ -60,12 +61,12 @@ export async function getIntroBlogsInternal(): Promise<IntroBlog[]> {
 
         const parsed = z.array(introBlogSchema).safeParse(mapped);
         if (!parsed.success) {
-
+            safeConsoleError('[AdminIntroQueries][getIntroBlogsInternal] validation failed:', parsed.error);
             return mapped as IntroBlog[];
         }
         return parsed.data;
     } catch (error) {
-        console.error('[AdminIntroQueries] getIntroBlogsInternal failed:', error);
+        safeConsoleError('[AdminIntroQueries][getIntroBlogsInternal] failed:', error);
         throw new Error('Kon blogs niet ophalen');
     }
 }
@@ -91,7 +92,7 @@ export async function getIntroPlanningInternal(): Promise<IntroPlanningItem[]> {
         }
         return parsed.data;
     } catch (error) {
-        console.error('[AdminIntroQueries] getIntroPlanningInternal failed:', error);
+        safeConsoleError('[AdminIntroQueries][getIntroPlanningInternal] failed:', error);
         throw new Error('Kon planning niet ophalen');
     }
 }

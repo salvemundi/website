@@ -47,7 +47,7 @@ const start = async () => {
         const { FullSyncJob } = await import('./services/full-sync.job.js');
         FullSyncJob.start(fastify.redis);
     } catch (error) {
-        console.error('Azure Sync Service crashed:', error);
+        safeConsoleError('Azure Sync Service crashed:', error);
         process.exit(1);
     }
 };

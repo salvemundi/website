@@ -5,6 +5,7 @@ import MembershipStatusIsland, { type MembershipUserData } from '@/components/is
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { fetchUserCommitteesDb, type Committee } from '@/server/internal/user-db.utils';
 import { connection } from 'next/server';
+import { safeConsoleError } from '@/server/utils/logger';
 
 export const metadata = {
     title: 'Word Lid | Salve Mundi',
@@ -26,8 +27,7 @@ export default async function MembershipPage() {
         try {
             committees = await fetchUserCommitteesDb(user.id);
         } catch (error) {
-            console.error('[Membership] Error fetching committees:', error);
-            // Non-blocking error for UI, but logged
+            safeConsoleError('[Membership][MembershipPage] Error fetching committees:', error);
         }
     }
 
