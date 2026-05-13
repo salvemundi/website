@@ -32,6 +32,7 @@ interface ActiviteitCardProps {
     registrationDeadline?: string;
     contact?: string;
     onlyMembers?: boolean;
+    serverTime?: string;
 }
 
 const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
@@ -54,7 +55,8 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     committeeName,
     contact,
     registrationDeadline,
-    onlyMembers = false
+    onlyMembers = false,
+    serverTime
 }) => {
     const { toast, showToast, hideToast } = useAdminToast();
     const { isAuthenticated, user } = useAuth();
@@ -62,7 +64,8 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
 
     const alreadySignedUp = Boolean(isSignedUp);
     const isListVariant = variant === 'list';
-    const isDeadlinePassed = registrationDeadline ? new Date(registrationDeadline) < new Date() : false;
+    const now = serverTime ? new Date(serverTime) : new Date();
+    const isDeadlinePassed = registrationDeadline ? new Date(registrationDeadline) < now : false;
     const cannotSignUp = alreadySignedUp || isDeadlinePassed;
 
     const handleSignupClick = (e: React.MouseEvent) => {

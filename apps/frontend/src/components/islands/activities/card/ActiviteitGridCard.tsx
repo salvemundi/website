@@ -38,7 +38,7 @@ export default function ActiviteitGridCard({
     return (
         <div
             onClick={onShowDetails}
-            className={`group relative z-0 overflow-hidden w-full rounded-[1.75rem] bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-0 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 ${isPast ? 'opacity-60 filter grayscale' : ''}`}
+            className={`group relative z-0 overflow-hidden w-full rounded-[1.75rem] bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-0 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 ${isPast ? 'opacity-75 grayscale-50' : ''}`}
         >
             <div className="relative z-10 w-full aspect-video mb-0 overflow-hidden">
                 {image ? (
@@ -54,22 +54,20 @@ export default function ActiviteitGridCard({
                         <Calendar className="h-12 w-12 text-[var(--theme-purple)]/20" />
                     </div>
                 )}
-                {!isPast && (
-                    <div className="absolute top-4 right-4 z-20 flex flex-col gap-2 items-end">
-                        <span className="bg-[var(--theme-purple)] text-[var(--color-white)] text-[10px] font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider backdrop-blur-md">
-                            {committeeLabel}
+                <div className="absolute top-4 right-4 z-20 flex flex-col gap-2 items-end">
+                    <span className="bg-[var(--theme-purple)] text-[var(--color-white)] text-[10px] font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider backdrop-blur-md">
+                        {committeeLabel}
+                    </span>
+                    {onlyMembers && (
+                        <span className="bg-[var(--theme-warning)] text-[var(--color-white)] text-[10px] font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider backdrop-blur-md">
+                            Leden Alleen
                         </span>
-                        {onlyMembers && (
-                            <span className="bg-[var(--theme-warning)] text-[var(--color-white)] text-[10px] font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider backdrop-blur-md">
-                                Leden Alleen
-                            </span>
-                        )}
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
 
             <div className="p-5 flex flex-col flex-grow relative z-10 space-y-3">
-                <h3 className="text-xl font-bold text-[var(--theme-purple)]/80 leading-snug line-clamp-2 break-words">
+                <h3 className="text-xl font-bold text-[var(--theme-purple)]/90 leading-tight group-hover:text-[var(--theme-purple)] transition-colors line-clamp-2 break-words">
                     {title}
                 </h3>
 
@@ -85,7 +83,7 @@ export default function ActiviteitGridCard({
                     )}
                 </div>
 
-                <p className="text-[var(--text-muted)] text-sm line-clamp-3 leading-relaxed">
+                <p className="text-[var(--text-muted)] text-sm line-clamp-3 leading-relaxed break-words overflow-hidden">
                     {description}
                 </p>
 

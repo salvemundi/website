@@ -11,9 +11,10 @@ interface EventListProps {
     events: (Activiteit & { is_signed_up?: boolean })[];
     onEventClick: (event: Activiteit) => void;
     variant?: 'list' | 'grid';
+    serverTime?: string;
 }
 
-export default function EventList({ events, onEventClick, variant = 'list' }: EventListProps) {
+export default function EventList({ events, onEventClick, variant = 'list', serverTime }: EventListProps) {
     const { user } = useAuth();
 
     if (events.length === 0) {
@@ -40,7 +41,13 @@ export default function EventList({ events, onEventClick, variant = 'list' }: Ev
                         location={event.locatie ?? undefined}
                         price={(user as unknown as MembershipUserData)?.membership_status === 'active' ? (event.price_members ?? undefined) : (event.price_non_members ?? undefined)}
                         image={event.afbeelding_id ?? undefined}
-                        isPast={isEventPast(event.datum_start)}
+                        isPast={isEventPast(
+                            event.datum_eind || event.datum_start,
+                            event.event_time_end || event.event_time,
+                            !!event.event_time_end,
+                            serverTime ? new Date(serverTime) : undefined
+                        )}
+                        serverTime={serverTime}
                         isSignedUp={event.is_signed_up}
                         variant="grid"
                         committeeName={event.committee_name ?? undefined}
@@ -70,7 +77,13 @@ export default function EventList({ events, onEventClick, variant = 'list' }: Ev
                     location={event.locatie ?? undefined}
                     price={(user as unknown as MembershipUserData)?.membership_status === 'active' ? (event.price_members ?? undefined) : (event.price_non_members ?? undefined)}
                     image={event.afbeelding_id ?? undefined}
-                    isPast={isEventPast(event.datum_start)}
+                    isPast={isEventPast(
+                        event.datum_eind || event.datum_start,
+                        event.event_time_end || event.event_time,
+                        !!event.event_time_end,
+                        serverTime ? new Date(serverTime) : undefined
+                    )}
+                    serverTime={serverTime}
                     isSignedUp={event.is_signed_up}
                     variant="list"
                     committeeName={event.committee_name ?? undefined}
