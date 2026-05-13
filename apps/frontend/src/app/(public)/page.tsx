@@ -2,9 +2,8 @@ import { getHeroBanners, getUpcomingActiviteiten, getSponsors } from '@/server/a
 import { HeroIsland } from '@/components/islands/layout/HeroIsland';
 import { EventsSection } from '@/components/ui/activities/EventsSection';
 import { WhySalveMundiSection } from '@/components/ui/membership/WhySalveMundiSection';
-import dynamic from 'next/dynamic';
 import { JoinSectionIsland } from '@/components/islands/membership/JoinSectionIsland';
-const SponsorsSection = dynamic(() => import('@/components/ui/layout/SponsorsSection').then(mod => mod.SponsorsSection));
+import { SponsorsSection } from '@/components/ui/layout/SponsorsSection';
 
 import { PwaInstallIsland } from '@/components/islands/layout/PwaInstallIsland';
 
