@@ -1,9 +1,5 @@
+import { safeConsoleError } from './utils/logger.js';
 import Fastify from 'fastify';
-
-/**
- * Finance Service - Salve Mundi V7
- * Handles asynchronous payment processing via Mollie Webhooks.
- */
 
 const fastify = Fastify({
     logger: true
