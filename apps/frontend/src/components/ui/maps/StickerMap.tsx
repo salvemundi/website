@@ -173,7 +173,7 @@ export default function StickerMap({
                             {popupInfo.image && (
                                 <div className="mt-3">
                                     {showImage ? (
-                                        <div className="relative w-full h-48 animate-in zoom-in-95 duration-300">
+                                        <div className="relative w-full h-48">
                                             <MediaAsset
                                                 asset={popupInfo.image}
                                                 alt="Sticker proof"

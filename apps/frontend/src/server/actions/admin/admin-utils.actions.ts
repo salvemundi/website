@@ -6,11 +6,24 @@ import { fetchUserMetadataDb, fetchUserCommitteesDb } from "@/server/internal/us
 import { type EnrichedUser, type ImpersonationInfo } from "@/types/auth";
 import { headers } from 'next/headers';
 import { safeConsoleError } from '@/server/utils/logger';
+import { unstable_cache } from 'next/cache';
 
 /**
  * Centraal mechanisme voor admin-toegangscontrole en user-enrichment.
  * Wordt gebruikt in layouts, pages en server actions.
  */
+const getCachedUserEnrichment = unstable_cache(
+    async (userId: string) => {
+        const [metadata, committees] = await Promise.all([
+            fetchUserMetadataDb(userId),
+            fetchUserCommitteesDb(userId)
+        ]);
+        return { metadata, committees };
+    },
+    ['user-enrichment-v1'],
+    { revalidate: 10 }
+);
+
 export async function checkAdminAccess() {
     const safeHeaders = new Headers();
     try {
@@ -31,10 +44,7 @@ export async function checkAdminAccess() {
         const user = session.user as unknown as EnrichedUser;
 
         try {
-            const [metadata, committees] = await Promise.all([
-                fetchUserMetadataDb(user.id),
-                fetchUserCommitteesDb(user.id)
-            ]);
+            const { metadata, committees } = await getCachedUserEnrichment(user.id);
 
             if (metadata) {
                 user.membership_status = metadata.membership_status;

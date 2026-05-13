@@ -1,19 +1,13 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import dynamic from 'next/dynamic';
 
 
 import { createStickerPublic, uploadFileAction } from '@/server/actions/public/stickers.actions';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 
-const StickerMap = dynamic(() => import('@/components/ui/maps/StickerMap'), {
-    ssr: false,
-    loading: () => (
-        <div className="w-full rounded-[var(--radius-2xl)] overflow-hidden shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)]/30 bg-[var(--bg-soft)]" style={{ height: '600px' }} />
-    )
-});
+import StickerMap from '@/components/ui/maps/StickerMap';
 
 import StickerStats from './map/StickerStats';
 import StickerFilters from './map/StickerFilters';
@@ -44,7 +38,6 @@ export default function StickerMapIsland({
     // Filters
     const [filterCountry, setFilterCountry] = useState('');
     const [filterCity, setFilterCity] = useState('');
-    const [filterUser] = useState('');
 
     // Form State
     const [formData, setFormData] = useState({
@@ -154,11 +147,11 @@ export default function StickerMapIsland({
     };
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-700">
+        <div className="space-y-8">
             <StickerStats stickers={stickers} />
 
             <div className="relative group min-h-[600px]">
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-orange-500/10 blur-3xl -z-10 group-hover:from-purple-500/20 group-hover:to-orange-500/20 transition-all duration-1000" />
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-orange-500/5 blur-3xl -z-10" />
 
                 <StickerMap
                     stickers={stickers}
@@ -166,7 +159,6 @@ export default function StickerMapIsland({
                     selectedLocation={selectedLocation}
                     filterCountry={filterCountry}
                     filterCity={filterCity}
-                    filterUser={filterUser}
                 />
 
                 {/* Floating Controls */}

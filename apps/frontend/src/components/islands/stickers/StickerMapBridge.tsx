@@ -17,7 +17,7 @@ const StickerMapIsland = nextDynamic(
     () => import('./StickerMapIsland'),
     {
         ssr: false,
-        loading: () => <div className="h-[600px] w-full animate-pulse bg-slate-100 dark:bg-white/5 rounded-3xl" />
+        loading: () => <div className="h-[600px] w-full bg-slate-100 dark:bg-white/5 rounded-3xl" />
     }
 );
 

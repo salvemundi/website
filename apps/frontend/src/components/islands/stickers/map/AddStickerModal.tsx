@@ -39,7 +39,7 @@ export default function AddStickerModal({
     if (!show) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl">
             <div className="bg-[var(--bg-card)] rounded-3xl w-full max-w-xl shadow-2xl border border-white/10 overflow-hidden">
                 <div className="bg-gradient-to-r from-[var(--theme-purple)] to-[var(--theme-purple-dark)] p-6 text-white flex justify-between items-center">
                     <div>
