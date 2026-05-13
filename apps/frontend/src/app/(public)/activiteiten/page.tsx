@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import React from 'react';
 import ActivitiesBannerIsland from '@/components/islands/activities/ActivitiesBannerIsland';
 import ActivitiesProviderIsland from '@/components/islands/activities/ActivitiesProviderIsland';
