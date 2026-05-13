@@ -35,7 +35,8 @@ export const SponsorsSection: React.FC<SponsorsSectionProps> = ({
                         <div className="sponsors-scroll-track">
                             {displaySponsors.map((sponsor, index) => {
                                 const key = `${sponsor.sponsor_id}-${index}`;
-                                const src = getImageUrl(sponsor.image, { width: 320, height: 160, fit: 'contain' }) || '/img/newlogo.png';
+                                // Why: 'inside' prevents black bars (letterboxing) from Directus.
+                                const src = getImageUrl(sponsor.image, { width: 400, height: 200, fit: 'inside' }) || '/img/newlogo.png';
                                 
                                 /** 
                                  * Why: We use a wrapper with a conditional class to ensure logos that are 

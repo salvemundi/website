@@ -9,7 +9,7 @@
     }
 
     100% {
-        transform: translateX(-25%);
+        transform: translate3d(-25%, 0, 0);
     }
 }
 
@@ -27,9 +27,10 @@
 .sponsors-scroll-track {
     display: flex;
     flex-wrap: nowrap;
-    gap: 4rem;
-    animation: scroll-sponsors 30s linear infinite;
+    /* Use padding on items instead of gap for perfect percentage-based looping */
+    animation: scroll-sponsors 10s linear infinite;
     will-change: transform;
+    backface-visibility: hidden;
 }
 
 .sponsors-scroll-track:hover {
@@ -47,6 +48,7 @@
     box-shadow: none;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
+    padding-right: 4rem; /* Replaces track gap */
 }
 
 .sponsor-item:hover {
@@ -62,6 +64,7 @@
     object-fit: contain;
     transition: all 0.3s ease;
     display: block;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05));
 }
 
 .sponsor-item:hover .sponsor-logo {
@@ -108,12 +111,12 @@ html.dark .sponsor-item {
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
     .sponsors-scroll-track {
-        gap: 2rem;
-        animation-duration: 20s;
+        animation-duration: 15s;
     }
 
     .sponsor-item {
-        padding: 0.75rem 1.5rem;
+        padding-right: 2rem;
+        padding-left: 1rem;
     }
 
     .sponsor-logo {
