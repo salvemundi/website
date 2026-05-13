@@ -1,3 +1,4 @@
+import { safeConsoleError } from './utils/logger.js';
 import Fastify from 'fastify';
 import dotenv from 'dotenv';
 

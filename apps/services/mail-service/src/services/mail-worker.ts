@@ -1,3 +1,4 @@
+import { safeConsoleError } from '../utils/logger.js';
 import { Redis } from 'ioredis';
 import { MailerService } from './mailer.js';
 import { AuditService } from './audit.js';
