@@ -85,7 +85,7 @@ export default function StickerMap({
                 key={isDark ? 'dark-map' : 'light-map'} // Force re-render on theme change to swap basemaps
                 initialViewState={{ latitude: center[0], longitude: center[1], zoom }}
                 style={{ width: '100%', height: '100%' }}
-                mapStyle={isDark ? 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json' : 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json'}
+                mapStyle={isDark ? '/map/styles/dark.json' : '/map/styles/light.json'}
                 cursor="grab"
             >
                 <NavigationControl position="top-right" />
