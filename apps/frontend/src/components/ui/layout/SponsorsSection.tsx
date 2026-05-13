@@ -12,10 +12,10 @@ export const SponsorsSection: React.FC<SponsorsSectionProps> = ({
     sponsors = []
 }) => {
     const hasSponsors = sponsors.length > 0;
-    const displaySponsors = Array.from({ length: 4 }, () => sponsors).flat();
+    const scrollDuration = Math.max(2, sponsors.length * 0.8);
 
     return (
-        <section className="py-12 overflow-hidden">
+        <section className="py-12 overflow-hidden" style={{ '--scroll-duration': `${scrollDuration}s` } as React.CSSProperties}>
             <div className="mx-auto max-w-app px-6">
                 <div className="text-center mb-10">
                     <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[var(--color-purple-700)] dark:text-[var(--color-purple-300)] mb-2">
@@ -33,48 +33,47 @@ export const SponsorsSection: React.FC<SponsorsSectionProps> = ({
                 ) : (
                     <div className="sponsors-scroll-container">
                         <div className="sponsors-scroll-track">
-                            {displaySponsors.map((sponsor, index) => {
-                                const key = `${sponsor.sponsor_id}-${index}`;
-                                // Why: 'inside' prevents black bars (letterboxing) from Directus.
-                                const src = getImageUrl(sponsor.image, { width: 400, height: 200, fit: 'inside' }) || '/img/newlogo.png';
-                                
-                                /** 
-                                 * Why: We use a wrapper with a conditional class to ensure logos that are 
-                                 * optimized for light backgrounds remain visible even in dark mode.
-                                 */
-                                const itemClasses = `sponsor-item ${sponsor.dark_bg ? 'sponsor-light-bg' : ''}`;
+                            {[1, 2, 3, 4].map((set) => (
+                                <div key={set} className="sponsors-set" aria-hidden={set > 1}>
+                                    {sponsors.map((sponsor, index) => {
+                                        const key = `${sponsor.sponsor_id}-${set}-${index}`;
+                                        const src = getImageUrl(sponsor.image, { width: 400, height: 200, fit: 'inside' }) || '/img/newlogo.png';
+                                        const itemClasses = `sponsor-item ${sponsor.dark_bg ? 'sponsor-light-bg' : ''}`;
 
-                                const imageContent = (
-                                    <Image
-                                        src={src}
-                                        alt="Sponsor Logo"
-                                        height={80}
-                                        width={160}
-                                        quality={90}
-                                        className="sponsor-logo"
-                                    />
-                                );
+                                        const imageContent = (
+                                            <Image
+                                                src={src}
+                                                alt="Sponsor Logo"
+                                                height={80}
+                                                width={160}
+                                                quality={90}
+                                                className="sponsor-logo"
+                                                priority={true}
+                                            />
+                                        );
 
-                                if (sponsor.website_url) {
-                                    return (
-                                        <Link
-                                            key={key}
-                                            href={sponsor.website_url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className={itemClasses}
-                                        >
-                                            {imageContent}
-                                        </Link>
-                                    );
-                                }
+                                        if (sponsor.website_url) {
+                                            return (
+                                                <Link
+                                                    key={key}
+                                                    href={sponsor.website_url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className={itemClasses}
+                                                >
+                                                    {imageContent}
+                                                </Link>
+                                            );
+                                        }
 
-                                return (
-                                    <div key={key} className={itemClasses}>
-                                        {imageContent}
-                                    </div>
-                                );
-                            })}
+                                        return (
+                                            <div key={key} className={itemClasses}>
+                                                {imageContent}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ))}
                         </div>
                     </div>
                 )}

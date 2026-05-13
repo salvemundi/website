@@ -4,13 +4,8 @@
    ========================================================================== */
 
 @keyframes scroll-sponsors {
-    0% {
-        transform: translateX(0);
-    }
-
-    100% {
-        transform: translate3d(-25%, 0, 0);
-    }
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-25%); }
 }
 
 /* ── Scroll Container ────────────────────────────────────────────────────────
@@ -22,15 +17,24 @@
     padding: 2rem 0;
     mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
     -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    isolation: isolate; /* Fix for Chromium mask rendering pop-in */
 }
 
 .sponsors-scroll-track {
     display: flex;
     flex-wrap: nowrap;
-    /* Use padding on items instead of gap for perfect percentage-based looping */
-    animation: scroll-sponsors 10s linear infinite;
+    width: max-content;
+    animation: scroll-sponsors var(--scroll-duration, 20s) linear infinite;
     will-change: transform;
+    transform: translate3d(0, 0, 0); /* Force GPU acceleration */
     backface-visibility: hidden;
+}
+
+.sponsors-set {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 5rem;
+    padding-right: 5rem; /* The key to seamless looping with gap */
 }
 
 .sponsors-scroll-track:hover {
@@ -45,10 +49,8 @@
     justify-content: center;
     background: transparent;
     border-radius: 0.75rem;
-    box-shadow: none;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
-    padding-right: 4rem; /* Replaces track gap */
 }
 
 .sponsor-item:hover {
@@ -92,8 +94,12 @@ html.dark .sponsor-item {
 
 .sponsor-light-bg {
     background: var(--color-white) !important;
-    box-shadow: none !important;
-    padding: 0.75rem 1.5rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+    padding: 1.25rem 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 200px;
 }
 
 .sponsor-dark-bg .sponsor-logo {
@@ -111,12 +117,14 @@ html.dark .sponsor-item {
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
     .sponsors-scroll-track {
-        animation-duration: 15s;
+        animation-duration: calc(var(--scroll-duration, 20s) * 1.2);
+    }
+    .sponsors-set {
+        gap: 2.5rem;
+        padding-right: 2.5rem;
     }
 
     .sponsor-item {
-        padding-right: 2rem;
-        padding-left: 1rem;
     }
 
     .sponsor-logo {

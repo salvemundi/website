@@ -19,7 +19,6 @@ import {
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 import { toLocalISOString } from '@/lib/utils/date-utils';
-import { safeConsoleError } from '@/server/utils/logger';
 import { 
     type DbPubCrawlEvent,
     type DbTrip,
@@ -42,8 +41,7 @@ export const getHeroBanners = async (): Promise<HeroBanner[]> => {
 
     const parsed = heroBannersSchema.safeParse(mappedData);
     if (!parsed.success) {
-        safeConsoleError('[home.actions.ts][getHeroBanners] Validation failed:', parsed.error);
-        return mappedData as HeroBanner[];
+        throw new Error(`[home.actions.ts][getHeroBanners] Validation failed: ${parsed.error.message}`);
     }
 
     return parsed.data;
@@ -133,8 +131,7 @@ export const getUpcomingActiviteiten = async (limit = 4): Promise<Activiteit[]> 
 
     const parsed = activitiesSchema.safeParse(allEvents);
     if (!parsed.success) {
-        safeConsoleError('[home.actions.ts][getUpcomingActiviteiten] Validation failed:', parsed.error);
-        return allEvents as unknown as Activiteit[];
+        throw new Error(`[home.actions.ts][getUpcomingActiviteiten] Validation failed: ${parsed.error.message}`);
     }
 
     return parsed.data;
@@ -150,8 +147,7 @@ export const getSponsors = async (): Promise<Sponsor[]> => {
 
     const parsed = sponsorsSchema.safeParse(rawData);
     if (!parsed.success) {
-        safeConsoleError('[home.actions.ts][getSponsors] Validation failed:', parsed.error);
-        return rawData as unknown as Sponsor[];
+        throw new Error(`[home.actions.ts][getSponsors] Validation failed: ${parsed.error.message}`);
     }
 
     return parsed.data;
