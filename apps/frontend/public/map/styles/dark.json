@@ -1766,13 +1766,7 @@
       "filter": ["all", ["has", "name"], ["==", "class", "river"]],
       "layout": {
         "text-field": "{name_en}",
-        "text-font": [
-          "Open Sans Italic",
-          "Open Sans Italic",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular"
-        ],
+        "text-font": ["Open Sans Regular"],
         "symbol-placement": "line",
         "symbol-spacing": 300,
         "symbol-avoid-edges": false,
@@ -1819,13 +1813,7 @@
             [4, 18]
           ]
         },
-        "text-font": [
-          "Montserrat Medium Italic",
-          "Open Sans Italic",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular"
-        ],
+        "text-font": ["Open Sans Regular"],
         "text-line-height": 1.2,
         "text-padding": 2,
         "text-allow-overlap": false,
@@ -1853,13 +1841,7 @@
         "text-field": "{name}",
         "symbol-placement": "point",
         "text-size": 12,
-        "text-font": [
-          "Montserrat Medium Italic",
-          "Open Sans Italic",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular"
-        ],
+        "text-font": ["Open Sans Regular"],
         "text-line-height": 1.2,
         "text-padding": 2,
         "text-allow-overlap": false,
@@ -1900,13 +1882,7 @@
             [17, 13]
           ]
         },
-        "text-font": [
-          "Open Sans Italic",
-          "Open Sans Italic",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular"
-        ],
+        "text-font": ["Open Sans Regular"],
         "text-line-height": 1.2,
         "text-padding": 2,
         "text-allow-overlap": false,
@@ -1944,13 +1920,7 @@
             [17, 13]
           ]
         },
-        "text-font": [
-          "Open Sans Italic",
-          "Open Sans Italic",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular"
-        ],
+        "text-font": ["Open Sans Regular"],
         "symbol-spacing": 350,
         "text-pitch-alignment": "auto",
         "text-rotation-alignment": "auto",
@@ -1978,13 +1948,7 @@
             [14, "{name}"]
           ]
         },
-        "text-font": [
-          "Montserrat Regular",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular"
-        ],
+        "text-font": ["Open Sans Regular"],
         "text-size": {
           "stops": [
             [13, 8],
@@ -2029,13 +1993,7 @@
             [13, "{name}"]
           ]
         },
-        "text-font": [
-          "Montserrat Regular",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular"
-        ],
+        "text-font": ["Open Sans Regular"],
         "text-size": {
           "stops": [
             [12, 9],
@@ -2082,13 +2040,7 @@
             [13, "{name}"]
           ]
         },
-        "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular"
-        ],
+        "text-font": ["Open Sans Regular"],
         "text-size": {
           "stops": [
             [10, 9],
@@ -2130,13 +2082,7 @@
             [13, "{name}"]
           ]
         },
-        "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular"
-        ],
+        "text-font": ["Open Sans Regular"],
         "text-size": {
           "stops": [
             [8, 10],
@@ -2173,13 +2119,7 @@
       "filter": ["all", ["==", "class", "country"], [">=", "rank", 3], ["has", "iso_a2"]],
       "layout": {
         "text-field": "{name_en}",
-        "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular"
-        ],
+        "text-font": ["Open Sans Regular"],
         "text-size": {
           "stops": [
             [3, 10],
@@ -2213,13 +2153,7 @@
       "filter": ["all", ["==", "class", "country"], ["<=", "rank", 2]],
       "layout": {
         "text-field": "{name_en}",
-        "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular"
-        ],
+        "text-font": ["Open Sans Regular"],
         "text-size": {
           "stops": [
             [3, 11],
@@ -2260,13 +2194,7 @@
       "filter": ["all", ["==", "class", "state"], ["<=", "rank", 4]],
       "layout": {
         "text-field": "{name_en}",
-        "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular"
-        ],
+        "text-font": ["Open Sans Regular"],
         "text-size": {
           "stops": [
             [5, 12],
@@ -2292,13 +2220,7 @@
       "filter": ["all", ["==", "class", "continent"]],
       "layout": {
         "text-field": "{name_en}",
-        "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular"
-        ],
+        "text-font": ["Open Sans Regular"],
         "text-transform": "uppercase",
         "text-size": 14,
         "text-letter-spacing": 0.1,
@@ -2327,13 +2249,7 @@
             [13, "{name}"]
           ]
         },
-        "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular"
-        ],
+        "text-font": ["Open Sans Regular"],
         "text-size": {
           "stops": [
             [8, 12],
@@ -2375,13 +2291,7 @@
             [13, "{name}"]
           ]
         },
-        "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular"
-        ],
+        "text-font": ["Open Sans Regular"],
         "text-size": {
           "stops": [
             [8, 14],
@@ -2417,13 +2327,7 @@
       "filter": ["all", ["==", "class", "city"], ["<=", "rank", 7]],
       "layout": {
         "text-field": "{name_en}",
-        "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular"
-        ],
+        "text-font": ["Open Sans Regular"],
         "text-size": 12,
         "icon-image": "circle-11",
         "icon-offset": [16, 5],
@@ -2451,13 +2355,7 @@
       "filter": ["all", ["==", "class", "city"], ["<=", "rank", 4]],
       "layout": {
         "text-field": "{name_en}",
-        "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular"
-        ],
+        "text-font": ["Open Sans Regular"],
         "text-size": 12,
         "icon-image": "circle-11",
         "icon-offset": [16, 5],
@@ -2485,13 +2383,7 @@
       "filter": ["all", ["==", "class", "city"], ["<=", "rank", 2]],
       "layout": {
         "text-field": "{name_en}",
-        "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular"
-        ],
+        "text-font": ["Open Sans Regular"],
         "text-size": 12,
         "icon-image": "circle-11",
         "icon-offset": [16, 5],
@@ -2519,13 +2411,7 @@
       "filter": ["all", ["!has", "capital"], ["!in", "class", "country", "state"]],
       "layout": {
         "text-field": "{name_en}",
-        "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular"
-        ],
+        "text-font": ["Open Sans Regular"],
         "text-size": 12,
         "icon-image": "circle-11",
         "icon-offset": [16, 5],
@@ -2553,13 +2439,7 @@
       "filter": ["all", [">", "capital", 0]],
       "layout": {
         "text-field": "{name_en}",
-        "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular"
-        ],
+        "text-font": ["Open Sans Regular"],
         "text-size": 12,
         "icon-image": "circle-11",
         "icon-offset": [16, 5],
@@ -2587,13 +2467,7 @@
       "filter": ["all", ["in", "class", "stadium", "cemetery", "attraction"], ["<=", "rank", 3]],
       "layout": {
         "text-field": "{name}",
-        "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular"
-        ],
+        "text-font": ["Open Sans Regular"],
         "text-size": {
           "stops": [
             [15, 8],
@@ -2618,13 +2492,7 @@
       "filter": ["all", ["==", "class", "park"]],
       "layout": {
         "text-field": "{name}",
-        "text-font": [
-          "Montserrat Medium",
-          "Open Sans Bold",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular"
-        ],
+        "text-font": ["Open Sans Regular"],
         "text-size": {
           "stops": [
             [15, 8],
@@ -2649,13 +2517,7 @@
       "filter": ["all", ["in", "class", "minor", "service"]],
       "layout": {
         "symbol-placement": "line",
-        "text-font": [
-          "Montserrat Regular",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular"
-        ],
+        "text-font": ["Open Sans Regular"],
         "text-size": 9,
         "text-field": "{name}",
         "symbol-avoid-edges": false,
@@ -2679,13 +2541,7 @@
       "filter": ["all", ["in", "class", "secondary", "tertiary"]],
       "layout": {
         "symbol-placement": "line",
-        "text-font": [
-          "Montserrat Regular",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular"
-        ],
+        "text-font": ["Open Sans Regular"],
         "text-size": {
           "stops": [
             [15, 9],
@@ -2715,13 +2571,7 @@
       "filter": ["all", ["in", "class", "primary"]],
       "layout": {
         "symbol-placement": "line",
-        "text-font": [
-          "Montserrat Regular",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular"
-        ],
+        "text-font": ["Open Sans Regular"],
         "text-size": {
           "stops": [
             [14, 10],
@@ -2763,13 +2613,7 @@
       "filter": ["all", ["in", "class", "trunk", "motorway"]],
       "layout": {
         "symbol-placement": "line",
-        "text-font": [
-          "Montserrat Regular",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular"
-        ],
+        "text-font": ["Open Sans Regular"],
         "text-size": {
           "stops": [
             [14, 10],
@@ -2817,13 +2661,7 @@
             [18, 11]
           ]
         },
-        "text-font": [
-          "Montserrat Regular",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular",
-          "Open Sans Regular"
-        ]
+        "text-font": ["Open Sans Regular"]
       },
       "paint": {
         "text-halo-color": "transparent",
@@ -2835,4 +2673,5 @@
   "id": "voyager",
   "owner": "Carto"
 }
+
 
