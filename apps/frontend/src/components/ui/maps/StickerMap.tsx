@@ -79,14 +79,42 @@ export default function StickerMap({
         return () => observer.disconnect();
     }, []);
 
+    /**
+     * Why: MapLibre requires absolute URLs for sprites and glyphs. 
+     * We dynamically prepend the current origin to local paths.
+     */
+    const transformRequest = (url: string) => {
+        if (url.startsWith('/map/')) {
+            return {
+                url: `${window.location.origin}${url}`
+            };
+        }
+        return { url };
+    };
+
     return (
-        <div style={{ height, width: '100%', position: 'relative' }} className="rounded-[var(--radius-2xl)] overflow-hidden shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)]/30">
+        <div 
+            className="rounded-[var(--radius-2xl)] overflow-hidden shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)]/30 w-full relative"
+            style={{ height: 'min(75vh, var(--map-height, 600px))' }}
+        >
+            <style jsx>{`
+                div {
+                    --map-height: 600px;
+                }
+                @media (max-width: 768px) {
+                    div {
+                        --map-height: 450px;
+                    }
+                }
+            `}</style>
             <Map
                 key={isDark ? 'dark-map' : 'light-map'} // Force re-render on theme change to swap basemaps
                 initialViewState={{ latitude: center[0], longitude: center[1], zoom }}
                 style={{ width: '100%', height: '100%' }}
                 mapStyle={isDark ? '/map/styles/dark.json' : '/map/styles/light.json'}
                 cursor="grab"
+                cooperativeGestures={true}
+                transformRequest={transformRequest}
             >
                 <NavigationControl position="top-right" />
                 <GeolocateControl position="top-right" trackUserLocation={false} />

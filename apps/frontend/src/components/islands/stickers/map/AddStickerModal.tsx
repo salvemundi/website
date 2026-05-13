@@ -39,11 +39,11 @@ export default function AddStickerModal({
     if (!show) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl">
-            <div className="bg-[var(--bg-card)] rounded-3xl w-full max-w-xl shadow-2xl border border-white/10 overflow-hidden">
-                <div className="bg-gradient-to-r from-[var(--theme-purple)] to-[var(--theme-purple-dark)] p-6 text-white flex justify-between items-center">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-xl">
+            <div className="bg-[var(--bg-card)] rounded-3xl w-full max-w-xl shadow-2xl border border-white/10 overflow-hidden flex flex-col max-h-[95vh]">
+                <div className="bg-gradient-to-r from-[var(--theme-purple)] to-[var(--theme-purple-dark)] p-4 sm:p-6 text-white flex justify-between items-center shrink-0">
                     <div>
-                        <h2 className="text-2xl font-black uppercase tracking-tighter italic">Nieuwe Sticker <span className="text-white/70">Plakken</span></h2>
+                        <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tighter italic">Nieuwe Sticker <span className="text-white/70">Plakken</span></h2>
                         <p className="text-[10px] uppercase tracking-widest font-black opacity-80 mt-1">Locatie geselecteerd op kaart</p>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-xl transition-colors">
@@ -51,7 +51,7 @@ export default function AddStickerModal({
                     </button>
                 </div>
 
-                <form onSubmit={onSubmit} className="p-8 space-y-6">
+                <form onSubmit={onSubmit} className="p-4 sm:p-8 space-y-6 overflow-y-auto">
                     <div className="space-y-4">
                         <div>
                             <label className="block text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-2 ml-1">Naam van de Locatie</label>

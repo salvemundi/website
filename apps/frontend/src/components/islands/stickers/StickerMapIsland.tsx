@@ -162,19 +162,20 @@ export default function StickerMapIsland({
                 />
 
                 {/* Floating Controls */}
-                <div className="absolute top-4 left-4 right-4 md:right-auto md:w-80 space-y-3 pointer-events-none">
-                    <StickerFilters
-                        filterCountry={filterCountry}
-                        setFilterCountry={setFilterCountry}
-                        filterCity={filterCity}
-                        setFilterCity={setFilterCity}
-                    />
-
-                    <StickerActionPanel
-                        user={user}
-                        isLocating={isLocating}
-                        onPlaceSticker={handlePlaceSticker}
-                    />
+                <div className="absolute top-4 left-4 right-4 md:right-auto md:w-80 space-y-3 pointer-events-none md:top-4 md:bottom-auto bottom-4 flex flex-col md:block">
+                    <div className="md:contents flex flex-col-reverse gap-3">
+                        <StickerActionPanel
+                            user={user}
+                            isLocating={isLocating}
+                            onPlaceSticker={handlePlaceSticker}
+                        />
+                        <StickerFilters
+                            filterCountry={filterCountry}
+                            setFilterCountry={setFilterCountry}
+                            filterCity={filterCity}
+                            setFilterCity={setFilterCity}
+                        />
+                    </div>
                 </div>
             </div>
 
