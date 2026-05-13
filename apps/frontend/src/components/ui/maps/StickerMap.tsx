@@ -65,6 +65,8 @@ export default function StickerMap({
             });
     }, [stickers, filterCountry, filterCity, filterUserId, filterUser]);
 
+    const [mapStyleObj, setMapStyleObj] = useState<any>(null);
+
     /**
      * Why: Sync map style with the site's dark/light mode. 
      * We observe the html class for changes.
@@ -78,6 +80,35 @@ export default function StickerMap({
         observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
         return () => observer.disconnect();
     }, []);
+
+    /**
+     * Why: MapLibre is extremely strict about sprite/glyphs URLs being absolute
+     * in the initial style object. We fetch and patch them dynamically.
+     */
+    useEffect(() => {
+        const loadAndPatchStyle = async () => {
+            const stylePath = isDark ? '/map/styles/dark.json' : '/map/styles/light.json';
+            try {
+                const response = await fetch(stylePath);
+                const style = await response.json();
+                
+                // Patch URLs to be absolute
+                if (style.sprite && style.sprite.startsWith('/')) {
+                    style.sprite = `${window.location.origin}${style.sprite}`;
+                }
+                if (style.glyphs && style.glyphs.startsWith('/')) {
+                    style.glyphs = `${window.location.origin}${style.glyphs}`;
+                }
+
+                setMapStyleObj(style);
+            } catch (err) {
+                console.error('Failed to load map style:', err);
+                // Fallback to URL if fetch fails
+                setMapStyleObj(stylePath);
+            }
+        };
+        loadAndPatchStyle();
+    }, [isDark]);
 
     /**
      * Why: MapLibre requires absolute URLs for sprites and glyphs. 
@@ -99,7 +130,7 @@ export default function StickerMap({
         >
             <style jsx>{`
                 div {
-                    --map-height: 600px;
+                    --map-height: ${height};
                 }
                 @media (max-width: 768px) {
                     div {
@@ -107,15 +138,16 @@ export default function StickerMap({
                     }
                 }
             `}</style>
-            <Map
-                key={isDark ? 'dark-map' : 'light-map'} // Force re-render on theme change to swap basemaps
-                initialViewState={{ latitude: center[0], longitude: center[1], zoom }}
-                style={{ width: '100%', height: '100%' }}
-                mapStyle={isDark ? '/map/styles/dark.json' : '/map/styles/light.json'}
-                cursor="grab"
-                cooperativeGestures={true}
-                transformRequest={transformRequest}
-            >
+            {mapStyleObj && (
+                <Map
+                    key={isDark ? 'dark-map' : 'light-map'} // Force re-render on theme change to swap basemaps
+                    initialViewState={{ latitude: center[0], longitude: center[1], zoom }}
+                    style={{ width: '100%', height: '100%' }}
+                    mapStyle={mapStyleObj}
+                    cursor="grab"
+                    cooperativeGestures={true}
+                    transformRequest={transformRequest}
+                >
                 <NavigationControl position="top-right" />
                 <GeolocateControl position="top-right" trackUserLocation={false} />
 
@@ -235,7 +267,8 @@ export default function StickerMap({
                         </div>
                     </Popup>
                 )}
-            </Map>
+                </Map>
+            )}
         </div>
     );
 }
