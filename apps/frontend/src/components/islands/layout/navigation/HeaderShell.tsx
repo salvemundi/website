@@ -84,12 +84,12 @@ export function HeaderShell({ children, mobileMenu }: HeaderShellProps) {
                     : "bg-white/50 dark:bg-black/50 backdrop-blur-sm"
             )}
             style={{ 
-                top: 'calc(var(--impersonation-banner-height, 0px) - 1px)',
+                top: 'var(--impersonation-banner-height, 0px)',
                 minHeight: 'calc(80px + env(safe-area-inset-top, 0px))',
                 paddingTop: 'env(safe-area-inset-top, 0px)'
             }}
         >
-            <div className="w-full flex-1 flex items-center justify-center min-h-[80px]">
+            <div className="w-full flex-1 flex items-center min-h-[80px]">
                 {children}
             </div>
             {mobileMenu}

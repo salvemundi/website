@@ -66,9 +66,9 @@ export default async function BeheerPage() {
         <AdminPageShell
             title="Beheer Dashboard"
             subtitle={`Welkom terug, ${access.user?.first_name || 'Admin'}. Beheer de vereniging vanaf één plek.`}
+            centered={true}
         >
-            <div className="container mx-auto px-4 py-8 md:py-12 max-w-7xl">
-                <div className={`grid grid-cols-1 ${isLimitedAccess ? 'lg:grid-cols-1 max-w-5xl mx-auto' : 'lg:grid-cols-12'} gap-8 md:gap-12 items-start`}>
+            <div className={`grid grid-cols-1 ${isLimitedAccess ? 'lg:grid-cols-1 max-w-5xl mx-auto' : 'lg:grid-cols-12'} gap-8 md:gap-12 items-start`}>
                     
                     <div className={isLimitedAccess ? 'w-full space-y-12' : 'lg:col-span-8 space-y-12'}>
                         <DashboardHub permissions={permissions} stats={stats} />
@@ -95,7 +95,6 @@ export default async function BeheerPage() {
                         </div>
                     </div>
                 </div>
-            </div>
         </AdminPageShell>
     );
 }

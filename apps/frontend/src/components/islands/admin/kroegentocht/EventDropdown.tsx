@@ -5,7 +5,7 @@ import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { type PubCrawlEvent } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 
 interface EventDropdownProps {
     events: PubCrawlEvent[];
@@ -62,7 +62,7 @@ export default function EventDropdown({
 
             <AnimatePresence>
                 {isOpen && (
-                    <motion.div
+                    <m.div
                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -102,7 +102,7 @@ export default function EventDropdown({
                                 );
                             })}
                         </div>
-                    </motion.div>
+                    </m.div>
                 )}
             </AnimatePresence>
         </div>

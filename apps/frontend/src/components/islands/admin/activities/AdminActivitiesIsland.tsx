@@ -2,13 +2,7 @@
 
 import { useState, useMemo, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
-    Calendar, 
-    Users, 
-    Plus, 
-    Clock 
-} from 'lucide-react';
-import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
+
 import ActivityCard from './ActivityCard';
 import ActivityFilters from './ActivityFilters';
 import AdminToast from '@/components/ui/admin/AdminToast';
@@ -68,31 +62,8 @@ export default function AdminActivitiesIsland({
     const displayedEvents = pageSize === -1 ? filteredEvents : filteredEvents.slice(0, pageSize);
     const canEdit = !!permissions?.canAccessActivitiesEdit;
 
-    const stats = useMemo(() => {
-        const upcomingCount = filteredEvents.filter(e => new Date(e.event_date) >= new Date()).length;
-        const totalSignups = filteredEvents.reduce((acc, curr) => acc + (curr.signup_count || 0), 0);
-        return [
-            { label: 'Aankomende activiteiten', value: upcomingCount, icon: Clock },
-            { label: 'Totale activiteiten', value: filteredEvents.length, icon: Calendar },
-            { label: 'Totale aanmeldingen', value: totalSignups, icon: Users },
-        ];
-    }, [filteredEvents]);
-
     return (
-        <div className="container mx-auto px-4 py-8 max-w-7xl">
-            {canEdit && (
-                <div className="flex justify-end mb-8">
-                    <button
-                        onClick={() => router.push('/beheer/activiteiten/nieuw')}
-                        className="bg-[var(--beheer-accent)] text-white px-8 py-2 rounded-[var(--beheer-radius)] font-black uppercase tracking-widest text-[10px] shadow-[var(--shadow-glow)] transition-all hover:opacity-90 active:scale-95 flex items-center gap-2 group disabled:opacity-50"
-                    >
-                        <Plus className="h-4 w-4" />
-                        Nieuw
-                    </button>
-                </div>
-            )}
-
-            <AdminStatsBar stats={stats} />
+        <div className="flex flex-col">
 
             <ActivityFilters 
                 searchQuery={searchQuery}

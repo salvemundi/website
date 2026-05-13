@@ -19,7 +19,6 @@ export const getAdminActivities = cache(async (search?: string, filter: 'all' | 
         const parsed = AdminActivitySchema.array().parse(eventsWithCounts);
         return parsed;
     } catch (_error) {
-
         return [];
     }
 });

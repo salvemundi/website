@@ -3,9 +3,7 @@ import { notFound } from 'next/navigation';
 import { getActivityById } from '@/server/actions/events/public-activiteit.actions';
 import { getActivitySignups } from '@/server/actions/admin/admin-activiteit.actions';
 import AttendanceIsland from '@/components/islands/activities/AttendanceIsland';
-import AnimatedBeheerHeader from '@/components/ui/admin/AnimatedBeheerHeader';
-import { ClipboardCheck } from 'lucide-react';
-
+import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
 
 export const metadata: Metadata = {
@@ -39,13 +37,12 @@ export default async function AttendancePage({ params }: PageProps) {
 
     return (
         <div className="w-full">
-            <AnimatedBeheerHeader 
+            <AdminToolbar 
                 title="Aanwezigheid"
                 subtitle={`Beheer de aanwezigheid voor "${activity.titel}".`}
-                backLink={`/beheer/activiteiten/${id}/aanmeldingen`}
-                icon={<ClipboardCheck className="h-10 w-10" />}
+                backHref={`/beheer/activiteiten/${id}/aanmeldingen`}
             />
-            <div className="max-w-7xl mx-auto px-4 pb-24">
+            <div className="admin-container py-8 pb-24">
                 <AttendanceIsland 
                     eventId={id} 
                     eventName={activity.titel} 

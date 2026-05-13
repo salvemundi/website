@@ -66,6 +66,36 @@ const mapRowToActiviteitData = (item: DbEventRow) => {
     };
 };
 
+const mapRowToAdminActivityData = (item: DbEventRow) => {
+    const safeISO = (d: string | Date | null | undefined, includeTime = false) => {
+        return toLocalISOString(d, includeTime);
+    };
+
+    return {
+        id: item.id,
+        name: item.name ?? '',
+        event_date: safeISO(item.event_date) || toLocalISOString(new Date()),
+        event_date_end: safeISO(item.event_date_end),
+        description: item.description ?? null,
+        location: item.location ?? null,
+        price_members: item.price_members != null ? Number(item.price_members) : 0,
+        price_non_members: item.price_non_members != null ? Number(item.price_non_members) : 0,
+        max_sign_ups: item.max_sign_ups != null ? Number(item.max_sign_ups) : null,
+        only_members: item.only_members ?? false,
+        registration_deadline: safeISO(item.registration_deadline),
+        contact: item.contact ?? null,
+        event_time: item.event_time ?? null,
+        event_time_end: item.event_time_end ?? null,
+        committee_id: item.committee_id ? Number(item.committee_id) : null,
+        committee_name: item.committee_name || null,
+        description_logged_in: item.description_logged_in || null,
+        publish_date: safeISO(item.publish_date),
+        custom_url: item.custom_url || null,
+        status: item.status || 'draft',
+        image: item.image ? { id: item.image, type: item.image_type ?? undefined } : null,
+    };
+};
+
 export async function getActivitiesInternal(onlyPublished = true): Promise<Activiteit[]> {
     const sql = `
         SELECT e.*, c.name as committee_name, f.type as image_type
@@ -183,14 +213,10 @@ export async function getActivitiesWithSignupCountsInternal(search?: string, fil
     const { rows } = await query(sql, params);
 
     return (rows as DbEventRow[]).map((r: DbEventRow) => {
-        // Map database row using identical logic as other methods
-        const mappedData = mapRowToActiviteitData(r);
-
-        // Zod validation isn't strictly necessary here if we trust the map, 
-        // but we cast correctly for the frontend.
+        const mappedData = mapRowToAdminActivityData(r);
         return {
             ...mappedData,
             signup_count: Number(r.signup_count || 0)
-        } as Activiteit & { signup_count: number };
-    });
+        };
+    }) as unknown as (Activiteit & { signup_count: number })[];
 }

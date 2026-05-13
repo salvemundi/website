@@ -185,7 +185,7 @@ export default function ActiviteitAanmeldingenIsland({
                 }
             />
 
-            <div className="container mx-auto px-4 py-8 max-w-7xl">
+            <div className="admin-container py-8">
                 <AdminStatsBar stats={adminStats} />
 
                 {/* Search Bar */}

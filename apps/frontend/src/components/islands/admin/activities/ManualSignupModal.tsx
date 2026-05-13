@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { X, Loader2, User, UserPlus, XCircle, CheckCircle } from 'lucide-react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { createManualSignupAction } from '@/server/actions/admin/aanmeldingen.actions';
 import { UserBasic } from '@salvemundi/validations';
 
@@ -103,7 +103,7 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
             {isOpen && (
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 isolate">
                     {/* Background Overlay with heavy blur */}
-                    <motion.div 
+                    <m.div 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -113,7 +113,7 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
                     />
                     
                     {/* Modal Container */}
-                    <motion.div 
+                    <m.div 
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -226,7 +226,7 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
                                 </div>
                             </form>
                         </div>
-                    </motion.div>
+                    </m.div>
                 </div>
             )}
         </AnimatePresence>,

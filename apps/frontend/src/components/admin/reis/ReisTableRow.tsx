@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { Loader2, Edit, Trash2, ChevronDown, Bus, Briefcase, CheckCircle2, Clock, XCircle, List } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import type { TripSignup, TripSignupActivity } from '@salvemundi/validations/schema/admin-reis.zod';
 
 interface ReisTableRowProps {
@@ -186,7 +186,7 @@ function StatusDropdown({ currentStatus, onChange }: { currentStatus: string, on
 
             <AnimatePresence>
                 {isOpen && (
-                    <motion.div
+                    <m.div
                         initial={{ opacity: 0, y: 4, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 4, scale: 0.95 }}
@@ -214,7 +214,7 @@ function StatusDropdown({ currentStatus, onChange }: { currentStatus: string, on
                                 </button>
                             ))}
                         </div>
-                    </motion.div>
+                    </m.div>
                 )}
             </AnimatePresence>
         </div>

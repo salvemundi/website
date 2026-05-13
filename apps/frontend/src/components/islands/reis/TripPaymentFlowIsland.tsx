@@ -23,7 +23,7 @@ import {
 } from '@/server/actions/events/reis-payment.actions';
 import { calculateTripPricing, type ActivitySelection } from '@/lib/reis/pricing';
 import { format } from 'date-fns';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 
 // Sub-components
 import { NameConfirmModal } from './shared/NameConfirmModal';
@@ -215,7 +215,7 @@ export default function TripPaymentFlowIsland({
                 <form autoComplete="off" onSubmit={(e) => e.preventDefault()}>
                     <div className="py-4 min-h-[400px]">
                         <AnimatePresence mode="wait" initial={false}>
-                            <motion.div
+                            <m.div
                                 key={step}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
@@ -243,14 +243,14 @@ export default function TripPaymentFlowIsland({
                                 )}
 
                                 {step === 4 && <PaymentSuccess trip={trip} />}
-                            </motion.div>
+                            </m.div>
                         </AnimatePresence>
                     </div>
 
                     <div className="mt-4">
                         <AnimatePresence>
                             {error && (
-                                <motion.div
+                                <m.div
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: 10 }}
@@ -261,7 +261,7 @@ export default function TripPaymentFlowIsland({
                                         <p className="font-bold tracking-tight italic">Er is iets misgegaan</p>
                                         <p className="opacity-80">{error}</p>
                                     </div>
-                                </motion.div>
+                                </m.div>
                             )}
                         </AnimatePresence>
 

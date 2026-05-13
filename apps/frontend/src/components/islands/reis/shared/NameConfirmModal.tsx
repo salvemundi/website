@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { AlertCircle, CheckCircle2, X } from 'lucide-react';
 
 interface NameConfirmModalProps {
@@ -45,7 +45,7 @@ export function NameConfirmModal({ isOpen, name, onConfirm, onCancel }: NameConf
             {isOpen && (
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 isolate">
                     {/* Background Overlay with heavy blur */}
-                    <motion.div 
+                    <m.div 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -55,7 +55,7 @@ export function NameConfirmModal({ isOpen, name, onConfirm, onCancel }: NameConf
                     />
                     
                     {/* Modal Container */}
-                    <motion.div 
+                    <m.div 
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -126,7 +126,7 @@ export function NameConfirmModal({ isOpen, name, onConfirm, onCancel }: NameConf
 
                         {/* Bottom decorative line */}
                         <div className="h-1.5 w-full bg-gradient-to-r from-transparent via-theme-purple/30 to-transparent opacity-50" />
-                    </motion.div>
+                    </m.div>
                 </div>
             )}
         </AnimatePresence>,

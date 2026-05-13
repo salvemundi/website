@@ -131,12 +131,14 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
     return (
         <AdminPageShell
             title={`Reis Beheer — ${activeTrip.name}`}
+            subtitle="Beheer aanmeldingen, activiteiten en instellingen voor deze reis"
             backHref="/beheer"
             hideToolbar={true}
         >
             <div className="pb-8 space-y-2">
                 <AdminReisTableIsland
                     title={`Reis Beheer — ${activeTrip.name}`}
+                    subtitle="Beheer aanmeldingen, activiteiten en instellingen voor deze reis"
                     backHref="/beheer"
                     initialSignups={signups}
                     initialSignupActivities={activitiesMap}
