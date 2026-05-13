@@ -12,7 +12,7 @@ export const SponsorsSection: React.FC<SponsorsSectionProps> = ({
     sponsors = []
 }) => {
     const hasSponsors = sponsors.length > 0;
-    const displaySponsors = Array.from({ length: 20 }, () => sponsors).flat();
+    const displaySponsors = Array.from({ length: 4 }, () => sponsors).flat();
 
     return (
         <section className="py-12 overflow-hidden">
@@ -31,20 +31,26 @@ export const SponsorsSection: React.FC<SponsorsSectionProps> = ({
                         <p className="text-center text-sm text-[var(--text-muted)] italic">Binnenkort meer informatie.</p>
                     </div>
                 ) : (
-                    <div className="relative overflow-visible h-24 flex items-center">
-                        <div className="sponsors-scroll-track flex items-center gap-12 whitespace-nowrap">
+                    <div className="sponsors-scroll-container">
+                        <div className="sponsors-scroll-track">
                             {displaySponsors.map((sponsor, index) => {
                                 const key = `${sponsor.sponsor_id}-${index}`;
-                                const src = getImageUrl(sponsor.image, { width: 300, height: 160, fit: 'contain' }) || '/img/newlogo.png';
+                                const src = getImageUrl(sponsor.image, { width: 320, height: 160, fit: 'contain' }) || '/img/newlogo.png';
+                                
+                                /** 
+                                 * Why: We use a wrapper with a conditional class to ensure logos that are 
+                                 * optimized for light backgrounds remain visible even in dark mode.
+                                 */
+                                const itemClasses = `sponsor-item ${sponsor.dark_bg ? 'sponsor-light-bg' : ''}`;
+
                                 const imageContent = (
                                     <Image
                                         src={src}
                                         alt="Sponsor Logo"
                                         height={80}
                                         width={160}
-                                        quality={80}
-                                        sizes="(max-width: 768px) 120px, 160px"
-                                        className="sponsor-logo h-20 w-auto object-contain transition-all duration-300 hover:scale-110"
+                                        quality={90}
+                                        className="sponsor-logo"
                                     />
                                 );
 
@@ -55,7 +61,7 @@ export const SponsorsSection: React.FC<SponsorsSectionProps> = ({
                                             href={sponsor.website_url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="sponsor-item flex-shrink-0"
+                                            className={itemClasses}
                                         >
                                             {imageContent}
                                         </Link>
@@ -63,7 +69,7 @@ export const SponsorsSection: React.FC<SponsorsSectionProps> = ({
                                 }
 
                                 return (
-                                    <div key={key} className="sponsor-item flex-shrink-0">
+                                    <div key={key} className={itemClasses}>
                                         {imageContent}
                                     </div>
                                 );
