@@ -1,3 +1,4 @@
+import { safeConsoleError } from '../utils/logger.js';
 import { FastifyInstance } from 'fastify';
 import { getMollieClient } from '../services/mollie.service.js';
 import { RegistrationService } from '../services/registration.service.js';
@@ -64,7 +65,7 @@ export default async function statusRoutes(fastify: FastifyInstance) {
                 signup_id: transaction.registration || transaction.trip_signup || transaction.pub_crawl_signup
             };
         } catch (error) {
-            console.error(`[STATUS] Error fetching status for ${id}:`, error);
+            safeConsoleError(`[STATUS] Error fetching status for ${id}:`, error);
             return reply.status(500).send({ error: 'Internal server error' });
         }
     });

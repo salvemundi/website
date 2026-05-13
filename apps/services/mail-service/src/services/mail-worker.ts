@@ -65,12 +65,12 @@ export class MailWorkerService {
                             throw new Error('MailerService returned false');
                         }
                     } catch (error: any) {
-                        console.error(`[MailWorker] Failed dispatch to ${task.to}:`, error.message);
+                        safeConsoleError(`[MailWorker] Failed dispatch to ${task.to}:`, error.message);
 
                         // 3. Handle Retry (Exponential Backoff with 60s base)
                         task.retries += 1;
                         if (task.retries >= task.maxRetries) {
-                            console.error(`[MailWorker] MAX RETRIES reached for ${task.to}. Removing task.`);
+                            safeConsoleError(`[MailWorker] MAX RETRIES reached for ${task.to}. Removing task.`);
                             await redis.zrem(this.QUEUE_KEY, taskJson);
                             await AuditService.logMail(task.to, task.templateId, 'FAILED', `Max retries reached: ${error.message}`);
                         } else {

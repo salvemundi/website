@@ -1,3 +1,4 @@
+import { safeConsoleError } from '../utils/logger.js';
 import { Redis } from 'ioredis';
 import { DirectusService } from './directus.service.js';
 import { Event, EventSignup } from '../types/schema.js';
@@ -25,7 +26,7 @@ export class EventReminderJob {
                 console.log(`[EventReminderJob] Next check scheduled in ${Math.round(delay / 1000 / 60 / 60)} hours.`);
                 await new Promise(resolve => setTimeout(resolve, delay));
             } catch (error: any) {
-                console.error('[EventReminderJob] Loop Error:', error.message);
+                safeConsoleError('[EventReminderJob] Loop Error:', error.message);
                 await new Promise(resolve => setTimeout(resolve, 60000));
             }
         }
@@ -89,7 +90,7 @@ export class EventReminderJob {
                 await redis.set(redisKey, '1', 'EX', 86400 * 30); // Cache for a month
             }
         } catch (error: any) {
-            console.error(`[EventReminderJob] Error notifying ${signup.participant_email}:`, error.message);
+            safeConsoleError(`[EventReminderJob] Error notifying ${signup.participant_email}:`, error.message);
         }
     }
 

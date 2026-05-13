@@ -1,3 +1,4 @@
+import { safeConsoleError } from '../utils/logger.js';
 import { Redis } from 'ioredis';
 import { DirectusService } from './directus.service.js';
 import { SyncJob } from './sync/sync-job.js';
@@ -43,7 +44,7 @@ export class FullSyncJob {
                 });
 
             } catch (error: any) {
-                console.error('[FullSyncJob] Loop Error:', error.message);
+                safeConsoleError('[FullSyncJob] Loop Error:', error.message);
                 await new Promise(resolve => setTimeout(resolve, 300000)); // Retry in 5 min on fatal error
             }
         }

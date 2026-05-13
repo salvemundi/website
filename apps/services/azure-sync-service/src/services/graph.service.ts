@@ -1,3 +1,4 @@
+import { safeConsoleError } from '../utils/logger.js';
 import { Client } from '@microsoft/microsoft-graph-client';
 import 'isomorphic-fetch';
 
@@ -93,7 +94,7 @@ export class GraphService {
 
             return allUsers;
         } catch (error: any) {
-            console.error(`[GraphService] Error in getAllUsers:`, JSON.stringify(error, null, 2));
+            safeConsoleError(`[GraphService] Error in getAllUsers:`, JSON.stringify(error, null, 2));
             throw error;
         }
     }
@@ -145,7 +146,7 @@ export class GraphService {
 
                 result.set(id, { members, owners });
             } catch (error: any) {
-                console.error(`[GraphService] Failed to fetch details for group ${id}:`, error.message);
+                safeConsoleError(`[GraphService] Failed to fetch details for group ${id}:`, error.message);
                 result.set(id, { members: [], owners: [] });
             }
         }
@@ -183,7 +184,7 @@ export class GraphService {
                     }
                 }
             } catch (error) {
-                console.error(`[GraphService] Batch photo fetch failed:`, error);
+                safeConsoleError(`[GraphService] Batch photo fetch failed:`, error);
                 // Fallback: fill remaining with nulls so we don't crash
                 batchIds.forEach(id => { if (!result.has(id)) result.set(id, null); });
             }
@@ -214,7 +215,7 @@ export class GraphService {
 
             return { buffer, contentType };
         } catch (error) {
-            console.error(`[GraphService] Error fetching photo for user ${userId}:`, error);
+            safeConsoleError(`[GraphService] Error fetching photo for user ${userId}:`, error);
             return null;
         }
     }

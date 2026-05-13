@@ -1,3 +1,4 @@
+import { safeConsoleError } from './utils/logger.js';
 import Fastify from 'fastify';
 import dotenv from 'dotenv';
 import multipart from '@fastify/multipart';
@@ -41,7 +42,7 @@ const start = async () => {
         const { ProvisionWorkerService } = await import('./services/provision-worker.js');
         ProvisionWorkerService.start(fastify.redis);
     } catch (error) {
-        console.error('Azure Management Service failed to start:', error);
+        safeConsoleError('Azure Management Service failed to start:', error);
         process.exit(1);
     }
 };

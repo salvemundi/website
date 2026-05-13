@@ -1,3 +1,4 @@
+import { safeConsoleError } from '../utils/logger.js';
 import { Redis } from 'ioredis';
 
 interface AzureUpdateTask {
@@ -60,7 +61,7 @@ export class AzureRetryService {
                         await redis.zrem(this.QUEUE_KEY, taskStr);
                         console.log(`[AzureRetry] Successfully updated Azure user ${task.entraId}`);
                     } catch (error: any) {
-                        console.error(`[AzureRetry] Failed attempt ${task.retries + 1} for ${task.entraId}: ${error.message}`);
+                        safeConsoleError(`[AzureRetry] Failed attempt ${task.retries + 1} for ${task.entraId}: ${error.message}`);
                         await redis.zrem(this.QUEUE_KEY, taskStr);
 
                         if (task.retries < task.maxRetries) {
@@ -73,7 +74,7 @@ export class AzureRetryService {
                 }
                 await new Promise(resolve => setTimeout(resolve, 2000));
             } catch (error: any) {
-                console.error(`[AzureRetry] Worker loop error: ${error.message}`);
+                safeConsoleError(`[AzureRetry] Worker loop error: ${error.message}`);
                 await new Promise(resolve => setTimeout(resolve, 10000));
             }
         }

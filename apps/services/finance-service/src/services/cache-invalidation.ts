@@ -1,3 +1,4 @@
+import { safeConsoleError } from '../utils/logger.js';
 import { Redis } from 'ioredis';
 
 interface InvalidationTask {
@@ -56,7 +57,7 @@ export class CacheInvalidationService {
                         // Success -> Remove from queue
                         await redis.zrem(this.QUEUE_KEY, taskStr);
                     } catch (error: any) {
-                        console.error(`[CacheInvalidation] Failed attempt ${task.retries + 1} for ${task.userId}: ${error.message}`);
+                        safeConsoleError(`[CacheInvalidation] Failed attempt ${task.retries + 1} for ${task.userId}: ${error.message}`);
 
                         // Remove old entry before potentially re-adding or dropping
                         await redis.zrem(this.QUEUE_KEY, taskStr);
@@ -72,7 +73,7 @@ export class CacheInvalidationService {
 
                             console.log(`[CacheInvalidation] Rescheduled user ${task.userId} for +${backoffSec}s (next: ${new Date(nextAttempt).toISOString()})`);
                         } else {
-                            console.error(`[CacheInvalidation] Max retries reached for user ${task.userId}. Dropping task.`);
+                            safeConsoleError(`[CacheInvalidation] Max retries reached for user ${task.userId}. Dropping task.`);
                             // Here we could log to Directus system_logs if needed
                         }
                     }
@@ -81,7 +82,7 @@ export class CacheInvalidationService {
                 // Small pause to breathe between batches
                 await new Promise(resolve => setTimeout(resolve, 500));
             } catch (error: any) {
-                console.error(`[CacheInvalidation] CRITICAL: Worker loop error: ${error.message}`);
+                safeConsoleError(`[CacheInvalidation] CRITICAL: Worker loop error: ${error.message}`);
                 // Wait longer if Redis or something fundamental is down
                 await new Promise(resolve => setTimeout(resolve, 5000));
             }

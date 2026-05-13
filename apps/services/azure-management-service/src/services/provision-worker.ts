@@ -1,3 +1,4 @@
+import { safeConsoleError } from '../utils/logger.js';
 import { Redis } from 'ioredis';
 import fetch from 'isomorphic-fetch';
 import { GraphService } from './graph.service.js';
@@ -96,7 +97,7 @@ export class ProvisionWorkerService {
                             console.log(`[ProvisionWorker] Adding user to group ${activeGroupId}...`);
                             await GraphService.addGroupMember(activeGroupId, result.id, token);
                         } catch (groupErr: any) {
-                            console.error(`[ProvisionWorker][addGroupMember] Failed to add user to active lid group: ${groupErr.message}`);
+                            safeConsoleError(`[ProvisionWorker][addGroupMember] Failed to add user to active lid group: ${groupErr.message}`);
                             // We don't fail the whole task if this fails, but it's worth logging
                         } 
 
@@ -143,7 +144,7 @@ export class ProvisionWorkerService {
                         // Success -> Remove task
                         await redis.zrem(this.QUEUE_KEY, taskJson);
                     } catch (error: any) {
-                        console.error(`[ProvisionWorker][${task.email}] Failed:`, error.message);
+                        safeConsoleError(`[ProvisionWorker][${task.email}] Failed:`, error.message);
 
                         // If user already exists, we consider it "Success" (or at least done)
                         if (error.message?.includes('already exists') || error.status === 409) {
@@ -160,7 +161,7 @@ export class ProvisionWorkerService {
                             const delay = 30000 * Math.pow(task.retries, 2); // 30s, 2m, 4.5m...
                             await redis.zadd(this.QUEUE_KEY, Date.now() + delay, JSON.stringify(task));
                         } else {
-                            console.error(`[ProvisionWorker][${task.email}] Max retries reached.`);
+                            safeConsoleError(`[ProvisionWorker][${task.email}] Max retries reached.`);
                             // Graceful failure logging: create a system_log in Directus
                             try {
                                 const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL;
@@ -185,13 +186,13 @@ export class ProvisionWorkerService {
                                     });
                                 }
                             } catch (logErr) {
-                                console.error(`[ProvisionWorker][${task.email}] Failed to write system_logs for dead-letter.`);
+                                safeConsoleError(`[ProvisionWorker][${task.email}] Failed to write system_logs for dead-letter.`);
                             }
                         }
                     }
                 }
             } catch (loopErr: any) {
-                console.error('[ProvisionWorker][loop] Loop Error:', loopErr.message);
+                safeConsoleError('[ProvisionWorker][loop] Loop Error:', loopErr.message);
                 await new Promise(resolve => setTimeout(resolve, 5000));
             }
         }

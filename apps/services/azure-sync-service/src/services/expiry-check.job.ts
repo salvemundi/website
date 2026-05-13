@@ -1,3 +1,4 @@
+import { safeConsoleError } from '../utils/logger.js';
 import { Redis } from 'ioredis';
 import { DirectusService } from './directus.service.js';
 
@@ -24,7 +25,7 @@ export class ExpiryCheckJob {
                 console.log(`[ExpiryCheckJob] Next check scheduled in ${Math.round(delay / 1000 / 60 / 60)} hours.`);
                 await new Promise(resolve => setTimeout(resolve, delay));
             } catch (error: any) {
-                console.error('[ExpiryCheckJob] Loop Error:', error.message);
+                safeConsoleError('[ExpiryCheckJob] Loop Error:', error.message);
                 await new Promise(resolve => setTimeout(resolve, 60000)); // Retry in 1 min
             }
         }
@@ -102,10 +103,10 @@ export class ExpiryCheckJob {
                 await redis.set(redisKey, '1', 'EX', 86400 * 365); // Cache for a year
                 console.log(`[ExpiryCheckJob] Notified ${member.email} for milestone: ${milestone}`);
             } else {
-                console.error(`[ExpiryCheckJob] Failed to send ${templateId} to ${member.email}:`, response.statusText);
+                safeConsoleError(`[ExpiryCheckJob] Failed to send ${templateId} to ${member.email}:`, response.statusText);
             }
         } catch (error: any) {
-            console.error(`[ExpiryCheckJob] Error triggering mail for ${member.email}:`, error.message);
+            safeConsoleError(`[ExpiryCheckJob] Error triggering mail for ${member.email}:`, error.message);
         }
     }
 

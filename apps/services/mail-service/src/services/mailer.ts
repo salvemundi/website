@@ -1,3 +1,4 @@
+import { safeConsoleError } from '../utils/logger.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -116,7 +117,7 @@ export class MailerService {
             return true;
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : String(error);
-            console.error(`[MailerService] Failed to send email:`, errorMessage);
+            safeConsoleError(`[MailerService] Failed to send email:`, errorMessage);
 
             throw error;
         }

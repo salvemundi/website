@@ -43,7 +43,7 @@ export class EventListenerService {
                     }
                 }
             } catch (error: any) {
-                console.error('[AzureEventListener] Loop Error:', error.message);
+                safeConsoleError('[AzureEventListener] Loop Error:', error.message);
                 await new Promise(resolve => setTimeout(resolve, 5000));
             }
         }
@@ -98,7 +98,7 @@ export class EventListenerService {
                 }
             }
         } catch (error: any) {
-            console.error('[AzureEventListener] Error handling event:', error.message);
+            safeConsoleError('[AzureEventListener] Error handling event:', error.message);
         }
     }
 

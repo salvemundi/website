@@ -1,10 +1,11 @@
+'use server';
 import 'server-only';
 import { query } from '@/lib/database';
 import { z } from 'zod';
 import { committeeSchema } from '@salvemundi/validations';
 
 /**
- * PURE QUERIES: No 'use server' and No headers() calls.
+ * PURE QUERIES: No and No headers() calls.
  * Safe to use in both Server Component renders and Server Actions.
  */
 

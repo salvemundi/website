@@ -1,5 +1,5 @@
 'use server';
-
+import { safeConsoleError } from '@/server/utils/logger';
 import { revalidateTag, revalidatePath } from "next/cache";
 import { getSystemDirectus } from "@/lib/directus";
 import { readUsers } from "@directus/sdk";
@@ -15,7 +15,7 @@ export async function triggerFullSyncAction(options?: { fields: string[]; forceL
     }
 
     if (!AZURE_SYNC_URL) {
-        console.error("[SYNC-ACTION] AZURE_SYNC_SERVICE_URL is not configured.");
+        safeConsoleError("[SYNC-ACTION] AZURE_SYNC_SERVICE_URL is not configured.");
         return { success: false, error: "Systeemfout: Sync service URL niet geconfigureerd." };
     }
 
@@ -36,10 +36,10 @@ export async function triggerFullSyncAction(options?: { fields: string[]; forceL
 
         if (!res.ok) {
             const errorData = await res.json().catch((error) => {
-                console.error(`[SYNC-ACTION] Error parsing sync response:`, error);
+                safeConsoleError(`[SYNC-ACTION] Error parsing sync response:`, error);
                 return { error: 'Sync service onbeschikbaar' };
             });
-            console.error(`[SYNC-ACTION] POST /run failed: ${res.status}`, errorData);
+            safeConsoleError(`[SYNC-ACTION] POST /run failed: ${res.status}`, errorData);
             return {
                 success: false,
                 error: `Start Fout: ${errorData.details || errorData.error || 'Sync service onbeschikbaar'}`
@@ -53,7 +53,7 @@ export async function triggerFullSyncAction(options?: { fields: string[]; forceL
         if (error instanceof Error && error.name === 'AbortError') {
             return { success: false, error: "Kon de synchronisatie niet starten (Timeout 30s)." };
         }
-        console.error(`[SYNC-ACTION] Connection error to ${AZURE_SYNC_URL}/api/sync/run:`, errorMessage);
+        safeConsoleError(`[SYNC-ACTION] Connection error to ${AZURE_SYNC_URL}/api/sync/run:`, errorMessage);
         return { success: false, error: "Kon geen verbinding maken met de sync service." };
     }
 }
@@ -68,7 +68,7 @@ export async function triggerUserSyncAction(userId: string, options?: { fields: 
     }
 
     if (!AZURE_SYNC_URL) {
-        console.error("[SYNC-ACTION] AZURE_SYNC_SERVICE_URL is not configured.");
+        safeConsoleError("[SYNC-ACTION] AZURE_SYNC_SERVICE_URL is not configured.");
         return { success: false, error: "Systeemfout: Sync service URL niet geconfigureerd." };
     }
 
@@ -81,7 +81,7 @@ export async function triggerUserSyncAction(userId: string, options?: { fields: 
         targetUser = users?.[0];
     } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : 'Onbekende fout';
-        console.error(`[SYNC-ACTION] Directus lookup failed for user ${userId}:`, errorMessage);
+        safeConsoleError(`[SYNC-ACTION] Directus lookup failed for user ${userId}:`, errorMessage);
         return { success: false, error: "Kon de gebruiker niet ophalen uit Directus." };
     }
 
@@ -110,10 +110,10 @@ export async function triggerUserSyncAction(userId: string, options?: { fields: 
 
         if (!res.ok) {
             const errorData = await res.json().catch((error) => {
-                console.error(`[SYNC-ACTION] Error parsing sync response:`, error);
+                safeConsoleError(`[SYNC-ACTION] Error parsing sync response:`, error);
                 return { error: 'Sync service onbeschikbaar' };
             });
-            console.error(`[SYNC-ACTION] POST /run/:id failed: ${res.status}`, errorData);
+            safeConsoleError(`[SYNC-ACTION] POST /run/:id failed: ${res.status}`, errorData);
             return {
                 success: false,
                 error: `Service Fout: ${errorData.details || errorData.error || 'Onbekende fout'}`
@@ -136,7 +136,7 @@ export async function triggerUserSyncAction(userId: string, options?: { fields: 
                 error: "De synchronisatie duurt te lang (60s). De taak loopt mogelijk nog op de achtergrond; ververs de pagina over een minuut."
             };
         }
-        console.error(`[SYNC-ACTION] Connection error to ${AZURE_SYNC_URL}/api/sync/run/${userId}:`, errorMessage);
+        safeConsoleError(`[SYNC-ACTION] Connection error to ${AZURE_SYNC_URL}/api/sync/run/${userId}:`, errorMessage);
         return { success: false, error: "Kon geen verbinding maken met de sync service." };
     }
 }
