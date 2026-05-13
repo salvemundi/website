@@ -139,10 +139,10 @@ export default function CalendarView({
                                             e.stopPropagation();
                                             onEventClick(event);
                                         }}
-                                        className="w-full text-left text-xs p-1.5 rounded bg-[var(--theme-purple)]/10 hover:bg-[var(--theme-purple)]/20 text-[var(--theme-purple)] font-medium truncate transition-colors hover:ring-2 hover:ring-inset hover:ring-[var(--theme-purple)]/30"
-                                        title={`${format(parseISO(event.datum_start), 'HH:mm')} - ${event.titel}`}
+                                        className="w-full text-left text-[10px] p-1.5 rounded-lg bg-[var(--theme-purple)]/10 hover:bg-[var(--theme-purple)]/20 text-[var(--theme-purple)] font-bold truncate transition-all hover:scale-[1.02] border border-transparent hover:border-[var(--theme-purple)]/20"
+                                        title={`${event.event_time ? event.event_time.split(':').slice(0, 2).join(':') : '00:00'} - ${event.titel}`}
                                     >
-                                        <span className="opacity-75 mr-1">{format(parseISO(event.datum_start), 'HH:mm')}</span>
+                                        <span className="opacity-60 mr-1.5 font-black">{event.event_time ? event.event_time.split(':').slice(0, 2).join(':') : '00:00'}</span>
                                         {event.titel}
                                     </button>
                                 ))}

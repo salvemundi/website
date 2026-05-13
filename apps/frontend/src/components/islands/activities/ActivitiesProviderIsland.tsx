@@ -4,57 +4,91 @@ import { useState, useMemo, useCallback, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { addMonths, subMonths } from 'date-fns';
 
+import { Eye, EyeOff, LayoutGrid, List, Calendar as CalendarIcon } from "lucide-react";
+
 import CalendarView from "./CalendarView";
 import DayDetails from "./DayDetails";
 import EventList from "./EventList";
 import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { slugify } from "@/shared/lib/utils/slug";
+import { isEventPast } from "@/shared/lib/utils/date";
+import { cn } from "@/lib/utils/cn";
 
 interface ActivitiesProviderIslandProps {
     events?: (Activiteit & { is_signed_up?: boolean })[];
     serverTime?: string;
+    initialViewMode?: 'list' | 'grid' | 'calendar';
 }
 
 export default function ActivitiesProviderIsland({
     events: initialEvents = [],
-    serverTime
+    serverTime,
+    initialViewMode = 'list'
 }: ActivitiesProviderIslandProps) {
     const router = useRouter();
     const [events] = useState<(Activiteit & { is_signed_up?: boolean })[]>(initialEvents);
     const searchParams = useSearchParams();
 
-    const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('list');
+    const [viewMode, setViewModeState] = useState<'list' | 'grid' | 'calendar'>(initialViewMode);
+
+    const setViewMode = useCallback((mode: 'list' | 'grid' | 'calendar') => {
+        setViewModeState(mode);
+        // Persist in cookie (hidden preference)
+        document.cookie = `activities_view_mode=${mode}; path=/; max-age=31536000; SameSite=Lax`;
+    }, []);
     const [showPastActivities, setShowPastActivities] = useState(false);
     const [selectedDay, setSelectedDay] = useState<Date | null>(null);
     const [currentDate, setCurrentDate] = useState(serverTime ? new Date(serverTime) : new Date());
 
     const filteredEvents = useMemo(() => {
+        const now = serverTime ? new Date(serverTime) : new Date();
         let filtered = events;
+
         if (!showPastActivities) {
-            const now = serverTime ? new Date(serverTime) : new Date();
             filtered = filtered.filter(event => {
-                const eventDate = event.datum_start;
-                let eventDateTime;
-                if (event.event_time && eventDate.length <= 10) {
-                    eventDateTime = new Date(`${eventDate}T${event.event_time}`);
-                } else {
-                    eventDateTime = new Date(eventDate);
-                }
-                return eventDateTime >= now;
+                return !isEventPast(
+                    event.datum_eind || event.datum_start,
+                    event.event_time_end || event.event_time,
+                    !!event.event_time_end,
+                    now
+                );
             });
         }
 
         return filtered.sort((a, b) => {
-            const aDate = a.datum_start;
-            const bDate = b.datum_start;
+            const isAPast = isEventPast(
+                a.datum_eind || a.datum_start,
+                a.event_time_end || a.event_time,
+                !!a.event_time_end,
+                now
+            );
+            const isBPast = isEventPast(
+                b.datum_eind || b.datum_start,
+                b.event_time_end || b.event_time,
+                !!b.event_time_end,
+                now
+            );
 
-            const aDateTime = (a.event_time && aDate.length <= 10)
-                ? new Date(`${aDate}T${a.event_time}`).getTime()
-                : new Date(aDate).getTime();
-            const bDateTime = (b.event_time && bDate.length <= 10)
-                ? new Date(`${bDate}T${b.event_time}`).getTime()
-                : new Date(bDate).getTime();
-            return showPastActivities ? bDateTime - aDateTime : aDateTime - bDateTime;
+            // Upcoming first
+            if (isAPast !== isBPast) return isAPast ? 1 : -1;
+
+            const getEventTime = (event: Activiteit) => {
+                const date = event.datum_start;
+                return (event.event_time && date.length <= 10)
+                    ? new Date(`${date}T${event.event_time}`).getTime()
+                    : new Date(date).getTime();
+            };
+
+            const aTime = getEventTime(a);
+            const bTime = getEventTime(b);
+
+            if (!isAPast) {
+                // Both upcoming: Soonest first
+                return aTime - bTime;
+            } else {
+                // Both past: Most recent first
+                return bTime - aTime;
+            }
         });
     }, [events, showPastActivities, serverTime]);
 
@@ -81,50 +115,72 @@ export default function ActivitiesProviderIsland({
 
     return (
         <div className="relative w-full flex flex-col">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-                <h2 className="text-3xl font-bold text-[var(--theme-purple)] dark:text-[var(--text-main)]">
-                    {showPastActivities ? 'Alle Activiteiten' : 'Komende Activiteiten'}
-                </h2>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-10 min-w-0">
+                <div className="space-y-1">
+                    <h2 className="text-3xl md:text-4xl font-black text-[var(--theme-purple)] dark:text-white tracking-tight">
+                        {showPastActivities ? 'Alle Activiteiten' : 'Komende Activiteiten'}
+                    </h2>
+                    <p className="text-sm font-medium text-[var(--text-muted)] opacity-70">
+                        {filteredEvents.length} {filteredEvents.length === 1 ? 'activiteit' : 'activiteiten'} zichtbaar
+                    </p>
+                </div>
 
-                <div className="flex flex-wrap items-center gap-3">
-                    <div className="flex rounded-lg bg-[var(--bg-card)] overflow-hidden shadow-sm border border-[var(--border-color)]">
+                <div className="flex flex-wrap items-center gap-4">
+                    <div className="flex p-1 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)]/30 shadow-sm">
                         <button
                             onClick={() => setViewMode('list')}
-                            className={`px-4 py-2 text-base font-semibold transition-all ${viewMode === 'list'
-                                ? 'bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] shadow-sm'
-                                : 'text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/5'
-                                }`}
+                            className={cn(
+                                "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all",
+                                viewMode === 'list'
+                                    ? "bg-[var(--theme-purple)] text-white shadow-md shadow-[var(--theme-purple)]/20"
+                                    : "text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/5"
+                            )}
                         >
-                            Lijst
+                            <List className="h-4 w-4" />
+                            <span>Lijst</span>
                         </button>
                         <button
                             onClick={() => setViewMode('grid')}
-                            className={`px-4 py-2 text-base font-semibold transition-all ${viewMode === 'grid'
-                                ? 'bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] shadow-sm'
-                                : 'text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/5'
-                                }`}
+                            className={cn(
+                                "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all",
+                                viewMode === 'grid'
+                                    ? "bg-[var(--theme-purple)] text-white shadow-md shadow-[var(--theme-purple)]/20"
+                                    : "text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/5"
+                            )}
                         >
-                            Kaarten
+                            <LayoutGrid className="h-4 w-4" />
+                            <span>Kaarten</span>
                         </button>
                         <button
                             onClick={() => setViewMode('calendar')}
-                            className={`px-4 py-2 text-base font-semibold transition-all ${viewMode === 'calendar'
-                                ? 'bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] shadow-sm'
-                                : 'text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/5'
-                                }`}
+                            className={cn(
+                                "hidden lg:flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all",
+                                viewMode === 'calendar'
+                                    ? "bg-[var(--theme-purple)] text-white shadow-md shadow-[var(--theme-purple)]/20"
+                                    : "text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/5"
+                            )}
                         >
-                            Kalender
+                            <CalendarIcon className="h-4 w-4" />
+                            <span>Kalender</span>
                         </button>
                     </div>
 
                     <button
                         onClick={() => setShowPastActivities(!showPastActivities)}
-                        className={`px-4 py-2 text-base font-semibold rounded-lg transition-all border w-[180px] text-center ${showPastActivities
-                            ? 'bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] border-[var(--theme-purple)]/20 shadow-sm'
-                            : 'bg-[var(--bg-card)] text-[var(--theme-purple)] border-[var(--border-color)] hover:bg-[var(--theme-purple)]/5'
-                            }`}
+                        className={cn(
+                            "group relative inline-flex items-center justify-center gap-3 px-6 py-3 rounded-xl border transition-all active:scale-95 text-[10px] font-black uppercase tracking-widest",
+                            showPastActivities
+                                ? "bg-[var(--theme-purple)] text-white border-[var(--theme-purple)] shadow-lg shadow-[var(--theme-purple)]/20"
+                                : "bg-[var(--bg-card)] text-[var(--theme-purple)] border-[var(--border-color)]/30 hover:border-[var(--theme-purple)]/30 hover:bg-[var(--theme-purple)]/5"
+                        )}
                     >
-                        {showPastActivities ? 'Verberg afgelopen' : 'Toon afgelopen'}
+                        <span>{showPastActivities ? 'Verberg afgelopen' : 'Toon afgelopen'}</span>
+                        <div className={cn(
+                            "h-5 w-5 rounded-full flex items-center justify-center transition-colors",
+                            showPastActivities ? "bg-white/20 text-white" : "bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] group-hover:bg-[var(--theme-purple)] group-hover:text-white"
+                        )}>
+                            {showPastActivities ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                        </div>
                     </button>
                 </div>
             </div>
@@ -141,7 +197,7 @@ export default function ActivitiesProviderIsland({
                     </aside>
                 )}
 
-                <div className="flex-1 space-y-6">
+                <div className="flex-1 min-w-0 space-y-6">
                     {viewMode === 'calendar' && (
                         <>
                             <div className="hidden lg:block">
@@ -169,6 +225,7 @@ export default function ActivitiesProviderIsland({
                         <EventList
                             events={filteredEvents}
                             onEventClick={handleShowDetails}
+                            serverTime={serverTime}
                         />
                     )}
 
@@ -177,6 +234,7 @@ export default function ActivitiesProviderIsland({
                             events={filteredEvents}
                             onEventClick={handleShowDetails}
                             variant="grid"
+                            serverTime={serverTime}
                         />
                     )}
                 </div>

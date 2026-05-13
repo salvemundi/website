@@ -44,7 +44,7 @@ export default function ActiviteitListCard({
     return (
         <div
             onClick={onShowDetails}
-            className={`group relative z-0 overflow-hidden w-full rounded-2xl bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-0 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 flex flex-col md:flex-row ${isPast ? 'opacity-60 filter grayscale' : ''}`}
+            className={`group relative z-0 overflow-hidden w-full rounded-[1.75rem] bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-0 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 flex flex-col md:flex-row ${isPast ? 'opacity-75 grayscale-50' : ''}`}
         >
             {/* Image Section */}
             <div className="relative w-full md:w-64 aspect-video flex-shrink-0 overflow-hidden">
@@ -67,20 +67,20 @@ export default function ActiviteitListCard({
                 <div className="relative z-10 flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-8 flex-1">
                     <div className="flex-1 min-w-[200px]">
                         <div className="flex items-center gap-2 mb-2">
-                            <span className="text-[10px] uppercase tracking-widest text-[var(--theme-purple)] font-black bg-[var(--theme-purple)]/10 px-2 py-0.5 rounded-md">
+                            <span className="text-[10px] uppercase tracking-widest text-[var(--color-white)] font-black bg-[var(--theme-purple)] px-2 py-0.5 rounded-md shadow-sm">
                                 {committeeLabel}
                             </span>
                             {onlyMembers && (
-                                <span className="text-[10px] uppercase tracking-widest text-amber-600 font-black bg-amber-50 px-2 py-0.5 rounded-md">
+                                <span className="text-[10px] uppercase tracking-widest text-[var(--color-white)] font-black bg-[var(--theme-warning)] px-2 py-0.5 rounded-md shadow-sm">
                                     Leden
                                 </span>
                             )}
                         </div>
-                        <h3 className="text-xl font-black text-[var(--theme-purple)]/90 leading-tight group-hover:text-[var(--theme-purple)] transition-colors line-clamp-2 break-words" title={title}>
+                        <h3 className="text-xl font-bold text-[var(--theme-purple)]/90 leading-tight group-hover:text-[var(--theme-purple)] transition-colors line-clamp-2 break-words" title={title}>
                             {title}
                         </h3>
                         {description && (
-                            <p className="hidden md:block text-[var(--text-muted)] text-sm line-clamp-2 mt-2 leading-relaxed pr-4">
+                            <p className="hidden md:block text-[var(--text-muted)] text-sm line-clamp-2 mt-2 leading-relaxed pr-4 break-words overflow-hidden">
                                 {description}
                             </p>
                         )}

@@ -10,6 +10,7 @@ import MediaAsset from '@/components/ui/media/MediaAsset';
 import { type EnrichedUser } from '@/types/auth';
 
 import { type StickerPublic } from '@salvemundi/validations';
+import type { StyleSpecification } from 'maplibre-gl';
 
 interface StickerMapProps {
     stickers?: StickerPublic[];
@@ -65,7 +66,7 @@ export default function StickerMap({
             });
     }, [stickers, filterCountry, filterCity, filterUserId, filterUser]);
 
-    const [mapStyleObj, setMapStyleObj] = useState<any>(null);
+    const [mapStyleObj, setMapStyleObj] = useState<string | StyleSpecification | null>(null);
 
     /**
      * Why: Sync map style with the site's dark/light mode. 

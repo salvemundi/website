@@ -90,13 +90,13 @@ const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href, serverTi
                 </div>
             )}
 
-            <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-3">
+            <div className="flex flex-wrap items-center justify-center gap-0.5 sm:gap-3">
                 <FlipBlock value={timeLeft.days} label="Dagen" />
-                <span className="text-xl sm:text-3xl lg:text-4xl font-black text-[var(--theme-purple)]/20 pb-6">-</span>
+                <span className="hidden min-[340px]:block text-xl sm:text-3xl lg:text-4xl font-black text-[var(--theme-purple)]/20 pb-6">-</span>
                 <FlipBlock value={timeLeft.hours} label="Uur" />
-                <span className="text-xl sm:text-3xl lg:text-4xl font-black text-[var(--theme-purple)]/20 pb-6">-</span>
+                <span className="hidden min-[340px]:block text-xl sm:text-3xl lg:text-4xl font-black text-[var(--theme-purple)]/20 pb-6">-</span>
                 <FlipBlock value={timeLeft.minutes} label="Min" />
-                <span className="text-xl sm:text-3xl lg:text-4xl font-black text-[var(--theme-purple)]/20 pb-6">-</span>
+                <span className="hidden min-[340px]:block text-xl sm:text-3xl lg:text-4xl font-black text-[var(--theme-purple)]/20 pb-6">-</span>
                 <FlipBlock value={timeLeft.seconds} label="Sec" />
             </div>
 
