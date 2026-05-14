@@ -50,11 +50,11 @@ export default async function ScannerPage({ params }: { params: Promise<{ id: st
         return (
             <AdminPageShell
                 title="Scanner"
-                subtitle={`Scanner voor: \"${eventData.name}\"`}
+                subtitle={`Scanner voor: \"${eventData.titel}\"`}
                 backHref={`/beheer/activiteiten/${id}/aanmeldingen`}
             >
                 <div className="pb-20">
-                    <AttendanceIsland eventId={String(id)} eventName={eventData.name} initialSignups={initialSignups} />
+                    <AttendanceIsland eventId={String(id)} eventName={eventData.titel} initialSignups={initialSignups} />
                 </div>
             </AdminPageShell>
         );
