@@ -1,6 +1,6 @@
 import { generateOGImage } from '@/lib/utils/og-utils';
 
-export const runtime = 'edge';
+// runtime switched to nodejs for database compatibility
 export const alt = 'Safe Havens - Salve Mundi';
 export const size = {
     width: 1200,

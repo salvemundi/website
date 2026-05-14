@@ -1,7 +1,7 @@
 // OG-image route voor de activiteiten overzichtspagina
 import { ImageResponse } from 'next/og';
 
-export const runtime = 'edge';
+// runtime switched to nodejs for database compatibility
 export const alt = 'Activiteiten - Salve Mundi';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
