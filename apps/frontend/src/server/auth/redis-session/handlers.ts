@@ -6,6 +6,22 @@ import { extractHeadersSafely } from "./utils";
 import { getImpersonatedUser } from "./impersonation";
 import { safeConsoleError } from '@/server/utils/logger';
 
+type ReturnedSessionLike = {
+    response?: unknown;
+    returned?: unknown;
+    headers?: HeadersInit;
+    status?: number;
+    statusText?: string;
+};
+
+function isResponseLike(value: unknown): value is Response {
+    return value instanceof Response;
+}
+
+function hasClone(value: unknown): value is { clone: () => Response } {
+    return typeof value === 'object' && value !== null && 'clone' in value && typeof (value as { clone?: unknown }).clone === 'function';
+}
+
 export async function beforeHandler(ctx: AuthContext) {
     try {
         const requestHeaders = extractHeadersSafely(ctx);
@@ -38,20 +54,21 @@ export async function beforeHandler(ctx: AuthContext) {
 
 export async function afterHandler(ctx: AuthContext, pool: Pool) {
     // 1. Extract the returned data (could be in ctx.context.returned or ctx.response)
-    const returned = ctx.context?.returned || (ctx as any).response || (ctx as any).returned;
+    const context = ctx as AuthContext & ReturnedSessionLike & { context?: ReturnedSessionLike };
+    const returned = context.context?.returned || context.response || context.returned;
 
     try {
-        let sessionData: any = null;
+        let sessionData: unknown = null;
 
         // 2. Safely parse sessionData from Response or plain object
-        if (returned && typeof returned === 'object' && 'clone' in returned && typeof (returned as any).clone === 'function') {
+        if (hasClone(returned)) {
             try {
-                sessionData = await (returned as Response).clone().json();
-            } catch (error) {
+                sessionData = await returned.clone().json();
+            } catch (_error) {
                 // Return original data in expected format if parsing fails
                 return {
-                    response: returned?.response || returned || null,
-                    headers: returned?.headers || null
+                        response: context.response || returned || null,
+                        headers: context.headers || null
                 };
             }
         } else {
@@ -60,14 +77,14 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
 
         // 3. Normalize sessionData (Better Auth sometimes wraps it in { response: ... })
         if (sessionData && typeof sessionData === 'object' && 'response' in sessionData) {
-            sessionData = sessionData.response;
+            sessionData = (sessionData as { response?: unknown }).response;
         }
 
         // 4. Basic validation - if no user, we can't do anything
-        if (!sessionData || typeof sessionData !== 'object' || !sessionData.user) {
+        if (!sessionData || typeof sessionData !== 'object' || !('user' in sessionData) || !sessionData.user) {
             return {
-                response: returned?.response || returned || null,
-                headers: returned?.headers || null
+                    response: context.response || returned || null,
+                    headers: context.headers || null
             };
         }
 
@@ -75,8 +92,8 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
         const userId = sessionWithUser.user?.id;
         if (!userId) {
             return {
-                response: returned?.response || returned || null,
-                headers: returned?.headers || null
+                    response: context.response || returned || null,
+                    headers: context.headers || null
             };
         }
 
@@ -134,14 +151,13 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
 
         // 9. Return the enriched data in the format Better Auth expects: { response, headers }
         const isResponse = returned && typeof returned === 'object' && 
-                          (returned instanceof Response || 
-                           (typeof (returned as any).clone === 'function' && 'headers' in returned));
+                          (isResponseLike(returned) || hasClone(returned));
 
         if (isResponse) {
             const newResponse = new Response(JSON.stringify(sessionWithUser), {
-                status: (returned as any).status || 200,
-                statusText: (returned as any).statusText || 'OK',
-                headers: (returned as any).headers
+                status: context.status || 200,
+                statusText: context.statusText || 'OK',
+                headers: context.headers
             });
             return {
                 response: newResponse,
@@ -150,7 +166,7 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
         }
 
         const originalHeaders = (returned && typeof returned === 'object' && 'headers' in returned) 
-            ? (returned as any).headers 
+            ? (returned as { headers?: HeadersInit }).headers 
             : null;
 
         return {
@@ -162,8 +178,8 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
         safeConsoleError(`[redis-session/handlers.ts][afterHandler] Critical Error:`, error);
         // Fallback to returning the original data in the expected structure if possible
         return {
-            response: returned?.response || returned || null,
-            headers: returned?.headers || null
+                response: context.response || returned || null,
+                headers: context.headers || null
         };
     }
 }

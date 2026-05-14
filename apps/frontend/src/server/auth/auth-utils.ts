@@ -41,7 +41,7 @@ export async function getEnrichedSession(): Promise<{ user: EnrichedUser; sessio
         let h;
         try {
             h = await headers();
-        } catch (e) {
+        } catch (_e) {
             // Expected outside of request context
             return null;
         }

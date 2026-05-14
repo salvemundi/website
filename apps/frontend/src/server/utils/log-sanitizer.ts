@@ -9,10 +9,15 @@ export function sanitizePayload(payload: unknown): unknown {
 
     const isError = payload instanceof Error;
     const sanitized: Record<string, unknown> = Object.create(null);
-    const keys = isError ? ['message', 'stack', ...Object.keys(payload)] : Object.keys(payload);
+    const entries: Array<[string, unknown]> = isError
+        ? [
+            ['message', payload.message],
+            ['stack', payload.stack],
+            ...Object.entries(payload as unknown as Record<string, unknown>)
+        ]
+        : Object.entries(payload as Record<string, unknown>);
 
-    for (const key of keys) {
-        const value = (payload as any)[key];
+    for (const [key, value] of entries) {
         const lowerKey = key.toLowerCase();
         let finalValue: unknown;
 
