@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import ActiveLink from '@/components/ui/ActiveLink';
 import { Instagram, Facebook, Linkedin } from 'lucide-react';
 import { ROUTES } from '@/lib/config/routes';
 import type { Committee } from '@salvemundi/validations/schema/committees.zod';
@@ -113,9 +114,9 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                         <ul className="grid grid-cols-2 md:grid-cols-1 gap-x-8 gap-y-2 text-sm w-full max-w-fit mx-auto md:mx-0 md:max-w-none">
                             {pageLinks.map((link) => (
                                 <li key={link.href}>
-                                    <Link href={link.href} className={LINK_CLS}>
+                                    <ActiveLink href={link.href} className={LINK_CLS} activeClassName="bg-[var(--color-purple-500)]/10 text-[var(--color-purple-700)]">
                                         {link.label}
-                                    </Link>
+                                    </ActiveLink>
                                 </li>
                             ))}
                         </ul>
@@ -133,9 +134,9 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                     const slug = slugify(cleaned);
                                     return (
                                         <div key={committee.id}>
-                                            <Link href={`${ROUTES.COMMITTEES}/${slug}`} className={LINK_CLS}>
+                                            <ActiveLink href={`${ROUTES.COMMITTEES}/${slug}`} className={LINK_CLS} activeClassName="bg-[var(--color-purple-500)]/10 text-[var(--color-purple-700)]">
                                                 {cleaned}
-                                            </Link>
+                                            </ActiveLink>
                                         </div>
                                     );
                                 })}
@@ -148,9 +149,9 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                     const slug = slugify(cleaned);
                                     return (
                                         <div key={committee.id}>
-                                            <Link href={`${ROUTES.COMMITTEES}/${slug}`} className={LINK_CLS}>
+                                            <ActiveLink href={`${ROUTES.COMMITTEES}/${slug}`} className={LINK_CLS} activeClassName="bg-[var(--color-purple-500)]/10 text-[var(--color-purple-700)]">
                                                 {cleaned}
-                                            </Link>
+                                            </ActiveLink>
                                         </div>
                                     );
                                 })}
@@ -159,9 +160,9 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
 
                         {/* Alle bekijken link gecentreerd eronder */}
                         <div className="mt-6 text-center lg:text-center">
-                            <Link href={ROUTES.COMMITTEES} className={`${LINK_CLS} font-bold text-[var(--color-purple-500)]`}>
+                            <ActiveLink href={ROUTES.COMMITTEES} className={`${LINK_CLS} font-bold text-[var(--color-purple-500)]`} activeClassName="bg-[var(--color-purple-500)]/10 text-[var(--color-purple-700)]">
                                 Alle commissies bekijken
-                            </Link>
+                            </ActiveLink>
                         </div>
                     </div>
 

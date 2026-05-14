@@ -1,7 +1,11 @@
+/* Mobile menu - client component */
 'use client';
 
 import React from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils/cn';
+import { isPathActive } from '@/lib/utils/link-utils';
 import Image from 'next/image';
 import {
     Shield, Sparkles, LogOut
@@ -42,6 +46,7 @@ export default function MobileMenu({
     onLogout,
     mounted
 }: MobileMenuProps) {
+    const pathname = usePathname() || '/';
     return (
         <div
             className={`lg:hidden ${isOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
@@ -132,12 +137,20 @@ export default function MobileMenu({
                         })
                         .map((link) => {
                             const Icon = IconMap[link.icon];
+                            const pathname = usePathname() || '/';
+                            const active = isPathActive(pathname, link.href);
+
                             return (
                                 <Link
                                     key={link.href}
                                     href={link.href}
                                     onClick={onClose}
-                                    className="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold text-[var(--text-main)] shadow-sm bg-[color-mix(in_srgb,var(--bg-card)_70%,transparent)] active:scale-[0.98] transition-all"
+                                    className={cn(
+                                        'flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold shadow-sm active:scale-[0.98] transition-all',
+                                        active
+                                            ? 'bg-[var(--color-purple-50)] text-[var(--color-purple-500)]'
+                                            : 'text-[var(--text-main)] bg-[color-mix(in_srgb,var(--bg-card)_70%,transparent)]'
+                                    )}
                                 >
                                     <span className="flex items-center gap-3 whitespace-nowrap">
                                         {Icon && <Icon className="h-5 w-5 text-[var(--color-purple-500)]" aria-hidden="true" />}

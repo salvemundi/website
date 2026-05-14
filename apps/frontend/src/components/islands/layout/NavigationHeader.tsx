@@ -1,5 +1,10 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils/cn';
+import { isPathActive } from '@/lib/utils/link-utils';
 import Image from 'next/image';
 import { ThemeToggle } from '@/components/islands/layout/ThemeToggle';
 import { ROUTES } from '@/lib/config/routes';
@@ -23,6 +28,7 @@ const NavigationHeader = ({
     initialSession,
     isAdmin: initialIsAdmin
 }: NavigationHeaderProps) => {
+    const pathname = usePathname() || '/';
     const user = initialSession?.user ?? null;
     const isAuthenticated = !!user;
 
@@ -65,16 +71,26 @@ const NavigationHeader = ({
 
                 {/* Desktop Navigation */}
                 <nav className="hidden lg:flex flex-1 items-center justify-center px-4 gap-x-[clamp(0.4rem,0.8vw,1.1rem)] min-w-0">
-                    {navItems.map((link) => (
-                        <Link
-                            key={link.href}
-                            href={link.href}
-                            className="group relative inline-flex items-center gap-2 text-sm font-semibold transition-all duration-200 whitespace-nowrap text-[var(--text-main)] hover:text-[var(--color-purple-500)] shrink-0"
-                        >
-                            <span className="text-[clamp(13px,1vw,15px)] font-semibold">{link.name}</span>
-                            <span className="absolute -bottom-2 left-0 h-0.5 w-full origin-left rounded-full bg-[var(--color-purple-50)] transition-transform duration-200 ease-out scale-x-0 group-hover:scale-x-100" />
-                        </Link>
-                    ))}
+                    {navItems.map((link) => {
+                        const active = isPathActive(pathname, link.href);
+                        return (
+                            <Link
+                                key={link.href}
+                                href={link.href}
+                                className={cn(
+                                    'group relative inline-flex items-center gap-2 text-sm font-semibold transition-all duration-200 whitespace-nowrap shrink-0',
+                                    active ? 'text-[var(--color-purple-500)]' : 'text-[var(--text-main)]',
+                                    !active && 'hover:text-[var(--color-purple-500)]'
+                                )}
+                            >
+                                <span className="text-[clamp(13px,1vw,15px)] font-semibold">{link.name}</span>
+                                <span className={cn(
+                                    'absolute -bottom-2 left-0 h-0.5 w-full origin-left rounded-full bg-[var(--color-purple-50)] transition-transform duration-200 ease-out',
+                                    active ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                                )} />
+                            </Link>
+                        );
+                    })}
                 </nav>
 
                 {/* Right Actions */}
