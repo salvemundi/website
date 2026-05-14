@@ -11,7 +11,8 @@
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
     "type-check": "pnpm -r exec tsc --noEmit",
-    "validate": "pnpm type-check && pnpm lint && pnpm build"
+    "validate": "pnpm type-check && pnpm lint && pnpm build",
+    "setup": "pnpm install && pnpm validate"
   },
   "pnpm": {
     "overrides": {
