@@ -2,7 +2,7 @@
 FROM node:22.22.2-alpine AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable && corepack prepare pnpm@9 --activate
+RUN corepack enable && corepack prepare pnpm@11 --activate
 WORKDIR /app
 
 # 2. Builder Stage
@@ -29,7 +29,7 @@ COPY apps/services/azure-sync-service ./apps/services/azure-sync-service
 RUN pnpm --filter=@salvemundi/azure-sync-service build
 
 # Step 3: Prune for production
-RUN pnpm deploy --filter=@salvemundi/azure-sync-service --prod /app/pruned
+RUN pnpm deploy --filter=@salvemundi/azure-sync-service --prod --legacy /app/pruned
 
 # 3. Runner Stage
 FROM node:22.22.2-alpine AS runner
