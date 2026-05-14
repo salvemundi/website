@@ -1,4 +1,4 @@
-﻿{
+{
   "version": 8,
   "name": "Dark Matter",
   "metadata": { "maputnik:renderer": "mbgljs" },
@@ -2661,7 +2661,7 @@
             [18, 11]
           ]
         },
-        "text-font": ["Open Sans Regular"]
+        "text-font": ["OpenSansRegular"]
       },
       "paint": {
         "text-halo-color": "transparent",

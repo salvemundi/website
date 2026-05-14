@@ -1,4 +1,4 @@
-﻿{
+{
   "version": 8,
   "name": "Voyager",
   "metadata": {},
@@ -637,7 +637,7 @@
       ],
       "layout": {
         "text-field": "{name_en}",
-        "text-font": ["Open Sans Regular"],
+        "text-font": ["OpenSansRegular"],
         "symbol-placement": "line",
         "symbol-spacing": 300,
         "symbol-avoid-edges": false,
@@ -4231,7 +4231,7 @@
             ]
           ]
         },
-        "text-font": ["Open Sans Regular"],
+        "text-font": ["OpenSansRegular"],
         "text-line-height": 1.2,
         "text-padding": 2,
         "text-allow-overlap": false,
@@ -4275,7 +4275,7 @@
         "text-field": "{name}",
         "symbol-placement": "point",
         "text-size": 12,
-        "text-font": ["Open Sans Regular"],
+        "text-font": ["OpenSansRegular"],
         "text-line-height": 1.2,
         "text-padding": 2,
         "text-allow-overlap": false,
@@ -4353,7 +4353,7 @@
             ]
           ]
         },
-        "text-font": ["Open Sans Regular"],
+        "text-font": ["OpenSansRegular"],
         "text-line-height": 1.2,
         "text-padding": 2,
         "text-allow-overlap": false,
@@ -4423,7 +4423,7 @@
             ]
           ]
         },
-        "text-font": ["Open Sans Regular"],
+        "text-font": ["OpenSansRegular"],
         "symbol-spacing": 350,
         "text-pitch-alignment": "auto",
         "text-rotation-alignment": "auto",
@@ -4469,7 +4469,7 @@
             ]
           ]
         },
-        "text-font": ["Open Sans Regular"],
+        "text-font": ["OpenSansRegular"],
         "text-size": {
           "stops": [
             [
@@ -4548,7 +4548,7 @@
             ]
           ]
         },
-        "text-font": ["Open Sans Regular"],
+        "text-font": ["OpenSansRegular"],
         "text-size": {
           "stops": [
             [
@@ -4635,7 +4635,7 @@
             ]
           ]
         },
-        "text-font": ["Open Sans Regular"],
+        "text-font": ["OpenSansRegular"],
         "text-size": {
           "stops": [
             [
@@ -4711,7 +4711,7 @@
             ]
           ]
         },
-        "text-font": ["Open Sans Regular"],
+        "text-font": ["OpenSansRegular"],
         "text-size": {
           "stops": [
             [
@@ -4785,7 +4785,7 @@
       ],
       "layout": {
         "text-field": "{name_en}",
-        "text-font": ["Open Sans Regular"],
+        "text-font": ["OpenSansRegular"],
         "text-size": {
           "stops": [
             [
@@ -4855,7 +4855,7 @@
       ],
       "layout": {
         "text-field": "{name_en}",
-        "text-font": ["Open Sans Regular"],
+        "text-font": ["OpenSansRegular"],
         "text-size": {
           "stops": [
             [
@@ -4941,7 +4941,7 @@
       ],
       "layout": {
         "text-field": "{name_en}",
-        "text-font": ["Open Sans Regular"],
+        "text-font": ["OpenSansRegular"],
         "text-size": {
           "stops": [
             [
@@ -4980,7 +4980,7 @@
       ],
       "layout": {
         "text-field": "{name_en}",
-        "text-font": ["Open Sans Regular"],
+        "text-font": ["OpenSansRegular"],
         "text-transform": "uppercase",
         "text-size": 14,
         "text-letter-spacing": 0.1,
@@ -5027,7 +5027,7 @@
             ]
           ]
         },
-        "text-font": ["Open Sans Regular"],
+        "text-font": ["OpenSansRegular"],
         "text-size": {
           "stops": [
             [
@@ -5113,7 +5113,7 @@
             ]
           ]
         },
-        "text-font": ["Open Sans Regular"],
+        "text-font": ["OpenSansRegular"],
         "text-size": {
           "stops": [
             [
@@ -5179,7 +5179,7 @@
       ],
       "layout": {
         "text-field": "{name_en}",
-        "text-font": ["Open Sans Regular"],
+        "text-font": ["OpenSansRegular"],
         "text-size": 12,
         "icon-image": "circle-11",
         "icon-offset": [
@@ -5225,7 +5225,7 @@
       ],
       "layout": {
         "text-field": "{name_en}",
-        "text-font": ["Open Sans Regular"],
+        "text-font": ["OpenSansRegular"],
         "text-size": 12,
         "icon-image": "circle-11",
         "icon-offset": [
@@ -5271,7 +5271,7 @@
       ],
       "layout": {
         "text-field": "{name_en}",
-        "text-font": ["Open Sans Regular"],
+        "text-font": ["OpenSansRegular"],
         "text-size": 12,
         "icon-image": "circle-11",
         "icon-offset": [
@@ -5317,7 +5317,7 @@
       ],
       "layout": {
         "text-field": "{name_en}",
-        "text-font": ["Open Sans Regular"],
+        "text-font": ["OpenSansRegular"],
         "text-size": 12,
         "icon-image": "circle-11",
         "icon-offset": [
@@ -5358,7 +5358,7 @@
       ],
       "layout": {
         "text-field": "{name_en}",
-        "text-font": ["Open Sans Regular"],
+        "text-font": ["OpenSansRegular"],
         "text-size": 12,
         "icon-image": "circle-11",
         "icon-offset": [
@@ -5406,7 +5406,7 @@
       ],
       "layout": {
         "text-field": "{name}",
-        "text-font": ["Open Sans Regular"],
+        "text-font": ["OpenSansRegular"],
         "text-size": {
           "stops": [
             [
@@ -5447,7 +5447,7 @@
       ],
       "layout": {
         "text-field": "{name}",
-        "text-font": ["Open Sans Regular"],
+        "text-font": ["OpenSansRegular"],
         "text-size": {
           "stops": [
             [
@@ -5489,7 +5489,7 @@
       ],
       "layout": {
         "symbol-placement": "line",
-        "text-font": ["Open Sans Regular"],
+        "text-font": ["OpenSansRegular"],
         "text-size": 9,
         "text-field": "{name}",
         "symbol-avoid-edges": false,
@@ -5521,7 +5521,7 @@
       ],
       "layout": {
         "symbol-placement": "line",
-        "text-font": ["Open Sans Regular"],
+        "text-font": ["OpenSansRegular"],
         "text-size": {
           "stops": [
             [
@@ -5567,7 +5567,7 @@
       ],
       "layout": {
         "symbol-placement": "line",
-        "text-font": ["Open Sans Regular"],
+        "text-font": ["OpenSansRegular"],
         "text-size": {
           "stops": [
             [
@@ -5641,7 +5641,7 @@
       ],
       "layout": {
         "symbol-placement": "line",
-        "text-font": ["Open Sans Regular"],
+        "text-font": ["OpenSansRegular"],
         "text-size": {
           "stops": [
             [
@@ -5719,7 +5719,7 @@
             ]
           ]
         },
-        "text-font": ["Open Sans Regular"]
+        "text-font": ["OpenSansRegular"]
       },
       "paint": {
         "text-halo-color": "rgba(255,255,255,0.15)",
