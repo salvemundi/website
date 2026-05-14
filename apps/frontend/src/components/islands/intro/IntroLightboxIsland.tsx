@@ -44,7 +44,7 @@ export const IntroLightboxIsland = () => {
         <>
             <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {IMAGES.map((img, idx) => (
-                    <div key={idx} className="relative h-32 w-full bg-[var(--color-purple-50)] dark:bg-white/5 rounded-lg overflow-hidden border border-[var(--color-purple-100)] dark:border-white/10 flex items-center justify-center">
+                    <div key={idx} className="relative h-32 w-full bg-purple-50 dark:bg-white/5 rounded-lg overflow-hidden border border-purple-100 dark:border-white/10 flex items-center justify-center">
                         <Image
                             src={failedImages[img.src] ? fallbackImage : img.src}
                             alt={img.alt}
@@ -61,28 +61,30 @@ export const IntroLightboxIsland = () => {
 
             {lightboxOpen && lightboxSrc && (
                 <div
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.75)' }}
+                    className="fixed inset-0 z-100 flex items-center justify-center p-4 sm:p-6 bg-black/90 backdrop-blur-lg animate-in fade-in duration-300"
                     onClick={(e) => {
                         if (e.target === e.currentTarget) {
                             closeLightbox();
                         }
                     }}
                 >
-                    <div className="relative max-w-4xl w-full h-[80vh] sm:h-[90vh]">
-                        <button
-                            onClick={closeLightbox}
-                            className="absolute top-2 right-2 z-50 bg-black/40 text-white rounded-full p-2 hover:bg-black/60"
-                            aria-label="Sluiten"
-                        >
-                            ×
-                        </button>
+                    <button
+                        onClick={closeLightbox}
+                        className="absolute top-4 right-4 sm:top-8 sm:right-8 z-101 bg-white/10 text-white rounded-full p-3 hover:bg-white/20 transition-colors border border-white/20"
+                        aria-label="Sluiten"
+                    >
+                        ×
+                    </button>
+
+                    <div
+                        className="relative w-full max-w-8xl h-[80vh] overflow-hidden rounded-3xl bg-black/20 p-2"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <Image
                             src={lightboxSrc}
                             alt="Foto"
                             fill
-                            sizes="(max-width: 1024px) 90vw, 1024px"
-                            className="object-contain rounded-lg shadow-2xl"
+                            className="object- rounded-2xl"
                         />
                     </div>
                 </div>
