@@ -71,7 +71,7 @@ export const IntroStudentIsland = () => {
     }
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 lg:space-y-6" autoComplete="off">
+        <form onSubmit={handleSubmit(onSubmit)} className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-md shadow-black/5 p-6 lg:p-8 space-y-4 lg:space-y-6" autoComplete="off">
             <input {...register('website')} type="text" className="hidden" tabIndex={-1} autoComplete="off" />
 
             <FormField id="field-voornaam" label="Voornaam" required error={errors.voornaam?.message}>

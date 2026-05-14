@@ -24,7 +24,7 @@ export default async function BoardHistoryPage() {
             imageFilter="brightness(0.6) blur(2px)"
             description="Een eregalerij van alle voorgaande besturen van de vereniging"
         >
-            <div className="container mx-auto px-4 max-w-7xl pt-8 pb-4">
+            <div className="container  px-4 max-w-7xl pt-8 pb-4">
                 <BackButton href="/commissies/bestuur" title="Terug naar Huidig Bestuur" text="Huidig Bestuur" />
             </div>
 

@@ -42,7 +42,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                             <span className="inline-block px-4 py-1.5 rounded-full bg-[var(--theme-purple)] text-white text-[11px] font-black uppercase tracking-widest mb-4 shadow-xl border border-white/10">
                                 {activity?.committee_name || 'Algemene Activiteit'}
                             </span>
-                            <h1 className="text-4xl md:text-7xl font-black text-white dropshadow-sm tracking-tight leading-tight">
+                            <h1 className="text-4xl md:text-7xl font-black text-(--theme-white) dropshadow-sm tracking-tight leading-tight">
                                 {activity?.titel}
                             </h1>
                         </div>
@@ -53,7 +53,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                     <span className="inline-block px-4 py-1.5 rounded-full bg-[var(--theme-purple)] text-white text-[11px] font-black uppercase tracking-widest mb-4 shadow-xl border border-white/10">
                         {activity?.committee_name || 'Algemene Activiteit'}
                     </span>
-                    <h1 className="text-4xl md:text-7xl font-black text-[var(--theme-purple)] tracking-tight leading-tight">
+                    <h1 className="text-4xl md:text-7xl  text-(--theme-purple) tracking-tight leading-tight">
                         {activity?.titel}
                     </h1>
                 </div>

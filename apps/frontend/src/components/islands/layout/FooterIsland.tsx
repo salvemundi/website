@@ -123,10 +123,10 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                     </div>
 
                     {/* ── Kolom 3: Commissies ── */}
-                    <div className="lg:col-span-2 flex flex-col items-center">
+                    <div className="lg:col-span-2 flex flex-col items-center md:items-start">
                         <h3 className={`${HEADING_CLS} text-center w-full`}>Commissies</h3>
 
-                        <div className="grid grid-cols-2 gap-x-12 gap-y-2 text-sm w-full max-w-fit mx-auto">
+                        <div className="flex gap-x-12 gap-y-2 text-sm  ">
                             {/* Linkerkolom (eerste 6) */}
                             <div className="flex flex-col gap-y-2 text-left">
                                 {sortedCommittees.slice(0, 6).map((committee) => {
