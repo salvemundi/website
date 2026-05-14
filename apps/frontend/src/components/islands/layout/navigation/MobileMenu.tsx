@@ -137,7 +137,6 @@ export default function MobileMenu({
                         })
                         .map((link) => {
                             const Icon = IconMap[link.icon];
-                            const pathname = usePathname() || '/';
                             const active = isPathActive(pathname, link.href);
 
                             return (
