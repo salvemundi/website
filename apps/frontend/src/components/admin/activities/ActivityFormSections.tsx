@@ -2,6 +2,7 @@ import React from 'react';
 import MediaAsset from '@/components/ui/media/MediaAsset';
 import { Info, Calendar as CalendarIcon, MapPin, Euro, Link as LinkIcon, Upload, X, Eye, Check } from 'lucide-react';
 import { toLocalISOString } from '@/lib/utils/date-utils';
+import { ActivityAdmin } from '@salvemundi/validations';
 
 // --- Utilities ---
 function cleanCommitteeName(name: string): string {
@@ -20,19 +21,25 @@ const formatDateTime = (dateStr?: InitialValue) =>
 const formatTime = (timeStr?: InitialValue) =>
     (typeof timeStr === 'string' && timeStr) ? timeStr.slice(0, 5) : '';
 
-const toInputSafe = (val: InitialValue): string | number | undefined => {
-    if (typeof val === 'string' || typeof val === 'number') return val;
-    return undefined;
+const toInputSafe = (value: unknown): string => {
+    if (value === null || value === undefined) return '';
+    return String(value);
 };
 
 // --- Components ---
 
-export function GeneralInfoSection({ initialData, formErrors }: { initialData?: Record<string, InitialValue>, formErrors?: Record<string, string[] | undefined> }) {
+export function GeneralInfoSection({
+    initialData,
+    formErrors
+}: {
+    initialData?: Partial<ActivityAdmin>,
+    formErrors?: Record<string, string[] | undefined>
+}) {
     return (
         <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] overflow-hidden">
             <div className="px-6 py-4 border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 flex items-center gap-3">
                 <Info className="h-4 w-4 text-[var(--beheer-accent)]" />
-                <h2 className="text-base font-semibold text-[var(--beheer-text)]">Algemene informatie</h2>
+                <h2 className="text-base font-semibold text-[var(--beheer-text)]">Beschrijving</h2>
             </div>
             <div className="p-6 space-y-6">
                 <div className="relative z-10">
@@ -51,12 +58,32 @@ export function GeneralInfoSection({ initialData, formErrors }: { initialData?: 
                 <div className="grid grid-cols-1 gap-6">
                     <div>
                         <label htmlFor="description" className="block text-base font-semibold text-[var(--beheer-text-muted)] mb-2">Publieke beschrijving *</label>
-                        <textarea id="description" name="description" rows={4} defaultValue={toInputSafe(initialData?.description)} className={`beheer-input ${formErrors?.description ? 'border-red-500 ring-4 ring-red-500/10' : ''}`} placeholder="Wat gaan we doen?" />
+                        <textarea
+                            id="description"
+                            name="description"
+                            rows={8}
+                            defaultValue={toInputSafe(initialData?.description)}
+                            className={`beheer-input font-mono text-sm leading-relaxed resize-y ${formErrors?.description ? 'border-red-500 ring-4 ring-red-500/10' : ''}`}
+                            placeholder="Plak hier je WhatsApp bericht. Gebruik **tekst** voor dikgedrukt."
+                        />
                         {formErrors?.description && <p className="text-red-500 text-sm font-semibold mt-2">{formErrors.description[0]}</p>}
                     </div>
                     <div>
-                        <label htmlFor="description_logged_in" className="block text-base font-semibold text-[var(--beheer-text-muted)] mb-2">Extra informatie (alleen ingelogd)</label>
-                        <textarea id="description_logged_in" name="description_logged_in" rows={2} defaultValue={toInputSafe(initialData?.description_logged_in)} className="beheer-input" placeholder="Bijv. verzamelplek, wat mee te nemen..." />
+                        <label htmlFor="description_logged_in" className="flex items-end justify-between mb-2">
+                            <span className="block text-base font-semibold text-[var(--beheer-text-muted)]">Extra informatie (alleen ingelogd)</span>
+                            <span className="text-xs font-normal text-[var(--beheer-text-muted)] opacity-70">
+                                Optioneel
+                            </span>
+                        </label>
+                        <textarea
+                            id="description_logged_in"
+                            name="description_logged_in"
+                            rows={3}
+                            defaultValue={toInputSafe(initialData?.description_logged_in)}
+                            className={`beheer-input font-mono text-sm leading-relaxed resize-y ${formErrors?.description_logged_in ? 'border-red-500 ring-4 ring-red-500/10' : ''}`}
+                            placeholder="Bijv. verzamelplek, wat mee te nemen..."
+                        />
+                        {formErrors?.description_logged_in && <p className="text-red-500 text-sm font-semibold mt-2">{formErrors.description_logged_in[0]}</p>}
                     </div>
                 </div>
             </div>

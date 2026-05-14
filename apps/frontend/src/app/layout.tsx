@@ -12,11 +12,8 @@ import { getCommittees } from '@/server/actions/public/committees.actions';
 import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
 import { headers } from 'next/headers';
 import { connection } from 'next/server';
-import { getHeroBanners, getUpcomingActiviteiten } from '@/server/actions/public/home.actions';
-import { getImageUrl } from '@/lib/utils/image-utils';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { type ExtendedSession, type ImpersonationInfo } from '@/types/auth';
-import { type Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { domMax, LazyMotion } from 'framer-motion';
 import { safeConsoleError } from '@/server/utils/logger';
 
@@ -86,10 +83,8 @@ export default async function RootLayout({
     children }: Readonly<{ children: React.ReactNode }>) {
     const h = await headers();
     const nonce = h.get('x-nonce') || '';
-    const [session, adminAccess] = await Promise.all([
-        getEnrichedSession(),
-        checkAdminAccess()
-    ]);
+    const session = await getEnrichedSession();
+    const adminAccess = await checkAdminAccess();
 
     const { impersonation, isAuthorized } = adminAccess;
 
@@ -105,7 +100,6 @@ export default async function RootLayout({
                     }}
                 />
                 <link rel="preload" as="image" href="/img/newlogo.png" />
-                <HeadPreloads />
             </head>
             <body className={`${poppins.variable} antialiased flex flex-col min-h-screen`}>
                 <ImpersonationWrapper impersonation={impersonation} />
@@ -119,30 +113,7 @@ export default async function RootLayout({
     );
 }
 
-async function HeadPreloads() {
-    await connection();
-    try {
-        const [banners, activities] = await Promise.all([
-            getHeroBanners(),
-            getUpcomingActiviteiten(4)
-        ]);
 
-        const criticalImages = [
-            ...(banners[0]?.afbeelding_id ? [getImageUrl(banners[0].afbeelding_id, { width: 1200, height: 800, fit: 'cover' })] : []),
-            ...activities.slice(0, 2).map((a: Activiteit) => a.afbeelding_id ? getImageUrl(a.afbeelding_id, { width: 400, height: 300, fit: 'cover' }) : null).filter(Boolean)
-        ];
-
-        return (
-            <>
-                {criticalImages.map((src, idx) => (
-                    <link key={`preload-img-${idx}`} rel="preload" as="image" href={src!} />
-                ))}
-            </>
-        );
-    } catch (_error) {
-        return null;
-    }
-}
 
 
 
