@@ -30,7 +30,7 @@ COPY apps/services/mail-service ./apps/services/mail-service
 RUN pnpm --filter=@salvemundi/mail-service build
 
 # Step 3: Prune for production
-RUN pnpm deploy --filter=@salvemundi/mail-service --prod /app/pruned
+RUN pnpm deploy --filter=@salvemundi/mail-service --prod --legacy /app/pruned
 
 # 3. Runner Stage
 FROM node:22.22.2-alpine AS runner
