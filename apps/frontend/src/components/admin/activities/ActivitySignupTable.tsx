@@ -3,7 +3,7 @@
 import React from 'react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import { Mail, Phone, Clock, Trash2, CheckCircle2, Circle, Loader2 } from 'lucide-react';
+import { Mail, Clock, Trash2, CheckCircle2, Circle, Loader2 } from 'lucide-react';
 import { type Signup } from '@/components/islands/admin/activities/ActiviteitAanmeldingenIsland';
 import { 
     getSignupName, 
@@ -90,7 +90,6 @@ export default function ActivitySignupTable({
                                     </div>
                                     {phone && phone !== '-' && (
                                         <div className="flex items-center gap-2 text-xs text-[var(--beheer-text-muted)] font-semibold tracking-tight">
-                                            <Phone className="h-3.5 w-3.5 opacity-50" />
                                             <a href={`tel:${phone}`} className="hover:text-[var(--beheer-accent)] transition-colors">{phone}</a>
                                         </div>
                                     )}

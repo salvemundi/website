@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useMemo, useOptimistic, useTransition } from 'react';
-import { Search, Download, UserPlus } from 'lucide-react';
+import Link from 'next/link';
+import { Search, Download, UserPlus, QrCode } from 'lucide-react';
 import { deleteSignupAction, toggleCheckInAction } from '@/server/actions/admin/aanmeldingen.actions';
 import ManualSignupModal from './ManualSignupModal';
 import { useRouter } from 'next/navigation';
@@ -138,7 +139,14 @@ export default function ActiviteitAanmeldingenIsland({
         <div className="w-full">
             <div className="flex flex-col gap-8">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-                    <div className="flex items-center gap-1.5 order-2 sm:order-1">
+                    <div className="flex flex-wrap items-center gap-1.5 order-2 sm:order-1">
+                        <Link
+                            href={`/beheer/activiteiten/${event.id}/scanner`}
+                            className="md:hidden flex items-center justify-center gap-2 px-6 py-2.5 bg-[var(--theme-purple)] text-white font-semibold text-xs rounded-xl shadow-lg shadow-[var(--theme-purple)]/20 transition-all active:scale-95 border border-white/10"
+                        >
+                            <QrCode className="h-3.5 w-3.5" />
+                            Scanner
+                        </Link>
                         <button
                             onClick={() => exportSignupsToCSV(filteredSignups, event.name)}
                             disabled={filteredSignups.length === 0}
