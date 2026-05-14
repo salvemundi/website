@@ -1,0 +1,99 @@
+'use client';
+
+import { stripHtml } from '@/shared/lib/text';
+import ActiviteitCard from './ActiviteitCard';
+import { isEventPast } from '@/shared/lib/utils/date';
+import { useAuth } from '@/features/auth/providers/auth-provider';
+import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
+import { type MembershipUserData } from '@/components/islands/account/MembershipStatusIsland';
+
+interface EventListProps {
+    events: (Activiteit & { is_signed_up?: boolean })[];
+    onEventClick: (event: Activiteit) => void;
+    variant?: 'list' | 'grid';
+    serverTime?: string;
+}
+
+export default function EventList({ events, onEventClick, variant = 'list', serverTime }: EventListProps) {
+    const { user } = useAuth();
+
+    if (events.length === 0) {
+        return (
+            <div className="text-center py-12 bg-[var(--bg-card)] rounded-3xl shadow-sm">
+                <p className="text-[var(--text-muted)]">Geen activiteiten gevonden.</p>
+            </div>
+        );
+    }
+
+    if (variant === 'grid') {
+        return (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {events.map((event) => (
+                    <ActiviteitCard
+                        key={event.id}
+                        id={event.id}
+                        title={event.titel || 'Activiteit'}
+                        description={stripHtml(event.beschrijving || '')}
+                        date={event.datum_start}
+                        endDate={event.datum_eind ?? undefined}
+                        startTime={event.event_time ?? undefined}
+                        endTime={event.event_time_end ?? undefined}
+                        location={event.locatie ?? undefined}
+                        price={(user as unknown as MembershipUserData)?.membership_status === 'active' ? (event.price_members ?? undefined) : (event.price_non_members ?? undefined)}
+                        image={event.afbeelding_id ?? undefined}
+                        isPast={isEventPast(
+                            event.datum_eind || event.datum_start,
+                            event.event_time_end || event.event_time,
+                            !!event.event_time_end,
+                            serverTime ? new Date(serverTime) : undefined
+                        )}
+                        serverTime={serverTime}
+                        isSignedUp={event.is_signed_up}
+                        variant="grid"
+                        committeeName={event.committee_name ?? undefined}
+                        contact={event.contact ?? undefined}
+                        registrationDeadline={event.registration_deadline ?? undefined}
+                        onlyMembers={event.only_members ?? undefined}
+                        onShowDetails={() => onEventClick(event)}
+                        onSignup={() => onEventClick(event)}
+                    />
+                ))}
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-4">
+            {events.map((event) => (
+                <ActiviteitCard
+                    key={event.id}
+                    id={event.id}
+                    title={event.titel || 'Activiteit'}
+                    description={stripHtml(event.beschrijving || '')}
+                    date={event.datum_start}
+                    endDate={event.datum_eind ?? undefined}
+                    startTime={event.event_time ?? undefined}
+                    endTime={event.event_time_end ?? undefined}
+                    location={event.locatie ?? undefined}
+                    price={(user as unknown as MembershipUserData)?.membership_status === 'active' ? (event.price_members ?? undefined) : (event.price_non_members ?? undefined)}
+                    image={event.afbeelding_id ?? undefined}
+                    isPast={isEventPast(
+                        event.datum_eind || event.datum_start,
+                        event.event_time_end || event.event_time,
+                        !!event.event_time_end,
+                        serverTime ? new Date(serverTime) : undefined
+                    )}
+                    serverTime={serverTime}
+                    isSignedUp={event.is_signed_up}
+                    variant="list"
+                    committeeName={event.committee_name ?? undefined}
+                    contact={event.contact ?? undefined}
+                    registrationDeadline={event.registration_deadline ?? undefined}
+                    onlyMembers={event.only_members ?? undefined}
+                    onShowDetails={() => onEventClick(event)}
+                    onSignup={() => onEventClick(event)}
+                />
+            ))}
+        </div>
+    );
+}

@@ -1,0 +1,42 @@
+{
+    "name": "@salvemundi/validations",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "default": "./dist/index.js"
+        },
+        "./schema/*": {
+            "types": "./dist/schema/*.d.ts",
+            "import": "./dist/schema/*.js",
+            "default": "./dist/schema/*.js"
+        },
+        "./directus/*": {
+            "types": "./dist/directus/*.d.ts",
+            "import": "./dist/directus/*.js",
+            "default": "./dist/directus/*.js"
+        },
+        "./security": {
+            "types": "./dist/security.d.ts",
+            "import": "./dist/security.js",
+            "default": "./dist/security.js"
+        }
+    },
+    "scripts": {
+        "build": "tsc",
+        "type-check": "tsc --noEmit"
+    },
+    "dependencies": {
+        "zod": "^3.23.8"
+    },
+    "devDependencies": {
+        "@types/node": "^22.0.0",
+        "typescript": "5.7.3"
+    }
+}

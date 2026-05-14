@@ -1,0 +1,70 @@
+import { FastifyInstance } from 'fastify';
+import { timingSafeCompare } from '@salvemundi/validations/security';
+import { TokenService } from '../services/token.service.js';
+import { GraphService } from '../services/graph.service.js';
+
+export default async function userRoutes(fastify: FastifyInstance) {
+
+    // Middleware-like check for internal service token
+    fastify.addHook('preHandler', async (request, reply) => {
+        const rawAuthHeader = request.headers['authorization'];
+        const authHeader = Array.isArray(rawAuthHeader) ? rawAuthHeader[0] : rawAuthHeader;
+        const token = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
+
+        const expectedHeader = `Bearer ${token}`;
+        if (!authHeader || !token || !timingSafeCompare(authHeader.trim(), expectedHeader)) {
+            return reply.status(401).send({ error: 'Unauthorized' });
+        }
+    });
+
+    // Update user profile
+    fastify.patch('/:entraId', async (request: any, reply) => {
+        const { entraId } = request.params;
+        const { displayName, phoneNumber, dateOfBirth, membershipExpiry, originalPaymentDate } = request.body;
+
+        try {
+            const token = await TokenService.getAccessToken();
+            await GraphService.updateUser(entraId, token, { displayName, phoneNumber, dateOfBirth, membershipExpiry, originalPaymentDate });
+            return { success: true, message: 'User updated in Microsoft Entra ID' };
+        } catch (error: any) {
+            fastify.log.error(`[USERS] Failed to update user ${entraId}:`, error.message);
+            return reply.status(500).send({ error: 'Failed to update user in Azure AD', details: error.message });
+        }
+    });
+
+    // Get user's groups
+    fastify.get('/:entraId/groups', async (request: any, reply) => {
+        const { entraId } = request.params;
+
+        try {
+            const token = await TokenService.getAccessToken();
+            const groups = await GraphService.getUserGroups(entraId, token);
+            return { success: true, groups };
+        } catch (error: any) {
+            fastify.log.error(`[USERS] Failed to fetch groups for user ${entraId}:`, error.message);
+            return reply.status(500).send({ error: 'Failed to fetch groups', details: error.message });
+        }
+    });
+
+    // Update user photo
+    fastify.put('/:entraId/photo', async (request: any, reply) => {
+        const { entraId } = request.params;
+
+        try {
+            const data = await request.file();
+            if (!data) {
+                return reply.status(400).send({ error: 'No photo provided' });
+            }
+
+            const buffer = await data.toBuffer();
+            const token = await TokenService.getAccessToken();
+
+            await GraphService.updateUserPhoto(entraId, buffer, token);
+
+            return { success: true, message: 'Photo updated in Microsoft Entra ID' };
+        } catch (error: any) {
+            fastify.log.error(`[USERS] Failed to update photo for user ${entraId}:`, error.message);
+            return reply.status(500).send({ error: 'Failed to update photo in Azure AD', details: error.message });
+        }
+    });
+}

@@ -1,0 +1,28 @@
+{
+    "name": "@salvemundi/mail-service",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "fastify start -w -a 0.0.0.0 -l info src/server.ts",
+        "build": "tsc && node -e \"const fs=require('fs'); fs.cpSync('src/templates', 'dist/templates', {recursive: true}); fs.cpSync('src/assets', 'dist/assets', {recursive: true})\"",
+        "type-check": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@azure/identity": "^4.13.0",
+        "@fastify/rate-limit": "^10.3.0",
+        "@salvemundi/validations": "workspace:*",
+        "fastify": "5.2.1",
+        "fastify-plugin": "^5.0.1",
+        "handlebars": "^4.7.9",
+        "ioredis": "^5.6.0",
+        "pg": "^8.13.0",
+        "qrcode": "^1.5.4"
+    },
+    "devDependencies": {
+        "@types/node": "^22.0.0",
+        "@types/pg": "^8.11.0",
+        "@types/qrcode": "^1.5.5",
+        "typescript": "5.7.3"
+    }
+}

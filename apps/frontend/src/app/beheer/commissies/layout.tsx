@@ -1,0 +1,35 @@
+import { redirect } from 'next/navigation';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
+import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
+import { getPermissions } from '@/shared/lib/permissions';
+import { fetchUserCommitteesDb } from '@/server/internal/user-db.utils';
+
+import { type EnrichedUser } from '@/types/auth';
+
+export default async function CommissiesLayout({
+    children }: {
+    children: React.ReactNode;
+}) {
+    const session = await getEnrichedSession();
+
+    if (!session || !session.user) {
+        redirect('/?needLogin=true');
+    }
+
+    const user = session.user as unknown as EnrichedUser;
+    const userCommittees = await fetchUserCommitteesDb(user.id).catch(() => []);
+    const permissions = getPermissions(userCommittees || []);
+
+    if (!permissions.canAccessCommittees) {
+        return (
+            <div className="container mx-auto px-4 py-8">
+                <AdminUnauthorized 
+                    title="Commissie Beheer"
+                    description="Je hebt geen rechten om commissies te beheren. Alleen het Bestuur en ICT hebben deze rechten."
+                />
+            </div>
+        );
+    }
+
+    return <>{children}</>;
+}
