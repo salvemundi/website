@@ -160,3 +160,36 @@ export async function fetchEventSignupByIdDb(id: number): Promise<EnrichedEventS
         return null;
     }
 }
+
+export async function fetchEventSignupByTokenDb(token: string): Promise<EnrichedEventSignup | null> {
+    try {
+        const sql = `
+            SELECT es.*, e.name as event_name, e.event_date, e.description, e.image, e.contact
+            FROM event_signups es
+            JOIN events e ON es.event_id = e.id
+            WHERE es.qr_token = $1
+            LIMIT 1
+        `;
+        const { rows } = await query(sql, [token]);
+        if (rows.length === 0) return null;
+
+        const row = rows[0] as DbJoinedEventSignupRow;
+        const { toLocalISOString } = await import('@/lib/utils/date-utils');
+        return {
+            ...row,
+            created_at: toLocalISOString(row.created_at),
+            checked_in_at: toLocalISOString(row.checked_in_at),
+            event_id: {
+                id: row.event_id,
+                name: row.event_name,
+                event_date: toLocalISOString(row.event_date) ?? undefined,
+                description: row.description ?? undefined,
+                image: row.image ?? undefined,
+                contact: row.contact ?? undefined
+            }
+        } as unknown as EnrichedEventSignup;
+    } catch (error: unknown) {
+        safeConsoleError('[event-db.utils.ts][fetchEventSignupByTokenDb] Failed to fetch event signup by token:', error);
+        return null;
+    }
+}
