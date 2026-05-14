@@ -5,8 +5,8 @@ import Image from 'next/image';
 
 const IMAGES = [
     { src: '/img/Intro-2-2025.jpg', alt: 'Introductie Sfeer' },
-    { src: '/img/intro-3-2025.jpg', alt: 'Introductie Sfeer' },
-    { src: '/img/intro-4-2025.jpg', alt: 'Introductie Sfeer' },
+    { src: '/img/Intro-3-2025.jpg', alt: 'Introductie Sfeer' },
+    { src: '/img/Intro-4-2025.jpg', alt: 'Introductie Sfeer' },
     { src: '/img/Intro2025.jpg', alt: 'Salve Mundi Logo' },
 ];
 

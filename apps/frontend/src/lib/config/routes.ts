@@ -28,6 +28,7 @@ export const PUBLIC_ROUTES: string[] = [
     ROUTES.TRIP,
     '/commissies/oud-besturen',
     '/api/assets',
+    '/map',
     '/404'
 ];
 

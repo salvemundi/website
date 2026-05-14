@@ -215,7 +215,7 @@ async function proxy(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/((?!_next/static|_next/image|fonts|img|favicon.ico|robots.txt|.well-known|sw.js|manifest.json|manifest.webmanifest|workbox-|logo.svg|icons/|api/assets|api/auth).*)']
+    matcher: ['/((?!_next/static|_next/image|fonts|map|img|favicon.ico|robots.txt|.well-known|sw.js|manifest.json|manifest.webmanifest|workbox-|logo.svg|icons/|api/assets|api/auth).*)']
 };
 
 export { proxy };
