@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import Image from 'next/image';
 import { Users2 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -33,6 +33,20 @@ interface ProfielHeaderProps {
 }
 
 export default function ProfielHeader({ user = {}, membershipStatus = { text: '', color: '', textColor: '' } }: ProfielHeaderProps) {
+    const displayName = useMemo(() => {
+        const isCommitteeMember = Array.isArray(user.committees) && user.committees.length > 0;
+        
+        if (isCommitteeMember) {
+            // 1 in 500 chance
+            const random = Math.floor(Math.random() * 500);
+            if (random === 0) {
+                return "Vouw een Bak!";
+            }
+        }
+        
+        return user.name || "Niet ingesteld";
+    }, [user.name, user.committees]);
+
     return (
         <Tile className="h-fit">
             <div className="flex flex-col gap-6 items-center text-center">
@@ -85,7 +99,7 @@ export default function ProfielHeader({ user = {}, membershipStatus = { text: ''
 
                 <div className="min-w-0 w-full">
                     <h2 className="text-xl sm:text-2xl font-extrabold text-[var(--color-purple-700)] dark:text-white break-words">
-                        {user.name || "Niet ingesteld"}
+                        {displayName}
                     </h2>
 
                     <div className="mt-4 flex flex-wrap justify-center">
