@@ -4,8 +4,10 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 const IMAGES = [
-    { src: '/img/backgrounds/Kroto2025.jpg', alt: 'Introductie Sfeer' },
-    { src: '/img/newlogo.svg', alt: 'Salve Mundi Logo' },
+    { src: '/img/Intro-2-2025.jpg', alt: 'Introductie Sfeer' },
+    { src: '/img/intro-3-2025.jpg', alt: 'Introductie Sfeer' },
+    { src: '/img/intro-4-2025.jpg', alt: 'Introductie Sfeer' },
+    { src: '/img/Intro2025.jpg', alt: 'Salve Mundi Logo' },
 ];
 
 export const IntroLightboxIsland = () => {
