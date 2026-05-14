@@ -99,7 +99,7 @@ export default async function RootLayout({
                         __html: `(function(){try{if(localStorage.theme==='light'){document.documentElement.classList.remove('dark')}}catch(error){}})()`
                     }}
                 />
-                <link rel="preload" as="image" href="/img/newlogo.png" />
+                <link rel="preload" as="image" href="/img/newlogo.svg" />
             </head>
             <body className={`${poppins.variable} antialiased flex flex-col min-h-screen`}>
                 <ImpersonationWrapper impersonation={impersonation} />
