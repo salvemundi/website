@@ -48,20 +48,11 @@ export const metadata: Metadata = {
         siteName: 'SV Salve Mundi',
         title: 'SV Salve Mundi | Studievereniging Fontys ICT',
         description: 'SV Salve Mundi is de studievereniging voor Fontys ICT in Eindhoven. Ontdek onze activiteiten, commissies en word lid!',
-        images: [
-            {
-                url: '/img/newlogo.png',
-                width: 1200,
-                height: 630,
-                alt: 'SV Salve Mundi Logo'
-            },
-        ]
     },
     twitter: {
         card: 'summary_large_image',
         title: 'SV Salve Mundi | Studievereniging Fontys ICT',
         description: 'De officiële studievereniging van Fontys ICT Eindhoven.',
-        images: ['/img/newlogo.png']
     },
     icons: {
         icon: [
