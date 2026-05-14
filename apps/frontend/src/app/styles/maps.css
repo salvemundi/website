@@ -155,11 +155,14 @@ html.dark .map-popup__avatar {
 }
 
 .samu-marker__dot--mine {
-    background: var(--sticker-mine);
+    background: #f59e0b;
 }
 
 .samu-marker--mine .samu-marker__img {
-    box-shadow: 0 10px 22px rgba(37, 99, 235, 0.22);
+    border-color: #f59e0b;
+    box-shadow:
+        0 0 0 4px rgba(245, 158, 11, 0.18),
+        0 10px 22px rgba(245, 158, 11, 0.28);
 }
 
 .samu-marker--selected {
