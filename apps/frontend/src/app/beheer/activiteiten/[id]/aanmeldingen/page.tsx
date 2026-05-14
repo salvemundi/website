@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import ActiviteitAanmeldingenIsland, { type Signup, type AdminEvent } from '@/components/islands/admin/activities/ActiviteitAanmeldingenIsland';
 import {
     getActivityByIdInternal,
@@ -77,6 +78,11 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
                 backHref={`/beheer/activiteiten`}
                 actions={
                     <div className="flex items-center gap-4">
+                        <Link href={`/beheer/activiteiten/${id}/scanner`} className="hidden md:inline-block">
+                            <button className="h-10 px-4 rounded-xl bg-[var(--theme-purple)] text-white font-bold flex items-center gap-2 hover:scale-105 transition-all shadow-lg shadow-[var(--theme-purple)]/20 text-sm">
+                                Scanner
+                            </button>
+                        </Link>
                         <div className="hidden md:flex items-center gap-4 bg-[var(--beheer-card-soft)] px-4 py-2 rounded-2xl border border-[var(--beheer-border)]/50 shadow-sm">
                             <div className="flex flex-col items-center px-2">
                                 <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1">Totaal</span>
