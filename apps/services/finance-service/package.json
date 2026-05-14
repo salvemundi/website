@@ -10,13 +10,13 @@
         "type-check": "tsc --noEmit"
     },
     "dependencies": {
-        "@mollie/api-client": "^4.0.1",
         "@directus/sdk": "^21.1.0",
+        "@mollie/api-client": "^4.0.1",
         "@salvemundi/validations": "workspace:*",
-        "fastify": "5.1.0",
-        "fastify-plugin": "^5.1.0",
-        "pg": "^8.19.0",
-        "ioredis": "^5.6.0"
+        "fastify": "5.2.1",
+        "fastify-plugin": "^5.0.1",
+        "ioredis": "^5.6.0",
+        "pg": "^8.19.0"
     },
     "devDependencies": {
         "@types/node": "^22.0.0",
