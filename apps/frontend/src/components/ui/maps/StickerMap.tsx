@@ -21,6 +21,7 @@ interface StickerMapProps {
     filterUserId?: string;
     filterUser?: string;
     height?: string;
+    stretchToContainer?: boolean;
     zoom?: number;
     center?: [number, number];
 }
@@ -34,6 +35,7 @@ export default function StickerMap({
     filterUserId,
     filterUser,
     height = '600px',
+    stretchToContainer = false,
     zoom = 2,
     center = [52.1326, 5.2913]
 }: StickerMapProps) {
@@ -116,11 +118,13 @@ export default function StickerMap({
     return (
         <div
             className="rounded-[var(--radius-2xl)] overflow-hidden shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)]/30 w-full relative"
-            style={{ height: 'min(75vh, var(--map-height, 600px))' }}
+            style={{ height: stretchToContainer ? '100%' : 'min(75vh, var(--map-height, 600px))' }}
         >
             <style jsx>{`
                 div { --map-height: ${height}; }
-                @media (max-width: 768px) { div { --map-height: 450px; } }
+                @media (max-width: 768px) {
+                    div { --map-height: calc(100dvh - 4.5rem); }
+                }
             `}</style>
 
             {mapStyleObj ? (
