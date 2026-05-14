@@ -288,6 +288,8 @@ export default function StickerMapIsland({
                 setFormData={setFormData}
                 handleImageChange={handleImageChange}
                 imagePreview={imagePreview}
+                selectedLocation={selectedLocation}
+                setSelectedLocation={setSelectedLocation}
             />
             <AdminToast toast={toast} onClose={hideToast} />
         </div>
