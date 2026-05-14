@@ -1,7 +1,6 @@
 import React from 'react';
 import { MapPin, User, Mail, CalendarClock } from 'lucide-react';
-import { SafeHtml } from '@/components/ui/security/SafeHtml';
-import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
+import { SafeMarkdown } from '@/components/ui/security/SafeMarkdown'; import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 import { type Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { buildCommitteeEmail, formatDutchDate, formatTime } from '@/shared/lib/activity-utils';
 import MediaAsset from '@/components/ui/media/MediaAsset';
@@ -9,13 +8,13 @@ import MediaAsset from '@/components/ui/media/MediaAsset';
 interface ActivityDetailIslandProps {
     activity?: Activiteit;
     isLoggedIn?: boolean;
-    children?: React.ReactNode; // For EventSignupIsland
+    children?: React.ReactNode;
 }
 
 export default function ActivityDetailIsland({ activity, isLoggedIn = false, children }: ActivityDetailIslandProps) {
 
-    const committeeEmail = activity?.contact?.includes('@') 
-        ? activity.contact 
+    const committeeEmail = activity?.contact?.includes('@')
+        ? activity.contact
         : activity ? buildCommitteeEmail(activity.committee_name) : null;
 
     const startTime = activity ? formatTime(activity.event_time) : null;
@@ -37,7 +36,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                         />
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-main)] via-[var(--bg-main)]/40 to-transparent" />
-                    
+
                     <div className="absolute inset-x-0 bottom-0 max-w-7xl mx-auto px-4 pb-12">
                         <div className="max-w-3xl space-y-4">
                             <span className="inline-block px-4 py-1.5 rounded-full bg-[var(--theme-purple)] text-white text-[11px] font-black uppercase tracking-widest mb-4 shadow-xl border border-white/10">
@@ -63,7 +62,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
             {/* Content Grid Area */}
             <main className="w-full max-w-7xl mx-auto px-4 py-8 md:py-12">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                    
+
                     {/* Left Column: Signup Island (Inject via children) */}
                     <div className="order-1 lg:order-1 h-full">
                         {children}
@@ -148,8 +147,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                                 </h2>
                             </div>
                             <div className="prose prose-purple max-w-none text-[var(--text-main)] font-medium leading-relaxed">
-                                <SafeHtml html={activity?.beschrijving || 'Geen beschrijving beschikbaar.'} />
-                                {isLoggedIn && activity?.description_logged_in && (
+                                <SafeMarkdown content={activity?.beschrijving || 'Geen beschrijving beschikbaar.'} />                                {isLoggedIn && activity?.description_logged_in && (
                                     <>
                                         <hr className="my-8 border-[var(--border-color)]/50" />
                                         <div className="flex items-center gap-3 mb-6">
@@ -158,7 +156,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                                                 Extra Informatie (alleen ingelogd)
                                             </h3>
                                         </div>
-                                        <SafeHtml html={activity.description_logged_in} />
+                                        <SafeMarkdown content={activity.description_logged_in} />
                                     </>
                                 )}
                             </div>

@@ -1,20 +1,7 @@
-/* ==========================================================================
-   GLOBAL STYLES ENTRY POINT (globals.css)
-   V7.9 Standard · Tailwind 4 CSS-First · No tailwind.config.js
-
-   This file is intentionally minimal: it owns @theme and orchestrates imports.
-   Add CSS to the appropriate domain file in ./styles/, not here.
-   ========================================================================== */
-
-/* 1. Tailwind 4 Core */
 @import "tailwindcss";
 
-/* Scan all frontend source files for utility usage */
 @source "../../src";
 
-/* Class-based dark mode — dark: utilities activeren alleen via .dark op <html>.
-   Zonder dit gebruikt Tailwind 4 standaard @media (prefers-color-scheme: dark),
-   waardoor dark:text-white lekt naar light mode op systemen met OS-dark voorkeur. */
 @custom-variant dark (&:where(.dark, .dark *));
 
 @import "./styles/theme.css";
@@ -25,6 +12,7 @@
 @import "./styles/vendor.css";
 @import "./styles/maps.css";
 @import "./styles/sponsors.css";
+@plugin "@tailwindcss/typography";
 /* Infinite-scroll sponsor banner            */
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -136,22 +124,46 @@
 }
 
 @utility admin-container {
-    margin-left: auto;
-    margin-right: auto;
-    width: 100%;
-    max-width: var(--max-w-app);
-    padding-left: var(--spacing-4);
-    @media (min-width: 1024px) { padding-left: var(--spacing-6); }
-    padding-right: var(--spacing-4);
-    @media (min-width: 1024px) { padding-right: var(--spacing-6); }
+   margin-left: auto;
+   margin-right: auto;
+   width: 100%;
+   max-width: var(--max-w-app);
+   padding-left: var(--spacing-4);
+
+   @media (min-width: 1024px) {
+      padding-left: var(--spacing-6);
+   }
+
+   padding-right: var(--spacing-4);
+
+   @media (min-width: 1024px) {
+      padding-right: var(--spacing-6);
+   }
 }
 
-@utility pt-safe { padding-top: env(safe-area-inset-top, 0px); }
-@utility pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
-@utility pl-safe { padding-left: env(safe-area-inset-left, 0px); }
-@utility pr-safe { padding-right: env(safe-area-inset-right, 0px); }
-@utility mt-safe { margin-top: env(safe-area-inset-top, 0px); }
-@utility mb-safe { margin-bottom: env(safe-area-inset-bottom, 0px); }
+@utility pt-safe {
+   padding-top: env(safe-area-inset-top, 0px);
+}
+
+@utility pb-safe {
+   padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@utility pl-safe {
+   padding-left: env(safe-area-inset-left, 0px);
+}
+
+@utility pr-safe {
+   padding-right: env(safe-area-inset-right, 0px);
+}
+
+@utility mt-safe {
+   margin-top: env(safe-area-inset-top, 0px);
+}
+
+@utility mb-safe {
+   margin-bottom: env(safe-area-inset-bottom, 0px);
+}
 
 /* Stabilize Autofill - Import at the absolute bottom to ensure it overrides defaults */
 @import "./styles/autofill.css";

@@ -38,22 +38,42 @@ export async function getEnrichedSession(): Promise<{ user: EnrichedUser; sessio
             return null;
         }
 
-        const h = await headers();
+        let h;
+        try {
+            h = await headers();
+        } catch (e) {
+            safeConsoleError('[AuthUtils][getEnrichedSession] Failed to call headers():', e);
+            return null;
+        }
+
         if (!h) {
-            safeConsoleError('[AuthUtils] Headers are undefined', undefined);
+            return null;
+        }
+
+        // Clone headers to avoid issues with ReadonlyHeaders in some environments
+        const safeHeaders = new Headers();
+        try {
+            h.forEach((v, k) => safeHeaders.set(k, v));
+        } catch (e) {
+            safeConsoleError('[AuthUtils][getEnrichedSession] Failed to iterate headers:', e);
             return null;
         }
 
         const session = await auth.api.getSession({
-            headers: h
+            headers: safeHeaders
         }) as any;
+
+        if (session && typeof session === 'object' && 'user' in session && 'session' in session) {
+            return session as { user: EnrichedUser; session: Session };
+        }
 
         if (session && typeof session === 'object' && 'response' in session) {
             return session.response as { user: EnrichedUser; session: Session };
         }
-        return session as { user: EnrichedUser; session: Session } | null;
+
+        return null;
     } catch (error) {
-        safeConsoleError('[AuthUtils] Error in getEnrichedSession:', error);
+        safeConsoleError('[AuthUtils][getEnrichedSession] Error in getEnrichedSession:', error);
         return null;
     }
 }
