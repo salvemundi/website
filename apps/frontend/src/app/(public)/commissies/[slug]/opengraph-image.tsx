@@ -1,8 +1,8 @@
-// OG-image route voor de commissie detailpagina
+// OG-image route voor de commissie detailpagina (Refactored)
 import { ImageResponse } from 'next/og';
 import { getCommitteeBySlug } from '@/server/actions/public/committees.actions';
 
-// runtime switched to nodejs for database compatibility
+export const runtime = 'nodejs';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -11,45 +11,108 @@ export default async function Image({ params }: { params: Promise<{ slug: string
     const committee = await getCommitteeBySlug(slug);
     
     const title = committee?.name || 'Commissie';
-    const desc = committee?.description || 'Ontdek wat deze commissie doet voor Salve Mundi.';
-    const description = desc.length > 100 ? desc.substring(0, 100) + '...' : desc;
+    const description = committee?.description || 'Ontdek wat deze commissie doet voor Salve Mundi.';
 
     return new ImageResponse(
         (
             <div
                 style={{
-                    width: '100%',
                     height: '100%',
+                    width: '100%',
                     display: 'flex',
-                    flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    background: 'linear-gradient(135deg, #5e2b52 0%, #a4539b 100%)',
-                    color: '#ffffff',
+                    backgroundColor: '#4a2344', // Brand purple frame
                     fontFamily: 'sans-serif',
-                    padding: '60px',
-                    position: 'relative' }}
+                }}
             >
-                {/* Logo in de hoek */}
-                <div style={{ position: 'absolute', top: 40, left: 40, display: 'flex', alignItems: 'center' }}>
-                    <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: 2 }}>SALVE MUNDI</div>
-                </div>
+                {/* Foreground Card */}
+                <div style={{
+                    width: '94%',
+                    height: '88%',
+                    backgroundColor: 'white',
+                    borderRadius: 40,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden',
+                    position: 'relative',
+                    boxShadow: '0 20px 50px rgba(0,0,0,0.2)',
+                }}>
+                    {/* Top Half - Image Placeholder with accent overlay */}
+                    <div style={{
+                        height: '55%',
+                        width: '100%',
+                        backgroundColor: '#f1f3f5',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        position: 'relative',
+                    }}>
+                        {/* Dynamic Image or Icon */}
+                        <div style={{ fontSize: 120 }}>👥</div>
+                        
+                        {/* Soft overlay gradient */}
+                        <div style={{
+                            position: 'absolute',
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            height: '40%',
+                            background: 'linear-gradient(to bottom, transparent, white)',
+                        }}></div>
+                    </div>
 
-                <p style={{ fontSize: 24, opacity: 0.75, marginBottom: 16, letterSpacing: 4 }}>
-                    COMMISSIE
-                </p>
-                <h1 style={{ fontSize: 84, fontWeight: 800, margin: 0, textAlign: 'center', lineHeight: 1.1 }}>
-                    {title}
-                </h1>
-                <p style={{ fontSize: 32, opacity: 0.85, marginTop: 24, textAlign: 'center', maxWidth: 900 }}>
-                    {description}
-                </p>
-                
-                <div style={{ position: 'absolute', bottom: 40, display: 'flex', alignItems: 'center', opacity: 0.6 }}>
-                    <p style={{ fontSize: 20 }}>salvemundi.nl</p>
+                    {/* Bottom Half */}
+                    <div style={{
+                        height: '45%',
+                        width: '100%',
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'flex-start',
+                        justifyContent: 'space-between',
+                        padding: '20px 60px 40px 60px',
+                    }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', maxWidth: '70%' }}>
+                            <p style={{ fontSize: 22, fontWeight: 700, color: '#4a2344', textTransform: 'uppercase', letterSpacing: 4, marginBottom: 12 }}>
+                                COMMISSIE
+                            </p>
+                            <h1 style={{ fontSize: 84, fontWeight: 900, color: '#212529', margin: 0, lineHeight: 1.0 }}>
+                                {title}
+                            </h1>
+                            <p style={{ fontSize: 24, color: '#495057', marginTop: 16, lineHeight: 1.4, display: 'flex' }}>
+                                {description.length > 120 ? description.substring(0, 120) + '...' : description}
+                            </p>
+                        </div>
+
+                        {/* Social Proof / Badge */}
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'flex-end',
+                            marginTop: 20,
+                        }}>
+                             <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                backgroundColor: '#f8f9fa',
+                                padding: '14px 24px',
+                                borderRadius: 16,
+                                border: '1px solid #e9ecef',
+                            }}>
+                                <span style={{ fontSize: 24, fontWeight: 800, color: '#4a2344' }}>👤 Actieve Leden</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Branding */}
+                    <div style={{ position: 'absolute', top: 30, left: 30, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ width: 32, height: 32, backgroundColor: '#4a2344', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <span style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>S</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         ),
-        { ...size },
+        { ...size }
     );
 }
