@@ -66,7 +66,7 @@ export default async function Image() {
                 </div>
 
                 {/* Subtle watermark bottom-right */}
-                <div style={{ position: 'absolute', bottom: 40, right: 60, opacity: 0.05 }}>
+                <div style={{ position: 'absolute', bottom: 40, right: 60, opacity: 0.05, display: 'flex' }}>
                     <div style={{ width: 120, height: 120, backgroundColor: '#4a2344', borderRadius: 24 }}></div>
                 </div>
             </div>
