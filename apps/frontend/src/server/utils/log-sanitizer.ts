@@ -7,9 +7,12 @@ export function sanitizePayload(payload: unknown): unknown {
         return payload.map(sanitizePayload);
     }
 
+    const isError = payload instanceof Error;
     const sanitized: Record<string, unknown> = Object.create(null);
+    const keys = isError ? ['message', 'stack', ...Object.keys(payload)] : Object.keys(payload);
 
-    for (const [key, value] of Object.entries(payload as Record<string, unknown>)) {
+    for (const key of keys) {
+        const value = (payload as any)[key];
         const lowerKey = key.toLowerCase();
         let finalValue: unknown;
 

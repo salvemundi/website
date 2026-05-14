@@ -42,25 +42,14 @@ export async function getEnrichedSession(): Promise<{ user: EnrichedUser; sessio
         try {
             h = await headers();
         } catch (e) {
-            safeConsoleError('[AuthUtils][getEnrichedSession] Failed to call headers():', e);
+            // Expected outside of request context
             return null;
         }
 
-        if (!h) {
-            return null;
-        }
-
-        // Clone headers to avoid issues with ReadonlyHeaders in some environments
-        const safeHeaders = new Headers();
-        try {
-            h.forEach((v, k) => safeHeaders.set(k, v));
-        } catch (e) {
-            safeConsoleError('[AuthUtils][getEnrichedSession] Failed to iterate headers:', e);
-            return null;
-        }
+        if (!h) return null;
 
         const session = await auth.api.getSession({
-            headers: safeHeaders
+            headers: h
         }) as any;
 
         if (session && typeof session === 'object' && 'user' in session && 'session' in session) {
@@ -73,7 +62,12 @@ export async function getEnrichedSession(): Promise<{ user: EnrichedUser; sessio
 
         return null;
     } catch (error) {
-        safeConsoleError('[AuthUtils][getEnrichedSession] Error in getEnrichedSession:', error);
+        const stack = error instanceof Error ? error.stack : new Error().stack;
+        safeConsoleError('[AuthUtils][getEnrichedSession] Caught Error:', {
+            message: error instanceof Error ? error.message : String(error),
+            stack,
+            errorObject: error
+        });
         return null;
     }
 }
