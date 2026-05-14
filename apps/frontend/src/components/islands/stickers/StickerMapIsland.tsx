@@ -188,7 +188,7 @@ export default function StickerMapIsland({
                 />
 
                 {/* Floating Controls */}
-                <div className="absolute inset-x-0 top-4 z-[120] px-4 pointer-events-none md:inset-auto md:top-4 md:left-4 md:right-auto md:w-80 md:px-0 md:bottom-auto">
+                <div className="absolute inset-x-0 top-4 z-[90] px-4 pointer-events-none md:inset-auto md:top-4 md:left-4 md:right-auto md:w-80 md:px-0 md:bottom-auto">
                     <div className="flex items-center gap-3 md:hidden pointer-events-auto">
                         <button
                             type="button"
@@ -223,7 +223,7 @@ export default function StickerMapIsland({
                     </div>
                 </div>
 
-                <div className="absolute inset-x-4 bottom-4 z-[120] md:hidden pointer-events-none">
+                <div className="absolute inset-x-4 bottom-4 z-[90] md:hidden pointer-events-none">
                     <div className="pointer-events-auto w-full">
                         <StickerActionPanel
                             user={user}

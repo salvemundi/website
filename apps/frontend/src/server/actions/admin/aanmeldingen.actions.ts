@@ -4,6 +4,7 @@ import { getSystemDirectus } from "@/lib/directus";
 import { getAuthorizedUser, verifyActivityBOLA } from "@/server/actions/events/activiteiten/auth-check";
 import { logAdminAction } from '@/server/actions/infrastructure/audit.actions';
 import { deleteEventSignupDb, updateEventSignupDb } from "@/server/internal/event-db.utils";
+import { fetchEventSignupByTokenDb } from "@/server/internal/event-db.utils";
 import { safeConsoleError } from '@/server/utils/logger';
 import {
     createItem,
@@ -217,5 +218,24 @@ export async function toggleCheckInAction(signupId: number, eventId: number, che
     } catch {
 
         return { success: false, error: "Failed to update check-in" };
+    }
+}
+
+export async function findSignupByTokenAction(token: string) {
+    if (!token || typeof token !== 'string') {
+        return { success: false, error: 'Ongeldige token' };
+    }
+
+    // Admin-only access
+    const session = await checkAdminAccess();
+    if (!session?.user) return { success: false, error: 'Unauthorized' };
+
+    try {
+        const signup = await fetchEventSignupByTokenDb(token);
+        if (!signup) return { success: false, error: 'Aanmelding niet gevonden' };
+
+        return { success: true, data: signup };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'Lookup failed' };
     }
 }
