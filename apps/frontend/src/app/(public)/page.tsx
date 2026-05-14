@@ -8,6 +8,7 @@ import { SponsorsSection } from '@/components/ui/layout/SponsorsSection';
 import { PwaInstallIsland } from '@/components/islands/layout/PwaInstallIsland';
 
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
+import { HomePreloads } from '@/components/ui/layout/HomePreloads';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -22,6 +23,7 @@ import { safeConsoleError } from '@/server/utils/logger';
 export default async function HomePage() {
     return (
         <PublicPageShell>
+            <HomePreloads />
             <HomeContent />
         </PublicPageShell>
     );

@@ -2,6 +2,11 @@ import { z } from 'zod';
 import { phoneNumberSchema } from './shared.zod.js';
 import { userBasicSchema } from './members.zod.js';
 
+// Regex voor NL & Internationale telefoonnummers. 
+// Zoekt naar (0, +31, 0031) gevolgd door ~9 cijfers, ongeacht spaties of streepjes.
+const phoneRegex = /(?:(?:\+|00)31|0)\s*[1-9](?:[\s-]*\d){8,}/;
+const noPhoneMessage = "Om privacyredenen (AVG) mogen er geen telefoonnummers in de tekst staan.";
+
 export const activitySchema = z.object({
     id: z.union([z.string(), z.number()]),
     titel: z.string(),
@@ -59,8 +64,14 @@ export const attendanceSchema = z.object({
 
 export const activityAdminSchema = z.object({
     name: z.string().min(1, 'Naam is verplicht'),
-    description: z.string().min(1, 'Beschrijving is verplicht'),
-    description_logged_in: z.string().nullable().optional().transform(v => v === '' ? null : v),
+
+    description: z.string()
+        .min(1, 'Beschrijving is verplicht')
+        .refine((val) => !phoneRegex.test(val), { message: noPhoneMessage }),
+
+    description_logged_in: z.string().nullable().optional().transform(v => v === '' ? null : v)
+        .refine((val) => !val || !phoneRegex.test(val), { message: noPhoneMessage }),
+
     event_date: z.string().min(1, 'Startdatum is verplicht'),
     event_time: z.string().nullable().optional().transform(v => v === '' ? null : v),
     event_date_end: z.string().nullable().optional().transform(v => v === '' ? null : v),
