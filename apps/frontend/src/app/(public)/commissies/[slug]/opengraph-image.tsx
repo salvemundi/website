@@ -2,7 +2,7 @@
 import { ImageResponse } from 'next/og';
 import { getCommitteeBySlug } from '@/server/actions/public/committees.actions';
 
-export const runtime = 'edge';
+// runtime switched to nodejs for database compatibility
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -10,8 +10,9 @@ export default async function Image({ params }: { params: Promise<{ slug: string
     const { slug } = await params;
     const committee = await getCommitteeBySlug(slug);
     
-    const title = committee?.naam || 'Commissie';
-    const description = committee?.omschrijving?.substring(0, 100) + (committee?.omschrijving?.length > 100 ? '...' : '') || 'Ontdek wat deze commissie doet voor Salve Mundi.';
+    const title = committee?.name || 'Commissie';
+    const desc = committee?.description || 'Ontdek wat deze commissie doet voor Salve Mundi.';
+    const description = desc.length > 100 ? desc.substring(0, 100) + '...' : desc;
 
     return new ImageResponse(
         (

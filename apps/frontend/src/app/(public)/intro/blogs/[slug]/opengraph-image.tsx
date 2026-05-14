@@ -2,7 +2,7 @@
 import { ImageResponse } from 'next/og';
 import { getIntroBlogBySlug } from '@/server/actions/public/intro.actions';
 
-export const runtime = 'edge';
+// runtime switched to nodejs for database compatibility
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -11,7 +11,8 @@ export default async function Image({ params }: { params: Promise<{ slug: string
     const blog = await getIntroBlogBySlug(slug);
     
     const title = blog?.title || 'Blog';
-    const description = blog?.excerpt || 'Lees de nieuwste updates over de Salve Mundi introductie.';
+    const desc = blog?.excerpt || 'Lees de nieuwste updates over de Salve Mundi introductie.';
+    const description = desc.length > 100 ? desc.substring(0, 100) + '...' : desc;
 
     return new ImageResponse(
         (

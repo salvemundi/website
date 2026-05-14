@@ -2,7 +2,7 @@
 import { ImageResponse } from 'next/og';
 import { getActivityBySlug } from '@/server/actions/events/public-activiteit.actions';
 
-export const runtime = 'edge';
+// runtime switched to nodejs for database compatibility
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -11,7 +11,8 @@ export default async function Image({ params }: { params: Promise<{ id: string }
     const activity = await getActivityBySlug(id);
     
     const title = activity?.titel || 'Activiteit';
-    const description = activity?.beschrijving?.substring(0, 100) + (activity?.beschrijving?.length > 100 ? '...' : '') || 'Schrijf je in voor deze activiteit bij Salve Mundi.';
+    const desc = activity?.beschrijving || 'Schrijf je in voor deze activiteit bij Salve Mundi.';
+    const description = desc.length > 100 ? desc.substring(0, 100) + '...' : desc;
 
     return new ImageResponse(
         (

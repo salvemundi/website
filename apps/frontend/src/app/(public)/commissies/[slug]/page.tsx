@@ -16,8 +16,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     }
 
     return {
-        title: `${committee.naam} | SV Salve Mundi`,
-        description: committee.omschrijving || 'Ontdek deze commissie en wat zij doen voor de vereniging.'
+        title: `${committee.name} | SV Salve Mundi`,
+        description: committee.description || 'Ontdek deze commissie en wat zij doen voor de vereniging.'
     };
 }
 
