@@ -37,33 +37,50 @@ export async function beforeHandler(ctx: AuthContext) {
 }
 
 export async function afterHandler(ctx: AuthContext, pool: Pool) {
-    const returned = ctx.context?.returned || (ctx as { response?: unknown }).response;
-    try {
-        let sessionData: unknown = null;
+    // 1. Extract the returned data (could be in ctx.context.returned or ctx.response)
+    const returned = ctx.context?.returned || (ctx as any).response || (ctx as any).returned;
 
-        if (returned && typeof returned === 'object' && 'clone' in returned) {
+    try {
+        let sessionData: any = null;
+
+        // 2. Safely parse sessionData from Response or plain object
+        if (returned && typeof returned === 'object' && 'clone' in returned && typeof (returned as any).clone === 'function') {
             try {
                 sessionData = await (returned as Response).clone().json();
             } catch (error) {
-                safeConsoleError(`[redis-session/handlers.ts][afterHandler] Error cloning response:`, error);
-                return returned;
+                // Return original data in expected format if parsing fails
+                return {
+                    response: returned?.response || returned || null,
+                    headers: returned?.headers || null
+                };
             }
         } else {
             sessionData = returned;
         }
 
+        // 3. Normalize sessionData (Better Auth sometimes wraps it in { response: ... })
         if (sessionData && typeof sessionData === 'object' && 'response' in sessionData) {
-            sessionData = (sessionData as { response: ExtendedSession }).response;
+            sessionData = sessionData.response;
         }
 
-        if (!sessionData || typeof sessionData !== 'object' || !('user' in sessionData) || !sessionData.user) {
-            return returned;
+        // 4. Basic validation - if no user, we can't do anything
+        if (!sessionData || typeof sessionData !== 'object' || !sessionData.user) {
+            return {
+                response: returned?.response || returned || null,
+                headers: returned?.headers || null
+            };
         }
 
         const sessionWithUser = sessionData as ExtendedSession;
         const userId = sessionWithUser.user?.id;
-        if (!userId) return returned;
+        if (!userId) {
+            return {
+                response: returned?.response || returned || null,
+                headers: returned?.headers || null
+            };
+        }
 
+        // 5. Enrich with committees and permissions
         const { rows: realCommittees } = await pool.query(
             `SELECT c.id, c.name, c.azure_group_id, m.is_leader 
              FROM committee_members m 
@@ -75,48 +92,78 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
         sessionWithUser.user.committees = realCommittees;
         Object.assign(sessionWithUser.user, getPermissions(realCommittees));
 
+        // 6. Ensure name is set
         if (!sessionWithUser.user.name && (sessionWithUser.user.first_name || sessionWithUser.user.last_name)) {
             sessionWithUser.user.name = `${sessionWithUser.user.first_name || ''} ${sessionWithUser.user.last_name || ''}`.trim();
         }
 
+        // 7. Handle impersonation
         const requestHeaders = extractHeadersSafely(ctx);
-        if (!requestHeaders) {
-            return { response: sessionData };
-        }
+        if (requestHeaders) {
+            const cookies = requestHeaders.get("cookie") || "";
+            const testToken = cookies.split("directus_test_token=")?.[1]?.split(";")?.[0];
+            const isAdmin = sessionWithUser.user.isAdmin || sessionWithUser.user.isICT;
 
-        const cookies = requestHeaders.get("cookie") || "";
-        const testToken = cookies.split("directus_test_token=")?.[1]?.split(";")?.[0];
-        const isAdmin = sessionWithUser.user.isAdmin || sessionWithUser.user.isICT;
+            if (testToken && isAdmin) {
+                const targetUser = await getImpersonatedUser(testToken, pool);
+                if (targetUser) {
+                    sessionWithUser.impersonatedBy = {
+                        id: sessionWithUser.user.id,
+                        name: sessionWithUser.user.name || sessionWithUser.user.email,
+                        email: sessionWithUser.user.email,
+                        isNormallyAdmin: true
+                    };
+                    sessionWithUser.user = { ...targetUser, emailVerified: true, createdAt: new Date(), updatedAt: new Date() };
+                }
+            }
 
-        if (testToken && isAdmin) {
-            const targetUser = await getImpersonatedUser(testToken, pool);
-            if (targetUser) {
-                sessionWithUser.impersonatedBy = {
-                    id: sessionWithUser.user.id,
-                    name: sessionWithUser.user.name || sessionWithUser.user.email,
-                    email: sessionWithUser.user.email,
-                    isNormallyAdmin: true
-                };
-                sessionWithUser.user = { ...targetUser, emailVerified: true, createdAt: new Date(), updatedAt: new Date() };
+            // 8. Cache in Redis
+            const token = requestHeaders.get("authorization")?.split(" ")[1] ||
+                requestHeaders.get("cookie")?.split("better-auth.session-token=")?.[1]?.split(";")?.[0] ||
+                requestHeaders.get("cookie")?.split("better-auth.session_token=")?.[1]?.split(";")?.[0];
+
+            if (token && !sessionWithUser.impersonatedBy) {
+                try {
+                    const redis = await getRedis();
+                    await redis.set(`session:${token}`, JSON.stringify(sessionWithUser), 'EX', 300);
+                } catch (error) {
+                    safeConsoleError(`[afterHandler] Redis Cache Error:`, error);
+                }
             }
         }
 
-        const token = requestHeaders.get("authorization")?.split(" ")[1] ||
-            requestHeaders.get("cookie")?.split("better-auth.session-token=")?.[1]?.split(";")?.[0] ||
-            requestHeaders.get("cookie")?.split("better-auth.session_token=")?.[1]?.split(";")?.[0];
+        // 9. Return the enriched data in the format Better Auth expects: { response, headers }
+        const isResponse = returned && typeof returned === 'object' && 
+                          (returned instanceof Response || 
+                           (typeof (returned as any).clone === 'function' && 'headers' in returned));
 
-        if (token && !sessionWithUser.impersonatedBy) {
-            try {
-                const redis = await getRedis();
-                await redis.set(`session:${token}`, JSON.stringify(sessionWithUser), 'EX', 300);
-            } catch (error) {
-                safeConsoleError(`[redis-session/handlers.ts][afterHandler] Error while caching session:`, error);
-            }
+        if (isResponse) {
+            const newResponse = new Response(JSON.stringify(sessionWithUser), {
+                status: (returned as any).status || 200,
+                statusText: (returned as any).statusText || 'OK',
+                headers: (returned as any).headers
+            });
+            return {
+                response: newResponse,
+                headers: newResponse.headers
+            };
         }
 
-        return { response: sessionWithUser };
+        const originalHeaders = (returned && typeof returned === 'object' && 'headers' in returned) 
+            ? (returned as any).headers 
+            : null;
+
+        return {
+            response: sessionWithUser,
+            headers: originalHeaders
+        };
+
     } catch (error) {
-        safeConsoleError(`[redis-session/handlers.ts][afterHandler] Error in afterHandler:`, error);
-        return returned;
+        safeConsoleError(`[redis-session/handlers.ts][afterHandler] Critical Error:`, error);
+        // Fallback to returning the original data in the expected structure if possible
+        return {
+            response: returned?.response || returned || null,
+            headers: returned?.headers || null
+        };
     }
 }
