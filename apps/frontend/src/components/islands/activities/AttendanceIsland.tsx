@@ -109,50 +109,93 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
 
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm">
-                    <p className="text-base font-bold text-[var(--text-muted)]">Totaal inschrijvingen</p>
-                    <p className="text-3xl font-black text-[var(--theme-purple)]">{stats.total}</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+                <div className="p-4 sm:p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm">
+                    <p className="text-sm sm:text-base font-bold text-[var(--text-muted)]">Totaal inschrijvingen</p>
+                    <p className="text-2xl sm:text-3xl font-black text-[var(--theme-purple)]">{stats.total}</p>
                 </div>
-                <div className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm">
-                    <p className="text-base font-bold text-[var(--text-muted)]">Aanwezig</p>
-                    <p className="text-3xl font-black text-green-600">{stats.checkedIn}</p>
+                <div className="p-4 sm:p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm">
+                    <p className="text-sm sm:text-base font-bold text-[var(--text-muted)]">Aanwezig</p>
+                    <p className="text-2xl sm:text-3xl font-black text-green-600">{stats.checkedIn}</p>
                 </div>
-                <div className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm">
-                    <p className="text-base font-bold text-[var(--text-muted)]">Nog verwacht</p>
-                    <p className="text-3xl font-black text-blue-600">{stats.total - stats.checkedIn}</p>
+                <div className="p-4 sm:p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm">
+                    <p className="text-sm sm:text-base font-bold text-[var(--text-muted)]">Nog verwacht</p>
+                    <p className="text-2xl sm:text-3xl font-black text-blue-600">{stats.total - stats.checkedIn}</p>
                 </div>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-4">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[var(--text-muted)]" />
+            <div className="flex flex-col gap-3 sm:gap-4">
+                <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-[var(--text-muted)]" />
                     <input
                         type="text"
                         placeholder="Zoek deelnemers..."
-                        className="w-full pl-10 pr-4 h-12 rounded-xl bg-[var(--bg-soft)] border-none focus:ring-2 focus:ring-[var(--theme-purple)]/20 font-medium text-base"
+                        className="w-full pl-9 sm:pl-10 pr-4 h-10 sm:h-12 rounded-xl bg-[var(--bg-soft)] border-none focus:ring-2 focus:ring-[var(--theme-purple)]/20 font-medium text-sm sm:text-base"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
                 </div>
                 <button
                     onClick={startScanner}
-                    className="h-12 px-6 rounded-xl bg-[var(--theme-purple)] text-white font-bold flex items-center gap-2 hover:scale-105 transition-all shadow-lg shadow-[var(--theme-purple)]/20 text-base"
+                    className="w-full sm:w-auto h-10 sm:h-12 px-4 sm:px-6 rounded-xl bg-[var(--theme-purple)] text-white font-bold flex items-center justify-center sm:justify-start gap-2 hover:scale-105 transition-all shadow-lg shadow-[var(--theme-purple)]/20 text-sm sm:text-base"
                 >
-                    <QrCode className="h-5 w-5" />
+                    <QrCode className="h-4 w-4 sm:h-5 sm:w-5" />
                     Scan QR
                 </button>
             </div>
 
             {scanning && (
-                <div className="fixed inset-0 z-50 bg-black/80 flex flex-col items-center justify-center p-4">
-                    <div id="reader" className="w-full max-w-md bg-white rounded-2xl overflow-hidden shadow-2xl" />
+                <div className="fixed inset-0 z-[9999] bg-black/80 flex flex-col items-center justify-center p-4 isolate">
+                    <div id="reader" className="scanner-reader w-full max-w-md bg-[var(--bg-card)] rounded-2xl overflow-hidden shadow-2xl" />
                     <button
                         onClick={() => setScanning(false)}
                         className="mt-6 px-8 py-3 rounded-full bg-white/20 text-white font-bold hover:bg-white/30 transition-all text-base"
                     >
                         Annuleren
                     </button>
+                    <style jsx global>{`
+                        .scanner-reader {
+                            color: var(--text-main);
+                        }
+
+                        .scanner-reader :is(p, span, label, small, h1, h2, h3, h4, h5, h6) {
+                            color: var(--text-main) !important;
+                        }
+
+                        .scanner-reader :is(button, select, input) {
+                            color: var(--text-main) !important;
+                            background: var(--bg-soft) !important;
+                            border-color: var(--border-color) !important;
+                        }
+
+                        .scanner-reader button:hover,
+                        .scanner-reader button:focus-visible {
+                            background: var(--bg-card) !important;
+                        }
+
+                        .scanner-reader #reader__dashboard,
+                        .scanner-reader #reader__dashboard_section {
+                            color: var(--text-main) !important;
+                        }
+
+                        .scanner-reader #reader__dashboard_section_csr,
+                        .scanner-reader #reader__dashboard_section_swaplink,
+                        .scanner-reader #reader__status_span {
+                            color: var(--text-main) !important;
+                        }
+
+                        .scanner-reader #reader__dashboard_section_csr select,
+                        .scanner-reader #reader__dashboard_section_csr button,
+                        .scanner-reader #reader__dashboard_section_swaplink {
+                            background: var(--bg-soft) !important;
+                            color: var(--text-main) !important;
+                            border: 1px solid var(--border-color) !important;
+                        }
+
+                        .scanner-reader #reader__scan_region {
+                            border-color: var(--border-color) !important;
+                        }
+                    `}</style>
                 </div>
             )}
 
@@ -165,52 +208,53 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
             )}
 
             <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] overflow-hidden shadow-xl">
-                <table className="w-full text-left">
-                    <thead className="bg-[var(--bg-soft)] border-b border-[var(--border-color)]">
-                        <tr>
-                            <th className="px-6 py-4 text-base font-black text-[var(--theme-purple)]/40">Deelnemer</th>
-                            <th className="px-6 py-4 text-base font-black text-[var(--theme-purple)]/40 hidden md:table-cell">E-mail</th>
-                            <th className="px-6 py-4 text-base font-black text-[var(--theme-purple)]/40">Status</th>
-                            <th className="px-6 py-4 text-base font-black text-[var(--theme-purple)]/40 text-right">Actie</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[var(--border-color)]">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left min-w-full">
+                        <thead className="bg-[var(--bg-soft)] border-b border-[var(--border-color)]">
+                            <tr>
+                                <th className="px-4 sm:px-6 py-4 text-sm sm:text-base font-black text-[var(--theme-purple)]/40">Deelnemer</th>
+                                <th className="px-4 sm:px-6 py-4 text-sm sm:text-base font-black text-[var(--theme-purple)]/40 hidden md:table-cell">E-mail</th>
+                                <th className="px-4 sm:px-6 py-4 text-sm sm:text-base font-black text-[var(--theme-purple)]/40">Status</th>
+                                <th className="px-4 sm:px-6 py-4 text-sm sm:text-base font-black text-[var(--theme-purple)]/40 text-right whitespace-nowrap">Actie</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[var(--border-color)]">
                         {loading ? (
                             <tr>
-                                <td colSpan={4} className="px-6 py-12 text-center text-[var(--text-muted)] text-base">
+                                <td colSpan={4} className="px-4 sm:px-6 py-12 text-center text-[var(--text-muted)] text-sm sm:text-base">
                                     <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
                                     Laden...
                                 </td>
                             </tr>
                         ) : filteredSignups.length === 0 ? (
                             <tr>
-                                <td colSpan={4} className="px-6 py-12 text-center text-[var(--text-muted)] italic text-base">Geen deelnemers gevonden</td>
+                                <td colSpan={4} className="px-4 sm:px-6 py-12 text-center text-[var(--text-muted)] italic text-sm sm:text-base">Geen deelnemers gevonden</td>
                             </tr>
                         ) : filteredSignups.map((s) => (
                             <tr key={s.id} className="hover:bg-[var(--bg-soft)] transition-colors">
-                                <td className="px-6 py-4">
-                                    <p className="font-bold text-[var(--theme-purple)]/80 text-base">{s.participant_name}</p>
-                                    <p className="text-sm text-[var(--text-muted)] md:hidden">{s.participant_email}</p>
+                                <td className="px-4 sm:px-6 py-4">
+                                    <p className="font-bold text-[var(--theme-purple)]/80 text-sm sm:text-base">{s.participant_name}</p>
+                                    <p className="text-xs sm:text-sm text-[var(--text-muted)] md:hidden">{s.participant_email}</p>
                                 </td>
-                                <td className="px-6 py-4 hidden md:table-cell text-base font-medium text-[var(--text-muted)]">
+                                <td className="px-4 sm:px-6 py-4 hidden md:table-cell text-sm sm:text-base font-medium text-[var(--text-muted)]">
                                     {s.participant_email}
                                 </td>
-                                <td className="px-6 py-4">
+                                <td className="px-4 sm:px-6 py-4">
                                     {s.checked_in ? (
-                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-50 text-green-700 text-sm font-bold ring-1 ring-inset ring-green-600/20">
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-50 text-green-700 text-xs sm:text-sm font-bold ring-1 ring-inset ring-green-600/20">
                                             <UserCheck className="h-3 w-3" />
                                             Aanwezig
                                         </span>
                                     ) : (
-                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--bg-soft)] text-[var(--text-muted)] text-sm font-bold ring-1 ring-inset ring-[var(--border-color)]">
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--bg-soft)] text-[var(--text-muted)] text-xs sm:text-sm font-bold ring-1 ring-inset ring-[var(--border-color)]">
                                             Niet ingecheckt
                                         </span>
                                     )}
                                 </td>
-                                <td className="px-6 py-4 text-right">
+                                <td className="px-4 sm:px-6 py-4 text-right">
                                     <button
                                         onClick={() => handleToggleCheckIn(s.id, s.checked_in)}
-                                        className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${s.checked_in ? 'text-red-600 hover:bg-red-50' : 'text-green-600 hover:bg-green-50'}`}
+                                        className={`px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${s.checked_in ? 'text-red-600 hover:bg-red-50' : 'text-green-600 hover:bg-green-50'}`}
                                     >
                                         {s.checked_in ? 'Afmelden' : 'Inchecken'}
                                     </button>
@@ -218,7 +262,8 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                             </tr>
                         ))}
                     </tbody>
-                </table>
+                    </table>
+                </div>
             </div>
 
             <div className="flex justify-center">

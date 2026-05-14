@@ -44,40 +44,42 @@ export default function ActivityFilters({
                 />
             </div>
             
-            <div className="flex flex-wrap md:flex-nowrap items-stretch md:items-center gap-4">
-                {/* Committee Filter */}
-                <div className="flex-1 md:flex-none flex items-center gap-3 px-5 py-3 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] shadow-sm hover:border-[var(--beheer-accent)]/30 transition-colors">
-                    <label className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest whitespace-nowrap opacity-60">Commissie</label>
-                    <select
-                        value={selectedCommittee}
-                        onChange={(e) => onCommitteeChange(e.target.value)}
-                        suppressHydrationWarning
-                        className="bg-transparent text-[var(--beheer-text)] text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer border-none p-0 focus:ring-0 min-w-[100px]"
-                    >
-                        <option value="all" className="bg-[var(--beheer-card-bg)]">Alle</option>
-                        {committees.map(c => (
-                            <option key={c.id} value={c.id} className="bg-[var(--beheer-card-bg)]">{c.name}</option>
-                        ))}
-                    </select>
-                </div>
+            <div className="flex flex-col gap-4">
+                <div className="grid grid-cols-2 gap-3">
+                    {/* Committee Filter */}
+                    <div className="flex min-w-0 items-center gap-2 px-4 py-3 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] shadow-sm hover:border-[var(--beheer-accent)]/30 transition-colors">
+                        <label className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest whitespace-nowrap opacity-60">Commissie</label>
+                        <select
+                            value={selectedCommittee}
+                            onChange={(e) => onCommitteeChange(e.target.value)}
+                            suppressHydrationWarning
+                            className="bg-transparent text-[var(--beheer-text)] text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer border-none p-0 focus:ring-0 min-w-[100px]"
+                        >
+                            <option value="all" className="bg-[var(--beheer-card-bg)]">Alle</option>
+                            {committees.map(c => (
+                                <option key={c.id} value={c.id} className="bg-[var(--beheer-card-bg)]">{c.name}</option>
+                            ))}
+                        </select>
+                    </div>
 
-                {/* Page Size Filter */}
-                <div className="flex-1 md:flex-none flex items-center gap-3 px-5 py-3 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] shadow-sm hover:border-[var(--beheer-accent)]/30 transition-colors">
-                    <label className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest whitespace-nowrap opacity-60">Per pagina</label>
-                    <select
-                        value={pageSize === -1 ? 'all' : pageSize}
-                        onChange={(e) => onPageSizeChange(e.target.value === 'all' ? -1 : parseInt(e.target.value, 10))}
-                        suppressHydrationWarning
-                        className="bg-transparent text-[var(--beheer-text)] text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer border-none p-0 focus:ring-0"
-                    >
-                        <option value="10" className="bg-[var(--beheer-card-bg)]">10 items</option>
-                        <option value="25" className="bg-[var(--beheer-card-bg)]">25 items</option>
-                        <option value="all" className="bg-[var(--beheer-card-bg)]">Alles</option>
-                    </select>
+                    {/* Page Size Filter */}
+                    <div className="flex min-w-0 items-center gap-2 px-4 py-3 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] shadow-sm hover:border-[var(--beheer-accent)]/30 transition-colors">
+                        <label className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest whitespace-nowrap opacity-60">Per pagina</label>
+                        <select
+                            value={pageSize === -1 ? 'all' : pageSize}
+                            onChange={(e) => onPageSizeChange(e.target.value === 'all' ? -1 : parseInt(e.target.value, 10))}
+                            suppressHydrationWarning
+                            className="bg-transparent text-[var(--beheer-text)] text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer border-none p-0 focus:ring-0"
+                        >
+                            <option value="10" className="bg-[var(--beheer-card-bg)]">10 items</option>
+                            <option value="25" className="bg-[var(--beheer-card-bg)]">25 items</option>
+                            <option value="all" className="bg-[var(--beheer-card-bg)]">Alles</option>
+                        </select>
+                    </div>
                 </div>
 
                 {/* Status Filter Buttons */}
-                <div className="w-full md:w-auto flex gap-1 p-1 bg-[var(--beheer-card-soft)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] shadow-sm">
+                <div className="w-full flex gap-1 p-1 bg-[var(--beheer-card-soft)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] shadow-sm">
                     {(['all', 'upcoming', 'past'] as const).map(f => (
                         <button
                             key={f}
