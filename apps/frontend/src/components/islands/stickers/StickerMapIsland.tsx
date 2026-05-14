@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
+import { Filter, BarChart3, X } from 'lucide-react';
 
 
 import { createStickerPublic, uploadFileAction } from '@/server/actions/public/stickers.actions';
@@ -34,6 +35,8 @@ export default function StickerMapIsland({
     // UI State
     const [showAddModal, setShowAddModal] = useState(false);
     const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
+    const [showMobileFilters, setShowMobileFilters] = useState(false);
+    const [showMobileStats, setShowMobileStats] = useState(false);
 
     // Filters
     const [filterCountry, setFilterCountry] = useState('');
@@ -48,6 +51,26 @@ export default function StickerMapIsland({
         image: null as File | null
     });
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+    useEffect(() => {
+        document.body.style.overflow = (showMobileFilters || showMobileStats) ? 'hidden' : '';
+        return () => { document.body.style.overflow = ''; };
+    }, [showMobileFilters, showMobileStats]);
+
+    const closeMobileOverlays = () => {
+        setShowMobileFilters(false);
+        setShowMobileStats(false);
+    };
+
+    const openMobileFilters = () => {
+        setShowMobileStats(false);
+        setShowMobileFilters(true);
+    };
+
+    const openMobileStats = () => {
+        setShowMobileFilters(false);
+        setShowMobileStats(true);
+    };
 
     const handlePlaceSticker = () => {
         if (!user) return;
@@ -147,10 +170,12 @@ export default function StickerMapIsland({
     };
 
     return (
-        <div className="space-y-8">
-            <StickerStats stickers={stickers} />
+        <div className="space-y-4 sm:space-y-8">
+            <div className="hidden md:block">
+                <StickerStats stickers={stickers} />
+            </div>
 
-            <div className="relative group min-h-[600px]">
+            <div className="relative group h-[calc(100dvh-4.5rem)] md:h-[600px]">
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-orange-500/5 blur-3xl -z-10" />
 
                 <StickerMap
@@ -159,11 +184,31 @@ export default function StickerMapIsland({
                     selectedLocation={selectedLocation}
                     filterCountry={filterCountry}
                     filterCity={filterCity}
+                    stretchToContainer
                 />
 
                 {/* Floating Controls */}
-                <div className="absolute top-4 left-4 right-4 md:right-auto md:w-80 space-y-3 pointer-events-none md:top-4 md:bottom-auto bottom-4 flex flex-col md:block">
-                    <div className="md:contents flex flex-col-reverse gap-3">
+                <div className="absolute inset-x-0 top-4 z-[120] px-4 pointer-events-none md:inset-auto md:top-4 md:left-4 md:right-auto md:w-80 md:px-0 md:bottom-auto">
+                    <div className="flex items-center gap-3 md:hidden pointer-events-auto">
+                        <button
+                            type="button"
+                            onClick={openMobileFilters}
+                            className="inline-flex flex-1 min-w-0 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-[var(--bg-card)]/95 px-3 py-2.5 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--text-main)] shadow-2xl backdrop-blur-md whitespace-nowrap"
+                        >
+                            <Filter className="h-4 w-4 text-[var(--theme-purple)] shrink-0" />
+                            Filters
+                        </button>
+                        <button
+                            type="button"
+                            onClick={openMobileStats}
+                            className="inline-flex flex-1 min-w-0 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-[var(--bg-card)]/95 px-3 py-2.5 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--text-main)] shadow-2xl backdrop-blur-md whitespace-nowrap"
+                        >
+                            <BarChart3 className="h-4 w-4 text-[var(--theme-purple)] shrink-0" />
+                            Stats
+                        </button>
+                    </div>
+
+                    <div className="hidden md:flex md:flex-col-reverse gap-3 pointer-events-auto">
                         <StickerActionPanel
                             user={user}
                             isLocating={isLocating}
@@ -177,7 +222,62 @@ export default function StickerMapIsland({
                         />
                     </div>
                 </div>
+
+                <div className="absolute inset-x-4 bottom-4 z-[120] md:hidden pointer-events-none">
+                    <div className="pointer-events-auto w-full">
+                        <StickerActionPanel
+                            user={user}
+                            isLocating={isLocating}
+                            onPlaceSticker={handlePlaceSticker}
+                            compact
+                        />
+                    </div>
+                </div>
             </div>
+
+            {(showMobileFilters || showMobileStats) && (
+                <div className="fixed inset-0 z-[210] md:hidden">
+                    <button
+                        type="button"
+                        className="absolute inset-0 bg-black/45 backdrop-blur-[2px]"
+                        onClick={closeMobileOverlays}
+                        aria-label="Sluit overlay"
+                    />
+                    <div className="absolute inset-x-0 bottom-0 max-h-[78dvh] overflow-y-auto rounded-t-[2rem] border-t border-white/10 bg-[var(--bg-main)] shadow-[0_-20px_60px_rgba(0,0,0,0.35)]">
+                        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--border-color)]/10 bg-[var(--bg-main)]/95 px-4 py-4 backdrop-blur-md">
+                            <div>
+                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">
+                                    Salve Mundi
+                                </p>
+                                <h2 className="text-base font-black uppercase tracking-widest text-[var(--text-main)]">
+                                    {showMobileFilters ? 'Filters' : 'Statistieken'}
+                                </h2>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={closeMobileOverlays}
+                                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--bg-card)] text-[var(--text-main)] shadow-sm"
+                                aria-label="Sluit paneel"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+
+                        <div className="p-4">
+                            {showMobileFilters ? (
+                                <StickerFilters
+                                    filterCountry={filterCountry}
+                                    setFilterCountry={setFilterCountry}
+                                    filterCity={filterCity}
+                                    setFilterCity={setFilterCity}
+                                />
+                            ) : (
+                                <StickerStats stickers={stickers} />
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <AddStickerModal
                 show={showAddModal}

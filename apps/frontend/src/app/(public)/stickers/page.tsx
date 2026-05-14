@@ -21,8 +21,8 @@ export default async function StickersPage() {
             title="STICKERKAART"
             description="Onze leden reizen de hele wereld over. Bekijk hier waar de Salve Mundi stickers allemaal te vinden zijn!"
         >
-            <div className="container mx-auto px-4 py-12 max-w-7xl">
-                <div className="rounded-3xl border border-[var(--beheer-border)] overflow-hidden shadow-2xl bg-[var(--bg-card)]">
+            <div className="mx-auto w-full max-w-7xl px-0 py-0 sm:px-4 sm:py-12">
+                <div className="overflow-hidden border border-[var(--beheer-border)]/80 bg-[var(--bg-card)] shadow-2xl sm:rounded-3xl">
                     {/* We gebruiken de bridge, die de ssr: false logica afhandelt */}
                     <StickerMapBridge
                         initialStickers={stickers}
