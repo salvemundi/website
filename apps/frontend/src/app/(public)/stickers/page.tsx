@@ -3,6 +3,7 @@ import type { EnrichedUser } from '@/types/auth';
 import { getPublicStickers } from '@/server/actions/public/stickers.actions';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import StickerMapBridge from '@/components/islands/stickers/StickerMapBridge';
+import Leaderboard from '@/components/islands/stickers/Leaderboard';
 
 export const dynamic = 'force-dynamic';
 export const metadata = {
@@ -29,6 +30,8 @@ export default async function StickersPage() {
                         user={(session?.user as unknown as EnrichedUser ?? null)}
                     />
                 </div>
+
+                <Leaderboard stickers={stickers} currentUser={(session?.user as unknown as EnrichedUser ?? null)} />
             </div>
         </PublicPageShell>
     );
