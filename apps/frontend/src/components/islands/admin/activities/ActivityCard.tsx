@@ -42,7 +42,7 @@ export default function ActivityCard({
             className={`flex flex-col md:flex-row bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-lg transition-all border border-[var(--beheer-border)] hover:shadow-2xl group/card relative overflow-hidden ${isPast ? 'opacity-60 grayscale-[0.5]' : ''}`}
         >
             {/* Left: Image Banner */}
-            <div className="relative w-full md:w-48 lg:w-56 min-h-[160px] md:min-h-full bg-[var(--beheer-card-soft)]/50 flex-shrink-0 border-r border-[var(--beheer-border)]">
+            <div className="hidden md:block relative w-full md:w-48 lg:w-56 min-h-[160px] md:min-h-full bg-[var(--beheer-card-soft)]/50 flex-shrink-0 border-r border-[var(--beheer-border)]">
                 <div className="absolute inset-0 p-4">
                     <div className="relative w-full h-full">
                         <MediaAsset
@@ -121,10 +121,10 @@ export default function ActivityCard({
             </div>
 
             {/* Right: Original Actions Area */}
-            <div className="flex flex-col sm:flex-row md:flex-col gap-3 justify-center items-stretch md:w-64 p-6 border-t md:border-t-0 md:border-l border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/20">
+            <div className="flex flex-row md:flex-col gap-2 md:gap-3 justify-center items-stretch md:w-64 p-4 md:p-6 border-t md:border-t-0 md:border-l border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/20">
                 <button
                     onClick={() => onViewSignups(event.id)}
-                    className="flex-1 flex items-center justify-center gap-4 px-6 py-5 text-[11px] bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] hover:bg-[var(--beheer-accent)] hover:text-white rounded-2xl transition-all font-semibold cursor-pointer active:scale-95 group/btn"
+                    className="flex-1 flex items-center justify-center gap-2 md:gap-4 px-4 md:px-6 py-3 md:py-5 text-[11px] bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] hover:bg-[var(--beheer-accent)] hover:text-white rounded-2xl transition-all font-semibold cursor-pointer active:scale-95 group/btn"
                 >
                     <Eye className="h-5 w-5 group-hover/btn:scale-110 transition-transform" />
                     <span>Aanmeldingen</span>
@@ -133,7 +133,7 @@ export default function ActivityCard({
                 {canEdit && (
                     <button
                         onClick={() => onEdit(event.id)}
-                        className="flex-1 flex items-center justify-center gap-4 px-6 py-5 text-[11px] border border-[var(--beheer-border)] text-[var(--beheer-text)] hover:bg-[var(--beheer-border)] rounded-2xl transition-all font-semibold cursor-pointer active:scale-95 group/btn"
+                        className="flex-1 flex items-center justify-center gap-2 md:gap-4 px-4 md:px-6 py-3 md:py-5 text-[11px] border border-[var(--beheer-border)] text-[var(--beheer-text)] hover:bg-[var(--beheer-border)] rounded-2xl transition-all font-semibold cursor-pointer active:scale-95 group/btn"
                     >
                         <Edit className="h-5 w-5 group-hover/btn:rotate-12 transition-transform" />
                         <span>Bewerken</span>
