@@ -84,7 +84,7 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
                             </button>
                         </div>
                     ) : (
-                        <div className="h-24 bg-theme-purple/10" />
+                        <div  />
                     )}
 
                     <div className="p-6 sm:p-8">
@@ -115,7 +115,6 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
                     <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-theme-purple/5 rounded-full blur-3xl" />
                     <div className="relative z-10">
                         <h3 className="text-xl sm:text-2xl font-bold text-theme-purple dark:text-theme-white mb-6 flex items-center gap-3">
-                            <div className="h-8 w-1 bg-theme-purple rounded-full" />
                             Over de Reis
                         </h3>
                         <SafeHtml
@@ -133,7 +132,6 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
                 </div>
                 <div className="relative z-10">
                     <h3 className="text-xl sm:text-2xl font-bold text-theme-purple dark:text-theme-white mb-8 flex items-center gap-3">
-                        <div className="h-8 w-1 bg-theme-purple rounded-full" />
                         Goed om te weten
                     </h3>
                     

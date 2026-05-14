@@ -10,12 +10,27 @@ import { type MembershipUserData } from '@/components/islands/account/Membership
 import { type EnrichedUser } from '@/types/auth';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import BackButton from '@/components/ui/navigation/BackButton';
-
-
+import { type Metadata } from 'next';
 
 interface PageProps {
     params: Promise<{ id: string }>;
     searchParams: Promise<{ status?: string; token?: string }>;
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+    const { id } = await params;
+    const activity = await getActivityBySlug(id);
+
+    if (!activity) {
+        return {
+            title: 'Activiteit niet gevonden | SV Salve Mundi'
+        };
+    }
+
+    return {
+        title: `${activity.titel} | SV Salve Mundi`,
+        description: activity.beschrijving || 'Schrijf je in voor deze activiteit bij Salve Mundi.'
+    };
 }
 
 import { connection } from 'next/server';
@@ -78,7 +93,7 @@ async function ActivityContent({ params, searchParams }: PageProps) {
 
     return (
         <>
-            <div className="container mx-auto px-4 max-w-7xl pt-8 pb-4">
+            <div className="container px-4 max-w-7xl pt-8 pb-4">
                 <BackButton href="/activiteiten" title="Terug naar activiteiten" />
             </div>
 

@@ -221,8 +221,8 @@ export default function KroegentochtFormIsland({
                                             required
                                         />
                                     </div>
-                                    <div className="w-24">
-                                        <label htmlFor={`field-participants-${index}-initial`} className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">1e letter achtern.</label>
+                                    <div className="w-fit shrink-0">
+                                        <label htmlFor={`field-participants-${index}-initial`} className="text-[10px] font-bold text-slate-400 uppercase mb-1 block whitespace-nowrap">1e letter achtern.</label>
                                         <Input
                                             {...register(`participants.${index}.initial`, {
                                                 onChange: (e) => {
@@ -232,7 +232,7 @@ export default function KroegentochtFormIsland({
                                             id={`field-participants-${index}-initial`}
                                             placeholder="Bijv. S"
                                             maxLength={1}
-                                            className="text-center uppercase font-bold"
+                                            className="w-20 text-center uppercase font-bold"
                                             required
                                         />
                                     </div>

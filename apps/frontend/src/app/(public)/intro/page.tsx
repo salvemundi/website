@@ -87,8 +87,10 @@ export default async function IntroPage() {
             
             <section className="px-4 sm:px-6 lg:px-10 pt-8 pb-8 lg:py-10">
                 <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 max-w-7xl mx-auto w-full">
-                    <div className="flex-1">
-                        {isAuthenticated ? <IntroInfoParent /> : <IntroInfoStudent />}
+                    <div className="flex-1 space-y-6">
+                        <div className="bg-(--bg-card) dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-md shadow-black/5 p-6 lg:p-8">
+                            {isAuthenticated ? <IntroInfoParent /> : <IntroInfoStudent />}
+                        </div>
                         {!isAuthenticated && <IntroLightboxIsland />}
                     </div>
 
