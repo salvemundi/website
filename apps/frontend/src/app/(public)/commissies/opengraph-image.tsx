@@ -1,8 +1,7 @@
-// OG-image route voor de commissies overzichtspagina
+// OG-image route voor de commissies overzichtspagina (Refactored)
 import { ImageResponse } from 'next/og';
 
-// runtime switched to nodejs for database compatibility
-export const alt = 'Commissies - Salve Mundi';
+export const runtime = 'nodejs';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -11,35 +10,80 @@ export default function Image() {
         (
             <div
                 style={{
-                    width: '100%',
                     height: '100%',
+                    width: '100%',
                     display: 'flex',
-                    flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    background: 'linear-gradient(135deg, #5e2b52 0%, #a4539b 100%)',
-                    color: '#ffffff',
+                    backgroundColor: '#4a2344', // Brand purple frame
                     fontFamily: 'sans-serif',
-                    padding: '60px' }}
+                }}
             >
-                {/* Categorie label */}
-                <p style={{ fontSize: 24, opacity: 0.75, marginBottom: 16, letterSpacing: 4 }}>
-                    COMMISSIES
-                </p>
-                {/* Hoofdtitel */}
-                <h1 style={{ fontSize: 72, fontWeight: 800, margin: 0, textAlign: 'center' }}>
-                    Onze Commissies
-                </h1>
-                {/* Ondertitel */}
-                <p style={{ fontSize: 28, opacity: 0.85, marginTop: 24, textAlign: 'center', maxWidth: 800 }}>
-                    Ontdek de verschillende commissies van Salve Mundi en zie wat zij doen voor de vereniging.
-                </p>
-                {/* Verenigingsnaam */}
-                <p style={{ fontSize: 20, opacity: 0.6, marginTop: 48 }}>
-                    Salve Mundi — Studievereniging ICT
-                </p>
+                {/* Foreground Card */}
+                <div style={{
+                    width: '92%',
+                    height: '84%',
+                    backgroundColor: 'white',
+                    borderRadius: 32,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden',
+                    position: 'relative',
+                }}>
+                    {/* Top Half - Placeholder for group feeling */}
+                    <div style={{
+                        height: '50%',
+                        width: '100%',
+                        backgroundColor: '#f8f9fa',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderBottom: '1px solid #f1f3f5',
+                    }}>
+                        <div style={{ fontSize: 100 }}>👥</div>
+                    </div>
+
+                    {/* Bottom Half */}
+                    <div style={{
+                        height: '50%',
+                        width: '100%',
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '0 60px',
+                    }}>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <p style={{ fontSize: 20, fontWeight: 700, color: '#4a2344', textTransform: 'uppercase', letterSpacing: 4, marginBottom: 8 }}>
+                                COMMISSIES
+                            </p>
+                            <h1 style={{ fontSize: 72, fontWeight: 900, color: '#212529', margin: 0 }}>
+                                Onze Commissies
+                            </h1>
+                        </div>
+
+                        {/* Members Badge */}
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            backgroundColor: '#f8f9fa',
+                            padding: '16px 32px',
+                            borderRadius: 20,
+                            border: '1px solid #f1f3f5',
+                        }}>
+                            <span style={{ fontSize: 32, fontWeight: 800, color: '#4a2344' }}>👤 {'>'}15 Commissies</span>
+                        </div>
+                    </div>
+
+                    {/* Mini Logo branding */}
+                    <div style={{ position: 'absolute', top: 30, left: 30, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ width: 24, height: 24, backgroundColor: '#4a2344', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <span style={{ color: 'white', fontSize: 14, fontWeight: 'bold' }}>S</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         ),
-        { ...size },
+        { ...size }
     );
 }
