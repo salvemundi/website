@@ -43,10 +43,10 @@ export default function AddStickerModal({
     selectedLocation,
     setSelectedLocation
 }: AddStickerModalProps) {
-    if (!show) return null;
-
     const [addressQuery, setAddressQuery] = useState('');
     const [isSearching, setIsSearching] = useState(false);
+
+    if (!show) return null;
 
     const handleAddressSearch = async () => {
         if (!addressQuery) return;
@@ -68,7 +68,7 @@ export default function AddStickerModal({
                 const city = parts.length > 1 ? parts[parts.length - 3] || parts[parts.length - 2] : '';
                 setFormData((prev) => ({ ...prev, city, country }));
             }
-        } catch (e) {
+        } catch (_e) {
             // ignore
         }
         setIsSearching(false);

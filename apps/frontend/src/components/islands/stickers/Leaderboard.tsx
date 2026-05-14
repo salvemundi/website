@@ -1,23 +1,35 @@
 import type { StickerPublic } from '@salvemundi/validations';
 import type { EnrichedUser } from '@/types/auth';
 
+type StickerCreator = {
+    id?: string | number;
+    first_name?: string | null;
+    last_name?: string | null;
+    email?: string | null;
+    avatar?: string | null;
+};
+
 interface LeaderboardProps {
     stickers: StickerPublic[];
     currentUser?: EnrichedUser | null;
 }
 
 export default function Leaderboard({ stickers, currentUser }: LeaderboardProps) {
-    const counts: Record<string, { id: string; name: string; avatar?: string | null; count: number }> = {};
+    const counts = new Map<string, { id: string; name: string; avatar?: string | null; count: number }>();
 
     for (const s of stickers) {
-        const u = s.user_created as any;
+        const u = s.user_created as StickerCreator | null | undefined;
         const uid = u?.id ? String(u.id) : 'unknown';
         const name = u ? ((u.first_name || '') + ' ' + (u.last_name || '')).trim() || u.email || uid : 'Unknown';
-        if (!counts[uid]) counts[uid] = { id: uid, name, avatar: u?.avatar ?? null, count: 0 };
-        counts[uid].count += 1;
+        const existing = counts.get(uid);
+        if (existing) {
+            existing.count += 1;
+        } else {
+            counts.set(uid, { id: uid, name, avatar: u?.avatar ?? null, count: 1 });
+        }
     }
 
-    const leaderboard = Object.values(counts).sort((a, b) => b.count - a.count);
+    const leaderboard = Array.from(counts.values()).sort((a, b) => b.count - a.count);
 
     return (
         <div className="bg-[var(--bg-card)] rounded-2xl md:rounded-3xl shadow-lg p-4 md:p-6 mt-6">
