@@ -1,50 +1,57 @@
-# Node modules
+# Logs
+logs
+*.log
+
+# Diagnostic reports (https://nodejs.org/api/report.html)
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Dependency directories
 node_modules/
 
-# Build output
+# Next.js
+.next/
+out/
+build/
 dist/
+.unlighthouse/
+scratch/
 
-# Logs
-*.log
-.next
-
-# OS generated files
-.DS_Store
-
-# Vite cache
-.vite/
-
-# Env files
+# Environment Variables
 .env
+.env.test
+.env.production
 .env.local
+.env.*.local
+!.env.example
 
-# IDE files
-.vscode/
-.idea/
-
-# Misc
-*.swp
-*.swo
-
-# Coverage
-coverage/
-
-# TypeScript
+# Typescript
 *.tsbuildinfo
+next-env.d.ts
 
-# Yarn
-.yarn/
+# Misc tool configs
+.eslintcache
+.stylelintcache
+.prettiercache
 
-# npm
+# Temporary local test files and scripts
+*.txt
+apps/frontend/scripts/
+tmp/
+PROJECT_STATUS.md
 
-frontend/env
-RSA
+# RedisInsight
+infrastructure/databases.json
 
-# Agent helper scripts
-.agent/
-frontend/next-env.d.ts
-
-# Local Rules
-FRONTEND_RULES.md
-.cursorrules
-.windsurfrules
+# PWA artifacts
+apps/frontend/public/sw.js
+apps/frontend/public/sw.js.map
+.pnpm-store
+playwright-report/
+scripts/
+.antigravity/

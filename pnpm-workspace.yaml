@@ -1,0 +1,12 @@
+packages:
+  - 'apps/frontend'
+  - 'apps/services/*'
+  - 'packages/*'
+allowBuilds:
+  '@parcel/watcher': false
+  core-js-pure: false
+  esbuild: false
+  puppeteer: false
+  sharp: false
+  unrs-resolver: false
+  vue-demi: false

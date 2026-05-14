@@ -1,0 +1,102 @@
+'use client';
+
+import React from 'react';
+import { 
+    Users, 
+    Edit2, 
+    Trash2, 
+    LayoutGrid 
+} from 'lucide-react';
+import MediaAsset from '@/components/ui/media/MediaAsset';
+
+import { type TripActivity } from '@salvemundi/validations/schema/admin-reis.zod';
+
+interface Props {
+    activity: TripActivity;
+    onEdit: (activity: TripActivity) => void;
+    onDelete: (id: number) => void;
+    onViewSignups: (id: number) => void;
+}
+
+export default function TripActivityCard({ activity, onEdit, onDelete, onViewSignups }: Props) {
+    return (
+        <div className="group bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] overflow-hidden shadow-sm hover:shadow-xl hover:border-[var(--beheer-accent)]/30 transition-all duration-500 flex flex-col">
+            {/* Visual Header */}
+            {activity.image ? (
+                <div className="relative h-48 bg-slate-900 overflow-hidden">
+                    <MediaAsset asset={activity.image} alt={activity.name} fill className="object-cover group-hover:scale-110 transition-transform duration-1000" />
+                    <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-[9px] font-semibold tracking-widest shadow-lg ${activity.is_active ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
+                        {activity.is_active ? 'Actief' : 'Inactief'}
+                    </div>
+                </div>
+            ) : (
+                <div className="h-24 bg-[var(--beheer-card-soft)]/50 flex items-center justify-center border-b border-[var(--beheer-border)]">
+                    <LayoutGrid className="h-8 w-8 text-[var(--beheer-text-muted)] opacity-20" />
+                </div>
+            )}
+
+            <div className="p-6 flex-1 flex flex-col">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                    <h3 className="text-lg font-semibold text-[var(--beheer-text)] tracking-tight line-clamp-1 group-hover:text-[var(--beheer-accent)] transition-colors">{activity.name}</h3>
+                    <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] opacity-40">#{activity.display_order}</span>
+                </div>
+                
+                {activity.description && (
+                    <p className="text-xs text-[var(--beheer-text-muted)] mt-1 mb-6 line-clamp-2 min-h-[2.5rem] font-medium leading-relaxed">{activity.description}</p>
+                )}
+
+                <div className="flex justify-between items-end mt-auto mb-8">
+                    <div className="flex flex-col">
+                        <span className="text-[9px] font-semibold text-[var(--beheer-text-muted)] mb-1 opacity-60">Basisprijs</span>
+                        <span className="text-2xl font-semibold text-[var(--beheer-accent)]">€{Number(activity.price || 0).toFixed(2)}</span>
+                    </div>
+                    {activity.max_participants && (
+                        <div className="flex flex-col items-end">
+                            <span className="text-[9px] font-semibold text-[var(--beheer-text-muted)] mb-1 opacity-60">Capaciteit</span>
+                            <span className="text-xs font-semibold text-[var(--beheer-text)] flex items-center gap-1.5 bg-[var(--beheer-card-soft)] px-2 py-1 rounded-lg border border-[var(--beheer-border)]/50"><Users className="h-3 w-3" /> {activity.max_participants}</span>
+                        </div>
+                    )}
+                </div>
+
+                {activity.options && activity.options.length > 0 && (
+                    <div className="mb-8 p-4 bg-[var(--beheer-card-soft)]/50 rounded-2xl border border-[var(--beheer-border)]/30">
+                        <span className="text-[9px] font-semibold text-[var(--beheer-text-muted)] block mb-2 opacity-60">{activity.max_selections === 1 ? 'Keuze verplicht' : 'Extra opties'} ({activity.options.length})</span>
+                        <div className="flex flex-wrap gap-1.5">
+                            {activity.options.slice(0, 2).map((o, i) => (
+                                <span key={i} className="text-[9px] font-semibold px-2 py-1 bg-[var(--beheer-card-bg)] rounded-lg border border-[var(--beheer-border)] text-[var(--beheer-text-muted)] tracking-tight">
+                                    {o.name || 'Naamloos'}
+                                </span>
+                            ))}
+                            {activity.options.length > 2 && (
+                                <span className="text-[9px] font-semibold px-2 py-1 text-[var(--beheer-text-muted)] opacity-50">+{activity.options.length - 2}</span>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                <div className="space-y-3 pt-6 border-t border-[var(--beheer-border)]/20">
+                    <div className="flex gap-3">
+                        <button 
+                            onClick={() => onEdit(activity)}
+                            className="flex-1 px-4 py-3 rounded-xl border border-[var(--beheer-border)] font-semibold text-[10px] text-[var(--beheer-text)] hover:border-[var(--beheer-accent)] hover:text-[var(--beheer-accent)] hover:bg-[var(--beheer-accent)]/5 transition-all flex items-center justify-center gap-2 active:scale-95"
+                        >
+                            <Edit2 className="h-3.5 w-3.5" /> Bewerken
+                        </button>
+                        <button 
+                            onClick={() => onDelete(activity.id)}
+                            className="p-3 rounded-xl border border-[var(--beheer-border)] text-[var(--beheer-text-muted)] hover:text-red-500 hover:border-red-500/20 hover:bg-red-500/5 transition-all flex items-center justify-center active:scale-95"
+                        >
+                            <Trash2 className="h-4 w-4" />
+                        </button>
+                    </div>
+                    <button 
+                        onClick={() => onViewSignups(activity.id)}
+                        className="w-full h-11 bg-[var(--beheer-accent)]/5 hover:bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] rounded-xl font-semibold text-[10px] transition-all flex items-center justify-center gap-2 border border-[var(--beheer-accent)]/10 active:scale-95"
+                    >
+                        <Users className="h-3.5 w-3.5" /> Inschrijvingen
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}

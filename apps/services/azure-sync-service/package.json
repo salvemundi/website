@@ -1,0 +1,28 @@
+{
+    "name": "@salvemundi/azure-sync-service",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "fastify start -w -a 0.0.0.0 -l info src/server.ts",
+        "build": "tsc",
+        "type-check": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@azure/identity": "^4.13.0",
+        "@directus/sdk": "^21.1.0",
+        "@microsoft/microsoft-graph-client": "^3.0.7",
+        "@salvemundi/validations": "workspace:*",
+        "dotenv": "^17.3.1",
+        "fastify": "5.2.1",
+        "fastify-plugin": "^5.0.1",
+        "ioredis": "^5.6.0",
+        "isomorphic-fetch": "^3.0.0",
+        "pg": "^8.20.0"
+    },
+    "devDependencies": {
+        "@types/node": "^22.0.0",
+        "@types/pg": "^8.20.0",
+        "typescript": "5.7.3"
+    }
+}

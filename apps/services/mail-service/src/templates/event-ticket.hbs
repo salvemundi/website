@@ -1,0 +1,43 @@
+{{#> layout headerTitle="JE TICKET IS KLAAR"}}
+    <div class="status-badge">Ticket Bevestigd</div>
+    <p>Beste {{name}},</p>
+    
+    <p>Je hebt je succesvol ingeschreven voor <strong>{{eventName}}</strong>! Je ticket is zojuist gegenereerd en staat voor je klaar.</p>
+    
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h2 style="color: #5e2b52; margin: 10px 0; font-weight: 900; font-size: 22px;">{{eventName}}</h2>
+        <p style="font-weight: 700; margin: 5px 0; color: #a4539b;">{{eventDate}}</p>
+    </div>
+
+    <div style="text-align: center; margin: 25px 0; padding: 25px; background: #ffffff; border: 1px solid #eee; border-radius: 12px; border: 2px dashed #a4539b;">
+        <p style="color: #a4539b; font-weight: 800; text-transform: uppercase; font-size: 10px; letter-spacing: 1.5px; margin-bottom: 15px;">Scannen bij Entree</p>
+        {{#if qrToken}}
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={{qrToken}}" alt="Ticket QR Code" width="180" height="180" style="display: block; margin: 0 auto; border: 0;">
+        {{else}}
+            <p style="font-style: italic; color: #8a7a8c;">Je QR-code is online beschikbaar.</p>
+        {{/if}}
+    </div>
+
+    <p>Je kunt je ticket op elk moment online bekijken. Scan de bovenstaande code bij de entree van het evenement.</p>
+    
+    <p style="text-align: center;">
+        {{#if hasAccount}}
+            <a href="https://salvemundi.nl/profiel/tickets" class="button">Toon Mijn Tickets</a>
+        {{else if confirmationUrl}}
+            <a href="{{confirmationUrl}}" class="button">Open Mijn Ticket Online</a>
+        {{/if}}
+    </p>
+
+    <p>We raden je aan om alvast een screenshot te maken van je QR-code voor het geval internet op locatie slecht is.</p>
+
+    <div class="reference-data">
+        <p><strong>Referentie Details:</strong></p>
+        <p>Inschrijving ID: {{signupId}}<br>
+        Event: {{eventName}}</p>
+    </div>
+
+    <p style="margin-top: 30px;">Met vriendelijke groet,<br><br>
+    <strong>Salve Mundi</strong><br>
+    Rachelsmolen 1<br>
+    5612 MA Eindhoven</p>
+{{/layout}}

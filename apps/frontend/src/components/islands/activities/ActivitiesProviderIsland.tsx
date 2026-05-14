@@ -1,0 +1,244 @@
+'use client';
+
+import { useState, useMemo, useCallback, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { addMonths, subMonths } from 'date-fns';
+
+import { Eye, EyeOff, LayoutGrid, List, Calendar as CalendarIcon } from "lucide-react";
+
+import CalendarView from "./CalendarView";
+import DayDetails from "./DayDetails";
+import EventList from "./EventList";
+import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
+import { slugify } from "@/shared/lib/utils/slug";
+import { isEventPast } from "@/shared/lib/utils/date";
+import { cn } from "@/lib/utils/cn";
+
+interface ActivitiesProviderIslandProps {
+    events?: (Activiteit & { is_signed_up?: boolean })[];
+    serverTime?: string;
+    initialViewMode?: 'list' | 'grid' | 'calendar';
+}
+
+export default function ActivitiesProviderIsland({
+    events: initialEvents = [],
+    serverTime,
+    initialViewMode = 'list'
+}: ActivitiesProviderIslandProps) {
+    const router = useRouter();
+    const [events] = useState<(Activiteit & { is_signed_up?: boolean })[]>(initialEvents);
+    const searchParams = useSearchParams();
+
+    const [viewMode, setViewModeState] = useState<'list' | 'grid' | 'calendar'>(initialViewMode);
+
+    const setViewMode = useCallback((mode: 'list' | 'grid' | 'calendar') => {
+        setViewModeState(mode);
+        // Persist in cookie (hidden preference)
+        document.cookie = `activities_view_mode=${mode}; path=/; max-age=31536000; SameSite=Lax`;
+    }, []);
+    const [showPastActivities, setShowPastActivities] = useState(false);
+    const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+    const [currentDate, setCurrentDate] = useState(serverTime ? new Date(serverTime) : new Date());
+
+    const filteredEvents = useMemo(() => {
+        const now = serverTime ? new Date(serverTime) : new Date();
+        let filtered = events;
+
+        if (!showPastActivities) {
+            filtered = filtered.filter(event => {
+                return !isEventPast(
+                    event.datum_eind || event.datum_start,
+                    event.event_time_end || event.event_time,
+                    !!event.event_time_end,
+                    now
+                );
+            });
+        }
+
+        return filtered.sort((a, b) => {
+            const isAPast = isEventPast(
+                a.datum_eind || a.datum_start,
+                a.event_time_end || a.event_time,
+                !!a.event_time_end,
+                now
+            );
+            const isBPast = isEventPast(
+                b.datum_eind || b.datum_start,
+                b.event_time_end || b.event_time,
+                !!b.event_time_end,
+                now
+            );
+
+            // Upcoming first
+            if (isAPast !== isBPast) return isAPast ? 1 : -1;
+
+            const getEventTime = (event: Activiteit) => {
+                const date = event.datum_start;
+                return (event.event_time && date.length <= 10)
+                    ? new Date(`${date}T${event.event_time}`).getTime()
+                    : new Date(date).getTime();
+            };
+
+            const aTime = getEventTime(a);
+            const bTime = getEventTime(b);
+
+            if (!isAPast) {
+                // Both upcoming: Soonest first
+                return aTime - bTime;
+            } else {
+                // Both past: Most recent first
+                return bTime - aTime;
+            }
+        });
+    }, [events, showPastActivities, serverTime]);
+
+    const handleShowDetails = useCallback((activity: Activiteit) => {
+        const act = activity as Activiteit & { custom_url?: string };
+        if (act.custom_url) {
+            router.push(act.custom_url);
+            return;
+        }
+        const slug = slugify(activity.titel || '');
+        router.push(`/activiteiten/${slug}`);
+    }, [router]);
+
+    useEffect(() => {
+        const status = searchParams.get('payment_status');
+        const eventId = searchParams.get('event_id');
+
+        if (status === 'success' && eventId) {
+            const event = events.find(e => e.id.toString() === eventId.toString());
+            const slug = event ? slugify(event.titel || '') : eventId;
+            router.replace(`/activiteiten/${slug}`);
+        }
+    }, [searchParams, router, events]);
+
+    return (
+        <div className="relative w-full flex flex-col">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-10 min-w-0">
+                <div className="space-y-1">
+                    <h2 className="text-3xl md:text-4xl font-black text-[var(--theme-purple)] dark:text-white tracking-tight">
+                        {showPastActivities ? 'Alle Activiteiten' : 'Komende Activiteiten'}
+                    </h2>
+                    <p className="text-sm font-medium text-[var(--text-muted)] opacity-70">
+                        {filteredEvents.length} {filteredEvents.length === 1 ? 'activiteit' : 'activiteiten'} zichtbaar
+                    </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-4">
+                    <div className="flex p-1 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)]/30 shadow-sm">
+                        <button
+                            onClick={() => setViewMode('list')}
+                            className={cn(
+                                "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all",
+                                viewMode === 'list'
+                                    ? "bg-[var(--theme-purple)] text-white shadow-md shadow-[var(--theme-purple)]/20"
+                                    : "text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/5"
+                            )}
+                        >
+                            <List className="h-4 w-4" />
+                            <span>Lijst</span>
+                        </button>
+                        <button
+                            onClick={() => setViewMode('grid')}
+                            className={cn(
+                                "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all",
+                                viewMode === 'grid'
+                                    ? "bg-[var(--theme-purple)] text-white shadow-md shadow-[var(--theme-purple)]/20"
+                                    : "text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/5"
+                            )}
+                        >
+                            <LayoutGrid className="h-4 w-4" />
+                            <span>Kaarten</span>
+                        </button>
+                        <button
+                            onClick={() => setViewMode('calendar')}
+                            className={cn(
+                                "hidden lg:flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all",
+                                viewMode === 'calendar'
+                                    ? "bg-[var(--theme-purple)] text-white shadow-md shadow-[var(--theme-purple)]/20"
+                                    : "text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/5"
+                            )}
+                        >
+                            <CalendarIcon className="h-4 w-4" />
+                            <span>Kalender</span>
+                        </button>
+                    </div>
+
+                    <button
+                        onClick={() => setShowPastActivities(!showPastActivities)}
+                        className={cn(
+                            "group relative inline-flex items-center justify-center gap-3 px-6 py-3 rounded-xl border transition-all active:scale-95 text-[10px] font-black uppercase tracking-widest",
+                            showPastActivities
+                                ? "bg-[var(--theme-purple)] text-white border-[var(--theme-purple)] shadow-lg shadow-[var(--theme-purple)]/20"
+                                : "bg-[var(--bg-card)] text-[var(--theme-purple)] border-[var(--border-color)]/30 hover:border-[var(--theme-purple)]/30 hover:bg-[var(--theme-purple)]/5"
+                        )}
+                    >
+                        <span>{showPastActivities ? 'Verberg afgelopen' : 'Toon afgelopen'}</span>
+                        <div className={cn(
+                            "h-5 w-5 rounded-full flex items-center justify-center transition-colors",
+                            showPastActivities ? "bg-white/20 text-white" : "bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] group-hover:bg-[var(--theme-purple)] group-hover:text-white"
+                        )}>
+                            {showPastActivities ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
+                {selectedDay && (
+                    <aside className="lg:w-96 xl:w-[28rem] space-y-6">
+                        <DayDetails
+                            selectedDay={selectedDay}
+                            activities={events}
+                            onClose={() => setSelectedDay(null)}
+                            onEventClick={handleShowDetails}
+                        />
+                    </aside>
+                )}
+
+                <div className="flex-1 min-w-0 space-y-6">
+                    {viewMode === 'calendar' && (
+                        <>
+                            <div className="hidden lg:block">
+                                <CalendarView
+                                    currentDate={currentDate}
+                                    events={filteredEvents}
+                                    selectedDay={selectedDay}
+                                    onSelectDay={setSelectedDay}
+                                    onEventClick={handleShowDetails}
+                                    onPrevMonth={() => setCurrentDate(subMonths(currentDate, 1))}
+                                    onNextMonth={() => setCurrentDate(addMonths(currentDate, 1))}
+                                    onGoToDate={(d: Date) => setCurrentDate(d)}
+                                />
+                            </div>
+                            <div className="lg:hidden">
+                                <EventList
+                                    events={filteredEvents}
+                                    onEventClick={handleShowDetails}
+                                />
+                            </div>
+                        </>
+                    )}
+
+                    {viewMode === 'list' && (
+                        <EventList
+                            events={filteredEvents}
+                            onEventClick={handleShowDetails}
+                            serverTime={serverTime}
+                        />
+                    )}
+
+                    {viewMode === 'grid' && (
+                        <EventList
+                            events={filteredEvents}
+                            onEventClick={handleShowDetails}
+                            variant="grid"
+                            serverTime={serverTime}
+                        />
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}

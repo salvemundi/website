@@ -1,0 +1,70 @@
+/* ==========================================================================
+   THEME.CSS — Dark Mode Overrides & Semantic Token Aliases
+   Only values that differ from the @theme light-mode defaults appear here.
+   ========================================================================== */
+
+/* ── Dark Mode ─────────────────────────────────────────────────────────────── */
+.dark {
+    color-scheme: dark;
+    --bg-main: #1a141b;
+    --bg-soft: #161116;
+    --bg-card: #241824;
+
+    --text-main: #ffffff;
+    --text-subtle: rgba(255, 255, 255, 0.96);
+    --text-muted: rgba(255, 255, 255, 0.88);
+    --text-light: rgba(255, 255, 255, 0.80);
+
+    --border-color: #4b3a4d;
+
+    --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+    --shadow-card-elevated: 0 8px 20px rgba(6, 4, 10, 0.45);
+
+    --gradient-start: #805480;
+    --gradient-end: #905e8e;
+
+    --bg-gradient-start: #312131; /* Deep Brand Purple */
+    --bg-gradient-end: #1a141b;   /* Soft Ink Black */
+
+    --theme-success: #4ade80;
+    --theme-warning: #fbbf24;
+    --theme-error: #f87171;
+    --theme-info: #60a5fa;
+}
+
+/* ── Semantic Aliases ──────────────────────────────────────────────────────── */
+/* Maps atomic palette tokens onto role-named vars used throughout the app.
+   New code should use the --color-* and semantic vars directly.
+   Aliases here exist purely for backwards-compat with old components.        */
+:root {
+    color-scheme: light;
+    --theme-purple: var(--color-purple-300);
+    --theme-purple-light: var(--color-purple-500);
+    --theme-purple-dark: var(--color-purple-800);
+    --theme-purple-darker: var(--color-purple-900);
+    --theme-purple-lighter: var(--color-purple-100);
+    --theme-white: var(--color-white);
+
+    /* ── Beheer Page Tokens ────────────────────────────────────────── */
+    --beheer-active: #22c55e;        /* Green-500 */
+    --beheer-inactive: #ef4444;      /* Red-500 */
+    --beheer-accent: var(--theme-purple);
+    --beheer-card-bg: var(--bg-card);
+    --beheer-card-soft: var(--bg-soft);
+    --beheer-border: var(--border-color);
+    --beheer-text: var(--text-main);
+    --beheer-text-muted: var(--text-muted);
+    
+    /* Beheer Page Tokens */
+    --beheer-btn-px: 1.5rem;
+    --beheer-btn-py: 0.75rem;
+    --beheer-radius: 1.5rem;
+}
+
+.dark {
+    --beheer-active: #4ade80;        /* Green-400 */
+    --beheer-inactive: #f87171;      /* Red-400 */
+    --beheer-card-bg: var(--bg-card);
+    --beheer-card-soft: rgba(255, 255, 255, 0.02);
+    --beheer-border: rgba(255, 255, 255, 0.06);
+}

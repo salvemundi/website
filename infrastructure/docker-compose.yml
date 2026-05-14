@@ -1,0 +1,126 @@
+services:
+  v7-core-db:
+    image: postgres:16.6-alpine
+    container_name: v7-core-db
+    ports:
+      - "${INTERNAL_SERVER_IP:-127.0.0.1}:5432:5432"
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      TZ: Europe/Amsterdam
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - v7_core_postgres_data:/var/lib/postgresql/data
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    networks:
+      - shared-network
+
+  v7-core-redis:
+    image: redis:7.4-alpine
+    container_name: v7-core-redis
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "${INTERNAL_SERVER_IP:-127.0.0.1}:6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    volumes:
+      - v7_core_redis_data:/data
+    networks:
+      - shared-network
+
+  v7-core-directus:
+    image: directus/directus:11.1.1
+    container_name: v7-core-directus
+    mem_limit: 1024m
+    command: >
+      sh -c "node /directus/cli.js bootstrap && node /directus/cli.js start"
+    ports:
+      - "${INTERNAL_SERVER_IP:-127.0.0.1}:8055:8055"
+    depends_on:
+      v7-core-db:
+        condition: service_healthy
+      v7-core-redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8055/server/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    environment:
+      KEY: ${DIRECTUS_KEY}
+      SECRET: ${DIRECTUS_SECRET}
+      DB_CLIENT: 'pg'
+      DB_HOST: v7-core-db
+      DB_PORT: '5432'
+      DB_DATABASE: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      CACHE_ENABLED: "true"
+      CACHE_STORE: "redis"
+      CACHE_REDIS: "redis://default:${REDIS_PASSWORD}@v7-core-redis:6379"
+      REDIS: "redis://default:${REDIS_PASSWORD}@v7-core-redis:6379"
+      PM2_HOME: "/tmp/pm2"
+      PUBLIC_URL: ${PUBLIC_URL}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+      ASSETS_CACHE_TTL: "86400"
+      # SSO / Entra ID Config
+      AUTH_PROVIDERS: "microsoft"
+      AUTH_MICROSOFT_DRIVER: "openid"
+      AUTH_MICROSOFT_CLIENT_ID: ${AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID}
+      AUTH_MICROSOFT_CLIENT_SECRET: ${AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET}
+      AUTH_MICROSOFT_ISSUER_URL: "https://login.microsoftonline.com/${AZURE_WEBSITEV7_TENANT_ID}/v2.0/.well-known/openid-configuration"
+      AUTH_MICROSOFT_REDIRECT_URL: "${PUBLIC_URL}/auth/login/microsoft/callback"
+      AUTH_MICROSOFT_IDENTIFIER_KEY: "email"
+      AUTH_MICROSOFT_ALLOW_PUBLIC_REGISTRATION: "false"
+      AUTH_MICROSOFT_DEFAULT_ROLE_ID: "85750035-2d6e-4405-9f5b-6f069ce58a9e"
+      AUTH_SAFE_REDIRECT_HOSTS: ${DIRECTUS_ALLOWED_REDIRECTS}
+      DIRECTUS_STATIC_TOKEN: ${DIRECTUS_STATIC_TOKEN}
+      TZ: Europe/Amsterdam
+    volumes:
+      - v7_core_directus_uploads:/directus/uploads
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    networks:
+      - shared-network
+      - proxy-network
+
+  v7-core-redisinsight:
+    image: redis/redisinsight:2.66
+    container_name: v7-core-redisinsight
+    expose:
+      - "5540"
+    environment:
+      - REDISINSIGHT_HOST=v7-core-redis
+      - REDISINSIGHT_PORT=6379
+      - REDISINSIGHT_PASSWORD=${REDIS_PASSWORD}
+      - REDISINSIGHT_PROVISIONING_PATH=/db/databases.json
+      - RI_PRE_SETUP_DATABASES_PATH=/db/databases.json
+    volumes:
+      - v7_core_redisinsight_data:/data
+      - ./databases.json:/db/databases.json
+    networks:
+      - shared-network
+      - proxy-network
+
+networks:
+  shared-network:
+    name: salve-mundi-v7-shared
+    external: true
+  proxy-network:
+    external: true
+
+volumes:
+  v7_core_postgres_data:
+  v7_core_redis_data:
+  v7_core_directus_uploads:
+  v7_core_redisinsight_data:

@@ -1,0 +1,52 @@
+import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
+import AdminPageShell from '@/components/ui/admin/AdminPageShell';
+
+import CommitteeManagementIsland from '@/components/islands/admin/commissies/CommitteeManagementIsland';
+import { getCommittees, getCommitteeMembers, countUniqueCommitteeMembers } from '@/server/queries/admin-commissies.queries';
+
+export const metadata: Metadata = {
+    title: 'Commissies Beheer | SV Salve Mundi' };
+
+export default async function CommissiesBeheerPage() {
+    const session = await getEnrichedSession();
+    if (!session?.user) redirect('/?needLogin=true');
+
+    // NUCLEAR SSR: Fetch all data before flushing any part of the page content
+    const [committees, totalUniqueMembers] = await Promise.all([
+        getCommittees().catch(() => []),
+        countUniqueCommitteeMembers().catch(() => 0),
+    ]);
+    
+    const firstCommittee = committees[0];
+    const initialMembers = firstCommittee ? await getCommitteeMembers(firstCommittee.id.toString()).catch(() => []) : [];
+
+    return (
+        <AdminPageShell
+            title="Commissies"
+            subtitle="Beheer commissies, leden en Azure-groepen"
+            backHref="/beheer"
+            actions={
+                <div className="flex items-center gap-4">
+                    <div className="hidden md:flex items-center gap-4 bg-[var(--beheer-card-soft)] px-4 py-2 rounded-2xl border border-[var(--beheer-border)]/50 shadow-sm">
+                        <div className="flex flex-col items-center px-2">
+                            <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1">Groepen</span>
+                            <span className="text-sm font-bold text-[var(--beheer-text)] leading-none">{committees.length}</span>
+                        </div>
+                        <div className="w-px h-6 bg-[var(--beheer-border)]/20" />
+                        <div className="flex flex-col items-center px-2">
+                            <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1">Totaal Leden</span>
+                            <span className="text-sm font-bold text-[var(--beheer-text)] leading-none">{totalUniqueMembers}</span>
+                        </div>
+                    </div>
+                </div>
+            }
+        >
+            <CommitteeManagementIsland 
+                initialCommittees={committees} 
+                initialMembers={initialMembers}
+            />
+        </AdminPageShell>
+    );
+}

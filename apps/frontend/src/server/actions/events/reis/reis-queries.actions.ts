@@ -1,0 +1,120 @@
+'use server';
+
+import 'server-only';
+import {
+    reisTripSchema,
+    type ReisSiteSettings,
+    type ReisTrip,
+    type ReisTripSignup
+} from '@salvemundi/validations/schema/reis.zod';
+import { query } from '@/lib/database';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
+import {
+    fetchUserSignupStatusDb,
+    fetchPublicTripsDb,
+    fetchAllTripSignupsDb
+} from '@/server/internal/reis-db.utils';
+import { fetchUserProfileByEmailDb } from '@/server/internal/user-db.utils';
+import { safeConsoleError } from '@/server/utils/logger';
+
+export async function getReisSiteSettings(): Promise<ReisSiteSettings | null> {
+    const { rows } = await query('SELECT is_active, message FROM feature_flags WHERE name = $1 LIMIT 1', ['trip_registration']);
+    const flag = rows?.[0];
+
+    if (!flag) return null;
+
+    return {
+        id: 'reis',
+        show: !!flag.is_active,
+        disabled_message: flag.message
+    };
+}
+
+export async function getCurrentUserProfileAction(): Promise<{ success: boolean; data?: Record<string, unknown>; error?: string }> {
+    try {
+        const session = await getEnrichedSession();
+        if (!session || !session.user) return { success: false, error: "Niet ingelogd" };
+
+        const userEmail = session.user.email?.toLowerCase();
+        if (!userEmail) return { success: false, error: "Geen e-mailadres gevonden in sessie" };
+
+        const user = await fetchUserProfileByEmailDb(userEmail);
+
+        if (!user) {
+            return { success: false, error: "Gebruiker niet gevonden in systeem" };
+        }
+
+        return { success: true, data: user };
+    } catch (error: unknown) {
+        safeConsoleError(`[Reis-Queries-Action][getCurrentUserProfileAction] Failed to get user profile:`, error);
+        return { success: false, error: "Profiel ophalen mislukt" };
+    }
+}
+
+export async function getUpcomingTrips(): Promise<ReisTrip[]> {
+    const data = await fetchPublicTripsDb();
+
+    const parsed = reisTripSchema.array().safeParse(data ?? []);
+    if (!parsed.success) {
+        safeConsoleError(`[Reis-Queries-Action][getUpcomingTrips] Failed to parse trips:`, parsed.error);
+        return (data ?? []) as ReisTrip[];
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const validTrips = parsed.data.filter((trip: ReisTrip) => {
+        if (trip.end_date) {
+            const endDate = new Date(trip.end_date);
+            endDate.setHours(23, 59, 59, 999);
+            return endDate >= today;
+        }
+
+        const dateStr = trip.start_date;
+        if (!dateStr) return false;
+        const eventDate = new Date(dateStr);
+        eventDate.setHours(23, 59, 59, 999);
+        return eventDate >= today;
+    });
+
+    return validTrips;
+}
+
+export async function getTripParticipantsCount(tripId: number): Promise<number> {
+    try {
+        const { rows } = await query(
+            `SELECT COUNT(*)::int as count FROM trip_signups 
+             WHERE trip_id = $1 AND status IN ('registered', 'confirmed')`,
+            [tripId]
+        );
+        return rows?.[0]?.count || 0;
+    } catch (error: unknown) {
+        safeConsoleError(`[Reis-Queries-Action][getTripParticipantsCount] Failed to fetch trip participants count:`, error);
+        return 0;
+    }
+}
+
+export async function getUserTripSignup(tripId: number): Promise<ReisTripSignup | null> {
+    try {
+        const session = await getEnrichedSession();
+
+        if (!session || !session.user) {
+            return null;
+        }
+
+        const userId = session.user.id;
+        return await fetchUserSignupStatusDb(userId, tripId);
+    } catch (error: unknown) {
+        safeConsoleError(`[Reis-Queries-Action][getUserTripSignup] Failed to fetch user trip signup:`, error);
+        return null;
+    }
+}
+
+export async function getTripSignupsInternal(tripId: number): Promise<ReisTripSignup[]> {
+    try {
+        return await fetchAllTripSignupsDb(tripId);
+    } catch (error: unknown) {
+        safeConsoleError(`[Reis-Queries-Action][getTripSignupsInternal] Failed to fetch trip signups:`, error);
+        return []
+    }
+}

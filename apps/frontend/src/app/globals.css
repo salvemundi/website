@@ -1,0 +1,169 @@
+@import "tailwindcss";
+
+@source "../../src";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@import "./styles/theme.css";
+@import "./styles/base.css";
+@import "./styles/animations.css";
+
+@import "./styles/components.css";
+@import "./styles/vendor.css";
+@import "./styles/maps.css";
+@import "./styles/sponsors.css";
+@plugin "@tailwindcss/typography";
+/* Infinite-scroll sponsor banner            */
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   3. @theme  — Static Design Tokens (Tailwind 4 CSS-First)
+   These tokens compile into Tailwind utilities AND CSS custom properties.
+   Components reference them via var(--token) or bg-[var(--bg-main)], etc.
+   ─────────────────────────────────────────────────────────────────────────── */
+@theme {
+   --color-text-main: var(--text-main);
+
+   /* Semantic Aliases */
+   --theme-purple: var(--color-purple-theme);
+   --theme-text: var(--text-main);
+   --theme-bg: var(--bg-main);
+
+   /* Layout & Containers */
+   --max-w-app: 80rem;
+   --header-padding: clamp(1rem, 5vw, 2.5rem);
+   --beheer-container-px: clamp(1rem, 3vw, 2rem);
+
+   /* Purple Palette */
+   --color-purple-50: #f4e9f3;
+   --color-purple-100: #e4cbe2;
+   --color-purple-200: #d4add0;
+   --color-purple-300: #c48fbe;
+   --color-purple-400: #b471ad;
+   --color-purple-500: #a4539b;
+   /* Base Brand Purple */
+   --color-purple-600: #8c4682;
+   --color-purple-700: #75386a;
+   --color-purple-800: #5e2b52;
+   --color-purple-900: #471e3b;
+
+   /* RGB companions for rgba() usage */
+   --color-purple-500-rgb: 164,
+      83,
+      155;
+   --color-purple-400-rgb: 180,
+      113,
+      173;
+
+   /* Whites */
+   --color-white: #ffffff;
+   --color-white-soft: #faf7fb;
+   --color-white-mute: #f0ebf0;
+
+   /* Brand */
+   --color-brand-primary: #003056;
+   --color-brand-secondary: #00a3e0;
+
+   --color-brand-secondary: #00a3e0;
+
+   /* Semantic Background — Light Mode defaults
+     Reference the palette tokens above; no duplicate hex values.             */
+   --bg-main: #f8f9fa;
+   --bg-soft: var(--color-white-soft);
+   /* #faf7fb */
+   --bg-card: var(--color-white);
+   /* #ffffff */
+
+   /* Semantic Text — Light Mode defaults */
+   --text-main: #5e2b52;
+   --text-subtle: #6a5068;
+   --text-muted: #6f5772;
+   --text-light: #8a7a8c;
+
+   /* Border */
+   --border-color: #d9c7db;
+
+   /* Shadows */
+   --shadow-card: 0 1px 3px rgba(16, 24, 40, 0.1),
+      0 1px 2px rgba(16, 24, 40, 0.06);
+   --shadow-card-elevated: 0 8px 20px rgba(6, 4, 10, 0.45);
+   --shadow-glow: 0 0 15px rgba(102, 50, 101, 0.3);
+
+   /* Gradients */
+   --gradient-start: #fdfbff;
+   --gradient-end: #f4eef5;
+
+   --bg-gradient-start: #fdfbff;
+   --bg-gradient-end: #f4eef5;
+
+   /* Status */
+   --theme-success: #16a34a;
+   --theme-warning: #d97706;
+   --theme-error: #dc2626;
+   --theme-info: #0284c7;
+
+   /* Radii */
+   --radius-xl: 0.75rem;
+   --radius-2xl: 1rem;
+
+   /* Layout */
+   --header-height: 80px;
+   --impersonation-banner-height: 0px;
+   --header-total-height: calc(var(--impersonation-banner-height, 0px) + var(--header-height, 80px));
+
+   /* Typography Scale & Family */
+   --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+   --font-size-xs: 0.75rem;
+   --font-size-sm: 0.875rem;
+   --font-size-base: 1rem;
+   --font-size-lg: 1.125rem;
+   --font-size-xl: 1.25rem;
+   --font-size-2xl: 1.5rem;
+   --font-size-3xl: 1.875rem;
+   --font-size-4xl: 2.25rem;
+   --font-size-5xl: 3rem;
+}
+
+@utility admin-container {
+   margin-left: auto;
+   margin-right: auto;
+   width: 100%;
+   max-width: var(--max-w-app);
+   padding-left: var(--spacing-4);
+
+   @media (min-width: 1024px) {
+      padding-left: var(--spacing-6);
+   }
+
+   padding-right: var(--spacing-4);
+
+   @media (min-width: 1024px) {
+      padding-right: var(--spacing-6);
+   }
+}
+
+@utility pt-safe {
+   padding-top: env(safe-area-inset-top, 0px);
+}
+
+@utility pb-safe {
+   padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@utility pl-safe {
+   padding-left: env(safe-area-inset-left, 0px);
+}
+
+@utility pr-safe {
+   padding-right: env(safe-area-inset-right, 0px);
+}
+
+@utility mt-safe {
+   margin-top: env(safe-area-inset-top, 0px);
+}
+
+@utility mb-safe {
+   margin-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Stabilize Autofill - Import at the absolute bottom to ensure it overrides defaults */
+@import "./styles/autofill.css";

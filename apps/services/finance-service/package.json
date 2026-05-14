@@ -1,0 +1,26 @@
+{
+    "name": "@salvemundi/finance-service",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "fastify start -w -a 0.0.0.0 -l info src/server.ts",
+        "start": "fastify start -a 0.0.0.0 -l info dist/server.js",
+        "build": "tsc",
+        "type-check": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@directus/sdk": "^21.1.0",
+        "@mollie/api-client": "^4.0.1",
+        "@salvemundi/validations": "workspace:*",
+        "fastify": "5.2.1",
+        "fastify-plugin": "^5.0.1",
+        "ioredis": "^5.6.0",
+        "pg": "^8.19.0"
+    },
+    "devDependencies": {
+        "@types/node": "^22.0.0",
+        "@types/pg": "^8.16.0",
+        "typescript": "5.7.3"
+    }
+}
