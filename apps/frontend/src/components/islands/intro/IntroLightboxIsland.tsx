@@ -84,7 +84,7 @@ export const IntroLightboxIsland = () => {
                             src={lightboxSrc}
                             alt="Foto"
                             fill
-                            className="object-cover rounded-2xl"
+                            className="object- rounded-2xl"
                         />
                     </div>
                 </div>
