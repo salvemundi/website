@@ -24,12 +24,12 @@ export const CommitteeDetail: React.FC<CommitteeDetailProps> = ({ committee }) =
     });
 
     return (
-        <div className="space-y-6">
+        <div className="@container space-y-12">
             {/* Immersive Hero Section */}
-            <header className="flex flex-col w-full lg:flex-row items-center lg:items-start gap-8 lg:gap-20 pt-4">
+            <header className="flex flex-col w-full @[900px]:flex-row items-center @[900px]:items-start gap-8 @[900px]:gap-20 pt-4">
                 {/* Left: Text Content */}
-                <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left order-2 lg:order-1 w-full lg:pt-8">
-                    <h1 className="mb-4 text-5xl font-black tracking-tight text-[var(--text-main)] sm:text-6xl md:text-7xl break-words leading-[1.1]">
+                <div className="flex-1 flex flex-col items-center @[900px]:items-start text-center @[900px]:text-left order-2 @[900px]:order-1 w-full @[900px]:pt-8">
+                    <h1 className="mb-4 text-5xl font-black tracking-tight text-[var(--text-main)] @[600px]:text-6xl @[900px]:text-7xl break-words leading-[1.1]">
                         {cleanedName}
                     </h1>
 
@@ -37,7 +37,7 @@ export const CommitteeDetail: React.FC<CommitteeDetailProps> = ({ committee }) =
                         {committee.description || `De ${cleanedName} van Salve Mundi zet zich dagelijks in om de vereniging naar een hoger niveau te tillen en memorabele momenten te creëren voor al onze leden.`}
                     </div>
 
-                    <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4">
+                    <div className="flex flex-wrap items-center justify-center @[900px]:justify-start gap-4">
                         {committee.email && (
                             <a 
                                 href={`mailto:${committee.email}`}
@@ -69,7 +69,7 @@ export const CommitteeDetail: React.FC<CommitteeDetailProps> = ({ committee }) =
                 </div>
 
                 {/* Right: Image Element */}
-                <div className="relative w-full max-w-[450px] lg:w-[450px] aspect-square order-1 lg:order-2 flex-shrink-0 mx-auto lg:ml-auto group">
+                <div className="relative w-full max-w-[450px] @[900px]:w-[450px] aspect-square order-1 @[900px]:order-2 flex-shrink-0 mx-auto @[900px]:ml-auto group">
                     <div className="absolute inset-0 bg-[var(--color-purple-500)]/10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-3xl -z-10" />
                     <Image
                         src={committee.image ? (getImageUrl(committee.image) ?? '/img/newlogo.svg') : '/img/newlogo.svg'}
@@ -83,16 +83,16 @@ export const CommitteeDetail: React.FC<CommitteeDetailProps> = ({ committee }) =
             </header>
 
             {/* Team Section */}
-            <section className="pt-4 border-t border-[var(--border-color)]/10">
-                <div className="flex flex-col items-center mb-10">
-                    <h2 className="flex items-center gap-4 text-4xl font-black text-[var(--text-main)]">
-                        <Users className="h-10 w-10 text-[var(--color-purple-500)]" />
+            <section className="pt-12 border-t border-[var(--border-color)]/10">
+                <div className="flex flex-col items-center mb-16">
+                    <h2 className="flex items-center gap-4 text-4xl font-black text-[var(--text-main)] text-center">
+                        <Users className="h-10 w-10 text-[var(--color-purple-500)] shrink-0" />
                         {isBestuur ? 'Het Bestuur' : 'De Commissie'}
                     </h2>
                     <div className="h-2 w-24 bg-gradient-to-r from-transparent via-[var(--color-purple-500)] to-transparent rounded-full mt-6" />
                 </div>
                 
-                <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-12 grid-cols-[repeat(auto-fit,minmax(min(240px,100%),1fr))]">
                     {members.map((member, idx) => {
                         const name = member.user_id?.first_name ? `${member.user_id.first_name} ${member.user_id.last_name || ''}` : 'Lid';
                         

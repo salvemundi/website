@@ -46,12 +46,12 @@ export const CommitteeCard: React.FC<CommitteeCardProps> = ({
                 ${isBestuur ? 'ring-4 ring-[var(--color-purple-500)]/20 shadow-purple-500/10' : ''}`}
         >
             {/* Image Header */}
-            <div className="relative h-56 w-full overflow-hidden bg-gradient-to-br from-[var(--color-purple-500)]/20 to-[var(--color-purple-900)]/40">
+            <div className="relative h-61 w-full overflow-hidden bg-gradient-to-br from-[var(--color-purple-500)]/20 to-[var(--color-purple-900)]/40">
                 <Image 
                     src={imageUrl} 
                     alt={committee.name || 'Committee'} 
                     fill 
-                    className={`transition-all duration-700 ${hasImage ? 'object-cover group-hover:scale-110' : 'object-contain p-12 opacity-40 group-hover:scale-105'}`}
+                    className={`transition-all duration-700 ${hasImage ? 'object-cover group-hover:scale-110' : 'object-cover p-12 opacity-40 group-hover:scale-105'}`}
                     unoptimized
                     priority={index < 4}
                 />

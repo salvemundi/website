@@ -167,6 +167,19 @@
         cursor: not-allowed;
     }
 
+    /* ── Form Title ─────────────────────────────────────────────────────────── */
+    .form-title {
+        font-size: var(--font-size-3xl); /* Fluid 1.5rem to 2.25rem */
+        font-weight: 900;
+        color: var(--color-purple-700);
+        letter-spacing: -0.025em;
+        line-height: 1.2;
+    }
+
+    .dark .form-title {
+        color: var(--color-purple-300);
+    }
+
     /* Inverted variant for gradient-themed sections */
     .bg-gradient-theme .form-button {
         background-color: var(--color-white);

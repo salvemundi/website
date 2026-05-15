@@ -40,7 +40,7 @@ async function ContactContent() {
         <div>
             <h1 className="sr-only">Contact</h1>
 
-            <div className="mx-auto max-w-7xl px-4 pt-8 pb-8 sm:py-10 md:py-12">
+            <div className="mx-auto max-w-7xl px-[var(--spacing-fluid-md)] py-[var(--spacing-fluid-lg)]">
                 <div className="max-w-6xl mx-auto flex w-full flex-col gap-8">
 
                     {/* 2-koloms grid — Informatie | Contact */}
@@ -52,7 +52,7 @@ async function ContactContent() {
                     {/* Social Media sectie - Wordt direct statisch geserveerd */}
                     <section
                         aria-labelledby="social-media-header"
-                        className="bg-(--bg-card) dark:border dark:border-white/10 rounded-3xl shadow-lg p-8"
+                        className="bg-(--bg-card) dark:border dark:border-white/10 rounded-3xl shadow-lg p-[var(--spacing-fluid-md)]"
                     >
                         <h2
                             id="social-media-header"

@@ -52,61 +52,63 @@ function ActionItem({ icon, title, subtitle, href, onClick, children }: ActionIt
 
 export default function ContactInfoCard({ documenten, isLoggedIn }: { documenten: WebsiteDocument[], isLoggedIn: boolean }) {
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-            {/* Linkerkolom: Algemene Info */}
-            <div className="space-y-6">
-                <h2 className="text-2xl font-semibold text-[var(--text-main)] px-2">Informatie</h2>
+        <div className="@container w-full">
+            <div className="grid grid-cols-1 @[700px]:grid-cols-2 gap-10">
+                {/* Linkerkolom: Algemene Info */}
+                <div className="space-y-6">
+                    <h2 className="text-2xl font-semibold text-[var(--text-main)] px-2">Informatie</h2>
 
-                <ActionItem
-                    icon={<MapPin />}
-                    title="Rachelsmolen 1"
-                    subtitle="Gebouw R10, Lokaal 2.26"
-                />
-
-                <ActionItem
-                    icon={<Building />}
-                    title="KvK nummer 70280606"
-                />
-
-                <ActionItem
-                    icon={<Calendar />}
-                    title="Activiteitenkalender"
-                    href="/activiteiten"
-                />
-
-                <div className="pt-4 px-2">
-                    <h3 className="font-semibold text-[var(--text-main)] text-lg mb-4 flex items-center gap-3">
-                        <FileText className="h-5 w-5 text-[var(--color-purple-500)]" />
-                        Documenten
-                    </h3>
-                    <DocumentenLijst documenten={documenten} />
-                </div>
-            </div>
-
-            {/* Rechterkolom: Contactopties */}
-            <div className="space-y-6">
-                <h2 className="text-2xl font-semibold text-[var(--text-main)] px-2">Contact</h2>
-
-                <ActionItem
-                    icon={<Mail />}
-                    title={<ObfuscatedEmail email="info@salvemundi.nl" showIcon={false} />}
-                />
-
-                <ActionItem
-                    icon={<Phone />}
-                    title="+31 6 24827777"
-                    href="tel:+31624827777"
-                />
-
-                {isLoggedIn && (
                     <ActionItem
-                        icon={<MessageCircle />}
-                        title="WhatsApp"
-                        href="https://wa.me/31624827777"
+                        icon={<MapPin />}
+                        title="Rachelsmolen 1"
+                        subtitle="Gebouw R10, Lokaal 2.26"
                     />
-                )}
 
-                <SafeHavenButton />
+                    <ActionItem
+                        icon={<Building />}
+                        title="KvK nummer 70280606"
+                    />
+
+                    <ActionItem
+                        icon={<Calendar />}
+                        title="Activiteitenkalender"
+                        href="/activiteiten"
+                    />
+
+                    <div className="pt-4 px-2">
+                        <h3 className="font-semibold text-[var(--text-main)] text-lg mb-4 flex items-center gap-3">
+                            <FileText className="h-5 w-5 text-[var(--color-purple-500)]" />
+                            Documenten
+                        </h3>
+                        <DocumentenLijst documenten={documenten} />
+                    </div>
+                </div>
+
+                {/* Rechterkolom: Contactopties */}
+                <div className="space-y-6">
+                    <h2 className="text-2xl font-semibold text-[var(--text-main)] px-2">Contact</h2>
+
+                    <ActionItem
+                        icon={<Mail />}
+                        title={<ObfuscatedEmail email="info@salvemundi.nl" showIcon={false} />}
+                    />
+
+                    <ActionItem
+                        icon={<Phone />}
+                        title="+31 6 24827777"
+                        href="tel:+31624827777"
+                    />
+
+                    {isLoggedIn && (
+                        <ActionItem
+                            icon={<MessageCircle />}
+                            title="WhatsApp"
+                            href="https://wa.me/31624827777"
+                        />
+                    )}
+
+                    <SafeHavenButton />
+                </div>
             </div>
         </div>
     );

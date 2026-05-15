@@ -14,6 +14,7 @@ import {
 import { Plus, Minus, Mail, Building, Ticket } from 'lucide-react';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import AdminToast from '@/components/ui/admin/AdminToast';
+import { StandardFormCard } from '@/components/ui/forms/StandardFormCard';
 
 const ASSOCIATIONS = [
     'Salve Mundi',
@@ -38,8 +39,6 @@ interface KroegentochtFormIslandProps {
     event?: PubCrawlEvent;
     initialUser?: { email?: string; association?: string } | null;
 }
-
-// Type removed since it's now defined in @salvemundi/validations as PubCrawlSignupForm
 
 export default function KroegentochtFormIsland({ 
     event = {} as PubCrawlEvent, 
@@ -69,9 +68,6 @@ export default function KroegentochtFormIsland({
             website: '',
             pub_crawl_event_id: event.id }
     });
-
-    // REIS_FORM_V7.6_SSR: Skeletons en useEffect prefills verwijderd voor maximale stabiliteit.
-
 
     const { fields, append, remove } = useFieldArray({
         control,
@@ -118,19 +114,14 @@ export default function KroegentochtFormIsland({
         });
     };
 
-    // Skeletons verwijderd om browser autofill niet te blokkeren.
-
-
     return (
-        <section className={`bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-6 md:p-8 animate-in fade-in duration-500`}>
-            <h2 className="text-2xl sm:text-3xl font-black text-[var(--theme-purple)] mb-4 flex items-center gap-3">
-                <Ticket className="w-8 h-8" />
-                Inschrijven
-            </h2>
-            <div className="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
-                Vul hieronder je gegevens in en reserveer je plek voor de kroegentocht. 
-                Tickets kosten slechts <strong>€1,00</strong> per stuk!
-            </div>
+        <StandardFormCard
+            title="Inschrijven"
+            subtitle="Kroegentocht"
+            icon={<Ticket className="w-8 h-8" />}
+            description="Vul hieronder je gegevens in en reserveer je plek voor de kroegentocht. Tickets kosten slechts €1,00 per stuk!"
+            className="animate-in fade-in duration-500"
+        >
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" autoComplete="off">
                 <FormField id="field-email" label="E-mailadres" required error={errors.email?.message}>
                     <div className="relative">
@@ -264,7 +255,6 @@ export default function KroegentochtFormIsland({
                 </div>
             </form>
             <AdminToast toast={toast} onClose={hideToast} />
-        </section>
+        </StandardFormCard>
     );
 }
-

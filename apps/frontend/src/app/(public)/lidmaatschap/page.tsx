@@ -6,6 +6,7 @@ import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { fetchUserCommitteesDb, type Committee } from '@/server/internal/user-db.utils';
 import { connection } from 'next/server';
 import { safeConsoleError } from '@/server/utils/logger';
+import { StandardFormCard } from '@/components/ui/forms/StandardFormCard';
 
 export const metadata = {
     title: 'Word Lid | Salve Mundi',
@@ -42,17 +43,17 @@ export default async function MembershipPage() {
         >
             <div className="max-w-app mx-auto">
                 <div className="flex flex-col sm:flex-row gap-6 px-6 py-8 sm:py-10 md:py-12">
-                    <section className={`bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-[2rem] shadow-xl p-6 sm:p-10 ${isGuest ? 'w-full sm:w-1/2' : 'w-full max-w-2xl mx-auto'}`}>
-                        <h1 className="text-4xl font-semibold text-theme-purple dark:text-purple-400 mb-8 tracking-tight">
-                            {isGuest ? 'INSCHRIJVEN' : (user?.membership_status === 'active' ? 'STATUS' : 'VERLENGEN')}
-                        </h1>
-
+                    <StandardFormCard
+                        title={isGuest ? 'INSCHRIJVEN' : (user?.membership_status === 'active' ? 'STATUS' : 'VERLENGEN')}
+                        subtitle="Lidmaatschap"
+                        className={isGuest ? 'w-full sm:w-1/2' : 'w-full max-w-2xl mx-auto'}
+                    >
                         {isGuest ? (
                             <MembershipFormIsland baseAmount={baseAmount} />
                         ) : (
                             <MembershipStatusIsland user={user as MembershipUserData} baseAmount={baseAmount} />
                         )}
-                    </section>
+                    </StandardFormCard>
 
                     {isGuest && (
                         <aside className="w-full sm:w-1/2 flex flex-col gap-6">

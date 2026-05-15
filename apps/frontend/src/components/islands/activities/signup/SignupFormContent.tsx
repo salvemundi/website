@@ -8,6 +8,7 @@ import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { Loader2, CreditCard, Send, Users, Info, AlertCircle } from 'lucide-react';
+import { StandardFormCard } from '@/components/ui/forms/StandardFormCard';
 
 interface SignupFormContentProps {
     onSubmit: (data: EventSignupForm) => void;
@@ -45,20 +46,13 @@ export default function SignupFormContent({
     });
 
     return (
-        <div className={`h-full flex flex-col p-8 rounded-[2rem] bg-[var(--bg-card)] border border-[var(--border-color)] shadow-2xl group transition-all duration-500 hover:shadow-[var(--theme-purple)]/10`}>
-            <div className="flex justify-between items-start mb-8">
-                <div>
-                    <h3 className="text-2xl font-semibold text-[var(--theme-purple)] flex items-center gap-3">
-                        <Users className="h-6 w-6" /> Aanmelden
-                    </h3>
-                    <p className="text-[10px]  font-semibold text-[var(--text-muted)] tracking-[0.2em] mt-1 ml-9">Activiteit Tickets</p>
-                </div>
-                <div className="text-right">
-                    <span className="block text-[10px]  font-semibold text-[var(--text-muted)] tracking-[0.2em] mb-1">Prijs</span>
-                    <span className="text-2xl font-semibold text-[var(--theme-purple)]">€{price.toFixed(2)}</span>
-                </div>
-            </div>
-
+        <StandardFormCard
+            title="Aanmelden"
+            subtitle="Activiteit"
+            icon={<Users className="h-8 w-8" />}
+            price={price}
+            className="h-full"
+        >
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 flex-1 flex flex-col" autoComplete="off">
                 <div className="space-y-4 flex-1">
                     <FormField
@@ -66,7 +60,6 @@ export default function SignupFormContent({
                         label="Naam"
                         required
                         error={errors.name?.message}
-                        labelClassName="text-[10px]  font-semibold text-[var(--theme-purple)]/50 ml-3 tracking-widest"
                     >
                         <Input
                             {...register('name')}
@@ -81,7 +74,6 @@ export default function SignupFormContent({
                         label="Email"
                         required
                         error={errors.email?.message}
-                        labelClassName="text-[10px]  font-semibold text-[var(--theme-purple)]/50 ml-3 tracking-widest"
                     >
                         <Input
                             {...register('email')}
@@ -97,7 +89,6 @@ export default function SignupFormContent({
                         label="Telefoonnummer"
                         required
                         error={errors.phoneNumber?.message}
-                        labelClassName="text-[10px]  font-semibold text-[var(--theme-purple)]/50 ml-3 tracking-widest"
                     >
                         <Controller
                             name="phoneNumber"
@@ -136,12 +127,12 @@ export default function SignupFormContent({
                         </div>
                     </button>
                     <div className="flex items-center justify-center gap-2 text-[10px] font-black text-[var(--text-muted)] opacity-50 uppercase tracking-tighter">
-                        <Info className="h-3 w-3" /> <span>Beveiligid verwerking & Directe bevestiging</span>
+                        <Info className="h-3 w-3" /> <span>Beveiligde verwerking & Directe bevestiging</span>
                     </div>
                 </div>
                 {/* Honeypot at bottom to avoid breaking browser autofill sections */}
                 <input {...register('website')} type="text" className="hidden" tabIndex={-1} autoComplete="off" suppressHydrationWarning />
             </form>
-        </div>
+        </StandardFormCard>
     );
 }

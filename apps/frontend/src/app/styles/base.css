@@ -12,6 +12,14 @@
 
 @font-face {
     font-family: "Poppins";
+    src: url("/fonts/poppins/Poppins-Medium.ttf") format("truetype");
+    font-weight: 500;
+    font-style: normal;
+    font-display: fallback;
+}
+
+@font-face {
+    font-family: "Poppins";
     src: url("/fonts/poppins/Poppins-SemiBold.ttf") format("truetype");
     font-weight: 600;
     font-style: normal;
@@ -22,6 +30,14 @@
     font-family: "Poppins";
     src: url("/fonts/poppins/Poppins-Bold.ttf") format("truetype");
     font-weight: 700;
+    font-style: normal;
+    font-display: fallback;
+}
+
+@font-face {
+    font-family: "Poppins";
+    src: url("/fonts/poppins/Poppins-Black.ttf") format("truetype");
+    font-weight: 900;
     font-style: normal;
     font-display: fallback;
 }
