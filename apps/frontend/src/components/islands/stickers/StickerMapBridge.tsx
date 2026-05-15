@@ -10,6 +10,7 @@ type Sticker = z.infer<typeof stickerPublicSchema>;
 interface StickerMapBridgeProps {
     initialStickers: Sticker[];
     user: EnrichedUser | null;
+    className?: string;
 }
 
 // Hier mag ssr: false wel, omdat dit een Client Component is

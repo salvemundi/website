@@ -21,11 +21,13 @@ import { type StickerPublic } from '@salvemundi/validations';
 interface StickerMapIslandProps {
     initialStickers: StickerPublic[];
     user: EnrichedUser | null;
+    className?: string;
 }
 
 export default function StickerMapIsland({
     initialStickers,
-    user
+    user,
+    className
 }: StickerMapIslandProps) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [stickers, setStickers] = useState(initialStickers);
@@ -170,12 +172,12 @@ export default function StickerMapIsland({
     };
 
     return (
-        <div className="space-y-4 sm:space-y-8">
-            <div className="hidden md:block">
+        <div className="flex flex-col h-full gap-4 sm:gap-6">
+            <div className="hidden md:block shrink-0">
                 <StickerStats stickers={stickers} />
             </div>
 
-            <div className="relative group h-[calc(100dvh-4.5rem)] md:h-[600px]">
+            <div className="relative group flex-1 min-h-0">
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-orange-500/5 blur-3xl -z-10" />
 
                 <StickerMap
@@ -185,6 +187,7 @@ export default function StickerMapIsland({
                     filterCountry={filterCountry}
                     filterCity={filterCity}
                     stretchToContainer
+                    className={className}
                 />
 
                 {/* Floating Controls */}
