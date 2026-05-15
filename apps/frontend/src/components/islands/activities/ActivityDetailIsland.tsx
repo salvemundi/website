@@ -69,70 +69,72 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                     </div>
 
                     {/* Right Column: Info Tiles Grid */}
-                    <div className="order-2 lg:order-2 grid grid-cols-1 sm:grid-cols-2 gap-4 h-full">
-                        {/* Date & Time Tile */}
-                        <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] p-6 shadow-lg shadow-[var(--theme-purple)]/5 flex items-center gap-4 transition-all hover:border-[var(--theme-purple)]/30 group sm:col-span-2">
-                            <div className="h-14 w-14 rounded-2xl bg-[var(--theme-purple)]/5 flex items-center justify-center text-[var(--theme-purple)] group-hover:scale-110 transition-transform shrink-0">
-                                <CalendarClock className="h-7 w-7" />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                                <p className="text-[10px] uppercase font-black text-[var(--theme-purple)]/40 tracking-[0.2em] mb-1">Datum & Tijd</p>
-                                <p className="text-base font-bold text-[var(--text-main)] truncate">
-                                    {activity ? formatDutchDate(activity.datum_start) : ''}
-                                </p>
-                                {timeRange && (
-                                    <p className="text-sm font-medium text-[var(--text-muted)]">
-                                        {timeRange}
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-
-
-                        {/* Location Tile */}
-                        {activity?.locatie && (
-                            <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] p-6 shadow-lg shadow-[var(--theme-purple)]/5 flex items-center gap-4 transition-all hover:border-[var(--theme-purple)]/30 group sm:col-span-2">
+                    <div className="@container order-2 lg:order-2 h-full">
+                        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(240px,100%),1fr))] gap-4">
+                            {/* Date & Time Tile */}
+                            <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] p-6 shadow-lg shadow-[var(--theme-purple)]/5 flex items-center gap-4 transition-all hover:border-[var(--theme-purple)]/30 group @[500px]:col-span-2">
                                 <div className="h-14 w-14 rounded-2xl bg-[var(--theme-purple)]/5 flex items-center justify-center text-[var(--theme-purple)] group-hover:scale-110 transition-transform shrink-0">
-                                    <MapPin className="h-7 w-7" />
+                                    <CalendarClock className="h-7 w-7" />
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-[10px] uppercase font-black text-[var(--theme-purple)]/40 tracking-[0.2em] mb-1">Locatie</p>
-                                    <p className="text-base font-bold text-[var(--text-main)]">
-                                        {activity?.locatie}
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-[10px] uppercase font-black text-[var(--theme-purple)]/40 tracking-[0.2em] mb-1">Datum & Tijd</p>
+                                    <p className="text-base font-bold text-[var(--text-main)] truncate">
+                                        {activity ? formatDutchDate(activity.datum_start) : ''}
+                                    </p>
+                                    {timeRange && (
+                                        <p className="text-sm font-medium text-[var(--text-muted)]">
+                                            {timeRange}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+
+
+                            {/* Location Tile */}
+                            {activity?.locatie && (
+                                <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] p-6 shadow-lg shadow-[var(--theme-purple)]/5 flex items-center gap-4 transition-all hover:border-[var(--theme-purple)]/30 group @[500px]:col-span-2">
+                                    <div className="h-14 w-14 rounded-2xl bg-[var(--theme-purple)]/5 flex items-center justify-center text-[var(--theme-purple)] group-hover:scale-110 transition-transform shrink-0">
+                                        <MapPin className="h-7 w-7" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-[10px] uppercase font-black text-[var(--theme-purple)]/40 tracking-[0.2em] mb-1">Locatie</p>
+                                        <p className="text-base font-bold text-[var(--text-main)]">
+                                            {activity?.locatie}
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Organization/Committee Tile */}
+                            <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] p-6 shadow-lg shadow-[var(--theme-purple)]/5 flex items-center gap-4 transition-all hover:border-[var(--theme-purple)]/30 group">
+                                <div className="h-14 w-14 rounded-2xl bg-[var(--theme-purple)]/5 flex items-center justify-center text-[var(--theme-purple)] group-hover:scale-110 transition-transform shrink-0">
+                                    <User className="h-7 w-7" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-[10px] uppercase font-black text-[var(--theme-purple)]/40 tracking-[0.2em] mb-1">Organisatie</p>
+                                    <p className="text-base font-bold text-[var(--text-main)] truncate">
+                                        {activity?.committee_name || 'Bestuur'}
                                     </p>
                                 </div>
                             </div>
-                        )}
 
-                        {/* Organization/Committee Tile */}
-                        <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] p-6 shadow-lg shadow-[var(--theme-purple)]/5 flex items-center gap-4 transition-all hover:border-[var(--theme-purple)]/30 group">
-                            <div className="h-14 w-14 rounded-2xl bg-[var(--theme-purple)]/5 flex items-center justify-center text-[var(--theme-purple)] group-hover:scale-110 transition-transform shrink-0">
-                                <User className="h-7 w-7" />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                                <p className="text-[10px] uppercase font-black text-[var(--theme-purple)]/40 tracking-[0.2em] mb-1">Organisatie</p>
-                                <p className="text-base font-bold text-[var(--text-main)] truncate">
-                                    {activity?.committee_name || 'Bestuur'}
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Contact/Support Tile */}
-                        <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] p-6 shadow-lg shadow-[var(--theme-purple)]/5 flex items-center gap-4 transition-all hover:border-[var(--theme-purple)]/30 group">
-                            <div className="h-14 w-14 rounded-2xl bg-[var(--theme-purple)]/5 flex items-center justify-center text-[var(--theme-purple)] group-hover:scale-110 transition-transform shrink-0">
-                                <Mail className="h-7 w-7" />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                                <p className="text-[10px] uppercase font-black text-[var(--theme-purple)]/40 tracking-[0.2em] mb-1">Contact</p>
-                                {committeeEmail ? (
-                                    <div className="text-sm font-bold text-[var(--theme-purple)] truncate block">
-                                        <ObfuscatedEmail email={committeeEmail} showIcon={false} />
-                                    </div>
-                                ) : (
-                                    <div className="text-sm font-bold text-[var(--theme-purple)] truncate block">
-                                        <ObfuscatedEmail email="bestuur@salvemundi.nl" showIcon={false} />
-                                    </div>
-                                )}
+                            {/* Contact/Support Tile */}
+                            <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] p-6 shadow-lg shadow-[var(--theme-purple)]/5 flex items-center gap-4 transition-all hover:border-[var(--theme-purple)]/30 group">
+                                <div className="h-14 w-14 rounded-2xl bg-[var(--theme-purple)]/5 flex items-center justify-center text-[var(--theme-purple)] group-hover:scale-110 transition-transform shrink-0">
+                                    <Mail className="h-7 w-7" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-[10px] uppercase font-black text-[var(--theme-purple)]/40 tracking-[0.2em] mb-1">Contact</p>
+                                    {committeeEmail ? (
+                                        <div className="text-sm font-bold text-[var(--theme-purple)] truncate block">
+                                            <ObfuscatedEmail email={committeeEmail} showIcon={false} />
+                                        </div>
+                                    ) : (
+                                        <div className="text-sm font-bold text-[var(--theme-purple)] truncate block">
+                                            <ObfuscatedEmail email="bestuur@salvemundi.nl" showIcon={false} />
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -8,6 +8,7 @@ import { ReisRegistrationForm } from './ReisRegistrationForm';
 import { RefreshCcw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { revalidateReisAction } from '@/server/actions/events/reis.actions';
+import { StandardFormCard } from '@/components/ui/forms/StandardFormCard';
 
 import { type EnrichedUser } from '@/types/auth';
 
@@ -57,45 +58,38 @@ export function ReisFormIsland({
     };
 
     return (
-        <section className="w-full lg:w-1/2 bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl shadow-2xl p-6 sm:p-10 relative overflow-hidden group">
-            {/* Decorative background element */}
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-theme-purple/5 rounded-full blur-3xl group-hover:bg-theme-purple/10 transition-colors duration-700" />
-
-            <div className="relative z-10">
-                <div className="flex justify-between items-start mb-8 sm:mb-10">
-                    <div className="space-y-1">
-                        <h1 className="text-3xl sm:text-4xl font-bold text-theme-purple dark:text-theme-white tracking-tight">
-                            {nextTrip?.name || 'Inschrijven'}
-                        </h1>
-                    </div>
-                    <button
-                        onClick={handleRefresh}
-                        disabled={refreshing}
-                        className="p-3 bg-theme-purple/5 hover:bg-theme-purple/10 rounded-2xl text-[var(--text-muted)] hover:text-theme-purple transition-all disabled:opacity-50 active:scale-90"
-                        title="Gegevens vernieuwen"
-                    >
-                        <RefreshCcw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
-                    </button>
-                </div>
-
-                <div className="duration-700">
-                    {userSignup ? (
-                        <ReisSignupStatus
-                            userSignup={userSignup}
-                            nextTrip={nextTrip}
-                            error={null}
-                        />
-                    ) : (
-                        <ReisRegistrationForm
-                            nextTrip={nextTrip}
-                            canSignUp={canSignUp}
-                            registrationStartText={registrationStartText}
-                            currentUser={currentUser}
-                            onRefresh={handleRefresh}
-                        />
-                    )}
-                </div>
+        <StandardFormCard
+            title={nextTrip?.name || 'Inschrijven'}
+            subtitle="Jaarlijkse Reis"
+            className="w-full lg:w-1/2"
+            headerActions={
+                <button
+                    onClick={handleRefresh}
+                    disabled={refreshing}
+                    className="p-3 bg-theme-purple/5 hover:bg-theme-purple/10 rounded-2xl text-[var(--text-muted)] hover:text-theme-purple transition-all disabled:opacity-50 active:scale-90"
+                    title="Gegevens vernieuwen"
+                >
+                    <RefreshCcw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
+                </button>
+            }
+        >
+            <div className="duration-700">
+                {userSignup ? (
+                    <ReisSignupStatus
+                        userSignup={userSignup}
+                        nextTrip={nextTrip}
+                        error={null}
+                    />
+                ) : (
+                    <ReisRegistrationForm
+                        nextTrip={nextTrip}
+                        canSignUp={canSignUp}
+                        registrationStartText={registrationStartText}
+                        currentUser={currentUser}
+                        onRefresh={handleRefresh}
+                    />
+                )}
             </div>
-        </section>
+        </StandardFormCard>
     );
 }

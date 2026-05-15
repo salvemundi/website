@@ -23,6 +23,10 @@
 @theme {
    --color-text-main: var(--text-main);
 
+   /* Brand Colors */
+   --color-paars: #5e2b52;
+   --color-oranje: #ff6542;
+
    /* Semantic Aliases */
    --theme-purple: var(--color-purple-theme);
    --theme-text: var(--text-main);
@@ -112,15 +116,23 @@
 
    /* Typography Scale & Family */
    --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-   --font-size-xs: 0.75rem;
-   --font-size-sm: 0.875rem;
-   --font-size-base: 1rem;
-   --font-size-lg: 1.125rem;
-   --font-size-xl: 1.25rem;
-   --font-size-2xl: 1.5rem;
-   --font-size-3xl: 1.875rem;
-   --font-size-4xl: 2.25rem;
-   --font-size-5xl: 3rem;
+   /* Fluid Typography Scale */
+   --font-size-xs: clamp(0.65rem, 0.6rem + 0.25vw, 0.75rem);
+   --font-size-sm: clamp(0.75rem, 0.7rem + 0.375vw, 0.875rem);
+   --font-size-base: clamp(0.875rem, 0.8rem + 0.5vw, 1rem);
+   --font-size-lg: clamp(1rem, 0.9rem + 0.625vw, 1.125rem);
+   --font-size-xl: clamp(1.125rem, 1rem + 1.25vw, 1.25rem);
+   --font-size-2xl: clamp(1.25rem, 1.15rem + 1.5vw, 1.75rem);
+   --font-size-3xl: clamp(1.5rem, 1.3rem + 2vw, 2.25rem);
+   --font-size-4xl: clamp(2rem, 1.75rem + 3vw, 3.5rem);
+   --font-size-5xl: clamp(2.5rem, 2rem + 5vw, 4.5rem);
+
+   /* Fluid Spacing Scale */
+   --spacing-fluid-xs: clamp(0.25rem, 0.2rem + 0.25vw, 0.5rem);
+   --spacing-fluid-sm: clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem);
+   --spacing-fluid-md: clamp(1rem, 0.8rem + 1vw, 1.5rem);
+   --spacing-fluid-lg: clamp(1.5rem, 1.2rem + 1.5vw, 2.5rem);
+   --spacing-fluid-xl: clamp(2rem, 1.5rem + 2.5vw, 4rem);
 }
 
 @utility admin-container {

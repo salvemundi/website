@@ -32,28 +32,33 @@ export default async function HomePage() {
 async function HomeContent() {
     await connection();
 
-    const session = await getEnrichedSession().catch((error) => {
-        safeConsoleError('[HomePage][HomeContent] Kon sessie niet ophalen:', error);
-        return null;
-    });
+    try {
+        const session = await getEnrichedSession().catch((error) => {
+            safeConsoleError('[HomePage][HomeContent] Kon sessie niet ophalen:', error);
+            return null;
+        });
 
-    const [banners, heroActivities, activities, sponsors] = await Promise.all([
-        getHeroBanners(),
-        getUpcomingActiviteiten(1),
-        getUpcomingActiviteiten(4),
-        getSponsors(),
-    ]);
+        const [banners, heroActivities, activities, sponsors] = await Promise.all([
+            getHeroBanners(),
+            getUpcomingActiviteiten(1),
+            getUpcomingActiviteiten(4),
+            getSponsors(),
+        ]);
 
-    const user = session?.user ?? null;
+        const user = session?.user ?? null;
 
-    return (
-        <>
-            <HeroIsland banners={banners} activiteiten={heroActivities} initialSession={session} />
-            <EventsSection activities={activities} />
-            <WhySalveMundiSection />
-            <JoinSectionIsland serverUser={user} />
-            <SponsorsSection sponsors={sponsors} />
-            <PwaInstallIsland />
-        </>
-    );
+        return (
+            <>
+                <HeroIsland banners={banners} activiteiten={heroActivities} initialSession={session} />
+                <EventsSection activities={activities} />
+                <WhySalveMundiSection />
+                <JoinSectionIsland serverUser={user} />
+                <SponsorsSection sponsors={sponsors} />
+                <PwaInstallIsland />
+            </>
+        );
+    } catch (error) {
+        safeConsoleError('[HomePage][HomeContent] Critical data fetch error:', error);
+        throw error; // Re-throw to trigger the error boundary
+    }
 }

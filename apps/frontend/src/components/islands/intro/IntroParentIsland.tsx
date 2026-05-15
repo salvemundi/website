@@ -9,6 +9,7 @@ import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { Heart } from 'lucide-react';
 import { introParentSignupFormSchema, type IntroParentSignupForm } from '@salvemundi/validations/schema/intro.zod';
 import { formatPhoneNumber } from '@/lib/utils/phone-utils';
+import { StandardFormCard } from '@/components/ui/forms/StandardFormCard';
 
 interface IntroParentIslandProps {
     userName: string;
@@ -66,56 +67,64 @@ export const IntroParentIsland = ({ userName, userEmail, initialPhone }: IntroPa
     }
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="bg-(--bg-card) dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-md shadow-black/5 p-6 lg:p-8 space-y-4" autoComplete="off">
-            <div className="flex items-center gap-2 mb-4">
-                <Heart className="w-5 h-5 lg:w-6 lg:h-6 text-theme-purple" />
-                <h3 className="text-xl lg:text-2xl font-bold text-theme-purple">Word Intro Ouder!</h3>
-            </div>
+        <StandardFormCard
+            title="Word Intro Ouder!"
+            subtitle="Begeleiding"
+            icon={<Heart className="w-8 h-8" />}
+            description="Begeleid de nieuwe lichting studenten tijdens de introweek."
+        >
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 lg:space-y-6" autoComplete="off">
+                <div className="bg-[var(--bg-soft)] rounded-2xl p-4 lg:p-6 mb-6 border border-[var(--border-color)]/20 shadow-inner">
+                    <p className="text-[var(--text-main)] text-sm lg:text-base font-medium space-y-2">
+                        <div className="flex justify-between items-center border-b border-[var(--border-color)]/10 pb-2">
+                            <span className="text-[var(--text-muted)] font-bold uppercase text-[10px] tracking-widest">Naam</span>
+                            <span className="font-bold">{userName}</span>
+                        </div>
+                        <div className="flex justify-between items-center pt-1">
+                            <span className="text-[var(--text-muted)] font-bold uppercase text-[10px] tracking-widest">E-mail</span>
+                            <span className="font-bold">{userEmail}</span>
+                        </div>
+                    </p>
+                </div>
 
-            <div className="bg-white/10 rounded-lg p-3 lg:p-4 mb-4">
-                <p className="text-white text-xs lg:text-sm">
-                    <strong>Naam:</strong> {userName}
-                    <br />
-                    <strong>E-mailadres:</strong> {userEmail}
-                </p>
-            </div>
+                <FormField id="field-telefoonnummer" label="Telefoonnummer" required error={errors.telefoonnummer?.message}>
+                    <Controller
+                        name="telefoonnummer"
+                        control={control}
+                        render={({ field }) => (
+                            <PhoneInput
+                                {...field}
+                                id="field-telefoonnummer"
+                                required
+                                autoComplete="one-time-code"
+                            />
+                        )}
+                    />
+                </FormField>
 
-            <FormField id="field-telefoonnummer" label="Telefoonnummer" required error={errors.telefoonnummer?.message}>
-                <Controller
-                    name="telefoonnummer"
-                    control={control}
-                    render={({ field }) => (
-                        <PhoneInput
-                            {...field}
-                            id="field-telefoonnummer"
-                            required
-                            autoComplete="one-time-code"
-                        />
-                    )}
-                />
-            </FormField>
+                <FormField id="field-motivation" label="Motivatie" required error={errors.motivation?.message}>
+                    <textarea
+                        {...register('motivation')}
+                        id="field-motivation"
+                        required
+                        rows={4}
+                        className="form-input w-full"
+                        placeholder="Vertel ons waarom jij een goede intro ouder zou zijn..."
+                        autoComplete="off"
+                        suppressHydrationWarning
+                    />
+                </FormField>
 
-            <FormField id="field-motivation" label="Motivatie" required error={errors.motivation?.message}>
-                <textarea
-                    {...register('motivation')}
-                    id="field-motivation"
-                    required
-                    rows={4}
-                    className="form-input w-full"
-                    autoComplete="off"
-                    suppressHydrationWarning
-                />
-            </FormField>
+                {error && <p className="text-red-500 dark:text-red-400 text-xs lg:text-sm">{error}</p>}
 
-            {error && <p className="text-red-500 dark:text-red-400 text-xs lg:text-sm">{error}</p>}
-
-            <button
-                type="submit"
-                disabled={isSubmitting}
-                className="form-button w-full mt-4"
-            >
-                {isSubmitting ? 'Bezig...' : 'Meld je aan als Introouder'}
-            </button>
-        </form>
+                <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="form-button w-full mt-4"
+                >
+                    {isSubmitting ? 'Bezig...' : 'Meld je aan als Introouder'}
+                </button>
+            </form>
+        </StandardFormCard>
     );
 };

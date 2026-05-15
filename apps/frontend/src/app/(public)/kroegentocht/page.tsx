@@ -165,7 +165,7 @@ export default async function KroegentochtPage() {
             imageFilter="brightness(0.55)"
             description="Dé activiteit van het jaar! Verken de beste kroegen van Eindhoven met je medestudenten."
         >
-            <div className="mx-auto max-w-7xl px-4 py-8 sm:py-10 md:py-12">
+            <div className="mx-auto max-w-7xl px-[var(--spacing-fluid-md)] py-[var(--spacing-fluid-lg)]">
                 {isAuthenticated && tickets.length > 0 && (
                     <KroegentochtTicketsIsland initialTickets={tickets} userEmail={session.user.email!} />
                 )}

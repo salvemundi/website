@@ -2,6 +2,7 @@ import { connection } from 'next/server';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { hasParentSignup, getIntroBlogsPublic } from '@/server/actions/public/intro.actions';
 
+import { CheckCircle2 } from 'lucide-react';
 import { IntroStudentIsland } from '@/components/islands/intro/IntroStudentIsland';
 import { IntroParentIsland } from '@/components/islands/intro/IntroParentIsland';
 import { IntroLightboxIsland } from '@/components/islands/intro/IntroLightboxIsland';
@@ -13,59 +14,73 @@ export const metadata = {
     description: 'Schrijf je in voor de gezelligste introductieweek bij Salve Mundi.' };
 
 const IntroInfoStudent = () => (
-    <div>
-        <h2 className="text-2xl lg:text-3xl font-bold mb-4 text-theme dark:text-white">
+    <div className="space-y-6">
+        <h2 className="text-3xl font-black mb-4 text-[var(--text-main)] tracking-tight">
             Klaar om je studententijd met een knal te beginnen?
         </h2>
-        <p className="text-base lg:text-lg leading-relaxed mb-4 text-theme dark:text-white">
+        <p className="text-lg leading-relaxed text-[var(--text-muted)] font-medium">
             Voordat de boeken opengaan en de eerste regels code geschreven worden, is er maar één plek waar je moet zijn: de Salve Mundi Introductie!
         </p>
 
-        <h3 className="font-semibold mb-2 text-theme dark:text-white">Waarom je dit niet wilt missen</h3>
-        <ul className="list-disc list-inside mb-4 text-base lg:text-lg text-theme dark:text-white">
-            <li className="mb-1"><strong>Legendarische Feesten:</strong> Ontdek het Eindhovense nachtleven met mensen die dezelfde passie delen.</li>
-            <li className="mb-1"><strong>Connecties:</strong> Leer de ouderejaars kennen; zij weten precies hoe je die lastige vakken straks haalt.</li>
-            <li className="mb-1"><strong>Gezelligheid boven alles:</strong> Geen ontgroening, maar een warm welkom bij dè studievereniging van Fontys ICT.</li>
-        </ul>
+        <div className="space-y-4">
+            <h3 className="font-black text-xs uppercase tracking-[0.2em] text-[var(--color-purple-500)]">Waarom je dit niet wilt missen</h3>
+            <ul className="grid gap-3">
+                <li className="flex gap-3 text-[var(--text-muted)] font-medium">
+                    <span className="text-[var(--color-purple-500)] font-black">01</span>
+                    <span><strong>Legendarische Feesten:</strong> Ontdek het Eindhovense nachtleven met mensen die dezelfde passie delen.</span>
+                </li>
+                <li className="flex gap-3 text-[var(--text-muted)] font-medium">
+                    <span className="text-[var(--color-purple-500)] font-black">02</span>
+                    <span><strong>Connecties:</strong> Leer de ouderejaars kennen; zij weten precies hoe je die lastige vakken straks haalt.</span>
+                </li>
+                <li className="flex gap-3 text-[var(--text-muted)] font-medium">
+                    <span className="text-[var(--color-purple-500)] font-black">03</span>
+                    <span><strong>Gezelligheid boven alles:</strong> Geen ontgroening, maar een warm welkom bij dè studievereniging van Fontys ICT.</span>
+                </li>
+            </ul>
+        </div>
 
-        <h3 className="font-semibold text-theme dark:text-white">Schrijf je nu in!</h3>
-        <p className="text-base lg:text-lg leading-relaxed mb-2 text-theme dark:text-white">
-            Ben jij erbij? Vul het onderstaande formulier in om je plek te reserveren voor de gezelligste week van het jaar.
-            Of je nu een hardcore gamer bent, een toekomstige developer of gewoon houdt van een goed feestje: bij Salve Mundi hoor je erbij.
-        </p>
-        <p className="text-sm text-theme-muted">Let op: De plaatsen zijn beperkt, dus wacht niet te lang met aanmelden!</p>
+        <div className="p-6 bg-[var(--bg-soft)] rounded-2xl border border-[var(--border-color)]/20 shadow-inner">
+            <p className="text-sm font-bold text-[var(--text-muted)] leading-relaxed italic">
+                Of je nu een hardcore gamer bent, een toekomstige developer of gewoon houdt van een goed feestje: bij Salve Mundi hoor je erbij.
+            </p>
+        </div>
     </div>
 );
 
 const IntroInfoParent = () => (
-    <div>
-        <h2 className="text-2xl lg:text-3xl font-bold mb-4 text-theme dark:text-white">
+    <div className="space-y-6">
+        <h2 className="text-3xl font-black mb-4 text-[var(--text-main)] tracking-tight">
             Word Intro Ouder — begeleid de nieuwe lichting
         </h2>
-        <p className="text-base lg:text-lg leading-relaxed mb-4 text-theme dark:text-white">
+        <p className="text-lg leading-relaxed text-[var(--text-muted)] font-medium">
             Als ervaren Salve Mundi-lid kun je tijdens de Introweek het verschil maken. Als Intro Ouder begeleid je eerstejaars,
-            help je ze wegwijs te worden in studie en stad, en zorg je dat ze zich welkom voelen. Het is gezellig, laagdrempelig en
-            een mooie kans om jouw ervaring door te geven.
+            help je ze wegwijs te worden in studie en stad, en zorg je dat ze zich welkom voelen.
         </p>
 
-        <h3 className="font-semibold mb-2 text-theme dark:text-white">Wat doet een Intro Ouder?</h3>
-        <ul className="list-disc list-inside mb-4 text-base lg:text-lg text-theme dark:text-white">
-            <li className="mb-1"><strong>Begeleiden:</strong> Help kleine groepjes nieuwe leden tijdens activiteiten en zorg voor een veilige sfeer.</li>
-            <li className="mb-1"><strong>Mentorschap:</strong> Geef tips over studie, rooster en het vinden van de weg in Eindhoven.</li>
-            <li className="mb-1"><strong>Gezelligheid:</strong> Organiseer leuke momenten binnen je groep — simpele spellen, gesprekken en samen eten doen wonderen.</li>
-        </ul>
+        <div className="space-y-4">
+            <h3 className="font-black text-xs uppercase tracking-[0.2em] text-[var(--color-purple-500)]">Wat doet een Intro Ouder?</h3>
+            <ul className="grid gap-3">
+                <li className="flex gap-3 text-[var(--text-muted)] font-medium">
+                    <span className="text-[var(--color-purple-500)] font-black">★</span>
+                    <span><strong>Begeleiden:</strong> Help kleine groepjes nieuwe leden tijdens activiteiten en zorg voor een veilige sfeer.</span>
+                </li>
+                <li className="flex gap-3 text-[var(--text-muted)] font-medium">
+                    <span className="text-[var(--color-purple-500)] font-black">★</span>
+                    <span><strong>Mentorschap:</strong> Geef tips over studie, rooster en het vinden van de weg in Eindhoven.</span>
+                </li>
+                <li className="flex gap-3 text-[var(--text-muted)] font-medium">
+                    <span className="text-[var(--color-purple-500)] font-black">★</span>
+                    <span><strong>Gezelligheid:</strong> Organiseer leuke momenten binnen je groep — simpele spellen en samen eten doen wonderen.</span>
+                </li>
+            </ul>
+        </div>
 
-        <h3 className="font-semibold text-theme dark:text-white">Waarom meedoen?</h3>
-        <ul className="list-disc list-inside mb-4 text-base lg:text-lg text-theme dark:text-white">
-            <li className="mb-1"><strong>Impact:</strong> Je helpt nieuwe leden zich echt thuis te voelen.</li>
-            <li className="mb-1"><strong>Netwerk:</strong> Leer commissieleden en andere actieve leden kennen.</li>
-            <li className="mb-1"><strong>Fun:</strong> Gratis pizza, goede verhalen en herinneringen die je niet snel vergeet.</li>
-        </ul>
-
-        <p className="text-base lg:text-lg leading-relaxed mb-2 text-theme dark:text-white">
-            Wil je meedoen? Vul dan het formulier aan de rechterkant in en vertel kort waarom jij de perfecte Intro Ouder bent.
-        </p>
-        <p className="text-sm text-theme-muted">Heb je vragen? Neem contact op met de introcommissie.</p>
+        <div className="p-6 bg-[var(--bg-soft)] rounded-2xl border border-[var(--border-color)]/20 shadow-inner">
+            <p className="text-sm font-bold text-[var(--text-muted)] leading-relaxed italic">
+                Heb je vragen? Neem contact op met de introcommissie.
+            </p>
+        </div>
     </div>
 );
 
@@ -85,22 +100,25 @@ export default async function IntroPage() {
         <PublicPageShell>
             <h1 className="sr-only">Introductie</h1>
             
-            <section className="px-4 sm:px-6 lg:px-10 pt-8 pb-8 lg:py-10">
-                <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 max-w-7xl mx-auto w-full">
+            <section className="px-[var(--spacing-fluid-md)] py-[var(--spacing-fluid-lg)]">
+                <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 max-w-7xl mx-auto w-full items-start">
                     <div className="flex-1 space-y-6">
-                        <div className="bg-(--bg-card) dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-md shadow-black/5 p-6 lg:p-8">
+                        <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-[2rem] shadow-xl p-[var(--spacing-fluid-md)] sm:p-10">
                             {isAuthenticated ? <IntroInfoParent /> : <IntroInfoStudent />}
                         </div>
                         {!isAuthenticated && <IntroLightboxIsland />}
                     </div>
 
-                    <div className="flex-1 w-full flex flex-col justify-start">
+                    <div className="flex-1 w-full">
                         {isAuthenticated && session?.user ? (
                             isAlreadyParent ? (
-                                <div className="bg-gradient-theme squircle-lg p-6 lg:p-8 shadow-lg text-center">
-                                    <h3 className="text-xl lg:text-2xl font-bold text-white mb-4">Je hebt je al aangemeld als Intro Ouder</h3>
-                                    <p className="text-white/70">
-                                        Bedankt! Je inschrijving is ontvangen. Als je iets wilt aanpassen, neem contact op met de intro commissie.
+                                <div className="bg-gradient-theme rounded-[2rem] p-10 shadow-xl text-center flex flex-col items-center justify-center min-h-[300px]">
+                                    <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mb-6">
+                                        <CheckCircle2 className="w-10 h-10 text-white" />
+                                    </div>
+                                    <h3 className="text-3xl font-black text-white mb-4 tracking-tight uppercase">Aangemeld!</h3>
+                                    <p className="text-white/80 font-medium max-w-sm">
+                                        Bedankt! Je inschrijving als Intro Ouder is ontvangen. We nemen snel contact met je op.
                                     </p>
                                 </div>
                             ) : (
@@ -116,7 +134,7 @@ export default async function IntroPage() {
                     </div>
                 </div>
 
-                <div className="max-w-7xl mx-auto w-full">
+                <div className="max-w-7xl mx-auto w-full mt-12">
                     <IntroBlogsIsland blogs={blogs} />
                 </div>
             </section>

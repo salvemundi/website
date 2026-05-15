@@ -66,7 +66,7 @@ export const metadata: Metadata = {
 
 const poppins = Poppins({
     subsets: ['latin'],
-    weight: ['400', '600', '700', '900'],
+    weight: ['400', '500', '600', '700', '900'],
     variable: '--font-poppins'
 });
 
@@ -92,7 +92,7 @@ export default async function RootLayout({
                 />
                 <link rel="preload" as="image" href="/img/newlogo.svg" />
             </head>
-            <body className={`${poppins.variable} antialiased flex flex-col min-h-screen`}>
+            <body className={`${poppins.variable} font-sans antialiased flex flex-col min-h-screen`}>
                 <ImpersonationWrapper impersonation={impersonation} />
                 <HeaderWrapper initialSession={session} isAuthorized={isAuthorized} />
                 <main className="flex-grow min-h-[100dvh] pt-[var(--header-total-height,var(--header-height,80px))]">

@@ -26,7 +26,7 @@ export default async function StickersPage() {
                 <div className="flex flex-col lg:flex-row gap-8 items-stretch h-full">
                     {/* Kaart Sectie */}
                     <div className="flex-1 min-w-0 order-1 h-[50vh] lg:h-full">
-                        <div className="h-full overflow-hidden  bg-[var(--bg-card)]  rounded-3xl">
+                        <div className="h-full overflow-hidden    rounded-3xl">
                             {/* We gebruiken de bridge, die de ssr: false logica afhandelt */}
                             <StickerMapBridge
                                 initialStickers={stickers}
