@@ -22,16 +22,28 @@ export default async function StickersPage() {
             title="STICKERKAART"
             description="Onze leden reizen de hele wereld over. Bekijk hier waar de Salve Mundi stickers allemaal te vinden zijn!"
         >
-            <div className="w-full px-0 py-0 sm:py-12">
-                <div className="overflow-hidden border border-[var(--beheer-border)]/80 bg-[var(--bg-card)] shadow-2xl sm:rounded-3xl">
-                    {/* We gebruiken de bridge, die de ssr: false logica afhandelt */}
-                    <StickerMapBridge
-                        initialStickers={stickers}
-                        user={(session?.user as unknown as EnrichedUser ?? null)}
-                    />
-                </div>
+            <div className="w-full px-4 md:px-8 py-4 md:py-8 h-[calc(100vh-var(--header-total-height))] min-h-[600px]">
+                <div className="flex flex-col lg:flex-row gap-8 items-stretch h-full">
+                    {/* Kaart Sectie */}
+                    <div className="flex-1 min-w-0 order-1 h-[50vh] lg:h-full">
+                        <div className="h-full overflow-hidden  bg-[var(--bg-card)]  rounded-3xl">
+                            {/* We gebruiken de bridge, die de ssr: false logica afhandelt */}
+                            <StickerMapBridge
+                                initialStickers={stickers}
+                                user={(session?.user as unknown as EnrichedUser ?? null)}
+                                className="shadow-2xl"
+                            />
+                        </div>
+                    </div>
 
-                <Leaderboard stickers={stickers} currentUser={(session?.user as unknown as EnrichedUser ?? null)} />
+                    {/* Leaderboard Sectie */}
+                    <div className="w-full lg:w-[400px] shrink-0 order-2 h-[40vh] lg:h-full">
+                        <Leaderboard 
+                            stickers={stickers} 
+                            currentUser={(session?.user as unknown as EnrichedUser ?? null)} 
+                        />
+                    </div>
+                </div>
             </div>
         </PublicPageShell>
     );

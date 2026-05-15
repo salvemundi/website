@@ -25,7 +25,7 @@ export default function Image() {
             >
                 {/* Salve Mundi Branding */}
                 <div style={{ position: 'absolute', top: 60, left: 60, display: 'flex', alignItems: 'center' }}>
-                    <div style={{ fontSize: 32, fontWeight: 700, letterSpacing: 4 }}>SALVE MUNDI</div>
+                    <div style={{ display: 'flex', fontSize: 32, fontWeight: 700, letterSpacing: 4 }}>SALVE MUNDI</div>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>

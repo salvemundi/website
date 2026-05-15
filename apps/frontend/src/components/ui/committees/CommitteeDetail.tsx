@@ -26,7 +26,7 @@ export const CommitteeDetail: React.FC<CommitteeDetailProps> = ({ committee }) =
     return (
         <div className="space-y-6">
             {/* Immersive Hero Section */}
-            <header className="flex flex-col lg:flex-row items-start gap-8 lg:gap-20 pt-4">
+            <header className="flex flex-col w-full lg:flex-row items-center lg:items-start gap-8 lg:gap-20 pt-4">
                 {/* Left: Text Content */}
                 <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left order-2 lg:order-1 w-full lg:pt-8">
                     <h1 className="mb-4 text-5xl font-black tracking-tight text-[var(--text-main)] sm:text-6xl md:text-7xl break-words leading-[1.1]">
@@ -69,7 +69,7 @@ export const CommitteeDetail: React.FC<CommitteeDetailProps> = ({ committee }) =
                 </div>
 
                 {/* Right: Image Element */}
-                <div className="relative w-full max-w-xs md:max-w-md lg:w-[450px] aspect-square order-1 lg:order-2 flex-shrink-0 lg:ml-auto group">
+                <div className="relative w-full max-w-[450px] lg:w-[450px] aspect-square order-1 lg:order-2 flex-shrink-0 mx-auto lg:ml-auto group">
                     <div className="absolute inset-0 bg-[var(--color-purple-500)]/10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-3xl -z-10" />
                     <Image
                         src={committee.image ? (getImageUrl(committee.image) ?? '/img/newlogo.svg') : '/img/newlogo.svg'}
