@@ -2,7 +2,7 @@
 
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import { Edit2, Trash2, Calendar, Users, DollarSign, ImageIcon, Loader2 } from 'lucide-react';
+import { Edit2, Trash2, Calendar, Users, Euro, ImageIcon, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import type { Trip } from '@salvemundi/validations/schema/admin-reis.zod';
@@ -77,8 +77,8 @@ export default function TripCard({ trip, onEdit, onDelete, isDeleting }: TripCar
                         <span className="text-xs font-bold">{trip.max_participants} plekken totaal</span>
                     </div>
                     <div className="flex items-center gap-3 text-[var(--beheer-accent)]">
-                        <DollarSign className="h-4 w-4" />
-                        <span className="text-sm font-black italic">Γé¼{Number(trip.base_price || 0).toFixed(2)}</span>
+                        <Euro className="h-4 w-4" />
+                        <span className="text-sm font-black italic">{Number(trip.base_price || 0).toFixed(2)}</span>
                     </div>
                 </div>
 

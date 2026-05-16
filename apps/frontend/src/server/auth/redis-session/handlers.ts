@@ -92,7 +92,6 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
         const userId = sessionWithUser.user?.id;
         if (!userId) {
             return {
-            return {
                     response: context.response || returned || null,
                     headers: context.headers || null
             };

@@ -7,7 +7,7 @@ interface AdminVisibilityToggleProps {
     isVisible: boolean;
     onToggle: () => void;
     isPending?: boolean;
-    label?: string;
+    label?: React.ReactNode;
     disabled?: boolean;
 }
 
@@ -30,7 +30,7 @@ export default function AdminVisibilityToggle({
                 type="button"
                 onClick={onToggle}
                 disabled={isPending || disabled}
-                aria-label={label}
+                aria-label={typeof label === 'string' ? label : 'Toggle zichtbaarheid'}
                 className={`w-12 h-6 rounded-full p-1 transition-all relative flex items-center ${
                     isVisible ? 'bg-[var(--beheer-active)]' : 'bg-[var(--beheer-inactive)]'
                 } disabled:opacity-50 hover:opacity-90 active:scale-95`}
