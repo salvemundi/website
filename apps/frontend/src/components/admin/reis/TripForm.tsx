@@ -175,21 +175,21 @@ export default function TripForm({
                             </div>
                         </div>
 
-                        {/* Section 3: Financi├½n */}
+                        {/* Section 3: Financiën */}
                         <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] overflow-hidden">
                             <div className="px-6 py-4 border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 flex items-center gap-3">
                                 <Euro className="h-4 w-4 text-[var(--beheer-accent)]" />
-                                <h2 className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text)]">Financi├½n</h2>
+                                <h2 className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text)]">Financiën</h2>
                             </div>
                             <div className="p-6 space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label htmlFor="base_price" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest mb-2">Totale Prijs (Γé¼) *</label>
+                                        <label htmlFor="base_price" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest mb-2">Totale Prijs (€) *</label>
                                         <input type="number" id="base_price" name="base_price" step="0.01" min="0" className={`beheer-input ${formErrors.base_price ? 'border-red-500' : ''}`} placeholder="0.00" defaultValue={(state?.initialData?.base_price as number) || editingTrip?.base_price} />
                                         {formErrors.base_price && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.base_price[0]}</p>}
                                     </div>
                                     <div>
-                                        <label htmlFor="deposit_amount" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest mb-2">Aanbetaling (Γé¼) *</label>
+                                        <label htmlFor="deposit_amount" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest mb-2">Aanbetaling (€) *</label>
                                         <input type="number" id="deposit_amount" name="deposit_amount" step="0.01" min="0" className={`beheer-input ${formErrors.deposit_amount ? 'border-red-500' : ''}`} placeholder="0.00" defaultValue={(state?.initialData?.deposit_amount as number) || editingTrip?.deposit_amount} />
                                         {formErrors.deposit_amount && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.deposit_amount[0]}</p>}
                                     </div>

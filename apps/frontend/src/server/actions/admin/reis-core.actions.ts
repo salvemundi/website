@@ -12,7 +12,8 @@ import {
     createTripDb, 
     updateTripDb, 
     deleteTripDb, 
-    fetchAllTripsDb 
+    fetchFullTripsDb,
+    fetchTripByIdDb
 } from '@/server/internal/reis-db.utils';
 import { tripSchema } from '@salvemundi/validations/schema/admin-reis.zod';
 import { safeConsoleError } from '@/server/utils/logger';
@@ -37,17 +38,12 @@ async function handleImageUpload(formData: FormData): Promise<string | null> {
 
 export async function getAdminTrips() {
     await requireAdminResource(AdminResource.Reis);
-    return await fetchAllTripsDb();
+    return await fetchFullTripsDb();
 }
 
 export async function getAdminTripById(id: number) {
     await requireAdminResource(AdminResource.Reis);
-    const { rows } = await query('SELECT id, name, is_bus_trip FROM trips WHERE id = $1 LIMIT 1', [id]);
-    if (!rows?.[0]) return null;
-    return {
-        ...rows[0],
-        is_bus_trip: !!rows[0].is_bus_trip
-    };
+    return await fetchTripByIdDb(id);
 }
 
 export async function createTrip(prevState: unknown, formData: FormData) {

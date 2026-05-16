@@ -111,7 +111,7 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
 
     return (
         <AdminPageShell
-            title={`Reis Cockpit — ${activeTrip.name}`}
+            title={activeTrip.name}
             subtitle="Beheer alle deelnemers en logistiek voor deze trip"
             backHref="/beheer"
             actions={

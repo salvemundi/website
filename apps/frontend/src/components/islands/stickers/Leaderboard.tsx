@@ -62,7 +62,6 @@ export default function Leaderboard({ stickers, currentUser }: LeaderboardProps)
                             
                             const isGold = idx === 1;
                             const isSilver = idx === 0;
-                            const isBronze = idx === 2;
                             const isMe = Boolean(currentUser && String(user.id) === String(currentUser.id));
 
                             return (
