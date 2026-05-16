@@ -11,7 +11,7 @@ import {
     getSignupPhone, 
     MemberBadge, 
     PaymentBadge 
-} from '@/lib/activity-signup.utils';
+} from '@/lib/activities/activity-signup.utils';
 
 interface ActivitySignupTableProps {
     signups: Signup[];

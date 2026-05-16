@@ -1,4 +1,4 @@
-import { safeConsoleError } from '../utils/logger.js';
+import { safeConsoleError, logInfo } from '../utils/logger.js';
 import { Redis } from 'ioredis';
 import fetch from 'isomorphic-fetch';
 import { GraphService } from './graph.service.js';
@@ -35,7 +35,7 @@ export class ProvisionWorkerService {
      * Starts the worker loop.
      */
     static async start(redis: Redis) {
-        console.log('[ProvisionWorker] Starting worker loop...');
+        logInfo('[ProvisionWorker] Starting worker loop...');
 
         while (!this.shouldStop) {
             try {
@@ -68,7 +68,7 @@ export class ProvisionWorkerService {
                         const token = await TokenService.getAccessToken();
                         const upn = await GraphService.generateUniqueUpn(upnPrefix, token);
 
-                        console.log(`[ProvisionWorker] Provisioning ${task.email} as ${upn}...`);
+                        logInfo(`[ProvisionWorker] Provisioning ${task.email} as ${upn}...`);
 
                         const formatLocalDate = (date: Date) => {
                             return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -89,12 +89,12 @@ export class ProvisionWorkerService {
                             expiryDate
                         );
 
-                        console.log(`[ProvisionWorker] Azure account created for ${task.email}`);
+                        logInfo(`[ProvisionWorker] Azure account created for ${task.email}`);
 
                         // 2.1 Add to 'Leden_Actief_Lidmaatschap' group
                         const activeGroupId = process.env.AZURE_ACTIVE_LID_GROUP_ID || '2e17c12a-28d6-49ae-981a-8b5b8d88db8a';
                         try {
-                            console.log(`[ProvisionWorker] Adding user to group ${activeGroupId}...`);
+                            logInfo(`[ProvisionWorker] Adding user to group ${activeGroupId}...`);
                             await GraphService.addGroupMember(activeGroupId, result.id, token);
                         } catch (groupErr: any) {
                             safeConsoleError(`[ProvisionWorker][addGroupMember] Failed to add user to active lid group: ${groupErr.message}`);
@@ -103,7 +103,7 @@ export class ProvisionWorkerService {
 
                         // 3. Sync to Directus (Strict Seqential: Sync BEFORE Mail)
                         if (process.env.AZURE_SYNC_SERVICE_URL) {
-                            console.log(`[ProvisionWorker] Triggering immediate sync for Entra ID ${result.id}...`);
+                            logInfo(`[ProvisionWorker] Triggering immediate sync for Entra ID ${result.id}...`);
                             const syncRes = await fetch(`${process.env.AZURE_SYNC_SERVICE_URL}/api/sync/run/${encodeURIComponent(result.id)}`, {
                                 method: 'POST',
                                 headers: { 'Authorization': `Bearer ${process.env.INTERNAL_SERVICE_TOKEN}` }
@@ -113,11 +113,11 @@ export class ProvisionWorkerService {
                                 const errorText = await syncRes.text();
                                 throw new Error(`Sync service failed: ${errorText}`);
                             }
-                            console.log(`[ProvisionWorker] Sync completed for ${task.email}`);
+                            logInfo(`[ProvisionWorker] Sync completed for ${task.email}`);
                         }
 
                         // 4. Queue Welcome Email (ONLY after azure + sync success)
-                        console.log(`[ProvisionWorker] Sending combined welcome & payment email to ${task.email}...`);
+                        logInfo(`[ProvisionWorker] Sending combined welcome & payment email to ${task.email}...`);
 
                         const mailRes = await fetch(`${process.env.MAIL_SERVICE_URL}/api/mail/send`, {
                             method: 'POST',
@@ -139,7 +139,7 @@ export class ProvisionWorkerService {
                         });
 
                         if (!mailRes.ok) throw new Error(`Mail service failed: ${mailRes.statusText}`);
-                        console.log(`[ProvisionWorker][${task.email}] Welcome email successful.`);
+                        logInfo(`[ProvisionWorker][${task.email}] Welcome email successful.`);
 
                         // Success -> Remove task
                         await redis.zrem(this.QUEUE_KEY, taskJson);
@@ -148,7 +148,7 @@ export class ProvisionWorkerService {
 
                         // If user already exists, we consider it "Success" (or at least done)
                         if (error.message?.includes('already exists') || error.status === 409) {
-                            console.log(`[ProvisionWorker][${task.email}] User already exists. Removing task.`);
+                            logInfo(`[ProvisionWorker][${task.email}] User already exists. Removing task.`);
                             await redis.zrem(this.QUEUE_KEY, taskJson);
                             continue;
                         }

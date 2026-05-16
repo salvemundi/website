@@ -92,6 +92,7 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
         const userId = sessionWithUser.user?.id;
         if (!userId) {
             return {
+            return {
                     response: context.response || returned || null,
                     headers: context.headers || null
             };
@@ -178,8 +179,8 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
         safeConsoleError(`[redis-session/handlers.ts][afterHandler] Critical Error:`, error);
         // Fallback to returning the original data in the expected structure if possible
         return {
-                response: context.response || returned || null,
-                headers: context.headers || null
+            response: context.response || returned || null,
+            headers: context.headers || null
         };
     }
 }

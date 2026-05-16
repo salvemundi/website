@@ -1,11 +1,24 @@
-import { sanitizePayload } from './log-sanitizer';
+import { sanitizePayload, redactString } from './log-sanitizer';
 export function logInternalError(message: string, context?: unknown) {
+    const sanitizedMessage = redactString(message);
     const sanitizedContext = context ? sanitizePayload(context) : '';
-    console.error(`[ERROR] ${message}`, sanitizedContext);
+    console.error(`[ERROR] ${sanitizedMessage}`, sanitizedContext);
+}
+
+export function logInfo(message: string, context?: unknown) {
+    const sanitizedMessage = redactString(message);
+    const sanitizedContext = context ? sanitizePayload(context) : '';
+    console.log(`[INFO] ${sanitizedMessage}`, sanitizedContext);
+}
+
+export function logWarn(message: string, context?: unknown) {
+    const sanitizedMessage = redactString(message);
+    const sanitizedContext = context ? sanitizePayload(context) : '';
+    console.warn(`[WARN] ${sanitizedMessage}`, sanitizedContext);
 }
 
 export function safeConsoleError(context: string, error?: unknown) {
-    const message = error instanceof Error
+    const rawMessage = error instanceof Error
         ? error.message
         : typeof error === 'string'
             ? error
@@ -13,6 +26,9 @@ export function safeConsoleError(context: string, error?: unknown) {
                 ? String(error)
                 : 'Onbekende of onverwachte fout';
 
-    console.error(`${context} | ${message}`);
-    logInternalError(message, { context, originalError: error });
+    const sanitizedMessage = redactString(rawMessage);
+    const sanitizedContext = redactString(context);
+
+    console.error(`${sanitizedContext} | ${sanitizedMessage}`);
+    logInternalError(sanitizedMessage, { context: sanitizedContext, originalError: error });
 }

@@ -103,6 +103,7 @@ export default function StickerMap({
                 }
                 setMapStyleObj(style);
             } catch (err) {
+                // eslint-disable-next-line no-restricted-syntax
                 console.error('[StickerMap] Style Load Failed:', err);
             }
         };

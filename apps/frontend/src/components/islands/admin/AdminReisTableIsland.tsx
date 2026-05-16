@@ -13,8 +13,8 @@ import { downloadCSV } from '@/lib/utils/export';
 import AdminReisSignupModalIsland from './reis/AdminReisSignupModalIsland';
 
 // New Refactored Modules
-import { getPaymentStatus, getStatusBadge } from '@/lib/reis-admin.utils';
-import { generateReisCSVData } from '@/lib/reis-export';
+import { getPaymentStatus, getStatusBadge } from '@/lib/reis/reis-admin.utils';
+import { generateReisCSVData } from '@/lib/reis/reis-export';
 import { useReisActions } from '@/hooks/use-reis-actions';
 
 interface AdminReisTableIslandProps {

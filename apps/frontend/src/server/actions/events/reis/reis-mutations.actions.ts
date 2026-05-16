@@ -229,8 +229,9 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
 
         return { success: true };
     } catch (error: unknown) {
-        safeConsoleError(`[Reis-Mutations-Action][createTripSignup] Failed to create trip signup:`, error);
-        return { success: false, message: 'Interne serverfout tijdens inschrijving.' };
+        safeConsoleError(`[Reis-Mutations-Action][createTripSignup] Failed to create trip signup for trip ${tripId}:`, error);
+        const message = error instanceof Error ? error.message : 'Interne serverfout tijdens inschrijving.';
+        return { success: false, message: message };
     } finally {
         const currentToken = await redis.get(lockKey);
         if (currentToken === lockToken) {

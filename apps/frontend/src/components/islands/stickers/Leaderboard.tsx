@@ -22,12 +22,10 @@ export default function Leaderboard({ stickers, currentUser }: LeaderboardProps)
         const u = s.user_created as StickerCreator | null | undefined;
         const uid = u?.id ? String(u.id) : 'unknown';
         const name = u ? ((u.first_name || '') + ' ' + (u.last_name || '')).trim() || u.email || uid : 'Unknown';
-        const existing = counts.get(uid);
-        if (existing) {
-            existing.count += 1;
-        } else {
-            counts.set(uid, { id: uid, name, avatar: u?.avatar ?? null, count: 1 });
-        }
+        
+        const current = counts.get(uid) || { id: uid, name, avatar: u?.avatar ?? null, count: 0 };
+        current.count += 1;
+        counts.set(uid, current);
     }
 
     const leaderboard = Array.from(counts.values()).sort((a, b) => b.count - a.count);

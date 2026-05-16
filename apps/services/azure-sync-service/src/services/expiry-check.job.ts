@@ -1,4 +1,4 @@
-import { safeConsoleError } from '../utils/logger.js';
+import { safeConsoleError, logInfo, logWarn } from '../utils/logger.js';
 import { Redis } from 'ioredis';
 import { DirectusService } from './directus.service.js';
 
@@ -10,7 +10,7 @@ export class ExpiryCheckJob {
      * Starts the expiry check loop (runs once a day).
      */
     static async start(redis: Redis) {
-        console.log('[ExpiryCheckJob] Starting daily monitoring loop...');
+        logInfo('[ExpiryCheckJob] Starting daily monitoring loop...');
 
         while (!this.shouldStop) {
             try {
@@ -22,7 +22,7 @@ export class ExpiryCheckJob {
                 const nextRun = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 9, 0, 0); // Next day at 09:00
                 const delay = nextRun.getTime() - now.getTime();
 
-                console.log(`[ExpiryCheckJob] Next check scheduled in ${Math.round(delay / 1000 / 60 / 60)} hours.`);
+                logInfo(`[ExpiryCheckJob] Next check scheduled in ${Math.round(delay / 1000 / 60 / 60)} hours.`);
                 await new Promise(resolve => setTimeout(resolve, delay));
             } catch (error: any) {
                 safeConsoleError('[ExpiryCheckJob] Loop Error:', error.message);
@@ -32,11 +32,11 @@ export class ExpiryCheckJob {
     }
 
     static async runCheck(redis: Redis) {
-        console.log('[ExpiryCheckJob] Running membership expiry scan...');
+        logInfo('[ExpiryCheckJob] Running membership expiry scan...');
 
         const isActive = await DirectusService.isFlagActive('mail_expiry_check');
         if (!isActive) {
-            console.log('[ExpiryCheckJob] Automated membership emails are DISABLED via feature flag. Skipping run.');
+            logInfo('[ExpiryCheckJob] Automated membership emails are DISABLED via feature flag. Skipping run.');
             return;
         }
 
@@ -78,7 +78,7 @@ export class ExpiryCheckJob {
             const token = process.env.INTERNAL_SERVICE_TOKEN;
 
             if (!mailUrl || !token) {
-                console.warn('[ExpiryCheckJob] Missing Mail URL or Token. Cannot notify.');
+                logWarn('[ExpiryCheckJob] Missing Mail URL or Token. Cannot notify.');
                 return;
             }
 
@@ -101,7 +101,7 @@ export class ExpiryCheckJob {
 
             if (response.ok) {
                 await redis.set(redisKey, '1', 'EX', 86400 * 365); // Cache for a year
-                console.log(`[ExpiryCheckJob] Notified ${member.email} for milestone: ${milestone}`);
+                logInfo(`[ExpiryCheckJob] Notified ${member.email} for milestone: ${milestone}`);
             } else {
                 safeConsoleError(`[ExpiryCheckJob] Failed to send ${templateId} to ${member.email}:`, response.statusText);
             }
