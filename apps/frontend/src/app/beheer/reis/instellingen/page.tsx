@@ -1,37 +1,29 @@
-// src/app/beheer/reis/instellingen/page.tsx
-
 import ReisInstellingenIsland from '@/components/islands/admin/ReisInstellingenIsland';
-import AdminPageShell from '@/components/ui/admin/AdminPageShell';
-import { getSystemDirectus } from '@/lib/directus';
-import { readSingleton } from '@directus/sdk';
+import { getReisSiteSettings } from '@/server/actions/events/reis.actions';
 import { getTrips } from '@/server/queries/admin-reis.queries';
+import { tripSchema, type Trip } from '@salvemundi/validations';
 
-interface ReisSettings {
-    show: boolean;
-    disabled_message: string | null;
-}
+export const metadata = {
+    title: 'Reis Instellingen | SV Salve Mundi'
+};
 
 export default async function ReisInstellingenPage() {
-    const trips = await getTrips();
+    const [tripsRes, settings] = await Promise.all([
+        getTrips(),
+        getReisSiteSettings()
+    ]);
 
-    const directus = getSystemDirectus();
-    const settings = await directus.request<ReisSettings>(
-        readSingleton('Reis_Settings' as never)
-    );
+    // Error handling is managed at the action/db level or via Error Boundaries
+    const trips = tripSchema.array().parse(tripsRes);
 
     return (
-        <AdminPageShell
-            title="Reis Instellingen"
-            subtitle="Beheer de algemene configuratie van de reizen module."
-            backHref="/beheer/reis"
-        >
+        <div className="w-full">
             <ReisInstellingenIsland
-                initialTrips={trips}
+                initialTrips={trips as Trip[]}
                 initialSettings={{
-                    show: settings?.show ?? false,
-                    disabled_message: settings?.disabled_message ?? null
+                    show: settings?.show ?? false
                 }}
             />
-        </AdminPageShell>
+        </div>
     );
 }

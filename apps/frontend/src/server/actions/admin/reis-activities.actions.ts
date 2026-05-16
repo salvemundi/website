@@ -22,18 +22,23 @@ import { safeConsoleError } from '@/server/utils/logger';
 export async function createTripActivity(formData: FormData) {
     await requireAdminResource(AdminResource.Reis);
 
-    const rawData: Record<string, unknown> = {};
-    formData.forEach((value, key) => {
-        if (key === 'options') {
-            try { rawData[key] = JSON.parse(value as string); } catch (error) { safeConsoleError(`[ReisActivities][createTripActivity] Failed to parse options for ${key}:`, error); rawData[key] = []; }
-        } else if (key === 'price' || key === 'display_order' || key === 'max_participants' || key === 'max_selections' || key === 'trip_id') {
-            rawData[key] = value === '' ? null : (key === 'price' ? parseFloat(value as string) : parseInt(value as string));
-        } else if (key === 'is_active') {
-            rawData[key] = value === 'on' || value === 'true';
-        } else {
-            rawData[key] = value;
-        }
-    });
+    const rawData = {
+        name: formData.get('name') as string,
+        description: formData.get('description') as string,
+        price: formData.get('price') === '' ? null : parseFloat(formData.get('price') as string),
+        is_active: formData.get('is_active') === 'on' || formData.get('is_active') === 'true',
+        display_order: formData.get('display_order') === '' ? null : parseInt(formData.get('display_order') as string),
+        max_participants: formData.get('max_participants') === '' ? null : parseInt(formData.get('max_participants') as string),
+        max_selections: formData.get('max_selections') === '' ? null : parseInt(formData.get('max_selections') as string),
+        trip_id: formData.get('trip_id') === '' ? null : parseInt(formData.get('trip_id') as string),
+        options: (() => {
+            try {
+                return JSON.parse(formData.get('options') as string || '[]');
+            } catch {
+                return [];
+            }
+        })()
+    };
 
     const validated = tripActivitySchema.omit({ id: true }).safeParse(rawData);
     if (!validated.success) {
@@ -73,18 +78,24 @@ export async function updateTripActivity(formData: FormData) {
     const id = parseInt(formData.get('id') as string);
     if (!id) throw new Error('Geen ID gevonden voor update');
 
-    const rawData: Record<string, unknown> = {};
-    formData.forEach((value, key) => {
-        if (key === 'options') {
-            try { rawData[key] = JSON.parse(value as string); } catch (error) { safeConsoleError(`[ReisActivities][updateTripActivity] Failed to parse options for ${key}:`, error); rawData[key] = []; }
-        } else if (key === 'price' || key === 'display_order' || key === 'max_participants' || key === 'max_selections' || key === 'trip_id') {
-            rawData[key] = value === '' ? null : (key === 'price' ? parseFloat(value as string) : parseInt(value as string));
-        } else if (key === 'is_active') {
-            rawData[key] = value === 'on' || value === 'true';
-        } else {
-            rawData[key] = value;
-        }
-    });
+    const rawData = {
+        name: formData.get('name') as string,
+        description: formData.get('description') as string,
+        price: formData.get('price') === '' ? null : parseFloat(formData.get('price') as string),
+        is_active: formData.get('is_active') === 'on' || formData.get('is_active') === 'true',
+        display_order: formData.get('display_order') === '' ? null : parseInt(formData.get('display_order') as string),
+        max_participants: formData.get('max_participants') === '' ? null : parseInt(formData.get('max_participants') as string),
+        max_selections: formData.get('max_selections') === '' ? null : parseInt(formData.get('max_selections') as string),
+        trip_id: formData.get('trip_id') === '' ? null : parseInt(formData.get('trip_id') as string),
+        options: (() => {
+            try {
+                const opts = formData.get('options');
+                return opts ? JSON.parse(opts as string) : undefined;
+            } catch {
+                return undefined;
+            }
+        })()
+    };
 
     const validated = tripActivitySchema.omit({ id: true }).partial().safeParse(rawData);
     if (!validated.success) {
@@ -137,8 +148,8 @@ export async function deleteTripActivity(id: number) {
 
         return { success: true };
     } catch (error) {
+        safeConsoleError(`[ReisActivities][deleteTripActivity] Failed to delete trip activity ${id}:`, error);
         const message = error instanceof Error ? error.message : 'Onbekende fout';
-
         return { success: false, error: message };
     }
 }

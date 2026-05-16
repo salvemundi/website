@@ -39,7 +39,20 @@ const eslintConfig = [
             "prefer-const": "warn",
             "prefer-rest-params": "warn",
             "@typescript-eslint/ban-ts-comment": "warn",
-            "@next/next/no-html-link-for-pages": "warn"
+            "@next/next/no-html-link-for-pages": "warn",
+            "no-restricted-syntax": [
+                "error",
+                {
+                    "selector": "CallExpression[callee.object.name='console'][callee.property.name=/^(log|warn|error|info|debug)$/]",
+                    "message": "Do not use console methods directly. Use safeConsoleError or logInternalError from '@/server/utils/logger' to ensure PII is sanitized and logs are centralized."
+                }
+            ]
+        }
+    },
+    {
+        files: ["src/server/utils/logger.ts", "src/server/utils/log-sanitizer.ts"],
+        rules: {
+            "no-restricted-syntax": "off"
         }
     },
     {

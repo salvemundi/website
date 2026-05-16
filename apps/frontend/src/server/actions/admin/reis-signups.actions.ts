@@ -29,22 +29,12 @@ import { safeConsoleError } from '@/server/utils/logger';
 
 export async function getTripSignups(tripId: number) {
     await requireAdminResource(AdminResource.Reis);
-    try {
-        return await fetchAllTripSignupsDb(tripId);
-    } catch (error) {
-        safeConsoleError(`[ReisSignups][getTripSignups] Failed to fetch trip signups for trip ${tripId}:`, error);
-        return [];
-    }
+    return await fetchAllTripSignupsDb(tripId);
 }
 
 export async function getTripSignup(id: number): Promise<TripSignup | null> {
     await requireAdminResource(AdminResource.Reis);
-    try {
-        return await fetchTripSignupByIdDb(id);
-    } catch (error) {
-        safeConsoleError(`[ReisSignups][getTripSignup] Failed to fetch trip signup for ID ${id}:`, error);
-        return null;
-    }
+    return await fetchTripSignupByIdDb(id);
 }
 
 export async function updateSignupStatus(signupId: number, status: string) {
@@ -119,7 +109,7 @@ export async function updateSignupStatus(signupId: number, status: string) {
         return { success: true };
     } catch (error) {
         safeConsoleError(`[ReisSignups][updateSignupStatus] Failed to update trip signup ${signupId}:`, error);
-        return { success: false, error: 'Update mislukt' };
+        return { success: false, error: error instanceof Error ? error.message : 'Update mislukt' };
     }
 }
 
@@ -141,9 +131,9 @@ export async function deleteTripSignup(signupId: number) {
         revalidatePath('/reis');
 
         return { success: true };
-    } catch {
-
-        return { success: false, error: 'Verwijderen mislukt' };
+    } catch (error) {
+        safeConsoleError(`[ReisSignups][deleteTripSignup] Failed to delete trip signup ${signupId}:`, error);
+        return { success: false, error: error instanceof Error ? error.message : 'Verwijderen mislukt' };
     }
 }
 
@@ -193,26 +183,20 @@ export async function updateTripSignup(prevState: unknown, formData: FormData) {
         return { success: true };
     } catch (error) {
         safeConsoleError(`[ReisSignups][updateTripSignup] Failed to update trip signup ${id}:`, error);
-        return { success: false, error: 'Update mislukt' };
+        return { success: false, error: error instanceof Error ? error.message : 'Update mislukt' };
     }
 }
 
 export async function getSignupActivities(signupId: number) {
     await requireAdminResource(AdminResource.Reis);
-    try {
-        const activities = await fetchSelectedSignupActivitiesDb(signupId);
-        const parsed = z.array(tripSignupActivitySchema).safeParse(activities);
+    const activities = await fetchSelectedSignupActivitiesDb(signupId);
+    const parsed = z.array(tripSignupActivitySchema).safeParse(activities);
 
-        if (!parsed.success) {
-
-            return [];
-        }
-
-        return parsed.data;
-    } catch (error) {
-        safeConsoleError(`[ReisSignups][getSignupActivities] Failed to fetch signup activities for signup ${signupId}:`, error);
-        return [];
+    if (!parsed.success) {
+        throw new Error('Gegevensvalidatie mislukt voor aanmeldingsactiviteiten');
     }
+
+    return parsed.data;
 }
 
 
@@ -248,9 +232,9 @@ export async function updateSignupActivities(signupId: number, activityIds: numb
         revalidatePath('/beheer/reis');
         revalidatePath(`/beheer/reis/deelnemer/${signupId}`);
         return { success: true };
-    } catch {
-
-        return { success: false, error: 'Internal server error' };
+    } catch (error) {
+        safeConsoleError(`[ReisSignups][updateSignupActivities] Failed to update activities for signup ${signupId}:`, error);
+        return { success: false, error: error instanceof Error ? error.message : 'Interne serverfout' };
     }
 }
 
@@ -260,10 +244,5 @@ export async function updateSignupActivities(signupId: number, activityIds: numb
  */
 export async function getTripSignupActivitiesAction(tripId: number) {
     await requireAdminResource(AdminResource.Reis);
-    try {
-        return await fetchTripSignupActivitiesDb(tripId);
-    } catch (error) {
-        safeConsoleError(`[ReisSignups][getTripSignupActivitiesAction] Failed to fetch trip signup activities for trip ${tripId}:`, error);
-        return [];
-    }
+    return await fetchTripSignupActivitiesDb(tripId);
 }

@@ -30,25 +30,20 @@ export async function getReisSiteSettings(): Promise<ReisSiteSettings | null> {
     };
 }
 
-export async function getCurrentUserProfileAction(): Promise<{ success: boolean; data?: Record<string, unknown>; error?: string }> {
-    try {
-        const session = await getEnrichedSession();
-        if (!session || !session.user) return { success: false, error: "Niet ingelogd" };
+export async function getCurrentUserProfileAction(): Promise<{ success: boolean; data?: unknown; error?: string }> {
+    const session = await getEnrichedSession();
+    if (!session || !session.user) return { success: false, error: "Niet ingelogd" };
 
-        const userEmail = session.user.email?.toLowerCase();
-        if (!userEmail) return { success: false, error: "Geen e-mailadres gevonden in sessie" };
+    const userEmail = session.user.email?.toLowerCase();
+    if (!userEmail) return { success: false, error: "Geen e-mailadres gevonden in sessie" };
 
-        const user = await fetchUserProfileByEmailDb(userEmail);
+    const user = await fetchUserProfileByEmailDb(userEmail);
 
-        if (!user) {
-            return { success: false, error: "Gebruiker niet gevonden in systeem" };
-        }
-
-        return { success: true, data: user };
-    } catch (error: unknown) {
-        safeConsoleError(`[Reis-Queries-Action][getCurrentUserProfileAction] Failed to get user profile:`, error);
-        return { success: false, error: "Profiel ophalen mislukt" };
+    if (!user) {
+        return { success: false, error: "Gebruiker niet gevonden in systeem" };
     }
+
+    return { success: true, data: user };
 }
 
 export async function getUpcomingTrips(): Promise<ReisTrip[]> {
@@ -81,40 +76,25 @@ export async function getUpcomingTrips(): Promise<ReisTrip[]> {
 }
 
 export async function getTripParticipantsCount(tripId: number): Promise<number> {
-    try {
-        const { rows } = await query(
-            `SELECT COUNT(*)::int as count FROM trip_signups 
-             WHERE trip_id = $1 AND status IN ('registered', 'confirmed')`,
-            [tripId]
-        );
-        return rows?.[0]?.count || 0;
-    } catch (error: unknown) {
-        safeConsoleError(`[Reis-Queries-Action][getTripParticipantsCount] Failed to fetch trip participants count:`, error);
-        return 0;
-    }
+    const { rows } = await query(
+        `SELECT COUNT(*)::int as count FROM trip_signups 
+         WHERE trip_id = $1 AND status IN ('registered', 'confirmed')`,
+        [tripId]
+    );
+    return rows?.[0]?.count || 0;
 }
 
 export async function getUserTripSignup(tripId: number): Promise<ReisTripSignup | null> {
-    try {
-        const session = await getEnrichedSession();
+    const session = await getEnrichedSession();
 
-        if (!session || !session.user) {
-            return null;
-        }
-
-        const userId = session.user.id;
-        return await fetchUserSignupStatusDb(userId, tripId);
-    } catch (error: unknown) {
-        safeConsoleError(`[Reis-Queries-Action][getUserTripSignup] Failed to fetch user trip signup:`, error);
+    if (!session || !session.user) {
         return null;
     }
+
+    const userId = session.user.id;
+    return await fetchUserSignupStatusDb(userId, tripId);
 }
 
 export async function getTripSignupsInternal(tripId: number): Promise<ReisTripSignup[]> {
-    try {
-        return await fetchAllTripSignupsDb(tripId);
-    } catch (error: unknown) {
-        safeConsoleError(`[Reis-Queries-Action][getTripSignupsInternal] Failed to fetch trip signups:`, error);
-        return []
-    }
+    return await fetchAllTripSignupsDb(tripId);
 }

@@ -1,5 +1,5 @@
 'use server';
-import { safeConsoleError } from '@/server/utils/logger';
+import { safeConsoleError, logWarn } from '@/server/utils/logger';
 import { revalidateTag, revalidatePath } from "next/cache";
 import { getSystemDirectus } from "@/lib/directus";
 import { readUsers } from "@directus/sdk";
@@ -130,7 +130,7 @@ export async function triggerUserSyncAction(userId: string, options?: { fields: 
         clearTimeout(timeoutId);
         const errorMessage = error instanceof Error ? error.message : 'Onbekende fout';
         if (error instanceof Error && error.name === 'AbortError') {
-            console.warn(`[SYNC-ACTION] Request to ${AZURE_SYNC_URL} timed out after 60s`);
+            logWarn(`[SYNC-ACTION] Request to ${AZURE_SYNC_URL} timed out after 60s`);
             return {
                 success: false,
                 error: "De synchronisatie duurt te lang (60s). De taak loopt mogelijk nog op de achtergrond; ververs de pagina over een minuut."

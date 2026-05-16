@@ -40,8 +40,9 @@ export function useReisActions(
             } else {
                 showToast(res.error || 'Fout bij bijwerken status.', 'error');
             }
-        } catch {
-            showToast('Fout bij bijwerken status.', 'error');
+        } catch (error) {
+            const msg = error instanceof Error ? error.message : 'Fout bij bijwerken status.';
+            showToast(msg, 'error');
         } finally {
             setActionStates(prev => {
                 const newSet = new Set(prev.status);
@@ -64,8 +65,9 @@ export function useReisActions(
             } else {
                 showToast(res.error || 'Fout bij verwijderen aanmelding.', 'error');
             }
-        } catch {
-            showToast('Fout bij verwijderen aanmelding.', 'error');
+        } catch (error) {
+            const msg = error instanceof Error ? error.message : 'Fout bij verwijderen aanmelding.';
+            showToast(msg, 'error');
         } finally {
             setActionStates(prev => {
                 const newSet = new Set(prev.delete);

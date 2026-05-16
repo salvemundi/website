@@ -1,4 +1,4 @@
-import { safeConsoleError } from './utils/logger.js';
+import { safeConsoleError, logInfo } from './utils/logger.js';
 import Fastify from 'fastify';
 import dotenv from 'dotenv';
 
@@ -26,7 +26,7 @@ const start = async () => {
     try {
         const port = Number(process.env.PORT) || 3002;
         await fastify.listen({ port, host: '0.0.0.0' });
-        console.log(`Azure Sync Service listening on port ${port}`);
+        logInfo(`Azure Sync Service listening on port ${port}`);
 
         // Start the Provisioning Worker
         const { ProvisionWorkerService } = await import('./services/provision-worker.js');

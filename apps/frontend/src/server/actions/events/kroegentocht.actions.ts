@@ -10,7 +10,8 @@ import {
 
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { unstable_cache as cacheTag } from 'next/cache';
-import { logAdminAction } from '@/server/actions/infrastructure/audit.actions'; import { safeConsoleError } from '@/server/utils/logger';;
+import { logAdminAction } from '@/server/actions/infrastructure/audit.actions'; 
+import { safeConsoleError, logInfo } from '@/server/utils/logger';
 
 import { getSystemDirectus } from '@/lib/directus';
 import { createItem, updateItem, deleteItem } from '@directus/sdk';
@@ -55,7 +56,7 @@ async function fetchWithTimeout(url: string, options: RequestInit & { timeout?: 
 
 export async function getKroegentochtEvent() {
     if (process.env.NEXT_PHASE === 'phase-production-build') {
-        console.log('[Kroegentocht-Action] getKroegentochtEvent called during build. Returning null.');
+        logInfo('[Kroegentocht-Action] getKroegentochtEvent called during build. Returning null.');
         return null;
     }
 

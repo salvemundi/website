@@ -23,7 +23,7 @@ export function sanitizePayload(payload: unknown): unknown {
     const sanitized: Record<string, unknown> = Object.create(null);
     const entries: [string, unknown][] = isError 
         ? [['message', (payload as Error).message], ['stack', (payload as Error).stack], ...Object.entries(payload)]
-        : Object.entries(payload as Record<string, unknown>);
+        : Object.entries(payload);
 
     for (const [key, value] of entries) {
         const lowerKey = key.toLowerCase();

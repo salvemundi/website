@@ -1,6 +1,6 @@
 import 'server-only';
 import { Pool, type QueryResult, type QueryResultRow } from 'pg';
-import { safeConsoleError } from '@/server/utils/logger';
+import { safeConsoleError, logWarn } from '@/server/utils/logger';
 
 
 
@@ -40,7 +40,7 @@ export async function query<R extends QueryResultRow = QueryResultRow>(text: str
             const errorCode = (error as { code?: string })?.code;
             const isConnectionError = errorMessage.includes('Connection terminated unexpectedly') || errorCode === 'ECONNRESET';
             if (isConnectionError && i < retries) {
-                console.warn(`[DB-Query] Connection error, retrying... (${i + 1}/${retries})`);
+                logWarn(`[DB-Query] Connection error, retrying... (${i + 1}/${retries})`);
                 await new Promise(resolve => setTimeout(resolve, 500 * (i + 1)));
                 continue;
             }
@@ -59,7 +59,7 @@ export async function query<R extends QueryResultRow = QueryResultRow>(text: str
             });
 
             if (process.env.DB_USER === 'dummy') {
-                console.warn('[DB-Query] Build-time DB connection failure detected. Returning empty result.');
+                logWarn('[DB-Query] Build-time DB connection failure detected. Returning empty result.');
                 return { rows: [], rowCount: 0, command: '', oid: 0, fields: [] };
             }
 

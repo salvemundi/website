@@ -41,7 +41,7 @@ export async function getEnrichedSession(): Promise<{ user: EnrichedUser; sessio
         let h;
         try {
             h = await headers();
-        } catch (_e) {
+        } catch (_error) {
             // Expected outside of request context
             return null;
         }
@@ -63,11 +63,12 @@ export async function getEnrichedSession(): Promise<{ user: EnrichedUser; sessio
         return null;
     } catch (error) {
         const stack = error instanceof Error ? error.stack : new Error().stack;
-        safeConsoleError('[AuthUtils][getEnrichedSession] Caught Error:', {
+        safeConsoleError('[AuthUtils][getEnrichedSession] Technical Failure:', {
             message: error instanceof Error ? error.message : String(error),
             stack,
             errorObject: error
         });
-        return null;
+        // Propagate technical errors to prevent silent failures and redirect loops
+        throw error;
     }
 }

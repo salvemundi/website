@@ -10,8 +10,8 @@ import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 
 // Refactored Modules
-import { getSignupName, getSignupEmail, getSignupPhone } from '@/lib/activity-signup.utils';
-import { exportSignupsToCSV } from '@/lib/activity-export';
+import { getSignupName, getSignupEmail, getSignupPhone } from '@/lib/activities/activity-signup.utils';
+import { exportSignupsToCSV } from '@/lib/activities/activity-export';
 import ActivitySignupTable from '@/components/admin/activities/ActivitySignupTable';
 
 export interface Signup {

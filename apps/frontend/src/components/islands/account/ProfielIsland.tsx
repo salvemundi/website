@@ -13,7 +13,7 @@ import {
     calculateMembershipStatus, 
     filterProfileSignups, 
     type SessionUser 
-} from '@/lib/profile-admin.utils';
+} from '@/lib/profile/profile-admin.utils';
 import { useProfileState } from '@/hooks/use-profile-state';
 import AvatarPreviewModal from './profile/AvatarPreviewModal';
 

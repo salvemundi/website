@@ -38,8 +38,7 @@ export default function AddStickerModal({
     formData,
     setFormData,
     handleImageChange,
-    imagePreview
-    ,
+    imagePreview,
     selectedLocation,
     setSelectedLocation
 }: AddStickerModalProps) {

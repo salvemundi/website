@@ -1,5 +1,5 @@
 'use server';
-import { safeConsoleError } from '@/server/utils/logger';
+import { safeConsoleError, logWarn } from '@/server/utils/logger';
 import { revalidateTag, revalidatePath, unstable_noStore as noStore } from "next/cache";
 import { isSuperAdmin } from "@/lib/auth";
 import { type Committee } from "@/shared/lib/permissions";
@@ -33,7 +33,7 @@ export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' |
         // Prevent VULN-008 (Payload Bloat)
         const payloadStr = JSON.stringify(safePayload);
         if (payloadStr.length > 15000) {
-            console.warn('[AuditActions] Log payload too large, dropping.');
+            logWarn('[AuditActions] Log payload too large, dropping.');
             return;
         }
 

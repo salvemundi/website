@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { updateProfileSchema } from '@salvemundi/validations/schema/profiel.zod';
 import { updateUserProfile, uploadUserAvatar } from '@/server/actions/profile/profiel-update.actions';
 import { z } from 'zod';
-import { type SessionUser } from '@/lib/profile-admin.utils';
+import { type SessionUser } from '@/lib/profile/profile-admin.utils';
 
 // Zod validation schemas for forms
 const minecraftFormSchema = updateProfileSchema.pick({ minecraft_username: true });

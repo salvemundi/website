@@ -1,4 +1,4 @@
-import { safeConsoleError } from '../utils/logger.js';
+import { safeConsoleError, logInfo } from '../utils/logger.js';
 import { Redis } from 'ioredis';
 import { SyncJob } from './sync/sync-job.js';
 import { TokenService } from './token.service.js';
@@ -26,7 +26,7 @@ export class ProvisionWorkerService {
     }
 
     static async start(redis: Redis) {
-        console.log('[ProvisionWorker] Starting background worker loop...');
+        logInfo('[ProvisionWorker] Starting background worker loop...');
 
         while (!this.shouldStop) {
             try {
@@ -43,7 +43,7 @@ export class ProvisionWorkerService {
                     const task: ProvisionTask = JSON.parse(taskJson);
 
                     try {
-                        console.log(`[ProvisionWorker] Provisioning user ${task.userId}...`);
+                        logInfo(`[ProvisionWorker] Provisioning user ${task.userId}...`);
 
                         // 1. Get Azure Token
                         const token = await TokenService.getAccessToken(redis);
@@ -53,7 +53,7 @@ export class ProvisionWorkerService {
 
                         // Success -> Remove
                         await redis.zrem(this.QUEUE_KEY, taskJson);
-                        console.log(`[ProvisionWorker] Successfully provisioned user ${task.userId}`);
+                        logInfo(`[ProvisionWorker] Successfully provisioned user ${task.userId}`);
                     } catch (error: any) {
                         safeConsoleError(`[ProvisionWorker] Failed provisioning for user ${task.userId}:`, error.message);
 
@@ -63,7 +63,7 @@ export class ProvisionWorkerService {
                         if (task.retries < task.maxRetries) {
                             const delay = 10000 * Math.pow(task.retries, 2); // 10s, 40s, 90s...
                             await redis.zadd(this.QUEUE_KEY, Date.now() + delay, JSON.stringify(task));
-                            console.log(`[ProvisionWorker] Retrying in ${delay / 1000}s (Attempt ${task.retries}).`);
+                            logInfo(`[ProvisionWorker] Retrying in ${delay / 1000}s (Attempt ${task.retries}).`);
                         } else {
                             safeConsoleError(`[ProvisionWorker] MAX RETRIES reached for user ${task.userId}. Dropping task.`);
                         }

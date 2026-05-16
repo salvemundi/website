@@ -3,7 +3,7 @@ import { ProfielIsland } from '@/components/islands/account/ProfielIsland';
 import { getUserEventSignups, getUserPubCrawlSignups } from '@/server/actions/profile/profiel.actions';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
-import { type SessionUser } from '@/lib/profile-admin.utils';
+import { type SessionUser } from '@/lib/profile/profile-admin.utils';
 
 export const metadata = {
     title: 'Mijn Profiel | SV Salve Mundi',

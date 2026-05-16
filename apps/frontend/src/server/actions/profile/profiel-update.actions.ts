@@ -48,7 +48,7 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
 
             if (!azureRes.ok) {
                 const errorData = await azureRes.json().catch((_error: unknown) => ({}));
-                console.log(errorData)
+                safeConsoleError('[ProfileUpdate] Azure AD phone number update failed:', errorData);
                 return {
                     success: false,
                     error: `Azure AD update mislukt: ${errorData.details || 'Ongeldig telefoonnummer of service onbeschikbaar.'}`

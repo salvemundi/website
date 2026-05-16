@@ -1,4 +1,4 @@
-import { safeConsoleError } from '../utils/logger.js';
+import { safeConsoleError, logInfo, logWarn } from '../utils/logger.js';
 import { Redis } from 'ioredis';
 import { ProvisionWorkerService } from './provision-worker.js';
 import { AuditService } from './audit.service.js';
@@ -11,7 +11,7 @@ export class EventListenerService {
     private static shouldStop = false;
 
     static async start(redis: Redis) {
-        console.log('[AzureEventListener] Starting Redis Stream listener...');
+        logInfo('[AzureEventListener] Starting Redis Stream listener...');
 
         try {
             await redis.xgroup('CREATE', this.STREAM_KEY, this.GROUP_NAME, '0', 'MKSTREAM');
@@ -52,7 +52,7 @@ export class EventListenerService {
     private static async handleEvent(redis: Redis, message: any) {
         try {
             const rawData = JSON.parse(message.data.payload);
-            console.log(`[AzureEventListener] Received event: ${rawData.event}`);
+            logInfo(`[AzureEventListener] Received event: ${rawData.event}`);
 
             if (rawData.event === 'PAYMENT_SUCCESS') {
                 const data = PaymentSuccessEventSchema.parse(rawData);
@@ -62,7 +62,7 @@ export class EventListenerService {
                         // 1. Existing user: Membership Renewal / Extension
                         await ProvisionWorkerService.queueProvisioning(redis, data.userId, data.paymentId);
                         await AuditService.logMembershipRenewal(data.email, data.userId, data.paymentId);
-                        console.log(`[AzureEventListener] Queued renewal for user ${data.userId}`);
+                        logInfo(`[AzureEventListener] Queued renewal for user ${data.userId}`);
                     } else {
                         // 2. New user: Membership Provisioning (Direct to Management Service)
                         const managementUrl = process.env.AZURE_MANAGEMENT_SERVICE_URL;
@@ -88,13 +88,13 @@ export class EventListenerService {
                             if (!res.ok) throw new Error(`Management service error: ${await res.text()}`);
 
                             await AuditService.logMembershipProvisioning(data.email, data.firstName || '', data.lastName || '', data.paymentId);
-                            console.log(`[AzureEventListener] Triggered new user provisioning for ${data.email}`);
+                            logInfo(`[AzureEventListener] Triggered new user provisioning for ${data.email}`);
                         } else {
-                            console.warn('[AzureEventListener] Skipping provisioning: AZURE_MANAGEMENT_SERVICE_URL or token missing');
+                            logWarn('[AzureEventListener] Skipping provisioning: AZURE_MANAGEMENT_SERVICE_URL or token missing');
                         }
                     }
                 } else {
-                    console.log(`[AzureEventListener] Ignored PAYMENT_SUCCESS for non-membership type: ${data.registrationType}`);
+                    logInfo(`[AzureEventListener] Ignored PAYMENT_SUCCESS for non-membership type: ${data.registrationType}`);
                 }
             }
         } catch (error: any) {
