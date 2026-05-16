@@ -96,6 +96,7 @@ export default function TripForm({
                 <input type="hidden" name="registration_open" value={registrationOpen ? 'on' : 'off'} />
                 <input type="hidden" name="allow_final_payments" value={allowFinalPayments ? 'on' : 'off'} />
                 <input type="hidden" name="is_bus_trip" value={isBusTrip ? 'on' : 'off'} />
+                <input type="hidden" name="image" value={imagePreview && editingTrip?.image ? editingTrip.image : ''} />
                 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                     {/* Main Content Area */}
