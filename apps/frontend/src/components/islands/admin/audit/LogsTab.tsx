@@ -14,11 +14,13 @@ interface LogsTabProps {
     onLoadMore: () => void;
     title?: string;
     actions?: React.ReactNode;
+    idNameLookup?: Record<string, string>;
 }
 
-export default function LogsTab({ logs, totalCount, onRefresh, onLoadMore, title = "Activiteitslogboek", actions }: LogsTabProps) {
+export default function LogsTab({ logs, totalCount, onRefresh, onLoadMore, title = "Activiteitslogboek", actions, idNameLookup = {} }: LogsTabProps) {
     const [statusFilter, setStatusFilter] = React.useState<'ALL' | 'SUCCESS' | 'ERROR' | 'WARNING' | 'INFO'>('ERROR');
     const [acknowledging, setAcknowledging] = React.useState<string | null>(null);
+    const [expandedLogs, setExpandedLogs] = React.useState<Set<string>>(new Set());
     const { showToast } = useAdminToast();
 
     const filteredLogs = logs.filter(log => {
@@ -26,6 +28,18 @@ export default function LogsTab({ logs, totalCount, onRefresh, onLoadMore, title
         if (statusFilter === 'ERROR') return log.status === 'ERROR' && !log.acknowledged_at;
         return log.status === statusFilter;
     });
+
+    const toggleExpand = (id: string) => {
+        setExpandedLogs(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) {
+                next.delete(id);
+            } else {
+                next.add(id);
+            }
+            return next;
+        });
+    };
 
     const handleAcknowledge = async (id: string) => {
         setAcknowledging(id);
@@ -42,6 +56,27 @@ export default function LogsTab({ logs, totalCount, onRefresh, onLoadMore, title
         } finally {
             setAcknowledging(null);
         }
+    };
+
+    const resolveIdToName = (key: string, val: unknown, context?: string) => {
+        const valStr = String(val);
+        if (!valStr || valStr === 'null' || valStr === 'undefined') return valStr;
+
+        let lookupKey = '';
+        if (key === 'committee_id') {
+            lookupKey = `committee_${valStr}`;
+        } else if (key === 'event_id' || (key === 'id' && context === 'activiteit')) {
+            lookupKey = `event_${valStr}`;
+        } else if (key === 'trip_id' || (key === 'id' && context === 'reis')) {
+            lookupKey = `trip_${valStr}`;
+        }
+
+        // eslint-disable-next-line security/detect-object-injection
+        if (lookupKey && idNameLookup[lookupKey]) {
+            // eslint-disable-next-line security/detect-object-injection
+            return `${idNameLookup[lookupKey]} (ID: ${valStr})`;
+        }
+        return valStr;
     };
 
     const hasMore = logs.length < totalCount;
@@ -94,85 +129,130 @@ export default function LogsTab({ logs, totalCount, onRefresh, onLoadMore, title
                             <th className="p-4">Type</th>
                             <th className="p-4">Context</th>
                             <th className="p-4">Admin</th>
-                            <th className="p-4">Details</th>
+                            <th className="p-4 min-w-[200px]">Details</th>
                             <th className="p-4 text-center">Status</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-[var(--beheer-border)]/10">
                         {filteredLogs.map((log) => (
-                            <tr key={log.id} className="hover:bg-[var(--beheer-accent)]/[0.02] transition-colors group">
-                                <td className="p-4 text-xs font-medium text-[var(--beheer-text-muted)] tracking-tight whitespace-nowrap">
-                                    {formatDate(log.created_at, 'dd-MM-yyyy HH:mm')}
-                                </td>
-                                <td className="p-4">
-                                    <div className="flex flex-col">
-                                        <span className="font-semibold text-[var(--beheer-text)] tracking-tight text-xs capitalize">
-                                            {log.type}
-                                        </span>
-                                    </div>
-                                </td>
-                                <td className="p-4">
-                                    {(log.payload && typeof log.payload === 'object' && 'context' in log.payload) ? (
+                            <React.Fragment key={log.id}>
+                                <tr 
+                                    className="hover:bg-[var(--beheer-accent)]/[0.02] transition-colors group cursor-pointer border-b border-[var(--beheer-border)]/10"
+                                    onClick={() => toggleExpand(log.id)}
+                                >
+                                    <td className="p-4 text-xs font-medium text-[var(--beheer-text-muted)] tracking-tight whitespace-nowrap">
+                                        {formatDate(log.created_at, 'dd-MM-yyyy HH:mm')}
+                                    </td>
+                                    <td className="p-4">
                                         <div className="flex flex-col">
                                             <span className="font-semibold text-[var(--beheer-text)] tracking-tight text-xs capitalize">
-                                                {String(log.payload.context)}
+                                                {log.type}
                                             </span>
-                                            {log.payload.context_name && (
-                                                <span className="text-[10px] text-[var(--beheer-text-muted)] truncate max-w-[120px]" title={String(log.payload.context_name)}>
-                                                    {String(log.payload.context_name)}
+                                        </div>
+                                    </td>
+                                    <td className="p-4">
+                                        {(log.payload && typeof log.payload === 'object' && 'context' in log.payload) ? (
+                                            <div className="flex flex-col">
+                                                <span className="font-semibold text-[var(--beheer-text)] tracking-tight text-xs capitalize">
+                                                    {String(log.payload.context)}
+                                                </span>
+                                                {log.payload.context_name && (
+                                                    <span className="text-[10px] text-[var(--beheer-text-muted)] truncate max-w-[120px]" title={String(log.payload.context_name)}>
+                                                        {String(log.payload.context_name)}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        ) : <span className="text-[var(--beheer-text-muted)]">-</span>}
+                                    </td>
+                                    <td className="p-4 text-xs font-semibold text-[var(--beheer-text-muted)]">
+                                        {(log.payload && typeof log.payload === 'object' && 'admin_name' in log.payload) ? String(log.payload.admin_name) : 'Systeem'}
+                                    </td>
+                                    <td className="p-4">
+                                        <div className="text-xs font-medium text-[var(--beheer-text-muted)] tracking-tight max-w-[280px] break-all">
+                                            {log.payload && typeof log.payload === 'object' ? (
+                                                <div className="space-y-1">
+                                                    {Object.entries(log.payload)
+                                                        .filter(([key]) => !['admin_id', 'admin_name', 'timestamp', 'context', 'context_name'].includes(key))
+                                                        .map(([key, val]) => {
+                                                            const isComplex = typeof val === 'object' && val !== null;
+                                                            return (
+                                                                <div key={key} className="flex flex-col gap-0.5">
+                                                                    <div className="flex flex-wrap items-center gap-1">
+                                                                        <span className="opacity-50 font-semibold">{key}:</span>
+                                                                        {isComplex ? (
+                                                                            <button
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    toggleExpand(log.id);
+                                                                                }}
+                                                                                className="px-2 py-0.5 bg-[var(--beheer-accent)]/10 hover:bg-[var(--beheer-accent)]/20 text-[var(--beheer-accent)] rounded text-[10px] font-semibold transition-all active:scale-95 flex items-center gap-1"
+                                                                            >
+                                                                                {expandedLogs.has(log.id) ? 'Verberg details' : 'Toon details'}
+                                                                            </button>
+                                                                         ) : (
+                                                                            <span className="text-[var(--beheer-text)] break-all">{resolveIdToName(key, val, (log.payload && typeof log.payload === 'object' && 'context' in log.payload) ? String(log.payload.context) : undefined)}</span>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                </div>
+                                            ) : (
+                                                <span className="break-all">{String(log.payload || '-')}</span>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className="p-4 text-center">
+                                        <div className="flex flex-col items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold tracking-tight border ${
+                                                log.status === 'SUCCESS' ? 'bg-[var(--beheer-active)]/10 text-[var(--beheer-active)] border-[var(--beheer-active)]/20'
+                                                : log.status === 'INFO' ? 'bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] border-[var(--beheer-accent)]/20'
+                                                : log.status === 'WARNING' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                                                : 'bg-[var(--beheer-inactive)]/10 text-[var(--beheer-inactive)] border-[var(--beheer-inactive)]/20'
+                                            }`}>
+                                                {log.status}
+                                            </span>
+                                            {log.status === 'ERROR' && !log.acknowledged_at && (
+                                                <button 
+                                                    onClick={() => handleAcknowledge(log.id)}
+                                                    disabled={acknowledging === log.id}
+                                                    className="text-[10px] text-[var(--beheer-accent)] hover:text-[var(--beheer-accent)]/80 hover:underline disabled:opacity-50"
+                                                >
+                                                    {acknowledging === log.id ? 'Bezig...' : 'Markeer als gezien'}
+                                                </button>
+                                            )}
+                                            {log.status === 'ERROR' && log.acknowledged_at && (
+                                                <span className="text-[10px] text-[var(--beheer-text-muted)] flex items-center gap-1">
+                                                    Gezien
                                                 </span>
                                             )}
                                         </div>
-                                    ) : <span className="text-[var(--beheer-text-muted)]">-</span>}
-                                </td>
-                                <td className="p-4 text-xs font-semibold text-[var(--beheer-text-muted)]">
-                                    {(log.payload && typeof log.payload === 'object' && 'admin_name' in log.payload) ? String(log.payload.admin_name) : 'Systeem'}
-                                </td>
-                                <td className="p-4">
-                                    <div className="text-xs font-medium text-[var(--beheer-text-muted)] tracking-tight max-w-[300px] break-words">
-                                        {log.payload && typeof log.payload === 'object' ? (
-                                            <div className="space-y-1">
-                                                {Object.entries(log.payload)
-                                                    .filter(([key]) => !['admin_id', 'admin_name', 'timestamp', 'context', 'context_name'].includes(key))
-                                                    .map(([key, val]) => (
-                                                        <div key={key} className="flex gap-2">
-                                                            <span className="opacity-50">{key}:</span>
-                                                            <span className="text-[var(--beheer-text)]">{typeof val === 'object' ? JSON.stringify(val) : String(val)}</span>
-                                                        </div>
-                                                    ))}
+                                    </td>
+                                </tr>
+                                {expandedLogs.has(log.id) && (
+                                    <tr className="bg-[var(--beheer-card-soft)]/20 border-b border-[var(--beheer-border)]/40">
+                                        <td colSpan={6} className="p-4 md:p-6">
+                                            <div className="flex flex-col gap-3 max-w-4xl mx-auto" onClick={(e) => e.stopPropagation()}>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-xs font-semibold text-[var(--beheer-text-muted)]">Volledige Payload Details</span>
+                                                    <button
+                                                        onClick={() => {
+                                                            navigator.clipboard.writeText(JSON.stringify(log.payload, null, 2));
+                                                            showToast('Gekopieerd naar klembord', 'success');
+                                                        }}
+                                                        className="px-3 py-1 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] hover:bg-[var(--beheer-card-soft)] text-xs rounded-lg font-semibold text-[var(--beheer-text)] transition-all flex items-center gap-1 active:scale-95"
+                                                    >
+                                                        Kopieer JSON
+                                                    </button>
+                                                </div>
+                                                <pre className="text-xs p-4 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)]/80 rounded-xl overflow-x-auto text-[var(--beheer-text)] font-mono max-h-[350px] leading-relaxed shadow-inner break-all whitespace-pre-wrap md:whitespace-pre">
+                                                    {JSON.stringify(log.payload, null, 2)}
+                                                </pre>
                                             </div>
-                                        ) : (
-                                            <span>{String(log.payload || '-')}</span>
-                                        )}
-                                    </div>
-                                </td>
-                                <td className="p-4 text-center">
-                                    <div className="flex flex-col items-center gap-2">
-                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold tracking-tight border ${
-                                            log.status === 'SUCCESS' ? 'bg-[var(--beheer-active)]/10 text-[var(--beheer-active)] border-[var(--beheer-active)]/20'
-                                            : log.status === 'INFO' ? 'bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] border-[var(--beheer-accent)]/20'
-                                            : log.status === 'WARNING' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
-                                            : 'bg-[var(--beheer-inactive)]/10 text-[var(--beheer-inactive)] border-[var(--beheer-inactive)]/20'
-                                        }`}>
-                                            {log.status}
-                                        </span>
-                                        {log.status === 'ERROR' && !log.acknowledged_at && (
-                                            <button 
-                                                onClick={() => handleAcknowledge(log.id)}
-                                                disabled={acknowledging === log.id}
-                                                className="text-[10px] text-[var(--beheer-accent)] hover:text-[var(--beheer-accent)]/80 hover:underline disabled:opacity-50"
-                                            >
-                                                {acknowledging === log.id ? 'Bezig...' : 'Markeer als gezien'}
-                                            </button>
-                                        )}
-                                        {log.status === 'ERROR' && log.acknowledged_at && (
-                                            <span className="text-[10px] text-[var(--beheer-text-muted)] flex items-center gap-1">
-                                                Gezien
-                                            </span>
-                                        )}
-                                    </div>
-                                </td>
-                            </tr>
+                                        </td>
+                                    </tr>
+                                )}
+                            </React.Fragment>
                         ))}
                         {filteredLogs.length === 0 && (
                             <tr>
