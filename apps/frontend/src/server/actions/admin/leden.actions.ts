@@ -6,7 +6,8 @@ import { revalidateTag, revalidatePath } from "next/cache";
 import { getSystemDirectus } from "@/lib/directus";
 import { updateUser } from "@directus/sdk";
 import { isMemberAdmin } from "@/lib/auth";
-import { logAdminAction } from '@/server/actions/infrastructure/audit.actions'; import { safeConsoleError } from '@/server/utils/logger';;
+import { logAdminAction } from '@/server/actions/infrastructure/audit.actions';
+import { safeConsoleError } from '@/server/utils/logger';
 
 const updateMemberSchema = z.object({
     first_name: z.string().min(1).optional(),
@@ -167,6 +168,7 @@ export async function updateMemberProfileAction(
 
         // Log the change
         await logAdminAction('member_profile_updated', 'SUCCESS', {
+            context: 'lidmaatschap',
             member_id: directusUserId,
             updates: payload
         });
@@ -241,6 +243,7 @@ export async function renewMembershipAction(
 
         // Log the renewal
         await logAdminAction('membership_renewed', 'SUCCESS', {
+            context: 'lidmaatschap',
             member_id: directusUserId,
             months_added: months,
             new_expiry: newExpiryStr
@@ -290,6 +293,7 @@ export async function provisionAzureAccountAction(directusUserId: string) {
 
         // Log the provisioning
         await logAdminAction('azure_provisioning', 'SUCCESS', {
+            context: 'lidmaatschap',
             member_id: directusUserId,
             email: user.email
         });

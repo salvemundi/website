@@ -69,7 +69,7 @@ export default function PendingTab({
                     
                     <button 
                         onClick={onRefresh}
-                        className="p-2 text-slate-400 hover:text-purple-600 transition-colors"
+                        className="p-2 text-[var(--beheer-text-muted)] hover:text-[var(--beheer-accent)] transition-colors"
                     >
                         <RefreshCw className="h-5 w-5" />
                     </button>

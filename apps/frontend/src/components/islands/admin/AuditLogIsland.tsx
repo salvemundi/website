@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import {
-    Clock, Server, RefreshCw, History, Shield
+    Clock, Server, RefreshCw, Shield
 } from 'lucide-react';
 import {
     approveSignupAction,
@@ -21,6 +21,11 @@ import LogsTab from './audit/LogsTab';
 import QueuesTab from './audit/QueuesTab';
 
 
+interface QueueDataMap {
+    new_users?: QueueInfo;
+    sync_existing?: QueueInfo;
+}
+
 interface AuditLogIslandProps {
     initialData: {
         signups: PendingSignup[];
@@ -29,31 +34,33 @@ interface AuditLogIslandProps {
         adminLogsTotal: number;
         systemLogs: SystemLog[];
         systemLogsTotal: number;
-        queueData: Record<string, QueueInfo>;
+        queueData: QueueDataMap | null;
     };
 }
 
 export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
     const { toast, showToast, hideToast } = useAdminToast();
-    const [activeTab, setActiveTab] = useState<'pending' | 'admin_logs' | 'system_logs' | 'queues'>('pending');
+    const [activeTab, setActiveTab] = useState<'pending' | 'admin_logs' | 'system_logs' | 'queues'>('admin_logs');
 
     const [signups, setSignups] = useState<PendingSignup[]>(initialData.signups);
     const [adminLogs, setAdminLogs] = useState<SystemLog[]>(initialData.adminLogs);
     const [systemLogs, setSystemLogs] = useState<SystemLog[]>(initialData.systemLogs);
     const [adminLogsTotalCount, setAdminLogsTotalCount] = useState(initialData.adminLogsTotal);
     const [systemLogsTotalCount, setSystemLogsTotalCount] = useState(initialData.systemLogsTotal);
-    const [queueData, _setQueueData] = useState<Record<string, QueueInfo>>(initialData.queueData);
+    const queueData = initialData.queueData;
 
     const [isProcessing, setIsProcessing] = useState<string | null>(null);
     const [isBulkProcessing, setIsBulkProcessing] = useState<'approve' | 'reject' | null>(null);
     const [manualApproval, setManualApproval] = useState(initialData.manualApproval);
 
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [adminLogsLimit, setAdminLogsLimit] = useState(50);
+    const [systemLogsLimit, setSystemLogsLimit] = useState(50);
 
     const refreshLogs = async () => {
         const [adminLogsRes, systemLogsRes] = await Promise.all([
-            getSystemLogsAction(50, 'admin'),
-            getSystemLogsAction(50, 'system')
+            getSystemLogsAction(adminLogsLimit, 'admin'),
+            getSystemLogsAction(systemLogsLimit, 'system')
         ]);
 
         if (adminLogsRes.success) {
@@ -66,7 +73,26 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
         }
     };
 
-    // Only membership types remain in the queue
+    const loadMoreAdminLogs = async () => {
+        const newLimit = adminLogsLimit + 50;
+        setAdminLogsLimit(newLimit);
+        const res = await getSystemLogsAction(newLimit, 'admin');
+        if (res.success) {
+            setAdminLogs(res.data);
+            setAdminLogsTotalCount(res.totalCount);
+        }
+    };
+
+    const loadMoreSystemLogs = async () => {
+        const newLimit = systemLogsLimit + 50;
+        setSystemLogsLimit(newLimit);
+        const res = await getSystemLogsAction(newLimit, 'system');
+        if (res.success) {
+            setSystemLogs(res.data);
+            setSystemLogsTotalCount(res.totalCount);
+        }
+    };
+
     const filteredSignups = signups;
 
     const handleApprove = async (id: string, type: string) => {
@@ -191,11 +217,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
         setSelectedIds(newSet);
     };
 
-    const _adminStats = [
-        { label: 'Wachtrij', value: signups.length, icon: Clock, trend: 'Pending' },
-        { label: 'Beheerder', value: adminLogsTotalCount, icon: Shield, trend: 'Actions' },
-        { label: 'Systeem', value: systemLogsTotalCount, icon: History, trend: 'Events' },
-    ];
+
 
     return (
         <div className="w-full">
@@ -256,7 +278,9 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                 {activeTab === 'admin_logs' && (
                     <LogsTab
                         logs={adminLogs}
+                        totalCount={adminLogsTotalCount}
                         onRefresh={refreshLogs}
+                        onLoadMore={loadMoreAdminLogs}
                         title="Beheerder Acties"
                     />
                 )}
@@ -264,7 +288,9 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                 {activeTab === 'system_logs' && (
                     <LogsTab
                         logs={systemLogs}
+                        totalCount={systemLogsTotalCount}
                         onRefresh={refreshLogs}
+                        onLoadMore={loadMoreSystemLogs}
                         title="Systeem Events"
                         actions={
                             <a

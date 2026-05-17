@@ -75,7 +75,7 @@ export async function deleteSticker(id: number) {
         revalidatePath('/stickers');
         revalidateTag('stickers', 'max');
 
-        await logAdminAction('sticker_deleted', 'SUCCESS', { sticker_id: id });
+        await logAdminAction('sticker_deleted', 'SUCCESS', { context: 'sticker', sticker_id: id });
 
         return { success: true };
     } catch {

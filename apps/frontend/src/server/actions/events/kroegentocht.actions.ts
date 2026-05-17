@@ -233,7 +233,7 @@ export async function initiateKroegentochtPayment(formData: unknown) {
                 // Cleanup DB if sync fails for other reasons
                 await deletePubCrawlTicketsBySignupIdDb(signupId);
                 await deletePubCrawlSignupDb(signupId);
-                await logAdminAction('kroegentocht_signup_rollback', 'ERROR', { id: signupId, error: String(error), action: 'rollback_delete' });
+                await logAdminAction('kroegentocht_signup_rollback', 'ERROR', { context: 'kroegentocht', id: signupId, error: String(error), action: 'rollback_delete' });
                 return { success: false, error: 'Synchronisatie met CMS mislukt. Inschrijving niet voltooid.' };
             }
         }

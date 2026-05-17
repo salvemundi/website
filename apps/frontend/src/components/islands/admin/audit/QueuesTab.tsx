@@ -4,9 +4,8 @@ import React from 'react';
 import { CheckCircle } from 'lucide-react';
 import { QueueInfo } from '@salvemundi/validations';
 
-
 interface QueuesTabProps {
-    queueData: Record<string, QueueInfo> | null;
+    queueData: { new_users?: QueueInfo; sync_existing?: QueueInfo } | null;
 }
 
 export default function QueuesTab({ queueData }: QueuesTabProps) {
