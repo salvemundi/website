@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useState, useTransition, useRef } from 'react';
 import { Filter, BarChart3, X } from 'lucide-react';
 
 
@@ -24,6 +24,18 @@ interface StickerMapIslandProps {
     className?: string;
 }
 
+interface DirectusStickerResponse {
+    id: string | number;
+    latitude: string | number;
+    longitude: string | number;
+    location_name?: string | null;
+    description?: string | null;
+    city?: string | null;
+    country?: string | null;
+    image?: string | null;
+    date_created?: string | null;
+}
+
 export default function StickerMapIsland({
     initialStickers,
     user,
@@ -33,6 +45,7 @@ export default function StickerMapIsland({
     const [stickers, setStickers] = useState(initialStickers);
     const [isPending, startTransition] = useTransition();
     const [isLocating, setIsLocating] = useState(false);
+    const cameraInputRef = useRef<HTMLInputElement>(null);
 
     // UI State
     const [showAddModal, setShowAddModal] = useState(false);
@@ -75,51 +88,224 @@ export default function StickerMapIsland({
     };
 
     const handlePlaceSticker = () => {
-        if (!user) return;
+        if (!user) {
+            showToast("Log in om een sticker te plakken.", 'error');
+            return;
+        }
+
+        const isMobile = typeof window !== 'undefined' && (
+            /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+            window.matchMedia("(pointer: coarse)").matches ||
+            window.innerWidth < 768
+        );
+
+        if (isMobile) {
+            cameraInputRef.current?.click();
+        } else {
+            setIsLocating(true);
+
+            if (!navigator.geolocation) {
+                showToast("Je browser ondersteunt geen geolocatie. We openen de handmatige kaartomgeving.", 'error');
+                setSelectedLocation(null);
+                setShowAddModal(true);
+                setIsLocating(false);
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const { latitude, longitude } = position.coords;
+                    setSelectedLocation({ lat: latitude, lng: longitude });
+
+                    let city = '';
+                    let country = '';
+
+                    try {
+                        const response = await fetch(
+                            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=nl`,
+                            { headers: { 'User-Agent': 'SalveMundi-Website' } }
+                        );
+                        if (response.ok) {
+                            const geoData = await response.json();
+                            const addr = geoData.address || {};
+                            city = addr.city || addr.town || addr.village || addr.suburb || '';
+                            country = addr.country || '';
+                        }
+                    } catch (_geoErr) {
+                        // Ignore
+                    }
+
+                    setFormData({
+                        location_name: city,
+                        description: '',
+                        city,
+                        country,
+                        image: null
+                    });
+                    setImagePreview(null);
+                    setShowAddModal(true);
+                    setIsLocating(false);
+                },
+                (error) => {
+                    let msg = "Kon je locatie niet bepalen. We openen de handmatige kaartomgeving.";
+                    if (error.code === 1) msg = "Locatie toegang geweigerd. We openen de handmatige kaartomgeving.";
+                    showToast(msg, 'error');
+
+                    setFormData({
+                        location_name: '',
+                        description: '',
+                        city: '',
+                        country: '',
+                        image: null
+                    });
+                    setImagePreview(null);
+                    setSelectedLocation(null);
+                    setShowAddModal(true);
+                    setIsLocating(false);
+                },
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        }
+    };
+
+    const handleAutomatedFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
 
         setIsLocating(true);
+        showToast('Foto ontvangen! Locatie bepalen...', 'success');
 
         if (!navigator.geolocation) {
-            showToast("Je browser ondersteunt geen geolocatie.", 'error');
+            showToast("Je browser ondersteunt geen geolocatie. We openen de handmatige kaartomgeving.", 'error');
+            setFormData(prev => ({ ...prev, image: file }));
+            const reader = new FileReader();
+            reader.onloadend = () => setImagePreview(reader.result as string);
+            reader.readAsDataURL(file);
+            setSelectedLocation(null);
+            setShowAddModal(true);
             setIsLocating(false);
+            e.target.value = '';
             return;
         }
 
         navigator.geolocation.getCurrentPosition(
             async (position) => {
                 const { latitude, longitude } = position.coords;
-                setSelectedLocation({ lat: latitude, lng: longitude });
+                
+                let city = 'Onbekende Stad';
+                let country = 'Onbekend Land';
 
-                // Reverse Geocoding to pre-fill city and country
                 try {
-                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=nl`, {
-                        headers: { 'User-Agent': 'SalveMundi-Website' }
-                    });
-                    const geoData = await response.json();
-                    const addr = geoData.address || {};
-                    const city = addr.city || addr.town || addr.village || addr.suburb || '';
-                    const country = addr.country || '';
-
-                    setFormData(prev => ({
-                        ...prev,
-                        city,
-                        country
-                    }));
-                } catch (_error) {
-
+                    const response = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=nl`,
+                        { headers: { 'User-Agent': 'SalveMundi-Website' } }
+                    );
+                    if (response.ok) {
+                        const geoData = await response.json();
+                        const addr = geoData.address || {};
+                        city = addr.city || addr.town || addr.village || addr.suburb || city;
+                        country = addr.country || country;
+                    }
+                } catch (_geoErr) {
+                    // Silently fail, use defaults
                 }
 
-                setShowAddModal(true);
-                setIsLocating(false);
+                startTransition(async () => {
+                    try {
+                        showToast('Foto uploaden...', 'success');
+                        const fileData = new FormData();
+                        fileData.append('file', file);
+                        const imageId = await uploadFileAction(fileData);
+                        
+                        if (!imageId || (typeof imageId === 'object' && 'error' in imageId)) {
+                            const errMsg = (imageId && typeof imageId === 'object' && 'error' in imageId) 
+                                ? String((imageId as Record<string, unknown>).error) 
+                                : 'Foto upload mislukt.';
+                            throw new Error(errMsg);
+                        }
+
+                        showToast('Sticker registreren...', 'success');
+                        const locationName = `${city}`;
+                        const response = await createStickerPublic({
+                            latitude,
+                            longitude,
+                            location_name: locationName,
+                            description: '',
+                            city,
+                            country,
+                            image: imageId
+                        });
+
+                        if (!response.success || !response.data) {
+                            throw new Error(response.error || 'Kon sticker niet opslaan.');
+                        }
+
+                        const userCreatedInfo = user ? {
+                            id: user.id,
+                            first_name: user.first_name,
+                            last_name: user.last_name,
+                            avatar: user.avatar
+                        } : null;
+
+                        const responseData = response.data as unknown as DirectusStickerResponse;
+                        const stickerToAppend: StickerPublic = {
+                            id: Number(responseData.id),
+                            latitude: Number(responseData.latitude),
+                            longitude: Number(responseData.longitude),
+                            location_name: responseData.location_name || locationName,
+                            description: responseData.description || '',
+                            city: responseData.city || city,
+                            country: responseData.country || country,
+                            image: responseData.image || imageId,
+                            date_created: responseData.date_created || new Date().toISOString(),
+                            user_created: userCreatedInfo
+                        };
+
+                        setStickers((prev: StickerPublic[]) => [stickerToAppend, ...prev]);
+                        showToast('Sticker succesvol geplaatst! 🎨📍', 'success');
+                    } catch (err: unknown) {
+                        const errMsg = err instanceof Error ? err.message : 'Fout bij automatisch plaatsen.';
+                        showToast(errMsg, 'error');
+                        
+                        setFormData({
+                            location_name: city !== 'Onbekende Stad' ? city : '',
+                            description: '',
+                            city: city !== 'Onbekende Stad' ? city : '',
+                            country: country !== 'Onbekend Land' ? country : '',
+                            image: file
+                        });
+                        const reader = new FileReader();
+                        reader.onloadend = () => setImagePreview(reader.result as string);
+                        reader.readAsDataURL(file);
+                        setSelectedLocation({ lat: latitude, lng: longitude });
+                        setShowAddModal(true);
+                    } finally {
+                        setIsLocating(false);
+                    }
+                });
             },
             (error) => {
-                let msg = "Kon je locatie niet bepalen.";
-                if (error.code === 1) msg = "Locatie toegang geweigerd. Zet dit aan in je browser.";
+                let msg = "Kon je locatie niet bepalen. We openen de handmatige kaartomgeving.";
+                if (error.code === 1) msg = "Locatie toegang geweigerd. We openen de handmatige kaartomgeving.";
                 showToast(msg, 'error');
+
+                setFormData(prev => ({
+                    ...prev,
+                    image: file,
+                    city: '',
+                    country: ''
+                }));
+                const reader = new FileReader();
+                reader.onloadend = () => setImagePreview(reader.result as string);
+                reader.readAsDataURL(file);
+                setSelectedLocation(null);
+                setShowAddModal(true);
                 setIsLocating(false);
             },
             { enableHighAccuracy: true, timeout: 10000 }
         );
+
+        e.target.value = '';
     };
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -147,9 +333,15 @@ export default function StickerMapIsland({
                 let imageId = null;
                 if (formData.image) {
                     imageId = await uploadImage(formData.image);
+                    if (!imageId || (typeof imageId === 'object' && 'error' in imageId)) {
+                        const errMsg = (imageId && typeof imageId === 'object' && 'error' in imageId) 
+                            ? String((imageId as Record<string, unknown>).error) 
+                            : 'Foto upload mislukt.';
+                        throw new Error(errMsg);
+                    }
                 }
 
-                const newSticker = await createStickerPublic({
+                const response = await createStickerPublic({
                     latitude: selectedLocation.lat,
                     longitude: selectedLocation.lng,
                     location_name: formData.location_name,
@@ -159,17 +351,44 @@ export default function StickerMapIsland({
                     image: imageId
                 });
 
-                setStickers((prev: StickerPublic[]) => [newSticker as unknown as StickerPublic, ...prev]);
+                if (!response.success || !response.data) {
+                    throw new Error(response.error || 'Kon sticker niet opslaan.');
+                }
+
+                const userCreatedInfo = user ? {
+                    id: user.id,
+                    first_name: user.first_name,
+                    last_name: user.last_name,
+                    avatar: user.avatar
+                } : null;
+
+                const responseData = response.data as unknown as DirectusStickerResponse;
+                const stickerToAppend: StickerPublic = {
+                    id: Number(responseData.id),
+                    latitude: Number(responseData.latitude),
+                    longitude: Number(responseData.longitude),
+                    location_name: responseData.location_name || formData.location_name,
+                    description: responseData.description || formData.description,
+                    city: responseData.city || formData.city,
+                    country: responseData.country || formData.country,
+                    image: responseData.image || imageId,
+                    date_created: responseData.date_created || new Date().toISOString(),
+                    user_created: userCreatedInfo
+                };
+
+                setStickers((prev: StickerPublic[]) => [stickerToAppend, ...prev]);
                 setShowAddModal(false);
                 setSelectedLocation(null);
                 setFormData({ location_name: '', description: '', city: '', country: '', image: null });
                 setImagePreview(null);
                 showToast('Sticker succesvol toegevoegd! 🎨', 'success');
-            } catch (error) {
-                showToast('Fout bij toevoegen: ' + error, 'error');
+            } catch (error: unknown) {
+                const errMsg = error instanceof Error ? error.message : String(error);
+                showToast('Fout bij toevoegen: ' + errMsg, 'error');
             }
         });
     };
+
 
     return (
         <div className="flex flex-col h-full gap-4 sm:gap-6">
@@ -294,6 +513,16 @@ export default function StickerMapIsland({
                 selectedLocation={selectedLocation}
                 setSelectedLocation={setSelectedLocation}
             />
+
+            <input
+                type="file"
+                ref={cameraInputRef}
+                accept="image/*"
+                capture="environment"
+                onChange={handleAutomatedFileChange}
+                className="hidden"
+            />
+
             <AdminToast toast={toast} onClose={hideToast} />
         </div>
     );
