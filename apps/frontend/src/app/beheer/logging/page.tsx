@@ -1,22 +1,6 @@
 import React from 'react';
-import { redirect } from 'next/navigation';
 import AuditLogIsland from '@/components/islands/admin/AuditLogIsland';
-import { getEnrichedSession } from '@/server/auth/auth-utils';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
-import { type Committee } from '@/shared/lib/permissions';
-
-async function checkAuditAccess() {
-    const session = await getEnrichedSession();
-    if (!session || !session.user) return false;
-    
-    const user = session.user as { committees?: Committee[] };
-    const memberships = user.committees || [];
-    return memberships.some((c) => {
-        const name = (c?.name || '').toString().toLowerCase();
-        return name.includes('bestuur') || name.includes('ict') || name.includes('kas') || name.includes('kandi');
-    });
-}
-
 import { 
     getPendingSignupsAction, 
     getAuditSettingsAction, 
@@ -24,19 +8,7 @@ import {
     getQueueStatusAction 
 } from '@/server/actions/infrastructure/audit.actions';
 
-/**
- * AuditLoggingPage: Nuclear SSR Modernization.
- * Wrapped in AdminPageShell for instant header rendering.
- * All data is fetched concurrently at the top-level to ensure Zero-Drift.
- */
 export default async function AuditLoggingPage() {
-    const hasAccess = await checkAuditAccess();
-
-    if (!hasAccess) {
-        redirect('/beheer');
-    }
-
-    // Fetch all audit data concurrently
     const [
         signupsRes, 
         settingsRes, 
@@ -89,3 +61,4 @@ export default async function AuditLoggingPage() {
         </AdminPageShell>
     );
 }
+

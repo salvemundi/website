@@ -1,15 +1,18 @@
 import 'server-only';
+import { z } from 'zod';
 import { query } from '@/lib/database';
 import { type PendingSignup } from '@salvemundi/validations/schema/audit.zod';
 import { safeConsoleError } from '@/server/utils/logger';
 
-export interface SystemLog {
-    id: string;
-    type: string;
-    status: string;
-    payload: Record<string, unknown>;
-    created_at: string;
-}
+const SystemLogSchema = z.object({
+    id: z.string(),
+    type: z.string(),
+    status: z.string(),
+    payload: z.record(z.string(), z.unknown()),
+    created_at: z.string(),
+    acknowledged_at: z.string().nullable().optional()
+});
+export type SystemLog = z.infer<typeof SystemLogSchema>;
 
 interface TransactionRow {
     mollie_id: string;
@@ -30,6 +33,7 @@ interface SystemLogRow {
     status: string;
     payload: string | Record<string, unknown>;
     created_at: string | Date;
+    acknowledged_at: string | Date | null;
 }
 
 interface CountRow {
@@ -66,7 +70,7 @@ export async function getPendingSignupsInternal(): Promise<PendingSignup[]> {
         return result;
     } catch (error: unknown) {
         safeConsoleError('[AuditQueries] Failed to fetch pending signups:', error);
-        return [];
+        throw error;
     }
 }
 
@@ -82,25 +86,26 @@ export async function getSystemLogsInternal(limit: number = 50, source: 'admin' 
         ]);
 
         const logs: SystemLog[] = (logsResult.rows as SystemLogRow[]).map((r: SystemLogRow) => {
-            let parsedPayload: Record<string, unknown> = {};
+            let parsedPayload: z.infer<typeof SystemLogSchema>['payload'] = {};
 
             if (typeof r.payload === 'string') {
                 try {
-                    parsedPayload = JSON.parse(r.payload) as Record<string, unknown>;
+                    parsedPayload = JSON.parse(r.payload) as z.infer<typeof SystemLogSchema>['payload'];
                 } catch (_parseError) {
                     parsedPayload = { error: 'Invalid JSON payload string' };
                 }
             } else if (r.payload && typeof r.payload === 'object') {
-                parsedPayload = r.payload as Record<string, unknown>;
+                parsedPayload = r.payload as z.infer<typeof SystemLogSchema>['payload'];
             }
 
-            return {
+            return SystemLogSchema.parse({
                 id: r.id,
                 type: r.type,
                 status: r.status,
                 created_at: r.created_at instanceof Date ? r.created_at.toISOString() : String(r.created_at),
+                acknowledged_at: r.acknowledged_at ? (r.acknowledged_at instanceof Date ? r.acknowledged_at.toISOString() : String(r.acknowledged_at)) : null,
                 payload: parsedPayload
-            };
+            });
         });
 
         const countRows = countResult.rows as CountRow[];
@@ -109,7 +114,7 @@ export async function getSystemLogsInternal(limit: number = 50, source: 'admin' 
         return { logs, totalCount };
     } catch (error: unknown) {
         safeConsoleError('[AuditQueries] Failed to fetch system logs:', error);
-        return { logs: [], totalCount: 0 };
+        throw error;
     }
 }
 

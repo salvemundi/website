@@ -8,6 +8,7 @@ import { Pool } from "pg";
 import { getRedis } from "@/server/auth/redis-client";
 import { isSuperAdmin } from "@/lib/auth/auth-utils";
 import { checkAdminAccess } from "@/server/actions/admin/admin-utils.actions";
+import { logAdminAction } from "@/server/actions/infrastructure/audit.actions";
 import { safeConsoleError } from '@/server/utils/logger';
 
 const pool = new Pool({
@@ -79,6 +80,13 @@ export async function setImpersonateToken(token: string) {
 
         revalidatePath('/beheer/impersonate');
         revalidatePath('/', 'layout');
+        const adminName = `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || 'Onbekend';
+
+        await logAdminAction('impersonation_started', 'INFO', {
+            target_id: targetUser.id,
+            target_name: fullName || targetUser.email,
+            started_by: adminName
+        });
 
         return {
             success: true,
@@ -119,6 +127,10 @@ export async function clearImpersonateToken() {
     if (testToken) {
         await redis.del(`impersonation:${testToken}`);
     }
+
+    await logAdminAction('impersonation_ended', 'INFO', {
+        ended_by: `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || 'Onbekend'
+    });
 
     revalidatePath('/beheer/impersonate');
     revalidatePath('/', 'layout');

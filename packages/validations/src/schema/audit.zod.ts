@@ -44,6 +44,7 @@ export const SystemLogSchema = z.object({
     status: z.string(),
     payload: z.record(z.any()).nullable(),
     created_at: z.string(),
+    acknowledged_at: z.string().nullable().optional(),
 });
 
 export type SystemLog = z.infer<typeof SystemLogSchema>;

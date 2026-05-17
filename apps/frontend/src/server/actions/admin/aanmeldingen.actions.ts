@@ -68,7 +68,7 @@ export async function deleteSignupAction(signupId: number, eventId: string | num
             await getSystemDirectus().request(deleteItem('event_signups', signupId));
         } catch (error) {
 
-            await logAdminAction('event_signup_delete_failed', 'ERROR', { id: signupId, error: String(error) });
+            await logAdminAction('event_signup_delete_failed', 'ERROR', { context: 'activiteit', event_id: eventId, id: signupId, error: String(error) });
             // Non-critical rollback for delete? Actually we should probably revert the DB delete
             // But we already deleted it from Postgres. Ideally we do this in reverse.
             return { success: false, error: "CMS Synchronisatie mislukt. Aanmelding niet verwijderd." };
@@ -160,7 +160,7 @@ export async function createManualSignupAction(
                 throw new Error('Geen ID teruggekregen van het CMS');
             }
 
-            await logAdminAction('event_signup_manual_created', 'SUCCESS', { id: newItem.id, data: payload });
+            await logAdminAction('event_signup_manual_created', 'SUCCESS', { context: 'activiteit', event_id: eventId, context_name: eventName, id: newItem.id, data: payload });
 
             revalidateTag(`event_signups_${eventId}`, 'max');
             revalidatePath(`/beheer/activiteiten/${eventId}/aanmeldingen`);
@@ -169,6 +169,9 @@ export async function createManualSignupAction(
         } catch (error) {
             safeConsoleError('[CMS Sync] Directus createItem failed (signup):', error);
             await logAdminAction('activity_signup_failed', 'ERROR', {
+                context: 'activiteit',
+                event_id: eventId,
+                context_name: eventName,
                 error: error instanceof Error ? error.message : JSON.stringify(error),
                 payload: payload
             });
@@ -209,7 +212,7 @@ export async function toggleCheckInAction(signupId: number, eventId: number, che
         } catch (error) {
             // Revert DB on sync fail
             await updateEventSignupDb(signupId, { checked_in: !checkedIn, checked_in_at: !checkedIn ? new Date().toISOString() : null });
-            await logAdminAction('event_signup_checkin_rollback', 'ERROR', { id: signupId, error: String(error), action: 'rollback_restore' });
+            await logAdminAction('event_signup_checkin_rollback', 'ERROR', { context: 'activiteit', event_id: eventId, id: signupId, error: String(error), action: 'rollback_restore' });
             return { success: false, error: "CMS Synchronisatie mislukt. Check-in status niet bijgewerkt." };
         }
 

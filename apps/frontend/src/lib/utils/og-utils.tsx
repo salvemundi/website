@@ -68,7 +68,6 @@ export async function generateOGImage(props: OGImageProps) {
                         flexDirection: 'column',
                         gap: '28px',
                         position: 'relative',
-                        zIndex: 10,
                         maxWidth: '900px' }}
                 >
                     {category && (
@@ -122,8 +121,7 @@ export async function generateOGImage(props: OGImageProps) {
                         alignItems: 'flex-end',
                         justifyContent: 'space-between',
                         width: '100%',
-                        position: 'relative',
-                        zIndex: 10 }}
+                        position: 'relative' }}
                 >
                     {/* Organization name */}
                     <div

@@ -9,7 +9,8 @@ import {
 import { getSystemDirectus } from '@/lib/directus';
 import { createItem } from '@directus/sdk';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { logAdminAction } from '@/server/actions/infrastructure/audit.actions'; import { safeConsoleError } from '@/server/utils/logger';;
+import { logAdminAction } from '@/server/actions/infrastructure/audit.actions';
+import { safeConsoleError } from '@/server/utils/logger';
 import {
     fetchUserSignupStatusDb,
     insertTripSignupDb,
@@ -200,7 +201,7 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
             }
 
             await deleteTripSignupDb(signupId);
-            await logAdminAction('trip_signup_rollback', 'ERROR', { id: signupId, error: String(error), action: 'rollback_delete' });
+            await logAdminAction('trip_signup_rollback', 'ERROR', { context: 'reis', trip_id: tripId, id: signupId, error: String(error), action: 'rollback_delete' });
             return { success: false, message: 'Synchronisatie met CMS mislukt. Inschrijving niet voltooid.' };
         }
 

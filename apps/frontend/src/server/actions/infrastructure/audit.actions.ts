@@ -30,7 +30,6 @@ export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' |
 
         const user = session.user as unknown as EnrichedUser;
 
-        // Prevent VULN-008 (Payload Bloat)
         const payloadStr = JSON.stringify(safePayload);
         if (payloadStr.length > 15000) {
             logWarn('[AuditActions] Log payload too large, dropping.');
@@ -41,7 +40,7 @@ export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' |
             type,
             status,
             payload: {
-                ...(payload as Record<string, unknown>),
+                ...(safePayload as Record<string, unknown>),
                 admin_id: user?.id || null,
                 admin_name: user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : 'Systeem',
                 timestamp: new Date().toISOString()
@@ -82,7 +81,6 @@ export async function approveSignupAction(id: string, type: string) {
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
-        // Internal call to finance-service to release the payment and trigger Azure sync
         const res = await fetch(`${process.env.FINANCE_SERVICE_URL}/api/payments/approve`, {
             method: 'POST',
             headers: {
@@ -95,6 +93,7 @@ export async function approveSignupAction(id: string, type: string) {
         if (!res.ok) throw new Error(`Finance approval failed: ${await res.text()}`);
 
         await logAdminAction('signup_approved', 'SUCCESS', {
+            context: 'lidmaatschap',
             signup_id: id,
             type: type
         });
@@ -112,10 +111,10 @@ export async function rejectSignupAction(id: string, type: string) {
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
-        // Update transaction to rejected
         await query('UPDATE transactions SET approval_status = $1 WHERE mollie_id = $2', ['rejected', id]);
 
         await logAdminAction('signup_rejected', 'SUCCESS', {
+            context: 'lidmaatschap',
             signup_id: id,
             type: type
         });
@@ -161,6 +160,7 @@ export async function updateAuditSettingsAction(manualApproval: boolean) {
         }
 
         await logAdminAction('settings_change', 'SUCCESS', {
+            context: 'systeem',
             setting: 'manual_approval',
             value: manualApproval
         });
@@ -233,4 +233,18 @@ export async function bulkRejectSignupsAction(items: { id: string; type: string 
     const admin = await checkAuditAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
     return bulkActionHelper(items, rejectSignupAction);
+}
+
+export async function acknowledgeSystemLogAction(logId: string) {
+    const admin = await checkAuditAccess();
+    if (!admin) return { success: false, error: "Unauthorized" };
+
+    try {
+        await query('UPDATE system_logs SET acknowledged_at = NOW() WHERE id = $1', [logId]);
+        revalidatePath('/beheer/logging');
+        return { success: true };
+    } catch (error: unknown) {
+        safeConsoleError(`[AuditActions] Failed to acknowledge system log ${logId}:`, error);
+        return { success: false, error: "Markeren als gezien mislukt." };
+    }
 }

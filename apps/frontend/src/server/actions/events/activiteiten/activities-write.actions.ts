@@ -12,7 +12,8 @@ import {
 import {
     activityAdminSchema
 } from "@salvemundi/validations";
-import { logAdminAction } from '@/server/actions/infrastructure/audit.actions'; import { safeConsoleError } from '@/server/utils/logger';;
+import { logAdminAction } from '@/server/actions/infrastructure/audit.actions';
+import { safeConsoleError } from '@/server/utils/logger';
 import { deleteEventDb } from "@/server/internal/event-db.utils";
 import { ensureActivitiesEdit, verifyActivityBOLA } from "@/server/actions/events/activiteiten/auth-check";
 
@@ -35,11 +36,11 @@ export async function deleteActivity(eventId: number) {
         try {
             await getSystemDirectus().request(deleteItem('events', eventId));
         } catch (error) {
-            await logAdminAction('activity_delete_failed', 'ERROR', { id: eventId, error: String(error) });
+            await logAdminAction('activity_delete_failed', 'ERROR', { context: 'activiteit', id: eventId, error: String(error) });
             return { success: false, error: "CMS Synchronisatie mislukt. Activiteit is niet verwijderd." };
         }
 
-        await logAdminAction('activity_deleted', 'SUCCESS', { id: eventId });
+        await logAdminAction('activity_deleted', 'SUCCESS', { context: 'activiteit', id: eventId });
 
         revalidateTag('events', 'max');
         revalidatePath('/beheer/activiteiten');
@@ -128,7 +129,7 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
             throw new Error('Geen ID teruggekregen van het CMS');
         }
 
-        await logAdminAction('activity_created', 'SUCCESS', { id: newItem.id, data: directusPayload });
+        await logAdminAction('activity_created', 'SUCCESS', { context: 'activiteit', context_name: data.name, id: newItem.id, data: directusPayload });
 
         revalidateTag('events', 'max');
         revalidatePath('/beheer/activiteiten');
@@ -139,6 +140,8 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
     } catch (error: unknown) {
         safeConsoleError('[CMS Sync] Directus createItem failed:', error);
         await logAdminAction('activity_create_failed', 'ERROR', {
+            context: 'activiteit',
+            context_name: data.name,
             error: error instanceof Error ? error.message : JSON.stringify(error),
             payload: directusPayload
         });
@@ -227,7 +230,7 @@ export async function updateActivityAction(eventId: number, prevState: unknown, 
         try {
             await getSystemDirectus().request(updateItem('events', eventId, directusPayload));
 
-            await logAdminAction('activity_updated', 'SUCCESS', { id: eventId, data: directusPayload });
+            await logAdminAction('activity_updated', 'SUCCESS', { context: 'activiteit', context_name: data.name, id: eventId, data: directusPayload });
 
             revalidateTag('events', 'max');
             revalidateTag(`event_${eventId}`, 'max');
@@ -239,6 +242,7 @@ export async function updateActivityAction(eventId: number, prevState: unknown, 
         } catch (error) {
             safeConsoleError('[CMS Sync] Directus updateItem failed:', error);
             await logAdminAction('activity_update_failed', 'ERROR', {
+                context: 'activiteit',
                 id: eventId,
                 error: error instanceof Error ? error.message : JSON.stringify(error)
             });
