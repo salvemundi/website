@@ -143,3 +143,24 @@ export async function insertSystemLogInternal(data: {
         safeConsoleError('[AuditQueries] Failed to insert system log:', error);
     }
 }
+
+export async function getIdNameLookupInternal(): Promise<Record<string, string>> {
+    try {
+        const sql = `
+            SELECT 'committee_' || id::text AS key, name FROM committees
+            UNION ALL
+            SELECT 'event_' || id::text AS key, name FROM events
+            UNION ALL
+            SELECT 'trip_' || id::text AS key, name FROM trips
+        `;
+        const { rows } = await query(sql);
+        const lookup: Record<string, string> = {};
+        for (const row of rows as { key: string; name: string }[]) {
+            lookup[row.key] = row.name;
+        }
+        return lookup;
+    } catch (error: unknown) {
+        safeConsoleError('[AuditQueries] Failed to fetch ID name lookup:', error);
+        return {};
+    }
+}

@@ -35,6 +35,7 @@ interface AuditLogIslandProps {
         systemLogs: SystemLog[];
         systemLogsTotal: number;
         queueData: QueueDataMap | null;
+        idNameLookup: Record<string, string>;
     };
 }
 
@@ -282,6 +283,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                         onRefresh={refreshLogs}
                         onLoadMore={loadMoreAdminLogs}
                         title="Beheerder Acties"
+                        idNameLookup={initialData.idNameLookup}
                     />
                 )}
 
@@ -292,6 +294,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                         onRefresh={refreshLogs}
                         onLoadMore={loadMoreSystemLogs}
                         title="Systeem Events"
+                        idNameLookup={initialData.idNameLookup}
                         actions={
                             <a
                                 href="/beheer/sync"

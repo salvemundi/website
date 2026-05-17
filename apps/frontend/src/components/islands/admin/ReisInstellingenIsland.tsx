@@ -112,11 +112,6 @@ export default function ReisInstellingenIsland({ initialTrips, initialSettings }
                             isVisible={settings.show}
                             onToggle={handleToggleVisibility}
                             isPending={isPending}
-                            label={
-                                <span className="inline-block min-w-[175px] whitespace-nowrap text-right">
-                                    Reispagina staat {settings.show ? 'aan' : 'uit'}
-                                </span>
-                            }
                         />
                         <button
                             onClick={handleAdd}

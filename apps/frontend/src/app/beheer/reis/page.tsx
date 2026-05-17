@@ -8,6 +8,7 @@ import { notFound } from 'next/navigation';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import AdminTripSwitcher from '@/components/ui/admin/AdminTripSwitcher';
 import AdminReisTableIsland from '@/components/islands/admin/AdminReisTableIsland';
+import ReisVisibilityToggle from '@/components/islands/admin/reis/ReisVisibilityToggle';
 
 // Server Actions & Queries
 import { getReisSiteSettings } from '@/server/actions/events/reis.actions';
@@ -151,6 +152,8 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
                                 <span className="hidden sm:inline">Instellingen</span>
                             </Link>
                         </div>
+                        
+                        <ReisVisibilityToggle initialVisible={_reisSettings.show} />
                     </div>
                 </div>
             }

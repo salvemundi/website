@@ -8,6 +8,7 @@ import {
     getPendingSignupsInternal,
     getSystemLogsInternal,
     insertSystemLogInternal,
+    getIdNameLookupInternal,
     type SystemLog
 } from "@/server/queries/audit.queries";
 import { type PendingSignup } from "@salvemundi/validations/schema/audit.zod";
@@ -246,5 +247,18 @@ export async function acknowledgeSystemLogAction(logId: string) {
     } catch (error: unknown) {
         safeConsoleError(`[AuditActions] Failed to acknowledge system log ${logId}:`, error);
         return { success: false, error: "Markeren als gezien mislukt." };
+    }
+}
+
+export async function getIdNameLookupAction(): Promise<ActionResponse<Record<string, string>>> {
+    const admin = await checkAuditAccess();
+    if (!admin) return { success: false, error: "Unauthorized" };
+
+    try {
+        const result = await getIdNameLookupInternal();
+        return { success: true, data: result };
+    } catch (error: unknown) {
+        safeConsoleError('[AuditActions] Failed to fetch ID name lookup map:', error);
+        return { success: false, error: "Kon ID-namen mapping niet ophalen." };
     }
 }

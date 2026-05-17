@@ -5,7 +5,8 @@ import {
     getPendingSignupsAction, 
     getAuditSettingsAction, 
     getSystemLogsAction, 
-    getQueueStatusAction 
+    getQueueStatusAction,
+    getIdNameLookupAction
 } from '@/server/actions/infrastructure/audit.actions';
 
 export default async function AuditLoggingPage() {
@@ -14,13 +15,15 @@ export default async function AuditLoggingPage() {
         settingsRes, 
         adminLogsRes, 
         systemLogsRes, 
-        queueRes
+        queueRes,
+        idNameLookupRes
     ] = await Promise.all([
         getPendingSignupsAction(),
         getAuditSettingsAction(),
         getSystemLogsAction(50, 'admin'),
         getSystemLogsAction(50, 'system'),
-        getQueueStatusAction()
+        getQueueStatusAction(),
+        getIdNameLookupAction()
     ]);
 
     const initialData = {
@@ -30,7 +33,8 @@ export default async function AuditLoggingPage() {
         adminLogsTotal: adminLogsRes.success ? (adminLogsRes.totalCount || 0) : 0,
         systemLogs: systemLogsRes.success ? (systemLogsRes.data || []) : [],
         systemLogsTotal: systemLogsRes.success ? (systemLogsRes.totalCount || 0) : 0,
-        queueData: queueRes.success ? (queueRes.data?.queues || null) : null
+        queueData: queueRes.success ? (queueRes.data?.queues || null) : null,
+        idNameLookup: idNameLookupRes.success ? (idNameLookupRes.data || {}) : {}
     };
 
     return (
