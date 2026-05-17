@@ -201,69 +201,69 @@ export default function StickerMap({
                             anchor="bottom"
                             className="map-popup-theme"
                         >
-                            <div className="map-popup p-4 relative min-w-[280px]">
+                            <div className="map-popup p-5 relative w-[290px] sm:w-[360px] bg-[var(--bg-card)] rounded-3xl shadow-2xl border border-[var(--border-color)]/25 flex flex-col gap-4 text-[var(--text-main)]">
                                 <button
                                     type="button"
-                                    className="absolute top-2 right-2 p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors z-10"
+                                    className="absolute top-3 right-3 p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors z-10"
                                     onClick={() => { setPopupInfo(null); setShowImage(false); }}
                                 >
-                                    <X className="h-5 w-5 text-[var(--text-muted)]" />
+                                    <X className="h-4 w-4 text-[var(--text-muted)]" />
                                 </button>
 
-                                <div className="flex gap-4 items-center mb-4 pr-6">
+                                <div className="flex gap-3 items-center pr-6">
                                     <MediaAsset
                                         asset={popupInfo.user_created?.avatar}
                                         alt="avatar"
                                         width={128}
                                         height={128}
-                                        className="w-12 h-12 rounded-xl object-cover ring-2 ring-[var(--theme-purple)]/20"
+                                        className="w-11 h-11 rounded-full object-cover ring-2 ring-[var(--theme-purple)]/20 shrink-0"
                                     />
-                                    <div>
-                                        <h3 className="font-black text-[var(--text-main)] leading-tight uppercase tracking-tight">
+                                    <div className="min-w-0">
+                                        <h3 className="font-semibold text-[var(--text-main)] text-sm sm:text-base leading-tight truncate">
                                             {popupInfo.location_name === 'Imported' ? (popupInfo.city || popupInfo.address || 'Imported') : (popupInfo.location_name || 'Sticker Locatie')}
                                         </h3>
-                                        <p className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">
-                                            {[popupInfo.city || popupInfo.address, popupInfo.country].filter(Boolean).join(' • ')}
+                                        <p className="text-xs font-medium text-[var(--text-muted)] mt-0.5 truncate">
+                                            {[popupInfo.city || popupInfo.address, popupInfo.country].filter(Boolean).join(', ')}
                                         </p>
                                     </div>
                                 </div>
 
                                 {popupInfo.description && (
-                                    <p className="text-sm text-[var(--text-subtle)] leading-relaxed mb-4 bg-black/5 dark:bg-white/5 p-3 rounded-lg border border-[var(--border-color)]/20">
+                                    <p className="text-xs sm:text-sm text-[var(--text-subtle)] leading-relaxed bg-[var(--bg-main)]/50 p-3 rounded-2xl border border-[var(--border-color)]/10 break-words">
                                         {popupInfo.description}
                                     </p>
                                 )}
 
                                 {popupInfo.image && (
-                                    <div className="mt-3">
+                                    <div className="mt-1">
                                         {showImage ? (
-                                            <div className="relative w-full h-48">
+                                            <div className="relative w-full h-40 sm:h-48 overflow-hidden rounded-2xl border border-[var(--border-color)]/20 shadow-md">
                                                 <MediaAsset
                                                     asset={popupInfo.image}
                                                     alt="Sticker proof"
                                                     fill
-                                                    className="rounded-xl shadow-lg border border-[var(--border-color)]/30 object-cover"
+                                                    className="object-cover"
                                                 />
                                             </div>
                                         ) : (
                                             <button
                                                 type="button"
                                                 onClick={() => setShowImage(true)}
-                                                className="w-full py-3 bg-gradient-to-r from-[var(--theme-purple)] to-[var(--theme-purple-dark)] text-white rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 font-bold uppercase tracking-widest text-[10px]"
+                                                className="w-full py-2.5 bg-gradient-to-r from-[var(--theme-purple)] to-[var(--theme-purple-dark)] text-white rounded-2xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 font-bold uppercase tracking-widest text-[9px] sm:text-[10px]"
                                             >
-                                                <Camera className="h-4 w-4" />
+                                                <Camera className="h-3.5 w-3.5" />
                                                 Bekijk Foto Bewijs
                                             </button>
                                         )}
                                     </div>
                                 )}
 
-                                <div className="mt-4 pt-4 border-t border-[var(--border-color)]/20 flex flex-col gap-1">
-                                    <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest" suppressHydrationWarning>
+                                <div className="pt-3 border-t border-[var(--border-color)]/10 flex flex-col gap-1 text-[9px] sm:text-[10px] font-medium text-[var(--text-muted)]">
+                                    <p suppressHydrationWarning>
                                         Toegevoegd op {formatDate(popupInfo.date_created)}
                                     </p>
                                     {popupInfo.user_created && (
-                                        <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">
+                                        <p>
                                             Door: {popupInfo.user_created.first_name || 'Anonieme'} {popupInfo.user_created.last_name || 'Plakker'}
                                         </p>
                                     )}
