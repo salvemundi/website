@@ -31,6 +31,7 @@ RUN BETTER_AUTH_SECRET=dummy_secret_at_least_32_characters_long_v7_salve_mundi \
     NEXT_PUBLIC_APP_URL=http://localhost:3000 \
     PUBLIC_URL=http://localhost:3000 \
     INTERNAL_DIRECTUS_URL=http://localhost:8055 \
+    DIRECTUS_SERVICE_URL=http://localhost:8055 \
     DIRECTUS_STATIC_TOKEN=dummy_token \
     DB_USER=dummy \
     DB_PASSWORD=dummy \
