@@ -47,11 +47,11 @@ export async function deleteIntroPlanning(id: number) {
     return planning.deleteIntroPlanning(id);
 }
 
-export async function updateIntroSignup(id: number, data: Partial<Record<string, unknown>>) {
+export async function updateIntroSignup(id: number, data: Partial<{ [key: string]: unknown }>) {
     return signups.updateIntroSignup(id, data);
 }
 
-export async function updateIntroParentSignup(id: number, data: Partial<Record<string, unknown>>) {
+export async function updateIntroParentSignup(id: number, data: Partial<{ [key: string]: unknown }>) {
     return signups.updateIntroParentSignup(id, data);
 }
 

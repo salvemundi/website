@@ -7,7 +7,6 @@ import {
     pubCrawlSignupSchema
 } from '@salvemundi/validations/schema/pub-crawl.zod';
 
-
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { unstable_cache as cacheTag } from 'next/cache';
 import { logAdminAction } from '@/server/actions/infrastructure/audit.actions'; 
@@ -24,6 +23,12 @@ import {
 } from '@/server/internal/kroegentocht-db.utils';
 import { query } from '@/lib/database';
 import crypto from 'crypto';
+
+interface RawKroegentochtTicketRow {
+    id: string;
+    signup_id: string;
+    event_name: string;
+}
 
 const getFinanceServiceUrl = () =>
     process.env.FINANCE_SERVICE_URL;
@@ -55,18 +60,12 @@ async function fetchWithTimeout(url: string, options: RequestInit & { timeout?: 
 }
 
 export async function getKroegentochtEvent() {
-    if (process.env.NEXT_PHASE === 'phase-production-build') {
-        logInfo('[Kroegentocht-Action] getKroegentochtEvent called during build. Returning null.');
-        return null;
-    }
-
     return await cacheTag(
         async () => {
             const { toLocalISOString } = await import('@/lib/utils/date-utils');
             const today = toLocalISOString(new Date()) as string;
 
             const events = await fetchPubCrawlEventsDb();
-            // Sort ascending to find the nearest upcoming event
             const nearestEvents = [...events].sort((a, b) => {
                 const dateA = a.date ? new Date(a.date).getTime() : 0;
                 const dateB = b.date ? new Date(b.date).getTime() : 0;
@@ -79,7 +78,6 @@ export async function getKroegentochtEvent() {
                 return null;
             }
 
-            // Apply defaults/overrides
             if (!event.email) event.email = 'feest@salvemundi.nl';
             event.price = 1;
             event.max_tickets_per_person = 10;
@@ -94,7 +92,7 @@ export async function getKroegentochtEvent() {
         ['kroegentocht-active-event'],
         {
             tags: ['kroegentocht-event', 'kroegentocht-events'],
-            revalidate: 3600 // 1 hour backup revalidation
+            revalidate: 3600
         }
     )();
 }
@@ -110,7 +108,8 @@ export async function getKroegentochtTickets(email: string): Promise<PubCrawlTic
             [email]
         );
 
-        const items = (res.rows || []).map((t) => ({
+        const rows = res.rows as RawKroegentochtTicketRow[];
+        const items = rows.map((t) => ({
             ...t,
             signup_id: {
                 pub_crawl_event_id: {
@@ -129,7 +128,7 @@ export async function getKroegentochtTickets(email: string): Promise<PubCrawlTic
 
 export async function initiateKroegentochtPayment(formData: unknown) {
     const { rateLimit } = await import('@/server/utils/ratelimit');
-    const { success: rateLimitSuccess } = await rateLimit('kroegentocht-signup', 15, 600); // 15 pogingen per 10 min
+    const { success: rateLimitSuccess } = await rateLimit('kroegentocht-signup', 15, 600);
     if (!rateLimitSuccess) {
         return { success: false, error: 'Te veel aanmeldingen vanaf dit IP-adres. Probeer het over een kwartier opnieuw.' };
     }
@@ -152,11 +151,9 @@ export async function initiateKroegentochtPayment(formData: unknown) {
         }
 
         const price = 1;
-        // The limit of 10 tickets per registration is already enforced by the Zod schema (pubCrawlSignupSchema).
-        // Per user request, we allow multiple registrations from the same email.
 
         const session = await getEnrichedSession();
-        const userId = session?.user?.id;
+        const userId = session?.user.id;
 
         const signupId = await createPubCrawlSignupDb({
             name: parsed.data.name,
@@ -173,11 +170,9 @@ export async function initiateKroegentochtPayment(formData: unknown) {
         let participantsData: { name: string, initial: string }[] = [];
 
         try {
-            // Try parsing as JSON first (modern frontend behavior)
-            if (parsed.data.name_initials?.startsWith('[')) {
-                participantsData = JSON.parse(parsed.data.name_initials);
+            if (parsed.data.name_initials.startsWith('[')) {
+                participantsData = JSON.parse(parsed.data.name_initials) as { name: string; initial: string }[];
             } else {
-                // Fallback for comma-separated strings
                 participantsData = (parsed.data.name_initials || '').split(',')
                     .map(n => n.trim())
                     .filter(Boolean)
@@ -192,7 +187,7 @@ export async function initiateKroegentochtPayment(formData: unknown) {
         }
 
         for (let i = 0; i < parsed.data.amount_tickets; i++) {
-            const p = participantsData[i];
+            const p = participantsData[i] as { name: string; initial: string } | undefined;
             ticketsTable.push({
                 name: p?.name || parsed.data.name,
                 initial: (p?.initial || p?.name || parsed.data.name).substring(0, 1).toUpperCase(),
@@ -201,7 +196,6 @@ export async function initiateKroegentochtPayment(formData: unknown) {
         }
         await createPubCrawlTicketsDb(signupId, ticketsTable);
 
-        // Sync to Directus - now with Fallback to Upsert
         const syncPayload = {
             id: signupId,
             name: parsed.data.name,
@@ -215,7 +209,7 @@ export async function initiateKroegentochtPayment(formData: unknown) {
         };
 
         try {
-            await getSystemDirectus().request(createItem('pub_crawl_signups', syncPayload as Record<string, unknown>));
+            await getSystemDirectus().request(createItem('pub_crawl_signups', syncPayload as { [key: string]: unknown }));
         } catch (error) {
             const errorMsg = error instanceof Error ? error.message : String(error);
             if (errorMsg.includes('unique') || (typeof error === 'object' && error !== null && 'errors' in error && JSON.stringify(error.errors).includes('unique'))) {
@@ -223,17 +217,15 @@ export async function initiateKroegentochtPayment(formData: unknown) {
                 try {
                     await getSystemDirectus().request(updateItem('pub_crawl_signups', signupId, syncPayload));
                 } catch {
-                    // Rollback both if even update fails
                     await deletePubCrawlTicketsBySignupIdDb(signupId);
                     await deletePubCrawlSignupDb(signupId);
                     return { success: false, error: 'Synchronisatie met CMS mislukt (collision fallback failed).' };
                 }
             } else {
 
-                // Cleanup DB if sync fails for other reasons
                 await deletePubCrawlTicketsBySignupIdDb(signupId);
                 await deletePubCrawlSignupDb(signupId);
-                await logAdminAction('kroegentocht_signup_rollback', 'ERROR', { context: 'kroegentocht', id: signupId, error: String(error), action: 'rollback_delete' });
+                await logAdminAction('system_kroegentocht_signup_rollback', 'ERROR', { context: 'kroegentocht', id: signupId, error: String(error), action: 'rollback_delete' });
                 return { success: false, error: 'Synchronisatie met CMS mislukt. Inschrijving niet voltooid.' };
             }
         }
@@ -255,8 +247,8 @@ export async function initiateKroegentochtPayment(formData: unknown) {
             })
         });
 
-        const paymentData = await paymentRes.json();
-        if (paymentRes.ok && paymentData.checkoutUrl) {
+        const paymentData = (await paymentRes.json()) as { checkoutUrl?: string } | null | undefined;
+        if (paymentRes.ok && paymentData && paymentData.checkoutUrl) {
             return { success: true, checkoutUrl: paymentData.checkoutUrl };
         }
 

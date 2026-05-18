@@ -75,7 +75,7 @@ export function ReisRegistrationForm({
     const firstName = watch('first_name');
     const { errors } = formState;
 
-    const onSubmit = async (data: ReisSignupForm) => {
+    const onSubmit = (data: ReisSignupForm) => {
         setPendingData(data);
         setShowNameConfirm(true);
     };
@@ -141,12 +141,12 @@ export function ReisRegistrationForm({
             <NameConfirmModal
                 isOpen={showNameConfirm}
                 name={firstName}
-                onConfirm={confirmAndSubmit}
+                onConfirm={() => { void confirmAndSubmit(); }}
                 onCancel={() => setShowNameConfirm(false)}
             />
 
             <form
-                onSubmit={handleSubmit(onSubmit)}
+                onSubmit={(e) => { void handleSubmit(onSubmit)(e); }}
                 className="flex flex-col gap-4"
                 autoComplete="off"
                 suppressHydrationWarning

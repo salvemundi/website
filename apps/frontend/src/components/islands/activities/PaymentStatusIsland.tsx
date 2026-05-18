@@ -69,7 +69,7 @@ export default function PaymentStatusIsland({
         if (status === 'paid' || status === 'expired' || status === 'failed' || status === 'canceled') return;
 
         const timer = setTimeout(() => {
-            checkStatus();
+            void checkStatus();
         }, 3000);
 
         return () => clearTimeout(timer);

@@ -4,10 +4,27 @@ import { DashboardStatsSchema, type DashboardStats, type RecentActivity, RecentA
 import { z } from 'zod';
 import { EXCLUDED_EMAILS } from '@/shared/lib/constants/admin.constants';
 
-/**
- * High-performance dashboard statistics using direct SQL.
- * Bypasses Directus API and cache for immediate consistency.
- */
+interface DbDashboardRow {
+    members?: unknown;
+    events?: unknown;
+    signups?: unknown;
+    intro?: unknown;
+    coupons?: unknown;
+    errors?: unknown;
+    stickers_total?: unknown;
+    stickers_recent?: unknown;
+}
+
+interface DbCountRow {
+    count?: unknown;
+}
+
+interface DbRecentActivityRow {
+    id: string | number;
+    name?: unknown;
+    event_date?: unknown;
+    signups?: unknown;
+}
 
 export async function getDashboardStatsInternal(): Promise<DashboardStats> {
     try {
@@ -16,8 +33,6 @@ export async function getDashboardStatsInternal(): Promise<DashboardStats> {
         const today = toLocalISOString(now) as string;
         const lastWeek = toLocalISOString(new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000), true) as string;
 
-        // 1. Basic counts in a single multi-query
-        // Filter signups by successful/open payment status
         const excludedEmailsStr = EXCLUDED_EMAILS.map(e => `'${e}'`).join(',');
         const basicSql = `
             SELECT 
@@ -32,10 +47,8 @@ export async function getDashboardStatsInternal(): Promise<DashboardStats> {
         `;
 
         const { rows: basicRows } = await query(basicSql, [today, lastWeek]);
-        const b = basicRows[0];
+        const b = basicRows[0] as DbDashboardRow;
 
-        // 2. Specialized counts for Trips and Pub Crawl
-        // Upcoming Pub Crawl Signups (filtered by payment status)
         const pcSql = `
             SELECT COUNT(*) as count 
             FROM pub_crawl_signups 
@@ -47,8 +60,8 @@ export async function getDashboardStatsInternal(): Promise<DashboardStats> {
             )
         `;
         const { rows: pcRows } = await query(pcSql, [now.toISOString()]);
+        const pcRow = (pcRows as DbCountRow[])[0];
 
-        // Active Trip Signups
         const tripSql = `
             SELECT COUNT(*) as count 
             FROM trip_signups 
@@ -60,26 +73,26 @@ export async function getDashboardStatsInternal(): Promise<DashboardStats> {
             )
         `;
         const { rows: tripRows } = await query(tripSql, [now.toISOString()]);
+        const tripRow = (tripRows as DbCountRow[])[0];
 
-        const totalStickers = Number(b?.stickers_total || 0);
-        const recentStickers = Number(b?.stickers_recent || 0);
+        const totalStickers = Number(b.stickers_total || 0);
+        const recentStickers = Number(b.stickers_recent || 0);
         const stickerGrowthRate = totalStickers > 0 ? Math.round((recentStickers / totalStickers) * 100) : 0;
 
         const stats = {
-            totalMembers: Number(b?.members || 0),
-            upcomingEventsCount: Number(b?.events || 0),
-            pendingSignupsCount: Number(b?.signups || 0),
-            systemErrors: Number(b?.errors || 0),
-            introSignups: Number(b?.intro || 0),
-            totalCoupons: Number(b?.coupons || 0),
-            pubCrawlSignups: Number(pcRows?.[0]?.count || 0),
-            reisSignups: Number(tripRows?.[0]?.count || 0),
+            totalMembers: Number(b.members || 0),
+            upcomingEventsCount: Number(b.events || 0),
+            pendingSignupsCount: Number(b.signups || 0),
+            systemErrors: Number(b.errors || 0),
+            introSignups: Number(b.intro || 0),
+            totalCoupons: Number(b.coupons || 0),
+            pubCrawlSignups: Number(pcRow.count || 0),
+            reisSignups: Number(tripRow.count || 0),
             stickerGrowthRate
         };
 
         return DashboardStatsSchema.parse(stats);
     } catch (_error) {
-
         return {
             totalMembers: 0,
             upcomingEventsCount: 0,
@@ -94,10 +107,6 @@ export async function getDashboardStatsInternal(): Promise<DashboardStats> {
     }
 }
 
-/**
- * Fetch recent activities with signup counts using SQL for immediate consistency.
- * Excludes failed/canceled payments.
- */
 export async function getRecentActivitiesInternal(): Promise<RecentActivity[]> {
     try {
         const sql = `
@@ -112,16 +121,15 @@ export async function getRecentActivitiesInternal(): Promise<RecentActivity[]> {
         `;
         const { rows } = await query(sql);
 
-        const mapped = rows.map(r => ({
+        const mapped = (rows as DbRecentActivityRow[]).map(r => ({
             id: Number(r.id),
-            name: r.name,
-            event_date: r.event_date ? new Date(r.event_date).toISOString() : null,
+            name: typeof r.name === 'string' ? r.name : '',
+            event_date: (typeof r.event_date === 'string' || r.event_date instanceof Date) ? new Date(r.event_date as string | Date).toISOString() : null,
             signups: Number(r.signups || 0)
         }));
 
         return z.array(RecentActivitySchema).parse(mapped);
     } catch (_error) {
-
         return [];
     }
 }

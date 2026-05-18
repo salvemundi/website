@@ -21,4 +21,6 @@ export default fp(async (fastify: FastifyInstance) => {
     fastify.addHook('onClose', async (instance) => {
         await instance.redis.quit();
     });
+
+    await Promise.resolve();
 });

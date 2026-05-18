@@ -1,26 +1,29 @@
 import { Redis } from "ioredis";
 import { safeConsoleError } from '@/server/utils/logger';
 
-// Redis Client voor sessie-caching (Node.js runtime alleen — niet beschikbaar in Edge runtime).
-// De configuratie wordt volledig bepaald door de omgevingsvariabelen (REDIS_URL of host+password).
 const host = process.env.INTERNAL_REDIS_HOST;
 const password = process.env.REDIS_PASSWORD;
 
 let redisUrl = process.env.REDIS_URL;
 if (!redisUrl && host && password) {
     redisUrl = `redis://default:${password}@${host}:6379`;
-} else if (redisUrl) {
 }
 
 let redisClient: Redis | null = null;
 let isConnecting = false;
 
+const state = {
+    get client() {
+        return redisClient;
+    }
+};
+
 export async function getRedis() {
     if (redisClient) return redisClient;
-    
+
     if (isConnecting) {
         await new Promise(resolve => setTimeout(resolve, 500));
-        if (redisClient) return redisClient;
+        if (state.client) return state.client;
     }
 
     try {
@@ -38,8 +41,8 @@ export async function getRedis() {
             }
         });
 
-        redisClient.on('error', (_err: Error) => {
-            
+        redisClient.on('error', (error: Error) => {
+            safeConsoleError('[redis-client.ts][getRedis] Error event:', error);
         });
 
         isConnecting = false;

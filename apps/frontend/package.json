@@ -30,7 +30,7 @@
     "isomorphic-dompurify": "^3.12.0",
     "lucide-react": "^0.475.0",
     "maplibre-gl": "5.21.0",
-    "next": "16.2.3",
+    "next": "16.2.6",
     "pg": "^8.19.0",
     "qrcode": "^1.5.4",
     "qrcode.react": "^4.2.0",
@@ -50,7 +50,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "3.3.0",
-    "@next/bundle-analyzer": "^16.2.4",
+    "@next/bundle-analyzer": "^16.2.6",
     "@playwright/test": "^1.59.1",
     "@serwist/next": "^9.5.7",
     "@serwist/precaching": "^9.5.11",

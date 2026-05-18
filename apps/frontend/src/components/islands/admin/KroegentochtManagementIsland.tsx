@@ -40,7 +40,8 @@ interface KroegentochtManagementIslandProps {
 export default function KroegentochtManagementIsland({
     initialEvents = [],
     initialSettings = { show: false },
-    initialSignups = [] }: KroegentochtManagementIslandProps) {
+    initialSignups = []
+}: KroegentochtManagementIslandProps) {
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
     const [events] = useState(initialEvents);
@@ -52,17 +53,19 @@ export default function KroegentochtManagementIsland({
     const [error, setError] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
 
-    const loadSignups = useCallback(async (eventId: number | string) => {
+    const loadSignups = useCallback((eventId: number | string) => {
         setError(null);
-        startTransition(async () => {
-            try {
-                const data = await getPubCrawlSignups(Number(eventId));
-                setSignups(data);
-            } catch (error) {
-                safeConsoleError('[KroegentochtManagementIsland][loadSignups] Error loading signups:', error);
-                showToast('Fout bij het laden van aanmeldingen. Probeer het opnieuw.', 'error');
-                setError('Kon gegevens niet ophalen van de server.');
-            }
+        startTransition(() => {
+            void (async () => {
+                try {
+                    const data = await getPubCrawlSignups(Number(eventId));
+                    setSignups(data);
+                } catch (error) {
+                    safeConsoleError('[KroegentochtManagementIsland][loadSignups]', error);
+                    showToast('Fout bij het laden van aanmeldingen. Probeer het opnieuw.', 'error');
+                    setError('Kon gegevens niet ophalen van de server.');
+                }
+            })();
         });
     }, [showToast]);
 
@@ -85,17 +88,20 @@ export default function KroegentochtManagementIsland({
     };
 
     const handleToggleVisibility = () => {
-        startTransition(async () => {
-            try {
-                const result = await toggleKroegentochtVisibility();
-                if (result.success) {
-                    setSettings({ show: result.show ?? false });
-                    showToast(`Kroegentocht is nu ${result.show ? 'zichtbaar' : 'verborgen'}`, 'success');
-                    router.refresh();
+        startTransition(() => {
+            void (async () => {
+                try {
+                    const result = await toggleKroegentochtVisibility();
+                    if (result.success) {
+                        setSettings({ show: result.show ?? false });
+                        showToast(`Kroegentocht is nu ${result.show ? 'zichtbaar' : 'verborgen'}`, 'success');
+                        router.refresh();
+                    }
+                } catch (error) {
+                    safeConsoleError('[KroegentochtManagementIsland][handleToggleVisibility]', error);
+                    showToast('Fout bij bijwerken zichtbaarheid', 'error');
                 }
-            } catch {
-                showToast('Fout bij bijwerken zichtbaarheid', 'error');
-            }
+            })();
         });
     };
 
@@ -108,7 +114,8 @@ export default function KroegentochtManagementIsland({
             setSignups(prev => prev.filter(s => s.id !== id));
             showToast('Inschrijving succesvol verwijderd', 'success');
         } catch (error) {
-            showToast('Fout bij verwijderen: ' + error, 'error');
+            safeConsoleError('[KroegentochtManagementIsland][handleDeleteSignup]', error);
+            showToast('Fout bij verwijderen: ' + String(error), 'error');
         }
     };
 
@@ -166,7 +173,12 @@ export default function KroegentochtManagementIsland({
                         <div className="mb-8 p-4 bg-red-500/10 border border-red-500/50 rounded-[var(--beheer-radius)] text-red-500 text-base font-semibold flex items-center gap-3">
                             <AlertCircle className="h-5 w-5" />
                             {error}
-                            <button onClick={handleRefresh} className="ml-auto underline">Probeer opnieuw</button>
+                            <button
+                                onClick={handleRefresh}
+                                className="ml-auto underline"
+                            >
+                                Probeer opnieuw
+                            </button>
                         </div>
                     )}
 
@@ -195,7 +207,9 @@ export default function KroegentochtManagementIsland({
                                     signups={signups}
                                     eventId={selectedEvent.id}
                                     eventName={selectedEvent.name}
-                                    onDelete={handleDeleteSignup}
+                                    onDelete={(id) => {
+                                        void handleDeleteSignup(id);
+                                    }}
                                     onEdit={(id) => router.push(`/beheer/kroegentocht/deelnemer/${id}`)}
                                 />
                             </div>

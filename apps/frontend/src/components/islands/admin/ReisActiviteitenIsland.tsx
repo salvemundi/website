@@ -19,6 +19,12 @@ import TripActivitySignupsModal, { type Signup } from './reis/TripActivitySignup
 
 import { type Trip, type TripActivity } from '@salvemundi/validations/schema/admin-reis.zod';
 import { type ActivityOption } from '@/lib/reis';
+interface ActivityActionResponse {
+    success: boolean;
+    error?: string;
+    initialData?: Partial<TripActivity>;
+}
+
 interface Props {
     initialTrips?: Trip[];
     initialActivities?: TripActivity[];
@@ -55,13 +61,13 @@ export default function ReisActiviteitenIsland({
     const handleSave = async (formData: FormData, options: ActivityOption[]) => {
         formData.set('options', JSON.stringify(options));
 
-        let res;
+        let res: ActivityActionResponse;
         if (editingActivity?.id) {
             formData.set('id', editingActivity.id.toString());
-            res = await updateTripActivity(formData);
+            res = (await updateTripActivity(formData)) as ActivityActionResponse;
         } else {
             formData.set('trip_id', selectedTripId.toString());
-            res = await createTripActivity(formData);
+            res = (await createTripActivity(formData)) as ActivityActionResponse;
         }
 
         if (res.success) {
@@ -151,7 +157,7 @@ export default function ReisActiviteitenIsland({
                                     key={activity.id}
                                     activity={activity}
                                     onEdit={setEditingActivity}
-                                    onDelete={handleDelete}
+                                    onDelete={(id) => { void handleDelete(id); }}
                                     onViewSignups={setViewingSignupsId}
                                 />
                             ))}
@@ -165,7 +171,7 @@ export default function ReisActiviteitenIsland({
                         activityName={activities.find(a => a.id === viewingSignupsId)?.name || ''}
                         options={activities.find(a => a.id === viewingSignupsId)?.options}
                         // eslint-disable-next-line security/detect-object-injection
-                        signups={signupsByActivity[viewingSignupsId] || []}
+                        signups={signupsByActivity[viewingSignupsId]}
                         loading={false}
                         onClose={() => setViewingSignupsId(null)}
                     />

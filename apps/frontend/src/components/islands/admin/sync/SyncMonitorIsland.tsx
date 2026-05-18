@@ -126,13 +126,13 @@ export default function SyncMonitorIsland() {
 
                 {/* UNIFIED FILTERS GRID */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7 gap-3">
-                    <FilterTab active={resultFilter === 'all'} label="Alles" count={status?.processed || 0} onClick={() => setResultFilter?.('all')} />
-                    <FilterTab active={resultFilter === 'success'} label="Success" count={status?.successCount || 0} onClick={() => setResultFilter?.('success')} color="green" />
-                    <FilterTab active={resultFilter === 'created'} label="Nieuw" count={status?.createdCount || 0} onClick={() => setResultFilter?.('created')} color="purple" />
-                    <FilterTab active={resultFilter === 'warnings'} label="Warnings" count={status?.warningCount || 0} onClick={() => setResultFilter?.('warnings')} color="amber" />
-                    <FilterTab active={resultFilter === 'missing'} label="Missend" count={status?.missingDataCount || 0} onClick={() => setResultFilter?.('missing')} color="blue" />
-                    <FilterTab active={resultFilter === 'errors'} label="Errors" count={status?.errorCount || 0} onClick={() => setResultFilter?.('errors')} color="red" />
-                    <FilterTab active={resultFilter === 'excluded'} label="Excluded" count={status?.excludedCount || 0} onClick={() => setResultFilter?.('excluded')} color="slate" />
+                    <FilterTab active={resultFilter === 'all'} label="Alles" count={status?.processed || 0} onClick={() => setResultFilter('all')} />
+                    <FilterTab active={resultFilter === 'success'} label="Success" count={status?.successCount || 0} onClick={() => setResultFilter('success')} color="green" />
+                    <FilterTab active={resultFilter === 'created'} label="Nieuw" count={status?.createdCount || 0} onClick={() => setResultFilter('created')} color="purple" />
+                    <FilterTab active={resultFilter === 'warnings'} label="Warnings" count={status?.warningCount || 0} onClick={() => setResultFilter('warnings')} color="amber" />
+                    <FilterTab active={resultFilter === 'missing'} label="Missend" count={status?.missingDataCount || 0} onClick={() => setResultFilter('missing')} color="blue" />
+                    <FilterTab active={resultFilter === 'errors'} label="Errors" count={status?.errorCount || 0} onClick={() => setResultFilter('errors')} color="red" />
+                    <FilterTab active={resultFilter === 'excluded'} label="Excluded" count={status?.excludedCount || 0} onClick={() => setResultFilter('excluded')} color="slate" />
                 </div>
 
                 <div className="min-h-[300px] border-t border-[var(--beheer-border)]/30 pt-8">

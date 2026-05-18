@@ -1,10 +1,11 @@
 import { safeConsoleError, logInfo, logWarn } from '../utils/logger.js';
 import { Redis } from 'ioredis';
 import { DirectusService } from './directus.service.js';
+import { DirectusUser } from '../types/schema.js';
 
 export class ExpiryCheckJob {
     private static readonly REDIS_PREFIX = 'v7:mail:notified:';
-    private static shouldStop = false;
+    private static shouldStop: boolean = false;
 
     /**
      * Starts the expiry check loop (runs once a day).
@@ -12,7 +13,7 @@ export class ExpiryCheckJob {
     static async start(redis: Redis) {
         logInfo('[ExpiryCheckJob] Starting daily monitoring loop...');
 
-        while (!this.shouldStop) {
+        while (!ExpiryCheckJob['shouldStop']) {
             try {
                 // 1. Run the check
                 await this.runCheck(redis);
@@ -24,8 +25,9 @@ export class ExpiryCheckJob {
 
                 logInfo(`[ExpiryCheckJob] Next check scheduled in ${Math.round(delay / 1000 / 60 / 60)} hours.`);
                 await new Promise(resolve => setTimeout(resolve, delay));
-            } catch (error: any) {
-                safeConsoleError('[ExpiryCheckJob] Loop Error:', error.message);
+            } catch (error: unknown) {
+                const message = error instanceof Error ? error.message : String(error);
+                safeConsoleError('[ExpiryCheckJob] Loop Error:', message);
                 await new Promise(resolve => setTimeout(resolve, 60000)); // Retry in 1 min
             }
         }
@@ -42,7 +44,6 @@ export class ExpiryCheckJob {
 
         const members = await DirectusService.getAllUsers();
         const now = new Date();
-        const todayStr = now.toISOString().split('T')[0];
 
         for (const member of members) {
             if (!member.membership_expiry || member.status !== 'active') continue;
@@ -63,7 +64,7 @@ export class ExpiryCheckJob {
         }
     }
 
-    private static async notifyMember(redis: Redis, member: any, milestone: string) {
+    private static async notifyMember(redis: Redis, member: DirectusUser, milestone: string) {
         const year = new Date().getFullYear();
         const redisKey = `${this.REDIS_PREFIX}${member.id}:${milestone}:${year}`;
 
@@ -101,12 +102,13 @@ export class ExpiryCheckJob {
 
             if (response.ok) {
                 await redis.set(redisKey, '1', 'EX', 86400 * 365); // Cache for a year
-                logInfo(`[ExpiryCheckJob] Notified ${member.email} for milestone: ${milestone}`);
+                logInfo(`[ExpiryCheckJob] Notified ${member.email || 'leeg'} for milestone: ${milestone}`);
             } else {
-                safeConsoleError(`[ExpiryCheckJob] Failed to send ${templateId} to ${member.email}:`, response.statusText);
+                safeConsoleError(`[ExpiryCheckJob] Failed to send ${templateId} to ${member.email || 'leeg'}:`, response.statusText);
             }
-        } catch (error: any) {
-            safeConsoleError(`[ExpiryCheckJob] Error triggering mail for ${member.email}:`, error.message);
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : String(error);
+            safeConsoleError(`[ExpiryCheckJob] Error triggering mail for ${member.email || 'leeg'}:`, message);
         }
     }
 

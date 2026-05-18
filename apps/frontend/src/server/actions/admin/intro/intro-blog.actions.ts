@@ -13,6 +13,17 @@ import { toLocalISOString } from '@/lib/utils/date-utils';
 import { checkIntroAdminAccess, genericDelete } from './intro-signup.actions';
 import { safeConsoleError } from '@/server/utils/logger';
 
+interface DirectusBlogRow {
+    id: string | number;
+    title: string | null;
+    content: string | null;
+    blog_type: string | null;
+    is_published: boolean | number | null;
+    created_at: string | Date | null;
+    slug: string | null;
+    excerpt: string | null;
+}
+
 export async function getIntroBlogs(): Promise<IntroBlog[]> {
     await checkIntroAdminAccess();
     const data = await getIntroBlogsInternal();
@@ -39,21 +50,22 @@ export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ succe
     const { id, ...payload } = validated.data;
 
     try {
-        let result;
+        let result: DirectusBlogRow;
         const sanitizedPayload = {
             ...payload,
             created_at: toLocalISOString(payload.created_at, true)
         };
 
         if (id) {
-            result = await getSystemDirectus().request(updateItem('intro_blogs', id, sanitizedPayload));
+            result = await getSystemDirectus().request(updateItem('intro_blogs', id, sanitizedPayload)) as unknown as DirectusBlogRow;
         } else {
-            result = await getSystemDirectus().request(createItem('intro_blogs', sanitizedPayload));
+            result = await getSystemDirectus().request(createItem('intro_blogs', sanitizedPayload)) as unknown as DirectusBlogRow;
         }
         revalidatePath('/beheer/intro');
 
         return {
-            success: true, data: {
+            success: true,
+            data: {
                 id: Number(result.id),
                 title: result.title || '',
                 content: result.content || '',
@@ -64,8 +76,8 @@ export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ succe
                 excerpt: result.excerpt || ''
             }
         };
-    } catch (error) {
-        safeConsoleError('[AdminIntro] Failed to upsert blog:', error);
+    } catch (error: unknown) {
+        safeConsoleError('[intro-blog.actions.ts][upsertIntroBlog] Failed to upsert blog:', error);
         return { success: false, error: 'Opslaan mislukt' };
     }
 }

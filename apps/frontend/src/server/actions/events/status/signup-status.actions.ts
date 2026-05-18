@@ -2,7 +2,6 @@
 
 import { unstable_noStore as noStore } from 'next/cache';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { type EnrichedUser } from '@/types/auth';
 import { query } from '@/lib/database';
 import { fetchEventSignupByIdDb } from '@/server/internal/event-db.utils';
 import { fetchPubCrawlSignupByIdDb } from '@/server/internal/kroegentocht-db.utils';
@@ -10,6 +9,23 @@ import { fetchTripSignupByIdDb } from '@/server/internal/reis-db.utils';
 import { getFinanceServiceUrl, getInternalHeaders, fetchWithTimeout } from '@/server/internal/activiteit-utils';
 import { type DbPubCrawlSignup } from '@salvemundi/validations/directus/schema';
 import { type PaymentStatus, type SignupStatusResult } from './types';
+
+interface FinanceStatusResponse {
+    payment_status?: PaymentStatus;
+    product_type?: string;
+    signup_id?: number | string;
+    registration?: number | string;
+    trip_signup?: number | string;
+    pub_crawl_signup?: number | string;
+}
+
+interface DbTransaction {
+    payment_status?: PaymentStatus;
+    product_type?: string;
+    registration?: number | string;
+    trip_signup?: number | string;
+    pub_crawl_signup?: number | string;
+}
 
 /**
  * Resolves the payment and registration status for a given identifier.
@@ -36,8 +52,8 @@ export async function getSignupStatus(
         });
 
         if (finRes.ok) {
-            const finData = await finRes.json();
-            paymentStatus = (finData.payment_status as PaymentStatus) || 'open';
+            const finData = await finRes.json() as FinanceStatusResponse;
+            paymentStatus = finData.payment_status || 'open';
         }
     }
 
@@ -74,11 +90,11 @@ export async function getSignupStatus(
         });
 
         if (financeRes.ok) {
-            const trans = await financeRes.json();
+            const trans = await financeRes.json() as FinanceStatusResponse;
             return {
-                status: trans.payment_status as PaymentStatus,
+                status: (trans.payment_status || 'open') as PaymentStatus,
                 isMembership: trans.product_type === 'membership',
-                signup: { id: trans.signup_id || trans.registration || trans.trip_signup || trans.pub_crawl_signup }
+                signup: { id: trans.signup_id || trans.registration || trans.trip_signup || trans.pub_crawl_signup || null }
             };
         }
 
@@ -93,11 +109,11 @@ export async function getSignupStatus(
         );
 
         if (transRes.rows.length > 0) {
-            const trans = transRes.rows[0];
+            const trans = transRes.rows[0] as DbTransaction;
             return {
-                status: trans.payment_status as PaymentStatus,
+                status: (trans.payment_status || 'open') as PaymentStatus,
                 isMembership: trans.product_type === 'membership',
-                signup: { id: trans.registration || trans.trip_signup || trans.pub_crawl_signup }
+                signup: { id: trans.registration || trans.trip_signup || trans.pub_crawl_signup || null }
             };
         }
     }
@@ -106,7 +122,7 @@ export async function getSignupStatus(
         const signup = await fetchEventSignupByIdDb(parseInt(id));
         if (signup && signup.qr_token === transactionId) {
             return {
-                status: (signup.payment_status as PaymentStatus) || 'paid',
+                status: (signup.payment_status as PaymentStatus),
                 signup
             };
         }
@@ -115,14 +131,14 @@ export async function getSignupStatus(
     if (typeof id === 'string' && /^\d+$/.test(id)) {
         const signupId = parseInt(id);
         const session = await getEnrichedSession();
-        const user = session?.user as unknown as EnrichedUser | undefined;
+        const user = session?.user;
         const isAdmin = user?.role === 'admin' || user?.role === '06e78cf9-f9c3-4f9e-a86d-1907de634567';
 
         const signup = await fetchEventSignupByIdDb(signupId);
         if (signup) {
             const isOwner = user?.id && signup.directus_relations === user.id;
             if (isAdmin || isOwner) {
-                return { status: (signup.payment_status as PaymentStatus) || paymentStatus, signup };
+                return { status: (signup.payment_status as PaymentStatus), signup };
             }
             return { status: 'unauthorized' };
         }
@@ -131,7 +147,7 @@ export async function getSignupStatus(
         if (krotoSignup) {
             const isOwner = user?.id && krotoSignup.directus_relations === user.id;
             if (isAdmin || isOwner) {
-                return { status: (krotoSignup.payment_status as PaymentStatus) || paymentStatus, signup: krotoSignup as unknown as DbPubCrawlSignup };
+                return { status: (krotoSignup.payment_status as PaymentStatus), signup: krotoSignup as unknown as DbPubCrawlSignup };
             }
             return { status: 'unauthorized' };
         }

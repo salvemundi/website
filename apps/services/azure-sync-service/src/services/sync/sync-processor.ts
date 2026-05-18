@@ -1,9 +1,15 @@
+interface DirectusCommitteeMembership {
+    id: number;
+    is_leader: boolean;
+    committee_id: number | { id: number } | string | null;
+}
 import { AzureUser, GraphService } from '../graph.service.js';
 import { DirectusUser } from '../../types/schema.js';
 import { DirectusService } from '../directus.service.js';
 import { SyncContext } from './sync-types.js';
 import { parseAzureDate, sanitizeAzureDate } from './sync-helpers.js';
 import { SyncLifecycle } from './sync-lifecycle.js';
+import { logInfo } from '../../utils/logger.js';
 
 export class SyncProcessor {
     /**
@@ -11,7 +17,7 @@ export class SyncProcessor {
      */
     static async syncUserOptimized(ctx: SyncContext & { membershipMap: Map<string, Map<number, boolean>> }, aUser: AzureUser) {
         const email = (aUser.mail || aUser.userPrincipalName).toLowerCase();
-        const changes: { field: string; old: any; new: any }[] = [];
+        const changes: { field: string; old: unknown; new: unknown }[] = [];
 
         let dUser = ctx.userCacheByEntra.get(aUser.id);
 
@@ -21,7 +27,7 @@ export class SyncProcessor {
             const existingByEmail = Array.from(ctx.userCacheByEntra.values()).find(u => u.email?.toLowerCase() === email);
 
             if (existingByEmail) {
-                console.log(`[SYNC] Linking existing user ${email} to Entra ID ${aUser.id}`);
+                logInfo(`[SYNC] Linking existing user ${email} to Entra ID ${aUser.id}`);
                 await DirectusService.updateUser(existingByEmail.id, { entra_id: aUser.id });
                 dUser = { ...existingByEmail, entra_id: aUser.id };
                 ctx.userCacheByEntra.set(aUser.id, dUser); // Update cache for subsequent lookups
@@ -70,17 +76,17 @@ export class SyncProcessor {
                 ctx.status.createdCount++;
                 changes.push({ field: 'User', old: 'Bestaat niet', new: 'Nieuw lid aangemaakt' });
                 ctx.status.createdUsers.push({ email, changes: [...changes] });
-            } catch (error: any) {
+            } catch (_error) {
                 // If creation fails due to email already existing (and forceLink was false), log it as an error
-                throw new Error(`Kon gebruiker ${email} niet aanmaken. Bestaat waarschijnlijk al zonder Entra ID. Gebruik 'Forceer Entra Link' om ze te koppelen.`);
+                throw new Error(`Kon gebruiker ${email} niet aanmaken. Bestaat waarschijnlijk al zonder Entra ID. Gebruik 'Forceer Entra Link' om ze te koppelen.`, { cause: _error });
             }
         }
 
         // Ensure dUser is seen as defined by TypeScript
-        const currentUser = dUser as DirectusUser;
+        const currentUser = dUser;
 
         const csa = aUser.customSecurityAttributes?.SalveMundiLidmaatschap;
-        const updatePayload: any = {};
+        const updatePayload: Record<string, unknown> = {};
 
         const fields = ctx.options.fields || [];
 
@@ -117,36 +123,34 @@ export class SyncProcessor {
 
         if (Object.keys(updatePayload).length > 0) {
             // Track changes for existing user
+            /* eslint-disable security/detect-object-injection */
             for (const key of Object.keys(updatePayload)) {
                 // Precise comparison to avoid redundant logs
                 const oldValue = currentUser[key as keyof DirectusUser];
                 const newValue = updatePayload[key];
-                if (oldValue != newValue) { // Use loose inequality to handle null vs undefined if needed, but be careful
-                    changes.push({ field: key, old: (oldValue as string | number | boolean) || 'leeg', new: newValue });
+                if (oldValue !== newValue) { // Use loose inequality to handle null vs undefined if needed, but be careful
+                    changes.push({ field: key, old: (oldValue) || 'leeg', new: newValue });
                 }
             }
+            /* eslint-enable security/detect-object-injection */
             if (changes.length > 0) {
                 await DirectusService.updateUser(currentUser.id, updatePayload);
             }
         }
 
-        // LIFECYCLE MANAGEMENT
-        // Only run lifecycle if explicitly requested or if relevant fields are being synced
         if (fields.includes('membership_status') || fields.includes('membership_expiry')) {
-            const lifecycleChanges = await SyncLifecycle.handleLifecycle(ctx, aUser, currentUser, updatePayload.membership_expiry);
+            const lifecycleChanges = await SyncLifecycle.handleLifecycle(ctx, aUser, currentUser, updatePayload.membership_expiry as string | null | undefined);
             changes.push(...lifecycleChanges);
         }
-
-        // COMMITTEES
         if (fields.includes('committees')) {
-            const currentMemberships = ctx.membershipCache.get(currentUser.id) || [];
+            const currentMemberships = (ctx.membershipCache.get(currentUser.id) || []) as DirectusCommitteeMembership[];
             const azureMemberships = ctx.membershipMap.get(aUser.id) || new Map<number, boolean>();
 
             for (const [committeeId, isLeader] of azureMemberships) {
                 const committee = ctx.committeeByIdCache?.get(Number(committeeId));
                 const committeeName = committee?.name || `ID ${committeeId}`;
 
-                const existing = currentMemberships.find((m: any) => {
+                const existing = currentMemberships.find((m) => {
                     const mCommId = (typeof m.committee_id === 'object' && m.committee_id !== null) ? m.committee_id.id : m.committee_id;
                     return Number(mCommId) === Number(committeeId);
                 });
@@ -161,9 +165,14 @@ export class SyncProcessor {
             }
 
             for (const current of currentMemberships) {
-                if (!azureMemberships.has(current.committee_id)) {
-                    const committee = ctx.committeeByIdCache?.get(Number(current.committee_id));
-                    const committeeName = committee?.name || `ID ${current.committee_id}`;
+                const currentCommId = (typeof current.committee_id === 'object' && current.committee_id !== null) ? current.committee_id.id : current.committee_id;
+                const committeeIdNum = currentCommId ? Number(currentCommId) : null;
+
+                if (committeeIdNum === null) continue;
+
+                if (!azureMemberships.has(committeeIdNum)) {
+                    const committee = ctx.committeeByIdCache?.get(committeeIdNum);
+                    const committeeName = committee?.name || `ID ${committeeIdNum}`;
 
                     await DirectusService.removeMemberFromCommittee(current.id);
                     changes.push({ field: 'Commissie', old: committeeName, new: 'Verwijderd' });
@@ -171,14 +180,11 @@ export class SyncProcessor {
             }
         }
 
-        // PROFILE PHOTO
         if (fields.includes('profile_photo')) {
             const shouldSync = ctx.options.forceSyncPhotos || !currentUser.avatar;
             if (shouldSync) {
-                // Use pre-fetched batch photo if available
                 let photo = ctx.photoCache?.get(aUser.id);
 
-                // Fallback to individual fetch if cache is missing (e.g. single user sync)
                 if (photo === undefined) {
                     photo = await GraphService.getUserPhoto(aUser.id, ctx.token);
                 }
@@ -191,7 +197,6 @@ export class SyncProcessor {
         }
 
         if (changes.length > 0) {
-            // Avoid double counting for stats if user was already processed
             if (!ctx.processedEmails) ctx.processedEmails = new Set<string>();
             if (!ctx.processedEmails.has(email)) {
                 ctx.status.successCount++;

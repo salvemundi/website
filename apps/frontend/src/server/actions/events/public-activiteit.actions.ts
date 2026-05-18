@@ -23,6 +23,10 @@ import { fetchUserPubCrawlSignupsDb } from '@/server/internal/kroegentocht-db.ut
 import { getFinanceServiceUrl, getInternalHeaders, fetchWithTimeout } from '@/server/internal/activiteit-utils';
 import { safeConsoleError } from '@/server/utils/logger';
 
+interface FinancePaymentResponse {
+    checkoutUrl?: string;
+}
+
 /**
  * Fetches all published activities directly from the database (SQL-first).
  */
@@ -126,7 +130,7 @@ export async function signupForActivity(data: EventSignupForm) {
 
     try {
         const session = await getEnrichedSession();
-        const userId = session?.user?.id;
+        const userId = session?.user.id;
 
         const activity = await getActivityById(String(parsed.data.event_id));
         if (!activity) return { success: false, error: 'Activiteit niet gevonden' };
@@ -135,8 +139,8 @@ export async function signupForActivity(data: EventSignupForm) {
             return { success: false, error: 'Deze activiteit is alleen voor leden.' };
         }
 
-        const user = session?.user as unknown as EnrichedUser;
-        const isMember = user?.membership_status === 'active';
+        const user = session?.user as unknown as EnrichedUser | undefined;
+        const isMember = user ? user.membership_status === 'active' : false;
         const price = (isMember ? activity.price_members : activity.price_non_members) ?? 0;
 
         const { query } = await import('@/lib/database');
@@ -158,7 +162,7 @@ export async function signupForActivity(data: EventSignupForm) {
             participant_name: parsed.data.name,
             participant_email: parsed.data.email,
             participant_phone: parsed.data.phoneNumber,
-            payment_status: (price ?? 0) > 0 ? 'open' : 'paid',
+            payment_status: price > 0 ? 'open' : 'paid',
             qr_token: qrToken,
             directus_relations: userId || null,
             is_member: isMember
@@ -169,7 +173,7 @@ export async function signupForActivity(data: EventSignupForm) {
 
         revalidateTag(`event_signups_${parsed.data.event_id}`, 'max');
 
-        if ((price ?? 0) > 0) {
+        if (price > 0) {
             const financeUrl = `${getFinanceServiceUrl()}/api/payments/create`;
             const paymentRes = await fetchWithTimeout(financeUrl, {
                 method: 'POST',
@@ -187,7 +191,7 @@ export async function signupForActivity(data: EventSignupForm) {
                     redirectUrl: `${process.env.PUBLIC_URL}/activiteiten/bevestiging?id=${signupId}`
                 })
             });
-            const paymentData = await paymentRes.json();
+            const paymentData = (await paymentRes.json()) as FinancePaymentResponse;
             if (paymentRes.ok && paymentData.checkoutUrl) {
                 return { success: true, checkoutUrl: paymentData.checkoutUrl };
             }

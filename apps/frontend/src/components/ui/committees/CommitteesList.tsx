@@ -1,20 +1,14 @@
-import React from 'react';
 import { CommitteeCard } from '@/components/ui/committees/CommitteeCard';
 import { type Committee } from '@salvemundi/validations/schema/committees.zod';
 
 interface CommitteesListProps {
-    initialCommittees?: Committee[]; 
+    initialCommittees?: Committee[];
 }
 
-// Helper to clean committee names
 function cleanCommitteeName(name: string): string {
-    return name?.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim() || '';
+    return name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim() || '';
 }
 
-/**
- * CommitteesList: Standard Grid display without entrance animations.
- * NUCLEAR SSR: This is a Server Component to ensure zero-skeleton rendering.
- */
 export default function CommitteesList({ initialCommittees = [] }: CommitteesListProps) {
     const sortedCommittees = [...initialCommittees].sort((a, b) => {
         const aIsBestuur = cleanCommitteeName(a.name).toLowerCase().includes('bestuur');
@@ -37,10 +31,10 @@ export default function CommitteesList({ initialCommittees = [] }: CommitteesLis
             {sortedCommittees.map((committee, idx) => {
                 const cleanedName = cleanCommitteeName(committee.name);
                 const isBestuur = cleanedName.toLowerCase().includes('bestuur');
-                
+
                 return (
-                    <div 
-                        key={committee.id} 
+                    <div
+                        key={committee.id}
                         className={`${isBestuur ? 'md:col-span-2' : ''} h-full`}
                     >
                         <CommitteeCard committee={committee} index={idx} />

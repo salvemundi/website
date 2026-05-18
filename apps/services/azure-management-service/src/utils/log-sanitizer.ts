@@ -22,7 +22,7 @@ export function sanitizePayload(payload: unknown): unknown {
     const isError = payload instanceof Error;
     const sanitized: Record<string, unknown> = Object.create(null);
     const entries: [string, unknown][] = isError 
-        ? [['message', (payload as Error).message], ['stack', (payload as Error).stack], ...Object.entries(payload)]
+        ? [['message', (payload).message], ['stack', (payload).stack], ...Object.entries(payload)]
         : Object.entries(payload);
 
     for (const [key, value] of entries) {

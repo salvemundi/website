@@ -1,3 +1,4 @@
+import 'server-only';
 import { query } from '@/lib/database';
 import { buildUpdateQuery } from '@/lib/database/query-builder';
 import { type DbEventSignup } from '@salvemundi/validations/directus/schema';
@@ -19,7 +20,6 @@ export type EnrichedEventSignup = DbEventSignup & {
     event_id: EnrichedEvent;
 };
 
-// --- Strict database row typing ---
 interface DbJoinedEventSignupRow extends Omit<DbEventSignup, 'event_id'> {
     event_id: number;
     event_name: string;
@@ -59,13 +59,13 @@ export async function createEventSignupDb(data: Partial<DbEventSignup>): Promise
             data.payment_status || 'open',
             data.qr_token || null,
             data.directus_relations || null,
-            data.checked_in ? true : false,
+            !!data.checked_in,
             data.checked_in_at || null,
-            data.is_member ? true : false
+            !!data.is_member
         ];
 
-        const { rows } = await query(sql, params);
-        return (rows[0] as { id?: number })?.id || null;
+        const { rows } = await query<{ id: number }>(sql, params);
+        return rows[0]?.id ?? null;
     } catch (error: unknown) {
         safeConsoleError('[event-db.utils.ts][createEventSignupDb] Failed to create event signup:', error);
         return null;
@@ -106,10 +106,10 @@ export async function fetchUserEventSignupsDb(email: string): Promise<EnrichedEv
             WHERE LOWER(es.participant_email) = LOWER($1)
             ORDER BY e.event_date DESC
         `;
-        const { rows } = await query(sql, [email]);
+        const { rows } = await query<DbJoinedEventSignupRow>(sql, [email]);
         const { toLocalISOString } = await import('@/lib/utils/date-utils');
 
-        return (rows as DbJoinedEventSignupRow[]).map((row) => ({
+        return rows.map((row) => ({
             ...row,
             created_at: toLocalISOString(row.created_at),
             checked_in_at: toLocalISOString(row.checked_in_at),
@@ -137,10 +137,10 @@ export async function fetchEventSignupByIdDb(id: number): Promise<EnrichedEventS
             WHERE es.id = $1
             LIMIT 1
         `;
-        const { rows } = await query(sql, [id]);
+        const { rows } = await query<DbJoinedEventSignupRow>(sql, [id]);
         if (rows.length === 0) return null;
 
-        const row = rows[0] as DbJoinedEventSignupRow;
+        const row = rows[0];
         const { toLocalISOString } = await import('@/lib/utils/date-utils');
         return {
             ...row,
@@ -170,10 +170,10 @@ export async function fetchEventSignupByTokenDb(token: string): Promise<Enriched
             WHERE es.qr_token = $1
             LIMIT 1
         `;
-        const { rows } = await query(sql, [token]);
+        const { rows } = await query<DbJoinedEventSignupRow>(sql, [token]);
         if (rows.length === 0) return null;
 
-        const row = rows[0] as DbJoinedEventSignupRow;
+        const row = rows[0];
         const { toLocalISOString } = await import('@/lib/utils/date-utils');
         return {
             ...row,

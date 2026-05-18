@@ -11,7 +11,7 @@ interface HeroCarouselProps {
 }
 
 export function HeroCarousel({ slideUrls }: HeroCarouselProps) {
-    if (!slideUrls || slideUrls.length === 0) return null;
+    if (slideUrls.length === 0) return null;
 
     return (
         <div className="w-full h-full relative group bg-[var(--bg-main)]">

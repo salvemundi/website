@@ -55,7 +55,7 @@ export default function TripActivityForm({ activity, onSave, onCancel, pending }
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
-        onSave(formData, options);
+        void onSave(formData, options);
     };
 
     return (

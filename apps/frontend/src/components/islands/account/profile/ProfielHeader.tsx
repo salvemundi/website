@@ -35,15 +35,14 @@ interface ProfielHeaderProps {
 export default function ProfielHeader({ user = {}, membershipStatus = { text: '', color: '', textColor: '' } }: ProfielHeaderProps) {
     const displayName = useMemo(() => {
         const isCommitteeMember = Array.isArray(user.committees) && user.committees.length > 0;
-        
+
         if (isCommitteeMember) {
-            // 1 in 500 chance
             const random = Math.floor(Math.random() * 500);
             if (random === 0) {
                 return "Vouw een Bak!";
             }
         }
-        
+
         return user.name || "Niet ingesteld";
     }, [user.name, user.committees]);
 
@@ -51,7 +50,7 @@ export default function ProfielHeader({ user = {}, membershipStatus = { text: ''
         <Tile className="h-fit">
             <div className="flex flex-col gap-6 items-center text-center">
                 <div className="relative group shrink-0">
-                    <label 
+                    <label
                         className="relative block cursor-pointer group"
                         title="Profielfoto wijzigen"
                     >
@@ -71,8 +70,7 @@ export default function ProfielHeader({ user = {}, membershipStatus = { text: ''
                                     </span>
                                 </div>
                             )}
-                            
-                            {/* Hover Overlay */}
+
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white p-2">
                                 <svg className="h-8 w-8 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
@@ -81,16 +79,15 @@ export default function ProfielHeader({ user = {}, membershipStatus = { text: ''
                                 <span className="text-[10px] font-black uppercase tracking-wider">Wijzigen</span>
                             </div>
                         </div>
-                        <input 
-                            type="file" 
-                            className="hidden" 
+                        <input
+                            type="file"
+                            className="hidden"
                             accept="image/*"
                             onChange={(e) => {
                                 const file = e.target.files?.[0];
-                                if (file && user?.onAvatarChange) {
+                                if (file && user.onAvatarChange) {
                                     user.onAvatarChange(file);
                                 }
-                                // Reset input so same file can be picked again if needed
                                 e.target.value = '';
                             }}
                         />
@@ -138,7 +135,7 @@ export default function ProfielHeader({ user = {}, membershipStatus = { text: ''
                                 Lidmaatschap tot
                             </p>
                             <p className="text-base font-bold text-[var(--color-purple-700)] dark:text-white">
-                                {user.membership_expiry 
+                                {user.membership_expiry
                                     ? format(new Date(user.membership_expiry), "d MMM yyyy", { locale: nl })
                                     : "Niet van toepassing"}
                             </p>

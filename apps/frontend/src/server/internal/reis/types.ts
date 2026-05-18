@@ -1,7 +1,7 @@
 
 export type QueryParam = string | number | boolean | object | null | undefined;
 
-export type DbRow = Record<string, unknown>;
+export type DbRow = { [key: string]: unknown };
 
 export interface RawTripSignupRow extends DbRow {
     id: number;

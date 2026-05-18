@@ -6,6 +6,20 @@ import { getRedis } from '@/server/auth/redis-client';
 import { getDisabledRoutes } from '@/lib/config/feature-flags';
 import { safeConsoleError } from '@/server/utils/logger';
 
+interface SessionPayload {
+    user?: unknown;
+}
+
+interface CachedSession {
+    user?: unknown;
+    response?: SessionPayload;
+}
+
+interface InternalSessionResponse {
+    user?: unknown;
+    response?: SessionPayload;
+}
+
 /**
  * Direct Provider Proxy (V7)
  */
@@ -104,7 +118,7 @@ async function proxy(request: NextRequest) {
                 rawCookie.split('directus_test_token=')[1]?.split(';')[0]?.trim();
 
             const hasTestToken = !!testTokenRaw;
-            const sessionToken = sessionTokenRaw?.split('.')[0];
+            const sessionToken = sessionTokenRaw ? sessionTokenRaw.split('.')[0] : undefined;
 
             let hasSession = false;
 
@@ -113,8 +127,8 @@ async function proxy(request: NextRequest) {
                 const cached = await redis.get(`session:${sessionToken}`);
                 if (cached) {
                     try {
-                        const sessionData = JSON.parse(cached);
-                        if (sessionData && (sessionData.user || (sessionData.response && sessionData.response.user))) {
+                        const sessionData = JSON.parse(cached) as CachedSession;
+                        if (sessionData.user || (sessionData.response && sessionData.response.user)) {
                             hasSession = true;
                         }
                     } catch (parseErr) {
@@ -152,12 +166,10 @@ async function proxy(request: NextRequest) {
 
                         if (text && text !== 'null' && text !== '{}') {
                             try {
-                                let sessionData = JSON.parse(text);
-                                if (sessionData && 'response' in sessionData) {
-                                    sessionData = sessionData.response;
-                                }
+                                const parsed = JSON.parse(text) as InternalSessionResponse;
+                                const sessionData = parsed.response ? parsed.response : parsed;
 
-                                if (sessionData && sessionData.user) {
+                                if (sessionData.user) {
                                     hasSession = true;
 
                                     if (request.nextUrl.searchParams.has('needLogin')) {

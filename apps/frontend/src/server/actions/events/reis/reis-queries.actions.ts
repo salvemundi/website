@@ -17,24 +17,38 @@ import {
 import { fetchUserProfileByEmailDb } from '@/server/internal/user-db.utils';
 import { safeConsoleError } from '@/server/utils/logger';
 
+interface DbFeatureFlagRow {
+    is_active: boolean;
+    message: string | null;
+}
+
+interface ParticipantCountRow {
+    count: number;
+}
+
 export async function getReisSiteSettings(): Promise<ReisSiteSettings | null> {
-    const { rows } = await query('SELECT is_active, message FROM feature_flags WHERE name = $1 LIMIT 1', ['trip_registration']);
-    const flag = rows?.[0];
+    try {
+        const { rows } = await query<DbFeatureFlagRow>('SELECT is_active, message FROM feature_flags WHERE name = $1 LIMIT 1', ['trip_registration']);
 
-    if (!flag) return null;
+        if (rows.length === 0) return null;
+        const flag = rows[0];
 
-    return {
-        id: 'reis',
-        show: !!flag.is_active,
-        disabled_message: flag.message
-    };
+        return {
+            id: 'reis',
+            show: flag.is_active,
+            disabled_message: flag.message
+        };
+    } catch (error: unknown) {
+        safeConsoleError('[reis-queries.actions.ts][getReisSiteSettings] Failed to fetch site settings:', error);
+        return null;
+    }
 }
 
 export async function getCurrentUserProfileAction(): Promise<{ success: boolean; data?: unknown; error?: string }> {
     const session = await getEnrichedSession();
-    if (!session || !session.user) return { success: false, error: "Niet ingelogd" };
+    if (!session) return { success: false, error: "Niet ingelogd" };
 
-    const userEmail = session.user.email?.toLowerCase();
+    const userEmail = session.user.email.toLowerCase();
     if (!userEmail) return { success: false, error: "Geen e-mailadres gevonden in sessie" };
 
     const user = await fetchUserProfileByEmailDb(userEmail);
@@ -49,10 +63,10 @@ export async function getCurrentUserProfileAction(): Promise<{ success: boolean;
 export async function getUpcomingTrips(): Promise<ReisTrip[]> {
     const data = await fetchPublicTripsDb();
 
-    const parsed = reisTripSchema.array().safeParse(data ?? []);
+    const parsed = reisTripSchema.array().safeParse(data);
     if (!parsed.success) {
-        safeConsoleError(`[Reis-Queries-Action][getUpcomingTrips] Failed to parse trips:`, parsed.error);
-        return (data ?? []) as ReisTrip[];
+        safeConsoleError(`[reis-queries.actions.ts][getUpcomingTrips] Failed to parse trips:`, parsed.error);
+        return data as unknown as ReisTrip[];
     }
 
     const today = new Date();
@@ -76,18 +90,23 @@ export async function getUpcomingTrips(): Promise<ReisTrip[]> {
 }
 
 export async function getTripParticipantsCount(tripId: number): Promise<number> {
-    const { rows } = await query(
-        `SELECT COUNT(*)::int as count FROM trip_signups 
-         WHERE trip_id = $1 AND status IN ('registered', 'confirmed')`,
-        [tripId]
-    );
-    return rows?.[0]?.count || 0;
+    try {
+        const { rows } = await query<ParticipantCountRow>(
+            `SELECT COUNT(*)::int as count FROM trip_signups 
+             WHERE trip_id = $1 AND status IN ('registered', 'confirmed')`,
+            [tripId]
+        );
+        return rows[0]?.count ?? 0;
+    } catch (error: unknown) {
+        safeConsoleError(`[reis-queries.actions.ts][getTripParticipantsCount] Failed to get participant count for trip ${tripId}:`, error);
+        return 0;
+    }
 }
 
 export async function getUserTripSignup(tripId: number): Promise<ReisTripSignup | null> {
     const session = await getEnrichedSession();
 
-    if (!session || !session.user) {
+    if (!session) {
         return null;
     }
 

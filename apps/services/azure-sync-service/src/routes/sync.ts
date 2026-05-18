@@ -11,7 +11,7 @@ export default async function syncRoutes(fastify: FastifyInstance) {
      */
     fastify.addHook('preHandler', async (request, reply) => {
         const token = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
-        const rawAuthHeader = request.headers.authorization;
+        const rawAuthHeader = request.headers.authorization as string | string[] | undefined;
         const authHeader = Array.isArray(rawAuthHeader) ? rawAuthHeader[0] : rawAuthHeader;
 
         if (!token) {
@@ -34,16 +34,18 @@ export default async function syncRoutes(fastify: FastifyInstance) {
             const options = azureSyncRunSchema.parse(request.body || {});
 
             // Start sync job asynchronously (Fire-and-forget)
-            SyncJob.run(fastify.redis, options).catch(error => {
-                fastify.log.error(`[SYNC] Full job failed: ${error.message}`);
+            SyncJob.run(fastify.redis, options).catch((error: unknown) => {
+                const message = error instanceof Error ? error.message : String(error);
+                fastify.log.error(`[SYNC] Full job failed: ${message}`);
             });
 
             return { message: 'Sync job started' };
-        } catch (error: any) {
-            fastify.log.error(`[SYNC] Failed to start job: ${error.stack || error.message}`);
+        } catch (error: unknown) {
+            const err = error as { stack?: string; message?: string };
+            fastify.log.error(`[SYNC] Failed to start job: ${err.stack || err.message || String(error)}`);
             return reply.status(500).send({
                 error: 'Failed to start sync job',
-                details: error.message || String(error)
+                details: err.message || String(error)
             });
         }
     });
@@ -61,11 +63,14 @@ export default async function syncRoutes(fastify: FastifyInstance) {
 
             await SyncJob.syncByEntraId(fastify.redis, userId, accessToken, options);
             return { message: `Sync for Entra ID ${userId} completed` };
-        } catch (error: any) {
-            fastify.log.error(`[SYNC] Failed to sync user ${userId}: ${error.stack || error.message || error}`);
+        } catch (error: unknown) {
+            const err = error as { stack?: string; message?: string };
+            const errMsg = err.message || (typeof error === 'string' ? error : 'Onbekende fout');
+            const errStack = err.stack || errMsg;
+            fastify.log.error(`[SYNC] Failed to sync user ${userId}: ${errStack}`);
             return reply.status(500).send({
                 error: 'Failed to sync user',
-                details: error.message || (typeof error === 'object' ? JSON.stringify(error) : String(error))
+                details: errMsg
             });
         }
     });
@@ -81,8 +86,9 @@ export default async function syncRoutes(fastify: FastifyInstance) {
                 fastify.redis.del(SYNC_ABORT_KEY)
             ]);
             return { message: 'Sync status reset to idle' };
-        } catch (error: any) {
-            fastify.log.error(`[SYNC] Failed to reset status: ${error.message}`);
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : String(error);
+            fastify.log.error(`[SYNC] Failed to reset status: ${message}`);
             return reply.status(500).send({ error: 'Failed to reset sync status' });
         }
     });
@@ -91,7 +97,9 @@ export default async function syncRoutes(fastify: FastifyInstance) {
      * GET /status
      * Returns the current status of the synchronization job.
      */
-    fastify.get('/status', async (request, reply) => {
+    fastify.get('/status', async (_request, _reply) => {
         return SyncJob.getStatus(fastify.redis);
     });
+
+    await Promise.resolve();
 }

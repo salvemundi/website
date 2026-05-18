@@ -1,7 +1,6 @@
 import { connection } from 'next/server';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { hasParentSignup, getIntroBlogsPublic } from '@/server/actions/public/intro.actions';
-
 import { CheckCircle2 } from 'lucide-react';
 import { IntroStudentIsland } from '@/components/islands/intro/IntroStudentIsland';
 import { IntroParentIsland } from '@/components/islands/intro/IntroParentIsland';
@@ -11,7 +10,8 @@ import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 
 export const metadata = {
     title: 'Introductie | Salve Mundi',
-    description: 'Schrijf je in voor de gezelligste introductieweek bij Salve Mundi.' };
+    description: 'Schrijf je in voor de gezelligste introductieweek bij Salve Mundi.'
+};
 
 const IntroInfoStudent = () => (
     <div className="space-y-6">
@@ -63,7 +63,7 @@ const IntroInfoParent = () => (
             <ul className="grid gap-3">
                 <li className="flex gap-3 text-[var(--text-muted)] font-medium">
                     <span className="text-[var(--color-purple-500)] font-black">★</span>
-                    <span><strong>Begeleiden:</strong> Help kleine groepjes nieuwe leden tijdens activiteiten en zorg voor een veilige sfeer.</span>
+                    <span><strong>Begeleiden:</strong> Help kleine groepjes nieuwe leden tijdens activiteiten and zorg voor een veilige sfeer.</span>
                 </li>
                 <li className="flex gap-3 text-[var(--text-muted)] font-medium">
                     <span className="text-[var(--color-purple-500)] font-black">★</span>
@@ -86,31 +86,27 @@ const IntroInfoParent = () => (
 
 export default async function IntroPage() {
     await connection();
-    
-    // NUCLEAR SSR: Fetch all data before flushing any part of the page content
+
     const session = await getEnrichedSession();
-    
-    // Cruciale fix: Controleer specifiek of user bestaat, want de Redis plugin 
-    // kan een leeg object {} retourneren!
-    const isAuthenticated = !!session?.user;
-    const isAlreadyParent = isAuthenticated ? await hasParentSignup() : false;
+    const user = session?.user;
+    const isAlreadyParent = user ? await hasParentSignup() : false;
     const blogs = await getIntroBlogsPublic();
 
     return (
         <PublicPageShell>
             <h1 className="sr-only">Introductie</h1>
-            
+
             <section className="px-[var(--spacing-fluid-md)] py-[var(--spacing-fluid-lg)]">
                 <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 max-w-7xl mx-auto w-full items-start">
                     <div className="flex-1 space-y-6">
                         <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-[2rem] shadow-xl p-[var(--spacing-fluid-md)] sm:p-10">
-                            {isAuthenticated ? <IntroInfoParent /> : <IntroInfoStudent />}
+                            {user ? <IntroInfoParent /> : <IntroInfoStudent />}
                         </div>
-                        {!isAuthenticated && <IntroLightboxIsland />}
+                        {!user && <IntroLightboxIsland />}
                     </div>
 
                     <div className="flex-1 w-full">
-                        {isAuthenticated && session?.user ? (
+                        {user ? (
                             isAlreadyParent ? (
                                 <div className="bg-gradient-theme rounded-[2rem] p-10 shadow-xl text-center flex flex-col items-center justify-center min-h-[300px]">
                                     <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mb-6">
@@ -123,9 +119,9 @@ export default async function IntroPage() {
                                 </div>
                             ) : (
                                 <IntroParentIsland
-                                    userName={session.user.name}
-                                    userEmail={session.user.email}
-                                    initialPhone={session.user.phone_number || ''}
+                                    userName={user.name}
+                                    userEmail={user.email}
+                                    initialPhone={user.phone_number || ''}
                                 />
                             )
                         ) : (

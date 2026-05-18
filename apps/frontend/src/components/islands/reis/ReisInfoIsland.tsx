@@ -55,7 +55,7 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
                     {nextTrip.image ? (
                         <div className="relative w-full h-[300px] sm:h-[400px] overflow-hidden">
                             <Image
-                                src={imageError ? '/img/placeholder.svg' : (getImageUrl(nextTrip.image) ?? '/img/placeholder.svg')}
+                                src={imageError ? '/img/placeholder.svg' : getImageUrl(nextTrip.image)}
                                 alt={nextTrip.name}
                                 fill
                                 className="object-cover transition-transform duration-1000 group-hover:scale-110"
@@ -77,7 +77,7 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
 
                             <button
                                 type="button"
-                                onClick={() => openLightbox(getImageUrl(nextTrip.image) ?? '')}
+                                onClick={() => openLightbox(getImageUrl(nextTrip.image))}
                                 className="absolute top-4 right-4 bg-white/10 backdrop-blur-md border border-white/20 p-3 rounded-2xl text-white hover:bg-white/20 transition-all active:scale-90"
                             >
                                 <Camera className="h-5 w-5" />

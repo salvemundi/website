@@ -36,7 +36,7 @@ export default function ConfirmationIsland({ transactionId, type, initialStatus,
             }
         };
 
-        checkStatus();
+        void checkStatus();
     }, [transactionId, retryCount]);
 
     const renderContent = () => {

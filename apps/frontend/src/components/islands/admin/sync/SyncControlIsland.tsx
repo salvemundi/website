@@ -5,7 +5,7 @@ import { RefreshCw, X, Info } from 'lucide-react';
 import { useSync } from './SyncContext';
 
 interface Props {
-    tasks?: Record<string, unknown>[];
+    tasks?: { [key: string]: unknown }[];
 }
 
 export default function SyncControlIsland({ tasks: _tasks = [] }: Props) {
@@ -30,10 +30,10 @@ export default function SyncControlIsland({ tasks: _tasks = [] }: Props) {
                     <div>
                         <label className="text-xs font-semibold text-[var(--beheer-text-muted)] mb-3 block">Velden om te synchroniseren</label>
                         <div className="flex flex-wrap gap-2">
-                            {(syncFieldOptions || []).map((field: { id: string; label: string }) => (
+                            {syncFieldOptions.map((field: { id: string; label: string }) => (
                                 <button
                                     key={field.id}
-                                    onClick={() => toggleField?.(field.id)}
+                                    onClick={() => toggleField(field.id)}
                                     className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold transition-all border ${selectedSyncFields.includes(field.id) ? 'bg-[var(--beheer-accent)] text-white border-[var(--beheer-accent)] shadow-md' : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] border-[var(--beheer-border)]/50 hover:border-[var(--beheer-accent)]/30 hover:text-[var(--beheer-text)]'}`}
                                 >
                                     {field.label}
@@ -44,7 +44,7 @@ export default function SyncControlIsland({ tasks: _tasks = [] }: Props) {
 
                     <div className="grid grid-cols-1 gap-2.5 pt-4 border-t border-[var(--beheer-border)]/50">
                         <button
-                            onClick={() => setForceLink?.(!forceLink)}
+                            onClick={() => setForceLink(!forceLink)}
                             className={`flex items-center justify-between p-3.5 rounded-xl border transition-all ${forceLink ? 'border-[var(--beheer-accent)] bg-[var(--beheer-accent)]/5' : 'border-[var(--beheer-border)] hover:border-[var(--beheer-accent)]/30 group'}`}
                         >
                             <span className={`text-[11px] font-semibold transition-colors ${forceLink ? 'text-[var(--beheer-accent)]' : 'text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-text)]'}`}>Forceer Entra Link</span>
@@ -54,7 +54,7 @@ export default function SyncControlIsland({ tasks: _tasks = [] }: Props) {
                         </button>
 
                         <button
-                            onClick={() => setActiveOnly?.(!activeOnly)}
+                            onClick={() => setActiveOnly(!activeOnly)}
                             className={`flex items-center justify-between p-3.5 rounded-xl border transition-all ${activeOnly ? 'border-[var(--beheer-accent)] bg-[var(--beheer-accent)]/5' : 'border-[var(--beheer-border)] hover:border-[var(--beheer-accent)]/30 group'}`}
                         >
                             <span className={`text-[11px] font-semibold transition-colors ${activeOnly ? 'text-[var(--beheer-accent)]' : 'text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-text)]'}`}>Alleen Actieve Leden</span>
@@ -68,16 +68,16 @@ export default function SyncControlIsland({ tasks: _tasks = [] }: Props) {
                         {status?.active ? (
                             <>
                                 <button
-                                    onClick={handleStopSync}
-                                    disabled={isStopping || status?.abortRequested}
+                                    onClick={() => { void handleStopSync(); }}
+                                    disabled={isStopping || status.abortRequested}
                                     className="w-full flex items-center justify-center gap-2 py-3.5 bg-[var(--beheer-inactive)] text-white rounded-xl font-semibold text-xs shadow-md hover:scale-[1.01] active:scale-95 disabled:opacity-50 transition-all"
                                 >
                                     <X className={`h-4 w-4 ${isStopping ? 'animate-spin' : ''}`} />
-                                    {status?.abortRequested ? 'Afbreken aangevraagd...' : 'Synchronisatie Stoppen'}
+                                    {status.abortRequested ? 'Afbreken aangevraagd...' : 'Synchronisatie Stoppen'}
                                 </button>
-                                {status?.abortRequested && (
+                                {status.abortRequested && (
                                     <button
-                                        onClick={handleResetSync}
+                                        onClick={() => { void handleResetSync(); }}
                                         disabled={isResetting}
                                         className="w-full flex items-center justify-center gap-2 py-2 text-[11px] text-[var(--beheer-inactive)] font-semibold hover:underline disabled:opacity-50"
                                     >
@@ -88,7 +88,7 @@ export default function SyncControlIsland({ tasks: _tasks = [] }: Props) {
                             </>
                         ) : (
                             <button
-                                onClick={handleFullSync}
+                                onClick={() => { void handleFullSync(); }}
                                 disabled={isStartingSync}
                                 className="w-full flex items-center justify-center gap-2 py-3.5 bg-[var(--beheer-accent)] text-white rounded-xl font-semibold text-xs shadow-md hover:scale-[1.01] active:scale-95 disabled:opacity-50 transition-all"
                             >
@@ -112,13 +112,13 @@ export default function SyncControlIsland({ tasks: _tasks = [] }: Props) {
                     Synchroniseer een specifieke gebruiker op basis van hun Entra ID (UUID).
                 </p>
 
-                <form onSubmit={handleUserSync} className="space-y-3">
+                <form onSubmit={(e) => { void handleUserSync(e); }} className="space-y-3">
                     <input
                         type="text"
                         value={userId}
                         autoComplete="off"
                         suppressHydrationWarning
-                        onChange={(e) => setUserId?.(e.target.value)}
+                        onChange={(e) => setUserId(e.target.value)}
                         placeholder="Entra ID (UUID)..."
                         className="w-full px-5 py-3.5 bg-[var(--beheer-card-soft)] border border-[var(--beheer-border)] rounded-xl text-xs font-semibold focus:outline-none focus:border-[var(--beheer-accent)] transition-all placeholder:text-[var(--beheer-text-muted)]/30 text-[var(--beheer-text)]"
                     />

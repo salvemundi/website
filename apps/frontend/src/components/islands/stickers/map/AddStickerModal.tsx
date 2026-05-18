@@ -4,6 +4,12 @@ import { X, Camera, Loader2, Plus } from 'lucide-react';
 import { useState } from 'react';
 import MediaAsset from '@/components/ui/media/MediaAsset';
 
+interface NominatimSearchResult {
+    lat: string;
+    lon: string;
+    display_name?: string;
+}
+
 interface AddStickerModalProps {
     show: boolean;
     onClose: () => void;
@@ -54,23 +60,26 @@ export default function AddStickerModal({
             const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addressQuery)}&limit=5&accept-language=nl`, {
                 headers: { 'User-Agent': 'SalveMundi-Website' }
             });
-            const items = await res.json();
-            if (items && items.length > 0) {
+            const items = (await res.json()) as NominatimSearchResult[];
+            if (items.length > 0) {
                 const first = items[0];
-                const lat = parseFloat(first.lat);
-                const lon = parseFloat(first.lon);
+                const lat = parseFloat(first.lat || '0');
+                const lon = parseFloat(first.lon || '0');
                 setSelectedLocation({ lat, lng: lon });
 
                 const addr = first.display_name || '';
                 const parts = addr.split(',').map((s: string) => s.trim());
                 const country = parts[parts.length - 1] || '';
-                const city = parts.length > 1 ? parts[parts.length - 3] || parts[parts.length - 2] : '';
+                const city = parts.length > 1 ? parts[parts.length - 3] || parts[parts.length - 2] || '' : '';
                 setFormData((prev) => ({ ...prev, city, country }));
             }
         } catch (_e) {
-            // ignore
         }
         setIsSearching(false);
+    };
+
+    const handleAddressSearchSync = () => {
+        void handleAddressSearch();
     };
 
     return (
@@ -116,7 +125,7 @@ export default function AddStickerModal({
                                 />
                                 <button
                                     type="button"
-                                    onClick={handleAddressSearch}
+                                    onClick={handleAddressSearchSync}
                                     disabled={isSearching}
                                     className="inline-flex items-center gap-2 rounded-2xl bg-[var(--theme-purple)]/90 px-3 py-2 text-white font-black uppercase text-xs"
                                 >

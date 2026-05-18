@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
             limit: 1
         }));
 
-        if (signup && signup[0]) {
+        if (signup[0]) {
             return {
                 title: `Deelnemer: ${signup[0].first_name} ${signup[0].last_name} | SV Salve Mundi`
             };
@@ -42,7 +42,6 @@ export default async function DeelnemerDetailPage({ params }: PageProps) {
     const { id } = await params;
     const signupId = parseInt(id);
 
-    // NUCLEAR SSR: Fetch participant and trip data before flushing ANY part of the page
     const signup = await getTripSignup(signupId);
     if (!signup || !signup.trip_id) {
         notFound();

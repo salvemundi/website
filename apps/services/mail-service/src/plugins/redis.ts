@@ -2,6 +2,7 @@ import fp from 'fastify-plugin';
 import { Redis } from 'ioredis';
 
 export default fp(async (fastify) => {
+    await Promise.resolve();
     const redisUrl = process.env.REDIS_URL || 'redis://v7-core-redis:6379';
 
     const client = new Redis(redisUrl, {

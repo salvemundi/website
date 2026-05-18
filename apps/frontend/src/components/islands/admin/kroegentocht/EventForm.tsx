@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import type { SyntheticEvent, ChangeEvent } from 'react';
 import {
     Save,
     Loader2,
@@ -35,34 +36,39 @@ export default function EventForm({ event }: EventFormProps) {
         name: event?.name || '',
         description: event?.description || '',
         date: toLocalISOString(event?.date) || '',
-        email: event?.email || 'intro@salvemundi.nl',
+        email: event?.email || 'feest@salvemundi.nl',
         image: event?.image || null
     });
     const [uploading, setUploading] = useState(false);
 
     const isEdit = !!event?.id;
 
-    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        setUploading(true);
-        const uploadData = new FormData();
-        uploadData.append('file', file);
+        const performUpload = async () => {
+            setUploading(true);
+            const uploadData = new FormData();
+            uploadData.append('file', file);
 
-        try {
-            const result = await uploadPubCrawlImage(uploadData);
-            setFormData(prev => ({ ...prev, image: result.id }));
-            showToast('Afbeelding succesvol geüpload', 'success');
-        } catch (error) {
-            const message = error instanceof Error ? error.message : 'Upload mislukt';
-            showToast(message, 'error');
-        } finally {
-            setUploading(false);
-        }
+            try {
+                const result = await uploadPubCrawlImage(uploadData);
+                setFormData(prev => ({ ...prev, image: result.id }));
+                showToast('Afbeelding succesvol geüpload', 'success');
+            } catch (error) {
+                safeConsoleError('[EventForm][handleImageUpload] Upload mislukt', error);
+                const message = error instanceof Error ? error.message : 'Upload mislukt';
+                showToast(message, 'error');
+            } finally {
+                setUploading(false);
+            }
+        };
+
+        void performUpload();
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
         startTransition(async () => {
             try {
@@ -75,7 +81,7 @@ export default function EventForm({ event }: EventFormProps) {
                 router.refresh();
             } catch (error) {
                 const message = error instanceof Error ? error.message : 'Fout bij opslaan';
-                safeConsoleError(`[EventForm][EventForm.handleSubmit] Error:`, error);
+                safeConsoleError(`[EventForm][handleSubmit] Error:`, error);
                 showToast(message, 'error');
             }
         });
@@ -86,7 +92,6 @@ export default function EventForm({ event }: EventFormProps) {
             <form onSubmit={handleSubmit} className="space-y-8 max-w-4xl mx-auto">
                 <div className="bg-[var(--bg-card)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)]/30 overflow-hidden">
                     <div className="p-8 space-y-8">
-                        {/* Basic Info Section */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             <div className="md:col-span-2 space-y-6">
                                 <div className="space-y-2">
@@ -126,13 +131,12 @@ export default function EventForm({ event }: EventFormProps) {
                                             value={formData.email}
                                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                             className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-semibold text-[var(--text-main)]"
-                                            placeholder="Bijv. intro@salvemundi.nl"
+                                            placeholder="Bijv. feest@salvemundi.nl"
                                         />
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Image Upload Sidebar */}
                             <div className="space-y-2">
                                 <label className="text-[10px] font-semibold text-[var(--text-muted)] ml-1 flex items-center gap-2">
                                     <ImagePlus className="h-3 w-3" /> Event Afbeelding
@@ -181,7 +185,6 @@ export default function EventForm({ event }: EventFormProps) {
                             </div>
                         </div>
 
-                        {/* Description Full Width */}
                         <div className="space-y-2">
                             <label className="text-[10px] font-semibold text-[var(--text-muted)] ml-1 flex items-center gap-2">
                                 <FileText className="h-3 w-3" /> Beschrijving

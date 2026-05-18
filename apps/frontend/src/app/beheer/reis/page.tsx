@@ -70,7 +70,7 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
     const trips = tripSchema.array().parse(tripsRes);
     const _reisSettings = settingsRes || { show: true };
 
-    if (!trips || trips.length === 0) {
+    if (trips.length === 0) {
         return (
             <AdminPageShell title="Reis Beheer" backHref="/beheer">
                 <NoTripsView />

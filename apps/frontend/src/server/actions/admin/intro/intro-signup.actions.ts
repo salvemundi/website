@@ -14,6 +14,7 @@ export async function checkIntroAdminAccess() {
 }
 
 export async function genericDelete(collection: string, id: number) {
+    await checkIntroAdminAccess();
     try {
         await getSystemDirectus().request(deleteItem(collection as never, id));
         revalidatePath('/beheer/intro');
@@ -23,7 +24,7 @@ export async function genericDelete(collection: string, id: number) {
     }
 }
 
-export async function genericUpdate(collection: string, id: number, data: Record<string, unknown>, allowedFields: string[]) {
+async function genericUpdate(collection: string, id: number, data: { [key: string]: unknown }, allowedFields: string[]) {
     const filteredData = Object.fromEntries(
         Object.entries(data).filter(([key]) => allowedFields.includes(key))
     );
@@ -63,12 +64,12 @@ export async function deleteIntroParentSignup(id: number): Promise<{ success: bo
     return genericDelete('intro_parent_signups', id);
 }
 
-export async function updateIntroSignup(id: number, data: Partial<Record<string, unknown>>): Promise<{ success: boolean; error?: string }> {
+export async function updateIntroSignup(id: number, data: Partial<{ [key: string]: unknown }>): Promise<{ success: boolean; error?: string }> {
     await checkIntroAdminAccess();
     return genericUpdate('intro_signups', id, data, ['status', 'payment_status', 'is_member', 'notes', 'checked_in']);
 }
 
-export async function updateIntroParentSignup(id: number, data: Partial<Record<string, unknown>>): Promise<{ success: boolean; error?: string }> {
+export async function updateIntroParentSignup(id: number, data: Partial<{ [key: string]: unknown }>): Promise<{ success: boolean; error?: string }> {
     await checkIntroAdminAccess();
     return genericUpdate('intro_parent_signups', id, data, ['status', 'payment_status', 'notes', 'checked_in']);
 }

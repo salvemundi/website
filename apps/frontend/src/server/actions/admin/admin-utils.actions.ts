@@ -37,7 +37,7 @@ export async function checkAdminAccess() {
     try {
         const session = await getEnrichedSession();
 
-        if (!session || !session.user) {
+        if (!session) {
             return { isAuthorized: false, user: null, isIct: false, impersonation: null };
         }
 
@@ -54,14 +54,12 @@ export async function checkAdminAccess() {
                 user.date_of_birth = metadata.date_of_birth;
                 user.entra_id = metadata.entra_id;
             }
-            if (committees) {
-                user.committees = committees;
-                const perms = getPermissions(committees);
-                user.isICT = perms.isICT;
+            user.committees = committees;
+            const perms = getPermissions(committees);
+            user.isICT = perms.isICT;
 
-                // Store granular permissions in the user object for convenience
-                Object.assign(user, perms);
-            }
+            // Store granular permissions in the user object for convenience
+            Object.assign(user, perms);
         } catch (error) {
             safeConsoleError(`[AdminUtilsActions][checkAdminAccess] Error while enriching user:`, error);
         }

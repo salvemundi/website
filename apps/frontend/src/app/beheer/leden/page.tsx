@@ -16,7 +16,7 @@ export const metadata = {
 export default async function LedenBeheerPage() {
     const session = await getEnrichedSession();
 
-    if (!session || !session.user) return <AdminUnauthorized />;
+    if (!session) return <AdminUnauthorized />;
 
     const user = session.user as unknown as EnrichedUser;
     if (!isMemberAdmin(user.committees)) {

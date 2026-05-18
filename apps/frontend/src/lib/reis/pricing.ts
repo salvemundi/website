@@ -36,7 +36,7 @@ export function calculateTripPricing(
         
         // Add sub-option prices if any
         if (activity.options && Array.isArray(activity.options)) {
-                const optionsMap = new Map(Object.entries(sel.options || {}));
+                const optionsMap = new Map(Object.entries(sel.options));
                 activity.options.forEach(opt => {
                     const optId = opt.id;
                     if (optId && optionsMap.get(optId)) {

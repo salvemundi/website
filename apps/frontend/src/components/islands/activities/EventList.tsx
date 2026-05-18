@@ -32,14 +32,14 @@ export default function EventList({ events, onEventClick, variant = 'list', serv
                     <ActiviteitCard
                         key={event.id}
                         id={event.id}
-                        title={event.titel || 'Activiteit'}
+                        title={event.titel}
                         description={stripHtml(event.beschrijving || '')}
                         date={event.datum_start}
                         endDate={event.datum_eind ?? undefined}
                         startTime={event.event_time ?? undefined}
                         endTime={event.event_time_end ?? undefined}
                         location={event.locatie ?? undefined}
-                        price={(user as unknown as MembershipUserData)?.membership_status === 'active' ? (event.price_members ?? undefined) : (event.price_non_members ?? undefined)}
+                        price={user && (user as unknown as MembershipUserData).membership_status === 'active' ? (event.price_members ?? undefined) : (event.price_non_members ?? undefined)}
                         image={event.afbeelding_id ?? undefined}
                         isPast={isEventPast(
                             event.datum_eind || event.datum_start,
@@ -68,14 +68,14 @@ export default function EventList({ events, onEventClick, variant = 'list', serv
                 <ActiviteitCard
                     key={event.id}
                     id={event.id}
-                    title={event.titel || 'Activiteit'}
+                    title={event.titel}
                     description={stripHtml(event.beschrijving || '')}
                     date={event.datum_start}
                     endDate={event.datum_eind ?? undefined}
                     startTime={event.event_time ?? undefined}
                     endTime={event.event_time_end ?? undefined}
                     location={event.locatie ?? undefined}
-                    price={(user as unknown as MembershipUserData)?.membership_status === 'active' ? (event.price_members ?? undefined) : (event.price_non_members ?? undefined)}
+                    price={user && (user as unknown as MembershipUserData).membership_status === 'active' ? (event.price_members ?? undefined) : (event.price_non_members ?? undefined)}
                     image={event.afbeelding_id ?? undefined}
                     isPast={isEventPast(
                         event.datum_eind || event.datum_start,

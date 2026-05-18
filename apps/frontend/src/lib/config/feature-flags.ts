@@ -17,7 +17,7 @@ export async function getDisabledRoutes(): Promise<string[]> {
         const redis = await getRedis();
         const cached = await redis.get(FLAGS_CACHE_KEY);
 
-        if (cached) return JSON.parse(cached);
+        if (cached) return JSON.parse(cached) as string[];
 
         const { rows } = await query('SELECT route_match FROM feature_flags WHERE is_active = false');
         const routes = (rows as FlagRow[])

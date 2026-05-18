@@ -1,8 +1,9 @@
 import { getDirectusClient } from '../config/directus.js';
 import { createItem } from '@directus/sdk';
+import { safeConsoleError } from '../utils/logger.js';
 
 export class AuditService {
-    static async logSystemAction(type: string, status: 'SUCCESS' | 'ERROR' | 'INFO', payload?: any) {
+    static async logSystemAction(type: string, status: 'SUCCESS' | 'ERROR' | 'INFO', payload?: Record<string, unknown>) {
         try {
             await getDirectusClient().request(createItem('system_logs', {
                 type,
@@ -13,8 +14,9 @@ export class AuditService {
                     timestamp: new Date().toISOString()
                 }
             }));
-        } catch (error) {
-            console.warn('[AuditService] Failed to log action:', error);
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : String(error);
+            safeConsoleError('[AuditService] Failed to log action:', message);
         }
     }
 
@@ -22,8 +24,8 @@ export class AuditService {
         await this.logSystemAction('membership_renewal', 'SUCCESS', {
             lid: email,
             email: email,
-            user_id: userId,
-            payment_id: paymentId,
+            user_id: userId || '',
+            payment_id: paymentId || '',
             details: 'Lidmaatschap verlengd'
         });
     }
@@ -32,7 +34,7 @@ export class AuditService {
         await this.logSystemAction('membership_provisioning', 'SUCCESS', {
             naam: `${firstName} ${lastName}`,
             email: email,
-            payment_id: paymentId,
+            payment_id: paymentId || '',
             details: 'Account creatie gestart in Azure'
         });
     }

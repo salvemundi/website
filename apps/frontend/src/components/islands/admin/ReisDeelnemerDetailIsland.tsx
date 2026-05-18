@@ -25,6 +25,7 @@ import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
+import { safeConsoleError } from '@/server/utils/logger';
 import SignupForm from './reis/SignupForm';
 import SignupActivities from './reis/SignupActivities';
 
@@ -70,7 +71,8 @@ export default function ReisDeelnemerDetailIsland({
             } else {
                 showToast('Activiteiten succesvol bijgewerkt', 'success');
             }
-        } catch {
+        } catch (error) {
+            safeConsoleError('[ReisDeelnemerDetailIsland][handleUpdateActivities]', error);
             showToast('Geen verbinding met de server', 'error');
         } finally {
             setIsUpdatingActivities(false);
@@ -81,11 +83,16 @@ export default function ReisDeelnemerDetailIsland({
         if (!confirm('Weet je zeker dat je deze deelnemer wilt verwijderen? Dit kan niet ongedaan worden gemaakt.')) return;
 
         startTransition(async () => {
-            const res = await deleteTripSignup(initialSignup.id);
-            if (res.success) {
-                router.push('/beheer/reis');
-            } else {
-                showToast(res.error || 'Verwijderen mislukt', 'error');
+            try {
+                const res = await deleteTripSignup(initialSignup.id);
+                if (res.success) {
+                    router.push('/beheer/reis');
+                } else {
+                    showToast(res.error || 'Verwijderen mislukt', 'error');
+                }
+            } catch (error) {
+                safeConsoleError('[ReisDeelnemerDetailIsland][handleDelete]', error);
+                showToast('Er is een onverwachte fout opgetreden', 'error');
             }
         });
     };
@@ -114,7 +121,7 @@ export default function ReisDeelnemerDetailIsland({
         }
     }, [state, isSaving, showToast]);
 
-    const selectedTrip = (trips || []).find(t => t.id === initialSignup.trip_id);
+    const selectedTrip = trips.find(t => t.id === initialSignup.trip_id);
 
     return (
         <>
@@ -125,7 +132,9 @@ export default function ReisDeelnemerDetailIsland({
                 actions={
                     <button
                         type="button"
-                        onClick={handleDelete}
+                        onClick={() => {
+                            void handleDelete();
+                        }}
                         disabled={isPending}
                         className="px-6 py-3 bg-[var(--beheer-inactive)]/5 text-[var(--beheer-inactive)] rounded-xl font-semibold text-base border border-[var(--beheer-inactive)]/10 hover:bg-[var(--beheer-inactive)]/10 transition-all flex items-center gap-2 shadow-sm active:scale-95"
                     >
@@ -154,7 +163,9 @@ export default function ReisDeelnemerDetailIsland({
                             allActivities={allActivities}
                             selectedActivities={selectedActivities}
                             onToggleActivity={toggleActivity}
-                            onUpdate={handleUpdateActivities}
+                            onUpdate={() => {
+                                void handleUpdateActivities();
+                            }}
                             isUpdating={isUpdatingActivities}
                         />
 
@@ -197,7 +208,9 @@ export default function ReisDeelnemerDetailIsland({
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={handleDelete}
+                                    onClick={() => {
+                                        void handleDelete();
+                                    }}
                                     disabled={isPending}
                                     className="p-4 bg-[var(--beheer-inactive)]/5 hover:bg-[var(--beheer-inactive)]/10 text-[var(--beheer-inactive)] rounded-2xl border border-[var(--beheer-inactive)]/20 transition-all shadow-sm active:scale-90"
                                 >

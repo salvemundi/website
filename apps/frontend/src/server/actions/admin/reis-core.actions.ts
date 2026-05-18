@@ -17,9 +17,14 @@ import {
 } from '@/server/internal/reis-db.utils';
 import { tripSchema } from '@salvemundi/validations/schema/admin-reis.zod';
 import { safeConsoleError } from '@/server/utils/logger';
+import { logAdminAction } from '@/server/actions/infrastructure/audit.actions';
+
+interface DirectusFile {
+    id: string;
+}
 
 async function handleImageUpload(formData: FormData): Promise<string | null> {
-    const file = formData.get('image_file') as File;
+    const file = formData.get('image_file') as File | null;
     if (!file || file.size === 0) return null;
 
     const uploadFormData = new FormData();
@@ -27,8 +32,8 @@ async function handleImageUpload(formData: FormData): Promise<string | null> {
     
     try {
         const client = getSystemDirectus();
-        const response = await client.request(uploadFiles(uploadFormData));
-        const fileObj = Array.isArray(response) ? response[0] : response;
+        const response = (await client.request(uploadFiles(uploadFormData))) as unknown as DirectusFile | DirectusFile[];
+        const fileObj = (Array.isArray(response) ? response[0] : response) as DirectusFile | undefined;
         return fileObj?.id || null;
     } catch (error) {
         safeConsoleError('[ReisCore][handleImageUpload] Upload failed:', error);
@@ -87,6 +92,13 @@ export async function createTrip(prevState: unknown, formData: FormData) {
         // Shadow Write (Directus)
         getSystemDirectus().request(updateItem('trips', newId, validated.data)).catch(err => {
             safeConsoleError(`[ReisCore][createTrip] Directus shadow write failed for ${newId}:`, err);
+        });
+
+        await logAdminAction('admin_trip_created', 'SUCCESS', {
+            context: 'reis',
+            trip_id: newId,
+            name: validated.data.name,
+            data: validated.data
         });
 
         revalidatePath('/beheer/reis');
@@ -151,6 +163,12 @@ export async function updateTrip(prevState: unknown, formData: FormData) {
             safeConsoleError(`[ReisCore][updateTrip] Directus shadow write failed for ${id}:`, err);
         });
 
+        await logAdminAction('admin_trip_updated', 'SUCCESS', {
+            context: 'reis',
+            trip_id: id,
+            updates: validated.data
+        });
+
         revalidatePath('/beheer/reis');
         revalidatePath('/beheer/reis/instellingen');
         revalidatePath('/beheer/reis/activiteiten');
@@ -178,6 +196,11 @@ export async function deleteTrip(id: number) {
              safeConsoleError(`[ReisCore][deleteTrip] Directus shadow delete failed for ${id}:`, err);
         });
 
+        await logAdminAction('admin_trip_deleted', 'SUCCESS', {
+            context: 'reis',
+            trip_id: id
+        });
+
         revalidatePath('/beheer/reis');
         revalidatePath('/beheer/reis/instellingen');
         revalidatePath('/beheer/reis/activiteiten');
@@ -188,6 +211,13 @@ export async function deleteTrip(id: number) {
     }
 }
 
+interface DbFeatureFlag {
+    id: number;
+    name: string;
+    is_active: boolean;
+    route_match: string;
+}
+
 export async function toggleReisVisibility(): Promise<{ success: boolean; show?: boolean; error?: string }> {
     await requireAdminResource(AdminResource.Reis);
     const flagName = 'trip_registration';
@@ -195,9 +225,10 @@ export async function toggleReisVisibility(): Promise<{ success: boolean; show?:
     try {
         const sql = 'SELECT id, is_active FROM feature_flags WHERE name = $1 LIMIT 1';
         const { rows } = await query(sql, [flagName]);
+        const flagRows = rows as DbFeatureFlag[];
         
-        const flag = rows?.[0];
-        const oldStatus = flag ? !!flag.is_active : true;
+        const flag = flagRows[0] as DbFeatureFlag | undefined;
+        const oldStatus = flag ? flag.is_active : true;
         const newStatus = !oldStatus;
         
         if (flag) {
@@ -206,6 +237,11 @@ export async function toggleReisVisibility(): Promise<{ success: boolean; show?:
             await query('INSERT INTO feature_flags (name, route_match, is_active) VALUES ($1, $2, $3)', 
                 [flagName, '/reis', newStatus]);
         }
+
+        await logAdminAction('admin_trip_visibility_toggled', 'SUCCESS', {
+            context: 'reis',
+            show: newStatus
+        });
 
         // Clear Proxy Cache
         try {

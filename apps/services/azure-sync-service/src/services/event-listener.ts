@@ -8,20 +8,21 @@ export class EventListenerService {
     private static readonly STREAM_KEY = 'v7:events';
     private static readonly GROUP_NAME = 'azure-sync-group';
     private static readonly CONSUMER_NAME = 'azure-consumer-1';
-    private static shouldStop = false;
+    private static shouldStop: boolean = false;
 
     static async start(redis: Redis) {
         logInfo('[AzureEventListener] Starting Redis Stream listener...');
 
         try {
             await redis.xgroup('CREATE', this.STREAM_KEY, this.GROUP_NAME, '0', 'MKSTREAM');
-        } catch (error: any) {
-            if (!error.message.includes('BUSYGROUP')) {
-                safeConsoleError('[AzureEventListener] Error creating consumer group:', error);
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : String(error);
+            if (!message.includes('BUSYGROUP')) {
+                safeConsoleError('[AzureEventListener] Error creating consumer group:', message);
             }
         }
 
-        while (!this.shouldStop) {
+        while (!EventListenerService['shouldStop']) {
             try {
                 const response = (await redis.xreadgroup(
                     'GROUP', this.GROUP_NAME, this.CONSUMER_NAME,
@@ -33,26 +34,31 @@ export class EventListenerService {
                     for (const [, messages] of response) {
                         for (const [id, fields] of messages) {
                             const data: Record<string, string> = {};
+                            /* eslint-disable security/detect-object-injection */
                             for (let i = 0; i < fields.length; i += 2) {
                                 data[fields[i]] = fields[i + 1];
                             }
+                            /* eslint-enable security/detect-object-injection */
 
                             await this.handleEvent(redis, { id, data });
                             await redis.xack(this.STREAM_KEY, this.GROUP_NAME, id);
                         }
                     }
                 }
-            } catch (error: any) {
-                safeConsoleError('[AzureEventListener] Loop Error:', error.message);
+            } catch (error: unknown) {
+                const message = error instanceof Error ? error.message : String(error);
+                safeConsoleError('[AzureEventListener] Loop Error:', message);
                 await new Promise(resolve => setTimeout(resolve, 5000));
             }
         }
     }
 
-    private static async handleEvent(redis: Redis, message: any) {
+    private static async handleEvent(redis: Redis, message: { id: string; data: Record<string, string> }) {
         try {
-            const rawData = JSON.parse(message.data.payload);
-            logInfo(`[AzureEventListener] Received event: ${rawData.event}`);
+            const payloadStr = message.data.payload;
+            if (!payloadStr) return;
+            const rawData = JSON.parse(payloadStr) as Record<string, unknown>;
+            logInfo(`[AzureEventListener] Received event: ${String(rawData.event)}`);
 
             if (rawData.event === 'PAYMENT_SUCCESS') {
                 const data = PaymentSuccessEventSchema.parse(rawData);
@@ -97,8 +103,9 @@ export class EventListenerService {
                     logInfo(`[AzureEventListener] Ignored PAYMENT_SUCCESS for non-membership type: ${data.registrationType}`);
                 }
             }
-        } catch (error: any) {
-            safeConsoleError('[AzureEventListener] Error handling event:', error.message);
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : String(error);
+            safeConsoleError('[AzureEventListener] Error handling event:', message);
         }
     }
 

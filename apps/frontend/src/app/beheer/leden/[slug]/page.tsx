@@ -17,18 +17,23 @@ import {
 } from '@salvemundi/validations/directus/schema';
 import { safeConsoleError } from '@/server/utils/logger';
 
+interface AzureUserGroupsResponse {
+    success: boolean;
+    groups?: { id: string }[];
+}
+
 export default async function LidDetailPage({ params }: { params: Promise<{ slug: string }> }) {
     const resolvedParams = await params;
     const decodedSlug = decodeURIComponent(resolvedParams.slug);
 
     // NUCLEAR SSR: All access and permission checks must happen before flushing the shell
     const session = await getEnrichedSession();
-    if (!session || !session.user) return <AdminUnauthorized title="Lid Detail" />;
+    if (!session) return <AdminUnauthorized title="Lid Detail" />;
 
     const user = session.user as unknown as EnrichedUser;
     const memberships = user.committees || [];
     const hasPriv = memberships.some((c: Committee) => {
-        const name = (c?.name || '').toString().toLowerCase();
+        const name = (c.name || '').toString().toLowerCase();
         return name.includes('bestuur') || name.includes('ict') || name.includes('kandi');
     });
 
@@ -57,7 +62,7 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
             })
         ) as DbDirectusUser[];
 
-        if (!memberResult || memberResult.length === 0) return notFound();
+        if (memberResult.length === 0) return notFound();
 
         // Find exact match by comparing the normalized prefix (dots converted to dashes)
         const memberData = memberResult.find((u) => {
@@ -124,9 +129,9 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
                 });
 
                 if (mgmtRes.ok) {
-                    const data = await mgmtRes.json();
+                    const data = (await mgmtRes.json()) as AzureUserGroupsResponse;
                     if (data.success && Array.isArray(data.groups)) {
-                        const userAzureGroupIds = data.groups.map((g: { id: string }) => g.id.toLowerCase());
+                        const userAzureGroupIds = data.groups.map((g) => g.id.toLowerCase());
                         const matchedGroups = HARDCODED_AZURE_GROUPS.filter(hg => userAzureGroupIds.includes(hg.id.toLowerCase()));
 
                         const fakeMemberships = matchedGroups.map(match => ({

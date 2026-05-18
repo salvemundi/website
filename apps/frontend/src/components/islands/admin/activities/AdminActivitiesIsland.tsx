@@ -10,7 +10,7 @@ import { useAdminToast } from '@/hooks/use-admin-toast';
 import type { UserPermissions } from '@/shared/lib/permissions';
 
 function cleanCommitteeName(name: string): string {
-    return name?.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim() || '';
+    return name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim() || '';
 }
 
 import { type AdminActivity } from '@salvemundi/validations/schema/admin.zod';
@@ -65,7 +65,7 @@ export default function AdminActivitiesIsland({
     return (
         <div className="flex flex-col">
 
-            <ActivityFilters 
+            <ActivityFilters
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
                 filter={filter}
@@ -79,7 +79,7 @@ export default function AdminActivitiesIsland({
 
             <div className="grid grid-cols-1 gap-8 mt-10">
                 {displayedEvents.map((event) => (
-                    <ActivityCard 
+                    <ActivityCard
                         key={event.id}
                         event={event}
                         canEdit={canEdit}

@@ -60,7 +60,7 @@ export default function ProfielSignups({
                         
                         // Type guard to ensure we have an object with a name and date info
                         const isExpanded = (data: unknown): data is { name: string; event_date?: string | null; date?: string | null } => {
-                            return typeof data === 'object' && data !== null && 'name' in (data as Record<string, unknown>);
+                            return typeof data === 'object' && data !== null && 'name' in (data as { [key: string]: unknown });
                         };
 
                         if (!isExpanded(eventData)) return null;

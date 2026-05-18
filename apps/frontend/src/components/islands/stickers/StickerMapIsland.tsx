@@ -36,6 +36,18 @@ interface DirectusStickerResponse {
     date_created?: string | null;
 }
 
+interface NominatimAddress {
+    city?: string;
+    town?: string;
+    village?: string;
+    suburb?: string;
+    country?: string;
+}
+
+interface NominatimResponse {
+    address?: NominatimAddress;
+}
+
 export default function StickerMapIsland({
     initialStickers,
     user,
@@ -104,7 +116,7 @@ export default function StickerMapIsland({
         } else {
             setIsLocating(true);
 
-            if (!navigator.geolocation) {
+            if (!(navigator as Partial<Navigator>).geolocation) {
                 showToast("Je browser ondersteunt geen geolocatie. We openen de handmatige kaartomgeving.", 'error');
                 setSelectedLocation(null);
                 setShowAddModal(true);
@@ -113,38 +125,39 @@ export default function StickerMapIsland({
             }
 
             navigator.geolocation.getCurrentPosition(
-                async (position) => {
-                    const { latitude, longitude } = position.coords;
-                    setSelectedLocation({ lat: latitude, lng: longitude });
+                (position) => {
+                    void (async () => {
+                        const { latitude, longitude } = position.coords;
+                        setSelectedLocation({ lat: latitude, lng: longitude });
 
-                    let city = '';
-                    let country = '';
+                        let city = '';
+                        let country = '';
 
-                    try {
-                        const response = await fetch(
-                            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=nl`,
-                            { headers: { 'User-Agent': 'SalveMundi-Website' } }
-                        );
-                        if (response.ok) {
-                            const geoData = await response.json();
-                            const addr = geoData.address || {};
-                            city = addr.city || addr.town || addr.village || addr.suburb || '';
-                            country = addr.country || '';
+                        try {
+                            const response = await fetch(
+                                `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=nl`,
+                                { headers: { 'User-Agent': 'SalveMundi-Website' } }
+                            );
+                            if (response.ok) {
+                                const geoData = (await response.json()) as NominatimResponse;
+                                const addr = geoData.address || {};
+                                city = addr.city || addr.town || addr.village || addr.suburb || '';
+                                country = addr.country || '';
+                            }
+                        } catch (_geoErr) {
                         }
-                    } catch (_geoErr) {
-                        // Ignore
-                    }
 
-                    setFormData({
-                        location_name: city,
-                        description: '',
-                        city,
-                        country,
-                        image: null
-                    });
-                    setImagePreview(null);
-                    setShowAddModal(true);
-                    setIsLocating(false);
+                        setFormData({
+                            location_name: city,
+                            description: '',
+                            city,
+                            country,
+                            image: null
+                        });
+                        setImagePreview(null);
+                        setShowAddModal(true);
+                        setIsLocating(false);
+                    })();
                 },
                 (error) => {
                     let msg = "Kon je locatie niet bepalen. We openen de handmatige kaartomgeving.";
@@ -175,7 +188,7 @@ export default function StickerMapIsland({
         setIsLocating(true);
         showToast('Foto ontvangen! Locatie bepalen...', 'success');
 
-        if (!navigator.geolocation) {
+        if (!(navigator as Partial<Navigator>).geolocation) {
             showToast("Je browser ondersteunt geen geolocatie. We openen de handmatige kaartomgeving.", 'error');
             setFormData(prev => ({ ...prev, image: file }));
             const reader = new FileReader();
@@ -189,100 +202,99 @@ export default function StickerMapIsland({
         }
 
         navigator.geolocation.getCurrentPosition(
-            async (position) => {
-                const { latitude, longitude } = position.coords;
-                
-                let city = 'Onbekende Stad';
-                let country = 'Onbekend Land';
+            (position) => {
+                void (async () => {
+                    const { latitude, longitude } = position.coords;
+                    
+                    let city = 'Onbekende Stad';
+                    let country = 'Onbekend Land';
 
-                try {
-                    const response = await fetch(
-                        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=nl`,
-                        { headers: { 'User-Agent': 'SalveMundi-Website' } }
-                    );
-                    if (response.ok) {
-                        const geoData = await response.json();
-                        const addr = geoData.address || {};
-                        city = addr.city || addr.town || addr.village || addr.suburb || city;
-                        country = addr.country || country;
-                    }
-                } catch (_geoErr) {
-                    // Silently fail, use defaults
-                }
-
-                startTransition(async () => {
                     try {
-                        showToast('Foto uploaden...', 'success');
-                        const fileData = new FormData();
-                        fileData.append('file', file);
-                        const imageId = await uploadFileAction(fileData);
-                        
-                        if (!imageId || (typeof imageId === 'object' && 'error' in imageId)) {
-                            const errMsg = (imageId && typeof imageId === 'object' && 'error' in imageId) 
-                                ? String((imageId as Record<string, unknown>).error) 
-                                : 'Foto upload mislukt.';
-                            throw new Error(errMsg);
+                        const response = await fetch(
+                            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=nl`,
+                            { headers: { 'User-Agent': 'SalveMundi-Website' } }
+                        );
+                        if (response.ok) {
+                            const geoData = (await response.json()) as NominatimResponse;
+                            const addr = geoData.address || {};
+                            city = addr.city || addr.town || addr.village || addr.suburb || city;
+                            country = addr.country || country;
                         }
-
-                        showToast('Sticker registreren...', 'success');
-                        const locationName = `${city}`;
-                        const response = await createStickerPublic({
-                            latitude,
-                            longitude,
-                            location_name: locationName,
-                            description: '',
-                            city,
-                            country,
-                            image: imageId
-                        });
-
-                        if (!response.success || !response.data) {
-                            throw new Error(response.error || 'Kon sticker niet opslaan.');
-                        }
-
-                        const userCreatedInfo = user ? {
-                            id: user.id,
-                            first_name: user.first_name,
-                            last_name: user.last_name,
-                            avatar: user.avatar
-                        } : null;
-
-                        const responseData = response.data as unknown as DirectusStickerResponse;
-                        const stickerToAppend: StickerPublic = {
-                            id: Number(responseData.id),
-                            latitude: Number(responseData.latitude),
-                            longitude: Number(responseData.longitude),
-                            location_name: responseData.location_name || locationName,
-                            description: responseData.description || '',
-                            city: responseData.city || city,
-                            country: responseData.country || country,
-                            image: responseData.image || imageId,
-                            date_created: responseData.date_created || new Date().toISOString(),
-                            user_created: userCreatedInfo
-                        };
-
-                        setStickers((prev: StickerPublic[]) => [stickerToAppend, ...prev]);
-                        showToast('Sticker succesvol geplaatst! 🎨📍', 'success');
-                    } catch (err: unknown) {
-                        const errMsg = err instanceof Error ? err.message : 'Fout bij automatisch plaatsen.';
-                        showToast(errMsg, 'error');
-                        
-                        setFormData({
-                            location_name: city !== 'Onbekende Stad' ? city : '',
-                            description: '',
-                            city: city !== 'Onbekende Stad' ? city : '',
-                            country: country !== 'Onbekend Land' ? country : '',
-                            image: file
-                        });
-                        const reader = new FileReader();
-                        reader.onloadend = () => setImagePreview(reader.result as string);
-                        reader.readAsDataURL(file);
-                        setSelectedLocation({ lat: latitude, lng: longitude });
-                        setShowAddModal(true);
-                    } finally {
-                        setIsLocating(false);
+                    } catch (_geoErr) {
                     }
-                });
+
+                    startTransition(async () => {
+                        try {
+                            showToast('Foto uploaden...', 'success');
+                            const fileData = new FormData();
+                            fileData.append('file', file);
+                            const uploadResult = await uploadFileAction(fileData);
+                            
+                            if (!uploadResult.success) {
+                                throw new Error(uploadResult.error || 'Foto upload mislukt.');
+                            }
+                            const imageId = uploadResult.data;
+
+                            showToast('Sticker registreren...', 'success');
+                            const locationName = `${city}`;
+                            const response = (await createStickerPublic({
+                                latitude,
+                                longitude,
+                                location_name: locationName,
+                                description: '',
+                                city,
+                                country,
+                                image: imageId
+                            })) as { success: boolean; data?: unknown; error?: string };
+
+                            if (!response.success || !response.data) {
+                                throw new Error(response.error || 'Kon sticker niet opslaan.');
+                            }
+
+                            const userCreatedInfo = user ? {
+                                id: user.id,
+                                first_name: user.first_name,
+                                last_name: user.last_name,
+                                avatar: user.avatar
+                            } : null;
+
+                            const responseData = response.data as unknown as DirectusStickerResponse;
+                            const stickerToAppend: StickerPublic = {
+                                id: Number(responseData.id),
+                                latitude: Number(responseData.latitude),
+                                longitude: Number(responseData.longitude),
+                                location_name: responseData.location_name || locationName,
+                                description: responseData.description || '',
+                                city: responseData.city || city,
+                                country: responseData.country || country,
+                                image: responseData.image || imageId,
+                                date_created: responseData.date_created || new Date().toISOString(),
+                                user_created: userCreatedInfo
+                            };
+
+                            setStickers((prev: StickerPublic[]) => [stickerToAppend, ...prev]);
+                            showToast('Sticker succesvol geplaatst! 🎨📍', 'success');
+                        } catch (err: unknown) {
+                            const errMsg = err instanceof Error ? err.message : 'Fout bij automatisch plaatsen.';
+                            showToast(errMsg, 'error');
+                            
+                            setFormData({
+                                location_name: city !== 'Onbekende Stad' ? city : '',
+                                description: '',
+                                city: city !== 'Onbekende Stad' ? city : '',
+                                country: country !== 'Onbekend Land' ? country : '',
+                                image: file
+                            });
+                            const reader = new FileReader();
+                            reader.onloadend = () => setImagePreview(reader.result as string);
+                            reader.readAsDataURL(file);
+                            setSelectedLocation({ lat: latitude, lng: longitude });
+                            setShowAddModal(true);
+                        } finally {
+                            setIsLocating(false);
+                        }
+                    });
+                })();
             },
             (error) => {
                 let msg = "Kon je locatie niet bepalen. We openen de handmatige kaartomgeving.";
@@ -318,10 +330,14 @@ export default function StickerMapIsland({
         }
     };
 
-    const uploadImage = async (file: File) => {
+    const uploadImage = async (file: File): Promise<string> => {
         const formData = new FormData();
         formData.append('file', file);
-        return await uploadFileAction(formData);
+        const result = await uploadFileAction(formData);
+        if (!result.success) {
+            throw new Error(result.error || 'Foto upload mislukt.');
+        }
+        return result.data;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -330,18 +346,12 @@ export default function StickerMapIsland({
 
         startTransition(async () => {
             try {
-                let imageId = null;
+                let imageId: string | null = null;
                 if (formData.image) {
                     imageId = await uploadImage(formData.image);
-                    if (!imageId || (typeof imageId === 'object' && 'error' in imageId)) {
-                        const errMsg = (imageId && typeof imageId === 'object' && 'error' in imageId) 
-                            ? String((imageId as Record<string, unknown>).error) 
-                            : 'Foto upload mislukt.';
-                        throw new Error(errMsg);
-                    }
                 }
 
-                const response = await createStickerPublic({
+                const response = (await createStickerPublic({
                     latitude: selectedLocation.lat,
                     longitude: selectedLocation.lng,
                     location_name: formData.location_name,
@@ -349,7 +359,7 @@ export default function StickerMapIsland({
                     city: formData.city,
                     country: formData.country,
                     image: imageId
-                });
+                })) as { success: boolean; data?: unknown; error?: string };
 
                 if (!response.success || !response.data) {
                     throw new Error(response.error || 'Kon sticker niet opslaan.');
@@ -387,6 +397,14 @@ export default function StickerMapIsland({
                 showToast('Fout bij toevoegen: ' + errMsg, 'error');
             }
         });
+    };
+
+    const handleSubmitSync = (e: React.FormEvent) => {
+        void handleSubmit(e);
+    };
+
+    const handleAutomatedFileChangeSync = (e: React.ChangeEvent<HTMLInputElement>) => {
+        void handleAutomatedFileChange(e);
     };
 
 
@@ -504,7 +522,7 @@ export default function StickerMapIsland({
             <AddStickerModal
                 show={showAddModal}
                 onClose={() => setShowAddModal(false)}
-                onSubmit={handleSubmit}
+                onSubmit={handleSubmitSync}
                 isPending={isPending}
                 formData={formData}
                 setFormData={setFormData}
@@ -519,7 +537,7 @@ export default function StickerMapIsland({
                 ref={cameraInputRef}
                 accept="image/*"
                 capture="environment"
-                onChange={handleAutomatedFileChange}
+                onChange={handleAutomatedFileChangeSync}
                 className="hidden"
             />
 

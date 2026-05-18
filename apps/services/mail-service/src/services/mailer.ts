@@ -1,4 +1,5 @@
-import { safeConsoleError } from '../utils/logger.js';
+/* eslint-disable security/detect-non-literal-fs-filename */
+import { safeConsoleError, safeConsoleLog } from '../utils/logger.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -30,7 +31,7 @@ export class MailerService {
     /**
      * Renders a Handlebars template with the provided data.
      */
-    private static async renderTemplate(templateId: string, data: Record<string, unknown>): Promise<string> {
+    private static renderTemplate(templateId: string, data: Record<string, unknown>): string {
         const templatePath = path.join(__dirname, '../templates', `${templateId}.hbs`);
 
         if (!fs.existsSync(templatePath)) {
@@ -47,10 +48,10 @@ export class MailerService {
      */
     static async send(redis: Redis, to: string, templateId: string, data: Record<string, unknown>): Promise<boolean> {
         try {
-            console.log(`[MailerService] Preparing ${templateId} for ${to}...`);
+            safeConsoleLog(`[MailerService] Preparing ${templateId} for ${to}...`);
 
             // 1. Render HTML
-            const htmlContent = await this.renderTemplate(templateId, data);
+            const htmlContent = this.renderTemplate(templateId, data);
 
             // 2. Authenticate with Azure (using cached TokenService)
             const accessToken = await TokenService.getAccessToken(redis);
@@ -73,15 +74,15 @@ export class MailerService {
             const senderEmail = process.env.AZURE_MAIL_SENDER || 'info@salvemundi.nl';
 
             // Map template ID to a user-friendly subject
-            const subjectMap: Record<string, string> = {
-                'payment_confirmed': 'Betaling Bevestigd',
-                'event-ticket': 'Je Ticket is Klaar!',
-                'membership_renewal': 'Lidmaatschap Verlengd',
-                'pub_crawl_ticket': 'Je Tickets voor de Kroegentocht',
-                'welcome_payment': 'Welkom bij Salve Mundi',
-                'event_signup': 'Inschrijving Bevestigd'
-            };
-            const userFriendlySubject = subjectMap[templateId] || templateId.replace(/[-_]/g, ' ');
+            const subjectMap = new Map<string, string>([
+                ['payment_confirmed', 'Betaling Bevestigd'],
+                ['event-ticket', 'Je Ticket is Klaar!'],
+                ['membership_renewal', 'Lidmaatschap Verlengd'],
+                ['pub_crawl_ticket', 'Je Tickets voor de Kroegentocht'],
+                ['welcome_payment', 'Welkom bij Salve Mundi'],
+                ['event_signup', 'Inschrijving Bevestigd']
+            ]);
+            const userFriendlySubject = subjectMap.get(templateId) || templateId.replace(/[-_]/g, ' ');
 
             const response = await fetch(`https://graph.microsoft.com/v1.0/users/${senderEmail}/sendMail`, {
                 method: 'POST',
@@ -109,11 +110,11 @@ export class MailerService {
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
+                const errorData = await response.json() as unknown;
                 throw new Error(`Graph API Error: ${JSON.stringify(errorData)}`);
             }
 
-            console.log(`[MailerService] Successfully dispatched to ${to}`);
+            safeConsoleLog(`[MailerService] Successfully dispatched to ${to}`);
             return true;
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : String(error);

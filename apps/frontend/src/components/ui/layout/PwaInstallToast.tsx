@@ -5,9 +5,10 @@ import { useEffect, useState, useCallback } from 'react';
 import ToastWrapper from './pwa/ToastWrapper';
 import NativeToast from './pwa/NativeToast';
 import IosToast from './pwa/IosToast';
+import { safeConsoleError } from '@/server/utils/logger';
 
 const DISMISSED_KEY = 'pwa_install_dismissed_until';
-const DISMISS_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 1 week
+const DISMISS_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
 
 interface BeforeInstallPromptEvent extends Event {
     prompt(): Promise<void>;
@@ -18,14 +19,12 @@ type Mode = 'native' | 'ios';
 
 function detectIos(): boolean {
     const ua = navigator.userAgent;
-    // iPadOS 13+ rapporteert als Mac, maar heeft touchPoints
-    const isIpadOs = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+    const isIpadOs = /Macintosh/i.test(ua) && navigator.maxTouchPoints > 1;
     return /iphone|ipad|ipod/i.test(ua) || isIpadOs;
 }
 
 function detectIosSafari(): boolean {
     const ua = navigator.userAgent;
-    // Safari op iOS heeft geen 'Chrome' of 'CriOS' of 'FxiOS' in de UA
     const isIos = detectIos();
     const isSafari = /safari/i.test(ua) && !/chrome|crios|fxios|EdgiOS/i.test(ua);
     return isIos && isSafari;
@@ -35,7 +34,8 @@ function isDismissed(): boolean {
     try {
         const val = localStorage.getItem(DISMISSED_KEY);
         return !!val && Date.now() < parseInt(val, 10);
-    } catch (_error) {
+    } catch (error) {
+        safeConsoleError('[PwaInstallToast][isDismissed] Fout bij het uitlezen van localStorage', error);
         return false;
     }
 }
@@ -46,7 +46,6 @@ function isStandalone(): boolean {
     return false;
 }
 
-// ─── Hoofd export ─────────────────────────────────────────────────────────────
 export function PwaInstallToast() {
     const [show, setShow] = useState(false);
     const [mode, setMode] = useState<Mode>('native');
@@ -57,22 +56,16 @@ export function PwaInstallToast() {
         if (isStandalone()) return;
         if (isDismissed()) return;
 
-        // 1. Check specifiek voor iOS Safari
         if (detectIosSafari()) {
             setMode('ios');
             setTimeout(() => setShow(true), 2500);
             return;
         }
 
-        // 2. Check voor andere iOS browsers (Chrome/Firefox op iOS)
         if (detectIos()) {
-            // Doe niets. iOS Chrome/Firefox ondersteunen PWA installatie niet op 
-            // dezelfde manier en hebben geen "Deel" knop onderaan.
-            // Beter geen melding tonen dan een incorrecte melding.
             return;
         }
 
-        // 3. Chrome/Edge/Android: wacht op beforeinstallprompt
         const handler = (e: Event) => {
             e.preventDefault();
             setDeferredPrompt(e as BeforeInstallPromptEvent);
@@ -84,24 +77,32 @@ export function PwaInstallToast() {
         return () => window.removeEventListener('beforeinstallprompt', handler);
     }, []);
 
-    const handleInstall = useCallback(async () => {
-        if (!deferredPrompt) return;
-        setInstalling(true);
-        await deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-            setShow(false);
-        } else {
-            setInstalling(false);
-        }
-        setDeferredPrompt(null);
+    const handleInstall = useCallback(() => {
+        const performInstall = async () => {
+            if (!deferredPrompt) return;
+            setInstalling(true);
+            try {
+                await deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    setShow(false);
+                } else {
+                    setInstalling(false);
+                }
+            } finally {
+                setDeferredPrompt(null);
+            }
+        };
+        void performInstall();
     }, [deferredPrompt]);
 
     const handleDismiss = useCallback(() => {
         setShow(false);
         try {
             localStorage.setItem(DISMISSED_KEY, String(Date.now() + DISMISS_DURATION_MS));
-        } catch (_error) { /* noop */ }
+        } catch (error) {
+            safeConsoleError('[PwaInstallToast][handleDismiss] Kon dismissed state niet opslaan in localStorage', error);
+        }
     }, []);
 
     if (!show) return null;

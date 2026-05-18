@@ -1,4 +1,4 @@
-import { safeConsoleError } from '../utils/logger.js';
+import { safeConsoleError, safeConsoleLog } from '../utils/logger.js';
 import { ClientSecretCredential } from '@azure/identity';
 import { Redis } from 'ioredis';
 
@@ -23,7 +23,7 @@ export class TokenService {
             safeConsoleError('[TokenService] Redis cache read error:', error);
         }
 
-        console.log('[TokenService] Cache miss or expired. Fetching fresh token from Azure...');
+        safeConsoleLog('[TokenService] Cache miss or expired. Fetching fresh token from Azure...');
 
         // 2. Fetch fresh token from Azure AD
         if (!this.credential) {
@@ -42,7 +42,7 @@ export class TokenService {
         // 3. Save to Redis with 50-minute TTL (3000 seconds) for safe margin
         try {
             await redis.set(cacheKey, tokenResponse.token, 'EX', 3000);
-            console.log('[TokenService] New token cached in Redis for 50 minutes (3000s buffer)');
+            safeConsoleLog('[TokenService] New token cached in Redis for 50 minutes (3000s buffer)');
         } catch (error) {
             safeConsoleError('[TokenService] Redis cache write error:', error);
         }

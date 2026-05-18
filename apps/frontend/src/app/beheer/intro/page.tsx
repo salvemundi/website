@@ -5,6 +5,7 @@ import IntroManagementIsland from '@/components/islands/admin/IntroManagementIsl
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import { getPermissions } from '@/shared/lib/permissions';
 import { fetchUserCommitteesDb } from '@/server/internal/user-db.utils';
+import { safeConsoleError } from '@/server/utils/logger';
 import {
     getIntroSignups,
     getIntroParentSignups,
@@ -12,7 +13,6 @@ import {
     getIntroPlanning
 } from '@/server/actions/admin/admin-intro.actions';
 import { getIntroSettings } from '@/server/actions/public/intro.actions';
-
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import IntroVisibilityIsland from '@/components/islands/admin/intro/IntroVisibilityIsland';
 
@@ -20,14 +20,19 @@ export const metadata: Metadata = {
     title: 'Intro Beheer | SV Salve Mundi'
 };
 
-
 export default async function BeheerIntroPage() {
     const session = await getEnrichedSession();
 
     if (!session?.user) redirect('/?needLogin=true');
 
-    const userCommittees = await fetchUserCommitteesDb(session.user.id).catch(() => []);
-    const permissions = getPermissions(userCommittees || []);
+    let userCommittees: Awaited<ReturnType<typeof fetchUserCommitteesDb>> = [];
+    try {
+        userCommittees = await fetchUserCommitteesDb(session.user.id);
+    } catch (error) {
+        safeConsoleError('[page][BeheerIntroPage]', error);
+    }
+
+    const permissions = getPermissions(userCommittees);
 
     if (!permissions.canAccessIntro) {
         return (
@@ -38,7 +43,6 @@ export default async function BeheerIntroPage() {
         );
     }
 
-    // NUCLEAR SSR: Fetch all data before flushing any part of the page content
     const [signups, parents, blogs, planning, settings] = await Promise.all([
         getIntroSignups(),
         getIntroParentSignups(),
@@ -47,7 +51,7 @@ export default async function BeheerIntroPage() {
         getIntroSettings(),
     ]);
 
-    const introVisible = settings?.show ?? false;
+    const introVisible = settings.show;
 
     return (
         <AdminPageShell

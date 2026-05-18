@@ -23,11 +23,11 @@ interface ProfielGamingProps {
 export default function ProfielGaming({
     user = {},
     isEditingMinecraft = false,
-    setIsEditingMinecraft = () => {},
-    registerMinecraft = (() => ({ name: 'minecraft_username', onBlur: async () => {}, onChange: async () => {}, ref: () => {} })) as unknown as UseFormRegister<{ minecraft_username?: string | null }>,
+    setIsEditingMinecraft = () => { },
+    registerMinecraft = (() => ({ name: 'minecraft_username', onBlur: async () => { }, onChange: async () => { }, ref: () => { } })) as unknown as UseFormRegister<{ minecraft_username?: string | null }>,
     handleSubmitMinecraft = (() => () => { }) as unknown as UseFormHandleSubmit<{ minecraft_username?: string | null }>,
-    onSaveMinecraft = () => {},
-    resetMinecraft: _resetMinecraft = () => {},
+    onSaveMinecraft = () => { },
+    resetMinecraft: _resetMinecraft = () => { },
     minecraftErrors = {},
     isPending = false
 }: ProfielGamingProps) {
@@ -47,19 +47,18 @@ export default function ProfielGaming({
                 <div className="flex items-center gap-3 min-w-0">
                     <Gamepad2 className="h-5 w-5 text-[var(--color-purple-300)]" />
                     {isEditingMinecraft ? (
-                        <form onSubmit={handleSubmitMinecraft(onSaveMinecraft)} className="flex flex-col w-full gap-2" autoComplete="off">
-                            <div className="flex w-full items-center gap-2">
-                                <input 
-                                    {...registerMinecraft("minecraft_username")}
-                                    type="text" 
-                                    className={`flex-1 bg-white dark:bg-black/40 border ${minecraftErrors.minecraft_username ? 'border-red-500 ring-1 ring-red-500' : 'border-slate-300 dark:border-white/20'} rounded-lg px-3 py-1.5 text-sm font-medium focus:ring-2 focus:ring-[var(--color-purple-500)] focus:border-transparent outline-none`}
-                                    placeholder="Username"
-                                    autoComplete="off"
-                                />
-                                <button type="submit" disabled={isPending} className="p-1.5 bg-[var(--color-purple-500)] text-white rounded-lg hover:bg-[var(--color-purple-600)] transition-colors">
-                                    {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                                </button>
-                            </div>
+                        <form onSubmit={(e) => { void handleSubmitMinecraft(onSaveMinecraft)(e); }} className="flex flex-col w-full gap-2" autoComplete="off">                            <div className="flex w-full items-center gap-2">
+                            <input
+                                {...registerMinecraft("minecraft_username")}
+                                type="text"
+                                className={`flex-1 bg-white dark:bg-black/40 border ${minecraftErrors.minecraft_username ? 'border-red-500 ring-1 ring-red-500' : 'border-slate-300 dark:border-white/20'} rounded-lg px-3 py-1.5 text-sm font-medium focus:ring-2 focus:ring-[var(--color-purple-500)] focus:border-transparent outline-none`}
+                                placeholder="Username"
+                                autoComplete="off"
+                            />
+                            <button type="submit" disabled={isPending} className="p-1.5 bg-[var(--color-purple-500)] text-white rounded-lg hover:bg-[var(--color-purple-600)] transition-colors">
+                                {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                            </button>
+                        </div>
                         </form>
                     ) : (
                         <p className="break-words font-bold text-[var(--color-purple-700)] dark:text-white text-base min-w-0 flex-1">

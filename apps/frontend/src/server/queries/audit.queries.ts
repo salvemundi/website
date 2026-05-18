@@ -31,7 +31,7 @@ interface SystemLogRow {
     id: string;
     type: string;
     status: string;
-    payload: string | Record<string, unknown>;
+    payload: string | { [key: string]: unknown };
     created_at: string | Date;
     acknowledged_at: string | Date | null;
 }
@@ -77,8 +77,8 @@ export async function getPendingSignupsInternal(): Promise<PendingSignup[]> {
 export async function getSystemLogsInternal(limit: number = 50, source: 'admin' | 'system' = 'admin'): Promise<{ logs: SystemLog[]; totalCount: number }> {
     try {
         const filter = source === 'admin'
-            ? "WHERE type NOT LIKE 'system_%'"
-            : "WHERE type LIKE 'system_%'";
+            ? "WHERE type LIKE 'admin_%'"
+            : "WHERE type NOT LIKE 'admin_%'";
 
         const [logsResult, countResult] = await Promise.all([
             query(`SELECT * FROM system_logs ${filter} ORDER BY created_at DESC LIMIT $1`, [limit]),
@@ -94,7 +94,7 @@ export async function getSystemLogsInternal(limit: number = 50, source: 'admin' 
                 } catch (_parseError) {
                     parsedPayload = { error: 'Invalid JSON payload string' };
                 }
-            } else if (r.payload && typeof r.payload === 'object') {
+            } else {
                 parsedPayload = r.payload as z.infer<typeof SystemLogSchema>['payload'];
             }
 

@@ -4,7 +4,7 @@
 export function buildUpdateQuery(
     table: string,
     id: number | string,
-    data: Record<string, unknown>, // Gewijzigd: unknown is veiliger dan any
+    data: { [key: string]: unknown }, // Gewijzigd: unknown is veiliger dan any
     allowedFields?: string[]
 ) {
     const fields: string[] = [];

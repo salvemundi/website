@@ -76,7 +76,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
             if (!isAuthenticated) {
                 const returnTo = window.location.pathname + window.location.search;
                 localStorage.setItem('auth_return_to', returnTo);
-                loginWithMicrosoft();
+                void loginWithMicrosoft();
             } else {
                 showToast('Deze activiteit is alleen voor leden.', 'error');
             }
@@ -86,7 +86,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
         if (requiresLogin && !isAuthenticated) {
             const returnTo = window.location.pathname + window.location.search;
             localStorage.setItem('auth_return_to', returnTo);
-            loginWithMicrosoft();
+            void loginWithMicrosoft();
             return;
         }
 

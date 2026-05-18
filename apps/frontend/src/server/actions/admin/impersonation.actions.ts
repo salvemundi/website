@@ -26,7 +26,7 @@ const TEST_TOKEN_COOKIE = 'directus_test_token';
  */
 export async function setImpersonateToken(token: string) {
     const { isAuthorized, user } = await checkAdminAccess();
-    if (!isAuthorized || !isSuperAdmin(user?.committees)) {
+    if (!isAuthorized || !user || !isSuperAdmin(user.committees)) {
         throw new Error("Geen toegang: Alleen voor ICT en Bestuur.");
     }
 
@@ -41,7 +41,7 @@ export async function setImpersonateToken(token: string) {
 
         const targetUser = await testClient.request(readMe({
             fields: ['id', 'first_name', 'last_name', 'email', 'avatar']
-        } as never)) as unknown as DirectusUser;
+        } as never)) as unknown as DirectusUser | null;
 
         if (!targetUser) {
             return { success: false, error: "Token is ongeldig." };
@@ -80,9 +80,9 @@ export async function setImpersonateToken(token: string) {
 
         revalidatePath('/beheer/impersonate');
         revalidatePath('/', 'layout');
-        const adminName = `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || 'Onbekend';
+        const adminName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Onbekend';
 
-        await logAdminAction('impersonation_started', 'INFO', {
+        await logAdminAction('admin_impersonation_started', 'INFO', {
             target_id: targetUser.id,
             target_name: fullName || targetUser.email,
             started_by: adminName
@@ -110,7 +110,7 @@ export async function clearImpersonateToken() {
     }
 
     const { impersonation, user } = await checkAdminAccess();
-    if (!impersonation || !isSuperAdmin(user?.committees)) {
+    if (!impersonation || !isSuperAdmin(user.committees)) {
         return { success: false, error: "Je bent niet in test modus of hebt onvoldoende rechten." };
     }
 
@@ -128,8 +128,8 @@ export async function clearImpersonateToken() {
         await redis.del(`impersonation:${testToken}`);
     }
 
-    await logAdminAction('impersonation_ended', 'INFO', {
-        ended_by: `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || 'Onbekend'
+    await logAdminAction('admin_impersonation_ended', 'INFO', {
+        ended_by: `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Onbekend'
     });
 
     revalidatePath('/beheer/impersonate');

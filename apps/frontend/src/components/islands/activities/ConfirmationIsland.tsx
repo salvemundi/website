@@ -8,6 +8,7 @@ import StatusPaidMembership from './confirmation/StatusPaidMembership';
 import StatusPaidActivity from './confirmation/StatusPaidActivity';
 import StatusFailed from './confirmation/StatusFailed';
 import StatusPending from './confirmation/StatusPending';
+import { safeConsoleError } from '@/server/utils/logger';
 
 interface ConfirmationIslandProps {
     initialId?: string;
@@ -74,12 +75,13 @@ export default function ConfirmationIsland({
                     setStatus('timeout');
                     setSignupData({ errorType: 'timeout' });
                 }
-            } catch {
+            } catch (error) {
+                safeConsoleError('[ConfirmationIsland][checkStatus]', error);
                 setStatus('failed');
             }
         };
 
-        checkStatus();
+        void checkStatus();
     }, [initialId, initialTransactionId, retryCount, status]);
 
     useEffect(() => {
@@ -94,24 +96,26 @@ export default function ConfirmationIsland({
         }
     }, [status, signupData, isMembership, isTrip]);
 
-    const downloadTicket = async (elementId: string, ticketName: string) => {
+    const downloadTicket = (elementId: string, ticketName: string) => {
         const element = document.getElementById(elementId);
         if (!element) return;
 
-        try {
-            const dataUrl = await toPng(element, {
-                quality: 0.95,
-                backgroundColor: '#121212',
-                style: { borderRadius: '0' }
-            });
+        void (async () => {
+            try {
+                const dataUrl = await toPng(element, {
+                    quality: 0.95,
+                    backgroundColor: '#121212',
+                    style: { borderRadius: '0' }
+                });
 
-            const link = document.createElement('a');
-            link.download = `Ticket-${ticketName.replace(/\s+/g, '-')}-${Date.now()}.png`;
-            link.href = dataUrl;
-            link.click();
-        } catch {
-            // Silent catch to comply with project policies
-        }
+                const link = document.createElement('a');
+                link.download = `Ticket-${ticketName.replace(/\s+/g, '-')}-${Date.now()}.png`;
+                link.href = dataUrl;
+                link.click();
+            } catch (error) {
+                safeConsoleError('[ConfirmationIsland][downloadTicket]', error);
+            }
+        })();
     };
 
     const renderContent = () => {

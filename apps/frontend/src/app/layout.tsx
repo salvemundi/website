@@ -3,6 +3,7 @@ import { Poppins } from 'next/font/google';
 import './globals.css';
 import NavigationHeader from '@/components/islands/layout/NavigationHeader';
 import dynamic from 'next/dynamic';
+import type { ReactNode } from 'react';
 
 const FooterIsland = dynamic(() => import('@/components/islands/layout/FooterIsland'));
 
@@ -71,7 +72,7 @@ const poppins = Poppins({
 });
 
 export default async function RootLayout({
-    children }: Readonly<{ children: React.ReactNode }>) {
+    children }: Readonly<{ children: ReactNode }>) {
     const h = await headers();
     const nonce = h.get('x-nonce') || '';
     const session = await getEnrichedSession();
@@ -82,14 +83,15 @@ export default async function RootLayout({
     return (
         <html lang="nl" className="dark" suppressHydrationWarning>
             <head>
-                <script
-                    id="theme-strategy"
-                    nonce={nonce}
-                    suppressHydrationWarning
-                    dangerouslySetInnerHTML={{
-                        __html: `(function(){try{if(localStorage.theme==='light'){document.documentElement.classList.remove('dark')}}catch(error){}})()`
-                    }}
-                />
+                <script id="theme-strategy" nonce={nonce} suppressHydrationWarning>{`
+                    (function(){
+                        try {
+                            if(localStorage.theme === 'light'){
+                                document.documentElement.classList.remove('dark');
+                            }
+                        } catch(e) {}
+                    })()
+                `}</script>
                 <link rel="preload" as="image" href="/img/newlogo.svg" />
             </head>
             <body className={`${poppins.variable} font-sans antialiased flex flex-col min-h-screen`}>
@@ -104,11 +106,6 @@ export default async function RootLayout({
     );
 }
 
-
-
-
-
-
 async function HeaderWrapper({ initialSession, isAuthorized }: { initialSession: ExtendedSession | null, isAuthorized: boolean }) {
     await connection();
     try {
@@ -121,7 +118,9 @@ async function HeaderWrapper({ initialSession, isAuthorized }: { initialSession:
                 isAdmin={isAuthorized}
             />
         );
-    } catch (_error) {
+    } catch (error) {
+        // 🚀 FIX: Context prefixing gecorrigeerd naar exact [bestandsnaam][functienaam] conform PROJECT_STATUS.md
+        safeConsoleError('[layout][HeaderWrapper]', error);
         return (
             <NavigationHeader
                 disabledRoutes={[]}
@@ -150,7 +149,7 @@ async function FooterWrapper({ initialSession }: { initialSession: ExtendedSessi
             />
         );
     } catch (error) {
-        safeConsoleError('[RootLayout] FooterWrapper fail:', error);
+        safeConsoleError('[layout][FooterWrapper]', error);
         return (
             <FooterIsland
                 documents={[]}

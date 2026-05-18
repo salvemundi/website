@@ -11,7 +11,7 @@ declare global {
 
 const poolConfig = {
     user: process.env.DB_USER,
-    host: process.env.DB_HOST!,
+    host: process.env.DB_HOST ?? 'v7-core-db',
     database: process.env.DB_NAME,
     password: process.env.DB_PASSWORD,
     port: Number(process.env.DB_PORT) || 5432,
@@ -37,7 +37,7 @@ export async function query<R extends QueryResultRow = QueryResultRow>(text: str
             return res;
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : '';
-            const errorCode = (error as { code?: string })?.code;
+            const errorCode = (error as { code?: string }).code;
             const isConnectionError = errorMessage.includes('Connection terminated unexpectedly') || errorCode === 'ECONNRESET';
             if (isConnectionError && i < retries) {
                 logWarn(`[DB-Query] Connection error, retrying... (${i + 1}/${retries})`);

@@ -11,6 +11,7 @@ const fastify = Fastify({
 });
 
 fastify.get('/health', async () => {
+    await Promise.resolve();
     return { status: 'ok', service: 'mail-service' };
 });
 
@@ -23,6 +24,7 @@ import rateLimit from '@fastify/rate-limit';
 fastify.register(redisPlugin);
 
 fastify.register(async (instance) => {
+    await Promise.resolve();
     instance.register(rateLimit, {
         max: 100,
         timeWindow: '1 minute',
@@ -43,6 +45,11 @@ fastify.register(async (instance) => {
     instance.register(mailRoutes, { prefix: '/api/mail' });
 });
 
+fastify.addHook('onClose', async () => {
+    const { db } = await import('./services/db.js');
+    await db.destroy();
+});
+
 const start = async () => {
     try {
         await fastify.listen({ port: 3003, host: '0.0.0.0' });
@@ -50,15 +57,15 @@ const start = async () => {
 
         // Start the Mail Worker (background loop)
         const { MailWorkerService } = await import('./services/mail-worker.js');
-        MailWorkerService.startWorker(fastify.redis);
+        void MailWorkerService.startWorker(fastify.redis);
 
         // Start the Event Listener
         const { EventListenerService } = await import('./services/event-listener.js');
-        EventListenerService.start(fastify.redis);
+        void EventListenerService.start(fastify.redis);
     } catch (error) {
         safeConsoleError('Mail Service crashed:', error);
         process.exit(1);
     }
 };
 
-start();
+void start();

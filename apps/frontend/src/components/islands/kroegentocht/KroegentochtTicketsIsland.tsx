@@ -121,7 +121,7 @@ export default function KroegentochtTicketsIsland({ initialTickets = [], userEma
                             </div>
 
                             <button
-                                onClick={() => downloadTicketAsImage(ticket, i)}
+                                onClick={() => { void downloadTicketAsImage(ticket, i); }}
                                 className="mt-6 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-black text-[var(--color-purple-theme)] hover:bg-slate-50 dark:hover:bg-white/10 transition-all shadow-sm active:scale-[0.98]"
                             >
                                 <Download className="w-4 h-4" />

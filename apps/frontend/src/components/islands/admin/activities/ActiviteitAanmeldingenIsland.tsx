@@ -8,8 +8,6 @@ import ManualSignupModal from './ManualSignupModal';
 import { useRouter } from 'next/navigation';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
-
-// Refactored Modules
 import { getSignupName, getSignupEmail, getSignupPhone } from '@/lib/activities/activity-signup.utils';
 import { exportSignupsToCSV } from '@/lib/activities/activity-export';
 import ActivitySignupTable from '@/components/admin/activities/ActivitySignupTable';
@@ -41,17 +39,13 @@ export interface AdminEvent {
     max_sign_ups?: number | null;
 }
 
-/**
- * ActiviteitAanmeldingenIsland: Beheert de deelnemerslijst van een activiteit.
- * Onder de 300 regels door extractie van tabel-UI, export-logica en utilities.
- */
-export default function ActiviteitAanmeldingenIsland({ 
-    event, 
-    initialSignups = [], 
+export default function ActiviteitAanmeldingenIsland({
+    event,
+    initialSignups = [],
     canAccessEdit = false
-}: { 
+}: {
     event: AdminEvent;
-    initialSignups: Signup[]; 
+    initialSignups: Signup[];
     canAccessEdit?: boolean;
 }) {
     const router = useRouter();
@@ -61,16 +55,14 @@ export default function ActiviteitAanmeldingenIsland({
     const [isManualModalOpen, setIsManualModalOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState<number | null>(null);
 
-    // 1. Optimistic State
     const [optimisticSignups, setOptimisticSignups] = useOptimistic(
-        initialSignups || [],
+        initialSignups,
         (state: Signup[], { id, checkedIn }: { id: number; checkedIn: boolean }) =>
             state.map(s => s.id === id ? { ...s, checked_in: checkedIn } : s)
     );
 
-    // 2. Filtering & Deduplication
     const filteredSignups = useMemo(() => {
-        const map = new Map();
+        const map = new Map<string, Signup>();
         for (const signup of optimisticSignups) {
             const emailKey = getSignupEmail(signup).toLowerCase();
             const idKey = signup.directus_relations?.id || emailKey;
@@ -80,13 +72,13 @@ export default function ActiviteitAanmeldingenIsland({
                 map.set(key, signup);
             } else {
                 const existing = map.get(key);
-                if (signup.payment_status === 'paid' && existing.payment_status !== 'paid') {
+                if (existing && signup.payment_status === 'paid' && existing.payment_status !== 'paid') {
                     map.set(key, signup);
                 }
             }
         }
-        
-        const deduplicated = Array.from(map.values()) as Signup[];
+
+        const deduplicated = Array.from(map.values());
         const sorted = deduplicated.sort((a, b) => {
             if (a.is_member && !b.is_member) return -1;
             if (!a.is_member && b.is_member) return 1;
@@ -103,7 +95,6 @@ export default function ActiviteitAanmeldingenIsland({
         });
     }, [optimisticSignups, searchQuery]);
 
-    // 4. Action Handlers
     async function handleToggleCheckIn(signupId: number, currentCheckedIn: boolean) {
         const newValue = !currentCheckedIn;
         startTransition(async () => {
@@ -133,7 +124,6 @@ export default function ActiviteitAanmeldingenIsland({
         }
         setIsDeleting(null);
     }
-
 
     return (
         <div className="w-full">
@@ -166,7 +156,6 @@ export default function ActiviteitAanmeldingenIsland({
                         )}
                     </div>
 
-                    {/* Search Bar */}
                     <div className="relative group w-full sm:w-[320px] order-1 sm:order-2">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--beheer-text-muted)] opacity-40 group-focus-within:text-[var(--beheer-accent)] group-focus-within:opacity-100 transition-all" />
                         <input
@@ -179,9 +168,6 @@ export default function ActiviteitAanmeldingenIsland({
                     </div>
                 </div>
 
-
-
-
                 <ManualSignupModal
                     isOpen={isManualModalOpen}
                     onClose={() => setIsManualModalOpen(false)}
@@ -189,7 +175,6 @@ export default function ActiviteitAanmeldingenIsland({
                     eventName={event.name}
                 />
 
-                {/* Table Section */}
                 <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm ring-1 ring-[var(--beheer-border)] overflow-hidden">
                     {filteredSignups.length === 0 ? (
                         <div className="p-20 text-center">
@@ -202,11 +187,11 @@ export default function ActiviteitAanmeldingenIsland({
                             </p>
                         </div>
                     ) : (
-                        <ActivitySignupTable 
+                        <ActivitySignupTable
                             signups={filteredSignups}
                             canAccessEdit={canAccessEdit}
-                            onToggleCheckIn={handleToggleCheckIn}
-                            onDelete={handleDelete}
+                            onToggleCheckIn={(id, checkedIn) => { void handleToggleCheckIn(id, checkedIn); }}
+                            onDelete={(id, email) => { void handleDelete(id, email); }}
                             isDeletingId={isDeleting}
                         />
                     )}

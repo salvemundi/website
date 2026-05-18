@@ -8,16 +8,13 @@ interface SafeHavenCardProps {
     safeHaven?: SafeHaven;
 }
 
-/**
- * SafeHavenCard: Zero-Skeleton SSR standard.
- */
 export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
-    const imageUrl = safeHaven?.afbeelding_id 
-        ? getImageUrl(safeHaven.afbeelding_id, { width: 200, height: 200, fit: 'cover' }) 
+    const imageUrl = safeHaven?.afbeelding_id
+        ? getImageUrl(safeHaven.afbeelding_id, { width: 200, height: 200, fit: 'cover' })
         : '/img/newlogo.png';
 
     return (
-        <div 
+        <div
             className="flex flex-col squircle-lg bg-[var(--bg-main)]/30 border border-[var(--border-color)] p-5 sm:p-6 transition-all duration-300 hover:border-[var(--color-purple-300)] dark:hover:border-white/20 shadow-sm hover:shadow-md h-full"
         >
             <div className="flex items-center gap-4">
@@ -51,11 +48,11 @@ export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
             <div className="mt-5 space-y-2">
                 {safeHaven?.email || safeHaven?.telefoon ? (
                     <>
-                        <ObfuscatedEmail 
-                            email={safeHaven?.email || ''} 
+                        <ObfuscatedEmail
+                            email={safeHaven.email || ''}
                             className="flex items-center gap-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] p-3 text-sm font-medium text-theme hover:border-[var(--color-purple-300)] transition-colors w-full shadow-sm"
                         />
-                        {safeHaven?.telefoon && (
+                        {safeHaven.telefoon && (
                             <div className="flex items-center gap-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] p-3 text-sm font-medium text-theme shadow-sm">
                                 <Phone className="h-4 w-4 text-[var(--color-purple-400)]" />
                                 <span>{safeHaven.telefoon}</span>

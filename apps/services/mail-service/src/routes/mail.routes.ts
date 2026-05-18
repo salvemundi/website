@@ -3,13 +3,14 @@ import { MailRequestSchema } from '@salvemundi/validations';
 import { timingSafeCompare } from '@salvemundi/validations/security';
 
 export default async function mailRoutes(fastify: FastifyInstance) {
+    await Promise.resolve();
     /**
      * Security hook: Valideert het interne service token voor alle routes in deze scope.
      */
     fastify.addHook('preHandler', async (request, reply) => {
         const token = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
-        const rawAuthHeader = request.headers.authorization;
-        const authHeader = Array.isArray(rawAuthHeader) ? rawAuthHeader[0] : rawAuthHeader;
+        const rawAuthHeader = (request.headers as Record<string, unknown>).authorization;
+        const authHeader = typeof rawAuthHeader === 'string' ? rawAuthHeader : undefined;
 
         if (!token) {
             fastify.log.error('[AUTH] INTERNAL_SERVICE_TOKEN is not configured in environment variables');
@@ -40,11 +41,12 @@ export default async function mailRoutes(fastify: FastifyInstance) {
 
         try {
             const { MailWorkerService } = await import('../services/mail-worker.js');
-            await MailWorkerService.queueMail(fastify.redis, to, templateId, data);
+            await MailWorkerService.queueMail(fastify.redis, to, templateId, (data || {}) as Record<string, unknown>);
 
             return { success: true, message: 'Email queued for delivery' };
-        } catch (error: any) {
-            fastify.log.error(`[MAIL] Failed to queue email to ${to}:`, error);
+        } catch (error: unknown) {
+            const err = error instanceof Error ? error : new Error(String(error));
+            fastify.log.error(err, `[MAIL] Failed to queue email to ${to}`);
             return reply.status(500).send({ error: 'Failed to queue email' });
         }
     });

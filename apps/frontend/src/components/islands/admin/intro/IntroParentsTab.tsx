@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState, Fragment } from 'react';
+import type { MouseEvent, ChangeEvent } from 'react';
 import {
     Search,
     Download,
@@ -17,8 +18,6 @@ import { type DbIntroParentSignup as IntroParentRow } from '@salvemundi/validati
 import { formatDate } from '@/shared/lib/utils/date';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { formatPhoneNumber } from '@/lib/utils/phone-utils';
-
-
 
 interface Props {
     parents: IntroParentRow[];
@@ -46,7 +45,7 @@ export default function IntroParentsTab({ parents, onDelete, onUpdate, onExport,
         setEditingId(null);
     };
 
-    const startEdit = (e: React.MouseEvent, p: IntroParentRow) => {
+    const startEdit = (e: MouseEvent, p: IntroParentRow) => {
         e.stopPropagation();
         setEditingId(p.id);
         setEditData({
@@ -60,8 +59,6 @@ export default function IntroParentsTab({ parents, onDelete, onUpdate, onExport,
         await onUpdate(id, editData);
         setEditingId(null);
     };
-
-
 
     return (
         <div>
@@ -101,7 +98,7 @@ export default function IntroParentsTab({ parents, onDelete, onUpdate, onExport,
                             {filtered.map(p => {
                                 const isExpanded = expandedRows.includes(p.id);
                                 return (
-                                    <React.Fragment key={p.id}>
+                                    <Fragment key={p.id}>
                                         <tr
                                             onClick={() => toggleExpand(p.id)}
                                             className="hover:bg-[var(--beheer-accent)]/[0.02] cursor-pointer transition-colors group"
@@ -136,7 +133,7 @@ export default function IntroParentsTab({ parents, onDelete, onUpdate, onExport,
                                                     />
                                                     <ActionButton
                                                         icon={Trash2}
-                                                        onClick={(e) => { e.stopPropagation(); onDelete(p.id); }}
+                                                        onClick={(e) => { e.stopPropagation(); void onDelete(p.id); }}
                                                         variant="danger"
                                                         disabled={deletingId === p.id}
                                                         title="Verwijderen"
@@ -157,7 +154,7 @@ export default function IntroParentsTab({ parents, onDelete, onUpdate, onExport,
                                                                     <div className="flex items-center justify-between">
                                                                         <p className="text-xs font-semibold text-[var(--beheer-accent)]">Ouder Bewerken</p>
                                                                         <div className="flex gap-2">
-                                                                            <Button onClick={() => handleSaveEdit(p.id)} variant="success" icon={Save}>Opslaan</Button>
+                                                                            <Button onClick={() => { void handleSaveEdit(p.id); }} variant="success" icon={Save}>Opslaan</Button>
                                                                             <Button onClick={() => setEditingId(null)} variant="ghost" icon={X}>Annuleren</Button>
                                                                         </div>
                                                                     </div>
@@ -178,7 +175,7 @@ export default function IntroParentsTab({ parents, onDelete, onUpdate, onExport,
                                                                             <span className="opacity-50 text-[9px]">Telefoon</span>
                                                                             <PhoneInput
                                                                                 value={editData.phone_number || ''}
-                                                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditData({ ...editData, phone_number: e.target.value })}
+                                                                                onChange={(e: ChangeEvent<HTMLInputElement>) => setEditData({ ...editData, phone_number: e.target.value })}
                                                                                 className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-lg px-3 py-2 text-[var(--beheer-text)] text-xs font-semibold focus:ring-2 focus:ring-[var(--beheer-accent)] outline-none"
                                                                             />
                                                                         </div>
@@ -196,7 +193,7 @@ export default function IntroParentsTab({ parents, onDelete, onUpdate, onExport,
                                                                 <div className="space-y-4">
                                                                     <div className="flex items-center justify-between">
                                                                         <p className="text-xs font-semibold text-[var(--beheer-accent)]">Extra Informatie</p>
-                                                                        <Button onClick={() => startEdit({ stopPropagation: () => { } } as React.MouseEvent, p)} variant="ghost" icon={Edit}>
+                                                                        <Button onClick={() => startEdit({ stopPropagation: () => { } } as MouseEvent, p)} variant="ghost" icon={Edit}>
                                                                             Bewerken
                                                                         </Button>
                                                                     </div>
@@ -229,7 +226,12 @@ export default function IntroParentsTab({ parents, onDelete, onUpdate, onExport,
                                                             <p className="text-xs font-semibold text-[var(--beheer-accent)]">Beheer Acties</p>
                                                             <div className="flex flex-col gap-3">
                                                                 <Button
-                                                                    onClick={() => onUpdate(p.id, { approved: !p.approved, status: !p.approved ? 'approved' : 'registered' })}
+                                                                    onClick={() => {
+                                                                        void onUpdate(p.id, {
+                                                                            approved: !p.approved,
+                                                                            status: !p.approved ? 'approved' : 'registered'
+                                                                        });
+                                                                    }}
                                                                     variant={p.approved ? 'success' : 'secondary'}
                                                                     icon={UserCheck}
                                                                     className="w-full"
@@ -242,7 +244,7 @@ export default function IntroParentsTab({ parents, onDelete, onUpdate, onExport,
                                                 </td>
                                             </tr>
                                         )}
-                                    </React.Fragment>
+                                    </Fragment>
                                 );
                             })}
                         </tbody>

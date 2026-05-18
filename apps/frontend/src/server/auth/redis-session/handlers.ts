@@ -1,6 +1,6 @@
 import { Pool } from "pg";
 import { getRedis } from "@/server/auth/redis-client";
-import { getPermissions } from "@/shared/lib/permissions";
+import { getPermissions, type Committee } from "@/shared/lib/permissions";
 import { type AuthContext, type ExtendedSession } from "./types";
 import { extractHeadersSafely } from "./utils";
 import { getImpersonatedUser } from "./impersonation";
@@ -30,21 +30,42 @@ export async function beforeHandler(ctx: AuthContext) {
         const authHeader = requestHeaders.get("authorization");
         const cookieHeader = requestHeaders.get("cookie");
 
-        const token = authHeader?.split(" ")[1] ||
-            cookieHeader?.split("better-auth.session-token=")?.[1]?.split(";")?.[0] ||
-            cookieHeader?.split("better-auth.session_token=")?.[1]?.split(";")?.[0];
+        let token: string | undefined = undefined;
+        if (authHeader) {
+            token = authHeader.split(" ")[1];
+        }
+        if (!token && cookieHeader) {
+            const parts = cookieHeader.split("better-auth.session-token=");
+            if (parts.length > 1) {
+                const part = parts[1];
+                if (part) {
+                    token = part.split(";")[0];
+                }
+            }
+        }
+        if (!token && cookieHeader) {
+            const parts = cookieHeader.split("better-auth.session_token=");
+            if (parts.length > 1) {
+                const part = parts[1];
+                if (part) {
+                    token = part.split(";")[0];
+                }
+            }
+        }
 
-        if (!token || cookieHeader?.includes("directus_test_token=")) return;
+        if (!token || (cookieHeader && cookieHeader.includes("directus_test_token="))) return;
 
         const redis = await getRedis();
         const cached = await redis.get(`session:${token}`);
         if (cached) {
-            const parsed = JSON.parse(cached);
-            const finalSession = parsed.response ? parsed.response : parsed;
+            const parsed = JSON.parse(cached) as unknown;
+            const finalSession = (parsed && typeof parsed === 'object' && 'response' in parsed)
+                ? (parsed as { response: ExtendedSession }).response
+                : parsed as Partial<ExtendedSession> | null | undefined;
 
             if (!finalSession || !finalSession.user) return;
 
-            return { response: finalSession };
+            return { response: finalSession as ExtendedSession };
         }
     } catch (error) {
         safeConsoleError(`[redis-session/handlers.ts][beforeHandler] Error in beforeHandler:`, error);
@@ -53,51 +74,45 @@ export async function beforeHandler(ctx: AuthContext) {
 }
 
 export async function afterHandler(ctx: AuthContext, pool: Pool) {
-    // 1. Extract the returned data (could be in ctx.context.returned or ctx.response)
     const context = ctx as AuthContext & ReturnedSessionLike & { context?: ReturnedSessionLike };
     const returned = context.context?.returned || context.response || context.returned;
 
     try {
         let sessionData: unknown = null;
 
-        // 2. Safely parse sessionData from Response or plain object
         if (hasClone(returned)) {
             try {
                 sessionData = await returned.clone().json();
             } catch (_error) {
-                // Return original data in expected format if parsing fails
                 return {
-                        response: context.response || returned || null,
-                        headers: context.headers || null
+                    response: context.response || returned,
+                    headers: context.headers || null
                 };
             }
         } else {
             sessionData = returned;
         }
 
-        // 3. Normalize sessionData (Better Auth sometimes wraps it in { response: ... })
         if (sessionData && typeof sessionData === 'object' && 'response' in sessionData) {
             sessionData = (sessionData as { response?: unknown }).response;
         }
 
-        // 4. Basic validation - if no user, we can't do anything
         if (!sessionData || typeof sessionData !== 'object' || !('user' in sessionData) || !sessionData.user) {
             return {
-                    response: context.response || returned || null,
-                    headers: context.headers || null
+                response: context.response || returned || null,
+                headers: context.headers || null
             };
         }
 
         const sessionWithUser = sessionData as ExtendedSession;
-        const userId = sessionWithUser.user?.id;
+        const userId = sessionWithUser.user.id;
         if (!userId) {
             return {
-                    response: context.response || returned || null,
-                    headers: context.headers || null
+                response: context.response || returned || null,
+                headers: context.headers || null
             };
         }
 
-        // 5. Enrich with committees and permissions
         const { rows: realCommittees } = await pool.query(
             `SELECT c.id, c.name, c.azure_group_id, m.is_leader 
              FROM committee_members m 
@@ -106,19 +121,25 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
             [userId]
         );
 
-        sessionWithUser.user.committees = realCommittees;
-        Object.assign(sessionWithUser.user, getPermissions(realCommittees));
+        const typedCommittees = realCommittees as unknown as Committee[];
+        sessionWithUser.user.committees = typedCommittees;
+        Object.assign(sessionWithUser.user, getPermissions(typedCommittees));
 
-        // 6. Ensure name is set
         if (!sessionWithUser.user.name && (sessionWithUser.user.first_name || sessionWithUser.user.last_name)) {
             sessionWithUser.user.name = `${sessionWithUser.user.first_name || ''} ${sessionWithUser.user.last_name || ''}`.trim();
         }
 
-        // 7. Handle impersonation
         const requestHeaders = extractHeadersSafely(ctx);
         if (requestHeaders) {
             const cookies = requestHeaders.get("cookie") || "";
-            const testToken = cookies.split("directus_test_token=")?.[1]?.split(";")?.[0];
+            let testToken: string | undefined = undefined;
+            const cookieParts = cookies.split("directus_test_token=");
+            if (cookieParts.length > 1) {
+                const part = cookieParts[1];
+                if (part) {
+                    testToken = part.split(";")[0];
+                }
+            }
             const isAdmin = sessionWithUser.user.isAdmin || sessionWithUser.user.isICT;
 
             if (testToken && isAdmin) {
@@ -134,10 +155,30 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
                 }
             }
 
-            // 8. Cache in Redis
-            const token = requestHeaders.get("authorization")?.split(" ")[1] ||
-                requestHeaders.get("cookie")?.split("better-auth.session-token=")?.[1]?.split(";")?.[0] ||
-                requestHeaders.get("cookie")?.split("better-auth.session_token=")?.[1]?.split(";")?.[0];
+            let token: string | undefined = undefined;
+            const authHeader = requestHeaders.get("authorization");
+            if (authHeader) {
+                token = authHeader.split(" ")[1];
+            }
+            const cookieHeader = requestHeaders.get("cookie");
+            if (!token && cookieHeader) {
+                const parts = cookieHeader.split("better-auth.session-token=");
+                if (parts.length > 1) {
+                    const part = parts[1];
+                    if (part) {
+                        token = part.split(";")[0];
+                    }
+                }
+            }
+            if (!token && cookieHeader) {
+                const parts = cookieHeader.split("better-auth.session_token=");
+                if (parts.length > 1) {
+                    const part = parts[1];
+                    if (part) {
+                        token = part.split(";")[0];
+                    }
+                }
+            }
 
             if (token && !sessionWithUser.impersonatedBy) {
                 try {
@@ -149,7 +190,6 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
             }
         }
 
-        // 9. Return the enriched data in the format Better Auth expects: { response, headers }
         const isResponse = returned && typeof returned === 'object' && 
                           (isResponseLike(returned) || hasClone(returned));
 
@@ -176,7 +216,6 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
 
     } catch (error) {
         safeConsoleError(`[redis-session/handlers.ts][afterHandler] Critical Error:`, error);
-        // Fallback to returning the original data in the expected structure if possible
         return {
             response: context.response || returned || null,
             headers: context.headers || null

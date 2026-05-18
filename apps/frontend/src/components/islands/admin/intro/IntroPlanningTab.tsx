@@ -1,15 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
-import { 
-    Plus, 
-    X, 
-    Save, 
-    Edit, 
-    Trash2, 
-    List, 
-    LayoutGrid, 
-    Calendar 
+import { useState } from 'react';
+import {
+    Plus,
+    X,
+    Save,
+    Edit,
+    Trash2,
+    List,
+    LayoutGrid,
+    Calendar
 } from 'lucide-react';
 import { formatDate } from '@/shared/lib/utils/date';
 import type { IntroPlanningItem } from '@salvemundi/validations/schema/intro.zod';
@@ -30,7 +30,6 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
     const handleSave = async () => {
         if (!editingPlanning) return;
 
-        // Clean up empty strings to avoid Zod validation errors on the server
         const sanitized = Object.fromEntries(
             Object.entries(editingPlanning).filter(([_, value]) => value !== '')
         );
@@ -43,8 +42,8 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
         <div>
             <div className="flex items-center justify-between mb-8">
                 {editingPlanning === null && (
-                    <Button 
-                        onClick={() => setEditingPlanning({ date: '', time_start: '', title: '', description: '' })} 
+                    <Button
+                        onClick={() => setEditingPlanning({ date: '', time_start: '', title: '', description: '' })}
                         icon={Plus}
                     >
                         Nieuw Item
@@ -60,7 +59,6 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                 </div>
             </div>
 
-            {/* Planning Form */}
             {editingPlanning !== null && (
                 <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] p-8 mb-8 shadow-2xl">
                     <div className="flex items-center justify-between mb-8">
@@ -98,9 +96,9 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                     </div>
 
                     <div className="flex gap-3 pt-10 border-t border-[var(--beheer-border)]/50 mt-10">
-                        <Button 
-                            onClick={handleSave} 
-                            loading={saving} 
+                        <Button
+                            onClick={() => { void handleSave(); }}
+                            loading={saving}
                             icon={Save}
                             disabled={!editingPlanning.date || !editingPlanning.time_start || !editingPlanning.title || !editingPlanning.description}
                         >
@@ -113,7 +111,6 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                 </div>
             )}
 
-            {/* List view */}
             {view === 'list' && (
                 <div className="grid gap-4">
                     {planning.map(item => (
@@ -130,14 +127,18 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                                 {item.description && <p className="text-sm text-[var(--beheer-text-muted)] mt-4 font-medium leading-relaxed">{item.description}</p>}
                             </div>
                             <div className="flex gap-2 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <ActionButton 
-                                    icon={Edit} 
-                                    onClick={() => setEditingPlanning(item)} 
-                                    title="Bewerken" 
+                                <ActionButton
+                                    icon={Edit}
+                                    onClick={() => setEditingPlanning(item)}
+                                    title="Bewerken"
                                 />
-                                <ActionButton 
-                                    icon={Trash2} 
-                                    onClick={() => onDelete(item.id!)} 
+                                <ActionButton
+                                    icon={Trash2}
+                                    onClick={() => {
+                                        if (item.id !== undefined) {
+                                            void onDelete(item.id);
+                                        }
+                                    }}
                                     variant="danger"
                                     disabled={deletingId === item.id}
                                     title="Verwijderen"
@@ -151,13 +152,13 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                 </div>
             )}
 
-            {/* Calendar view - day-based grid */}
             {view === 'calendar' && planning.length > 0 && (() => {
                 const dayOrder = ['maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag', 'zondag'];
                 const byDay = planning.reduce((acc, item) => {
                     const key = (item.day || 'overig').toLowerCase();
-                    if (!acc.has(key)) acc.set(key, []);
-                    acc.get(key)!.push(item);
+                    const group = acc.get(key) || [];
+                    group.push(item);
+                    acc.set(key, group);
                     return acc;
                 }, new Map<string, IntroPlanningItem[]>());
 
@@ -176,14 +177,18 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                                                     <p className="text-xs font-medium text-[var(--beheer-text-muted)] opacity-70">{item.time_start}{item.time_end ? ` - ${item.time_end}` : ''}</p>
                                                 </div>
                                                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <ActionButton 
-                                                        icon={Edit} 
-                                                        onClick={() => setEditingPlanning(item)} 
-                                                        title="Bewerken" 
+                                                    <ActionButton
+                                                        icon={Edit}
+                                                        onClick={() => setEditingPlanning(item)}
+                                                        title="Bewerken"
                                                     />
-                                                    <ActionButton 
-                                                        icon={Trash2} 
-                                                        onClick={() => onDelete(item.id!)} 
+                                                    <ActionButton
+                                                        icon={Trash2}
+                                                        onClick={() => {
+                                                            if (item.id !== undefined) {
+                                                                void onDelete(item.id);
+                                                            }
+                                                        }}
                                                         variant="danger"
                                                         disabled={deletingId === item.id}
                                                         title="Verwijderen"

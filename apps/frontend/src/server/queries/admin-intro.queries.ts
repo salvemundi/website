@@ -11,6 +11,22 @@ import {
 import { z } from 'zod';
 import { safeConsoleError } from '@/server/utils/logger';
 
+interface DbIntroBlogRow {
+    id: string | number;
+    title?: unknown;
+    content?: unknown;
+    blog_type?: unknown;
+    is_published?: unknown;
+}
+
+interface DbIntroPlanningRow {
+    id: string | number;
+    date?: unknown;
+    time_start?: unknown;
+    title?: unknown;
+    description?: unknown;
+}
+
 export async function getIntroSignupsInternal() {
     try {
         const sql = 'SELECT * FROM intro_signups ORDER BY id DESC LIMIT 1000';
@@ -19,7 +35,7 @@ export async function getIntroSignupsInternal() {
         const parsed = z.array(introSignupDbSchema).safeParse(rows);
         if (!parsed.success) {
             safeConsoleError('[AdminIntroQueries][getIntroSignupsInternal] validation failed:', parsed.error);
-            return rows;
+            return rows as z.infer<typeof introSignupDbSchema>[];
         }
         return parsed.data;
     } catch (error) {
@@ -36,7 +52,7 @@ export async function getIntroParentSignupsInternal() {
         const parsed = z.array(introParentSignupDbSchema).safeParse(rows);
         if (!parsed.success) {
             safeConsoleError('[AdminIntroQueries][getIntroParentSignupsInternal] validation failed:', parsed.error);
-            return rows;
+            return rows as z.infer<typeof introParentSignupDbSchema>[];
         }
         return parsed.data;
     } catch (error) {
@@ -50,12 +66,11 @@ export async function getIntroBlogsInternal(): Promise<IntroBlog[]> {
         const sql = 'SELECT * FROM intro_blogs ORDER BY id DESC LIMIT 200';
         const { rows } = await query(sql);
 
-        const mapped = rows.map(i => ({
-            ...i,
+        const mapped = (rows as DbIntroBlogRow[]).map(i => ({
             id: Number(i.id),
-            title: i.title || '',
-            content: i.content || '',
-            blog_type: (i.blog_type || 'update') as IntroBlog['blog_type'],
+            title: typeof i.title === 'string' ? i.title : '',
+            content: typeof i.content === 'string' ? i.content : '',
+            blog_type: (typeof i.blog_type === 'string' ? i.blog_type : 'update') as IntroBlog['blog_type'],
             is_published: !!i.is_published
         }));
 
@@ -76,18 +91,17 @@ export async function getIntroPlanningInternal(): Promise<IntroPlanningItem[]> {
         const sql = 'SELECT * FROM intro_planning ORDER BY date ASC, time_start ASC LIMIT 200';
         const { rows } = await query(sql);
 
-        const mapped = rows.map(i => ({
-            ...i,
+        const mapped = (rows as DbIntroPlanningRow[]).map(i => ({
             id: Number(i.id),
-            date: i.date || '',
-            time_start: i.time_start || '',
-            title: i.title || '',
-            description: i.description || ''
+            date: typeof i.date === 'string' ? i.date : '',
+            time_start: typeof i.time_start === 'string' ? i.time_start : '',
+            title: typeof i.title === 'string' ? i.title : '',
+            description: typeof i.description === 'string' ? i.description : ''
         }));
 
         const parsed = z.array(introPlanningSchema).safeParse(mapped);
         if (!parsed.success) {
-
+            safeConsoleError('[AdminIntroQueries][getIntroPlanningInternal] validation failed:', parsed.error);
             return mapped as IntroPlanningItem[];
         }
         return parsed.data;
@@ -96,4 +110,3 @@ export async function getIntroPlanningInternal(): Promise<IntroPlanningItem[]> {
         throw new Error('Kon planning niet ophalen');
     }
 }
-

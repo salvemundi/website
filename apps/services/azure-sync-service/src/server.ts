@@ -19,6 +19,7 @@ fastify.register(redisPlugin);
 fastify.register(syncRoutes, { prefix: '/api/sync' });
 
 fastify.get('/health', async () => {
+    await Promise.resolve();
     return { status: 'ok', service: 'azure-sync-service' };
 });
 
@@ -30,27 +31,28 @@ const start = async () => {
 
         // Start the Provisioning Worker
         const { ProvisionWorkerService } = await import('./services/provision-worker.js');
-        ProvisionWorkerService.start(fastify.redis);
+        void ProvisionWorkerService.start(fastify.redis);
 
         // Start the Event Listener
         const { EventListenerService } = await import('./services/event-listener.js');
-        EventListenerService.start(fastify.redis);
+        void EventListenerService.start(fastify.redis);
 
         // Start the Expiry Check Job
         const { ExpiryCheckJob } = await import('./services/expiry-check.job.js');
-        ExpiryCheckJob.start(fastify.redis);
+        void ExpiryCheckJob.start(fastify.redis);
 
         // Start the Event Reminder Job
         const { EventReminderJob } = await import('./services/event-reminder.job.js');
-        EventReminderJob.start(fastify.redis);
+        void EventReminderJob.start(fastify.redis);
 
         // Start the Nightly Full Sync Job
         const { FullSyncJob } = await import('./services/full-sync.job.js');
-        FullSyncJob.start(fastify.redis);
-    } catch (error) {
-        safeConsoleError('Azure Sync Service crashed:', error);
+        void FullSyncJob.start(fastify.redis);
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        safeConsoleError('Azure Sync Service crashed:', message);
         process.exit(1);
     }
 };
 
-start();
+void start();

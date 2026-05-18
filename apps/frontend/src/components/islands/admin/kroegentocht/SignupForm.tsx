@@ -27,22 +27,22 @@ export default function SignupForm({ signup }: SignupFormProps) {
     const [isPending, startTransition] = useTransition();
     const [togglingId, setTogglingId] = useState<number | null>(null);
     const [formData, setFormData] = useState({
-        name: signup?.name || '',
-        email: signup?.email || '',
-        association: signup?.association || '',
-        payment_status: (signup?.payment_status || 'open') as "paid" | "open" | "failed" | "canceled" | "expired",
-        amount_tickets: signup?.amount_tickets || 1
+        name: signup.name,
+        email: signup.email,
+        association: signup.association || '',
+        payment_status: signup.payment_status as "paid" | "open" | "failed" | "canceled" | "expired",
+        amount_tickets: signup.amount_tickets
     });
-    const [ticketsData, setTicketsData] = useState(signup?.tickets || []);
+    const [ticketsData, setTicketsData] = useState(signup.tickets || []);
     const [editingTicketId, setEditingTicketId] = useState<number | null>(null);
 
-    const tickets = signup?.tickets || [];
+    const tickets = signup.tickets || [];
 
     const handleToggleCheckIn = async (ticketId: number, currentStatus: boolean) => {
         if (togglingId) return;
         setTogglingId(ticketId);
         try {
-            await togglePubCrawlTicketCheckIn(ticketId, currentStatus, Number(signup.pub_crawl_event_id?.id || 0));
+            await togglePubCrawlTicketCheckIn(ticketId, currentStatus, Number(signup.pub_crawl_event_id.id));
             showToast('Kaart status bijgewerkt', 'success');
             router.refresh();
         } catch (error) {
@@ -50,6 +50,10 @@ export default function SignupForm({ signup }: SignupFormProps) {
         } finally {
             setTogglingId(null);
         }
+    };
+
+    const handleToggleCheckInSync = (ticketId: number, currentStatus: boolean) => {
+        void handleToggleCheckIn(ticketId, currentStatus);
     };
 
     const handleTicketChange = (id: number, field: 'name' | 'initial', value: string) => {
@@ -63,7 +67,7 @@ export default function SignupForm({ signup }: SignupFormProps) {
 
         startTransition(async () => {
             try {
-                await deletePubCrawlSignup(Number(signup.id), Number(signup.pub_crawl_event_id?.id || 0));
+                await deletePubCrawlSignup(Number(signup.id), Number(signup.pub_crawl_event_id.id));
                 showToast('Aanmelding verwijderd', 'success');
                 router.push('/beheer/kroegentocht');
                 router.refresh();
@@ -73,6 +77,10 @@ export default function SignupForm({ signup }: SignupFormProps) {
         });
     };
 
+    const handleDeleteSignupSync = () => {
+        void handleDeleteSignup();
+    };
+
     const handleDeleteTicket = async (ticketId: number) => {
         if (!window.confirm('Weet je zeker dat je dit ticket wilt verwijderen?')) return;
 
@@ -80,7 +88,7 @@ export default function SignupForm({ signup }: SignupFormProps) {
 
         startTransition(async () => {
             try {
-                await deletePubCrawlTicket(ticketId, Number(signup.id), Number(signup.pub_crawl_event_id?.id || 0));
+                await deletePubCrawlTicket(ticketId, Number(signup.id), Number(signup.pub_crawl_event_id.id));
                 showToast('Ticket verwijderd', 'success');
                 router.refresh();
             } catch (error) {
@@ -89,11 +97,15 @@ export default function SignupForm({ signup }: SignupFormProps) {
         });
     };
 
+    const handleDeleteTicketSync = (ticketId: number) => {
+        void handleDeleteTicket(ticketId);
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         startTransition(async () => {
             try {
-                const eventId = Number(signup.pub_crawl_event_id?.id || 0);
+                const eventId = Number(signup.pub_crawl_event_id.id);
                 await Promise.all([
                     updatePubCrawlSignup(Number(signup.id), eventId, formData),
                     updatePubCrawlTickets(Number(signup.id), eventId, ticketsData.map(t => ({
@@ -115,13 +127,13 @@ export default function SignupForm({ signup }: SignupFormProps) {
     const handleReset = () => {
         type PaymentStatus = "paid" | "open" | "failed" | "canceled" | "expired";
         setFormData({
-            name: signup?.name || '',
-            email: signup?.email || '',
-            association: signup?.association || '',
-            payment_status: (signup?.payment_status || 'open') as PaymentStatus,
-            amount_tickets: signup?.amount_tickets || 1
+            name: signup.name,
+            email: signup.email,
+            association: signup.association || '',
+            payment_status: signup.payment_status as PaymentStatus,
+            amount_tickets: signup.amount_tickets
         });
-        setTicketsData(signup?.tickets || []);
+        setTicketsData(signup.tickets || []);
     };
 
     return (
@@ -143,8 +155,8 @@ export default function SignupForm({ signup }: SignupFormProps) {
                             editingTicketId={editingTicketId}
                             setEditingTicketId={setEditingTicketId}
                             togglingId={togglingId}
-                            handleToggleCheckIn={handleToggleCheckIn}
-                            handleDeleteTicket={handleDeleteTicket}
+                            handleToggleCheckIn={handleToggleCheckInSync}
+                            handleDeleteTicket={handleDeleteTicketSync}
                             handleTicketChange={handleTicketChange}
                         />
                     </div>
@@ -153,10 +165,10 @@ export default function SignupForm({ signup }: SignupFormProps) {
                 <SignupFormActions
                     isPending={isPending}
                     onReset={handleReset}
-                    onDelete={handleDeleteSignup}
+                    onDelete={handleDeleteSignupSync}
                 />
             </form>
             <AdminToast toast={toast} onClose={hideToast} />
         </>
     );
-}
+}

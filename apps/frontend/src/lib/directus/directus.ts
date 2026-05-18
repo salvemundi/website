@@ -4,7 +4,11 @@ import { type DirectusSchema } from '@salvemundi/validations/directus/schema';
 import { insertSystemLogInternal } from '@/server/queries/audit.queries';
 import { safeConsoleError } from '@/server/utils/logger';
 
-const directusUrl = process.env.DIRECTUS_SERVICE_URL!;
+if (!process.env.DIRECTUS_SERVICE_URL || !process.env.DIRECTUS_STATIC_TOKEN) {
+    throw new Error('Missing DIRECTUS_SERVICE_URL or DIRECTUS_STATIC_TOKEN in environment variables');
+}
+const directusUrl = process.env.DIRECTUS_SERVICE_URL;
+const directusToken = process.env.DIRECTUS_STATIC_TOKEN;
 
 export class DirectusError extends Error {
     constructor(
@@ -60,9 +64,9 @@ export async function fetchWithRetry(
         } catch (e: unknown) {
             const error = e instanceof Error ? e : new Error(String(e));
             const isLastRetry = i === retries;
-            const isTimeout = error.name === 'TimeoutError' || error.name === 'AbortError' || error.message?.includes('timeout');
+            const isTimeout = error.name === 'TimeoutError' || error.name === 'AbortError' || error.message.includes('timeout');
 
-            if (isLastRetry || (!isTimeout && !error.message?.includes('Server responded with 5'))) {
+            if (isLastRetry || (!isTimeout && !error.message.includes('Server responded with 5'))) {
                 throw error;
             }
 
@@ -79,10 +83,10 @@ export async function fetchWithRetry(
 export function getSystemDirectus() {
     return createDirectus<DirectusSchema>(directusUrl, {
         globals: {
-            fetch: async (url, options) => {
+            fetch: async (url: string | URL, options?: RequestInit) => {
                 const urlStr = url.toString();
 
-                const nextOptions = (options as { next?: { revalidate?: number | false; tags?: string[] } })?.next || {};
+                const nextOptions = (options as (RequestInit & { next?: { revalidate?: number | false; tags?: string[] } }) | undefined)?.next || {};
                 const tags: string[] = nextOptions.tags || [];
 
                 // ─── TIERED REVALIDATION STRATEGY ────────────────────────────────
@@ -157,7 +161,7 @@ export function getSystemDirectus() {
                 } catch (e: unknown) {
                     const error = e instanceof Error ? e : new Error(String(e));
 
-                    if (error.name === 'TimeoutError' || error.name === 'AbortError' || error.message?.includes('timeout')) {
+                    if (error.name === 'TimeoutError' || error.name === 'AbortError' || error.message.includes('timeout')) {
                         const timeoutError = new DirectusError(
                             `Service timeout (15s) for ${urlStr}. The service might be under heavy load or unreachable via VPN.`,
                             504,
@@ -184,6 +188,7 @@ export function getSystemDirectus() {
             }
         }
     })
-        .with(staticToken(process.env.DIRECTUS_STATIC_TOKEN!))
+        .with(staticToken(directusToken))
         .with(rest());
 }
+

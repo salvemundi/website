@@ -69,7 +69,6 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
             if (result.success && result.checkoutUrl) {
                 window.location.href = result.checkoutUrl;
             } else if (result.errors) {
-                // Handle Zod server-side errors if any returned
 
             } else {
                 showToast(result.error || 'Er ging iets mis', 'error');
@@ -81,7 +80,7 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
 
     return (
         <form
-            onSubmit={handleSubmit(onSubmit)}
+            onSubmit={(e) => { void handleSubmit(onSubmit)(e); }}
             className="flex flex-col gap-4"
             autoComplete="off"
             suppressHydrationWarning
@@ -182,7 +181,7 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
                     />
                     <button
                         type="button"
-                        onClick={handleCouponCheck}
+                        onClick={() => { void handleCouponCheck(); }}
                         disabled={!couponValue || isPending}
                         className="form-button !bg-theme-purple !text-white w-auto py-2 px-6 shadow-md shrink-0 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     >

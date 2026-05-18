@@ -108,7 +108,7 @@ export default function LedenOverzichtIsland({
                     Export
                 </button>
                 <button
-                    onClick={handleSendReminder}
+                    onClick={() => { void handleSendReminder(); }}
                     disabled={isSendingReminder}
                     className="flex items-center gap-2 px-6 py-2 bg-[var(--beheer-accent)] text-white font-semibold text-xs rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 disabled:opacity-50"
                 >

@@ -58,10 +58,10 @@ export function HeaderShell({ children, mobileMenu }: HeaderShellProps) {
         applyHeight(el.offsetHeight || 80);
         
         const ro = new ResizeObserver((entries) => {
-            const entry = entries[0];
+            const entry = entries[0] as ResizeObserverEntry | undefined;
             if (entry) {
                 // Gebruik de data uit de observer entry in plaats van el.offsetHeight te pollen
-                const height = entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height;
+                const height = entry.borderBoxSize[0]?.blockSize ?? entry.contentRect.height;
                 applyHeight(height);
             }
         });
@@ -71,7 +71,7 @@ export function HeaderShell({ children, mobileMenu }: HeaderShellProps) {
     }, []);
 
     // Hide header on certain routes
-    if (pathname?.startsWith('/intro/blog') || pathname?.startsWith('/intro/planning')) {
+    if (pathname.startsWith('/intro/blog') || pathname.startsWith('/intro/planning')) {
         return null;
     }
 

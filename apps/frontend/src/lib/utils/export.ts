@@ -5,7 +5,7 @@
  * Standard CSV format (UTF-8 with BOM for Excel compatibility).
  */
 
-export function downloadCSV(data: Record<string, unknown>[], filename: string) {
+export function downloadCSV(data: { [key: string]: unknown }[], filename: string) {
     if (data.length === 0) return;
 
     // 1. Extract headers from the first object

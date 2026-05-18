@@ -8,7 +8,6 @@ import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 import { formatDate } from '@/shared/lib/utils/date';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 
-// Dynamic Imports (met alias nextDynamic om conflict met 'export const dynamic' te voorkomen)
 const KroegentochtFormIsland = nextDynamic(() => import('@/components/islands/kroegentocht/KroegentochtFormIsland'), {
     ssr: true,
     loading: () => <div className="h-96 animate-pulse bg-slate-100 dark:bg-white/5 rounded-3xl" />
@@ -126,7 +125,7 @@ async function RegistrationSection() {
                     </h2>
                     <ul className="space-y-4">
                         <li className="flex items-start gap-3 text-sm">
-                            <span className="text-lg">👥</span>
+                            <span className="text-lg">➡</span>
                             <span className="text-slate-600 dark:text-slate-400">Je hoeft <strong>geen lid</strong> te zijn om deel te nemen.</span>
                         </li>
                         <li className="flex items-start gap-3 text-sm">
@@ -138,7 +137,7 @@ async function RegistrationSection() {
                             <span className="text-slate-600 dark:text-slate-400">Minimumleeftijd: <strong>18 jaar</strong>.</span>
                         </li>
                         <li className="flex items-start gap-3 text-sm">
-                            <span className="text-lg">🎟️</span>
+                            <span className="text-lg">🎟</span>
                             <span className="text-slate-600 dark:text-slate-400">Tickets zijn <strong>overdraagbaar</strong>.</span>
                         </li>
                     </ul>
@@ -150,24 +149,23 @@ async function RegistrationSection() {
 
 export default async function KroegentochtPage() {
     const session = await getEnrichedSession();
-    const isAuthenticated = !!session?.user;
+    const user = session?.user;
 
-    // NUCLEAR SSR: Fetch tickets if authenticated
     let tickets: PubCrawlTicket[] = [];
-    if (isAuthenticated && session?.user) {
-        tickets = await getKroegentochtTickets(session.user.email!).catch(() => []);
+    if (user?.email) {
+        tickets = await getKroegentochtTickets(user.email).catch(() => []);
     }
 
     return (
         <PublicPageShell
-            title="KROEGENTOCHT"
+            title="Kroegentochtt"
             backgroundImage="/img/backgrounds/Kroto2025.jpg"
             imageFilter="brightness(0.55)"
-            description="Dé activiteit van het jaar! Verken de beste kroegen van Eindhoven met je medestudenten."
+            description="DÉ activiteit van het jaar! Verken de beste kroegen van Eindhoven met je medestudenten."
         >
             <div className="mx-auto max-w-7xl px-[var(--spacing-fluid-md)] py-[var(--spacing-fluid-lg)]">
-                {isAuthenticated && tickets.length > 0 && (
-                    <KroegentochtTicketsIsland initialTickets={tickets} userEmail={session.user.email!} />
+                {user?.email && tickets.length > 0 && (
+                    <KroegentochtTicketsIsland initialTickets={tickets} userEmail={user.email} />
                 )}
 
                 <RegistrationSection />

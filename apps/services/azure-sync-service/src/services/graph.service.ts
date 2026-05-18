@@ -1,4 +1,4 @@
-import { safeConsoleError } from '../utils/logger.js';
+import { safeConsoleError, logInfo } from '../utils/logger.js';
 import { Client } from '@microsoft/microsoft-graph-client';
 import 'isomorphic-fetch';
 
@@ -33,14 +33,14 @@ export class GraphService {
     static async getUser(userId: string, token: string): Promise<AzureUser> {
         return await this.getClient(token).api(`/users/${userId}`)
             .select('id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,jobTitle,customSecurityAttributes,birthday')
-            .get();
+            .get() as AzureUser;
     }
 
     static async getUserByEmail(email: string, token: string): Promise<AzureUser | null> {
         const response = await this.getClient(token).api('/users')
             .filter(`mail eq '${email}' or userPrincipalName eq '${email}'`)
             .select('id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,jobTitle,customSecurityAttributes,birthday')
-            .get();
+            .get() as { value?: AzureUser[] };
         return response.value?.[0] || null;
     }
 
@@ -53,11 +53,11 @@ export class GraphService {
     }
 
     static async getAllUsers(token: string): Promise<AzureUser[]> {
-        console.log(`[GraphService] getAllUsers started`);
-        let allUsers: AzureUser[] = [];
+        logInfo(`[GraphService] getAllUsers started`);
+        let allUsers: AzureUser[];
         const client = this.getClient(token);
 
-        const fetchWithRetry = async (url: string, selectFields?: string, top: number = 100, retries = 3): Promise<any> => {
+        const fetchWithRetry = async (url: string, selectFields?: string, top: number = 100, retries = 3): Promise<unknown> => {
             const isFullUrl = url.startsWith('http');
             for (let i = 0; i < retries; i++) {
                 try {
@@ -67,33 +67,35 @@ export class GraphService {
                         request = request.top(top);
                     }
                     return await request.get();
-                } catch (error: any) {
+                } catch (error: unknown) {
                     if (i === retries - 1) throw error;
                     const delay = Math.pow(2, i) * 1000;
-                    console.warn(`[GraphService] Request failed (Status ${error.statusCode}), retrying in ${delay}ms...`);
+                    const statusCode = (error as { statusCode?: number }).statusCode || 500;
+                    safeConsoleError(`[GraphService] Request failed (Status ${statusCode}), retrying in ${delay}ms...`);
                     await new Promise(resolve => setTimeout(resolve, delay));
                 }
             }
+            throw new Error('Fetch failed after retries');
         };
 
         try {
             const selectFields = 'id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,jobTitle,customSecurityAttributes';
-            console.log(`[GraphService] Fetching users (page 1)...`);
-            let response = await fetchWithRetry('/users', selectFields, 100);
+            logInfo(`[GraphService] Fetching users (page 1)...`);
+            let response = await fetchWithRetry('/users', selectFields, 100) as Record<string, unknown>;
 
-            console.log(`[GraphService] Received response from /users. Count: ${response.value?.length}`);
-            allUsers = [...(response.value || [])];
+            logInfo(`[GraphService] Received response from /users. Count: ${(response.value as unknown[] | undefined)?.length}`);
+            allUsers = [...((response.value as AzureUser[] | undefined) || [])];
 
             let page = 1;
             while (response['@odata.nextLink']) {
                 page++;
-                console.log(`[GraphService] Fetching users (page ${page})...`);
-                response = await fetchWithRetry(response['@odata.nextLink'], undefined, 100);
-                allUsers = [...allUsers, ...(response.value || [])];
+                logInfo(`[GraphService] Fetching users (page ${page})...`);
+                response = await fetchWithRetry(response['@odata.nextLink'] as string, undefined, 100) as Record<string, unknown>;
+                allUsers = [...allUsers, ...((response.value as AzureUser[] | undefined) || [])];
             }
 
             return allUsers;
-        } catch (error: any) {
+        } catch (error: unknown) {
             safeConsoleError(`[GraphService] Error in getAllUsers:`, JSON.stringify(error, null, 2));
             throw error;
         }
@@ -102,7 +104,7 @@ export class GraphService {
     static async getUserGroups(userId: string, token: string): Promise<AzureGroup[]> {
         const response = await this.getClient(token).api(`/users/${userId}/memberOf/microsoft.graph.group`)
             .select('id,displayName')
-            .get();
+            .get() as { value?: AzureGroup[] };
         return response.value || [];
     }
 
@@ -110,11 +112,12 @@ export class GraphService {
         try {
             const response = await this.getClient(token).api(`/groups/${groupId}/owners`)
                 .select('id')
-                .get();
-            return (response.value || []).map((o: any) => o.id);
-        } catch (error: any) {
-            if (error.statusCode === 403 || error.message?.includes('Insufficient privileges')) {
-                console.warn(`[GraphService] Insufficient privileges to read owners of group ${groupId}. Returning empty list.`);
+                .get() as { value?: { id: string }[] };
+            return (response.value || []).map(o => o.id);
+        } catch (error: unknown) {
+            const err = error as { statusCode?: number; message?: string };
+            if (err.statusCode === 403 || err.message?.includes('Insufficient privileges')) {
+                safeConsoleError(`[GraphService] Insufficient privileges to read owners of group ${groupId}. Returning empty list.`);
                 return [];
             }
             throw error;
@@ -133,20 +136,21 @@ export class GraphService {
             try {
                 // 1. Fetch all members with pagination
                 let members: string[] = [];
-                let response = await client.api(`/groups/${id}/members`).select('id').top(999).get();
-                members = [...(response.value || []).map((m: any) => m.id)];
+                let response = await client.api(`/groups/${id}/members`).select('id').top(999).get() as Record<string, unknown>;
+                members = [...((response.value as { id: string }[] | undefined) || []).map(m => m.id)];
 
                 while (response['@odata.nextLink']) {
-                    response = await client.api(response['@odata.nextLink']).get();
-                    members = [...members, ...(response.value || []).map((m: any) => m.id)];
+                    response = await client.api(response['@odata.nextLink'] as string).get() as Record<string, unknown>;
+                    members = [...members, ...((response.value as { id: string }[] | undefined) || []).map(m => m.id)];
                 }
 
                 // 2. Fetch owners (usually few, but we use the dedicated method)
                 const owners = await this.getGroupOwners(id, token);
 
                 result.set(id, { members, owners });
-            } catch (error: any) {
-                safeConsoleError(`[GraphService] Failed to fetch details for group ${id}:`, error.message);
+            } catch (error: unknown) {
+                const message = error instanceof Error ? error.message : String(error);
+                safeConsoleError(`[GraphService] Failed to fetch details for group ${id}:`, message);
                 result.set(id, { members: [], owners: [] });
             }
         }
@@ -172,7 +176,9 @@ export class GraphService {
             }));
 
             try {
-                const batchResponse = await client.api('/$batch').post({ requests });
+                const batchResponse = await client.api('/$batch').post({ requests }) as {
+                    responses: { id: string; status: number; body: string; headers?: Record<string, string> }[];
+                };
 
                 for (const res of batchResponse.responses) {
                     if (res.status === 200) {

@@ -81,11 +81,9 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
     const fetchStatus = useCallback(async () => {
         try {
             const data = await getSyncStatusAction();
-            if (data && ('status' in data || ('success' in data && data.success === false))) {
-                setStatus(data);
-                if ('status' in data) {
-                    setLastUpdated(new Date());
-                }
+            setStatus(data);
+            if (!('success' in data)) {
+                setLastUpdated(new Date());
             }
         } catch (_error: unknown) {
             // Background errors remain silent to avoid interrupting the user, 
@@ -96,7 +94,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
     useEffect(() => {
         // Instant UI: If no initial status from server, fetch it immediately on mount
         if (!initialStatus) {
-            fetchStatus();
+            void fetchStatus();
         }
     }, [initialStatus, fetchStatus]);
 
@@ -108,11 +106,11 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
         const poll = async () => {
             if (!shouldPoll) return;
             await fetchStatus();
-            timeout = setTimeout(poll, 5000);
+            timeout = setTimeout(() => { void poll(); }, 5000);
         };
 
         if (shouldPoll) {
-            poll();
+            void poll();
         }
 
         return () => clearTimeout(timeout);
@@ -130,7 +128,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
                 showToast(result.error || 'Kon sync niet starten', 'error');
             } else {
                 showToast('Azure synchronisatie gestart', 'success');
-                fetchStatus();
+                void fetchStatus();
             }
         } catch (_error: unknown) {
             showToast('Netwerkfout bij het starten van de sync.', 'error');
@@ -147,7 +145,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
                 showToast(result.error || 'Kon sync niet stoppen', 'error');
             } else {
                 showToast('Synchronisatie afgebroken', 'info');
-                fetchStatus();
+                void fetchStatus();
             }
         } catch (_error: unknown) {
             showToast('Netwerkfout bij het stoppen van de sync.', 'error');
@@ -164,7 +162,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
                 showToast(result.error || 'Kon sync niet resetten', 'error');
             } else {
                 showToast('Synchronisatie status gereset naar Idle', 'success');
-                fetchStatus();
+                void fetchStatus();
             }
         } catch (_error: unknown) {
             showToast('Netwerkfout bij het resetten van de sync.', 'error');
@@ -184,7 +182,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
             } else {
                 showToast(`Gebruiker ${userId} succesvol gesynchroniseerd`, 'success');
                 setUserId('');
-                fetchStatus();
+                void fetchStatus();
             }
         } catch (_error: unknown) {
             showToast('Netwerkfout bij het synchroniseren van de gebruiker.', 'error');

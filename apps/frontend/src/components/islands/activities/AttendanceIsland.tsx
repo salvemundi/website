@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { getActivitySignups } from '@/server/actions/admin/admin-activiteit.actions';
 import { toggleCheckInAction } from '@/server/actions/admin/aanmeldingen.actions';
 import { Search, UserCheck, UserX, QrCode, Loader2, RefreshCw } from 'lucide-react';
+import { safeConsoleError } from '@/server/utils/logger';
 
 interface AttendanceSignup {
     id: number;
@@ -42,8 +43,8 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
             }));
 
             setSignups(mapped);
-        } catch {
-            // Error handled by the UI state
+        } catch (error) {
+            safeConsoleError('[AttendanceIsland][fetchData]', error);
         } finally {
             setLoading(false);
         }
@@ -51,16 +52,20 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
 
     useEffect(() => {
         if (initialSignups.length === 0) {
-            fetchData();
+            void fetchData();
         }
     }, [fetchData, initialSignups.length]);
 
     const handleToggleCheckIn = useCallback(async (signupId: number, currentStatus: boolean) => {
-        const result = await toggleCheckInAction(signupId, Number(eventId), !currentStatus);
-        if (result.success) {
-            setSignups(prev => prev.map(s =>
-                s.id === signupId ? { ...s, checked_in: !currentStatus, checked_in_at: !currentStatus ? new Date().toISOString() : null } : s
-            ));
+        try {
+            const result = await toggleCheckInAction(signupId, Number(eventId), !currentStatus);
+            if (result.success) {
+                setSignups(prev => prev.map(s =>
+                    s.id === signupId ? { ...s, checked_in: !currentStatus, checked_in_at: !currentStatus ? new Date().toISOString() : null } : s
+                ));
+            }
+        } catch (error) {
+            safeConsoleError('[AttendanceIsland][handleToggleCheckIn]', error);
         }
     }, [eventId]);
 
@@ -78,23 +83,34 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
         }
     }, [signups, handleToggleCheckIn]);
 
-    const startScanner = async () => {
+    const startScanner = () => {
         setScanning(true);
         setScanResult(null);
 
-        const { Html5QrcodeScanner } = await import('html5-qrcode');
+        void (async () => {
+            try {
+                const { Html5QrcodeScanner } = await import('html5-qrcode');
 
-        setTimeout(() => {
-            const scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
+                setTimeout(() => {
+                    const scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
 
-            scanner.render(async (decodedText) => {
-                await scanner.clear();
-                setScanning(false);
-                handleScan(decodedText);
-            }, () => {
-                // Frequent scan errors are ignored per policy
-            });
-        }, 100);
+                    scanner.render((decodedText) => {
+                        void (async () => {
+                            try {
+                                await scanner.clear();
+                                setScanning(false);
+                                await handleScan(decodedText);
+                            } catch (error) {
+                                safeConsoleError('[AttendanceIsland][startScannerRender]', error);
+                            }
+                        })();
+                    }, (_errorMessage) => {
+                    });
+                }, 100);
+            } catch (error) {
+                safeConsoleError('[AttendanceIsland][startScanner]', error);
+            }
+        })();
     };
 
     const filteredSignups = signups.filter(s =>
@@ -136,7 +152,9 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                     />
                 </div>
                 <button
-                    onClick={startScanner}
+                    onClick={() => {
+                        startScanner();
+                    }}
                     className="w-full sm:w-auto h-10 sm:h-12 px-4 sm:px-6 rounded-xl bg-[var(--theme-purple)] text-white font-bold flex items-center justify-center sm:justify-start gap-2 hover:scale-105 transition-all shadow-lg shadow-[var(--theme-purple)]/20 text-sm sm:text-base"
                 >
                     <QrCode className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -219,56 +237,60 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[var(--border-color)]">
-                        {loading ? (
-                            <tr>
-                                <td colSpan={4} className="px-4 sm:px-6 py-12 text-center text-[var(--text-muted)] text-sm sm:text-base">
-                                    <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
-                                    Laden...
-                                </td>
-                            </tr>
-                        ) : filteredSignups.length === 0 ? (
-                            <tr>
-                                <td colSpan={4} className="px-4 sm:px-6 py-12 text-center text-[var(--text-muted)] italic text-sm sm:text-base">Geen deelnemers gevonden</td>
-                            </tr>
-                        ) : filteredSignups.map((s) => (
-                            <tr key={s.id} className="hover:bg-[var(--bg-soft)] transition-colors">
-                                <td className="px-4 sm:px-6 py-4">
-                                    <p className="font-bold text-[var(--theme-purple)]/80 text-sm sm:text-base">{s.participant_name}</p>
-                                    <p className="text-xs sm:text-sm text-[var(--text-muted)] md:hidden">{s.participant_email}</p>
-                                </td>
-                                <td className="px-4 sm:px-6 py-4 hidden md:table-cell text-sm sm:text-base font-medium text-[var(--text-muted)]">
-                                    {s.participant_email}
-                                </td>
-                                <td className="px-4 sm:px-6 py-4">
-                                    {s.checked_in ? (
-                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-50 text-green-700 text-xs sm:text-sm font-bold ring-1 ring-inset ring-green-600/20">
-                                            <UserCheck className="h-3 w-3" />
-                                            Aanwezig
-                                        </span>
-                                    ) : (
-                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--bg-soft)] text-[var(--text-muted)] text-xs sm:text-sm font-bold ring-1 ring-inset ring-[var(--border-color)]">
-                                            Niet ingecheckt
-                                        </span>
-                                    )}
-                                </td>
-                                <td className="px-4 sm:px-6 py-4 text-right">
-                                    <button
-                                        onClick={() => handleToggleCheckIn(s.id, s.checked_in)}
-                                        className={`px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${s.checked_in ? 'text-red-600 hover:bg-red-50' : 'text-green-600 hover:bg-green-50'}`}
-                                    >
-                                        {s.checked_in ? 'Afmelden' : 'Inchecken'}
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
+                            {loading ? (
+                                <tr>
+                                    <td colSpan={4} className="px-4 sm:px-6 py-12 text-center text-[var(--text-muted)] text-sm sm:text-base">
+                                        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
+                                        Laden...
+                                    </td>
+                                </tr>
+                            ) : filteredSignups.length === 0 ? (
+                                <tr>
+                                    <td colSpan={4} className="px-4 sm:px-6 py-12 text-center text-[var(--text-muted)] italic text-sm sm:text-base">Geen deelnemers gevonden</td>
+                                </tr>
+                            ) : filteredSignups.map((s) => (
+                                <tr key={s.id} className="hover:bg-[var(--bg-soft)] transition-colors">
+                                    <td className="px-4 sm:px-6 py-4">
+                                        <p className="font-bold text-[var(--theme-purple)]/80 text-sm sm:text-base">{s.participant_name}</p>
+                                        <p className="text-xs sm:text-sm text-[var(--text-muted)] md:hidden">{s.participant_email}</p>
+                                    </td>
+                                    <td className="px-4 sm:px-6 py-4 hidden md:table-cell text-sm sm:text-base font-medium text-[var(--text-muted)]">
+                                        {s.participant_email}
+                                    </td>
+                                    <td className="px-4 sm:px-6 py-4">
+                                        {s.checked_in ? (
+                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-50 text-green-700 text-xs sm:text-sm font-bold ring-1 ring-inset ring-green-600/20">
+                                                <UserCheck className="h-3 w-3" />
+                                                Aanwezig
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--bg-soft)] text-[var(--text-muted)] text-xs sm:text-sm font-bold ring-1 ring-inset ring-[var(--border-color)]">
+                                                Niet ingecheckt
+                                            </span>
+                                        )}
+                                    </td>
+                                    <td className="px-4 sm:px-6 py-4 text-right">
+                                        <button
+                                            onClick={() => {
+                                                void handleToggleCheckIn(s.id, s.checked_in);
+                                            }}
+                                            className={`px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${s.checked_in ? 'text-red-600 hover:bg-red-50' : 'text-green-600 hover:bg-green-50'}`}
+                                        >
+                                            {s.checked_in ? 'Afmelden' : 'Inchecken'}
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
                     </table>
                 </div>
             </div>
 
             <div className="flex justify-center">
                 <button
-                    onClick={fetchData}
+                    onClick={() => {
+                        void fetchData();
+                    }}
                     disabled={loading}
                     className="flex items-center gap-2 text-base font-bold text-[var(--theme-purple)]/60 hover:text-[var(--theme-purple)] disabled:opacity-50 transition-all"
                 >

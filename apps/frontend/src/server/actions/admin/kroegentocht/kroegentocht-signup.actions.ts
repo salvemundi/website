@@ -42,7 +42,7 @@ export async function getPubCrawlSignups(eventId: number) {
                     if (!signup.id) continue;
                     const latestStatus = directusStatusMap.get(Number(signup.id));
                     if (latestStatus && latestStatus !== signup.payment_status) {
-                        (signup as Record<string, unknown>).payment_status = latestStatus;
+                        (signup as { [key: string]: unknown }).payment_status = latestStatus;
                         updatePubCrawlSignupDb(Number(signup.id), { payment_status: latestStatus as 'open' | 'paid' | 'failed' | 'canceled' | 'expired' }).catch((error) => {
                             safeConsoleError('[Kroegentocht-Action][getPubCrawlSignups] Failed to update signup payment status:', error);
                         });
@@ -180,7 +180,7 @@ export async function deletePubCrawlTicket(ticketId: number, signupId: number, e
             safeConsoleError(`[Kroegentocht-Action][deletePubCrawlTicket] Failed to delete ticket ${ticketId}:`, error);
         });
 
-        const { rows: remainingTickets } = await query(
+        const { rows: remainingTickets } = await query<{ name: string | null; initial: string | null }>(
             'SELECT name, initial FROM pub_crawl_tickets WHERE signup_id = $1 ORDER BY id ASC',
             [signupId]
         );

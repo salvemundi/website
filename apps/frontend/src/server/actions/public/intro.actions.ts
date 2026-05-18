@@ -7,9 +7,7 @@ import {
     type IntroParentSignupForm,
     type IntroBlog
 } from '@salvemundi/validations/schema/intro.zod';
-
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems, createItem, updateItem } from '@directus/sdk';
 import { query } from '@/lib/database';
@@ -17,6 +15,17 @@ import { insertSystemLogInternal } from '@/server/queries/audit.queries';
 import { revalidatePath } from 'next/cache';
 import { normalizeDate } from '@/lib/utils/date-utils';
 import { safeConsoleError } from '@/server/utils/logger';
+
+interface IntroFeatureFlagRow {
+    is_active: boolean;
+    message: string | null;
+}
+
+interface ParentSignupRecord {
+    id: number;
+    user_id: string | null;
+    email: string | null;
+}
 
 const getMailUrl = () => process.env.MAIL_SERVICE_URL;
 
@@ -31,15 +40,23 @@ const getServiceHeaders = (): HeadersInit => {
 
 export async function getIntroSettings() {
     try {
-        const { rows } = await query('SELECT is_active, message FROM feature_flags WHERE route_match = $1 LIMIT 1', ['/intro']);
-        const data = rows?.[0];
+        const { rows } = await query<IntroFeatureFlagRow>('SELECT is_active, message FROM feature_flags WHERE route_match = $1 LIMIT 1', ['/intro']);
+
+        if (rows.length === 0) {
+            return {
+                show: false,
+                disabled_message: 'De inschrijvingen voor de introweek zijn momenteel gesloten.'
+            };
+        }
+
+        const data = rows[0];
 
         return {
-            show: data?.is_active ?? false,
-            disabled_message: data?.message ?? 'De inschrijvingen voor de introweek zijn momenteel gesloten.'
+            show: data.is_active,
+            disabled_message: data.message ?? 'De inschrijvingen voor de introweek zijn momenteel gesloten.'
         };
-    } catch (error) {
-        safeConsoleError(`[IntroActions][getIntroSettings] Error while fetching intro settings:`, error);
+    } catch (error: unknown) {
+        safeConsoleError(`[intro.actions.ts][getIntroSettings] Error while fetching intro settings:`, error);
         return { show: false, disabled_message: 'De inschrijvingen voor de introweek zijn momenteel gesloten.' };
     }
 }
@@ -49,62 +66,54 @@ export async function hasParentSignup(): Promise<boolean> {
     return check.exists;
 }
 
-async function checkParentSignupInternal(): Promise<{ exists: boolean; record?: { id: number; user_id: string | null; email: string | null } }> {
+async function checkParentSignupInternal(): Promise<{ exists: boolean; record?: ParentSignupRecord }> {
     const session = await getEnrichedSession();
 
     if (!session?.user) return { exists: false };
 
     try {
-        // 1. Primary check: Strict User ID match
         const signups = await getSystemDirectus().request(
             readItems('intro_parent_signups', {
                 filter: { user_id: { _eq: session.user.id } },
                 fields: ['id', 'user_id', 'email'],
                 limit: 1
             })
-        );
+        ) as unknown as ParentSignupRecord[];
 
-        interface ParentSignupRecord {
-            id: number;
-            user_id: string | null;
-            email: string | null;
+        if (signups.length > 0 && signups[0]) {
+            return { exists: true, record: signups[0] };
         }
 
-        if (signups.length > 0) {
-            return { exists: true, record: signups[0] as unknown as ParentSignupRecord };
-        }
-
-        // 2. Fallback check: Email match verification
         const emailSignups = await getSystemDirectus().request(
             readItems('intro_parent_signups', {
                 filter: { email: { _eq: session.user.email } },
                 fields: ['id', 'user_id', 'email'],
                 limit: 1
             })
-        );
+        ) as unknown as ParentSignupRecord[];
 
-        if (emailSignups.length > 0) {
+        if (emailSignups.length > 0 && emailSignups[0]) {
             await insertSystemLogInternal({
                 type: 'system_intro_id_mismatch',
                 status: 'WARNING',
                 payload: {
                     context: 'Parent Signup existence check detected email-only match (ID mismatch)',
-                    session_id_exists: !!session.user.id
+                    session_id_exists: true
                 }
             });
-            return { exists: true, record: emailSignups[0] as unknown as ParentSignupRecord };
+            return { exists: true, record: emailSignups[0] };
         }
 
         return { exists: false };
-    } catch (error) {
-        safeConsoleError('[hasParentSignup] Directus check failed:', error);
+    } catch (error: unknown) {
+        safeConsoleError('[intro.actions.ts][checkParentSignupInternal] Directus check failed:', error);
         return { exists: false };
     }
 }
 
 export async function submitIntroSignup(data: IntroSignupForm): Promise<{ success: boolean; error?: string }> {
-    // Normalize date before validation
-    data.geboortedatum = normalizeDate(data.geboortedatum) as string;
+    const normalizedGeboorte = normalizeDate(data.geboortedatum);
+    data.geboortedatum = normalizedGeboorte ?? data.geboortedatum;
 
     const parsed = introSignupFormSchema.safeParse(data);
     if (!parsed.success) {
@@ -117,7 +126,6 @@ export async function submitIntroSignup(data: IntroSignupForm): Promise<{ succes
         return { success: false, error: 'Te veel aanmeldingen vanaf dit IP-adres. Probeer het later opnieuw.' };
     }
 
-    // Bot detection (honeypot)
     if (parsed.data.website) {
         return { success: true };
     }
@@ -133,12 +141,11 @@ export async function submitIntroSignup(data: IntroSignupForm): Promise<{ succes
 
     try {
         await getSystemDirectus().request(createItem('intro_signups', payload));
-    } catch (error) {
+    } catch (error: unknown) {
         safeConsoleError(`[intro.actions.ts][submitIntroSignup] Error while submitting intro signup:`, error);
         throw new Error('Er is een fout opgetreden bij je inschrijving');
     }
 
-    // Trigger Mail Microservice asynchronously
     fetch(`${getMailUrl()}/api/mail/send`, {
         method: 'POST',
         headers: getServiceHeaders(),
@@ -151,7 +158,7 @@ export async function submitIntroSignup(data: IntroSignupForm): Promise<{ succes
                 phone: payload.phone_number
             }
         })
-    }).catch((error) => {
+    }).catch((error: unknown) => {
         safeConsoleError(`[intro.actions.ts][submitIntroSignup] Error while triggering mail microservice:`, error);
     });
     return { success: true };
@@ -159,10 +166,10 @@ export async function submitIntroSignup(data: IntroSignupForm): Promise<{ succes
 
 export async function getIntroBlogsPublic(): Promise<IntroBlog[]> {
     try {
-        const sql = 'SELECT * FROM intro_blogs WHERE is_published = true ORDER BY id DESC LIMIT 6';
-        const { rows } = await query(sql);
-        return rows as unknown as IntroBlog[];
-    } catch (error) {
+        const sql = 'SELECT id, title, content, slug, excerpt, image, is_published, created_at, updated_at FROM intro_blogs WHERE is_published = true ORDER BY id DESC LIMIT 6';
+        const { rows } = await query<IntroBlog>(sql);
+        return rows;
+    } catch (error: unknown) {
         safeConsoleError(`[intro.actions.ts][getIntroBlogsPublic] Error while fetching intro blogs:`, error);
         throw new Error('Er is een fout opgetreden bij het ophalen van de intro blogs');
     }
@@ -170,10 +177,10 @@ export async function getIntroBlogsPublic(): Promise<IntroBlog[]> {
 
 export async function getAllIntroBlogsPublic(): Promise<IntroBlog[]> {
     try {
-        const sql = 'SELECT * FROM intro_blogs WHERE is_published = true ORDER BY id DESC';
-        const { rows } = await query(sql);
-        return rows as unknown as IntroBlog[];
-    } catch (error) {
+        const sql = 'SELECT id, title, content, slug, excerpt, image, is_published, created_at, updated_at FROM intro_blogs WHERE is_published = true ORDER BY id DESC';
+        const { rows } = await query<IntroBlog>(sql);
+        return rows;
+    } catch (error: unknown) {
         safeConsoleError(`[intro.actions.ts][getAllIntroBlogsPublic] Error while fetching all intro blogs:`, error);
         throw new Error('Er is een fout opgetreden bij het ophalen van de intro blogs');
     }
@@ -181,10 +188,10 @@ export async function getAllIntroBlogsPublic(): Promise<IntroBlog[]> {
 
 export async function getIntroBlogBySlug(slug: string): Promise<IntroBlog | null> {
     try {
-        const sql = 'SELECT * FROM intro_blogs WHERE slug = $1 AND is_published = true LIMIT 1';
-        const { rows } = await query(sql, [slug]);
-        return (rows[0] as unknown as IntroBlog) || null;
-    } catch (error) {
+        const sql = 'SELECT id, title, content, slug, excerpt, image, is_published, created_at, updated_at FROM intro_blogs WHERE slug = $1 AND is_published = true LIMIT 1';
+        const { rows } = await query<IntroBlog>(sql, [slug]);
+        return rows[0] ?? null;
+    } catch (error: unknown) {
         safeConsoleError(`[intro.actions.ts][getIntroBlogBySlug] Error while fetching intro blog by slug:`, error);
         throw new Error('Er is een fout opgetreden bij het ophalen van de intro blog');
     }
@@ -197,14 +204,12 @@ export async function submitIntroParentSignup(data: IntroParentSignupForm): Prom
         return { success: false, error: 'Je moet ingelogd zijn als lid om je aan te melden als Intro Ouder' };
     }
 
-    // Prevents unique constraint error and ensures data integrity (linking)
     const check = await checkParentSignupInternal();
     if (check.exists && check.record) {
-        // If it matched by email but not ID, fix the integrity by updating the ID
         if (check.record.user_id !== session.user.id) {
             try {
                 await insertSystemLogInternal({
-                    type: 'system_intro_id_healed',
+                    type: 'system_intro_id_mismatch',
                     status: 'SUCCESS',
                     payload: {
                         context: 'Automatically linked email-only signup to current session ID',
@@ -214,7 +219,7 @@ export async function submitIntroParentSignup(data: IntroParentSignupForm): Prom
                 await getSystemDirectus().request(updateItem('intro_parent_signups', check.record.id, {
                     user_id: session.user.id
                 }));
-            } catch (error) {
+            } catch (error: unknown) {
                 safeConsoleError(`[intro.actions.ts][submitIntroParentSignup] Failed to fix User ID link:`, error);
                 return { success: false, error: 'Er is een fout opgetreden bij het verwerken van uw aanmelding' };
             }
@@ -232,10 +237,14 @@ export async function submitIntroParentSignup(data: IntroParentSignupForm): Prom
     if (!parsed.success) {
         return { success: false, error: 'Validatie mislukt' };
     }
+
+    const rawName = session.user.name;
+    const nameParts = rawName.split(' ');
+
     const payload = {
         user_id: session.user.id,
-        first_name: session.user.name?.split(' ')[0] || session.user.name,
-        last_name: session.user.name?.split(' ').slice(1).join(' ') || '',
+        first_name: nameParts[0] || rawName,
+        last_name: nameParts.slice(1).join(' '),
         email: session.user.email,
         phone_number: parsed.data.telefoonnummer,
         motivation: parsed.data.motivation,
@@ -246,23 +255,8 @@ export async function submitIntroParentSignup(data: IntroParentSignupForm): Prom
         await getSystemDirectus().request(createItem('intro_parent_signups', payload));
         revalidatePath('/beheer/intro');
         return { success: true };
-    } catch (e) {
-        interface DirectusError {
-            message?: string;
-            status?: number;
-            code?: string;
-            response?: { data?: unknown };
-        }
-
-        const error = e as DirectusError;
-        safeConsoleError('[intro.actions.ts][submitIntroParentSignup] Error details:', {
-            message: error.message,
-            status: error.status,
-            code: error.code,
-            response: error.response?.data || error.response
-        });
+    } catch (error: unknown) {
+        safeConsoleError('[intro.actions.ts][submitIntroParentSignup] Error details:', error);
         return { success: false, error: 'Er is een fout opgetreden bij uw aanmelding' };
     }
 }
-
-

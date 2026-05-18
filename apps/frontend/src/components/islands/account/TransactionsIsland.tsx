@@ -24,7 +24,7 @@ export const TransactionsIsland: React.FC<TransactionsIslandProps> = ({ transact
     };
 
     const formatAmount = (amount: number | string | null | undefined): string => {
-        const numAmount = amount == null
+        const numAmount = amount === null || amount === undefined
             ? 0
             : typeof amount === 'string' ? parseFloat(amount) : amount;
         return new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(numAmount);
@@ -87,6 +87,5 @@ export const TransactionsIsland: React.FC<TransactionsIslandProps> = ({ transact
                 </div>
             )}
         </Tile>
-
     );
 };

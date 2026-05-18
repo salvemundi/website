@@ -20,10 +20,10 @@ export function sanitizePayload(payload: unknown): unknown {
     }
 
     const isError = payload instanceof Error;
-    const sanitized: Record<string, unknown> = Object.create(null);
-    const entries: [string, unknown][] = isError 
-        ? [['message', (payload as Error).message], ['stack', (payload as Error).stack], ...Object.entries(payload)]
-        : Object.entries(payload);
+    const sanitized: Record<string, unknown> = Object.create(null) as Record<string, unknown>;
+    const entries: [string, unknown][] = isError
+        ? [['message', (payload).message], ['stack', (payload).stack], ...((((Object.entries(payload) as [string, unknown][]))))]
+        : ((((Object.entries(payload) as [string, unknown][]))));
 
     for (const [key, value] of entries) {
         const lowerKey = key.toLowerCase();
@@ -46,3 +46,6 @@ export function sanitizePayload(payload: unknown): unknown {
 
     return sanitized;
 }
+
+
+

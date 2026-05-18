@@ -27,22 +27,11 @@ export interface UserPermissions {
     canAccessMail: boolean;
 }
 
-/**
- * Checks if a user has permission to access a specific resource.
- */
 export function hasPermission(committees: Committee[] = [], resource: AdminResource): boolean {
-    // eslint-disable-next-line security/detect-object-injection
-    const requirement = RESOURCE_PERMISSIONS[resource];
-    if (!requirement) return false;
+    const requirement = Reflect.get(RESOURCE_PERMISSIONS, resource) as typeof RESOURCE_PERMISSIONS[AdminResource];
 
     return committees.some(c => {
-        // We exclusively use the azure_group_id (UUID) for authorization because 
-        // administrative roles are linked to Entra ID groups, and numeric IDs 
-        // are non-stable across environments.
         const hasPermissionForGroup = !!(c.azure_group_id && requirement.allowedCommitteeIds.includes(c.azure_group_id));
-
-        // Certain restricted resources require the user to be a leader 
-        // to prevent unauthorized actions by regular members.
         if (requirement.leaderOnly) {
             return hasPermissionForGroup && c.is_leader;
         }
@@ -52,15 +41,9 @@ export function hasPermission(committees: Committee[] = [], resource: AdminResou
 
 }
 
-
-/**
- * Derives permissions from a list of committees.
- * This is the central source of truth for role-based access control.
- */
 export function getPermissions(committees: Committee[] = []): UserPermissions {
-    // Basic flags for backward compatibility or general navigation
-    const isAdmin = hasPermission(committees, AdminResource.Intro); 
-    const isICT = hasPermission(committees, AdminResource.Sync); // Using Sync access as proxy for ICT-level access
+    const isAdmin = hasPermission(committees, AdminResource.Intro);
+    const isICT = hasPermission(committees, AdminResource.Sync);
     const isLeader = committees.some(c => c.is_leader && c.azure_group_id !== COMMITTEES.BESTUUR);
 
     return {

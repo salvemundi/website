@@ -1,7 +1,7 @@
 import { safeConsoleError } from '../utils/logger.js';
 import { getDirectusClient } from '../config/directus.js';
 import { updateItem, readItems, createItem, deleteItem, readUsers, updateUser, createUser, uploadFiles } from '@directus/sdk';
-import { DirectusUser, Committee, CommitteeMember, Event, EventSignup, FeatureFlag } from '../types/schema.js';
+import { DirectusUser, CommitteeMember, Event, EventSignup } from '../types/schema.js';
 
 export class DirectusService {
     static async getUserById(id: string): Promise<DirectusUser | null> {
@@ -9,7 +9,8 @@ export class DirectusService {
             filter: { id: { _eq: id } },
             fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'avatar', 'phone_number', 'date_of_birth', 'originele_betaaldatum', 'membership_status', 'membership_expiry'] as never[]
         }));
-        return (users[0] as unknown as DirectusUser) || null;
+        const user = users[0] as unknown as DirectusUser | undefined;
+        return user || null;
     }
 
     static async getUserByEntraId(entraId: string): Promise<DirectusUser | null> {
@@ -17,7 +18,8 @@ export class DirectusService {
             filter: { entra_id: { _eq: entraId } },
             fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'avatar', 'phone_number', 'date_of_birth', 'originele_betaaldatum', 'membership_status', 'membership_expiry'] as never[]
         }));
-        return (users[0] as unknown as DirectusUser) || null;
+        const user = users[0] as unknown as DirectusUser | undefined;
+        return user || null;
     }
 
     static async getUserByEmail(email: string): Promise<DirectusUser | null> {
@@ -25,7 +27,8 @@ export class DirectusService {
             filter: { email: { _eq: email.toLowerCase() } },
             fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'avatar', 'phone_number', 'date_of_birth', 'originele_betaaldatum', 'membership_status', 'membership_expiry'] as never[]
         }));
-        return (users[0] as unknown as DirectusUser) || null;
+        const user = users[0] as unknown as DirectusUser | undefined;
+        return user || null;
     }
 
     static async updateUser(id: string, data: Partial<DirectusUser>) {
@@ -109,7 +112,7 @@ export class DirectusService {
         return await getDirectusClient().request(readItems('events', {
             filter: { event_date: { _eq: dateStr } },
             fields: ['id', 'name', 'event_date', 'event_time', 'location']
-        }));
+        })) as unknown as Event[];
     }
 
     static async getPaidEventSignups(eventId: number): Promise<EventSignup[]> {
@@ -119,7 +122,7 @@ export class DirectusService {
                 payment_status: { _eq: 'paid' }
             },
             fields: ['id', 'participant_name', 'participant_email']
-        }));
+        })) as unknown as EventSignup[];
     }
 
     static async isFlagActive(key: string): Promise<boolean> {
@@ -127,10 +130,11 @@ export class DirectusService {
             const items = await getDirectusClient().request(readItems('feature_flags', {
                 filter: { route_match: { _eq: key } },
                 fields: ['is_active']
-            }));
-            return items?.[0]?.is_active ?? false;
-        } catch (error) {
-            safeConsoleError(`[DirectusService] Error checking flag ${key}:`, error);
+            })) as { is_active?: boolean }[];
+            return items[0] ? !!items[0].is_active : false;
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : String(error);
+            safeConsoleError(`[Directus.Service.ts][isFlagActive] Error checking flag ${key}:`, message);
             return false;
         }
     }
@@ -142,8 +146,7 @@ export class DirectusService {
         const client = getDirectusClient();
         const formData = new FormData();
 
-        // Convert Buffer to Blob for the SDK/FormData
-        const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer;
+        const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
         const blob = new Blob([arrayBuffer], { type: contentType });
         formData.append('file', blob, filename);
 
@@ -156,8 +159,9 @@ export class DirectusService {
             }));
 
             return fileId;
-        } catch (error) {
-            safeConsoleError(`[DirectusService] Failed to upload avatar for user ${userId}:`, error);
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : String(error);
+            safeConsoleError(`[Directus.Service.ts][uploadUserAvatar] Failed to upload avatar for user ${userId}:`, message);
             throw error;
         }
     }

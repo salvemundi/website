@@ -13,13 +13,12 @@ export default async function CommissiesBeheerPage() {
     const session = await getEnrichedSession();
     if (!session?.user) redirect('/?needLogin=true');
 
-    // NUCLEAR SSR: Fetch all data before flushing any part of the page content
     const [committees, totalUniqueMembers] = await Promise.all([
         getCommittees().catch(() => []),
         countUniqueCommitteeMembers().catch(() => 0),
     ]);
     
-    const firstCommittee = committees[0];
+    const firstCommittee = committees[0] as typeof committees[0] | undefined;
     const initialMembers = firstCommittee ? await getCommitteeMembers(firstCommittee.id.toString()).catch(() => []) : [];
 
     return (

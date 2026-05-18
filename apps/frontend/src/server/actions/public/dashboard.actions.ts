@@ -22,9 +22,20 @@ import { getPermissions, type UserPermissions } from '@/shared/lib/permissions';
 import { checkAdminAccess } from "@/server/actions/admin/admin-utils.actions";
 import { safeConsoleError } from '@/server/utils/logger';
 
-/**
- * Haalt de specifieke permissies op voor de huidige gebruiker t.b.v. het admin dashboard.
- */
+interface DbTopStickerRow {
+    id: string;
+    first_name: string | null;
+    last_name: string | null;
+    count: string | number;
+}
+
+interface BirthdayUserRow {
+    id: string;
+    first_name: string | null;
+    last_name: string | null;
+    date_of_birth: string | null;
+}
+
 export async function getDashboardPermissions(): Promise<UserPermissions & { isIct: boolean }> {
     const { isAuthorized, user, isIct } = await checkAdminAccess();
 
@@ -59,9 +70,6 @@ export async function getDashboardPermissions(): Promise<UserPermissions & { isI
     };
 }
 
-/**
- * Haalt globale statistieken op voor de dashboard widgets.
- */
 export async function getDashboardStats(): Promise<DashboardStats> {
     const { isAuthorized } = await checkAdminAccess();
     if (!isAuthorized) throw new Error("Geen toegang");
@@ -69,9 +77,6 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     return await getDashboardStatsInternal();
 }
 
-/**
- * Haalt de eerstvolgende verjaardagen van leden op.
- */
 export async function getUpcomingBirthdays(): Promise<Birthday[]> {
     const { isAuthorized } = await checkAdminAccess();
     if (!isAuthorized) return [];
@@ -80,7 +85,8 @@ export async function getUpcomingBirthdays(): Promise<Birthday[]> {
             fields: [...USER_BASIC_FIELDS, 'date_of_birth' as keyof DirectusUser],
             filter: { date_of_birth: { _nnull: true } },
             limit: -1
-        }));
+        })) as unknown as BirthdayUserRow[];
+
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
@@ -115,15 +121,12 @@ export async function getUpcomingBirthdays(): Promise<Birthday[]> {
         }));
 
         return z.array(BirthdaySchema).parse(result);
-    } catch (error) {
-        safeConsoleError(`[DashboardActions][getUpcomingBirthdays] Error while fetching birthdays:`, error);
+    } catch (error: unknown) {
+        safeConsoleError(`[dashboard.actions.ts][getUpcomingBirthdays] Error while fetching birthdays:`, error);
         return [];
     }
 }
 
-/**
- * Haalt recente systeemactiviteiten op (logs).
- */
 export async function getRecentActivities(): Promise<RecentActivity[]> {
     const { isAuthorized } = await checkAdminAccess();
     if (!isAuthorized) return [];
@@ -131,9 +134,6 @@ export async function getRecentActivities(): Promise<RecentActivity[]> {
     return await getRecentActivitiesInternal();
 }
 
-/**
- * Haalt de top sticker-plakkers op.
- */
 export async function getTopStickers(): Promise<TopSticker[]> {
     const { isAuthorized } = await checkAdminAccess();
     if (!isAuthorized) return [];
@@ -150,7 +150,7 @@ export async function getTopStickers(): Promise<TopSticker[]> {
             ORDER BY count DESC
             LIMIT 3
         `;
-        const { rows } = await query(sql);
+        const { rows } = await query<DbTopStickerRow>(sql);
 
         const result = rows.map(r => ({
             id: String(r.id),
@@ -159,8 +159,8 @@ export async function getTopStickers(): Promise<TopSticker[]> {
             count: Number(r.count)
         }));
         return z.array(TopStickerSchema).parse(result);
-    } catch (error) {
-        safeConsoleError(`[DashboardActions][getTopStickers] Error while fetching top stickers:`, error);
+    } catch (error: unknown) {
+        safeConsoleError(`[dashboard.actions.ts][getTopStickers] Error while fetching top stickers:`, error);
         return [];
     }
 }

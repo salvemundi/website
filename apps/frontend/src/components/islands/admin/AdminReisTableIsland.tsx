@@ -12,7 +12,6 @@ import { useAdminToast } from '@/hooks/use-admin-toast';
 import { downloadCSV } from '@/lib/utils/export';
 import AdminReisSignupModalIsland from './reis/AdminReisSignupModalIsland';
 
-// New Refactored Modules
 import { getPaymentStatus, getStatusBadge } from '@/lib/reis/reis-admin.utils';
 import { generateReisCSVData } from '@/lib/reis/reis-export';
 import { useReisActions } from '@/hooks/use-reis-actions';
@@ -25,9 +24,6 @@ interface AdminReisTableIslandProps {
     trip: Trip;
 }
 
-/**
- * AdminReisTableIsland: Beheerpaneel voor reisaanmeldingen.
- */
 export default function AdminReisTableIsland({
     initialSignups = [],
     initialSignupActivities = {},
@@ -37,7 +33,6 @@ export default function AdminReisTableIsland({
     const [isPending, _startTransition] = useTransition();
     const { toast, showToast, hideToast } = useAdminToast();
 
-    // 1. Hook for Signup Actions (Status, Delete, Email)
     const {
         signups,
         setSignups,
@@ -48,7 +43,6 @@ export default function AdminReisTableIsland({
         handleResendPaymentEmail
     } = useReisActions(initialSignups, trip, showToast);
 
-    // 2. Local UI State
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [roleFilter, setRoleFilter] = useState<string>('all');
@@ -61,17 +55,21 @@ export default function AdminReisTableIsland({
 
     useEffect(() => { setMounted(true); }, []);
 
-    // Sync state when initialSignups changes (revalidation)
     useEffect(() => {
         setSignups(initialSignups);
     }, [initialSignups, setSignups]);
 
-    // 3. Selection & Modal Handlers
     const openSignup = (signup: TripSignup, edit: boolean = false) => {
         setSelectedSignup(signup);
         setIsEditing(edit);
-        const activities = initialSignupActivities[signup.id] || [];
-        setSelectedActivities(activities.map(a => typeof a.trip_activity_id === 'object' ? a.trip_activity_id.id : a.trip_activity_id));
+        const signupActivities = initialSignupActivities as Record<number, TripSignupActivity[] | undefined>;
+        const activities = signupActivities[signup.id] || [];
+        setSelectedActivities(activities.map(a => {
+            const actId = a.trip_activity_id as unknown;
+            return actId && typeof actId === 'object' && 'id' in actId
+                ? (actId as { id: number }).id
+                : Number(actId);
+        }));
     };
 
     const handleToggleActivity = (id: number) => {
@@ -119,19 +117,39 @@ export default function AdminReisTableIsland({
         }
     };
 
-    // 4. Filtering & Stats
+    const handleSaveSync = (formData: FormData) => {
+        void handleSave(formData);
+    };
+
+    const handleStatusChangeSync = (id: number, status: string) => {
+        void handleStatusChange(id, status, (u) => setSelectedSignup(u));
+    };
+
+    const handleDeleteSync = (id: number) => {
+        void handleDelete(id, () => setSelectedSignup(null));
+    };
+
+    const handleDeleteSelectedSync = () => {
+        if (selectedSignup) {
+            void handleDelete(selectedSignup.id, () => setSelectedSignup(null));
+        }
+    };
+
+    const handleResendPaymentEmailSync = (id: number, type: 'deposit' | 'final') => {
+        void handleResendPaymentEmail(id, type, (u) => setSelectedSignup(u));
+    };
+
     const filteredSignups = signups.filter(signup => {
         if (searchQuery) {
-            const query = searchQuery.toLowerCase();
+            const queryText = searchQuery.toLowerCase();
             const fullName = `${signup.first_name} ${signup.last_name}`.toLowerCase();
-            if (!fullName.includes(query) && !signup.email.toLowerCase().includes(query)) return false;
+            if (!fullName.includes(queryText) && !signup.email.toLowerCase().includes(queryText)) return false;
         }
         if (statusFilter !== 'all' && signup.status !== statusFilter) return false;
         if (roleFilter !== 'all' && signup.role !== roleFilter) return false;
         return true;
     });
 
-    // 5. Export Logic
     const downloadCSVExport = () => {
         if (filteredSignups.length === 0) return;
         try {
@@ -164,12 +182,12 @@ export default function AdminReisTableIsland({
                     getPaymentStatus={getPaymentStatus}
                     actionStates={actionStates}
                     sendingEmailTo={sendingEmailTo}
-                    onStatusChange={(id, status) => handleStatusChange(id, status, (u) => setSelectedSignup(u))}
-                    onDelete={(id) => handleDelete(id, () => setSelectedSignup(null))}
-                    onResendEmail={(id, type) => handleResendPaymentEmail(id, type, (u) => setSelectedSignup(u))}
+                    onStatusChange={handleStatusChangeSync}
+                    onDelete={handleDeleteSync}
+                    onResendEmail={handleResendPaymentEmailSync}
                     signupActivitiesMap={initialSignupActivities}
-                    allowFinalPayments={!!trip?.allow_final_payments}
-                    isBusTrip={!!trip?.is_bus_trip}
+                    allowFinalPayments={!!trip.allow_final_payments}
+                    isBusTrip={!!trip.is_bus_trip}
                 />
             </div>
 
@@ -186,10 +204,10 @@ export default function AdminReisTableIsland({
                     formRef={formRef}
                     onClose={() => isEditing ? setIsEditing(false) : setSelectedSignup(null)}
                     onToggleEdit={() => setIsEditing(!isEditing)}
-                    onDelete={() => handleDelete(selectedSignup!.id, () => setSelectedSignup(null))}
-                    onSave={handleSave as unknown as (formData: FormData) => void}
+                    onDelete={handleDeleteSelectedSync}
+                    onSave={handleSaveSync}
                     onToggleActivity={handleToggleActivity}
-                    onResendEmail={(id, type) => handleResendPaymentEmail(id, type, (u) => setSelectedSignup(u))}
+                    onResendEmail={handleResendPaymentEmailSync}
                 />
             )}
 

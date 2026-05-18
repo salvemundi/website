@@ -1,5 +1,5 @@
 import { createDirectus, rest, staticToken, DirectusClient, RestClient, StaticTokenClient } from '@directus/sdk';
-import { Schema } from '../types/schema.js';
+import { DirectusSchema } from '@salvemundi/validations';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -7,7 +7,7 @@ dotenv.config();
 const url = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL || 'http://v7-core-directus:8055';
 const token = process.env.DIRECTUS_STATIC_TOKEN;
 
-let _directus: DirectusClient<Schema> & RestClient<Schema> & StaticTokenClient<Schema> | null = null;
+let _directus: DirectusClient<DirectusSchema> & RestClient<DirectusSchema> & StaticTokenClient<DirectusSchema> | null = null;
 
 export function getDirectusClient() {
     if (_directus) return _directus;
@@ -16,9 +16,9 @@ export function getDirectusClient() {
         throw new Error('Missing DIRECTUS_STATIC_TOKEN in environment variables');
     }
 
-    _directus = createDirectus<Schema>(url)
+    _directus = createDirectus<DirectusSchema>(url)
         .with(staticToken(token))
         .with(rest());
-    
+
     return _directus;
 }

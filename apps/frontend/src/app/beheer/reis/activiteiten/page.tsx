@@ -5,6 +5,10 @@ import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 import { notFound } from 'next/navigation';
 import { getTripSignupActivitiesAction } from '@/server/actions/admin/reis-signups.actions';
+import AdminPageShell from '@/components/ui/admin/AdminPageShell';
+import Link from 'next/link';
+import { Ticket } from 'lucide-react';
+import { safeConsoleError } from '@/server/utils/logger';
 
 interface PageProps {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -31,21 +35,16 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
                 fields: ['name'],
                 limit: 1
             }));
-            if (trip && trip[0]) {
+            if (trip[0]) {
                 title = `${trip[0].name} - Activiteiten | SV Salve Mundi`;
             }
         } catch (error) {
-            safeConsoleError(`[AdminReisActiviteitenPage][generateMetadata] Error while fetching trip:`, error);
+            safeConsoleError('[ReisActiviteitenPage][generateMetadata]', error);
         }
     }
 
     return { title };
 }
-
-import AdminPageShell from '@/components/ui/admin/AdminPageShell';
-import Link from 'next/link';
-import { Ticket } from 'lucide-react';
-import { safeConsoleError } from '@/server/utils/logger';
 
 export default async function ReisActiviteitenPage({ searchParams }: PageProps) {
     const resolvedSearchParams = await searchParams;
@@ -53,7 +52,7 @@ export default async function ReisActiviteitenPage({ searchParams }: PageProps) 
 
     const trips = await getTrips();
 
-    if (!trips || trips.length === 0) {
+    if (trips.length === 0) {
         return (
             <AdminPageShell title="Reis Activiteiten" backHref="/beheer/reis">
                 <div className="container mx-auto px-4 py-20 text-center">
@@ -79,7 +78,8 @@ export default async function ReisActiviteitenPage({ searchParams }: PageProps) 
 
     const signupsByActivity = new Map<number, Signup[]>();
 
-    (allSignups as unknown as Signup[] || []).forEach((s) => {
+    const signupsArray = allSignups as unknown as Signup[];
+    signupsArray.forEach((s) => {
         const activityId = (s.trip_activity_id && typeof s.trip_activity_id === 'object')
             ? s.trip_activity_id.id
             : (s.trip_activity_id as number);

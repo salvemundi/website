@@ -2,7 +2,7 @@ import React from 'react';
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { getSyncStatusAction } from '@/server/actions/infrastructure/azure-sync/sync-monitoring.actions';
+import { getSyncStatusAction, type SyncStatus } from '@/server/actions/infrastructure/azure-sync/sync-monitoring.actions';
 
 // Modular Islands
 import SyncControlIsland from '@/components/islands/admin/sync/SyncControlIsland';
@@ -10,7 +10,6 @@ import SyncMonitorIsland from '@/components/islands/admin/sync/SyncMonitorIsland
 import { SyncProvider } from '@/components/islands/admin/sync/SyncContext';
 
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
-import { type EnrichedUser } from '@/types/auth';
 import { type Committee } from '@/shared/lib/permissions';
 
 export const metadata: Metadata = {
@@ -19,12 +18,12 @@ export const metadata: Metadata = {
 
 async function checkSyncAccess() {
     const session = await getEnrichedSession();
-    if (!session || !session.user) return false;
+    if (!session) return false;
 
-    const user = session.user as unknown as EnrichedUser;
-    const memberships = (user.committees as Committee[]) || [];
+    const user = session.user;
+    const memberships = user.committees || [];
     return memberships.some((c: Committee) => {
-        const name = (c?.name || '').toString().toLowerCase();
+        const name = (c.name || '').toString().toLowerCase();
         return name.includes('bestuur') || name.includes('ict') || name.includes('kandi');
     });
 }
@@ -35,8 +34,8 @@ export default async function AzureSyncPage() {
     if (!hasAccess) redirect('/beheer');
 
     const statusData = await getSyncStatusAction();
-    const initialStatus = statusData && !('success' in statusData && statusData.success === false)
-        ? statusData
+    const initialStatus = !('success' in statusData)
+        ? (statusData as SyncStatus)
         : null;
 
     const issuesCount = (initialStatus?.errorCount || 0) + (initialStatus?.warningCount || 0) + (initialStatus?.missingDataCount || 0);

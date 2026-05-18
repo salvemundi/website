@@ -5,7 +5,7 @@ export interface Schema {
     events: Event[];
     event_signups: EventSignup[];
     feature_flags: FeatureFlag[];
-    system_logs: any[];
+    system_logs: unknown[];
 }
 
 export interface FeatureFlag {

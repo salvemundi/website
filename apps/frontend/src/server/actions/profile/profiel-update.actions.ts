@@ -3,7 +3,6 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { updateProfileSchema } from '@salvemundi/validations/schema/profiel.zod';
-
 import { getSystemDirectus } from '@/lib/directus';
 import { updateUser } from '@directus/sdk';
 import { triggerUserSyncAction } from '@/server/actions/infrastructure/azure-sync/sync-tasks.actions';
@@ -11,6 +10,16 @@ import { clearSessionCache } from '@/server/auth/session-utils';
 import { getAuthorizedUser } from '@/server/actions/events/activiteiten/auth-check';
 import sharp from 'sharp';
 import { safeConsoleError } from '@/server/utils/logger';
+
+interface AzureErrorResponse {
+    details?: string;
+    error?: {
+        code?: string;
+        message?: string;
+    };
+    code?: string;
+    message?: string;
+}
 
 export async function updateUserProfile(data: z.infer<typeof updateProfileSchema>) {
     const user = await getAuthorizedUser();
@@ -22,7 +31,7 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
     const { rateLimit } = await import('@/server/utils/ratelimit');
     const { success } = await rateLimit('profile-update', 10, 300);
     if (!success) {
-        return { success: false, error: 'Te veel wijzigingen. Probeer het over 5 minuten opnieuw.' };
+        return { success: false, error: 'Te veel wijzigingen. Probeer het over 5 minutes opnieuw.' };
     }
 
     const parsed = updateProfileSchema.safeParse(data);
@@ -47,8 +56,8 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
             });
 
             if (!azureRes.ok) {
-                const errorData = await azureRes.json().catch((_error: unknown) => ({}));
-                safeConsoleError('[ProfileUpdate] Azure AD phone number update failed:', errorData);
+                const errorData = await azureRes.json().catch(() => ({})) as AzureErrorResponse;
+                safeConsoleError('[profiel-update.actions.ts][updateUserProfile] Azure AD phone number update failed:', errorData);
                 return {
                     success: false,
                     error: `Azure AD update mislukt: ${errorData.details || 'Ongeldig telefoonnummer of service onbeschikbaar.'}`
@@ -56,11 +65,11 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
             }
 
             await triggerUserSyncAction(entraId).catch((error: unknown) => {
-                safeConsoleError(`[SYNC-ACTION] Error triggering sync:`, error);
+                safeConsoleError(`[profiel-update.actions.ts][updateUserProfile] Error triggering sync:`, error);
             });
         }
 
-        const directusOnlyData: Record<string, unknown> = {};
+        const directusOnlyData: { [key: string]: unknown } = {};
         if (parsed.data.minecraft_username !== undefined) {
             directusOnlyData.minecraft_username = parsed.data.minecraft_username;
         }
@@ -75,7 +84,8 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
         revalidatePath('/profiel', 'page');
         revalidatePath('/', 'layout');
         return { success: true };
-    } catch {
+    } catch (error: unknown) {
+        safeConsoleError('[profiel-update.actions.ts][updateUserProfile] Profile update failed:', error);
         return { success: false, error: 'Bijwerken mislukt door een onbekende systeemfout.' };
     }
 }
@@ -93,9 +103,9 @@ export async function uploadUserAvatar(formData: FormData) {
         return { success: false, error: 'Te veel uploads. Probeer het over 10 minuten opnieuw.' };
     }
 
-    const file = formData.get('file') as File;
-    if (!file) {
-        return { success: false, error: 'Geen bestand geselecteerd.' };
+    const file = formData.get('file');
+    if (!file || !(file instanceof File)) {
+        return { success: false, error: 'Geen geldig bestand geselecteerd.' };
     }
 
     if (!file.type.startsWith('image/')) {
@@ -132,14 +142,14 @@ export async function uploadUserAvatar(formData: FormData) {
 
         if (!azureRes.ok) {
             const errorData = await azureRes.json().catch((error: unknown) => {
-                safeConsoleError('[AvatarUpload] Azure response was geen geldige JSON:', error);
-                return null;
-            });
+                safeConsoleError('[profiel-update.actions.ts][uploadUserAvatar] Azure response was no valid JSON:', error);
+                return {};
+            }) as AzureErrorResponse;
 
-            const safeErrorCode = errorData?.error?.code || errorData?.code || azureRes.status;
-            const safeErrorMessage = errorData?.error?.message || errorData?.message || 'Onbekende Azure fout';
+            const safeErrorCode = errorData.error?.code || errorData.code || azureRes.status;
+            const safeErrorMessage = errorData.error?.message || errorData.message || 'Onbekende Azure fout';
 
-            safeConsoleError(`[AvatarUpload] Azure API Error [${safeErrorCode}]:`, safeErrorMessage);
+            safeConsoleError(`[profiel-update.actions.ts][uploadUserAvatar] Azure API Error [${safeErrorCode}]:`, safeErrorMessage);
 
             return { success: false, error: 'Fout bij opslaan in Microsoft Entra ID.' };
         }
@@ -151,7 +161,7 @@ export async function uploadUserAvatar(formData: FormData) {
         revalidatePath('/profiel');
         return { success: true };
     } catch (error: unknown) {
-        safeConsoleError('[AvatarUpload] Error:', error);
+        safeConsoleError('[profiel-update.actions.ts][uploadUserAvatar] Avatar upload failed:', error);
         return { success: false, error: 'Uploaden van profielfoto mislukt.' };
     }
 }

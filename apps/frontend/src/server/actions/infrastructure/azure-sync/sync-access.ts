@@ -9,7 +9,7 @@ import { type EnrichedUser } from "@/types/auth";
 
 export async function checkSyncAccess(targetId?: string) {
     const session = await getEnrichedSession();
-    if (!session || !session.user) return null;
+    if (!session) return null;
     
     const user = session.user as unknown as EnrichedUser;
     

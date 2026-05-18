@@ -34,7 +34,7 @@ export default async function BlogDetailPage({ params }: Props) {
         notFound();
     }
 
-    const config = typeConfig[blog.blog_type] || typeConfig.update;
+    const config = typeConfig[blog.blog_type];
     const date = blog.created_at;
 
     return (

@@ -72,7 +72,7 @@ export default function TripForm({
         setImagePreview(null);
     };
 
-    const formErrors = state?.fieldErrors || {};
+    const formErrors = (state?.fieldErrors || {}) as Record<string, string[] | undefined>;
 
     const toLocalISO = (d: string | Date | null | undefined) => {
         if (!d) return '';

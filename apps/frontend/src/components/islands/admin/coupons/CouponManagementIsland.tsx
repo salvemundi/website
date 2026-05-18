@@ -1,7 +1,7 @@
 'use client';
 
-import { 
-    useState, useTransition, useMemo 
+import {
+    useState, useTransition, useMemo
 } from 'react';
 import {
     Ticket, Plus, CheckCircle, Clock, ToggleLeft, ToggleRight
@@ -15,11 +15,12 @@ import CouponRow from './CouponRow';
 import CouponForm from './CouponForm';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
+
 interface Props {
     initialCoupons?: Coupon[];
 }
 
-export default function CouponManagementIsland({ 
+export default function CouponManagementIsland({
     initialCoupons = [] }: Props) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [coupons, setCoupons] = useState<Coupon[]>(initialCoupons);
@@ -33,17 +34,16 @@ export default function CouponManagementIsland({
     const { validCoupons, inactiveCoupons } = useMemo(() => {
         const valid: Coupon[] = [];
         const inactive: Coupon[] = [];
-        
+
         coupons.forEach(c => {
             const status = getComputedCouponStatus(c);
-            // Non-expired coupons (active, pending, inactive, maxed) go in the top section
             if (status.type !== 'expired') {
                 valid.push(c);
             } else {
                 inactive.push(c);
             }
         });
-        
+
         return { validCoupons: valid, inactiveCoupons: inactive };
     }, [coupons]);
 
@@ -51,12 +51,10 @@ export default function CouponManagementIsland({
         setFormError(null);
         formData.set('discount_type', discountType);
 
-        // Optimistic values
         const code = (formData.get('coupon_code') as string || '').toUpperCase();
         const value = Number(formData.get('discount_value'));
         const isActive = formData.get('is_active') === 'on';
-        
-        // 1. Optimistic Update
+
         const tempId = -Math.floor(Math.random() * 1000000);
         const tempCoupon: Coupon = {
             id: tempId,
@@ -68,7 +66,7 @@ export default function CouponManagementIsland({
             valid_from: (formData.get('valid_from') as string) || null,
             valid_until: (formData.get('valid_until') as string) || null,
             is_active: isActive,
-            isOptimistic: true // Custom flag for UI
+            isOptimistic: true
         };
 
         setCoupons(prev => [tempCoupon, ...prev]);
@@ -76,16 +74,14 @@ export default function CouponManagementIsland({
 
         startTransition(async () => {
             const res = await createCoupon(formData);
-            
+
             if (!res.success) {
                 setFormError(res.error ?? 'Aanmaken mislukt');
-                // Rollback
                 setCoupons(prev => prev.filter(c => c.id !== tempId));
-                setIsAdding(true); // Open modal again
+                setIsAdding(true);
                 return;
             }
 
-            // 2. Replace optimistic with real data
             const newCoupon = res.data;
             if (newCoupon) {
                 setCoupons(prev => prev.map(c => c.id === tempId ? newCoupon : c));
@@ -128,7 +124,7 @@ export default function CouponManagementIsland({
     return (
         <>
             <div className={`container mx-auto px-4 py-8 max-w-7xl`}>
-                
+
                 <AdminModal
                     isOpen={isAdding}
                     onClose={() => setIsAdding(false)}
@@ -136,8 +132,8 @@ export default function CouponManagementIsland({
                     subtitle="Voeg een nieuwe kortingscode toe aan het systeem"
                     maxWidth="3xl"
                 >
-                    <CouponForm 
-                        onSave={handleCreate}
+                    <CouponForm
+                        onSave={(formData, discountType) => { void handleCreate(formData, discountType); }}
                         onCancel={() => setIsAdding(false)}
                         isPending={isPending}
                         error={formError}
@@ -156,7 +152,7 @@ export default function CouponManagementIsland({
                             Beheer kortingscodes en acties
                         </p>
                     </div>
-                    
+
                     <button
                         onClick={() => setIsAdding(true)}
                         className="flex items-center justify-center gap-3 px-8 py-4 bg-[var(--beheer-accent)] text-white font-semibold text-sm rounded-xl shadow-lg hover:opacity-90 transition-all active:scale-95 border border-white/10 group self-start sm:self-center"
@@ -168,7 +164,6 @@ export default function CouponManagementIsland({
 
                 <AdminStatsBar stats={adminStats} />
 
-                {/* Main Table */}
                 <div className="space-y-4">
                     <div className="flex items-center justify-between border-l-4 border-[var(--beheer-active)] pl-4 py-1">
                         <h2 className="text-sm font-semibold text-[var(--beheer-text)] flex items-center gap-3">
@@ -179,7 +174,7 @@ export default function CouponManagementIsland({
                         </h2>
                     </div>
 
-                    <div 
+                    <div
                         className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] overflow-hidden shadow-xl transition-all"
                     >
                         {validCoupons.length === 0 ? (
@@ -202,11 +197,11 @@ export default function CouponManagementIsland({
                                     </thead>
                                     <tbody className="divide-y divide-[var(--beheer-border)]">
                                         {validCoupons.map(coupon => (
-                                            <CouponRow 
-                                                key={coupon.id} 
-                                                coupon={coupon} 
-                                                onToggle={handleToggle} 
-                                                onDelete={handleDelete}
+                                            <CouponRow
+                                                key={coupon.id}
+                                                coupon={coupon}
+                                                onToggle={(c) => { void handleToggle(c); }}
+                                                onDelete={(id) => { void handleDelete(id); }}
                                                 isToggling={togglingId === coupon.id}
                                                 isDeleting={deletingId === coupon.id}
                                             />
@@ -218,9 +213,8 @@ export default function CouponManagementIsland({
                     </div>
                 </div>
 
-                {/* Collapsible Section for Expired/Inactive */}
                 <div className="mt-12 space-y-4">
-                    <button 
+                    <button
                         onClick={() => setShowExpired(!showExpired)}
                         className="flex items-center gap-4 text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] transition-all group cursor-pointer border-l-4 border-slate-500 pl-4 py-1"
                     >
@@ -244,11 +238,11 @@ export default function CouponManagementIsland({
                                     <table className="w-full text-left">
                                         <tbody className="divide-y divide-[var(--beheer-border)]">
                                             {inactiveCoupons.map(coupon => (
-                                                <CouponRow 
-                                                    key={coupon.id} 
-                                                    coupon={coupon} 
-                                                    onToggle={handleToggle} 
-                                                    onDelete={handleDelete}
+                                                <CouponRow
+                                                    key={coupon.id}
+                                                    coupon={coupon}
+                                                    onToggle={(c) => { void handleToggle(c); }}
+                                                    onDelete={(id) => { void handleDelete(id); }}
                                                     isToggling={togglingId === coupon.id}
                                                     isDeleting={deletingId === coupon.id}
                                                 />

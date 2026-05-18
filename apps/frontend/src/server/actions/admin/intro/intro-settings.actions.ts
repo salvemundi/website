@@ -16,7 +16,7 @@ export async function toggleIntroVisibility(): Promise<{ success: boolean; show?
         const sql = 'SELECT id, is_active FROM feature_flags WHERE route_match = $1 LIMIT 1';
         const { rows } = await query(sql, [route]);
 
-        const flag = rows?.[0];
+        const flag = rows[0] as { id: number; is_active: boolean } | undefined;
         const oldStatus = flag ? !!flag.is_active : true;
         const newStatus = !oldStatus;
 

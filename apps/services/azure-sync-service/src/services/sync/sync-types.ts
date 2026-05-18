@@ -48,7 +48,7 @@ export interface SyncContext {
     membershipCache: Map<string, CommitteeMember[]>; // user_id -> membership[]
     membershipMap?: Map<string, Map<number, boolean>>;
     // mainMembershipState: entrapId -> Set of active group IDs the user is in
-    mainMembershipState: Map<string, Set<string>>; 
+    mainMembershipState: Map<string, Set<string>>;
     processedEmails?: Set<string>;
     photoCache?: Map<string, { buffer: Buffer; contentType: string } | null>;
 }
@@ -56,8 +56,8 @@ export interface SyncContext {
 export const SYNC_REDIS_KEY = 'v7:sync:status';
 export const SYNC_ABORT_KEY = 'v7:sync:abort';
 
-export const GROUP_ACTIVE_LID = process.env.AZURE_ACTIVE_LID_GROUP_ID || '2e17c12a-28d6-49ae-981a-8b5b8d88db8a';
-export const GROUP_EXPIRED_LID = process.env.AZURE_EXPIRED_LID_GROUP_ID || '98c1d807-613a-4a23-9618-3f8821d35fe9';
+if (!process.env.AZURE_ACTIVE_LID_GROUP_ID) throw new Error('Missing AZURE_ACTIVE_LID_GROUP_ID'); export const GROUP_ACTIVE_LID = process.env.AZURE_ACTIVE_LID_GROUP_ID;
+if (!process.env.AZURE_EXPIRED_LID_GROUP_ID) throw new Error('Missing AZURE_EXPIRED_LID_GROUP_ID'); export const GROUP_EXPIRED_LID = process.env.AZURE_EXPIRED_LID_GROUP_ID;
 
 export const getInitialStatus = (): SyncStatus => ({
     active: false,
@@ -83,3 +83,4 @@ export const getInitialStatus = (): SyncStatus => ({
 });
 
 export const DEFAULT_SYNC_STATUS = getInitialStatus();
+

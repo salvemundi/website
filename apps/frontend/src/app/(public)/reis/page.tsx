@@ -12,7 +12,7 @@ import type { EnrichedUser } from '@/types/auth';
 
 export const metadata = {
     title: 'Reis | Salve Mundi',
-    description: 'Schrijf je in voor de jaarlijkse reis van Salve Mundi! Een onvergetelijke ervaring.'
+    description: 'Schrijf je in voor een reis van Salve Mundi!'
 };
 
 export default async function ReisPage() {

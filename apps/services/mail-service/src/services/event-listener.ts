@@ -1,4 +1,4 @@
-import { safeConsoleError } from '../utils/logger.js';
+import { safeConsoleError, safeConsoleLog } from '../utils/logger.js';
 import { Redis } from 'ioredis';
 import { EventHandlers } from './event-handlers.js';
 
@@ -12,7 +12,7 @@ export class EventListenerService {
      * Start luisteren naar Redis Stream events.
      */
     static async start(redis: Redis) {
-        console.log('[MailEventListener] Starting Redis Stream listener...');
+        safeConsoleLog('[MailEventListener] Starting Redis Stream listener...');
 
         try {
             await redis.xgroup('CREATE', this.STREAM_KEY, this.GROUP_NAME, '0', 'MKSTREAM');
@@ -31,43 +31,39 @@ export class EventListenerService {
                     'GROUP', this.GROUP_NAME, this.CONSUMER_NAME,
                     'COUNT', 1, 'BLOCK', 5000,
                     'STREAMS', this.STREAM_KEY, '>'
-                )) as [string, [string, string[]][]][];
+                )) as [string, [string, string[]][]][] | null;
 
                 if (response && response.length > 0) {
-                    for (const [stream, messages] of response) {
+                    for (const [, messages] of response) {
                         for (const [id, fields] of messages) {
-                            const data: Record<string, string> = {};
-                            for (let i = 0; i < fields.length; i += 2) {
-                                data[fields[i]] = fields[i + 1];
+                            const payloadIdx = fields.indexOf('payload');
+                            if (payloadIdx !== -1 && fields[payloadIdx + 1]) {
+                                const data = {
+                                    payload: fields[payloadIdx + 1]
+                                };
+                                await this.handleEvent(redis, { id, data });
                             }
-
-                            await this.handleEvent(redis, { id, data });
                             await redis.xack(this.STREAM_KEY, this.GROUP_NAME, id);
                         }
                     }
                 }
             } catch (error: unknown) {
-                // Volledige naleving van de "Zero-Any Policy": we casten niet naar any, maar gebruiken de message veilig.
                 const message = error instanceof Error ? error.message : String(error);
                 safeConsoleError('[MailEventListener] Loop Error:', message);
 
-                // Voorkom CPU-spike bij constante fouten
                 await new Promise(resolve => setTimeout(resolve, 5000));
             }
         }
     }
 
-    /**
-     * Dispatcht binnengekomen events naar de juiste handlers.
-     */
     private static async handleEvent(redis: Redis, message: { id: string; data: Record<string, string> }) {
         try {
             if (!message.data.payload) {
-                console.warn(`[MailEventListener] Message ${message.id} missing payload`);
+                safeConsoleLog(`[MailEventListener] Message ${message.id} missing payload`);
                 return;
             }
-            const payload = JSON.parse(message.data.payload);
-            console.log(`[MailEventListener] Received event: ${payload.event}`);
+            const payload = JSON.parse(message.data.payload) as { event?: string };
+            safeConsoleLog(`[MailEventListener] Received event: ${payload.event}`);
 
             if (payload.event === 'PAYMENT_SUCCESS') {
                 await EventHandlers.handlePaymentSuccess(redis, payload);

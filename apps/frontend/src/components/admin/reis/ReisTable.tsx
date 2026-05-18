@@ -15,7 +15,7 @@ interface ReisTableProps {
     onStatusChange: (id: number, status: string) => void;
     onDelete: (id: number) => void;
     onResendEmail: (id: number, type: 'deposit' | 'final') => void;
-    signupActivitiesMap: Record<number, TripSignupActivity[]>;
+    signupActivitiesMap: Record<number, TripSignupActivity[] | undefined>;
     allowFinalPayments: boolean;
     isBusTrip?: boolean;
 }
@@ -23,14 +23,14 @@ interface ReisTableProps {
 export default function ReisTable({
     filteredSignups = [],
     selectedSignupId = null,
-    onOpenSignup = () => {},
+    onOpenSignup = () => { },
     getStatusBadge = () => ({ label: '', color: '' }),
     getPaymentStatus = () => ({ label: '', color: '' }),
     actionStates = { status: new Set(), delete: new Set() },
     sendingEmailTo = null,
-    onStatusChange = () => {},
-    onDelete = () => {},
-    onResendEmail = () => {},
+    onStatusChange = () => { },
+    onDelete = () => { },
+    onResendEmail = () => { },
     signupActivitiesMap = {},
     allowFinalPayments = false,
     isBusTrip = false
@@ -47,7 +47,7 @@ export default function ReisTable({
                     {/* Cards Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                         {filteredSignups.map(signup => (
-                            <ReisTableRow 
+                            <ReisTableRow
                                 key={signup.id}
                                 signup={signup}
                                 isSelected={selectedSignupId === signup.id}

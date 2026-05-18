@@ -53,7 +53,7 @@ export default function SignupFormContent({
             price={price}
             className="h-full"
         >
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 flex-1 flex flex-col" autoComplete="off">
+            <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-6 flex-1 flex flex-col" autoComplete="off">
                 <div className="space-y-4 flex-1">
                     <FormField
                         id="field-name"

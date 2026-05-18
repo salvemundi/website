@@ -10,20 +10,22 @@ import {
     activitiesSchema,
     type Activiteit
 } from '@salvemundi/validations';
-import { 
-    HERO_BANNER_FIELDS, 
-    PUB_CRAWL_EVENT_FIELDS, 
-    SPONSOR_FIELDS 
+import {
+    HERO_BANNER_FIELDS,
+    PUB_CRAWL_EVENT_FIELDS,
+    SPONSOR_FIELDS
 } from '@salvemundi/validations';
 
 import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 import { toLocalISOString } from '@/lib/utils/date-utils';
-import { 
+import {
     type DbPubCrawlEvent,
     type DbTrip,
-    type DbHeroBanner 
+    type DbHeroBanner
 } from '@salvemundi/validations';
+import { getActivitiesInternal } from "@/server/queries/admin-event.queries";
+import { getUpcomingTrips } from "@/server/actions/events/reis.actions";
 
 export const getHeroBanners = async (): Promise<HeroBanner[]> => {
     const rawData = await getSystemDirectus().request(readItems('hero_banners', {
@@ -37,7 +39,8 @@ export const getHeroBanners = async (): Promise<HeroBanner[]> => {
         subtitle: null,
         afbeelding_id: item.image ?? null,
         status: 'published',
-        display_order: item.sort ?? 0 }));
+        display_order: item.sort ?? 0
+    }));
 
     const parsed = heroBannersSchema.safeParse(mappedData);
     if (!parsed.success) {
@@ -45,21 +48,13 @@ export const getHeroBanners = async (): Promise<HeroBanner[]> => {
     }
 
     return parsed.data;
-}
-
-
-import { 
-    getActivitiesInternal 
-} from "@/server/queries/admin-event.queries";
-import { 
-    getUpcomingTrips 
-} from "@/server/actions/events/reis.actions";
+};
 
 export const getUpcomingActiviteiten = async (limit = 4): Promise<Activiteit[]> => {
     const client = getSystemDirectus();
     const now = new Date();
-    const today = toLocalISOString(now) as string;
-    
+    const today = toLocalISOString(now) ?? new Date().toISOString();
+
     const [regularEvents, pubCrawlEvents, tripEvents] = await Promise.all([
         getActivitiesInternal(true),
         client.request(readItems('pub_crawl_events', {
@@ -76,7 +71,7 @@ export const getUpcomingActiviteiten = async (limit = 4): Promise<Activiteit[]> 
     const mappedRegular = (regularEvents as Activiteit[]).map((item) => {
         return {
             ...item,
-            category: item.committee_name || undefined, // Let component fallback if this is null
+            category: item.committee_name || undefined,
         };
     });
 
@@ -85,7 +80,7 @@ export const getUpcomingActiviteiten = async (limit = 4): Promise<Activiteit[]> 
         titel: item.name ?? '',
         beschrijving: item.description ?? null,
         locatie: 'Diverse locaties',
-        datum_start: toLocalISOString(item.date, true) || toLocalISOString(now, true)!,
+        datum_start: toLocalISOString(item.date, true) ?? toLocalISOString(now, true) ?? new Date().toISOString(),
         datum_eind: null,
         afbeelding_id: item.image ?? null,
         status: 'published',
@@ -98,14 +93,15 @@ export const getUpcomingActiviteiten = async (limit = 4): Promise<Activiteit[]> 
         event_time_end: null,
         custom_url: '/kroegentocht',
         category: 'Feestcommissie',
-        committee_name: 'Feestcommissie' }));
+        committee_name: 'Feestcommissie'
+    }));
 
     const mappedTrips = (tripEvents as DbTrip[]).map((item) => ({
         id: `trip-${item.id}`,
         titel: item.name ?? '',
         beschrijving: item.description ?? null,
         locatie: 'Studiereis',
-        datum_start: toLocalISOString(item.start_date, true) || toLocalISOString(now, true)!,
+        datum_start: toLocalISOString(item.start_date, true) ?? toLocalISOString(now, true) ?? new Date().toISOString(),
         datum_eind: toLocalISOString(item.end_date, true),
         afbeelding_id: item.image ?? null,
         status: 'published',
@@ -118,13 +114,13 @@ export const getUpcomingActiviteiten = async (limit = 4): Promise<Activiteit[]> 
         event_time_end: null,
         custom_url: '/reis',
         category: 'Reiscommissie',
-        committee_name: 'Reiscommissie' }));
+        committee_name: 'Reiscommissie'
+    }));
 
     const allEvents = [...mappedRegular, ...mappedPubCrawl, ...mappedTrips]
         .sort((a, b) => new Date(a.datum_start).getTime() - new Date(b.datum_start).getTime())
         .filter(event => {
             const date = new Date(event.datum_start);
-            // Include today's events and future ones
             return date >= new Date(new Date().setHours(0, 0, 0, 0));
         })
         .slice(0, limit);
@@ -135,8 +131,7 @@ export const getUpcomingActiviteiten = async (limit = 4): Promise<Activiteit[]> 
     }
 
     return parsed.data;
-}
-
+};
 
 export const getSponsors = async (): Promise<Sponsor[]> => {
     const rawData = await getSystemDirectus().request(readItems('sponsors', {
@@ -151,5 +146,4 @@ export const getSponsors = async (): Promise<Sponsor[]> => {
     }
 
     return parsed.data;
-}
-
+};
