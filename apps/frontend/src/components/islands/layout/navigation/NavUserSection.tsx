@@ -56,11 +56,12 @@ export function NavUserSection({ initialSession, canAccessAdmin }: NavUserSectio
                 </Link>
             ) : (
                 <button
-                    onClick={() => authClient.signIn.social({
-                        provider: 'microsoft',
-                        // Jouw toevoeging blijft intact
-                        callbackURL: searchParams.get('callbackURL') || ROUTES.MEMBERSHIP
-                    })}
+                    onClick={() => {
+                        void authClient.signIn.social({
+                            provider: 'microsoft',
+                            callbackURL: searchParams.get('callbackURL') || ROUTES.MEMBERSHIP
+                        });
+                    }}
                     className="flex cursor-pointer items-center justify-center gap-2 rounded-full font-semibold px-4 py-1.5 h-9 text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg bg-[var(--color-purple-50)] text-[var(--color-purple-700)] shrink-0"
                 >
                     Inloggen

@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 
-
 import {
     sendBulkTripEmail,
     sendBulkPaymentEmails
@@ -11,7 +10,6 @@ import {
 import type { Trip, TripSignup } from '@salvemundi/validations/schema/admin-reis.zod';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 
-// Modular Components
 import { TypeTab } from '@/components/admin/reis/MailComponents';
 import MailFilters from '@/components/admin/reis/MailFilters';
 import MailEditor from '@/components/admin/reis/MailEditor';
@@ -30,13 +28,11 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
     const [signups, setSignups] = useState<TripSignup[]>(initialSignups);
     const [sending, setSending] = useState(false);
 
-    // Filters
     const [filterStatus, setFilterStatus] = useState<string>('all');
     const [filterRole, setFilterRole] = useState<string>('all');
     const [filterPayment, setFilterPayment] = useState<string>('all');
     const [searchTerm, setSearchTerm] = useState('');
 
-    // Email Config
     const [emailType, setEmailType] = useState<'custom' | 'deposit_request' | 'final_request'>('custom');
     const [subject, setSubject] = useState('');
     const [message, setMessage] = useState('');
@@ -145,7 +141,9 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
                         message={message}
                         setMessage={setMessage}
                         sending={sending}
-                        onSend={handleSend}
+                        onSend={() => {
+                            void handleSend();
+                        }}
                         filteredCount={filteredRecipients.length}
                     />
                 </div>

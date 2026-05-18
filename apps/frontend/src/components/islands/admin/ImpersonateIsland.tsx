@@ -6,6 +6,7 @@ import { setImpersonateToken, clearImpersonateToken } from '@/server/actions/adm
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
+import { safeConsoleError } from '@/server/utils/logger';
 
 interface Props {
     activeToken: string | null;
@@ -26,7 +27,7 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
         startTransition(async () => {
             try {
                 const result = await setImpersonateToken(token);
-                if (result && result.success) {
+                if (result.success) {
                     setStatus('success');
                     setToken('');
                     showToast('Test modus succesvol geactiveerd', 'success');
@@ -36,9 +37,10 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                     }, 1000);
                 } else {
                     setStatus('error');
-                    showToast(result?.error || 'Ongeldige token of fout bij valideren.', 'error');
+                    showToast(result.error || 'Ongeldige token of fout bij valideren.', 'error');
                 }
-            } catch {
+            } catch (error) {
+                safeConsoleError('[ImpersonateIsland][handleSave]', error);
                 setStatus('error');
                 showToast('Er is een onverwachte fout opgetreden.', 'error');
             }
@@ -47,13 +49,17 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
 
     const handleClear = () => {
         startTransition(async () => {
-            await clearImpersonateToken();
-            showToast('Test modus gedeactiveerd', 'info');
-            setStatus('idle');
-            setTimeout(() => window.location.reload(), 1000);
+            try {
+                await clearImpersonateToken();
+                showToast('Test modus gedeactiveerd', 'info');
+                setStatus('idle');
+                setTimeout(() => window.location.reload(), 1000);
+            } catch (error) {
+                safeConsoleError('[ImpersonateIsland][handleClear]', error);
+                showToast('Er is een onverwachte fout opgetreden.', 'error');
+            }
         });
     };
-
 
     return (
         <>
@@ -78,7 +84,7 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                             <div className="w-px h-6 bg-[var(--beheer-border)]/20" />
                             <div className="flex flex-col items-center px-2">
                                 <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1 text-center">Rechten</span>
-                                <span className="text-base font-bold text-[var(--beheer-text)] leading-none">{impersonatedCommittees?.length || 0}</span>
+                                <span className="text-base font-bold text-[var(--beheer-text)] leading-none">{impersonatedCommittees.length}</span>
                             </div>
                             <div className="w-px h-6 bg-[var(--beheer-border)]/20 hidden sm:block" />
                             <div className="flex-col items-center px-2 hidden sm:flex">
@@ -104,7 +110,6 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
             />
 
             <div className="container mx-auto px-4 py-8 max-w-7xl">
-                {/* Active Status Box */}
                 {activeToken && (
                     <div className="p-8 rounded-[var(--beheer-radius)] bg-[var(--beheer-accent)]/5 border border-[var(--beheer-accent)]/20 shadow-sm mb-8">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -136,7 +141,6 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                     </div>
                 )}
 
-                {/* Token Input Form */}
                 {!activeToken && (
                     <div className="max-w-xl space-y-6">
                         <div>
@@ -171,7 +175,6 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                             )}
                         </button>
 
-                        {/* Instructies */}
                         <div className="p-8 rounded-[var(--beheer-radius)] bg-[var(--beheer-card-soft)] border border-[var(--beheer-border)]">
                             <h3 className="text-base font-semibold text-[var(--beheer-text)] mb-4 flex items-center gap-2">
                                 <Shield className="h-3.5 w-3.5 text-[var(--beheer-accent)]" />
@@ -180,7 +183,7 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                             <ul className="text-base text-[var(--beheer-text-muted)] space-y-3 font-semibold">
                                 <li className="flex gap-3"><span className="text-[var(--beheer-accent)]">•</span> Ga naar Directus &gt; User Settings &gt; Token.</li>
                                 <li className="flex gap-3"><span className="text-[var(--beheer-accent)]">•</span> Kopieer de statische token van de user die je wilt testen.</li>
-                                <li className="flex gap-3"><span className="text-[var(--beheer-accent)]">•</span> Plak deze hierboven en klik op &apos;Start Testen&apos;.</li>
+                                <li className="flex gap-3"><span className="text-[var(--beheer-accent)]">•</span> Plak deze hierboven i.p.v. de placeholder.</li>
                                 <li className="flex gap-3 text-[var(--beheer-inactive)] opacity-80"><span className="text-[var(--beheer-inactive)] font-semibold italic">!</span> Dit overschrijft tijdelijk je eigen rechten in de datalaag.</li>
                             </ul>
                         </div>

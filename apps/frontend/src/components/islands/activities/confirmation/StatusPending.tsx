@@ -55,7 +55,7 @@ export default function StatusPending({ signupData, initialId, isLoggedIn }: Sta
                     Check opnieuw
                 </button>
                 <button
-                    onClick={handleRetry}
+                    onClick={() => { void handleRetry(); }}
                     className="inline-flex h-14 px-10 rounded-2xl bg-[var(--theme-purple)] text-white font-semibold items-center justify-center gap-2 hover:scale-105 transition-all shadow-xl shadow-[var(--theme-purple)]/20"
                 >
                     <CreditCard className="h-4 w-4" />

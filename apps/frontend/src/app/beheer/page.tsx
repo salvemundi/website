@@ -65,7 +65,7 @@ export default async function BeheerPage() {
     return (
         <AdminPageShell
             title="Beheer Dashboard"
-            subtitle={`Welkom terug, ${access.user?.first_name || 'Admin'}. Beheer de vereniging vanaf één plek.`}
+            subtitle={`Welkom terug, ${access.user.first_name || 'Admin'}. Beheer de vereniging vanaf één plek.`}
             centered={true}
         >
             <div className={`grid grid-cols-1 ${isLimitedAccess ? 'lg:grid-cols-1 max-w-5xl mx-auto' : 'lg:grid-cols-12'} gap-8 md:gap-12 items-start`}>

@@ -73,7 +73,7 @@ export const IntroParentIsland = ({ userName, userEmail, initialPhone }: IntroPa
             icon={<Heart className="w-8 h-8" />}
             description="Begeleid de nieuwe lichting studenten tijdens de introweek."
         >
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 lg:space-y-6" autoComplete="off">
+            <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-4 lg:space-y-6" autoComplete="off">
                 <div className="bg-[var(--bg-soft)] rounded-2xl p-4 lg:p-6 mb-6 border border-[var(--border-color)]/20 shadow-inner">
                     <p className="text-[var(--text-main)] text-sm lg:text-base font-medium space-y-2">
                         <div className="flex justify-between items-center border-b border-[var(--border-color)]/10 pb-2">

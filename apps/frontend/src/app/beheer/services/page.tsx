@@ -14,7 +14,7 @@ export const metadata = {
  */
 export default async function ServicesStatusPage() {
     const access = await checkAdminAccess();
-    if (!access || !access.isAuthorized || !access.isIct) {
+    if (!access.isAuthorized || !access.isIct) {
         redirect('/beheer');
     }
 

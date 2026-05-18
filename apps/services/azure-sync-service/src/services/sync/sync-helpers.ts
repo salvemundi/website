@@ -1,5 +1,6 @@
 import { Redis } from 'ioredis';
-import { SyncStatus, SYNC_REDIS_KEY, DEFAULT_SYNC_STATUS, getInitialStatus } from './sync-types.js';
+import { SyncStatus, SYNC_REDIS_KEY, getInitialStatus } from './sync-types.js';
+import { safeConsoleError } from '../../utils/logger.js';
 
 export function parseAzureDate(dateStr?: string): string | null {
     if (!dateStr || dateStr.length !== 8) return null;
@@ -37,7 +38,7 @@ export async function getSyncStatus(redis: Redis): Promise<SyncStatus> {
     const data = await redis.get(SYNC_REDIS_KEY);
     if (!data) return getInitialStatus();
     try {
-        return JSON.parse(data);
+        return JSON.parse(data) as SyncStatus;
     } catch (_error) {
         return getInitialStatus();
     }
@@ -47,7 +48,7 @@ export async function persistSyncStatus(redis: Redis, status: SyncStatus, forceJ
     if (forceJobIdMatch) {
         const current = await getSyncStatus(redis);
         if (current.jobId && current.jobId !== status.jobId && current.active) {
-            console.warn(`[SYNC] Ghost job detected (${status.jobId}). Will not overwrite running job ${current.jobId}`);
+            safeConsoleError(`[SYNC] Ghost job detected (${status.jobId}). Will not overwrite running job ${current.jobId}`);
             return;
         }
     }

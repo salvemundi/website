@@ -63,14 +63,10 @@ export async function deleteSignupAction(signupId: number, eventId: string | num
         const success = await deleteEventSignupDb(signupId);
         if (!success) throw new Error("Deletion from database failed");
 
-        // Sync to Directus - now awaited
         try {
             await getSystemDirectus().request(deleteItem('event_signups', signupId));
         } catch (error) {
-
-            await logAdminAction('event_signup_delete_failed', 'ERROR', { context: 'activiteit', event_id: eventId, id: signupId, error: String(error) });
-            // Non-critical rollback for delete? Actually we should probably revert the DB delete
-            // But we already deleted it from Postgres. Ideally we do this in reverse.
+            await logAdminAction('system_event_signup_delete_failed', 'ERROR', { context: 'activiteit', event_id: eventId, id: signupId, error: String(error) });
             return { success: false, error: "CMS Synchronisatie mislukt. Aanmelding niet verwijderd." };
         }
 
@@ -78,12 +74,25 @@ export async function deleteSignupAction(signupId: number, eventId: string | num
             await sendCancellationEmail(participantEmail, eventName);
         }
 
+        await logAdminAction('admin_event_signup_deleted', 'SUCCESS', {
+            context: 'activiteit',
+            event_id: eventId,
+            id: signupId,
+            email: participantEmail,
+            event_name: eventName
+        });
+
         revalidateTag(`event_signups_${eventId}`, 'max');
         revalidatePath(`/beheer/activiteiten/${eventId}/aanmeldingen`);
         revalidatePath('/beheer/activiteiten');
         return { success: true };
-    } catch {
-
+    } catch (error) {
+        await logAdminAction('system_event_signup_delete_failed', 'ERROR', {
+            context: 'activiteit',
+            event_id: eventId,
+            id: signupId,
+            error: error instanceof Error ? error.message : String(error)
+        });
         return { success: false, error: "Deletion failed" };
     }
 }
@@ -102,7 +111,7 @@ export async function searchMembersAction(query: string) {
                 fields: [...USER_BASIC_FIELDS]
             })
         );
-        return { success: true, data: (users || []) as unknown as UserBasic[] };
+        return { success: true, data: users as unknown as UserBasic[] };
     } catch {
 
         return { success: false, error: "Search failed", data: [] as UserBasic[] };
@@ -132,7 +141,7 @@ export async function createManualSignupAction(
     }
 
     try {
-        const payload: Record<string, unknown> = {
+        const payload: { [key: string]: unknown } = {
             event_id: eventId,
             payment_status: 'paid'
         };
@@ -154,13 +163,13 @@ export async function createManualSignupAction(
         try {
             // Directus SDK will handle the database insertion and trigger internal logic (activity logs, etc.)
             // Since they share the same database, we don't need the redundant createEventSignupDb call here which causes ID conflicts.
-            const newItem = await getSystemDirectus().request(createItem('event_signups', payload)) as unknown as { id: number };
+            const newItem = await getSystemDirectus().request(createItem('event_signups', payload)) as unknown as { id?: number } | null;
 
             if (!newItem || !newItem.id) {
                 throw new Error('Geen ID teruggekregen van het CMS');
             }
 
-            await logAdminAction('event_signup_manual_created', 'SUCCESS', { context: 'activiteit', event_id: eventId, context_name: eventName, id: newItem.id, data: payload });
+            await logAdminAction('admin_event_signup_manual_created', 'SUCCESS', { context: 'activiteit', event_id: eventId, context_name: eventName, id: newItem.id, data: payload });
 
             revalidateTag(`event_signups_${eventId}`, 'max');
             revalidatePath(`/beheer/activiteiten/${eventId}/aanmeldingen`);
@@ -168,7 +177,7 @@ export async function createManualSignupAction(
             return { success: true };
         } catch (error) {
             safeConsoleError('[CMS Sync] Directus createItem failed (signup):', error);
-            await logAdminAction('activity_signup_failed', 'ERROR', {
+            await logAdminAction('system_activity_signup_failed', 'ERROR', {
                 context: 'activiteit',
                 event_id: eventId,
                 context_name: eventName,
@@ -212,14 +221,26 @@ export async function toggleCheckInAction(signupId: number, eventId: number, che
         } catch (error) {
             // Revert DB on sync fail
             await updateEventSignupDb(signupId, { checked_in: !checkedIn, checked_in_at: !checkedIn ? new Date().toISOString() : null });
-            await logAdminAction('event_signup_checkin_rollback', 'ERROR', { context: 'activiteit', event_id: eventId, id: signupId, error: String(error), action: 'rollback_restore' });
+            await logAdminAction('system_event_signup_checkin_rollback', 'ERROR', { context: 'activiteit', event_id: eventId, id: signupId, error: String(error), action: 'rollback_restore' });
             return { success: false, error: "CMS Synchronisatie mislukt. Check-in status niet bijgewerkt." };
         }
 
+        await logAdminAction(checkedIn ? 'admin_event_signup_checked_in' : 'admin_event_signup_checked_out', 'SUCCESS', {
+            context: 'activiteit',
+            event_id: eventId,
+            id: signupId,
+            checked_in: checkedIn
+        });
+
         revalidateTag(`event_signups_${eventId}`, 'max');
         return { success: true };
-    } catch {
-
+    } catch (error) {
+        await logAdminAction('system_event_signup_checkin_rollback', 'ERROR', {
+            context: 'activiteit',
+            event_id: eventId,
+            id: signupId,
+            error: error instanceof Error ? error.message : String(error)
+        });
         return { success: false, error: "Failed to update check-in" };
     }
 }

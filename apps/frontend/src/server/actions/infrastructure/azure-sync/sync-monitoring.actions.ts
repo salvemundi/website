@@ -3,7 +3,24 @@ import { safeConsoleError } from '@/server/utils/logger';
 import { getRedis } from "@/server/auth/redis-client";
 import { checkSyncAccess, AZURE_SYNC_URL, INTERNAL_TOKEN } from "@/server/actions/infrastructure/azure-sync/sync-access";
 
-export async function getSyncStatusAction() {
+export interface SyncStatus {
+    status?: string;
+    active?: boolean;
+    successCount?: number;
+    errorCount?: number;
+    warningCount?: number;
+    createdCount?: number;
+    missingDataCount?: number;
+    movedExpiredCount?: number;
+    excludedCount?: number;
+    processed?: number;
+    total?: number;
+    fatalError?: { message: string; stack?: string };
+    abortRequested?: boolean;
+    error?: string;
+}
+
+export async function getSyncStatusAction(): Promise<SyncStatus | { success: false; error: string }> {
     const admin = await checkSyncAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
 
@@ -12,7 +29,7 @@ export async function getSyncStatusAction() {
     }
 
     if (!AZURE_SYNC_URL) {
-        safeConsoleError("[SYNC-ACTION] AZURE_SYNC_SERVICE_URL is not configured.");
+        safeConsoleError("[sync-monitoring.actions][getSyncStatusAction] AZURE_SYNC_SERVICE_URL is not configured.");
         return { success: false, error: "Systeemfout: Sync service URL niet geconfigureerd." };
     }
 
@@ -25,14 +42,15 @@ export async function getSyncStatusAction() {
         });
 
         if (!res.ok) {
-            safeConsoleError(`[SYNC-ACTION] GET /status failed: ${res.status}`);
+            safeConsoleError(`[sync-monitoring.actions][getSyncStatusAction] GET /status failed: ${res.status}`);
             return { success: false, error: "Status service onbeschikbaar" };
         }
 
-        return await res.json();
+        const data = await res.json() as SyncStatus;
+        return data;
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Kon status niet ophalen.';
-        safeConsoleError(`[SYNC-ACTION] Connection error to ${AZURE_SYNC_URL}/api/sync/status:`, message);
+        safeConsoleError(`[sync-monitoring.actions][getSyncStatusAction] Connection error to status endpoint:`, message);
         return { success: false, error: "Kon status niet ophalen." };
     }
 }
@@ -50,7 +68,7 @@ export async function stopSyncAction() {
         // 2. Update the status object for instant UI feedback (abortRequested flag)
         const statusRaw = await redis.get('v7:sync:status');
         if (statusRaw) {
-            const status = JSON.parse(statusRaw);
+            const status = JSON.parse(statusRaw) as SyncStatus;
             if (status.active) {
                 status.abortRequested = true;
                 await redis.set('v7:sync:status', JSON.stringify(status), 'EX', 86400 * 7);
@@ -59,7 +77,7 @@ export async function stopSyncAction() {
         return { success: true };
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Onbekende fout';
-        safeConsoleError("[SYNC-ACTION] Stop sync failed:", message);
+        safeConsoleError("[sync-monitoring.actions][stopSyncAction] Stop sync failed:", message);
         return { success: false, error: message };
     }
 }
@@ -83,7 +101,7 @@ export async function resetSyncStatusAction() {
         return { success: true };
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Onbekende fout';
-        safeConsoleError("[SYNC-ACTION] Reset sync failed:", message);
+        safeConsoleError("[sync-monitoring.actions][resetSyncStatusAction] Reset sync failed:", message);
         return { success: false, error: message };
     }
 }

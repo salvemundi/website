@@ -1,25 +1,36 @@
-import { AzureUser, GraphService } from '../graph.service.js';
+import { db } from '../../plugins/db.js';
+import { AzureUser } from '../graph.service.js';
 import { SyncContext, GROUP_ACTIVE_LID, GROUP_EXPIRED_LID } from './sync-types.js';
 import { ManagementService } from '../management.service.js';
-import { query } from '../../plugins/db.js';
+import { safeConsoleError } from '../../utils/logger.js';
+
+export interface DirectusUserRecord {
+    id: string | number;
+    membership_expiry?: string | null;
+    membership_status?: string | null;
+}
 
 export class SyncLifecycle {
     /**
      * Handles the transition between active and expired memberships.
      * Manages Azure groups and Directus membership_status.
      */
-    static async handleLifecycle(ctx: SyncContext, aUser: AzureUser, dUser: any, currentExpiry?: string | null): Promise<{ field: string; old: any; new: any }[]> {
-        const changes: { field: string; old: any; new: any }[] = [];
+    static async handleLifecycle(
+        ctx: SyncContext,
+        aUser: AzureUser,
+        dUser: DirectusUserRecord,
+        currentExpiry?: string | null
+    ): Promise<{ field: string; old: unknown; new: unknown }[]> {
+        const changes: { field: string; old: unknown; new: unknown }[] = [];
         const lockerKey = `lock:sync:user:${aUser.id}`;
         const hasLock = await ctx.redis.set(lockerKey, 'locked', 'EX', 30, 'NX');
         
         if (!hasLock) {
-            console.warn(`[SYNC] Skip lifecycle for ${(aUser.mail || aUser.userPrincipalName)} - already being processed.`);
+            safeConsoleError(`[SYNC] Skip lifecycle for ${(aUser.mail || aUser.userPrincipalName)} - already being processed.`);
             return [];
         }
 
         try {
-            const email = (aUser.mail || aUser.userPrincipalName).toLowerCase();
             const expiryDate = currentExpiry ? new Date(currentExpiry) : (dUser.membership_expiry ? new Date(dUser.membership_expiry) : null);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -33,7 +44,14 @@ export class SyncLifecycle {
 
             // 1. Sync Directus Membership Status
             if (currentStatus !== desiredStatus) {
-                await query(`UPDATE directus_users SET membership_status = $1, status = 'active' WHERE id = $2`, [desiredStatus, dUser.id]);
+                await db
+                    .updateTable('directus_users')
+                    .set({
+                        membership_status: desiredStatus,
+                        status: 'active'
+                    })
+                    .where('id', '=', String(dUser.id))
+                    .execute();
                 changes.push({ field: 'membership_status', old: currentStatus, new: desiredStatus });
                 if (desiredStatus === 'active') ctx.status.movedActiveCount++;
                 else ctx.status.movedExpiredCount++;

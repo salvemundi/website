@@ -78,7 +78,7 @@ export const IntroStudentIsland = () => {
             icon={<Send className="w-8 h-8" />}
             description="Meld je aan voor de gezelligste week van het jaar!"
         >
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 lg:space-y-6" autoComplete="off">
+            <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-4 lg:space-y-6" autoComplete="off">
                 <input {...register('website')} type="text" className="hidden" tabIndex={-1} autoComplete="off" />
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

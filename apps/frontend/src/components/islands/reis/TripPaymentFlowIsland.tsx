@@ -25,7 +25,6 @@ import { calculateTripPricing, type ActivitySelection } from '@/lib/reis/pricing
 import { format } from 'date-fns';
 import { m, AnimatePresence } from 'framer-motion';
 
-// Sub-components
 import { NameConfirmModal } from './shared/NameConfirmModal';
 import { EnrichmentForm } from './payment/EnrichmentForm';
 import { PaymentSummary } from './payment/PaymentSummary';
@@ -56,14 +55,12 @@ export default function TripPaymentFlowIsland({
     const [showNameConfirm, setShowNameConfirm] = useState(false);
     const [localSignup, setLocalSignup] = useState(signup);
 
-    // Dynamic schema extension to include trip-specific end date validation
     const enrichmentSchema = useMemo(() => {
         return reisPaymentEnrichmentSchema.superRefine((data, ctx) => {
             if (!trip.is_bus_trip && data.document_expiry_date && trip.end_date) {
                 const expiry = new Date(data.document_expiry_date);
                 const tripEnd = new Date(trip.end_date);
 
-                // Lower bound: must be at least end of trip
                 if (expiry < tripEnd) {
                     ctx.addIssue({
                         code: z.ZodIssueCode.custom,
@@ -72,7 +69,6 @@ export default function TripPaymentFlowIsland({
                     });
                 }
 
-                // Upper bound: block if more than 15 years in the future (typo protection)
                 const maxExpiry = new Date(tripEnd);
                 maxExpiry.setFullYear(maxExpiry.getFullYear() + 15);
                 if (expiry > maxExpiry) {
@@ -86,7 +82,6 @@ export default function TripPaymentFlowIsland({
         });
     }, [trip.end_date, trip.is_bus_trip]);
 
-    // Form setup with React Hook Form
     const methods = useForm<ReisPaymentEnrichment>({
         resolver: zodResolver(enrichmentSchema),
         defaultValues: {
@@ -96,12 +91,15 @@ export default function TripPaymentFlowIsland({
             date_of_birth: localSignup.date_of_birth ? format(new Date(localSignup.date_of_birth), 'yyyy-MM-dd') : '',
             id_document: localSignup.id_document || 'none',
             document_number: localSignup.document_number || '',
-            document_expiry_date: (localSignup as TripSignup & { document_expiry_date?: string }).document_expiry_date ? format(new Date((localSignup as TripSignup & { document_expiry_date?: string }).document_expiry_date!), 'yyyy-MM-dd') : '',
+            document_expiry_date: (() => {
+                const expiry = (localSignup as TripSignup & { document_expiry_date?: string }).document_expiry_date;
+                return expiry ? format(new Date(expiry), 'yyyy-MM-dd') : '';
+            })(),
             extra_luggage: (localSignup as TripSignup & { extra_luggage?: boolean }).extra_luggage || false,
             allergies: localSignup.allergies || '',
             special_notes: localSignup.special_notes || '',
             willing_to_drive: localSignup.willing_to_drive || false,
-            is_bus_trip: trip.is_bus_trip ?? false
+            is_bus_trip: trip.is_bus_trip
         },
         mode: 'onChange',
         shouldUnregister: true
@@ -113,11 +111,10 @@ export default function TripPaymentFlowIsland({
     const [activitySelections, setActivitySelections] = useState<{ activityId: number, options: Record<string, boolean> }[]>(
         selectedActivities.map(sa => ({
             activityId: typeof sa.trip_activity_id === 'object' ? (sa.trip_activity_id as unknown as { id: number }).id : Number(sa.trip_activity_id),
-            options: (sa.selected_options as Record<string, boolean>) || {}
+            options: (sa.selected_options as Record<string, boolean> | undefined) || {}
         }))
     );
 
-    // Pricing Calculation
     const pricing = useMemo(() => {
         return calculateTripPricing(
             trip,
@@ -134,20 +131,17 @@ export default function TripPaymentFlowIsland({
 
         try {
             if (step === 1) {
-                // Step 1: Validation
-                const isValid = await trigger();
-                if (!isValid) {
+                const isValidForm = await trigger();
+                if (!isValidForm) {
                     setLoading(false);
                     return;
                 }
 
-                // Show confirmation modal for the name
                 setShowNameConfirm(true);
                 setLoading(false);
                 return;
             } else if (step === 2) {
-                // Step 2: Sync Activities
-                const res = await syncSignupActivities(signup.id!, activitySelections, token);
+                const res = await syncSignupActivities(signup.id || 0, activitySelections, token);
                 if (!res.success) {
                     setError(res.error || 'Fout bij opslaan activiteiten.');
                     setLoading(false);
@@ -169,19 +163,22 @@ export default function TripPaymentFlowIsland({
         }
     };
 
+    const handleNextSync = () => {
+        void handleNext();
+    };
+
     const confirmNameAndProceed = async () => {
         setShowNameConfirm(false);
         setLoading(true);
         try {
             const formData = getValues();
-            const res = await updateSignupDetails(signup.id!, formData, token);
+            const res = await updateSignupDetails(signup.id || 0, formData, token);
             if (!res.success) {
                 setError(res.error || 'Fout bij opslaan gegevens.');
                 setLoading(false);
                 return;
             }
 
-            // Sync local state so Step 3 and back-navigation show updated data
             setLocalSignup({ ...localSignup, ...formData });
             setStep(2);
         } catch (_error) {
@@ -191,12 +188,16 @@ export default function TripPaymentFlowIsland({
         }
     };
 
+    const confirmNameAndProceedSync = () => {
+        void confirmNameAndProceed();
+    };
+
     const handleStartPayment = async () => {
         setError(null);
         setIsProcessing(true);
 
         try {
-            const res = await initiateTripPaymentAction(signup.id!, paymentType, token);
+            const res = (await initiateTripPaymentAction(signup.id || 0, paymentType, token)) as { success: boolean; checkoutUrl?: string; error?: string };
             if (res.success && res.checkoutUrl) {
                 window.location.href = res.checkoutUrl;
             } else {
@@ -207,6 +208,10 @@ export default function TripPaymentFlowIsland({
             setError('Fout bij verbinden met betaalservice.');
             setIsProcessing(false);
         }
+    };
+
+    const handleStartPaymentSync = () => {
+        void handleStartPayment();
     };
 
     return (
@@ -272,8 +277,8 @@ export default function TripPaymentFlowIsland({
                             isValid={isValid}
                             paymentType={paymentType}
                             onPrevious={() => setStep(step - 1)}
-                            onNext={handleNext}
-                            onPayment={handleStartPayment}
+                            onNext={handleNextSync}
+                            onPayment={handleStartPaymentSync}
                         />
                     </div>
                 </form>
@@ -282,7 +287,7 @@ export default function TripPaymentFlowIsland({
             <NameConfirmModal
                 isOpen={showNameConfirm}
                 name={firstName}
-                onConfirm={confirmNameAndProceed}
+                onConfirm={confirmNameAndProceedSync}
                 onCancel={() => setShowNameConfirm(false)}
             />
         </FormProvider>

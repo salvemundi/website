@@ -5,7 +5,7 @@ const fastify = Fastify({
     logger: true
 });
 
-fastify.get('/health', async () => {
+fastify.get('/health', () => {
     return { status: 'ok', service: 'finance-service' };
 });
 
@@ -30,20 +30,20 @@ fastify.register(statusRoutes, { prefix: '/api/finance' });
 const start = async () => {
     try {
         await fastify.listen({ port: 3001, host: '0.0.0.0' });
-        console.log('Finance Service listening on port 3001');
+        fastify.log.info('Finance Service listening on port 3001');
 
         // Start background workers
         const { CacheInvalidationService } = await import('./services/cache-invalidation.js');
         const { DirectusRetryService } = await import('./services/directus-retry.service.js');
         const { AzureRetryService } = await import('./services/azure-retry.service.js');
 
-        CacheInvalidationService.startWorker(fastify.redis);
-        DirectusRetryService.startWorker(fastify.redis);
-        AzureRetryService.startWorker(fastify.redis);
+        void CacheInvalidationService.startWorker(fastify.redis);
+        void DirectusRetryService.startWorker(fastify.redis);
+        void AzureRetryService.startWorker(fastify.redis);
     } catch (error) {
         safeConsoleError('Finance Service crashed:', error);
         process.exit(1);
     }
 };
 
-start();
+void start();

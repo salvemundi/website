@@ -8,8 +8,6 @@ import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import { AdminActivity, Committee } from '@salvemundi/validations';
-
-// Refactored Modules
 import { useActivityForm, ActivityStatus } from '@/hooks/use-activity-form';
 import {
     GeneralInfoSection,
@@ -23,7 +21,7 @@ interface ActionState {
     success: boolean;
     error?: string;
     fieldErrors?: Record<string, string[]>;
-    initialData?: Record<string, unknown>;
+    initialData?: { [key: string]: unknown };
 }
 
 interface ActiviteitBewerkenIslandProps {
@@ -74,13 +72,13 @@ export default function ActiviteitBewerkenIsland({
     }, { success: false });
 
     useEffect(() => {
-        if (state?.initialData) {
+        if (state.initialData) {
             const data = state.initialData;
             if (data.status && typeof data.status === 'string') setStatus(data.status as ActivityStatus);
             if (data.only_members !== undefined) setOnlyMembers(data.only_members === 'on' || data.only_members === true);
             if (data.contact && typeof data.contact === 'string') setContactEmail(data.contact);
         }
-    }, [state?.initialData, setStatus, setOnlyMembers, setContactEmail]);
+    }, [state.initialData, setStatus, setOnlyMembers, setContactEmail]);
 
     const [optimisticSaving] = useOptimistic(isPending);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -101,8 +99,7 @@ export default function ActiviteitBewerkenIsland({
         }
     };
 
-    // Cast voor compatibiliteit met sectie-props (voorkomt unknown signature errors)
-    const initialData = (state.initialData || event) as Record<string, unknown>;
+    const initialData = (state.initialData || event) as { [key: string]: unknown };
 
     return (
         <div className="pb-20">
@@ -159,7 +156,7 @@ export default function ActiviteitBewerkenIsland({
                                 <div className="pt-4 border-t border-[var(--beheer-border)]/30">
                                     <button
                                         type="button"
-                                        onClick={handleDelete}
+                                        onClick={() => { void handleDelete(); }}
                                         disabled={isDeleting || optimisticSaving}
                                         className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all font-semibold text-base disabled:opacity-50 cursor-pointer active:scale-95 group border border-red-500/20"
                                     >

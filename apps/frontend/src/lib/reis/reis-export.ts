@@ -6,7 +6,7 @@ import { getPaymentStatus, getStatusBadge } from './reis-admin.utils';
 interface ExpandedTripSignupActivity {
     activity_name?: string;
     trip_activity_id?: number | { name?: string; options?: string | unknown[] };
-    selected_options?: string | Record<string, unknown>;
+    selected_options?: string | { [key: string]: unknown };
     activity_options?: string | unknown[];
 }
 
@@ -22,7 +22,7 @@ export function generateReisCSVData(
         const idDoc = signup.id_document || '';
         const idDocLabel = idDoc === 'passport' ? 'Paspoort' : idDoc === 'id_card' ? 'ID Kaart' : idDoc;
 
-        const activities = signupActivitiesMap[signup.id] || [];
+        const activities = (signupActivitiesMap[signup.id] as TripSignupActivity[] | undefined) || [];
         const activitiesStr = activities.map(a => {
             const activity = a as unknown as ExpandedTripSignupActivity;
             const tripActIdObj = typeof activity.trip_activity_id === 'object' ? activity.trip_activity_id : null;

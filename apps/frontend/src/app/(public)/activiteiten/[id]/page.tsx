@@ -1,4 +1,3 @@
-import React from 'react';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { notFound } from 'next/navigation';
 import { getActivityBySlug, checkUserSignupStatus } from '@/server/actions/events/public-activiteit.actions';
@@ -7,10 +6,10 @@ import ActivityDetailIsland from '@/components/islands/activities/ActivityDetail
 import EventSignupIsland from '@/components/islands/activities/EventSignupIsland';
 import { type DbEventSignup } from '@salvemundi/validations/directus/schema';
 import { type MembershipUserData } from '@/components/islands/account/MembershipStatusIsland';
-import { type EnrichedUser } from '@/types/auth';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import BackButton from '@/components/ui/navigation/BackButton';
 import { type Metadata } from 'next';
+import { connection } from 'next/server';
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -33,8 +32,6 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     };
 }
 
-import { connection } from 'next/server';
-
 export default async function PageActivityId({ params, searchParams }: PageProps) {
     await connection();
     return (
@@ -44,13 +41,10 @@ export default async function PageActivityId({ params, searchParams }: PageProps
     );
 }
 
-
 async function ActivityContent({ params, searchParams }: PageProps) {
     const { id: rawId } = await params;
     const sParams = await searchParams;
 
-    // Extract real ID or use slug
-    // Try By Slug first (which handles id, id-slug, and custom_url)
     const [activity, session] = await Promise.all([
         getActivityBySlug(rawId),
         getEnrichedSession()
@@ -60,12 +54,10 @@ async function ActivityContent({ params, searchParams }: PageProps) {
 
     const isPast = new Date(activity.datum_start) < new Date();
 
-    // Server-side authoritative price determination
     const user = session?.user as MembershipUserData | undefined;
     const isMember = user?.membership_status === 'active';
     const price = isMember ? (activity.price_members ?? 0) : (activity.price_non_members ?? 0);
 
-    // Server-side payment verification
     let verifiedPaymentStatus: 'paid' | 'open' | 'failed' | 'canceled' | null = null;
     let qrToken: string | undefined = undefined;
     let isSignedUp = false;
@@ -81,12 +73,11 @@ async function ActivityContent({ params, searchParams }: PageProps) {
         }
     }
 
-    // Check by token if returning from payment
     if (sParams.token) {
         const statusRes = await getSignupStatus(undefined, sParams.token);
         if (statusRes.status === 'paid') {
             verifiedPaymentStatus = 'paid';
-            qrToken = (statusRes.signup as DbEventSignup)?.qr_token || sParams.token;
+            qrToken = (statusRes.signup as DbEventSignup).qr_token || sParams.token;
             isSignedUp = true;
         }
     }
@@ -105,7 +96,7 @@ async function ActivityContent({ params, searchParams }: PageProps) {
                     description={activity.beschrijving || ''}
                     isPast={isPast}
                     eventName={activity.titel}
-                    initialUser={(session?.user as unknown as EnrichedUser) || null}
+                    initialUser={session?.user || null}
                     verifiedPaymentStatus={verifiedPaymentStatus}
                     initialQrToken={qrToken}
                     initialIsSignedUp={isSignedUp}

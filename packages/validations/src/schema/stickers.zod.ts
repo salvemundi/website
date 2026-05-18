@@ -19,7 +19,7 @@ export const stickerSchema = z.object({
     image: z.string().nullable().optional(),
     date_created: z.string().optional(),
     status: z.string().nullable().optional(),
-    address: z.string().optional(),
+    address: z.string().nullable().optional(),
     user_created: z.union([z.string(), stickerUserSchema]).nullable().optional(),
 });
 

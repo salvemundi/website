@@ -21,6 +21,19 @@ async function checkAccess() {
     return session;
 }
 
+interface DirectusCouponResponse {
+    id?: number | null;
+    coupon_code?: string | null;
+    discount_type?: string | null;
+    discount_value?: number | null;
+    usage_count?: number | null;
+    usage_limit?: number | null;
+    valid_from?: string | null;
+    valid_until?: string | null;
+    is_active?: boolean | null;
+    date_created?: string | null;
+}
+
 import { type Coupon } from '@/components/islands/admin/coupons/coupon-types';
 import { safeConsoleError } from '@/server/utils/logger';
 
@@ -56,7 +69,7 @@ export async function createCoupon(formData: FormData): Promise<{ success: boole
         }
     }
 
-    const payload: Record<string, unknown> = {
+    const payload: { [key: string]: unknown } = {
         coupon_code: code.trim().toUpperCase(),
         discount_type: discountType,
         discount_value: discountValue,
@@ -69,7 +82,7 @@ export async function createCoupon(formData: FormData): Promise<{ success: boole
 
     await getEnrichedSession();
     try {
-        const item = await getSystemDirectus().request(createItem('coupons', payload));
+        const item = (await getSystemDirectus().request(createItem('coupons', payload))) as unknown as DirectusCouponResponse;
         revalidatePath('/beheer/coupons');
 
         const newCoupon: Coupon = {

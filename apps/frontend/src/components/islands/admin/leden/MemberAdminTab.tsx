@@ -114,7 +114,7 @@ export default function MemberAdminTab({
                         Het tijdelijke wachtwoord wordt direct naar hun persoonlijke e-mailadres gestuurd.
                     </div>
                     <button
-                        onClick={handleProvision}
+                        onClick={() => { void handleProvision(); }}
                         disabled={provisioningLoading}
                         className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-amber-500 text-white rounded-xl font-semibold text-xs shadow-lg shadow-amber-500/20 transition-all hover:opacity-90 active:scale-95 disabled:opacity-50"
                     >
@@ -142,21 +142,25 @@ export default function MemberAdminTab({
                         <p className="text-xs text-[var(--beheer-text-muted)] font-medium italic opacity-30">Geen Azure-gekoppelde commissies.</p>
                     ) : (
                         <div className="grid grid-cols-1 gap-3">
-                            {optimisticMemberships.filter(m => m.committee_id.azure_group_id).map(m => (
-                                <div key={m.id} className="flex items-center justify-between p-4 rounded-2xl bg-[var(--beheer-card-soft)]/50 border border-[var(--beheer-border)] group">
-                                    <div className="flex items-center gap-3">
-                                        <Award className={`h-5 w-5 ${m.is_leader && m.committee_id.azure_group_id !== COMMITTEES.BESTUUR ? 'text-[var(--beheer-accent)]' : 'text-[var(--beheer-text-muted)] opacity-20'}`} />
-                                        <span className="font-semibold text-[var(--beheer-text)] text-sm">{cleanName(m.committee_id.name)}</span>
+                            {optimisticMemberships.filter(m => m.committee_id.azure_group_id).map(m => {
+                                const groupId = m.committee_id.azure_group_id;
+                                if (!groupId) return null;
+                                return (
+                                    <div key={m.id} className="flex items-center justify-between p-4 rounded-2xl bg-[var(--beheer-card-soft)]/50 border border-[var(--beheer-border)] group">
+                                        <div className="flex items-center gap-3">
+                                            <Award className={`h-5 w-5 ${m.is_leader && m.committee_id.azure_group_id !== COMMITTEES.BESTUUR ? 'text-[var(--beheer-accent)]' : 'text-[var(--beheer-text-muted)] opacity-20'}`} />
+                                            <span className="font-semibold text-[var(--beheer-text)] text-sm">{cleanName(m.committee_id.name)}</span>
+                                        </div>
+                                        <button 
+                                            onClick={() => { void onMembershipChange(groupId, 'remove', m.committee_id.name); }}
+                                            disabled={isActionInProgress === `remove-${m.committee_id.azure_group_id}`}
+                                            className="p-2 text-[var(--beheer-text-muted)] hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all cursor-pointer disabled:opacity-50"
+                                        >
+                                            {isActionInProgress === `remove-${m.committee_id.azure_group_id}` ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                                        </button>
                                     </div>
-                                    <button 
-                                        onClick={() => onMembershipChange(m.committee_id.azure_group_id!, 'remove', m.committee_id.name)}
-                                        disabled={isActionInProgress === `remove-${m.committee_id.azure_group_id}`}
-                                        className="p-2 text-[var(--beheer-text-muted)] hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all cursor-pointer disabled:opacity-50"
-                                    >
-                                        {isActionInProgress === `remove-${m.committee_id.azure_group_id}` ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                                    </button>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </div>
@@ -167,7 +171,11 @@ export default function MemberAdminTab({
                         {availableCommittees.map(c => (
                             <button
                                 key={c.id}
-                                onClick={() => c.azure_group_id && onMembershipChange(c.azure_group_id, 'add', c.name)}
+                                onClick={() => {
+                                    if (c.azure_group_id) {
+                                        void onMembershipChange(c.azure_group_id, 'add', c.name);
+                                    }
+                                }}
                                 disabled={isActionInProgress === `add-${c.azure_group_id}`}
                                 className="flex items-center justify-between p-4 rounded-2xl bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] hover:border-[var(--beheer-accent)]/50 hover:bg-[var(--beheer-accent)]/5 transition-all text-left shadow-sm group"
                             >
@@ -205,7 +213,7 @@ export default function MemberAdminTab({
                         ))}
                     </div>
                     <button
-                        onClick={handleRenew}
+                        onClick={() => { void handleRenew(); }}
                         disabled={renewLoading}
                         className="flex items-center gap-2 px-6 py-3 bg-green-500 text-white rounded-xl font-semibold text-xs hover:opacity-90 transition-all active:scale-95 disabled:opacity-50 shadow-lg shadow-green-500/20"
                     >
@@ -225,7 +233,7 @@ export default function MemberAdminTab({
                             <p className="text-xs text-[var(--beheer-text-muted)] font-semibold mt-1 opacity-60">Forceer een directe sync van dit lid met Azure AD.</p>
                         </div>
                         <button
-                            onClick={handleSync}
+                            onClick={() => { void handleSync(); }}
                             disabled={syncLoading}
                             className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] rounded-xl font-semibold text-xs hover:bg-[var(--beheer-border)]/50 transition-all active:scale-95 border border-[var(--beheer-border)]/50"
                         >

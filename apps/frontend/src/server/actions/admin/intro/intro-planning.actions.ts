@@ -12,6 +12,16 @@ import { updateItem, createItem } from '@directus/sdk';
 import { checkIntroAdminAccess, genericDelete } from './intro-signup.actions';
 import { safeConsoleError } from '@/server/utils/logger';
 
+interface IntroPlanningDbResult {
+    id: number | string;
+    date?: string | null;
+    time_start?: string | null;
+    title?: string | null;
+    description?: string | null;
+    day?: string | null;
+    location?: string | null;
+}
+
 export async function getIntroPlanning(): Promise<IntroPlanningItem[]> {
     await checkIntroAdminAccess();
     const data = await getIntroPlanningInternal();
@@ -22,7 +32,7 @@ export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Pro
     await checkIntroAdminAccess();
 
     const sanitized = Object.fromEntries(
-        Object.entries(item).map(([k, v]) => [k, v === null ? undefined : v])
+        Object.entries(item).map(([k, v]) => [k, (v as unknown) === null ? undefined : v])
     );
 
     const validated = introPlanningSchema.safeParse(sanitized);
@@ -45,7 +55,7 @@ export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Pro
                 day = d.toLocaleDateString('nl-NL', { weekday: 'long' });
             }
         } catch (error) {
-            safeConsoleError('Error calculating day:', error);
+            safeConsoleError('[intro-planning.actions][upsertIntroPlanning] Error calculating day:', error);
         }
     }
 
@@ -56,11 +66,11 @@ export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Pro
     const payload = { ...rest, date, day };
 
     try {
-        let result;
+        let result: IntroPlanningDbResult;
         if (id) {
-            result = await getSystemDirectus().request(updateItem('intro_planning', id, payload));
+            result = await getSystemDirectus().request(updateItem('intro_planning', id, payload)) as unknown as IntroPlanningDbResult;
         } else {
-            result = await getSystemDirectus().request(createItem('intro_planning', payload));
+            result = await getSystemDirectus().request(createItem('intro_planning', payload)) as unknown as IntroPlanningDbResult;
         }
         revalidatePath('/beheer/intro');
         return {
@@ -71,12 +81,12 @@ export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Pro
                 title: result.title || '',
                 description: result.description || '',
                 day: result.day || '',
-                location: result.location
+                location: result.location || undefined
             }
         };
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Onbekende fout';
-        safeConsoleError('[AdminIntro] Failed to upsert planning:', error);
+        safeConsoleError('[intro-planning.actions][upsertIntroPlanning] Failed to upsert planning:', error);
         return { success: false, error: `Opslaan mislukt: ${message}` };
     }
 }

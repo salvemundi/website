@@ -2,6 +2,14 @@ import { startOfDay, isBefore } from 'date-fns';
 import { type EventSignup } from '@salvemundi/validations/schema/profiel.zod';
 import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 
+interface LocalEventSignup {
+    event_id?: { event_date?: string | null } | null;
+}
+
+interface LocalPubCrawlSignup {
+    pub_crawl_event_id?: { date?: string | null } | null;
+}
+
 export type CommitteeMeta = {
     id: string | number;
     name?: string | null;
@@ -40,12 +48,12 @@ export function mergeUserData(sUser: SessionUser | null | undefined, initialUser
     // Merge client session with fresh server metadata
     const mergedUser = {
         ...sUser,
-        minecraft_username: initialUser?.minecraft_username ?? sUser.minecraft_username,
-        phone_number: initialUser?.phone_number ?? sUser.phone_number,
-        membership_status: initialUser?.membership_status ?? sUser.membership_status,
-        membership_expiry: initialUser?.membership_expiry ?? sUser.membership_expiry,
-        date_of_birth: initialUser?.date_of_birth ?? sUser.date_of_birth,
-        entra_id: initialUser?.entra_id ?? sUser.entra_id 
+        minecraft_username: initialUser.minecraft_username ?? sUser.minecraft_username,
+        phone_number: initialUser.phone_number ?? sUser.phone_number,
+        membership_status: initialUser.membership_status ?? sUser.membership_status,
+        membership_expiry: initialUser.membership_expiry ?? sUser.membership_expiry,
+        date_of_birth: initialUser.date_of_birth ?? sUser.date_of_birth,
+        entra_id: initialUser.entra_id ?? sUser.entra_id 
     };
 
     // Enrich name if missing on client
@@ -54,7 +62,7 @@ export function mergeUserData(sUser: SessionUser | null | undefined, initialUser
     }
     
     // Merge committees from initialUser if missing in session
-    if (!mergedUser.committees && initialUser?.committees) {
+    if (!mergedUser.committees && initialUser.committees) {
         mergedUser.committees = initialUser.committees;
     }
     
@@ -115,26 +123,25 @@ export function filterProfileSignups(
     const todayStart = startOfDay(new Date());
     
     const allSignups = [
-        ...(eventSignups || []).map(s => ({ ...s, _type: 'event' as const })),
-        ...(pubCrawlSignups || []).map(s => ({ ...s, _type: 'pub_crawl' as const }))
+        ...eventSignups.map(s => ({ ...s, _type: 'event' as const })),
+        ...pubCrawlSignups.map(s => ({ ...s, _type: 'pub_crawl' as const }))
     ];
 
     if (showPastEvents) return allSignups;
 
     return allSignups.filter((s) => {
         try {
-            let eventDate;
+            let eventDate: Date;
             if (s._type === 'event') {
-                const es = s as EventSignup & { _type: 'event' };
-                if (!es?.event_id?.event_date) return true;
-                eventDate = startOfDay(new Date(es.event_id.event_date));
+                const es = s as unknown as LocalEventSignup;
+                const eventId = es.event_id;
+                if (!eventId?.event_date) return true;
+                eventDate = startOfDay(new Date(eventId.event_date));
             } else {
-                const ps = s as PubCrawlSignup & { _type: 'pub_crawl' };
+                const ps = s as unknown as LocalPubCrawlSignup;
                 const eventData = ps.pub_crawl_event_id;
-                if (typeof eventData !== 'object' || !eventData || !('date' in eventData)) return true;
-                const dateVal = (eventData as { date?: string | null }).date;
-                if (!dateVal) return true;
-                eventDate = startOfDay(new Date(dateVal));
+                if (!eventData?.date) return true;
+                eventDate = startOfDay(new Date(eventData.date));
             }
             return !isBefore(eventDate, todayStart);
         } catch {

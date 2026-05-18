@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 /**
  * Directus Schema for Salve Mundi V7.
  */
@@ -11,7 +12,7 @@ export interface DbBoard {
     image?: string | null;
     naam?: string | null;
     year?: string | null;
-    members?: any | null;
+    members?: unknown;
 }
 
 export interface DbBoardMember {
@@ -160,8 +161,8 @@ export interface DbEvent {
     publish_date?: string | null;
     event_date_end?: string | null;
     custom_url?: string | null;
-    attendance_officers?: any | null;
-    signups?: any | null;
+    attendance_officers?: unknown;
+    signups?: unknown;
 }
 
 export interface DbEventsDirectusUser {
@@ -215,7 +216,7 @@ export interface DbIntroBlogLike {
     blog?: number | null;
     user_id?: string | null;
     created_at?: string | null;
-    ip_address?: any | null;
+    ip_address?: unknown;
     user_agent?: string | null;
 }
 
@@ -253,7 +254,7 @@ export interface DbIntroParentSignup {
     phone_number: string;
     motivation: string;
     previous_experience?: string | null;
-    availability?: any | null;
+    availability?: unknown;
     approved?: boolean | null;
     approved_by?: string | null;
     approved_at?: string | null;
@@ -342,7 +343,7 @@ export interface DbPubCrawlEvent {
     image?: string | null;
     date?: string | null;
     description?: string | null;
-    pub_crawl_signups?: any | null;
+    pub_crawl_signups?: unknown;
     // Ephemeral fields hardcoded in frontend per user request
     price?: number;
     max_tickets_per_person?: number;
@@ -362,7 +363,7 @@ export interface DbPubCrawlSignup {
     directus_relations?: string | null;
     // Relation to associated tickets for this signup
     tickets?: DbPubCrawlTicket[] | null;
-    transactions?: any | null;
+    transactions?: unknown;
 }
 
 export interface DbPubCrawlSignupsTransaction {
@@ -372,7 +373,7 @@ export interface DbPubCrawlSignupsTransaction {
 }
 
 export interface DbPubCrawlTicket {
-    id: any | null;
+    id: unknown;
     signup_id?: number | null;
     name?: string | null;
     initial?: string | null;
@@ -388,7 +389,7 @@ export interface DbPushNotification {
     created_at?: string | null;
     endpoint?: string | null;
     user_id?: string | null;
-    keys?: any | null;
+    keys?: unknown;
     user_agent?: string | null;
     last_used?: string | null;
 }
@@ -431,7 +432,7 @@ export interface DbSystemLog {
     id: string | null;
     type?: string | null;
     status?: string | null;
-    payload?: any | null;
+    payload?: unknown;
     created_at?: string | null;
 }
 
@@ -457,8 +458,8 @@ export interface DbTransaction {
     pub_crawl_signup?: number | DbPubCrawlSignup | null;
     trip_signup?: number | DbTripSignup | null;
     coupon_code?: string | null;
-    product_type?: 'event_signup' | 'pub_crawl_signup' | 'membership' | 'trip_signup' | string | null;
-    pub_crawl_signups?: any | null;
+    product_type?: 'event_signup' | 'pub_crawl_signup' | 'membership' | 'trip_signup' | (string & {}) | null;
+    pub_crawl_signups?: unknown;
     access_token?: string | null;
 }
 
@@ -474,7 +475,7 @@ export interface DbTripActivitie {
     max_participants?: number | null;
     is_active?: boolean | null;
     display_order?: number | null;
-    options?: any | null;
+    options?: unknown;
     max_selections?: number | null;
 }
 
@@ -483,7 +484,7 @@ export interface DbTripSignupActivitie {
     created_at?: string | null;
     trip_signup_id?: number | null;
     trip_activity_id?: number | null;
-    selected_options?: any | null;
+    selected_options?: unknown;
 }
 
 export interface DbTripSignup {
@@ -603,7 +604,7 @@ export interface DbDirectusUser {
     location?: string | null;
     title?: string | null;
     description?: string | null;
-    tags?: any | null;
+    tags?: unknown;
     avatar?: string | null;
     language?: string | null;
     tfa_secret?: string | null;
@@ -614,13 +615,13 @@ export interface DbDirectusUser {
     last_page?: string | null;
     provider?: string | null;
     external_identifier?: string | null;
-    auth_data?: any | null;
+    auth_data?: unknown;
     email_notifications?: boolean | null;
     appearance?: string | null;
     theme_dark?: string | null;
     theme_light?: string | null;
-    theme_light_overrides?: any | null;
-    theme_dark_overrides?: any | null;
+    theme_light_overrides?: unknown;
+    theme_dark_overrides?: unknown;
     text_direction?: string | null;
     entra_id?: string | null;
     fontys_email?: string | null;
@@ -634,7 +635,7 @@ export interface DbDirectusUser {
     lidmaatschap_verloopdatum?: string | null;
     originele_betaaldatum?: string | null;
     // M2M relation to committees via committee_members
-    committees?: any[] | null;
+    committees?: unknown[] | null;
 }
 
 export interface DirectusSchema {

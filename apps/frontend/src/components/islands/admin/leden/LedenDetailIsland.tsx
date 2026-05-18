@@ -53,8 +53,7 @@ export default function LedenDetailIsland({
         (state: CommitteeMembership[], { action, membership }: { action: 'add' | 'remove' | 'toggle', membership: CommitteeMembership }) => {
             if (action === 'add') return [...state, membership];
             if (action === 'remove') return state.filter(m => m.id !== membership.id);
-            if (action === 'toggle') return state.map(m => m.id === membership.id ? { ...m, is_leader: !m.is_leader } : m);
-            return state;
+            return state.map(m => m.id === membership.id ? { ...m, is_leader: !m.is_leader } : m);
         }
     );
 
@@ -64,10 +63,10 @@ export default function LedenDetailIsland({
         const groups: CommitteeMembership[] = [];
 
         optimisticMemberships.forEach(cm => {
-            const rawName = cm.committee_id?.name || 'Onbekend';
+            const rawName = cm.committee_id.name || 'Onbekend';
             if (!rawName || EXCLUDED_GROUPS.includes(rawName)) return;
 
-            if (cm.committee_id?.is_visible === true) {
+            if (cm.committee_id.is_visible === true) {
                 real.push(cm);
             } else {
                 groups.push(cm);
@@ -114,11 +113,12 @@ export default function LedenDetailIsland({
             setActiveTab('beheer');
             return;
         }
+        const entraId = localMember.entra_id;
         if (action === 'remove' && !confirm(`Weet je zeker dat je ${localMember.first_name} wilt verwijderen uit ${committeeName}?`)) return;
 
         setIsActionInProgress(`${action}-${azureGroupId}`);
         startTransition(async () => {
-            const res = await manageAzureMembershipAction(localMember.entra_id!, azureGroupId, action, localMember.id);
+            const res = await manageAzureMembershipAction(entraId, azureGroupId, action, localMember.id);
             if (!res.success) showToast(res.error || "Fout bij het bijwerken van lidmaatschap", "error");
             else showToast(`Lidmaatschap succesvol ${action === 'add' ? 'toegevoegd' : 'verwijderd'}`, "success");
         });

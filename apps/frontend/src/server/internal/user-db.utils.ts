@@ -1,6 +1,9 @@
+import 'server-only';
 import { query } from '@/lib/database';
 import { z } from 'zod';
 import { toLocalISOString } from '@/lib/utils/date-utils';
+import { type Committee } from '@/shared/lib/permissions';
+export type { Committee };
 
 export const userProfileSchema = z.object({
     id: z.string().uuid(),
@@ -22,9 +25,6 @@ export const userProfileSchema = z.object({
 
 export type UserProfile = z.infer<typeof userProfileSchema>;
 
-import { type Committee } from '@/shared/lib/permissions';
-export type { Committee };
-
 export interface UserBasic {
     id: string;
     email: string;
@@ -41,11 +41,35 @@ export interface UserMetadata {
     entra_id: string | null;
 }
 
-/**
- * Fetches a user profile directly from the database by email.
- */
+interface RawUserRow {
+    id: string;
+    first_name: string | null;
+    last_name: string | null;
+    email: string;
+    avatar: string | null;
+    membership_status: string | null;
+    phone_number: string | null;
+    date_of_birth: string | Date | null;
+    entra_id: string | null;
+    membership_expiry: string | Date | null;
+    description: string | null;
+    location: string | null;
+    title: string | null;
+    tags: string[] | null;
+    admin_access: boolean | null;
+}
+
+interface RawUserMetadataRow {
+    membership_status: string | null;
+    membership_expiry: string | Date | null;
+    phone_number: string | null;
+    date_of_birth: string | Date | null;
+    minecraft_username: string | null;
+    entra_id: string | null;
+}
+
 export async function fetchUserProfileByEmailDb(email: string): Promise<UserProfile | null> {
-    const { rows } = await query(
+    const { rows } = await query<RawUserRow>(
         `SELECT id, first_name, last_name, email, avatar, 
                 membership_status, phone_number, date_of_birth, 
                 entra_id, membership_expiry, description, 
@@ -56,7 +80,7 @@ export async function fetchUserProfileByEmailDb(email: string): Promise<UserProf
         [email]
     );
 
-    if (!rows || rows.length === 0) return null;
+    if (rows.length === 0) return null;
 
     const raw = rows[0];
     const parsed = userProfileSchema.safeParse({
@@ -66,34 +90,27 @@ export async function fetchUserProfileByEmailDb(email: string): Promise<UserProf
     });
 
     if (!parsed.success) {
-        // Fallback to raw if validation fails slightly but we have the ID (common in Directus nullable fields)
-        return raw as UserProfile;
+        return raw as unknown as UserProfile;
     }
 
     return parsed.data;
 }
 
-/**
- * Fetches the committees a user belongs to.
- */
 export async function fetchUserCommitteesDb(userId: string): Promise<Committee[]> {
     if (!userId || userId === '') return [];
-    const { rows } = await query(
+    const { rows } = await query<Committee>(
         `SELECT c.id, c.name, c.azure_group_id, cm.is_leader
          FROM committees c
          JOIN committee_members cm ON c.id = cm.committee_id
          WHERE cm.user_id = $1`,
         [userId]
     );
-    return rows as Committee[] || [];
+    return rows;
 }
 
-/**
- * Fetches user metadata (membership, phone, dob) directly by ID.
- */
 export async function fetchUserMetadataDb(userId: string): Promise<UserMetadata | null> {
     if (!userId || userId === '') return null;
-    const { rows } = await query(
+    const { rows } = await query<RawUserMetadataRow>(
         `SELECT membership_status, membership_expiry, phone_number, date_of_birth, minecraft_username, entra_id
          FROM directus_users 
          WHERE id = $1 
@@ -101,12 +118,15 @@ export async function fetchUserMetadataDb(userId: string): Promise<UserMetadata 
         [userId]
     );
 
-    if (!rows || rows.length === 0) return null;
+    if (rows.length === 0) return null;
 
     const raw = rows[0];
     return {
-        ...raw,
+        membership_status: raw.membership_status,
+        membership_expiry: raw.membership_expiry instanceof Date ? raw.membership_expiry.toISOString() : raw.membership_expiry,
+        phone_number: raw.phone_number,
         date_of_birth: raw.date_of_birth instanceof Date ? raw.date_of_birth.toISOString() : raw.date_of_birth,
-        membership_expiry: raw.membership_expiry instanceof Date ? raw.membership_expiry.toISOString() : raw.membership_expiry
-    } as UserMetadata;
+        minecraft_username: raw.minecraft_username,
+        entra_id: raw.entra_id
+    };
 }

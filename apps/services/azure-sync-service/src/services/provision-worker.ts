@@ -2,17 +2,20 @@ import { safeConsoleError, logInfo } from '../utils/logger.js';
 import { Redis } from 'ioredis';
 import { SyncJob } from './sync/sync-job.js';
 import { TokenService } from './token.service.js';
+import { z } from 'zod';
 
-interface ProvisionTask {
-    userId: string;
-    paymentId?: string;
-    retries: number;
-    maxRetries: number;
-}
+export const ProvisionTaskSchema = z.object({
+    userId: z.string(),
+    paymentId: z.string().optional(),
+    retries: z.number(),
+    maxRetries: z.number()
+});
+
+export type ProvisionTask = z.infer<typeof ProvisionTaskSchema>;
 
 export class ProvisionWorkerService {
     private static readonly QUEUE_KEY = 'v7:queue:provision:sync_existing';
-    private static shouldStop = false;
+    private static shouldStop: boolean = false;
 
     static async queueProvisioning(redis: Redis, userId: string, paymentId?: string) {
         const task: ProvisionTask = {
@@ -28,7 +31,7 @@ export class ProvisionWorkerService {
     static async start(redis: Redis) {
         logInfo('[ProvisionWorker] Starting background worker loop...');
 
-        while (!this.shouldStop) {
+        while (!ProvisionWorkerService['shouldStop']) {
             try {
                 const now = Date.now();
                 const tasks = await redis.zrangebyscore(this.QUEUE_KEY, 0, now, 'LIMIT', 0, 5);
@@ -39,8 +42,25 @@ export class ProvisionWorkerService {
                 }
 
                 for (const taskJson of tasks) {
-                    if (this.shouldStop) break;
-                    const task: ProvisionTask = JSON.parse(taskJson);
+                    if ((ProvisionWorkerService as unknown as Record<string, unknown>).shouldStop) break;
+
+                    let taskRaw: unknown;
+                    try {
+                        taskRaw = JSON.parse(taskJson);
+                    } catch (_parseErr) {
+                        safeConsoleError('[ProvisionWorker] Failed to parse JSON, removing corrupt task:', taskJson);
+                        await redis.zrem(this.QUEUE_KEY, taskJson);
+                        continue;
+                    }
+
+                    const parsed = ProvisionTaskSchema.safeParse(taskRaw);
+                    if (!parsed.success) {
+                        safeConsoleError('[ProvisionWorker] Invalid task schema, removing corrupt task:', taskJson);
+                        await redis.zrem(this.QUEUE_KEY, taskJson);
+                        continue;
+                    }
+
+                    const task = parsed.data;
 
                     try {
                         logInfo(`[ProvisionWorker] Provisioning user ${task.userId}...`);
@@ -54,8 +74,9 @@ export class ProvisionWorkerService {
                         // Success -> Remove
                         await redis.zrem(this.QUEUE_KEY, taskJson);
                         logInfo(`[ProvisionWorker] Successfully provisioned user ${task.userId}`);
-                    } catch (error: any) {
-                        safeConsoleError(`[ProvisionWorker] Failed provisioning for user ${task.userId}:`, error.message);
+                    } catch (error: unknown) {
+                        const message = error instanceof Error ? error.message : String(error);
+                        safeConsoleError(`[ProvisionWorker] Failed provisioning for user ${task.userId}:`, message);
 
                         task.retries += 1;
                         await redis.zrem(this.QUEUE_KEY, taskJson);
@@ -69,8 +90,9 @@ export class ProvisionWorkerService {
                         }
                     }
                 }
-            } catch (error: any) {
-                safeConsoleError('[ProvisionWorker] Loop Error:', error.message);
+            } catch (error: unknown) {
+                const message = error instanceof Error ? error.message : String(error);
+                safeConsoleError('[ProvisionWorker] Loop Error:', message);
                 await new Promise(resolve => setTimeout(resolve, 5000));
             }
         }

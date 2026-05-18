@@ -9,7 +9,7 @@ import { safeConsoleError } from '../utils/logger';
 export async function requireAdminResource(resource: AdminResource) {
     const session = await getEnrichedSession();
 
-    if (!session || !session.user) {
+    if (!session) {
         throw new Error('Niet ingelogd');
     }
 
@@ -33,10 +33,6 @@ export async function requireAdminResource(resource: AdminResource) {
 
 export async function getEnrichedSession(): Promise<{ user: EnrichedUser; session: Session } | null> {
     try {
-        if (!auth || !auth.api) {
-            safeConsoleError('[AuthUtils] Better Auth instance or API is undefined', undefined);
-            return null;
-        }
 
         let h;
         try {

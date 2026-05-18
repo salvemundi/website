@@ -9,6 +9,7 @@ declare module 'fastify' {
 }
 
 export default fp(async (fastify: FastifyInstance) => {
+    await Promise.resolve();
     const url = process.env.REDIS_URL || 'redis://v7-core-redis:6379';
     const client = new Redis(url, {
         maxRetriesPerRequest: null

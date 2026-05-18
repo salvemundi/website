@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import type { FormEvent } from 'react';
 import { X, Loader2, User, UserPlus, XCircle, CheckCircle } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { m, AnimatePresence } from 'framer-motion';
 import { createManualSignupAction } from '@/server/actions/admin/aanmeldingen.actions';
-import { UserBasic } from '@salvemundi/validations';
+import { type UserBasic } from '@salvemundi/validations';
 
 import MemberTab from './manual/MemberTab';
 import GuestTab from './manual/GuestTab';
@@ -17,17 +18,14 @@ interface ManualSignupModalProps {
     eventName: string;
 }
 
-
 export default function ManualSignupModal({ isOpen, onClose, eventId, eventName }: ManualSignupModalProps) {
     const [activeTab, setActiveTab] = useState<'member' | 'guest'>('member');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-    // Member specific state
     const [selectedMember, setSelectedMember] = useState<UserBasic | null>(null);
 
-    // Guest specific state
     const [guestName, setGuestName] = useState('');
     const [guestEmail, setGuestEmail] = useState('');
     const [guestPhone, setGuestPhone] = useState('');
@@ -53,7 +51,7 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
         setSelectedMember(user);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setError(null);
         setIsLoading(true);
@@ -70,7 +68,9 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
         const res = await createManualSignupAction(Number(eventId), eventName, activeTab, guestData, memberData);
 
         if (res.success) {
-            const name = activeTab === 'member' ? `${selectedMember!.first_name} ${selectedMember!.last_name || ''}` : guestName;
+            const name = (activeTab === 'member' && selectedMember)
+                ? `${selectedMember.first_name} ${selectedMember.last_name || ''}`
+                : guestName;
             setSuccessMessage(`Succesvol ingeschreven: ${name}`);
             setTimeout(() => {
                 onClose();
@@ -88,7 +88,6 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
         setMounted(true);
     }, []);
 
-    // Scroll Lock when modal is open
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
@@ -96,32 +95,28 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
         }
     }, [isOpen]);
 
-    if (!isOpen || !mounted) return null;
+    if (!mounted) return null;
 
     return createPortal(
         <AnimatePresence>
             {isOpen && (
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 isolate">
-                    {/* Background Overlay with heavy blur */}
-                    <m.div 
+                    <m.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.4 }}
-                        className="absolute inset-0 bg-slate-950/60 backdrop-blur-xl" 
-                        onClick={onClose} 
+                        className="absolute inset-0 bg-slate-950/60 backdrop-blur-xl"
+                        onClick={onClose}
                     />
-                    
-                    {/* Modal Container */}
-                    <m.div 
+
+                    <m.div
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
                         transition={{ type: "spring", damping: 25, stiffness: 350 }}
                         className="bg-[var(--beheer-card-bg)] w-full max-w-xl rounded-[2rem] shadow-[var(--shadow-card-elevated)] ring-1 ring-white/10 overflow-hidden flex flex-col max-h-[90vh] relative z-10 border border-[var(--beheer-border)]"
                     >
-                        
-                        {/* Header with subtle glow */}
                         <div className="px-8 py-6 border-b border-[var(--beheer-border)] flex justify-between items-center bg-[var(--beheer-card-soft)]/80 relative">
                             <div className="absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-[var(--beheer-accent)]/30 to-transparent" />
                             <h2 className="text-[10px] font-semibold text-[var(--beheer-text)]  tracking-[0.2em] flex items-center gap-3">
@@ -130,15 +125,14 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
                                 </div>
                                 Handmatig Inschrijven
                             </h2>
-                            <button 
-                                onClick={onClose} 
+                            <button
+                                onClick={onClose}
                                 className="text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] hover:bg-[var(--beheer-card-bg)] p-2.5 rounded-full transition-all active:scale-90 focus:outline-none border border-transparent hover:border-[var(--beheer-border)]"
                             >
                                 <X className="h-5 w-5" />
                             </button>
                         </div>
 
-                        {/* Segmented Control Tabs */}
                         <div className="px-8 py-4 bg-[var(--beheer-card-bg)]">
                             <div className="flex bg-[var(--beheer-card-soft)] p-1.5 rounded-2xl border border-[var(--beheer-border)] gap-1">
                                 <button
@@ -166,7 +160,6 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
                             </div>
                         </div>
 
-                        {/* Body Content */}
                         <div className="px-8 pb-8 pt-2 overflow-y-auto custom-scrollbar">
                             {error && (
                                 <div className="mb-6 p-4 bg-red-500/10 text-red-500 rounded-2xl text-[10px] font-semibold  tracking-widest border border-red-500/20 flex items-start gap-4 animate-in slide-in-from-top-2">
@@ -181,7 +174,7 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
                                 </div>
                             )}
 
-                            <form onSubmit={handleSubmit} className="space-y-8" autoComplete="off">
+                            <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-8" autoComplete="off">
                                 {activeTab === 'member' ? (
                                     <MemberTab
                                         selectedMember={selectedMember}
@@ -199,7 +192,6 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
                                     />
                                 )}
 
-                                {/* Footer Actions */}
                                 <div className="flex gap-4 pt-8 mt-4 border-t border-[var(--beheer-border)]">
                                     <button
                                         type="button"

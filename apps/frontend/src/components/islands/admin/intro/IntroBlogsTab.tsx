@@ -32,13 +32,14 @@ export default function IntroBlogsTab({ blogs, onSave, onDelete, saving, deletin
 
     const startEdit = (e: React.MouseEvent, blog: IntroBlog) => {
         e.stopPropagation();
-        setEditingId(blog.id!);
+        const blogId = blog.id ?? 0;
+        setEditingId(blogId);
         // Sanitize: convert nulls to undefined to avoid Zod validation issues
         const sanitized = Object.fromEntries(
             Object.entries(blog).map(([k, v]) => [k, v === null ? undefined : v])
         );
         setEditData(sanitized);
-        if (!expandedRows.includes(blog.id!)) setExpandedRows(prev => [...prev, blog.id!]);
+        if (!expandedRows.includes(blogId)) setExpandedRows(prev => [...prev, blogId]);
     };
 
     const handleSave = async () => {
@@ -95,7 +96,7 @@ export default function IntroBlogsTab({ blogs, onSave, onDelete, saving, deletin
                                         blog={{ id: -1 }}
                                         data={editData}
                                         onChange={setEditData}
-                                        onSave={handleSave}
+                                        onSave={() => { void handleSave(); }}
                                         onCancel={() => setEditingId(null)}
                                         saving={saving}
                                     />
@@ -104,15 +105,16 @@ export default function IntroBlogsTab({ blogs, onSave, onDelete, saving, deletin
                         )}
 
                         {blogs.map(blog => {
-                            const isExpanded = expandedRows.includes(blog.id!);
+                            const blogId = blog.id ?? 0;
+                            const isExpanded = expandedRows.includes(blogId);
                             const isEditing = editingId === blog.id;
-                            const typeInfo = blogTypes[blog.blog_type as keyof typeof blogTypes] || blogTypes.update;
+                            const typeInfo = blogTypes[blog.blog_type as keyof typeof blogTypes];
                             const date = blog.created_at;
 
                             return (
                                 <React.Fragment key={blog.id}>
                                     <tr 
-                                        onClick={() => toggleExpand(blog.id!)} 
+                                        onClick={() => toggleExpand(blogId)} 
                                         className="hover:bg-[var(--beheer-accent)]/[0.02] cursor-pointer transition-colors group"
                                     >
                                         <td className="px-8 py-5">
@@ -149,7 +151,7 @@ export default function IntroBlogsTab({ blogs, onSave, onDelete, saving, deletin
                                                 />
                                                 <ActionButton 
                                                     icon={Trash2} 
-                                                    onClick={(e) => { e.stopPropagation(); onDelete(blog.id!); }} 
+                                                    onClick={(e) => { e.stopPropagation(); void onDelete(blogId); }} 
                                                     variant="danger"
                                                     disabled={deletingId === blog.id}
                                                     title="Verwijderen"
@@ -168,7 +170,7 @@ export default function IntroBlogsTab({ blogs, onSave, onDelete, saving, deletin
                                                         blog={blog}
                                                         data={editData}
                                                         onChange={setEditData}
-                                                        onSave={handleSave}
+                                                        onSave={() => { void handleSave(); }}
                                                         onCancel={() => setEditingId(null)}
                                                         saving={saving}
                                                     />

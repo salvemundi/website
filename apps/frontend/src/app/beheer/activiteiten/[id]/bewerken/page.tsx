@@ -3,32 +3,40 @@ import { getEnrichedSession } from '@/server/auth/auth-utils';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import { notFound } from 'next/navigation';
 import ActiviteitBewerkenIsland from '@/components/islands/admin/activities/ActiviteitBewerkenIsland';
-
 import { getActivityByIdInternal } from '@/server/queries/admin-event.queries';
 import { query } from '@/lib/database';
 import { getPermissions } from '@/shared/lib/permissions';
 import { fetchUserCommitteesDb } from '@/server/internal/user-db.utils';
+import { safeConsoleError } from '@/server/utils/logger';
 import { type EnrichedUser } from '@/types/auth';
 import { type AdminActivity } from "@salvemundi/validations";
 import { type Committee } from '@/shared/lib/permissions';
 
 export const metadata: Metadata = {
-    title: 'Activiteit Bewerken | SV Salve Mundi' };
+    title: 'Activiteit Bewerken | SV Salve Mundi'
+};
 
 export default async function BewerkenActiviteitPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;
     const id = resolvedParams.id;
-    
+
     const session = await getEnrichedSession();
-    if (!session || !session.user) return <AdminUnauthorized title="Activiteit Bewerken" />;
+    if (!session) return <AdminUnauthorized title="Activiteit Bewerken" />;
 
     const user = session.user as unknown as EnrichedUser;
-    const userCommittees = await fetchUserCommitteesDb(user.id).catch(() => []);
-    const permissions = getPermissions(userCommittees || []);
+
+    let userCommittees: Awaited<ReturnType<typeof fetchUserCommitteesDb>> = [];
+    try {
+        userCommittees = await fetchUserCommitteesDb(user.id);
+    } catch (error) {
+        safeConsoleError('[page][BewerkenActiviteitPage]', error);
+    }
+
+    const permissions = getPermissions(userCommittees);
 
     if (!permissions.canAccessActivitiesEdit) {
         return (
-            <AdminUnauthorized 
+            <AdminUnauthorized
                 title="Activiteit Bewerken"
                 description="Je hebt geen rechten om activiteiten te bewerken. Alleen commissieleiders en beheer hebben deze rechten."
             />
@@ -37,15 +45,13 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
 
     const isPowerful = permissions.isLeader || permissions.isICT;
 
-    // Fetch data using SQL instead of Directus API for better performance and consistency
     const [eventData, allCommittees] = await Promise.all([
         getActivityByIdInternal(id),
         query('SELECT id, name, email FROM committees WHERE is_visible = true').then(res => res.rows as { id: number; name: string; email: string }[])
     ]);
-    
+
     if (!eventData) return notFound();
-    
-    // Map database fields to match the form expectations
+
     const event = {
         ...eventData,
         name: eventData.titel,
@@ -54,11 +60,9 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
         event_date_end: eventData.datum_eind,
         location: eventData.locatie,
         image: eventData.afbeelding_id,
-        // Ensure numeric fields are correctly typed
         price_members: eventData.price_members,
         price_non_members: eventData.price_non_members,
         max_sign_ups: eventData.max_sign_ups,
-        // Missing fields
         description_logged_in: eventData.description_logged_in,
         publish_date: eventData.publish_date,
         only_members: eventData.only_members
@@ -70,18 +74,16 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
         email: c.email
     }));
 
-    // Filter allowed committees for the dropdown (only if not powerful, otherwise show all)
-    const allowedCommitteesForDropdown = isPowerful 
-        ? cleanedCommittees 
-        : cleanedCommittees.filter((c) => (userCommittees || []).some((m) => String(m.id) === String(c.id)));
+    const allowedCommitteesForDropdown = isPowerful
+        ? cleanedCommittees
+        : cleanedCommittees.filter((c) => userCommittees.some((m) => String(m.id) === String(c.id)));
 
     return (
         <div className="pb-20">
-            <ActiviteitBewerkenIsland 
-                event={event as unknown as AdminActivity} 
-                committees={allowedCommitteesForDropdown as unknown as Committee[]} 
+            <ActiviteitBewerkenIsland
+                event={event as unknown as AdminActivity}
+                committees={allowedCommitteesForDropdown as unknown as Committee[]}
             />
         </div>
     );
 }
-

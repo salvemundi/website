@@ -5,12 +5,6 @@ import { activitiesSchema, type Activiteit } from '@salvemundi/validations/schem
 import { type DbEventSignup } from '@salvemundi/validations/directus/schema';
 import { safeConsoleError } from '@/server/utils/logger';
 
-/**
- * Pure database queries for event management.
- * Designed to be safe for both RSC (React Server Components) and Server Actions
- * by avoiding headers() or other request-bound context.
- */
-
 interface DbEventRow {
     id: string | number;
     name: string | null;
@@ -43,7 +37,7 @@ const mapRowToActiviteitData = (item: DbEventRow) => {
     };
 
     return {
-        id: String(item.id ?? ''),
+        id: String(item.id),
         titel: item.name ?? '',
         beschrijving: item.description ?? null,
         locatie: item.location ?? null,
@@ -51,9 +45,9 @@ const mapRowToActiviteitData = (item: DbEventRow) => {
         datum_eind: safeISO(item.event_date_end),
         afbeelding_id: item.image ? { id: item.image, type: item.image_type ?? undefined } : null,
         status: item.status ?? undefined,
-        price_members: item.price_members != null ? Number(item.price_members) : 0,
-        price_non_members: item.price_non_members != null ? Number(item.price_non_members) : 0,
-        max_sign_ups: item.max_sign_ups != null ? Number(item.max_sign_ups) : null,
+        price_members: item.price_members !== null ? Number(item.price_members) : 0,
+        price_non_members: item.price_non_members !== null ? Number(item.price_non_members) : 0,
+        max_sign_ups: item.max_sign_ups !== null ? Number(item.max_sign_ups) : null,
         only_members: item.only_members ?? false,
         registration_deadline: safeISO(item.registration_deadline),
         contact: item.contact ?? null,
@@ -79,9 +73,9 @@ const mapRowToAdminActivityData = (item: DbEventRow) => {
         event_date_end: safeISO(item.event_date_end),
         description: item.description ?? null,
         location: item.location ?? null,
-        price_members: item.price_members != null ? Number(item.price_members) : 0,
-        price_non_members: item.price_non_members != null ? Number(item.price_non_members) : 0,
-        max_sign_ups: item.max_sign_ups != null ? Number(item.max_sign_ups) : null,
+        price_members: item.price_members !== null ? Number(item.price_members) : 0,
+        price_non_members: item.price_non_members !== null ? Number(item.price_non_members) : 0,
+        max_sign_ups: item.max_sign_ups !== null ? Number(item.max_sign_ups) : null,
         only_members: item.only_members ?? false,
         registration_deadline: safeISO(item.registration_deadline),
         contact: item.contact ?? null,
@@ -130,7 +124,7 @@ export async function getActivityByIdInternal(id: string): Promise<Activiteit | 
     `;
     const { rows } = await query(sql, [id]);
 
-    const item = (rows as DbEventRow[])?.[0];
+    const item = (rows as DbEventRow[])[0] as DbEventRow | undefined;
     if (!item) return null;
 
     const mapped = mapRowToActiviteitData(item);
@@ -170,18 +164,13 @@ export async function getActivitySignupsInternal(eventId: string): Promise<DbEve
     `;
     const { rows } = await query(sql, [eventId]);
 
-    // Map back to ensure compatibility with existing components that expect is_member
-    return (rows as Record<string, unknown>[]).map((r) => ({
+    return (rows as { [key: string]: unknown }[]).map((r) => ({
         ...r,
-        id: r.id != null ? Number(r.id) : null,
+        id: r.id !== null && r.id !== undefined ? Number(r.id) : null,
         is_member: Boolean(r.calculated_is_member)
     } as DbEventSignup));
 }
 
-/**
- * Fetch all activities with their valid signup counts using SQL.
- * High performance alternative to Directus aggregates.
- */
 export async function getActivitiesWithSignupCountsInternal(search?: string, filter: 'all' | 'upcoming' | 'past' = 'all'): Promise<(Activiteit & { signup_count: number })[]> {
     let whereClause = "WHERE 1=1";
     const params: (string | number | boolean | null)[] = [];

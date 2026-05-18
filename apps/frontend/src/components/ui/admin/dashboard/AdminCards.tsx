@@ -20,14 +20,9 @@ const getColorClasses = (colorClass: string = 'purple') => {
         ['teal', 'text-teal-500 bg-teal-500/10 border-teal-500/20'],
         ['amber', 'text-amber-500 bg-amber-500/10 border-amber-500/20']
     ]);
-    return colors.get(colorClass) || colors.get('purple')!;
+    return colors.get(colorClass) || colors.get('purple') || '';
 };
 
-/**
- * Universal Dashboard Button (ActionCard style).
- * Horizontal layout: [Icon] [Name/Label] [Value]
- * Modernized: Pure data rendering.
- */
 export function ActionCard({
     title = '',
     subtitle,
@@ -48,25 +43,23 @@ export function ActionCard({
     const isInternal = isLink && !isExternal;
     const Component = (isInternal ? Link : (isLink ? 'a' : 'div')) as React.ElementType;
     const colorStyle = getColorClasses(colorClass);
-    
+
     return (
         <Component
-            {...((isLink && href) ? { 
-                href, 
-                ...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {}) 
+            {...((isLink && href) ? {
+                href,
+                ...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})
             } : {})}
             className={`w-full flex items-center gap-4 p-4 rounded-[var(--beheer-radius)] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] shadow-sm relative overflow-hidden
                 ${disabled ? 'opacity-50 cursor-not-allowed shadow-none' : ''} 
                 ${!disabled && href ? 'hover:border-[var(--beheer-accent)]/40 hover:bg-[var(--beheer-accent)]/[0.02] hover:shadow-md transition-all cursor-pointer active:scale-[0.98] group' : ''}`}
         >
-            {/* Left: Icon (Optional) */}
             {icon && (
                 <div className={`p-3 rounded-xl transition-colors ${colorStyle} group-hover:bg-opacity-20 shrink-0`}>
                     {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<{ className?: string }>, { className: 'h-6 w-6' }) : icon}
                 </div>
             )}
 
-            {/* Middle: Text hierarchy */}
             <div className="text-left flex-1 min-w-0 pr-2">
                 <p className="text-base font-semibold tracking-normal text-[var(--beheer-text)] group-hover:text-[var(--beheer-accent)] transition-colors leading-tight mb-1 truncate">
                     {title}
@@ -78,16 +71,14 @@ export function ActionCard({
                 )}
             </div>
 
-            {/* Right: Optional value/stat */}
-            {value !== undefined && value !== null && (
+            {value !== undefined && (
                 <div className="shrink-0 flex flex-col items-end">
                     <span className="text-2xl font-semibold tracking-normal text-[var(--beheer-text)] opacity-80 group-hover:opacity-100 group-hover:text-[var(--beheer-accent)] transition-all">
                         {value}
                     </span>
                 </div>
             )}
-            
-            {/* Indicator arrow if link */}
+
             {isLink && (
                 <div className="text-[var(--beheer-accent)] opacity-20 group-hover:opacity-100 group-hover:translate-x-1 transition-all pr-1">
                     <ChevronRight className="h-5 w-5" />
@@ -96,7 +87,3 @@ export function ActionCard({
         </Component>
     );
 }
-
-
-
-

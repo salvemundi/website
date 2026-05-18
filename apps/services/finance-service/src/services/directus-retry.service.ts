@@ -1,14 +1,18 @@
 import { safeConsoleError } from '../utils/logger.js';
 import { Redis } from 'ioredis';
 import { createDirectus, rest, staticToken, updateItem } from '@directus/sdk';
+import { DirectusSchema } from '@salvemundi/validations/directus/schema';
+import { z } from 'zod';
 
-interface DirectusUpdateTask {
-    collection: string;
-    id: string | number;
-    data: any;
-    retries: number;
-    maxRetries: number;
-}
+const DirectusUpdateTaskSchema = z.object({
+    collection: z.string(),
+    id: z.union([z.string(), z.number()]),
+    data: z.record(z.unknown()),
+    retries: z.number(),
+    maxRetries: z.number()
+});
+
+type DirectusUpdateTask = z.infer<typeof DirectusUpdateTaskSchema>;
 
 export class DirectusRetryService {
     private static readonly QUEUE_KEY = 'directus_update_retry_queue';
@@ -17,25 +21,25 @@ export class DirectusRetryService {
     /**
      * Queues an update request for Directus.
      */
-    static async queueUpdate(redis: Redis, collection: string, id: string | number, data: any) {
+    static async queueUpdate(redis: Redis, collection: string, id: string | number, data: object) {
         const task: DirectusUpdateTask = {
             collection,
             id,
-            data,
+            data: data as Record<string, unknown>,
             retries: 0,
             maxRetries: 15 // High number of retries for critical payment updates
         };
 
         // Add to Redis Sorted Set (Score = current time)
         await redis.zadd(this.QUEUE_KEY, Date.now(), JSON.stringify(task));
-        console.log(`[DirectusRetry] Queued update for ${collection}/${id}`);
+        safeConsoleError(`[DirectusRetry] Queued update for ${collection}/${id}`);
     }
 
     /**
      * Starts the background worker loop.
      */
     static async startWorker(redis: Redis) {
-        console.log('[DirectusRetry] Starting Directus Update Worker Loop...');
+        safeConsoleError('[DirectusRetry] Starting Directus Update Worker Loop...');
 
         while (!this.shouldStop) {
             try {
@@ -48,31 +52,47 @@ export class DirectusRetryService {
                 }
 
                 for (const taskStr of taskStrings) {
-                    const task: DirectusUpdateTask = JSON.parse(taskStr);
-
                     try {
-                        await this.processUpdate(task);
-                        await redis.zrem(this.QUEUE_KEY, taskStr);
-                        console.log(`[DirectusRetry] Successfully processed update for ${task.collection}/${task.id}`);
-                    } catch (error: any) {
-                        safeConsoleError(`[DirectusRetry] Failed attempt ${task.retries + 1} for ${task.collection}/${task.id}: ${error.message}`);
-                        await redis.zrem(this.QUEUE_KEY, taskStr);
+                        const result = DirectusUpdateTaskSchema.safeParse(JSON.parse(taskStr));
 
-                        if (task.retries < task.maxRetries) {
-                            task.retries++;
-                            // Exponential Backoff
-                            const backoffSec = Math.min(3600, 10 * Math.pow(2, task.retries - 1)); // Max 1 hour
-                            const nextAttempt = Date.now() + (backoffSec * 1000);
-
-                            await redis.zadd(this.QUEUE_KEY, nextAttempt, JSON.stringify(task));
-                        } else {
-                            safeConsoleError(`[DirectusRetry] Max retries reached for ${task.collection}/${task.id}. Dropping task.`);
+                        if (!result.success) {
+                            safeConsoleError(`[DirectusRetry] Corrupt queue entry detected, removing task: ${result.error.message}`);
+                            await redis.zrem(this.QUEUE_KEY, taskStr);
+                            continue;
                         }
+
+                        const task = result.data;
+
+                        try {
+                            await this.processUpdate(task);
+                            await redis.zrem(this.QUEUE_KEY, taskStr);
+                            safeConsoleError(`[DirectusRetry] Successfully processed update for ${task.collection}/${task.id}`);
+                        } catch (error: unknown) {
+                            const err = error instanceof Error ? error : new Error(String(error));
+                            safeConsoleError(`[DirectusRetry] Failed attempt ${task.retries + 1} for ${task.collection}/${task.id}: ${err.message}`);
+                            await redis.zrem(this.QUEUE_KEY, taskStr);
+
+                            if (task.retries < task.maxRetries) {
+                                task.retries++;
+                                // Exponential Backoff
+                                const backoffSec = Math.min(3600, 10 * Math.pow(2, task.retries - 1)); // Max 1 hour
+                                const nextAttempt = Date.now() + (backoffSec * 1000);
+
+                                await redis.zadd(this.QUEUE_KEY, nextAttempt, JSON.stringify(task));
+                            } else {
+                                safeConsoleError(`[DirectusRetry] Max retries reached for ${task.collection}/${task.id}. Dropping task.`);
+                            }
+                        }
+                    } catch (parseErr: unknown) {
+                        const err = parseErr instanceof Error ? parseErr : new Error(String(parseErr));
+                        safeConsoleError(`[DirectusRetry] Corrupt JSON detected, removing task: ${err.message}`);
+                        await redis.zrem(this.QUEUE_KEY, taskStr);
                     }
                 }
                 await new Promise(resolve => setTimeout(resolve, 1000));
-            } catch (error: any) {
-                safeConsoleError(`[DirectusRetry] Worker loop error: ${error.message}`);
+            } catch (error: unknown) {
+                const err = error instanceof Error ? error : new Error(String(error));
+                safeConsoleError(`[DirectusRetry] Worker loop error: ${err.message}`);
                 await new Promise(resolve => setTimeout(resolve, 5000));
             }
         }
@@ -83,13 +103,17 @@ export class DirectusRetryService {
     }
 
     private static async processUpdate(task: DirectusUpdateTask) {
-        const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL!;
-        const directusToken = process.env.DIRECTUS_STATIC_TOKEN!;
+        const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL || '';
+        const directusToken = process.env.DIRECTUS_STATIC_TOKEN || '';
 
-        const directus = createDirectus<any>(directusUrl)
+        if (!directusUrl || !directusToken) {
+            throw new Error('Directus configuration is missing');
+        }
+
+        const directus = createDirectus<DirectusSchema>(directusUrl)
             .with(staticToken(directusToken))
             .with(rest());
 
-        await directus.request(updateItem(task.collection, task.id, task.data));
+        await directus.request(updateItem(task.collection as never, task.id as never, task.data as never));
     }
 }

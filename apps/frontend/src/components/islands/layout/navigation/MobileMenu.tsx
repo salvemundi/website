@@ -152,7 +152,7 @@ export default function MobileMenu({
                                     )}
                                 >
                                     <span className="flex items-center gap-3 whitespace-nowrap">
-                                        {Icon && <Icon className="h-5 w-5 text-[var(--color-purple-500)]" aria-hidden="true" />}
+                                        <Icon className="h-5 w-5 text-[var(--color-purple-500)]" aria-hidden="true" />
                                         <span>{link.name}</span>
                                     </span>
                                     <span aria-hidden="true" className="text-[var(--text-muted)]">›</span>
@@ -192,15 +192,17 @@ export default function MobileMenu({
                         ) : (
                             <button
                                 type="button"
-                                onClick={async () => {
-                                    try {
-                                        await authClient.signIn.social({
-                                            provider: 'microsoft',
-                                            callbackURL: '/profiel'
-                                        });
-                                    } catch {
-                                        // Handle error
-                                    }
+                                onClick={() => {
+                                    void (async () => {
+                                        try {
+                                            await authClient.signIn.social({
+                                                provider: 'microsoft',
+                                                callbackURL: '/profiel'
+                                            });
+                                        } catch {
+                                            // Handle error
+                                        }
+                                    })();
                                 }}
                                 className="flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow-lg shadow-purple-500/10 active:scale-95 transition-all"
                                 style={{

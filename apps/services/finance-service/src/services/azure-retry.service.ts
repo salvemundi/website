@@ -1,16 +1,19 @@
 import { safeConsoleError } from '../utils/logger.js';
 import { Redis } from 'ioredis';
+import { z } from 'zod';
 
-interface AzureUpdateTask {
-    entraId: string;
-    data: {
-        membershipExpiry?: string;
-        originalPaymentDate?: string;
-    };
-    retries: number;
-    maxRetries: number;
-    triggerSync?: boolean;
-}
+const AzureUpdateTaskSchema = z.object({
+    entraId: z.string(),
+    data: z.object({
+        membershipExpiry: z.string().optional(),
+        originalPaymentDate: z.string().optional()
+    }),
+    retries: z.number(),
+    maxRetries: z.number(),
+    triggerSync: z.boolean().optional()
+});
+
+type AzureUpdateTask = z.infer<typeof AzureUpdateTaskSchema>;
 
 export class AzureRetryService {
     private static readonly QUEUE_KEY = 'azure_update_retry_queue';
@@ -19,7 +22,7 @@ export class AzureRetryService {
     /**
      * Queues an update request for Azure AD.
      */
-    static async queueUpdate(redis: Redis, entraId: string, data: any, triggerSync: boolean = true) {
+    static async queueUpdate(redis: Redis, entraId: string, data: AzureUpdateTask['data'], triggerSync: boolean = true) {
         const task: AzureUpdateTask = {
             entraId,
             data,
@@ -29,14 +32,14 @@ export class AzureRetryService {
         };
 
         await redis.zadd(this.QUEUE_KEY, Date.now(), JSON.stringify(task));
-        console.log(`[AzureRetry] Queued Azure update for Entra ID ${entraId}`);
+        safeConsoleError(`[AzureRetry] Queued Azure update for Entra ID ${entraId}`);
     }
 
     /**
      * Starts the background worker loop.
      */
     static async startWorker(redis: Redis) {
-        console.log('[AzureRetry] Starting Azure Update Worker Loop...');
+        safeConsoleError('[AzureRetry] Starting Azure Update Worker Loop...');
 
         while (!this.shouldStop) {
             try {
@@ -49,32 +52,48 @@ export class AzureRetryService {
                 }
 
                 for (const taskStr of taskStrings) {
-                    const task: AzureUpdateTask = JSON.parse(taskStr);
-
                     try {
-                        await this.processUpdate(task);
+                        const result = AzureUpdateTaskSchema.safeParse(JSON.parse(taskStr));
 
-                        if (task.triggerSync) {
-                            await this.triggerSync(task.entraId);
+                        if (!result.success) {
+                            safeConsoleError(`[AzureRetry] Corrupt queue entry detected, removing task: ${result.error.message}`);
+                            await redis.zrem(this.QUEUE_KEY, taskStr);
+                            continue;
                         }
 
-                        await redis.zrem(this.QUEUE_KEY, taskStr);
-                        console.log(`[AzureRetry] Successfully updated Azure user ${task.entraId}`);
-                    } catch (error: any) {
-                        safeConsoleError(`[AzureRetry] Failed attempt ${task.retries + 1} for ${task.entraId}: ${error.message}`);
-                        await redis.zrem(this.QUEUE_KEY, taskStr);
+                        const task = result.data;
 
-                        if (task.retries < task.maxRetries) {
-                            task.retries++;
-                            const backoffSec = 30 * Math.pow(2, task.retries - 1);
-                            const nextAttempt = Date.now() + (backoffSec * 1000);
-                            await redis.zadd(this.QUEUE_KEY, nextAttempt, JSON.stringify(task));
+                        try {
+                            await this.processUpdate(task);
+
+                            if (task.triggerSync) {
+                                await this.triggerSync(task.entraId);
+                            }
+
+                            await redis.zrem(this.QUEUE_KEY, taskStr);
+                            safeConsoleError(`[AzureRetry] Successfully updated Azure user ${task.entraId}`);
+                        } catch (error: unknown) {
+                            const err = error instanceof Error ? error : new Error(String(error));
+                            safeConsoleError(`[AzureRetry] Failed attempt ${task.retries + 1} for ${task.entraId}: ${err.message}`);
+                            await redis.zrem(this.QUEUE_KEY, taskStr);
+
+                            if (task.retries < task.maxRetries) {
+                                task.retries++;
+                                const backoffSec = 30 * Math.pow(2, task.retries - 1);
+                                const nextAttempt = Date.now() + (backoffSec * 1000);
+                                await redis.zadd(this.QUEUE_KEY, nextAttempt, JSON.stringify(task));
+                            }
                         }
+                    } catch (parseErr: unknown) {
+                        const err = parseErr instanceof Error ? parseErr : new Error(String(parseErr));
+                        safeConsoleError(`[AzureRetry] Corrupt JSON detected, removing task: ${err.message}`);
+                        await redis.zrem(this.QUEUE_KEY, taskStr);
                     }
                 }
                 await new Promise(resolve => setTimeout(resolve, 2000));
-            } catch (error: any) {
-                safeConsoleError(`[AzureRetry] Worker loop error: ${error.message}`);
+            } catch (error: unknown) {
+                const err = error instanceof Error ? error : new Error(String(error));
+                safeConsoleError(`[AzureRetry] Worker loop error: ${err.message}`);
                 await new Promise(resolve => setTimeout(resolve, 10000));
             }
         }
@@ -119,7 +138,7 @@ export class AzureRetryService {
         });
 
         if (!res.ok) {
-            console.warn(`[AzureRetry] Failed to trigger sync for ${entraId} (Status: ${res.status})`);
+            safeConsoleError(`[AzureRetry] Failed to trigger sync for ${entraId} (Status: ${res.status})`);
         }
     }
 }

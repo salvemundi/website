@@ -1,5 +1,6 @@
 import { ClientSecretCredential } from '@azure/identity';
 import { Redis } from 'ioredis';
+import { logInfo } from '../utils/logger.js';
 
 export class TokenService {
     private static credential?: ClientSecretCredential;
@@ -11,7 +12,7 @@ export class TokenService {
         const cachedToken = await redis.get(cacheKey);
         if (cachedToken) return cachedToken;
 
-        console.log('[TokenService] No cached token found, fetching new one from Azure...');
+        logInfo('[TokenService] No cached token found, fetching new one from Azure...');
 
         // 2. Fetch from Azure
         if (!this.credential) {
@@ -26,7 +27,7 @@ export class TokenService {
         }
 
         const tokenResponse = await this.credential.getToken('https://graph.microsoft.com/.default');
-        console.log(`[TokenService] Fetched new token starting with: ${tokenResponse.token.substring(0, 10)}...`);
+        logInfo(`[TokenService] Fetched new token starting with: ${tokenResponse.token.substring(0, 10)}...`);
         
         // 3. Save to Redis with 50m TTL (3000s)
         await redis.set(cacheKey, tokenResponse.token, 'EX', 3000);

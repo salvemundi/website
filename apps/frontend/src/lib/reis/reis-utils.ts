@@ -58,11 +58,11 @@ export function parseActivityOptions(options: unknown): ActivityOption[] {
  */
 export function parseSelectedOptions(selected: unknown): Record<string, boolean> {
     if (!selected) return {};
-    if (typeof selected === 'object' && selected !== null && !Array.isArray(selected)) return selected as Record<string, boolean>;
+    if (typeof selected === 'object' && !Array.isArray(selected)) return selected as Record<string, boolean>;
     if (typeof selected === 'string') {
         try {
-            const parsed = JSON.parse(selected);
-            return (typeof parsed === 'object' && parsed !== null) ? parsed : {};
+            const parsed = JSON.parse(selected) as unknown;
+            return (typeof parsed === 'object' && parsed !== null) ? (parsed as Record<string, boolean>) : {};
         } catch (_error) {
             return {};
         }

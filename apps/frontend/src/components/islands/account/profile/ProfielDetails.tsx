@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { Mail, Phone, Calendar, Edit2, Save, Loader2, LogOut } from 'lucide-react';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
@@ -50,13 +49,15 @@ export default function ProfielDetails({
                 router.push('/');
             }
         } catch (error) {
-            safeConsoleError('[ProfielDetails][handleLogout] Logout function failed:', error);
+            safeConsoleError('[ProfielDetails][handleLogout]', error);
         }
     };
 
     const logoutButton = (
         <button
-            onClick={handleLogout}
+            onClick={() => {
+                void handleLogout();
+            }}
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-red-500 bg-red-500/5 hover:bg-red-500/10 border border-red-500/10 transition-all active:scale-95 group"
         >
             <LogOut className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
@@ -72,7 +73,6 @@ export default function ProfielDetails({
             actions={logoutButton}
         >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Email Box */}
                 <div className="flex items-center gap-4 rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm">
                     <div className="shrink-0 rounded-xl bg-[var(--color-purple-100)] p-3 text-[var(--color-purple-600)] shadow-sm">
                         <Mail className="h-5 w-5" />
@@ -87,7 +87,6 @@ export default function ProfielDetails({
                     </div>
                 </div>
 
-                {/* Fontys Email Box */}
                 {user.fontys_email && (
                     <div className="flex items-center gap-4 rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm">
                         <div className="shrink-0 rounded-xl bg-[var(--color-purple-100)] p-3 text-[var(--color-purple-600)] shadow-sm">
@@ -104,7 +103,6 @@ export default function ProfielDetails({
                     </div>
                 )}
 
-                {/* Phone Box */}
                 <div className="rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm relative group">
                     <div className="flex items-center justify-between gap-2 mb-3">
                         <p className="text-[11px] font-bold uppercase text-[var(--color-purple-400)] tracking-wide text-left">
@@ -121,7 +119,13 @@ export default function ProfielDetails({
                             <Phone className="h-5 w-5" />
                         </div>
                         {isEditingPhoneNumber ? (
-                            <form onSubmit={handleSubmitPhone(onSavePhone)} className="flex flex-col w-full gap-2" autoComplete="off">
+                            <form 
+                                onSubmit={(e) => {
+                                    void handleSubmitPhone(onSavePhone)(e);
+                                }} 
+                                className="flex flex-col w-full gap-2" 
+                                autoComplete="off"
+                            >
                                 <div className="flex w-full items-center gap-2">
                                     <input
                                         {...registerPhone("phone_number")}
@@ -142,7 +146,6 @@ export default function ProfielDetails({
                     </div>
                 </div>
 
-                {/* Birthdate Box */}
                 <div className="rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm">
                     <div className="flex items-center justify-between gap-2 mb-3">
                         <p className="text-[11px] font-bold uppercase text-[var(--color-purple-400)] tracking-wide text-left">

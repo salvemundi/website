@@ -1,12 +1,15 @@
 import { safeConsoleError } from '../utils/logger.js';
 import { Redis } from 'ioredis';
+import { z } from 'zod';
 
-interface InvalidationTask {
-    userId: string;
-    tag: string;
-    retries: number;
-    maxRetries: number;
-}
+const InvalidationTaskSchema = z.object({
+    userId: z.string(),
+    tag: z.string(),
+    retries: z.number(),
+    maxRetries: z.number()
+});
+
+type InvalidationTask = z.infer<typeof InvalidationTaskSchema>;
 
 export class CacheInvalidationService {
     private static readonly QUEUE_KEY = 'cache_invalidation_queue';
@@ -27,14 +30,14 @@ export class CacheInvalidationService {
         // Add to Redis Sorted Set (Score = current time)
         await redis.zadd(this.QUEUE_KEY, Date.now(), JSON.stringify(task));
 
-        console.log(`[CacheInvalidation] Queued task for user ${userId} in Sorted Set`);
+        safeConsoleError(`[CacheInvalidation] Queued task for user ${userId} in Sorted Set`);
     }
 
     /**
      * Starts the background worker loop.
      */
     static async startWorker(redis: Redis) {
-        console.log('[CacheInvalidation] Starting Retry Worker Loop...');
+        safeConsoleError('[CacheInvalidation] Starting Retry Worker Loop...');
 
         while (!this.shouldStop) {
             try {
@@ -49,46 +52,61 @@ export class CacheInvalidationService {
                 }
 
                 for (const taskStr of taskStrings) {
-                    const task: InvalidationTask = JSON.parse(taskStr);
-
                     try {
-                        await this.processInvalidation(task);
+                        const result = InvalidationTaskSchema.safeParse(JSON.parse(taskStr));
 
-                        // Success -> Remove from queue
-                        await redis.zrem(this.QUEUE_KEY, taskStr);
-                    } catch (error: any) {
-                        safeConsoleError(`[CacheInvalidation] Failed attempt ${task.retries + 1} for ${task.userId}: ${error.message}`);
-
-                        // Remove old entry before potentially re-adding or dropping
-                        await redis.zrem(this.QUEUE_KEY, taskStr);
-
-                        if (task.retries < task.maxRetries) {
-                            task.retries++;
-
-                            // Exponential Backoff: base (5s) * 2^retries
-                            const backoffSec = 5 * Math.pow(2, task.retries - 1);
-                            const nextAttempt = Date.now() + (backoffSec * 1000);
-
-                            await redis.zadd(this.QUEUE_KEY, nextAttempt, JSON.stringify(task));
-
-                            console.log(`[CacheInvalidation] Rescheduled user ${task.userId} for +${backoffSec}s (next: ${new Date(nextAttempt).toISOString()})`);
-                        } else {
-                            safeConsoleError(`[CacheInvalidation] Max retries reached for user ${task.userId}. Dropping task.`);
-                            // Here we could log to Directus system_logs if needed
+                        if (!result.success) {
+                            safeConsoleError(`[CacheInvalidation] Corrupt queue entry detected, removing task: ${result.error.message}`);
+                            await redis.zrem(this.QUEUE_KEY, taskStr);
+                            continue;
                         }
+
+                        const task = result.data;
+
+                        try {
+                            await this.processInvalidation(task);
+
+                            // Success -> Remove from queue
+                            await redis.zrem(this.QUEUE_KEY, taskStr);
+                        } catch (error: unknown) {
+                            const err = error instanceof Error ? error : new Error(String(error));
+                            safeConsoleError(`[CacheInvalidation] Failed attempt ${task.retries + 1} for ${task.userId}: ${err.message}`);
+
+                            // Remove old entry before potentially re-adding or dropping
+                            await redis.zrem(this.QUEUE_KEY, taskStr);
+
+                            if (task.retries < task.maxRetries) {
+                                task.retries++;
+
+                                // Exponential Backoff: base (5s) * 2^retries
+                                const backoffSec = 5 * Math.pow(2, task.retries - 1);
+                                const nextAttempt = Date.now() + (backoffSec * 1000);
+
+                                await redis.zadd(this.QUEUE_KEY, nextAttempt, JSON.stringify(task));
+
+                                safeConsoleError(`[CacheInvalidation] Rescheduled user ${task.userId} for +${backoffSec}s (next: ${new Date(nextAttempt).toISOString()})`);
+                            } else {
+                                safeConsoleError(`[CacheInvalidation] Max retries reached for user ${task.userId}. Dropping task.`);
+                            }
+                        }
+                    } catch (parseErr: unknown) {
+                        const err = parseErr instanceof Error ? parseErr : new Error(String(parseErr));
+                        safeConsoleError(`[CacheInvalidation] Corrupt JSON detected, removing task: ${err.message}`);
+                        await redis.zrem(this.QUEUE_KEY, taskStr);
                     }
                 }
 
                 // Small pause to breathe between batches
                 await new Promise(resolve => setTimeout(resolve, 500));
-            } catch (error: any) {
-                safeConsoleError(`[CacheInvalidation] CRITICAL: Worker loop error: ${error.message}`);
+            } catch (error: unknown) {
+                const err = error instanceof Error ? error : new Error(String(error));
+                safeConsoleError(`[CacheInvalidation] CRITICAL: Worker loop error: ${err.message}`);
                 // Wait longer if Redis or something fundamental is down
                 await new Promise(resolve => setTimeout(resolve, 5000));
             }
         }
 
-        console.log('[CacheInvalidation] Worker Loop stopped gracefully.');
+        safeConsoleError('[CacheInvalidation] Worker Loop stopped gracefully.');
     }
 
     /**
@@ -100,7 +118,7 @@ export class CacheInvalidationService {
 
     private static async processInvalidation(task: InvalidationTask) {
         const nextAppUrl = process.env.NEXT_APP_INTERNAL_URL || 'http://v7-acc-frontend-1:3000';
-        const secret = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
+        const secret = (process.env.INTERNAL_SERVICE_TOKEN || '').replace(/^"|"$/g, '').trim();
         const expectedHeader = `Bearer ${secret}`;
 
         const res = await fetch(`${nextAppUrl}/api/revalidate`, {
@@ -117,6 +135,6 @@ export class CacheInvalidationService {
             throw new Error(`Next.js API returned ${res.status}: ${errorBody}`);
         }
 
-        console.log(`[CacheInvalidation] Successfully invalidated Next.js cache for tag: ${task.tag}`);
+        safeConsoleError(`[CacheInvalidation] Successfully invalidated Next.js cache for tag: ${task.tag}`);
     }
 }

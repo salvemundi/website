@@ -19,7 +19,7 @@ export default async function KroegentochtPage() {
     ]);
 
     // Pre-fetch signups for the primary event (first future or first overall)
-    const initialEvent = events.find(e => e.date && new Date(e.date) >= new Date()) || events[0];
+    const initialEvent = (events.find(e => e.date && new Date(e.date) >= new Date()) || events[0]) as typeof events[0] | undefined;
     const initialSignups = initialEvent ? await getPubCrawlSignups(Number(initialEvent.id)).catch(() => []) : [];
 
     return (

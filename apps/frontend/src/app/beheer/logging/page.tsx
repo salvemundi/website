@@ -1,20 +1,19 @@
-import React from 'react';
 import AuditLogIsland from '@/components/islands/admin/AuditLogIsland';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
-import { 
-    getPendingSignupsAction, 
-    getAuditSettingsAction, 
-    getSystemLogsAction, 
+import {
+    getPendingSignupsAction,
+    getAuditSettingsAction,
+    getSystemLogsAction,
     getQueueStatusAction,
     getIdNameLookupAction
 } from '@/server/actions/infrastructure/audit.actions';
 
 export default async function AuditLoggingPage() {
     const [
-        signupsRes, 
-        settingsRes, 
-        adminLogsRes, 
-        systemLogsRes, 
+        signupsRes,
+        settingsRes,
+        adminLogsRes,
+        systemLogsRes,
         queueRes,
         idNameLookupRes
     ] = await Promise.all([
@@ -27,14 +26,14 @@ export default async function AuditLoggingPage() {
     ]);
 
     const initialData = {
-        signups: signupsRes.success ? (signupsRes.data || []) : [],
-        manualApproval: settingsRes.success ? (settingsRes.data?.manual_approval ?? false) : false,
-        adminLogs: adminLogsRes.success ? (adminLogsRes.data || []) : [],
-        adminLogsTotal: adminLogsRes.success ? (adminLogsRes.totalCount || 0) : 0,
-        systemLogs: systemLogsRes.success ? (systemLogsRes.data || []) : [],
-        systemLogsTotal: systemLogsRes.success ? (systemLogsRes.totalCount || 0) : 0,
-        queueData: queueRes.success ? (queueRes.data?.queues || null) : null,
-        idNameLookup: idNameLookupRes.success ? (idNameLookupRes.data || {}) : {}
+        signups: signupsRes.success ? signupsRes.data : [],
+        manualApproval: settingsRes.success ? settingsRes.data.manual_approval : false,
+        adminLogs: adminLogsRes.success ? adminLogsRes.data : [],
+        adminLogsTotal: adminLogsRes.success ? adminLogsRes.totalCount : 0,
+        systemLogs: systemLogsRes.success ? systemLogsRes.data : [],
+        systemLogsTotal: systemLogsRes.success ? systemLogsRes.totalCount : 0,
+        queueData: queueRes.success ? queueRes.data.queues : null,
+        idNameLookup: idNameLookupRes.success ? idNameLookupRes.data : {}
     };
 
     return (
@@ -65,4 +64,3 @@ export default async function AuditLoggingPage() {
         </AdminPageShell>
     );
 }
-

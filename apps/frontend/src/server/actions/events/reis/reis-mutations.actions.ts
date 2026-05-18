@@ -64,7 +64,7 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
         return { success: false, message: 'Inschrijvingen voor de reis zijn momenteel gesloten.' };
     }
 
-    const userId = session?.user?.id;
+    const userId = session?.user.id;
     // Logged in users: check for existing signup
     if (userId) {
         const existing = existingSignups.find(s => s.directus_relations === userId && s.status !== 'cancelled');
@@ -201,7 +201,7 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
             }
 
             await deleteTripSignupDb(signupId);
-            await logAdminAction('trip_signup_rollback', 'ERROR', { context: 'reis', trip_id: tripId, id: signupId, error: String(error), action: 'rollback_delete' });
+            await logAdminAction('system_trip_signup_rollback', 'ERROR', { context: 'reis', trip_id: tripId, id: signupId, error: String(error), action: 'rollback_delete' });
             return { success: false, message: 'Synchronisatie met CMS mislukt. Inschrijving niet voltooid.' };
         }
 

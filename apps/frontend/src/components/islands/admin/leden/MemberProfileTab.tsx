@@ -124,7 +124,7 @@ export default function MemberProfileTab({
                                 </div>
                             ))}
                             <div className="flex gap-3 pt-4">
-                                <button onClick={handleSave} disabled={saving} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[var(--beheer-accent)] text-white rounded-xl text-xs font-semibold shadow-[var(--shadow-glow)] hover:opacity-90 transition-all disabled:opacity-50">
+                                <button onClick={() => { void handleSave(); }} disabled={saving} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[var(--beheer-accent)] text-white rounded-xl text-xs font-semibold shadow-[var(--shadow-glow)] hover:opacity-90 transition-all disabled:opacity-50">
                                     {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Opslaan
                                 </button>
                                 <button onClick={() => setIsEditing(false)} className="flex-1 px-4 py-3 rounded-xl text-xs font-semibold text-[var(--beheer-text-muted)] hover:bg-[var(--beheer-card-soft)] transition-all border border-transparent hover:border-[var(--beheer-border)]">

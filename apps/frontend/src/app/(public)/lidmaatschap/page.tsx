@@ -44,7 +44,7 @@ export default async function MembershipPage() {
             <div className="max-w-app mx-auto">
                 <div className="flex flex-col sm:flex-row gap-6 px-6 py-8 sm:py-10 md:py-12">
                     <StandardFormCard
-                        title={isGuest ? 'INSCHRIJVEN' : (user?.membership_status === 'active' ? 'STATUS' : 'VERLENGEN')}
+                        title={isGuest ? 'INSCHRIJVEN' : (user.membership_status === 'active' ? 'STATUS' : 'VERLENGEN')}
                         subtitle="Lidmaatschap"
                         className={isGuest ? 'w-full sm:w-1/2' : 'w-full max-w-2xl mx-auto'}
                     >

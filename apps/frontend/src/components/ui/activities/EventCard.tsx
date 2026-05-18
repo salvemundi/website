@@ -26,7 +26,7 @@ export const EventCard: React.FC<EventCardProps> = ({
     // Gebruik props of activity
     const displayTitle = title || activity?.titel;
 
-    const rawCategory = category || (activity as Activiteit & { category?: string; committee_name?: string })?.category || (activity as Activiteit & { committee_name?: string })?.committee_name;
+    const rawCategory = category || (activity as (Activiteit & { category?: string }) | undefined)?.category || (activity as (Activiteit & { committee_name?: string }) | undefined)?.committee_name;
     const cleanCategory = (name?: string) => {
         if (!name || name === 'S.V. Salve Mundi') return 'S.V. Salve Mundi';
         return name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim() || name;

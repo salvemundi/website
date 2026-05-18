@@ -1,26 +1,24 @@
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { getWhatsAppGroups } from '@/server/actions/profile/profiel.actions';
 import { WhatsAppGroupsIsland } from '@/components/islands/social/WhatsAppGroupsIsland';
 import BackButton from '@/components/ui/navigation/BackButton';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 
 export const metadata: Metadata = {
     title: 'WhatsApp Groepen | SV Salve Mundi',
-    description: 'Word lid van onze exclusieve WhatsApp groepen voor leden.' };
-
-import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { redirect } from 'next/navigation';
+    description: 'Word lid van onze exclusieve WhatsApp groepen voor leden.'
+};
 
 export default async function WhatsAppGroepenPage() {
     const session = await getEnrichedSession();
 
-    if (!session || !session.user) {
+    if (!session?.user) {
         redirect('/');
     }
 
-    // NUCLEAR SSR: Fetch groups and settings at the top level
     const groups = await getWhatsAppGroups();
-    const DIRECTUS_URL = process.env.PUBLIC_URL || 'https://salvemundi.nl';
-    const gedragscodeUrl = `${DIRECTUS_URL}/gedragscode`;
+    const gedragscodeUrl = '/gedragscode';
 
     return (
         <div className="bg-[var(--bg-main)]">
@@ -42,5 +40,3 @@ export default async function WhatsAppGroepenPage() {
         </div>
     );
 }
-
-

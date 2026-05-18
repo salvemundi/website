@@ -16,12 +16,10 @@ export function ReisSignupStatus({ userSignup, nextTrip, error }: ReisSignupStat
         if (signup.status === 'waitlist') return 'Wachtrij';
         if (signup.status === 'cancelled') return 'Geannuleerd';
         if (signup.status === 'registered') return 'Geregistreerd';
-        if (signup.status === 'confirmed') {
-            if (signup.full_payment_paid) return 'Geregistreerd (Betaald)';
-            if (!signup.deposit_paid) return 'Aanbetaling verwacht';
-            return 'Restbetaling verwacht';
-        }
-        return 'In afwachting';
+        
+        if (signup.full_payment_paid) return 'Geregistreerd (Betaald)';
+        if (!signup.deposit_paid) return 'Aanbetaling verwacht';
+        return 'Restbetaling verwacht';
     };
 
     return (

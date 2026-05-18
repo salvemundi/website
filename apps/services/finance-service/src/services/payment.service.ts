@@ -1,8 +1,19 @@
 import { FastifyInstance } from 'fastify';
-import { PaymentSuccessEventSchema, type DbFeatureFlag, type DirectusSchema } from '@salvemundi/validations';
+import { 
+    PaymentSuccessEventSchema, 
+    type DbFeatureFlag, 
+    type DirectusSchema, 
+    type DbTransaction, 
+    type MolliePaymentMetadata 
+} from '@salvemundi/validations';
 import { RegistrationService } from './registration.service.js';
 import { AzureRetryService } from './azure-retry.service.js';
 import { CacheInvalidationService } from './cache-invalidation.js';
+
+export interface FinanceMolliePaymentMetadata extends MolliePaymentMetadata {
+    paymentType?: string;
+    tripId?: number;
+}
 
 /**
  * PaymentService: Centralized logic for finalizing payments.
@@ -14,29 +25,33 @@ export class PaymentService {
         fastify: FastifyInstance,
         paymentId: string,
         newStatus: string,
-        metadata: any,
+        metadata: FinanceMolliePaymentMetadata | null | undefined,
         accessToken: string
     ) {
         // 1. Fetch current status to ensure idempotency and prevent duplicate events
-        const currentTx = await fastify.db.query(
-            `SELECT payment_status, approval_status, user_id FROM transactions WHERE mollie_id = $1 LIMIT 1`,
-            [paymentId]
-        );
+        const transaction = await fastify.db
+            .selectFrom('transactions')
+            .select(['payment_status', 'approval_status', 'user_id', 'email', 'first_name', 'last_name', 'product_type'])
+            .where('mollie_id', '=', paymentId)
+            .executeTakeFirst();
 
-        if (currentTx.rows.length === 0) {
+        if (!transaction) {
             fastify.log.warn(`[FINANCE] Attempted to finalize non-existent transaction: ${paymentId}`);
             return;
         }
 
-        const transaction = currentTx.rows[0];
         const oldStatus = transaction.payment_status;
 
         // 2. Update Database Status (Immediate update for consistency)
         if (oldStatus !== newStatus) {
-            await fastify.db.query(
-                `UPDATE transactions SET payment_status = $1, updated_at = NOW() WHERE mollie_id = $2`,
-                [newStatus, paymentId]
-            );
+            await fastify.db
+                .updateTable('transactions')
+                .set({
+                    payment_status: newStatus,
+                    updated_at: new Date().toISOString()
+                })
+                .where('mollie_id', '=', paymentId)
+                .execute();
             fastify.log.info(`[FINANCE] Updated payment status for ${paymentId}: ${oldStatus} -> ${newStatus}`);
         }
 
@@ -57,24 +72,32 @@ export class PaymentService {
                 let manualApproval = false;
                 try {
                     const { createDirectus, rest, staticToken, readItems } = await import('@directus/sdk');
-                    const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL!;
-                    const directusToken = process.env.DIRECTUS_STATIC_TOKEN!;
+                    const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL || '';
+                    const directusToken = process.env.DIRECTUS_STATIC_TOKEN || '';
+                    
+                    if (!directusUrl || !directusToken) {
+                        throw new Error('Directus configuration is missing');
+                    }
+
                     const directus = createDirectus<DirectusSchema>(directusUrl).with(staticToken(directusToken)).with(rest());
 
                     const flags = await directus.request(readItems('feature_flags', {
                         filter: { name: { _eq: 'manual_approval' } },
                         fields: ['is_active']
                     })) as DbFeatureFlag[];
-                    manualApproval = flags?.[0]?.is_active ?? false;
+                    manualApproval = flags[0]?.is_active ?? false;
                 } catch (authErr) {
-                    fastify.log.error(`[FINANCE] Failed to check manual_approval flag: ${authErr}`);
+                    fastify.log.error({ err: authErr }, `[FINANCE] Failed to check manual_approval flag: ${authErr instanceof Error ? authErr.message : String(authErr)}`);
                 }
 
                 approvalStatus = (isContribution && manualApproval) ? 'pending' : 'approved';
-                await fastify.db.query(
-                    `UPDATE transactions SET approval_status = $1 WHERE mollie_id = $2`,
-                    [approvalStatus, paymentId]
-                );
+                await fastify.db
+                    .updateTable('transactions')
+                    .set({
+                        approval_status: approvalStatus
+                    })
+                    .where('mollie_id', '=', paymentId)
+                    .execute();
             }
 
             // B. Process Success Actions (Only if approved)
@@ -95,7 +118,28 @@ export class PaymentService {
         }
     }
 
-    private static async processApprovedPayment(fastify: FastifyInstance, context: any) {
+    private static async processApprovedPayment(
+        fastify: FastifyInstance,
+        context: {
+            paymentId: string;
+            metadata: FinanceMolliePaymentMetadata | null | undefined;
+            registrationId?: string | number | null;
+            registrationType?: string | null;
+            userId?: string | null;
+            accessToken?: string | null;
+            isContribution: boolean;
+            transaction: Pick<
+                DbTransaction,
+                | 'payment_status'
+                | 'approval_status'
+                | 'user_id'
+                | 'email'
+                | 'first_name'
+                | 'last_name'
+                | 'product_type'
+            >;
+        }
+    ) {
         const { paymentId, metadata, registrationId, registrationType, userId, accessToken, isContribution, transaction } = context;
 
         // 1. Update Registration Status (SQL + Directus Shadow Write)
@@ -112,7 +156,7 @@ export class PaymentService {
                     fastify.log
                 );
             } catch (regErr) {
-                fastify.log.error(regErr, `[FINANCE] Failed to update registration for ${paymentId}`);
+                fastify.log.error({ err: regErr }, `[FINANCE] Failed to update registration for ${paymentId}`);
             }
         }
 
@@ -120,32 +164,33 @@ export class PaymentService {
         let qrToken: string | undefined = undefined;
         if (registrationId && registrationType === 'event_signup') {
             try {
-                const qrResult = await fastify.db.query(
-                    'SELECT qr_token FROM event_signups WHERE id = $1',
-                    [registrationId]
-                );
-                qrToken = qrResult.rows[0]?.qr_token;
+                const qrResult = await fastify.db
+                    .selectFrom('event_signups')
+                    .select('qr_token')
+                    .where('id', '=', Number(registrationId))
+                    .executeTakeFirst();
+                qrToken = qrResult?.qr_token || undefined;
             } catch (qrErr) {
-                fastify.log.error(qrErr, `[FINANCE] Failed to fetch QR token for registration ${registrationId}`);
+                fastify.log.error({ err: qrErr }, `[FINANCE] Failed to fetch QR token for registration ${registrationId}`);
             }
         }
 
         // 3. Publish Success Event
         const eventData = {
             event: 'PAYMENT_SUCCESS',
-            userId: userId,
+            userId: userId || null,
             paymentId: paymentId,
-            email: transaction.email || metadata?.email,
-            registrationId: registrationId,
-            registrationType: registrationType,
+            email: transaction.email || metadata?.email || null,
+            registrationId: registrationId || null,
+            registrationType: registrationType || null,
             isContribution: isContribution,
             isNewMember: !userId && isContribution,
-            qrToken: qrToken,
-            accessToken: accessToken,
-            firstName: transaction.first_name || metadata?.firstName,
-            lastName: transaction.last_name || metadata?.lastName,
-            phoneNumber: metadata?.phoneNumber,
-            dateOfBirth: metadata?.dateOfBirth,
+            qrToken: qrToken || null,
+            accessToken: accessToken || null,
+            firstName: transaction.first_name || metadata?.firstName || null,
+            lastName: transaction.last_name || metadata?.lastName || null,
+            phoneNumber: metadata?.phoneNumber || null,
+            dateOfBirth: metadata?.dateOfBirth || null,
             timestamp: new Date().toISOString()
         };
 
@@ -154,7 +199,7 @@ export class PaymentService {
             await fastify.redis.xadd('v7:events', '*', 'payload', JSON.stringify(validatedEvent));
             fastify.log.info(`[FINANCE] Published PAYMENT_SUCCESS event for ${paymentId}`);
         } catch (eventErr) {
-            fastify.log.error(eventErr, `[FINANCE] Event validation failed for ${paymentId}`);
+            fastify.log.error({ err: eventErr }, `[FINANCE] Event validation failed for ${paymentId}`);
         }
 
         // 4. Handle Azure Sync for Memberships
@@ -166,13 +211,18 @@ export class PaymentService {
     private static async triggerAzureSync(fastify: FastifyInstance, userId: string) {
         try {
             const { createDirectus, rest, staticToken, readUser } = await import('@directus/sdk');
-            const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL!;
-            const directusToken = process.env.DIRECTUS_STATIC_TOKEN!;
-            const directus = createDirectus(directusUrl).with(staticToken(directusToken)).with(rest());
+            const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL || '';
+            const directusToken = process.env.DIRECTUS_STATIC_TOKEN || '';
+            
+            if (!directusUrl || !directusToken) {
+                throw new Error('Directus configuration is missing');
+            }
 
-            const user = await directus.request(readUser(userId, { fields: ['id', 'entra_id'] }));
+            const directus = createDirectus<DirectusSchema>(directusUrl).with(staticToken(directusToken)).with(rest());
 
-            if (user?.entra_id) {
+            const user = await directus.request(readUser(userId, { fields: ['id', 'entra_id'] })) as { entra_id?: string | null };
+
+            if (user.entra_id) {
                 const now = new Date();
                 const expiry = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
 
@@ -183,7 +233,7 @@ export class PaymentService {
                 fastify.log.info(`[FINANCE] Queued Azure membership update for user ${userId}`);
             }
         } catch (error) {
-            fastify.log.error(error, `[FINANCE] Azure sync trigger failed for user ${userId}`);
+            fastify.log.error({ err: error }, `[FINANCE] Azure sync trigger failed for user ${userId}`);
         }
     }
 }

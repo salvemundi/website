@@ -65,7 +65,7 @@ export function MobileNav({ user, isAuthenticated, navItems, canAccessAdmin }: O
                 isAuthenticated={isAuthenticated}
                 navItems={navItems}
                 canAccessAdmin={canAccessAdmin}
-                onLogout={onLogout}
+                onLogout={() => { void onLogout(); }}
                 mounted={true}
             />
         </>

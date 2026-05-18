@@ -33,7 +33,6 @@ export function ReisFormIsland({
     const { data: session } = authClient.useSession();
     const router = useRouter();
 
-    // We prioritize the server-provided user to avoid any flicker.
     const currentUser = (initialUser || session?.user || null) as EnrichedUser | null;
 
     const [refreshing, setRefreshing] = useState(false);
@@ -60,11 +59,11 @@ export function ReisFormIsland({
     return (
         <StandardFormCard
             title={nextTrip?.name || 'Inschrijven'}
-            subtitle="Jaarlijkse Reis"
+            subtitle="Salve Mundi Reis"
             className="w-full lg:w-1/2"
             headerActions={
                 <button
-                    onClick={handleRefresh}
+                    onClick={() => { void handleRefresh(); }}
                     disabled={refreshing}
                     className="p-3 bg-theme-purple/5 hover:bg-theme-purple/10 rounded-2xl text-[var(--text-muted)] hover:text-theme-purple transition-all disabled:opacity-50 active:scale-90"
                     title="Gegevens vernieuwen"
@@ -86,7 +85,7 @@ export function ReisFormIsland({
                         canSignUp={canSignUp}
                         registrationStartText={registrationStartText}
                         currentUser={currentUser}
-                        onRefresh={handleRefresh}
+                        onRefresh={() => { void handleRefresh(); }}
                     />
                 )}
             </div>

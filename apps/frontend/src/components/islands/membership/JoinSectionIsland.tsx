@@ -13,7 +13,7 @@ export const JoinSectionIsland: React.FC<JoinSectionIslandProps> = ({
     serverUser = null
 }) => {
     const { data: session } = authClient.useSession();
-    const user = (session?.user as unknown as EnrichedUser) ?? serverUser;
+    const user = (session?.user as unknown as EnrichedUser | null | undefined) ?? serverUser;
 
     if (user?.membership_status === 'active') return null;
 

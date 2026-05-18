@@ -15,7 +15,7 @@ type Props = LinkProps & {
 
 export default function ActiveLink({ href, exact, className, activeClassName, children, ...rest }: Props) {
     const pathname = usePathname() || '/';
-    const asHref = typeof href === 'string' ? href : href?.pathname || '/';
+    const asHref = typeof href === 'string' ? href : href.pathname || '/';
     const active = isPathActive(pathname, asHref, !!exact);
 
     return (

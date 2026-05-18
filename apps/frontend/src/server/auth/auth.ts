@@ -10,12 +10,12 @@ export const auth = betterAuth({
     baseURL: process.env.BETTER_AUTH_URL,
     trustedOrigins: process.env.BETTER_AUTH_TRUSTED_ORIGINS
         ? process.env.BETTER_AUTH_TRUSTED_ORIGINS.split(',')
-        : [process.env.BETTER_AUTH_URL!],
+        : [process.env.BETTER_AUTH_URL ?? ""],
     socialProviders: {
         microsoft: {
-            clientId: process.env.AZURE_WEBSITEV7_AUTH_CLIENT_ID!,
-            clientSecret: process.env.AZURE_WEBSITEV7_AUTH_CLIENT_SECRET!,
-            tenantId: process.env.AZURE_WEBSITEV7_TENANT_ID!,
+            clientId: process.env.AZURE_WEBSITEV7_AUTH_CLIENT_ID ?? "",
+            clientSecret: process.env.AZURE_WEBSITEV7_AUTH_CLIENT_SECRET ?? "",
+            tenantId: process.env.AZURE_WEBSITEV7_TENANT_ID ?? "",
             prompt: "select_account" } },
     user: {
         modelName: "directus_users",

@@ -1,6 +1,6 @@
 import { safeConsoleError } from '../utils/logger.js';
-const DIRECTUS_URL = process.env.DIRECTUS_SERVICE_URL!;
-const STATIC_TOKEN = process.env.DIRECTUS_STATIC_TOKEN!;
+const DIRECTUS_URL = process.env.DIRECTUS_SERVICE_URL || '';
+const STATIC_TOKEN = process.env.DIRECTUS_STATIC_TOKEN || '';
 
 export class AuditService {
     static async logMail(to: string, templateId: string, status: 'SUCCESS' | 'FAILED', error?: string) {
@@ -24,7 +24,7 @@ export class AuditService {
                     }
                 })
             });
-        } catch (error) {
+        } catch (error: unknown) {
             safeConsoleError('[AuditService] Failed to log to Directus:', error);
         }
     }

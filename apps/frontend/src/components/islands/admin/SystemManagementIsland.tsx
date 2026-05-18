@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
     Activity,
     CheckCircle2,
@@ -48,14 +48,16 @@ export default function SystemManagementIsland({
             setStatuses(data);
             setLastUpdated(new Date());
         } catch (_error) {
-            // Background update errors are handled by data absence
+
         } finally {
             setIsRefreshing(false);
         }
     }, []);
 
     useEffect(() => {
-        const interval = setInterval(fetchStatus, 30000);
+        const interval = setInterval(() => {
+            void fetchStatus();
+        }, 30000);
         return () => clearInterval(interval);
     }, [fetchStatus]);
 
@@ -94,7 +96,7 @@ export default function SystemManagementIsland({
     return (
         <div className="w-full">
             <div className="flex flex-col gap-8">
-                {/* Header Actions */}
+
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                     <div className="flex bg-[var(--beheer-card-soft)] p-1.5 rounded-2xl border border-[var(--beheer-border)] gap-1 w-full sm:w-auto">
                         <button
@@ -124,7 +126,9 @@ export default function SystemManagementIsland({
                     </div>
 
                     <button
-                        onClick={fetchStatus}
+                        onClick={() => {
+                            void fetchStatus();
+                        }}
                         disabled={isRefreshing}
                         className="flex items-center justify-center gap-2 px-8 py-3 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-2xl text-[10px] font-semibold hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
                     >
@@ -229,7 +233,9 @@ export default function SystemManagementIsland({
                                     <AdminVisibilityToggle
                                         label="System Toggle"
                                         isVisible={setting.isActive}
-                                        onToggle={() => handleToggleAutomation(setting.id)}
+                                        onToggle={() => {
+                                            void handleToggleAutomation(setting.id);
+                                        }}
                                         isPending={togglingId === setting.id}
                                     />
                                 </div>
@@ -262,7 +268,7 @@ export default function SystemManagementIsland({
                         System Monitoring Active
                     </p>
                     <p className="text-[9px] font-semibold text-[var(--beheer-text-muted)] opacity-30">
-                        {`Last Sync: ${formatDate(lastUpdated!, 'dd-MM-yyyy HH:mm')}`}
+                        {`Last Sync: ${formatDate(lastUpdated, 'dd-MM-yyyy HH:mm')}`}
                     </p>
                 </div>
             )}

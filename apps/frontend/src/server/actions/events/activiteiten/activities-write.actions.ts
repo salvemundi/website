@@ -36,11 +36,11 @@ export async function deleteActivity(eventId: number) {
         try {
             await getSystemDirectus().request(deleteItem('events', eventId));
         } catch (error) {
-            await logAdminAction('activity_delete_failed', 'ERROR', { context: 'activiteit', id: eventId, error: String(error) });
+            await logAdminAction('system_activity_delete_failed', 'ERROR', { context: 'activiteit', id: eventId, error: String(error) });
             return { success: false, error: "CMS Synchronisatie mislukt. Activiteit is niet verwijderd." };
         }
 
-        await logAdminAction('activity_deleted', 'SUCCESS', { context: 'activiteit', id: eventId });
+        await logAdminAction('admin_activity_deleted', 'SUCCESS', { context: 'activiteit', id: eventId });
 
         revalidateTag('events', 'max');
         revalidatePath('/beheer/activiteiten');
@@ -53,7 +53,7 @@ export async function deleteActivity(eventId: number) {
 
 export type CreateActivityResult =
     | { success: true; id: number }
-    | { success: false; error: string; fieldErrors?: Record<string, string[]>; initialData?: Record<string, unknown> };
+    | { success: false; error: string; fieldErrors?: Record<string, string[]>; initialData?: { [key: string]: unknown } };
 
 export async function createActivityAction(prevState: unknown, formData: FormData): Promise<CreateActivityResult> {
     await ensureActivitiesEdit();
@@ -73,14 +73,14 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
         const fileData = new FormData();
         fileData.append('file', imageFile);
         try {
-            const res = await getSystemDirectus().request(uploadFiles(fileData));
+            const res = (await getSystemDirectus().request(uploadFiles(fileData))) as unknown as { id: string };
             imageId = res.id;
         } catch (error: unknown) {
             safeConsoleError(`[Activities-Write-Action][createActivityAction] Failed to upload image:`, error);
         }
     }
 
-    const rawData: Record<string, unknown> = {};
+    const rawData: { [key: string]: unknown } = {};
     formData.forEach((value, key) => {
         if (key !== 'imageFile') rawData[key] = value;
     });
@@ -111,11 +111,11 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
         };
     }
 
-    const directusPayload: Record<string, unknown> = {
+    const directusPayload: { [key: string]: unknown } = {
         ...data,
         status: data.status === 'scheduled' ? 'published' : data.status,
-        price_members: data.price_members ?? 0,
-        price_non_members: data.price_non_members ?? 0
+        price_members: data.price_members,
+        price_non_members: data.price_non_members
     };
 
     if (imageId) directusPayload.image = imageId;
@@ -123,13 +123,13 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
     try {
         // Directus SDK will handle the database insertion and trigger internal logic (activity logs, etc.)
         // Since they share the same database, we don't need the redundant createEventDb call here which causes ID conflicts.
-        const newItem = await getSystemDirectus().request(createItem('events', directusPayload)) as unknown as { id: number };
+        const newItem = (await getSystemDirectus().request(createItem('events', directusPayload))) as unknown as { id: number } | null | undefined;
 
         if (!newItem || !newItem.id) {
             throw new Error('Geen ID teruggekregen van het CMS');
         }
 
-        await logAdminAction('activity_created', 'SUCCESS', { context: 'activiteit', context_name: data.name, id: newItem.id, data: directusPayload });
+        await logAdminAction('admin_activity_created', 'SUCCESS', { context: 'activiteit', context_name: data.name, id: newItem.id, data: directusPayload });
 
         revalidateTag('events', 'max');
         revalidatePath('/beheer/activiteiten');
@@ -139,7 +139,7 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
         return { success: true, id: newItem.id };
     } catch (error: unknown) {
         safeConsoleError('[CMS Sync] Directus createItem failed:', error);
-        await logAdminAction('activity_create_failed', 'ERROR', {
+        await logAdminAction('system_activity_create_failed', 'ERROR', {
             context: 'activiteit',
             context_name: data.name,
             error: error instanceof Error ? error.message : JSON.stringify(error),
@@ -157,14 +157,14 @@ export async function updateActivityAction(eventId: number, prevState: unknown, 
     }
 
     try {
-        const existing = await getSystemDirectus().request(readItems('events', {
+        const existing = (await getSystemDirectus().request(readItems('events', {
             fields: ['*'],
             filter: { id: { _eq: eventId } },
             limit: 1
-        }));
+        }))) as unknown[] | null | undefined;
 
         if (!existing || existing.length === 0) return { error: "Activity not found", success: false };
-        const oldData = existing[0] as unknown as Record<string, unknown>;
+        const oldData = existing[0] as unknown as { [key: string]: unknown };
 
         const imageFile = formData.get('imageFile') as File | null;
         let imageId: string | null | undefined = undefined;
@@ -187,7 +187,7 @@ export async function updateActivityAction(eventId: number, prevState: unknown, 
             imageId = null;
         }
 
-        const rawData: Record<string, unknown> = {};
+        const rawData: { [key: string]: unknown } = {};
         formData.forEach((value, key) => {
             if (key !== 'imageFile' && key !== 'removeImage') rawData[key] = value;
         });
@@ -220,7 +220,7 @@ export async function updateActivityAction(eventId: number, prevState: unknown, 
             }
         }
 
-        const directusPayload: Record<string, unknown> = {
+        const directusPayload: { [key: string]: unknown } = {
             ...data,
             status: data.status === 'scheduled' ? 'published' : data.status
         };
@@ -230,7 +230,7 @@ export async function updateActivityAction(eventId: number, prevState: unknown, 
         try {
             await getSystemDirectus().request(updateItem('events', eventId, directusPayload));
 
-            await logAdminAction('activity_updated', 'SUCCESS', { context: 'activiteit', context_name: data.name, id: eventId, data: directusPayload });
+            await logAdminAction('admin_activity_updated', 'SUCCESS', { context: 'activiteit', context_name: data.name, id: eventId, data: directusPayload });
 
             revalidateTag('events', 'max');
             revalidateTag(`event_${eventId}`, 'max');
@@ -241,7 +241,7 @@ export async function updateActivityAction(eventId: number, prevState: unknown, 
             return { success: true };
         } catch (error) {
             safeConsoleError('[CMS Sync] Directus updateItem failed:', error);
-            await logAdminAction('activity_update_failed', 'ERROR', {
+            await logAdminAction('system_activity_update_failed', 'ERROR', {
                 context: 'activiteit',
                 id: eventId,
                 error: error instanceof Error ? error.message : JSON.stringify(error)

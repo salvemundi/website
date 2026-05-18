@@ -6,6 +6,7 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { searchMembersAction } from '@/server/actions/admin/aanmeldingen.actions';
 import { type UserBasic } from '@/server/internal/user-db.utils';
 import { cn } from '@/lib/utils/cn';
+import { safeConsoleError } from '@/server/utils/logger';
 
 interface UserSearchProps {
     onSelect: (user: UserBasic) => void;
@@ -29,7 +30,6 @@ export default function UserSearch({
     const debouncedQuery = useDebounce(query, 300);
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Close on click outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
@@ -40,7 +40,6 @@ export default function UserSearch({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // Fetch results
     useEffect(() => {
         if (debouncedQuery.length < 2) {
             setResults([]);
@@ -52,20 +51,21 @@ export default function UserSearch({
             setIsLoading(true);
             try {
                 const res = await searchMembersAction(debouncedQuery);
-                if (res.success && res.data) {
+                if (res.success) {
                     setResults(res.data);
                     setIsOpen(true);
                 } else {
                     setResults([]);
                 }
-            } catch (_error) {
+            } catch (error) {
+                safeConsoleError('[UserSearch.tsx][fetchResults] Fout bij het ophalen van zoekresultaten', error);
                 setResults([]);
             } finally {
                 setIsLoading(false);
             }
         };
 
-        fetchResults();
+        void fetchResults();
     }, [debouncedQuery]);
 
     const handleSelect = (user: UserBasic) => {

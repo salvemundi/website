@@ -1,25 +1,22 @@
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import ActiviteitNieuwIsland from '@/components/islands/admin/activities/ActiviteitNieuwIsland';
-
 import { getPermissions } from '@/shared/lib/permissions';
 import { fetchUserCommitteesDb } from '@/server/internal/user-db.utils';
 import { query } from '@/lib/database';
-
 import { type EnrichedUser } from '@/types/auth';
+import { safeConsoleError } from '@/server/utils/logger';
 
-// Add the explicit return type here
 async function getCommitteesForUser(
     user: EnrichedUser,
     permissions: ReturnType<typeof getPermissions>
 ): Promise<{ id: number; name: string }[]> {
-    const memberships = user.committees || [];
+    const memberships = user.committees ?? [];
     const isPowerful = permissions.isLeader || permissions.isICT;
 
     try {
         if (isPowerful) {
             const { rows } = await query('SELECT id, name FROM committees ORDER BY name ASC');
-            // Cast the raw rows to the expected shape
             return rows as { id: number; name: string }[];
         } else {
             if (memberships.length === 0) return [];
@@ -29,10 +26,10 @@ async function getCommitteesForUser(
 
             const placeholders = committeeIds.map((_, i) => `$${i + 1}`).join(', ');
             const { rows } = await query(`SELECT id, name FROM committees WHERE id IN (${placeholders}) ORDER BY name ASC`, committeeIds);
-            // Cast the raw rows to the expected shape
             return rows as { id: number; name: string }[];
         }
-    } catch (_error) {
+    } catch (error) {
+        safeConsoleError('[page][ActivityCreatePage]', error);
         return [];
     }
 }
@@ -40,7 +37,7 @@ async function getCommitteesForUser(
 export default async function ActivityCreatePage() {
     const session = await getEnrichedSession();
 
-    if (!session || !session.user) {
+    if (!session) {
         return (
             <AdminUnauthorized
                 title="Activiteit Aanmaken"
@@ -50,14 +47,22 @@ export default async function ActivityCreatePage() {
     }
 
     const user = session.user as unknown as EnrichedUser;
-    const userCommittees = await fetchUserCommitteesDb(user.id).catch(() => []);
-    const permissions = getPermissions(userCommittees || []);
+
+    let userCommittees: Awaited<ReturnType<typeof fetchUserCommitteesDb>> = [];
+
+    try {
+        userCommittees = await fetchUserCommitteesDb(user.id);
+    } catch (error) {
+        safeConsoleError('[page][ActivityCreatePage]', error);
+    }
+
+    const permissions = getPermissions(userCommittees);
 
     if (!permissions.canAccessActivitiesEdit) {
         return (
             <AdminUnauthorized
                 title="Activiteit Aanmaken"
-                description="Je hebt geen rechten om activiteiten aan te maken. Alleen commissieleiders en beheer hebben deze rechten."
+                description="Je hebt geen rechten om activiteiten aan te maken. Alleen commissieleiders en bestuur hebben deze rechten."
             />
         );
     }

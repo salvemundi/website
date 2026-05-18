@@ -1,6 +1,11 @@
-import { safeConsoleError } from '../utils/logger.js';
 import pkg from 'pg';
 const { Pool } = pkg;
+import { Kysely, PostgresDialect } from 'kysely';
+import { type DirectusSchema } from '@salvemundi/validations';
+
+export interface Database {
+    pub_crawl_tickets: DirectusSchema['pub_crawl_tickets'][number];
+}
 
 const pool = new Pool({
     user: process.env.DB_USER,
@@ -14,18 +19,10 @@ pool.on('error', (_err) => {
     // Silent error handler for idle clients to prevent service crash.
 });
 
-export async function query(text: string, params?: any[]) {
-    try {
-        const res = await pool.query(text, params);
-        return res;
-    } catch (error) {
-        safeConsoleError('[DB-Query Error]', {
-            message: error instanceof Error ? error.message : 'Unknown error',
-            text,
-            params,
-        });
-        throw error;
-    }
-}
+export const db = new Kysely<Database>({
+    dialect: new PostgresDialect({
+        pool
+    })
+});
 
 export default pool;

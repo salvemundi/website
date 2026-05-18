@@ -1,8 +1,23 @@
 import { Pool } from "pg";
 import { getRedis } from "@/server/auth/redis-client";
-import { getPermissions } from "@/shared/lib/permissions";
+import { getPermissions, type Committee } from "@/shared/lib/permissions";
 import { type ExtendedUser } from "./types";
 import { safeConsoleError } from '@/server/utils/logger';
+
+interface RawImpersonationDbUser {
+    id: string;
+    first_name: string | null;
+    last_name: string | null;
+    email: string;
+    avatar: string | null;
+    membership_status: string | null;
+    membership_expiry: string | Date | null;
+    phone_number: string | null;
+    date_of_birth: string | Date | null;
+    minecraft_username: string | null;
+    admin_access: boolean | null;
+    role: string | null;
+}
 
 export async function getImpersonatedUser(testToken: string, pool: Pool): Promise<ExtendedUser | null> {
     try {
@@ -12,7 +27,7 @@ export async function getImpersonatedUser(testToken: string, pool: Pool): Promis
 
         const cachedImp = await redis.get(cacheKey);
         if (cachedImp) {
-            return JSON.parse(cachedImp);
+            return JSON.parse(cachedImp) as ExtendedUser;
         }
 
         if (!directusUrl) return null;
@@ -33,29 +48,30 @@ export async function getImpersonatedUser(testToken: string, pool: Pool): Promis
 
         if (dbUsers.length === 0) return null;
 
-        const dbUser = dbUsers[0];
+        const dbUser = dbUsers[0] as RawImpersonationDbUser;
         const { rows: impCommittees } = await pool.query(
             `SELECT c.id, c.name, c.azure_group_id, m.is_leader FROM committee_members m 
              JOIN committees c ON m.committee_id = c.id WHERE m.user_id = $1`,
             [dbUser.id]
         );
 
-        const perms = getPermissions(impCommittees);
+        const typedCommittees = impCommittees as unknown as Committee[];
+        const perms = getPermissions(typedCommittees);
 
         const targetUser: ExtendedUser = {
             id: dbUser.id,
-            first_name: dbUser.first_name,
-            last_name: dbUser.last_name,
+            first_name: dbUser.first_name || undefined,
+            last_name: dbUser.last_name || undefined,
             name: `${dbUser.first_name || ''} ${dbUser.last_name || ''}`.trim(),
             email: dbUser.email,
-            avatar: dbUser.avatar,
-            membership_status: dbUser.membership_status,
-            membership_expiry: dbUser.membership_expiry,
-            phone_number: dbUser.phone_number,
-            date_of_birth: dbUser.date_of_birth,
-            minecraft_username: dbUser.minecraft_username,
-            role: dbUser.role,
-            committees: impCommittees,
+            avatar: dbUser.avatar || undefined,
+            membership_status: dbUser.membership_status || undefined,
+            membership_expiry: dbUser.membership_expiry ? (dbUser.membership_expiry instanceof Date ? dbUser.membership_expiry.toISOString() : String(dbUser.membership_expiry)) : undefined,
+            phone_number: dbUser.phone_number || undefined,
+            date_of_birth: dbUser.date_of_birth ? (dbUser.date_of_birth instanceof Date ? dbUser.date_of_birth.toISOString() : String(dbUser.date_of_birth)) : undefined,
+            minecraft_username: dbUser.minecraft_username || undefined,
+            role: dbUser.role || undefined,
+            committees: typedCommittees,
             emailVerified: true,
             createdAt: new Date(),
             updatedAt: new Date(),

@@ -23,6 +23,18 @@ import { getRedis } from '@/server/auth/redis-client';
 import { normalizeDate } from '@/lib/utils/date-utils';
 import { safeConsoleError } from '@/server/utils/logger';
 
+interface TripPaymentErrorResponse {
+    message?: string;
+}
+
+interface TripPaymentSuccessResponse {
+    checkoutUrl: string;
+}
+
+interface PaymentStatusResponse {
+    payment_status: 'paid' | 'open' | 'expired' | 'failed' | 'canceled';
+}
+
 /**
  * Validates if the current request has access to a signup.
  * Either via a valid session (logged in user owns the signup)
@@ -43,7 +55,7 @@ async function validateAccess(signupId: number, token?: string) {
         }
 
         // 2. Logged in user access via ownership
-        if (session?.user?.id && signup.directus_relations === session.user.id) {
+        if (session?.user.id && signup.directus_relations === session.user.id) {
             return { authorized: true, signup };
         }
 
@@ -143,7 +155,7 @@ export async function updateSignupDetails(signupId: number, data: ReisPaymentEnr
     }
 }
 
-export async function syncSignupActivities(signupId: number, selections: { activityId: number, options: Record<string, unknown> }[], token?: string) {
+export async function syncSignupActivities(signupId: number, selections: { activityId: number, options: { [key: string]: unknown } }[], token?: string) {
     try {
         const access = await validateAccess(signupId, token);
         if (!access.authorized || !access.signup) return { success: false, error: access.error };
@@ -172,7 +184,7 @@ export async function syncSignupActivities(signupId: number, selections: { activ
                 'SELECT id, trip_activity_id FROM trip_signup_activities WHERE trip_signup_id = $1',
                 [signupId]
             );
-            const current = currentRes.rows || [];
+            const current = currentRes.rows;
 
             const toRemove = current
                 .filter(c => !selections.find(s => s.activityId === Number(c.trip_activity_id)))
@@ -227,11 +239,11 @@ export async function initiateTripPaymentAction(signupId: number, paymentType: '
         });
 
         if (!response.ok) {
-            const errData = await response.json();
+            const errData = (await response.json()) as TripPaymentErrorResponse;
             return { success: false, error: errData.message || 'Betaalverzoek mislukt.' };
         }
 
-        const data = await response.json();
+        const data = (await response.json()) as TripPaymentSuccessResponse;
         return { success: true, checkoutUrl: data.checkoutUrl };
 
     } catch (error: unknown) {
@@ -251,10 +263,10 @@ export async function getPaymentStatusAction(mollieId: string) {
             return { success: false, error: 'Status ophalen mislukt bij betaalservice.' };
         }
 
-        const data = await response.json();
+        const data = (await response.json()) as PaymentStatusResponse;
         return {
             success: true,
-            payment_status: data.payment_status as 'paid' | 'open' | 'expired' | 'failed' | 'canceled'
+            payment_status: data.payment_status
         };
     } catch {
 

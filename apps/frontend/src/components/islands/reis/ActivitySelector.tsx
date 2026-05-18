@@ -29,7 +29,7 @@ export default function ActivitySelector({ activities, selectedSelections, onCha
         const selection = selectedSelections.find(s => s.activityId === activityId);
         if (!selection) return;
 
-        const optionsMap = new Map(Object.entries(selection.options || {}));
+        const optionsMap = new Map(Object.entries(selection.options));
         const isAlreadySelected = optionsMap.has(optionId);
 
         if (isAlreadySelected) {

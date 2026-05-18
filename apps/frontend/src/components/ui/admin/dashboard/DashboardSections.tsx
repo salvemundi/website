@@ -43,20 +43,20 @@ export function DashboardHub({
             title: "Content",
             icon: <Layout />,
             items: [
-                { title: "Activiteiten", value: stats?.upcomingEventsCount ?? '0', icon: <Calendar />, href: "/beheer/activiteiten", colorClass: "purple" as const },
-                { title: "Intro", value: stats?.introSignups ?? '0', icon: <FileText />, href: "/beheer/intro", colorClass: "blue" as const, disabled: !permissions.canAccessIntro },
-                { title: "Reis", value: stats?.reisSignups ?? '0', icon: <Globe />, href: "/beheer/reis", colorClass: "teal" as const, disabled: !permissions.canAccessReis },
-                { title: "Kroegentocht", value: stats?.pubCrawlSignups ?? '0', icon: <Ticket />, href: "/beheer/kroegentocht", colorClass: "orange" as const, disabled: !permissions.canAccessKroegentocht },
+                { title: "Activiteiten", value: stats.upcomingEventsCount, icon: <Calendar />, href: "/beheer/activiteiten", colorClass: "purple" as const },
+                { title: "Intro", value: stats.introSignups, icon: <FileText />, href: "/beheer/intro", colorClass: "blue" as const, disabled: !permissions.canAccessIntro },
+                { title: "Reis", value: stats.reisSignups, icon: <Globe />, href: "/beheer/reis", colorClass: "teal" as const, disabled: !permissions.canAccessReis },
+                { title: "Kroegentocht", value: stats.pubCrawlSignups, icon: <Ticket />, href: "/beheer/kroegentocht", colorClass: "orange" as const, disabled: !permissions.canAccessKroegentocht },
             ].filter(i => !i.disabled)
         },
         {
             title: "Beheer",
             icon: <Users />,
             items: [
-                { title: "Leden", value: stats?.totalMembers ?? '0', icon: <Users />, href: "/beheer/leden", colorClass: "green" as const, disabled: !permissions.canAccessMembers },
+                { title: "Leden", value: stats.totalMembers, icon: <Users />, href: "/beheer/leden", colorClass: "green" as const, disabled: !permissions.canAccessMembers },
                 { title: "Commissies", value: "Beheer", icon: <Shield />, href: "/beheer/commissies", colorClass: "orange" as const, disabled: !permissions.canAccessCommittees },
                 { title: "Stickers", value: "Beheer", icon: <MapPin />, href: "/beheer/stickers", colorClass: "purple" as const, disabled: !permissions.canAccessStickers },
-                { title: "Coupons", value: stats?.totalCoupons ?? '0', icon: <Ticket />, href: "/beheer/coupons", colorClass: "amber" as const, disabled: !permissions.canAccessCoupons },
+                { title: "Coupons", value: stats.totalCoupons, icon: <Ticket />, href: "/beheer/coupons", colorClass: "amber" as const, disabled: !permissions.canAccessCoupons },
             ].filter(i => !i.disabled)
         },
         {
@@ -144,8 +144,8 @@ export function BirthdaysList({ data }: { data: Birthday[] }) {
                         title={`${person.first_name} ${person.last_name}${person.isToday ? ' 🎂' : ''}`}
                         subtitle={person.isToday ? '🎉 Vandaag!' : formatDate(person.birthday, 'd MMMM')}
                         value={person.isToday ? '🎈' : undefined}
-                        colorClass={person?.isToday ? 'amber' : 'purple'}
-                        pulse={person?.isToday}
+                        colorClass={person.isToday ? 'amber' : 'purple'}
+                        pulse={person.isToday}
                     />
                 ))}
             </div>

@@ -23,7 +23,7 @@ export async function HeroIsland({ banners = [], activiteiten = [], initialSessi
 
     const slideUrls = banners.length
         ? banners
-            .sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))
+            .sort((a, b) => a.display_order - b.display_order)
             .map((b) => getImageUrl(b.afbeelding_id, {
                 width: 1920,
                 height: 1080,

@@ -46,8 +46,12 @@ export default function StickerMap({
     const [showImage, setShowImage] = useState<boolean>(false);
 
     const filteredStickers = useMemo(() => {
-        return (stickers || [])
-            .filter((s) => s.latitude != null && s.longitude != null)
+        return stickers
+            .filter((s) => {
+                const lat = s.latitude as number | null | undefined;
+                const lng = s.longitude as number | null | undefined;
+                return lat !== null && lat !== undefined && lng !== null && lng !== undefined;
+            })
             .filter((sticker) => {
                 if (filterCountry && !(sticker.country || '').toLowerCase().includes(filterCountry.toLowerCase())) return false;
                 if (filterCity && !(sticker.city || '').toLowerCase().includes(filterCity.toLowerCase())) return false;
@@ -90,24 +94,22 @@ export default function StickerMap({
                     style.glyphs = `${origin}/map/glyphs/OpenSansRegular/{range}.pbf?v=1&f={fontstack}`;
                 }
 
-                if (style.layers) {
-                    style.layers = style.layers.map(layer => {
-                        if (layer.type === 'symbol' && layer.layout && 'text-font' in layer.layout) {
-                            return {
-                                ...layer,
-                                layout: { ...layer.layout, 'text-font': ['OpenSansRegular'] }
-                            };
-                        }
-                        return layer;
-                    });
-                }
+                style.layers = style.layers.map(layer => {
+                    if (layer.type === 'symbol' && layer.layout && 'text-font' in layer.layout) {
+                        return {
+                            ...layer,
+                            layout: { ...layer.layout, 'text-font': ['OpenSansRegular'] }
+                        };
+                    }
+                    return layer;
+                });
                 setMapStyleObj(style);
             } catch (err) {
                 // eslint-disable-next-line no-restricted-syntax
                 console.error('[StickerMap] Style Load Failed:', err);
             }
         };
-        loadAndPatchStyle();
+        void loadAndPatchStyle();
         return () => { isMounted = false; };
     }, [isDark]);
 

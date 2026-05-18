@@ -13,7 +13,7 @@ import { redirect } from 'next/navigation';
 export default async function TransactiesPage() {
     const session = await getEnrichedSession();
 
-    if (!session || !session.user) {
+    if (!session) {
         redirect('/');
     }
 

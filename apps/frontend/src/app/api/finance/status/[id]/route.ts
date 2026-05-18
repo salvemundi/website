@@ -16,7 +16,7 @@ export async function GET(
             return NextResponse.json({ error: 'Status check failed' }, { status: response.status });
         }
 
-        const data = await response.json();
+        const data = (await response.json()) as unknown;
         return NextResponse.json(data);
     } catch {
 

@@ -29,7 +29,7 @@ export function IntroBlogGrid({ blogs }: Props) {
     return (
         <div className="grid grid-cols-[repeat(auto-fit,minmax(min(350px,100%),1fr))] gap-8">
             {blogs.map((blog, idx) => {
-                const config = typeConfig[blog.blog_type] || typeConfig.update;
+                const config = typeConfig[blog.blog_type];
                 const date = blog.created_at;
 
                 return (

@@ -1,7 +1,7 @@
 import { safeConsoleError } from '../utils/logger.js';
 import { FastifyInstance } from 'fastify';
 import { getMollieClient } from '../services/mollie.service.js';
-import { RegistrationService } from '../services/registration.service.js';
+import { type FinanceMolliePaymentMetadata } from '../services/payment.service.js';
 
 export default async function statusRoutes(fastify: FastifyInstance) {
     /**
@@ -9,14 +9,14 @@ export default async function statusRoutes(fastify: FastifyInstance) {
      * Returns the current status of a transaction.
      * If local status is 'open', it attempts a live Mollie check.
      */
-    fastify.get('/status/:id', async (request: any, reply) => {
+    await Promise.resolve();
+    fastify.get<{ Params: { id: string } }>('/status/:id', async (request, reply) => {
         const { id } = request.params;
 
         if (!id) {
             return reply.status(400).send({ error: 'Missing ID' });
         }
 
-        const isMollieId = id.startsWith('tr_');
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
 
         if (!isUuid) {
@@ -24,39 +24,54 @@ export default async function statusRoutes(fastify: FastifyInstance) {
         }
 
         try {
-            const query = 'SELECT mollie_id, payment_status, amount, product_type, registration, trip_signup, pub_crawl_signup, created_at, updated_at FROM transactions WHERE access_token = $1 LIMIT 1';
+            const transaction = await fastify.db
+                .selectFrom('transactions')
+                .select([
+                    'mollie_id',
+                    'payment_status',
+                    'amount',
+                    'product_type',
+                    'registration',
+                    'trip_signup',
+                    'pub_crawl_signup',
+                    'created_at',
+                    'updated_at',
+                    'access_token'
+                ])
+                .where('access_token', '=', id)
+                .executeTakeFirst();
 
-            const result = await fastify.db.query(query, [id]);
-
-            if (result.rows.length === 0) {
+            if (!transaction) {
                 return reply.status(404).send({ error: 'Transaction not found' });
             }
 
-            const transaction = result.rows[0];
+            const dbStatus = String(transaction.payment_status);
+            const mollieId = transaction.mollie_id;
 
             // Live status fallback if still open
-            if (transaction.payment_status === 'open' && transaction.mollie_id) {
+            if (dbStatus === 'open' && mollieId) {
                 try {
                     const mollie = getMollieClient();
-                    const livePayment = await mollie.payments.get(transaction.mollie_id);
+                    const livePayment = await mollie.payments.get(mollieId);
 
-                    if (livePayment.status !== transaction.payment_status) {
-                        fastify.log.info(`[STATUS] Live status mismatch for ${transaction.mollie_id}: DB=${transaction.payment_status}, Mollie=${livePayment.status}. Triggering finalization.`);
+                    if (String(livePayment.status) !== dbStatus) {
+                        fastify.log.info(`[STATUS] Live status mismatch for ${mollieId}: DB=${dbStatus}, Mollie=${livePayment.status}. Triggering finalization.`);
 
                         const { PaymentService } = await import('../services/payment.service.js');
                         await PaymentService.finalizePayment(
                             fastify,
-                            transaction.mollie_id,
+                            mollieId,
                             livePayment.status,
-                            livePayment.metadata,
-                            transaction.access_token
+                            livePayment.metadata as FinanceMolliePaymentMetadata,
+                            transaction.access_token || ''
                         );
 
+                        // Mutating the returned object for HTTP payload update
                         transaction.payment_status = livePayment.status;
-                        transaction.updated_at = new Date();
+                        (transaction as { updated_at?: string | null }).updated_at = new Date().toISOString();
                     }
                 } catch (mollieErr) {
-                    fastify.log.error(mollieErr, `[STATUS] Failed to fetch live Mollie status for ${transaction.mollie_id}`);
+                    fastify.log.error(mollieErr, `[STATUS] Failed to fetch live Mollie status for ${mollieId}`);
                 }
             }
 

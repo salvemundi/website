@@ -3,7 +3,33 @@ import { Redis } from 'ioredis';
 import { MailWorkerService } from './mail-worker.js';
 import { PaymentSuccessEventSchema, ActivitySignupEventSchema } from '@salvemundi/validations';
 import QRCode from 'qrcode';
-import { query } from './db.js';
+import { db } from './db.js';
+
+interface LocalPaymentSuccessEvent {
+    userId?: string | null;
+    paymentId: string;
+    email: string;
+    registrationId?: string | number | null;
+    registrationType?: 'event_signup' | 'pub_crawl_signup' | 'trip_signup' | 'membership';
+    isContribution?: boolean;
+    isNewMember?: boolean;
+    qrToken?: string;
+    accessToken?: string;
+    firstName?: string;
+    lastName?: string;
+    phoneNumber?: string;
+    dateOfBirth?: string;
+}
+
+interface LocalActivitySignupEvent {
+    email: string;
+    name: string;
+    eventName: string;
+    eventDate: string;
+    signupId: string | number;
+    qrToken?: string;
+    accessToken?: string;
+}
 
 /**
  * EventHandlers: Beheert de business logica voor verschillende soorten events 
@@ -13,10 +39,10 @@ export class EventHandlers {
     /**
      * Verwerkt een succesvolle betaling en bepaalt welk mail-sjabloon verzonden moet worden.
      */
-    static async handlePaymentSuccess(redis: Redis, rawPayload: any) {
-        const data = PaymentSuccessEventSchema.parse(rawPayload);
-        const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL!;
-        const directusToken = process.env.DIRECTUS_STATIC_TOKEN!;
+    static async handlePaymentSuccess(redis: Redis, rawPayload: unknown) {
+        const data = PaymentSuccessEventSchema.parse(rawPayload) as unknown as LocalPaymentSuccessEvent;
+        const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL || '';
+        const directusToken = process.env.DIRECTUS_STATIC_TOKEN || '';
 
         let templateId = 'payment_confirmed';
         let mailData: Record<string, unknown> = {
@@ -36,14 +62,14 @@ export class EventHandlers {
         // Confirmation URL
         const baseUrl = process.env.PUBLIC_URL || 'https://salvemundi.nl';
         if (data.registrationId && data.accessToken) {
-            const path = data.registrationType === 'membership' || (data as any).isContribution ? '/lidmaatschap/bevestiging' :
+            const path = data.registrationType === 'membership' || data.isContribution ? '/lidmaatschap/bevestiging' :
                 data.registrationType === 'trip_signup' ? '/reis/bevestiging' :
                     '/activiteiten/bevestiging';
             mailData.confirmationUrl = `${baseUrl}${path}?id=${data.registrationId}&t=${data.accessToken}`;
         }
 
         // Specific Flows
-        if ((data as any).isContribution || data.registrationType === 'membership') {
+        if (data.isContribution || data.registrationType === 'membership') {
             if (data.isNewMember || !data.userId) return; // Handled elsewhere
             templateId = 'membership_renewal';
             await this.enrichMembershipRenewal(mailData, data, directusUrl, directusToken, baseUrl);
@@ -66,11 +92,11 @@ export class EventHandlers {
     /**
      * Verwerkt een succesvolle activiteit-inschrijving.
      */
-    static async handleActivitySignup(redis: Redis, rawPayload: any) {
-        const data = ActivitySignupEventSchema.parse(rawPayload);
+    static async handleActivitySignup(redis: Redis, rawPayload: unknown) {
+        const data = ActivitySignupEventSchema.parse(rawPayload) as unknown as LocalActivitySignupEvent;
         const hasAccount = await this.checkUserHasAccount(
-            process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL!,
-            process.env.DIRECTUS_STATIC_TOKEN!,
+            process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL || '',
+            process.env.DIRECTUS_STATIC_TOKEN || '',
             data.email
         );
 
@@ -98,19 +124,19 @@ export class EventHandlers {
             const res = await fetch(`${url}/users?filter[email][_eq]=${encodeURIComponent(email)}&fields=id&limit=1`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            const json = await res.json() as { data: unknown[] };
-            return (json?.data?.length ?? 0) > 0;
+            const json = await res.json() as { data?: unknown[] };
+            return (json.data?.length ?? 0) > 0;
         } catch (_error) { return false; }
     }
 
-    private static async enrichMembershipRenewal(mailData: any, data: any, url: string, token: string, baseUrl: string) {
+    private static async enrichMembershipRenewal(mailData: Record<string, unknown>, data: LocalPaymentSuccessEvent, url: string, token: string, baseUrl: string) {
         try {
             const res = await fetch(`${url}/users/${data.userId}?fields=first_name,membership_expiry`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            const json = await res.json() as { data: { first_name?: string; membership_expiry?: string } };
-            mailData.firstName = json?.data?.first_name || data.firstName || 'Lid';
-            mailData.expiryDate = json?.data?.membership_expiry || 'Onbekend';
+            const json = await res.json() as { data?: { first_name?: string; membership_expiry?: string } };
+            mailData.firstName = json.data?.first_name || data.firstName || 'Lid';
+            mailData.expiryDate = json.data?.membership_expiry || 'Onbekend';
             mailData.amount = '20.00';
             if (!mailData.confirmationUrl && data.paymentId) {
                 mailData.confirmationUrl = `${baseUrl}/lidmaatschap/bevestiging?transaction_id=${data.paymentId}&t=${data.accessToken || ''}`;
@@ -120,13 +146,14 @@ export class EventHandlers {
         }
     }
 
-    private static async preparePubCrawlTickets(data: any, url: string, token: string) {
+    private static async preparePubCrawlTickets(data: LocalPaymentSuccessEvent, url: string, token: string) {
         try {
+            if (!data.registrationId) return null;
             const res = await fetch(`${url}/items/pub_crawl_signups/${data.registrationId}?fields=name,email,amount_tickets,pub_crawl_event_id.name`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            const json = await res.json() as { data: { name?: string; email?: string; amount_tickets?: number; pub_crawl_event_id?: { name?: string } } };
-            const signup = json?.data;
+            const json = await res.json() as { data?: { name?: string; email?: string; amount_tickets?: number; pub_crawl_event_id?: { name?: string } } };
+            const signup = json.data;
             const tickets = await this.fetchPubCrawlTicketsDb(data.registrationId, signup?.amount_tickets || 1);
 
             return {
@@ -136,7 +163,7 @@ export class EventHandlers {
                 paymentId: data.paymentId,
                 signupId: data.registrationId,
                 eventName: signup?.pub_crawl_event_id?.name || 'Kroegentocht',
-                tickets: await Promise.all(tickets.map(async (t: any) => ({
+                tickets: await Promise.all(tickets.map(async (t) => ({
                     ...t,
                     qrDataUrl: t.qr_token ? await this.generateQrDataUrl(String(t.qr_token)) : ''
                 }))),
@@ -146,7 +173,7 @@ export class EventHandlers {
         } catch (_error) { return null; }
     }
 
-    private static async enrichGenericEvent(mailData: any, data: any, url: string, token: string) {
+    private static async enrichGenericEvent(mailData: Record<string, unknown>, data: LocalPaymentSuccessEvent, url: string, token: string) {
         try {
             const collection = data.registrationType === 'trip_signup' ? 'trip_signups' : 'event_signups';
             const fields = data.registrationType === 'trip_signup' ? 'trip_id,first_name' : 'event_id,first_name,qr_token';
@@ -154,7 +181,8 @@ export class EventHandlers {
             const signupRes = await fetch(`${url}/items/${collection}/${data.registrationId}?fields=${fields}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            const signup = (await signupRes.json() as any)?.data;
+            const json = await signupRes.json() as { data?: { first_name?: string; qr_token?: string; trip_id?: number | string; event_id?: number | string } };
+            const signup = json.data;
             mailData.firstName = signup?.first_name || mailData.firstName;
             if (signup?.qr_token) mailData.qrToken = signup.qr_token;
 
@@ -164,7 +192,8 @@ export class EventHandlers {
                 const eventRes = await fetch(`${url}/items/${eventCollection}/${eventId}?fields=name`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                mailData.eventName = (await eventRes.json() as any)?.data?.name || mailData.eventName;
+                const eventJson = await eventRes.json() as { data?: { name?: string } };
+                mailData.eventName = eventJson.data?.name || mailData.eventName;
             }
         } catch (error) {
             safeConsoleError(`[MailService][EventHandlers][enrichGenericEvent] Error while enriching generic event:`, error);
@@ -173,8 +202,12 @@ export class EventHandlers {
 
     private static async fetchPubCrawlTicketsDb(signupId: string | number, expectedCount: number) {
         for (let i = 0; i < 5; i++) {
-            const res = await query(`SELECT id, name, initial, qr_token FROM pub_crawl_tickets WHERE signup_id = $1`, [signupId]);
-            if ((res.rows || []).length >= expectedCount) return res.rows;
+            const tickets = await db
+                .selectFrom('pub_crawl_tickets')
+                .select(['id', 'name', 'initial', 'qr_token'])
+                .where('signup_id', '=', Number(signupId))
+                .execute();
+            if (tickets.length >= expectedCount) return tickets;
             await new Promise(r => setTimeout(r, 1000));
         }
         return [];

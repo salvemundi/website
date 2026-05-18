@@ -1,9 +1,10 @@
-import { FastifyInstance } from 'fastify';
+import { type FastifyInstance } from 'fastify';
 import { type MolliePaymentMetadata } from '@salvemundi/validations';
 import { getMollieClient } from '../services/mollie.service.js';
 import crypto from 'node:crypto';
 
 export default async function paymentsRoutes(fastify: FastifyInstance) {
+    await Promise.resolve();
     /**
      * POST /api/payments/create
      * Creates a new Mollie payment and stores a transaction record.
@@ -37,7 +38,6 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
             phoneNumber,
             dateOfBirth,
             isContribution,
-            isNewMember,
             userId,
             redirectUrl,
             couponCode
@@ -54,7 +54,7 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 ? `${process.env.PUBLIC_URL}/api/finance/webhook/mollie`
                 : undefined;
 
-            console.log(`[FINANCE] Creating Mollie payment with webhookUrl: ${webhookUrl}`);
+            fastify.log.info(`[FINANCE] Creating Mollie payment with webhookUrl: ${webhookUrl || 'undefined'}`);
 
             // 1. Create payment in Mollie
             // Generate a random access_token for guest security (IDOR mitigation)
@@ -81,85 +81,82 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                     phoneNumber,
                     dateOfBirth,
                     isContribution,
-                    isNewMember,
                     couponCode
                 }
             });
 
             // 2. Store transaction in PostgreSQL
             // Map registrationType to literal Dutch names for the UI as requested
-            const productTypeMap: Record<string, string> = {
-                'pub_crawl_signup': 'Kroegentocht',
-                'trip_signup': 'Reis',
-                'event_signup': 'Activiteit'
-            };
+            const productTypeMap = new Map<string, string>([
+                ['pub_crawl_signup', 'Kroegentocht'],
+                ['trip_signup', 'Reis'],
+                ['event_signup', 'Activiteit']
+            ]);
 
             let productType = 'Overig';
             if (isContribution) {
                 // INTERNAL type for audit logs and system triggers
                 productType = 'membership';
-            } else if (registrationType && productTypeMap[registrationType]) {
-                productType = productTypeMap[registrationType];
+            } else if (registrationType && productTypeMap.has(registrationType)) {
+                productType = productTypeMap.get(registrationType) || 'Overig';
             } else if (registrationType) {
                 // Pre-mapped or fallback to registrationType itself
                 productType = registrationType;
             }
 
-            // 2. Build SQL dynamically to avoid parameter count mismatches
-            const columns = [
-                'mollie_id', 'amount', 'payment_status', 'product_name', 'product_type',
-                'user_id', 'email', 'first_name', 'last_name', 'access_token', 'coupon_code'
-            ];
-            const params = [
-                payment.id,
-                amount,
-                'open',
-                description,
-                productType,
-                userId || null,
-                email || null,
-                firstName || null,
-                lastName || null,
-                accessToken,
-                couponCode || null
-            ];
+            // 2. Build insertion object dynamically
+            const insertData: Record<string, unknown> = {
+                mollie_id: payment.id,
+                amount: amount,
+                payment_status: 'open',
+                product_name: description,
+                product_type: productType,
+                user_id: userId || null,
+                email: email || null,
+                first_name: firstName || null,
+                last_name: lastName || null,
+                access_token: accessToken,
+                coupon_code: couponCode || null,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            };
 
             if (registrationType === 'event_signup' || registrationType === 'membership') {
-                columns.push('registration');
-                params.push(registrationId || null);
+                insertData['registration'] = Number(registrationId) || null;
             } else if (registrationType === 'trip_signup') {
-                columns.push('trip_signup');
-                params.push(registrationId || null);
+                insertData['trip_signup'] = Number(registrationId) || null;
             } else if (registrationType === 'pub_crawl_signup') {
-                columns.push('pub_crawl_signup');
-                params.push(registrationId || null);
+                insertData['pub_crawl_signup'] = Number(registrationId) || null;
             }
 
-            const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
-            const dbResult = await fastify.db.query(
-                `INSERT INTO transactions (
-                    ${columns.join(', ')},
-                    created_at, updated_at
-                ) VALUES (${placeholders}, NOW(), NOW()) RETURNING id`,
-                params
-            );
+            const dbResult = await fastify.db
+                .insertInto('transactions')
+                .values(insertData as never)
+                .returning('id')
+                .executeTakeFirst();
 
-            const transactionDbId = dbResult.rows[0].id;
+            const transactionDbId = dbResult?.id;
+            if (!transactionDbId) {
+                throw new Error('Failed to retrieve inserted transaction ID');
+            }
 
             // Handle M2M junction table for Pub Crawl
             if (registrationType === 'pub_crawl_signup' && registrationId) {
-                await fastify.db.query(
-                    `INSERT INTO pub_crawl_signups_transactions (pub_crawl_signups_id, transactions_id)
-                     VALUES ($1, $2)`,
-                    [registrationId, transactionDbId]
-                );
+                await fastify.db
+                    .insertInto('pub_crawl_signups_transactions')
+                    .values({
+                        pub_crawl_signups_id: Number(registrationId),
+                        transactions_id: transactionDbId
+                    })
+                    .execute();
                 fastify.log.info(`[FINANCE] Linked transaction ${transactionDbId} to pub_crawl_signup ${registrationId}`);
             }
 
-            return { checkoutUrl: payment._links?.checkout?.href, mollie_id: payment.id, access_token: accessToken };
-        } catch (error: any) {
-            fastify.log.error({ error, message: error?.message, code: error?.code, detail: error?.detail }, '[FINANCE] Error creating payment');
-            return reply.status(500).send({ error: 'Failed to create payment', message: error.message });
+            return { checkoutUrl: payment._links.checkout?.href, mollie_id: payment.id, access_token: accessToken };
+        } catch (error: unknown) {
+            const err = error as { message?: string; code?: string; detail?: string };
+            fastify.log.error({ error, message: err.message, code: err.code, detail: err.detail }, '[FINANCE] Error creating payment');
+            return reply.status(500).send({ error: 'Failed to create payment', message: err.message || 'Unknown error' });
         }
     });
 
@@ -180,19 +177,21 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
 
         try {
             // 1. Update approval_status
-            await fastify.db.query(
-                `UPDATE transactions SET approval_status = 'approved', updated_at = NOW() WHERE mollie_id = $1`,
-                [mollieId]
-            );
+            await fastify.db
+                .updateTable('transactions')
+                .set({
+                    approval_status: 'approved',
+                    updated_at: new Date().toISOString()
+                })
+                .where('mollie_id', '=', mollieId)
+                .execute();
 
             // 2. Fetch transaction details to re-trigger event
-            // Note: In a real system, we would call a centralized "finalizePayment" function.
-            // Here we'll rely on the azure-sync-service listener to pick up the change or 
-            // the webhook handler to have published a success event that we now 'validate'.
-
-            // To be robust, we publish the success event NOW because it was skipped during webhook.
-            const result = await fastify.db.query(`SELECT * FROM transactions WHERE mollie_id = $1`, [mollieId]);
-            const tx = result.rows[0];
+            const tx = await fastify.db
+                .selectFrom('transactions')
+                .selectAll()
+                .where('mollie_id', '=', mollieId)
+                .executeTakeFirst();
 
             if (!tx || tx.payment_status !== 'paid') {
                 return reply.status(400).send({ error: 'Transaction not found or not paid yet' });
@@ -201,13 +200,13 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
             // Fetch full payment from Mollie to get metadata (names, phone, DOB)
             const mollie = getMollieClient();
             const payment = await mollie.payments.get(mollieId);
-            const metadata = payment.metadata as unknown as MolliePaymentMetadata;
+            const metadata = payment.metadata as MolliePaymentMetadata;
 
             const eventData = {
                 event: 'PAYMENT_SUCCESS',
                 userId: tx.user_id,
                 paymentId: tx.mollie_id,
-                email: tx.email || metadata?.email,
+                email: tx.email || metadata.email,
                 registrationId: tx.registration || tx.trip_signup || tx.pub_crawl_signup,
                 registrationType: tx.product_type === 'pub_crawl' ? 'pub_crawl_signup' :
                     tx.product_type === 'trip' ? 'trip_signup' :
@@ -215,10 +214,10 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 isContribution: tx.product_type === 'membership',
                 isNewMember: !tx.user_id && tx.product_type === 'membership',
                 accessToken: tx.access_token,
-                firstName: tx.first_name || metadata?.firstName,
-                lastName: tx.last_name || metadata?.lastName,
-                phoneNumber: metadata?.phoneNumber,
-                dateOfBirth: metadata?.dateOfBirth,
+                firstName: tx.first_name || metadata.firstName,
+                lastName: tx.last_name || metadata.lastName,
+                phoneNumber: metadata.phoneNumber,
+                dateOfBirth: metadata.dateOfBirth,
                 timestamp: new Date().toISOString()
             };
 
@@ -226,9 +225,10 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
             fastify.log.info(`[FINANCE] Manually approved and published success event for ${mollieId}`);
 
             return { success: true };
-        } catch (error: any) {
-            fastify.log.error(`[FINANCE] Approval failed for ${mollieId}:`, error);
-            return reply.status(500).send({ error: 'Approval failed', message: error.message });
+        } catch (error: unknown) {
+            const err = error as Error;
+            fastify.log.error(error as Error, `[FINANCE] Approval failed for ${mollieId}`);
+            return reply.status(500).send({ error: 'Approval failed', message: err.message });
         }
     });
 }

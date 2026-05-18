@@ -26,6 +26,7 @@ import {
 } from '@directus/sdk';
 import { normalizeDate } from '@/lib/utils/date-utils';
 import { safeConsoleError } from '@/server/utils/logger';
+import { logAdminAction } from '@/server/actions/infrastructure/audit.actions';
 
 export async function getTripSignups(tripId: number) {
     await requireAdminResource(AdminResource.Reis);
@@ -54,8 +55,15 @@ export async function updateSignupStatus(signupId: number, status: string) {
             safeConsoleError(`[ReisSignups][updateSignupStatus] Failed to update trip signup ${signupId}:`, error);
         });
 
+        await logAdminAction('admin_trip_signup_status_updated', 'SUCCESS', {
+            context: 'reis',
+            signup_id: signupId,
+            old_status: oldStatus,
+            new_status: status
+        });
+
         // 4. Trigger Email if status changed TO confirmed
-        if (status === 'confirmed' && oldStatus !== 'confirmed' && signup?.email) {
+        if (status === 'confirmed' && oldStatus !== 'confirmed' && signup.email) {
             const mailUrl = process.env.MAIL_SERVICE_URL;
             const token = process.env.INTERNAL_SERVICE_TOKEN;
 
@@ -124,6 +132,11 @@ export async function deleteTripSignup(signupId: number) {
             safeConsoleError(`[ReisSignups][deleteTripSignup] Failed to delete trip signup ${signupId}:`, error);
         });
 
+        await logAdminAction('admin_trip_signup_deleted', 'SUCCESS', {
+            context: 'reis',
+            signup_id: signupId
+        });
+
         const { revalidatePath, revalidateTag } = await import('next/cache');
         revalidateTag('reis-status', 'max');
 
@@ -173,6 +186,12 @@ export async function updateTripSignup(prevState: unknown, formData: FormData) {
             safeConsoleError(`[ReisSignups][updateTripSignup] Failed to update trip signup ${id}:`, error);
         });
 
+        await logAdminAction('admin_trip_signup_updated', 'SUCCESS', {
+            context: 'reis',
+            signup_id: id,
+            updates: validated.data
+        });
+
         const { revalidatePath, revalidateTag } = await import('next/cache');
         revalidateTag('reis-status', 'max');
 
@@ -208,10 +227,22 @@ export async function updateSignupActivities(signupId: number, activityIds: numb
         const client = getSystemDirectus();
 
         const current = await getSignupActivities(signupId);
-        const currentIds = current.map(a => typeof a.trip_activity_id === 'object' ? Number(a.trip_activity_id.id) : Number(a.trip_activity_id));
+        const currentIds = current.map(a => {
+            const actId = a.trip_activity_id as unknown;
+            if (actId && typeof actId === 'object' && 'id' in actId) {
+                return Number((actId as { id: unknown }).id);
+            }
+            return Number(actId);
+        });
 
         const toDelete = current.filter(a => {
-            const activityId = typeof a.trip_activity_id === 'object' ? a.trip_activity_id.id : a.trip_activity_id;
+            const actId = a.trip_activity_id as unknown;
+            let activityId: unknown;
+            if (actId && typeof actId === 'object' && 'id' in actId) {
+                activityId = (actId as { id: unknown }).id;
+            } else {
+                activityId = actId;
+            }
             return !activityIds.includes(Number(activityId));
         });
 
@@ -228,6 +259,12 @@ export async function updateSignupActivities(signupId: number, activityIds: numb
                 trip_activity_id: activityId
             }));
         }
+
+        await logAdminAction('admin_trip_signup_activities_updated', 'SUCCESS', {
+            context: 'reis',
+            signup_id: signupId,
+            activity_ids: activityIds
+        });
 
         revalidatePath('/beheer/reis');
         revalidatePath(`/beheer/reis/deelnemer/${signupId}`);

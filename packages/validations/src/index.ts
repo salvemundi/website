@@ -21,3 +21,4 @@ export * from './schema/audit.zod.js';
 export * from './directus/schema.js';
 export * from './directus/fields.js';
 export * from './utils/boolean-utils.js';
+export * from './directus/schema.js';

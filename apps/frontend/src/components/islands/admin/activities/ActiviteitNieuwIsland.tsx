@@ -29,17 +29,13 @@ interface ActionState {
     id?: number;
     error?: string;
     fieldErrors?: Record<string, string[]>;
-    initialData?: Record<string, unknown>;
+    initialData?: { [key: string]: unknown };
 }
 
 interface ActiviteitNieuwIslandProps {
     committees?: Committee[];
 }
 
-/**
- * ActiviteitNieuwIsland: Panel voor het aanmaken van een nieuwe activiteit.
- * Voldoet aan de Zero-Any Policy en Admin UI Standard.
- */
 export default function ActiviteitNieuwIsland({
     committees = []
 }: ActiviteitNieuwIslandProps) {
@@ -92,7 +88,7 @@ export default function ActiviteitNieuwIsland({
     }, [state, showToast, router, setStatus, setOnlyMembers, setContactEmail]);
 
     const [optimisticSaving] = useOptimistic(isPending);
-    const initialData = state.initialData as Record<string, unknown> | undefined;
+    const initialData = state.initialData as { [key: string]: unknown } | undefined;
 
     return (
         <div className="pb-20">

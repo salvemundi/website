@@ -1,5 +1,3 @@
-'use server';
-
 import 'server-only';
 import { query } from '@/lib/database';
 import { buildUpdateQuery } from '@/lib/database/query-builder';
@@ -11,9 +9,6 @@ import { z } from 'zod';
 import { DbTripSignup as TripSignup, DbTripSignupActivitie as TripSignupActivity } from '@salvemundi/validations/directus/schema';
 import { RawTripSignupRow, RawTripSignupActivityRow, QueryParam } from './types';
 
-/**
- * Fetches the registration status for a specific user and trip directly from the database to bypass caching.
- */
 export async function fetchUserSignupStatusDb(userIdOrEmail: string, tripId: number): Promise<ReisTripSignup | null> {
     if (!userIdOrEmail || userIdOrEmail === '') return null;
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userIdOrEmail);
@@ -49,9 +44,6 @@ export async function fetchUserSignupStatusDb(userIdOrEmail: string, tripId: num
     return parsed.data as ReisTripSignup;
 }
 
-/**
- * Fetches all signups for a specific trip directly from the database for the admin dashboard.
- */
 export async function fetchAllTripSignupsDb(tripId: number): Promise<ReisTripSignup[]> {
     const res = await query(
         `SELECT * FROM trip_signups 
@@ -81,9 +73,6 @@ export async function fetchAllTripSignupsDb(tripId: number): Promise<ReisTripSig
     return parsed.data as ReisTripSignup[];
 }
 
-/**
- * Fetches a single signup by ID directly from the database.
- */
 export async function fetchTripSignupByIdDb(signupId: number): Promise<ReisTripSignup | null> {
     const res = await query(
         `SELECT * FROM trip_signups WHERE id = $1 LIMIT 1`,
@@ -114,9 +103,6 @@ export async function fetchTripSignupByIdDb(signupId: number): Promise<ReisTripS
     return parsed.data as ReisTripSignup;
 }
 
-/**
- * Fetches activity selections for a specific trip directly from the database.
- */
 export async function fetchTripSignupActivitiesDb(tripId: number): Promise<(TripSignupActivity & { activity_name: string; activity_price: number; activity_options: unknown; first_name: string; last_name: string; email: string })[]> {
     const res = await query(
         `SELECT sa.*, a.name as activity_name, a.price as activity_price, a.options as activity_options,
@@ -139,11 +125,11 @@ export async function fetchTripSignupActivitiesDb(tripId: number): Promise<(Trip
 }
 
 export async function fetchSelectedSignupActivitiesDb(signupId: number): Promise<TripSignupActivity[]> {
-    const { rows } = await query(
+    const { rows } = await query<TripSignupActivity>(
         'SELECT * FROM trip_signup_activities WHERE trip_signup_id = $1',
         [signupId]
     );
-    return (rows as unknown as TripSignupActivity[]) || [];
+    return rows;
 }
 
 export async function insertTripSignupDb(payload: Partial<TripSignup>): Promise<number | null> {
@@ -151,11 +137,11 @@ export async function insertTripSignupDb(payload: Partial<TripSignup>): Promise<
     const values = Object.values(payload);
     const placeHolders = fields.map((_, i) => `$${i + 1}`).join(', ');
 
-    const res = await query(
+    const res = await query<{ id: number }>(
         `INSERT INTO trip_signups (${fields.join(', ')}) VALUES (${placeHolders}) RETURNING id`,
         values as QueryParam[]
     );
-    return res.rows[0]?.id || null;
+    return res.rows[0]?.id ?? null;
 }
 
 export async function updateTripSignupDb(id: number, data: Partial<TripSignup>): Promise<boolean> {
@@ -170,4 +156,3 @@ export async function deleteTripSignupDb(id: number): Promise<boolean> {
     await query(`DELETE FROM trip_signups WHERE id = $1`, [id]);
     return true;
 }
-

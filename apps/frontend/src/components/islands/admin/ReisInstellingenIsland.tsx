@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
-    Plus, 
-    Info 
+import {
+    Plus,
+    Info
 } from 'lucide-react';
-import { 
+import {
     deleteTrip,
     toggleReisVisibility
 } from '@/server/actions/admin/reis-core.actions';
@@ -15,8 +15,7 @@ import type { Trip } from '@salvemundi/validations/schema/admin-reis.zod';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
-
-// Modular Components
+import { safeConsoleError } from '@/server/utils/logger';
 import TripCard from '@/components/admin/reis/TripCard';
 import TripForm from '@/components/admin/reis/TripForm';
 
@@ -35,7 +34,6 @@ export default function ReisInstellingenIsland({ initialTrips, initialSettings }
     const [isAdding, setIsAdding] = useState(false);
     const [isDeleting, setIsDeleting] = useState<number | null>(null);
 
-    // Sync state with server data after revalidation
     useEffect(() => {
         setTrips(initialTrips);
         setSettings(initialSettings);
@@ -74,7 +72,8 @@ export default function ReisInstellingenIsland({ initialTrips, initialSettings }
                 } else {
                     showToast(result.error || 'Fout bij bijwerken zichtbaarheid', 'error');
                 }
-            } catch (_err) {
+            } catch (error) {
+                safeConsoleError('[ReisInstellingenIsland][handleToggleVisibility]', error);
                 showToast('Er is een onverwachte fout opgetreden', 'error');
             }
         });
@@ -82,7 +81,7 @@ export default function ReisInstellingenIsland({ initialTrips, initialSettings }
 
     const handleDelete = async (id: number) => {
         if (!confirm('Weet je zeker dat je deze reis wilt verwijderen? Dit verwijdert ook alle aanmeldingen!')) return;
-        
+
         setIsDeleting(id);
         try {
             const res = await deleteTrip(id);
@@ -93,7 +92,8 @@ export default function ReisInstellingenIsland({ initialTrips, initialSettings }
             } else {
                 showToast(res.error || 'Verwijderen mislukt', 'error');
             }
-        } catch (_err) {
+        } catch (error) {
+            safeConsoleError('[ReisInstellingenIsland][handleDelete]', error);
             showToast('Er is een fout opgetreden', 'error');
         } finally {
             setIsDeleting(null);
@@ -102,13 +102,13 @@ export default function ReisInstellingenIsland({ initialTrips, initialSettings }
 
     return (
         <>
-            <AdminToolbar 
+            <AdminToolbar
                 title="Reis Instellingen"
                 subtitle="Configureer reis details, prijzen en algemene instellingen"
                 backHref="/beheer/reis"
                 actions={
                     <div className="flex items-center gap-4">
-                        <AdminVisibilityToggle 
+                        <AdminVisibilityToggle
                             isVisible={settings.show}
                             onToggle={handleToggleVisibility}
                             isPending={isPending}
@@ -125,9 +125,8 @@ export default function ReisInstellingenIsland({ initialTrips, initialSettings }
             />
 
             <div className="container mx-auto px-4 py-8 max-w-7xl">
-                {/* Form (Add/Edit) */}
                 {(isAdding || editingTrip) && (
-                    <TripForm 
+                    <TripForm
                         editingTrip={editingTrip}
                         isAdding={isAdding}
                         onCancel={handleCancel}
@@ -135,15 +134,16 @@ export default function ReisInstellingenIsland({ initialTrips, initialSettings }
                     />
                 )}
 
-                {/* Trips List */}
                 {!isAdding && !editingTrip && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
                         {trips.map((trip) => (
-                            <TripCard 
-                                key={trip.id} 
-                                trip={trip} 
-                                onEdit={() => handleEdit(trip)} 
-                                onDelete={() => handleDelete(trip.id)}
+                            <TripCard
+                                key={trip.id}
+                                trip={trip}
+                                onEdit={() => handleEdit(trip)}
+                                onDelete={() => {
+                                    void handleDelete(trip.id);
+                                }}
                                 isDeleting={isDeleting === trip.id}
                             />
                         ))}

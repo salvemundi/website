@@ -18,7 +18,7 @@ export default async function ScannerPage({ params }: { params: Promise<{ id: st
     const id = resolvedParams.id;
 
     const session = await getEnrichedSession();
-    if (!session || !session.user) return <AdminUnauthorized title="Activiteit Scanner" />;
+    if (!session) return <AdminUnauthorized title="Activiteit Scanner" />;
 
     const user = session.user;
     const hasAccess = !!user.canAccessActivitiesView;

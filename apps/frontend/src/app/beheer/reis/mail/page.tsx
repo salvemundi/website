@@ -22,13 +22,12 @@ export default async function ReisMailPage({ searchParams }: PageProps) {
     const resolvedSearchParams = await searchParams;
     const tripIdParam = typeof resolvedSearchParams.tripId === 'string' ? resolvedSearchParams.tripId : undefined;
 
-    // NUCLEAR SSR: Fetch all trips and signups before flushing any part of the page
     const trips = await getSystemDirectus().request(readItems('trips', {
         fields: ['id', 'name'],
         sort: ['-start_date']
     })) as unknown as Trip[];
 
-    if (!trips || trips.length === 0) {
+    if (trips.length === 0) {
         return (
             <AdminPageShell title="Reis Mail" backHref="/beheer/reis">
                 <div className="container mx-auto px-4 py-20 text-center">

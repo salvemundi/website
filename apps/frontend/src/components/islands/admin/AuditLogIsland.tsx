@@ -154,7 +154,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                 setSignups(prev => prev.filter(s => !selectedIds.has(s.id)));
                 setSelectedIds(new Set());
                 showToast(`${itemsToProcess.length} inschrijvingen goedgekeurd`, 'success');
-                refreshLogs();
+                await refreshLogs();
             } else {
                 showToast(res.error || 'Bulk goedkeuren mislukt', 'error');
             }
@@ -179,7 +179,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                 setSignups(prev => prev.filter(s => !selectedIds.has(s.id)));
                 setSelectedIds(new Set());
                 showToast(`${itemsToProcess.length} inschrijvingen afgewezen`, 'info');
-                refreshLogs();
+                await refreshLogs();
             } else {
                 showToast(res.error || 'Bulk afwijzen mislukt', 'error');
             }
@@ -196,7 +196,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
         const res = await updateAuditSettingsAction(newValue);
         if (res.success) {
             showToast(`Automatische goedkeuring ${newValue ? 'uitgeschakeld' : 'ingeschakeld'}`, 'success');
-            refreshLogs();
+            await refreshLogs();
         } else {
             showToast('Fout bij bijwerken instellingen', 'error');
             setManualApproval(!newValue);
@@ -252,7 +252,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                             </span>
                         </div>
                         <button
-                            onClick={toggleManualApproval}
+                            onClick={() => { void toggleManualApproval(); }}
                             className={`relative inline-flex h-5 w-10 shrink-0 items-center rounded-full transition-all focus:outline-none ${manualApproval ? 'bg-amber-500' : 'bg-green-500'}`}
                         >
                             <span className={`inline-block h-3 w-3 transform rounded-full bg-white shadow-sm transition-transform ${manualApproval ? 'translate-x-[1.2rem]' : 'translate-x-1'}`} />
@@ -268,11 +268,11 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                         selectedIds={selectedIds}
                         onToggleSelectAll={toggleSelectAll}
                         onToggleSelectOne={toggleSelectOne}
-                        onApprove={handleApprove}
-                        onReject={handleReject}
-                        onBulkApprove={handleBulkApprove}
-                        onBulkReject={handleBulkReject}
-                        onRefresh={refreshLogs}
+                        onApprove={(id, type) => { void handleApprove(id, type); }}
+                        onReject={(id, type) => { void handleReject(id, type); }}
+                        onBulkApprove={() => { void handleBulkApprove(); }}
+                        onBulkReject={() => { void handleBulkReject(); }}
+                        onRefresh={() => { void refreshLogs(); }}
                     />
                 )}
 
@@ -280,8 +280,8 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                     <LogsTab
                         logs={adminLogs}
                         totalCount={adminLogsTotalCount}
-                        onRefresh={refreshLogs}
-                        onLoadMore={loadMoreAdminLogs}
+                        onRefresh={() => { void refreshLogs(); }}
+                        onLoadMore={() => { void loadMoreAdminLogs(); }}
                         title="Beheerder Acties"
                         idNameLookup={initialData.idNameLookup}
                     />
@@ -291,8 +291,8 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                     <LogsTab
                         logs={systemLogs}
                         totalCount={systemLogsTotalCount}
-                        onRefresh={refreshLogs}
-                        onLoadMore={loadMoreSystemLogs}
+                        onRefresh={() => { void refreshLogs(); }}
+                        onLoadMore={() => { void loadMoreSystemLogs(); }}
                         title="Systeem Events"
                         idNameLookup={initialData.idNameLookup}
                         actions={

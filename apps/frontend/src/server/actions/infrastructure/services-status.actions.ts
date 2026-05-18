@@ -9,7 +9,7 @@ const INTERNAL_TOKEN = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '')
 
 async function checkSystemAdminAccess() {
     const access = await checkAdminAccess();
-    if (!access || !access.isAuthorized || !access.isIct) return null;
+    if (!access.isAuthorized || !access.isIct) return null;
     return access;
 }
 
@@ -18,7 +18,7 @@ export interface ServiceStatus {
     status: 'online' | 'offline' | 'degraded';
     latency?: number;
     error?: string;
-    details?: Record<string, unknown>;
+    details?: { [key: string]: unknown };
 }
 
 export async function getServicesStatusAction(): Promise<ServiceStatus[]> {

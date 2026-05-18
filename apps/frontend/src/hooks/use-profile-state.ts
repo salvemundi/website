@@ -7,7 +7,6 @@ import { updateUserProfile, uploadUserAvatar } from '@/server/actions/profile/pr
 import { z } from 'zod';
 import { type SessionUser } from '@/lib/profile/profile-admin.utils';
 
-// Zod validation schemas for forms
 const minecraftFormSchema = updateProfileSchema.pick({ minecraft_username: true });
 const phoneFormSchema = updateProfileSchema.pick({ phone_number: true });
 
@@ -20,9 +19,6 @@ interface UseProfileStateProps {
     showToast: (message: string, type: 'success' | 'error') => void;
 }
 
-/**
- * Hook voor het beheren van profiel-gerelateerde state en acties.
- */
 export function useProfileState({ user, refetch, showToast }: UseProfileStateProps) {
     const router = useRouter();
     const [isEditingMinecraft, setIsEditingMinecraft] = useState(false);
@@ -30,28 +26,24 @@ export function useProfileState({ user, refetch, showToast }: UseProfileStatePro
     const [pendingAvatar, setPendingAvatar] = useState<{ file: File, preview: string } | null>(null);
     const [isPending, startUpdateTransition] = useTransition();
 
-    // Optimistic UI for instant feedback
     const [optimisticUser, addOptimisticUpdate] = useOptimistic(
         user,
         (current, update: Partial<SessionUser>) => ({ ...current, ...update })
     );
 
-    // Form: Minecraft
     const minecraftForm = useForm<MinecraftFormData>({
         resolver: zodResolver(minecraftFormSchema),
-        defaultValues: { minecraft_username: user?.minecraft_username || "" }
+        defaultValues: { minecraft_username: user.minecraft_username || "" }
     });
 
-    // Form: Phone
     const phoneForm = useForm<PhoneFormData>({
         resolver: zodResolver(phoneFormSchema),
-        defaultValues: { phone_number: user?.phone_number || "" }
+        defaultValues: { phone_number: user.phone_number || "" }
     });
 
-    // Sync form values if user changes
     useEffect(() => {
-        minecraftForm.reset({ minecraft_username: user?.minecraft_username || "" });
-        phoneForm.reset({ phone_number: user?.phone_number || "" });
+        minecraftForm.reset({ minecraft_username: user.minecraft_username || "" });
+        phoneForm.reset({ phone_number: user.phone_number || "" });
     }, [user, minecraftForm, phoneForm]);
 
     const onSaveMinecraft = (data: MinecraftFormData) => {
@@ -103,10 +95,10 @@ export function useProfileState({ user, refetch, showToast }: UseProfileStatePro
         startUpdateTransition(async () => {
             addOptimisticUpdate({ avatar: preview, image: preview });
             setPendingAvatar(null);
-            
+
             const formData = new FormData();
             formData.append('file', file);
-            
+
             const result = await uploadUserAvatar(formData);
             if (result.success) {
                 await refetch();

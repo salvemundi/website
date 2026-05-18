@@ -1,6 +1,9 @@
+'use client';
+
 import React from 'react';
 import { MapPin, User, Mail, CalendarClock } from 'lucide-react';
-import { SafeMarkdown } from '@/components/ui/security/SafeMarkdown'; import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
+import { SafeMarkdown } from '@/components/ui/security/SafeMarkdown';
+import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 import { type Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { buildCommitteeEmail, formatDutchDate, formatTime } from '@/shared/lib/activity-utils';
 import MediaAsset from '@/components/ui/media/MediaAsset';
@@ -12,9 +15,9 @@ interface ActivityDetailIslandProps {
 }
 
 export default function ActivityDetailIsland({ activity, isLoggedIn = false, children }: ActivityDetailIslandProps) {
-
-    const committeeEmail = activity?.contact?.includes('@')
-        ? activity.contact
+    const contact = activity?.contact;
+    const committeeEmail = contact && contact.includes('@')
+        ? contact
         : activity ? buildCommitteeEmail(activity.committee_name) : null;
 
     const startTime = activity ? formatTime(activity.event_time) : null;
@@ -23,27 +26,23 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
 
     return (
         <div className="w-full flex flex-col min-h-screen bg-[var(--bg-main)]">
-            {/* Hero Banner Area */}
             {activity?.afbeelding_id ? (
                 <div className="relative h-[45vh] min-h-[400px] w-full overflow-hidden bg-[var(--bg-soft)]">
-                    {activity && (
-                        <MediaAsset
-                            asset={activity.afbeelding_id}
-                            alt={activity.titel}
-                            fill
-                            priority
-                            className="object-cover"
-                        />
-                    )}
+                    <MediaAsset
+                        asset={activity.afbeelding_id}
+                        alt={activity.titel}
+                        fill
+                        priority
+                        className="object-cover"
+                    />
                     <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-main)] via-[var(--bg-main)]/40 to-transparent" />
-
                     <div className="absolute inset-x-0 bottom-0 max-w-7xl mx-auto px-4 pb-12">
                         <div className="max-w-3xl space-y-4">
                             <span className="inline-block px-4 py-1.5 rounded-full bg-[var(--theme-purple)] text-white text-[11px] font-black uppercase tracking-widest mb-4 shadow-xl border border-white/10">
-                                {activity?.committee_name || 'Algemene Activiteit'}
+                                {activity.committee_name || 'Algemene Activiteit'}
                             </span>
                             <h1 className="text-4xl md:text-7xl font-black text-(--theme-white) dropshadow-sm tracking-tight leading-tight">
-                                {activity?.titel}
+                                {activity.titel}
                             </h1>
                         </div>
                     </div>
@@ -59,19 +58,13 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                 </div>
             )}
 
-            {/* Content Grid Area */}
             <main className="w-full max-w-7xl mx-auto px-4 py-8 md:py-12">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-
-                    {/* Left Column: Signup Island (Inject via children) */}
                     <div className="order-1 lg:order-1 h-full">
                         {children}
                     </div>
-
-                    {/* Right Column: Info Tiles Grid */}
                     <div className="@container order-2 lg:order-2 h-full">
                         <div className="grid grid-cols-[repeat(auto-fit,minmax(min(240px,100%),1fr))] gap-4">
-                            {/* Date & Time Tile */}
                             <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] p-6 shadow-lg shadow-[var(--theme-purple)]/5 flex items-center gap-4 transition-all hover:border-[var(--theme-purple)]/30 group @[500px]:col-span-2">
                                 <div className="h-14 w-14 rounded-2xl bg-[var(--theme-purple)]/5 flex items-center justify-center text-[var(--theme-purple)] group-hover:scale-110 transition-transform shrink-0">
                                     <CalendarClock className="h-7 w-7" />
@@ -89,8 +82,6 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                                 </div>
                             </div>
 
-
-                            {/* Location Tile */}
                             {activity?.locatie && (
                                 <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] p-6 shadow-lg shadow-[var(--theme-purple)]/5 flex items-center gap-4 transition-all hover:border-[var(--theme-purple)]/30 group @[500px]:col-span-2">
                                     <div className="h-14 w-14 rounded-2xl bg-[var(--theme-purple)]/5 flex items-center justify-center text-[var(--theme-purple)] group-hover:scale-110 transition-transform shrink-0">
@@ -99,13 +90,12 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                                     <div className="flex-1 min-w-0">
                                         <p className="text-[10px] uppercase font-black text-[var(--theme-purple)]/40 tracking-[0.2em] mb-1">Locatie</p>
                                         <p className="text-base font-bold text-[var(--text-main)]">
-                                            {activity?.locatie}
+                                            {activity.locatie}
                                         </p>
                                     </div>
                                 </div>
                             )}
 
-                            {/* Organization/Committee Tile */}
                             <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] p-6 shadow-lg shadow-[var(--theme-purple)]/5 flex items-center gap-4 transition-all hover:border-[var(--theme-purple)]/30 group">
                                 <div className="h-14 w-14 rounded-2xl bg-[var(--theme-purple)]/5 flex items-center justify-center text-[var(--theme-purple)] group-hover:scale-110 transition-transform shrink-0">
                                     <User className="h-7 w-7" />
@@ -118,7 +108,6 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                                 </div>
                             </div>
 
-                            {/* Contact/Support Tile */}
                             <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] p-6 shadow-lg shadow-[var(--theme-purple)]/5 flex items-center gap-4 transition-all hover:border-[var(--theme-purple)]/30 group">
                                 <div className="h-14 w-14 rounded-2xl bg-[var(--theme-purple)]/5 flex items-center justify-center text-[var(--theme-purple)] group-hover:scale-110 transition-transform shrink-0">
                                     <Mail className="h-7 w-7" />
@@ -139,7 +128,6 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                         </div>
                     </div>
 
-                    {/* Full Width Description Row */}
                     <div className="lg:col-span-2 order-3 pt-6">
                         <div className="rounded-3xl bg-[var(--bg-card)] border border-[var(--border-color)] p-8 shadow-xl shadow-[var(--theme-purple)]/5">
                             <div className="flex items-center gap-3 mb-8">
@@ -149,7 +137,8 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                                 </h2>
                             </div>
                             <div className="prose prose-purple max-w-none text-[var(--text-main)] font-medium leading-relaxed">
-                                <SafeMarkdown content={activity?.beschrijving || 'Geen beschrijving beschikbaar.'} />                                {isLoggedIn && activity?.description_logged_in && (
+                                <SafeMarkdown content={activity?.beschrijving || 'Geen beschrijving beschikbaar.'} />
+                                {isLoggedIn && activity?.description_logged_in && (
                                     <>
                                         <hr className="my-8 border-[var(--border-color)]/50" />
                                         <div className="flex items-center gap-3 mb-6">
@@ -169,4 +158,3 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
         </div>
     );
 }
-

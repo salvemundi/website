@@ -11,6 +11,7 @@ import {
 import { format } from 'date-fns';
 import { downloadCSV } from '@/lib/utils/export';
 import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
+import { safeConsoleError } from '@/server/utils/logger';
 
 interface Participant {
     name: string;
@@ -30,6 +31,22 @@ interface SignupListProps {
     onEdit: (id: number | string) => void;
 }
 
+function getParticipants(signup: ExtendedSignup): Participant[] {
+    const raw = signup.participants as unknown;
+    if (typeof raw === 'string') {
+        try {
+            const parsed = JSON.parse(raw) as unknown;
+            if (Array.isArray(parsed)) {
+                return parsed as Participant[];
+            }
+        } catch (error) {
+            safeConsoleError('[SignupList][getParticipants] JSON parse error', error);
+        }
+        return [];
+    }
+    return Array.isArray(raw) ? (raw as Participant[]) : [];
+}
+
 export default function SignupList({
     signups,
     eventId: _eventId,
@@ -42,9 +59,9 @@ export default function SignupList({
 
     const filteredSignups = signups.filter(s => {
         const matchesSearch =
-            s.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            s.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            s.association?.toLowerCase().includes(searchQuery.toLowerCase());
+            s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            s.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            s.association.toLowerCase().includes(searchQuery.toLowerCase());
 
         const matchesStatus = showAll || s.payment_status === 'paid';
 
@@ -53,7 +70,6 @@ export default function SignupList({
 
     const exportToCSV = () => {
         const rows: Record<string, string | number>[] = [];
-        // Signups are sorted newest first (id DESC), so we calculate the sequential number accordingly
         filteredSignups.forEach((signup, signupIdx) => {
             const groupNumber = filteredSignups.length - signupIdx;
             const registrationDate = signup.created_at ? new Date(signup.created_at).toLocaleString('nl-NL', {
@@ -64,7 +80,7 @@ export default function SignupList({
                 minute: '2-digit'
             }) : '-';
 
-            const participants = signup.participants || [];
+            const participants = getParticipants(signup);
             if (participants.length > 0) {
                 participants.forEach((p) => {
                     rows.push({
@@ -92,7 +108,6 @@ export default function SignupList({
 
     return (
         <div className="space-y-6">
-            {/* Filters & Actions */}
             <div className="bg-[var(--bg-card)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)]/30 p-6">
                 <div className="flex flex-col lg:flex-row gap-6 justify-between items-stretch">
                     <div className="relative flex-1 group">
@@ -122,7 +137,6 @@ export default function SignupList({
                 </div>
             </div>
 
-            {/* Table */}
             <div className="bg-[var(--bg-card)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)]/30 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
@@ -143,12 +157,7 @@ export default function SignupList({
                                 </tr>
                             ) : (
                                 filteredSignups.map((signup) => {
-                                    // Robust participant parsing
-                                    let participants = signup.participants || [];
-                                    if (typeof participants === 'string') {
-                                        try { participants = JSON.parse(participants); } catch (_error) { participants = []; }
-                                    }
-                                    if (!Array.isArray(participants)) participants = [];
+                                    const participants = getParticipants(signup);
 
                                     return (
                                         <tr key={signup.id} className="hover:bg-[var(--bg-main)]/30 transition-colors group border-b border-[var(--border-color)]/10 last:border-0">
@@ -164,7 +173,6 @@ export default function SignupList({
                                                     {participants.length > 0 && (
                                                         <div className="mt-1.5 flex flex-wrap gap-1.5">
                                                             {participants.map((p, i) => {
-                                                                // AGGRESSIVE CLEANUP for broken JSON data
                                                                 let rawName = typeof p === 'object' ? (p.name || 'Onbekend') : String(p);
                                                                 let rawInitial = typeof p === 'object' ? (p.initial || '') : '';
 

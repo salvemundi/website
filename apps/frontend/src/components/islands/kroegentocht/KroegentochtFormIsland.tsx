@@ -122,7 +122,7 @@ export default function KroegentochtFormIsland({
             description="Vul hieronder je gegevens in en reserveer je plek voor de kroegentocht. Tickets kosten slechts €1,00 per stuk!"
             className="animate-in fade-in duration-500"
         >
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" autoComplete="off">
+            <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-6" autoComplete="off">
                 <FormField id="field-email" label="E-mailadres" required error={errors.email?.message}>
                     <div className="relative">
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -216,7 +216,7 @@ export default function KroegentochtFormIsland({
                                         <label htmlFor={`field-participants-${index}-initial`} className="text-[10px] font-bold text-slate-400 uppercase mb-1 block whitespace-nowrap">1e letter achtern.</label>
                                         <Input
                                             {...register(`participants.${index}.initial`, {
-                                                onChange: (e) => {
+                                                onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
                                                     setValue(`participants.${index}.initial`, e.target.value.slice(0, 1).toUpperCase());
                                                 }
                                             })}

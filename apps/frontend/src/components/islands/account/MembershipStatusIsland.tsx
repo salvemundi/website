@@ -37,7 +37,8 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
                 email: user.email,
                 telefoon: user.phone_number || '',
                 geboortedatum: user.date_of_birth || '',
-                coupon: '' };
+                coupon: ''
+            };
 
             const result = await initiateMembershipPaymentAction(formData);
 
@@ -124,7 +125,7 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
             <div className="bg-purple-50 dark:bg-white/5 border border-purple-100 dark:border-white/10 rounded-3xl p-6 mb-8 text-center">
                 <p className="text-sm font-bold text-theme-purple dark:text-purple-400 uppercase tracking-widest mb-6">Contributie Verlengen</p>
                 <button
-                    onClick={handleRenewal}
+                    onClick={() => { void handleRenewal(); }}
                     disabled={isPending}
                     className="form-button shadow-glow transition-transform active:scale-95"
                 >

@@ -12,7 +12,6 @@ import { connection } from 'next/server';
 
 export default async function CommissiesPage() {
     await connection();
-    // NUCLEAR SSR: Fetch all data before flushing any part of the page content
     const committees = await getCommittees();
 
     return (

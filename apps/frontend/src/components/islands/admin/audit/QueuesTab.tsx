@@ -4,6 +4,13 @@ import React from 'react';
 import { CheckCircle } from 'lucide-react';
 import { QueueInfo } from '@salvemundi/validations';
 
+interface QueueTask {
+    email?: string | null;
+    userId?: string | null;
+    retries: number;
+    maxRetries: number;
+}
+
 interface QueuesTabProps {
     queueData: { new_users?: QueueInfo; sync_existing?: QueueInfo } | null;
 }
@@ -11,9 +18,9 @@ interface QueuesTabProps {
 export default function QueuesTab({ queueData }: QueuesTabProps) {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {['new_users', 'sync_existing'].map(qKey => {
+            {(['new_users', 'sync_existing'] as const).map(qKey => {
                 // eslint-disable-next-line security/detect-object-injection
-                const q = queueData?.[qKey];
+                const q = queueData ? queueData[qKey] : undefined;
                 return (
                     <div key={qKey} className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] shadow-xl overflow-hidden">
                         <div className="p-6 border-b border-[var(--beheer-border)]/50 flex justify-between items-center bg-[var(--beheer-card-soft)]/30">
@@ -47,7 +54,7 @@ export default function QueuesTab({ queueData }: QueuesTabProps) {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-[var(--beheer-border)]/10">
-                                        {q.samples.map((task, idx: number) => (
+                                        {(q.samples as QueueTask[]).map((task, idx: number) => (
                                             <tr key={idx} className="hover:bg-[var(--beheer-accent)]/[0.02]">
                                                 <td className="p-3 font-bold text-[var(--beheer-text)]">
                                                     {task.email || task.userId || 'Unknown'}

@@ -34,9 +34,9 @@ export default function Leaderboard({ stickers, currentUser }: LeaderboardProps)
 
     // Reorder for podium display: [2, 1, 3]
     const podiumDisplay = [
-        podium[1] || null, // Silver
-        podium[0] || null, // Gold
-        podium[2] || null, // Bronze
+        (podium[1] as typeof podium[0] | undefined) || null, // Silver
+        (podium[0] as typeof podium[0] | undefined) || null, // Gold
+        (podium[2] as typeof podium[0] | undefined) || null, // Bronze
     ];
 
     return (

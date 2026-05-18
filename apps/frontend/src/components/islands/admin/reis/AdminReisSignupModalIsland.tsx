@@ -116,7 +116,7 @@ export default function AdminReisSignupModalIsland({
                                     <div className="space-y-4">
                                         <SignupForm 
                                             signup={selectedSignup} 
-                                            isBusTrip={!!trip?.is_bus_trip}
+                                            isBusTrip={!!trip.is_bus_trip}
                                             minimal={true}
                                             section="personal_basic"
                                             cockpit={true}
@@ -126,7 +126,7 @@ export default function AdminReisSignupModalIsland({
                                     <div className="space-y-6">
                                         <SignupForm 
                                             signup={selectedSignup} 
-                                            isBusTrip={!!trip?.is_bus_trip}
+                                            isBusTrip={!!trip.is_bus_trip}
                                             minimal={true}
                                             section="personal_extended"
                                             cockpit={true}
@@ -136,7 +136,7 @@ export default function AdminReisSignupModalIsland({
                                     <div className="space-y-6">
                                         <SignupForm 
                                             signup={selectedSignup} 
-                                            isBusTrip={!!trip?.is_bus_trip}
+                                            isBusTrip={!!trip.is_bus_trip}
                                             minimal={true}
                                             section="admin"
                                             cockpit={true}
@@ -163,7 +163,7 @@ export default function AdminReisSignupModalIsland({
                         </div>
                     ) : (
                         <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
-                            <SignupView signup={selectedSignup} isBusTrip={!!trip?.is_bus_trip} />
+                            <SignupView signup={selectedSignup} isBusTrip={!!trip.is_bus_trip} />
                         </div>
                     )}
 
@@ -201,7 +201,7 @@ export default function AdminReisSignupModalIsland({
                                 <button
                                     type="button"
                                     onClick={() => onResendEmail(selectedSignup.id, 'final')}
-                                    disabled={selectedSignup.full_payment_paid || !trip?.allow_final_payments || (sendingEmailTo?.signupId === selectedSignup.id && sendingEmailTo.type === 'final')}
+                                    disabled={selectedSignup.full_payment_paid || !trip.allow_final_payments || (sendingEmailTo?.signupId === selectedSignup.id && sendingEmailTo.type === 'final')}
                                     className={`px-5 py-2.5 rounded-xl text-[9px] font-semibold border transition-all ${selectedSignup.final_email_sent ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-emerald-500 text-white border-white/10 shadow-lg shadow-emerald-500/20 hover:scale-[1.02] disabled:opacity-30 disabled:grayscale disabled:scale-100 disabled:cursor-not-allowed'}`}
                                 >
                                     Restbetaling Mail

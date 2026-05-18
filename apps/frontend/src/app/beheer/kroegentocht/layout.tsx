@@ -5,6 +5,7 @@ import { getPermissions } from '@/shared/lib/permissions';
 import { fetchUserCommitteesDb } from '@/server/internal/user-db.utils';
 
 import { type EnrichedUser } from '@/types/auth';
+import { safeConsoleError } from '@/server/utils/logger';
 
 export default async function KroegentochtLayout({
     children }: {
@@ -12,13 +13,22 @@ export default async function KroegentochtLayout({
 }) {
     const session = await getEnrichedSession();
 
-    if (!session || !session.user) {
+    if (!session) {
         redirect('/?needLogin=true');
     }
 
     const user = session.user as unknown as EnrichedUser;
-    const userCommittees = await fetchUserCommitteesDb(user.id).catch(() => []);
-    const permissions = getPermissions(userCommittees || []);
+    
+    let userCommittees: Awaited<ReturnType<typeof fetchUserCommitteesDb>> = [];
+
+    try {
+        userCommittees = await fetchUserCommitteesDb(user.id);
+    } catch (error) {
+        safeConsoleError('[kroegentocht-layout][KroegentochtLayout]', error);
+        userCommittees = [];
+    }
+
+    const permissions = getPermissions(userCommittees);
 
     if (!permissions.canAccessKroegentocht) {
         return (

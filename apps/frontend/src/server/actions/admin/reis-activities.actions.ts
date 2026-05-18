@@ -33,7 +33,7 @@ export async function createTripActivity(formData: FormData) {
         trip_id: formData.get('trip_id') === '' ? null : parseInt(formData.get('trip_id') as string),
         options: (() => {
             try {
-                return JSON.parse(formData.get('options') as string || '[]');
+                return JSON.parse(formData.get('options') as string || '[]') as unknown[];
             } catch {
                 return [];
             }
@@ -90,7 +90,7 @@ export async function updateTripActivity(formData: FormData) {
         options: (() => {
             try {
                 const opts = formData.get('options');
-                return opts ? JSON.parse(opts as string) : undefined;
+                return opts ? (JSON.parse(opts as string) as unknown[]) : undefined;
             } catch {
                 return undefined;
             }

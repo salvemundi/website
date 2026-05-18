@@ -1,19 +1,19 @@
-import { safeConsoleError } from '../utils/logger.js';
+import { safeConsoleError, logInfo } from '../utils/logger.js';
 import { Redis } from 'ioredis';
 import { DirectusService } from './directus.service.js';
 import { Event, EventSignup } from '../types/schema.js';
 
 export class EventReminderJob {
     private static readonly REDIS_PREFIX = 'v7:mail:notified:event:';
-    private static shouldStop = false;
+    private static shouldStop: boolean = false;
 
     /**
      * Starts the event reminder loop (runs once a day).
      */
     static async start(redis: Redis) {
-        console.log('[EventReminderJob] Starting daily monitoring loop...');
+        logInfo('[EventReminderJob] Starting daily monitoring loop...');
 
-        while (!this.shouldStop) {
+        while (!EventReminderJob['shouldStop']) {
             try {
                 // 1. Run the check
                 await this.runCheck(redis);
@@ -23,30 +23,31 @@ export class EventReminderJob {
                 const nextRun = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 9, 30, 0); // Offset from Expiry job
                 const delay = nextRun.getTime() - now.getTime();
 
-                console.log(`[EventReminderJob] Next check scheduled in ${Math.round(delay / 1000 / 60 / 60)} hours.`);
+                logInfo(`[EventReminderJob] Next check scheduled in ${Math.round(delay / 1000 / 60 / 60)} hours.`);
                 await new Promise(resolve => setTimeout(resolve, delay));
-            } catch (error: any) {
-                safeConsoleError('[EventReminderJob] Loop Error:', error.message);
+            } catch (error: unknown) {
+                const message = error instanceof Error ? error.message : String(error);
+                safeConsoleError('[EventReminderJob] Loop Error:', message);
                 await new Promise(resolve => setTimeout(resolve, 60000));
             }
         }
     }
 
     static async runCheck(redis: Redis) {
-        console.log('[EventReminderJob] Running upcoming event scan (3 days ahead)...');
+        logInfo('[EventReminderJob] Running upcoming event scan (3 days ahead)...');
 
         const isActive = await DirectusService.isFlagActive('mail_event_reminders');
         if (!isActive) {
-            console.log('[EventReminderJob] Automated event reminders are DISABLED via feature flag. Skipping run.');
+            logInfo('[EventReminderJob] Automated event reminders are DISABLED via feature flag. Skipping run.');
             return;
         }
 
         const upcomingEvents = await DirectusService.getUpcomingEvents(3);
-        console.log(`[EventReminderJob] Found ${upcomingEvents.length} events scheduled in 3 days.`);
+        logInfo(`[EventReminderJob] Found ${upcomingEvents.length} events scheduled in 3 days.`);
 
         for (const event of upcomingEvents) {
             const signups = await DirectusService.getPaidEventSignups(event.id);
-            console.log(`[EventReminderJob] Notifying ${signups.length} participants for event: ${event.name}`);
+            logInfo(`[EventReminderJob] Notifying ${signups.length} participants for event: ${event.name}`);
 
             for (const signup of signups) {
                 await this.notifyParticipant(redis, event, signup);
@@ -89,8 +90,9 @@ export class EventReminderJob {
             if (response.ok) {
                 await redis.set(redisKey, '1', 'EX', 86400 * 30); // Cache for a month
             }
-        } catch (error: any) {
-            safeConsoleError(`[EventReminderJob] Error notifying ${signup.participant_email}:`, error.message);
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : String(error);
+            safeConsoleError(`[EventReminderJob] Error notifying ${signup.participant_email}:`, message);
         }
     }
 

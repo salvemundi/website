@@ -4,12 +4,10 @@ import { Info, Calendar as CalendarIcon, MapPin, Euro, Link as LinkIcon, Upload,
 import { toLocalISOString } from '@/lib/utils/date-utils';
 import { ActivityAdmin } from '@salvemundi/validations';
 
-// --- Utilities ---
 function cleanCommitteeName(name: string): string {
-    return name?.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim() || '';
+    return name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim();
 }
 
-// Gebruik unknown voor maximale compatibiliteit met Record<string, unknown> en DB modellen
 type InitialValue = unknown;
 
 const formatDate = (dateStr?: InitialValue) =>
@@ -25,8 +23,6 @@ const toInputSafe = (value: unknown): string => {
     if (value === null || value === undefined) return '';
     return String(value);
 };
-
-// --- Components ---
 
 export function GeneralInfoSection({
     initialData,

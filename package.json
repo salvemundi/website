@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "pnpm --filter @salvemundi/frontend dev",
     "build": "pnpm -r build",
-    "lint": "pnpm -r lint",
+    "lint": "pnpm -r --if-present lint",
     "knip": "pnpm -r --if-present knip",
     "type-check": "pnpm -r exec tsc --noEmit",
     "validate": "pnpm type-check && pnpm lint && pnpm knip",
@@ -35,7 +35,10 @@
       "picomatch": "4.0.4",
       "brace-expansion": "5.0.5",
       "vite": "7.3.2",
-      "jsdom": "25.0.1"
+      "jsdom": "25.0.1",
+      "kysely": "0.28.17",
+      "postcss": "8.5.14",
+      "protocol-buffers-schema": "3.6.1"
     },
     "peerDependencyRules": {
       "allowedVersions": {
@@ -46,5 +49,12 @@
     "patchedDependencies": {
       "brace-expansion@5.0.5": "patches/brace-expansion@5.0.5.patch"
     }
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^9.39.4",
+    "eslint-plugin-security": "^4.0.0",
+    "eslint-plugin-unused-imports": "^4.4.1",
+    "typescript-eslint": "^8.59.3"
   }
 }

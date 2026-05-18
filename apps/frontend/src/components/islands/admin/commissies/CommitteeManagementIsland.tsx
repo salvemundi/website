@@ -102,7 +102,7 @@ export default function CommitteeManagementIsland({ initialCommittees, initialMe
             setNewMemberEmail('');
             showToast(`${user.first_name} succesvol toegevoegd aan de commissie`, 'success');
             // Sync is done on server, so we can reload immediately
-            handleSelectCommittee(selected);
+            void handleSelectCommittee(selected);
         }
         setAddingMember(false);
     };
@@ -116,7 +116,7 @@ export default function CommitteeManagementIsland({ initialCommittees, initialMe
         setMembers(prev => prev.filter(m => m.entraId !== member.entraId));
         setActionLoading(`remove-${member.entraId}`);
 
-        const res = await removeCommitteeMember(selected!.azure_group_id!, member.entraId, member.isLeader);
+        const res = await removeCommitteeMember(selected.azure_group_id, member.entraId, member.isLeader);
         if (res.success) {
             showToast('Lid succesvol verwijderd uit de commissie', 'success');
         } else {
@@ -178,7 +178,7 @@ export default function CommitteeManagementIsland({ initialCommittees, initialMe
                     <CommitteeSidebar
                         committees={filteredCommittees}
                         selectedId={selected?.id || null}
-                        onSelect={handleSelectCommittee}
+                        onSelect={(c) => { void handleSelectCommittee(c); }}
                         searchQuery={searchQuery}
                         onSearchChange={setSearchQuery}
                         showAll={showAll}
@@ -207,15 +207,15 @@ export default function CommitteeManagementIsland({ initialCommittees, initialMe
                             onShortDescChange={setEditShortDesc}
                             editDesc={editDesc}
                             onDescChange={setEditDesc}
-                            onSaveDetail={handleSaveDetail}
+                            onSaveDetail={() => { void handleSaveDetail(); }}
                             savingDetail={savingDetail}
                             newMemberEmail={newMemberEmail}
                             onNewMemberEmailChange={setNewMemberEmail}
-                            onAddMember={handleAddMember}
+                            onAddMember={(user) => { void handleAddMember(user); }}
                             addingMember={addingMember}
                             addError={addError}
-                            onRemoveMember={handleRemoveMember}
-                            onToggleLeader={handleToggleLeader}
+                            onRemoveMember={(member) => { void handleRemoveMember(member); }}
+                            onToggleLeader={(member) => { void handleToggleLeader(member); }}
                         />
                     )}
                 </div>

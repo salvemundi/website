@@ -33,6 +33,16 @@ export async function getCommittees(): Promise<Committee[]> {
     });
 }
 
+interface RawMemberRow {
+    directus_membership_id: number;
+    is_leader: boolean;
+    user_id: string;
+    entra_id: string | null;
+    first_name: string | null;
+    last_name: string | null;
+    email: string;
+}
+
 export async function getCommitteeMembers(committeeId: string): Promise<CommitteeMember[]> {
     const sql = `
         SELECT 
@@ -49,7 +59,7 @@ export async function getCommitteeMembers(committeeId: string): Promise<Committe
     `;
     const { rows } = await query(sql, [committeeId]);
 
-    return rows.map((r) => adminCommitteeMemberSchema.parse({
+    return (rows as RawMemberRow[]).map((r) => adminCommitteeMemberSchema.parse({
         directusMembershipId: r.directus_membership_id,
         entraId: r.entra_id || r.user_id,
         displayName: `${r.first_name || ''} ${r.last_name || ''}`.trim() || r.email,
@@ -60,6 +70,7 @@ export async function getCommitteeMembers(committeeId: string): Promise<Committe
 export async function countUniqueCommitteeMembers(): Promise<number> {
     
     const { rows } = await query('SELECT COUNT(DISTINCT user_id) as count FROM committee_members WHERE user_id IS NOT NULL');
-    return Number(rows?.[0]?.count || 0);
+    return Number(rows[0]?.count || 0);
 }
+
 

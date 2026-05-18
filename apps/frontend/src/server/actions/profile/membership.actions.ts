@@ -57,7 +57,6 @@ export async function validateCouponAction(formData: FormData) {
 }
 
 export async function initiateMembershipPaymentAction(formData: SignupFormData) {
-    // Normalize date before validation
     formData.geboortedatum = normalizeDate(formData.geboortedatum) as string;
 
     const parsed = signupSchema.safeParse(formData);
@@ -77,7 +76,6 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
     const user = session?.user as EnrichedUser | undefined;
     const isExpired = user && user.membership_status !== 'active';
 
-    // Active members pay a reduced renewal fee (€10) if they are in a committee
     const { fetchUserCommitteesDb } = await import('@/server/internal/user-db.utils');
     const committees = user ? await fetchUserCommitteesDb(user.id) : [];
     const isCommitteeMember = committees.length > 0;
@@ -85,7 +83,6 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
     const baseAmount = (isCommitteeMember && isExpired) ? 10.00 : 20.00;
     let finalAmount = baseAmount;
 
-    // Pentest/IDOR Mitigation: Re-calculate price server-side to prevent client-side manipulation
     if (parsed.data.coupon) {
         const result = await getValidCoupon(parsed.data.coupon);
         if (result.valid && result.coupon) {
@@ -94,7 +91,6 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
                 ? (baseAmount * coupon.discount_value / 100)
                 : coupon.discount_value;
 
-            // Mollie minimum charge is €0.01
             finalAmount = Math.max(0.01, Math.min(baseAmount, baseAmount - discountValue));
         }
     }
@@ -143,7 +139,6 @@ export async function getTransactionStatusAction(transactionId: string) {
     }
 
     try {
-        // SQL-First: Fetch status directly for Zero-Drift consistency
         const { rows } = await query(
             `SELECT payment_status, user_id FROM transactions 
              WHERE id::text = $1 
@@ -153,16 +148,15 @@ export async function getTransactionStatusAction(transactionId: string) {
             [parsed.data.id]
         );
 
-        if (!rows || rows.length === 0) return { status: 'error' };
+        if (rows.length === 0) return { status: 'error' };
         const transaction = rows[0] as { payment_status: string; user_id: string | null };
 
         if (transaction.payment_status === 'paid') {
-            // Ensure session data is fresh after payment
             if (transaction.user_id) {
                 revalidateTag(`user-${transaction.user_id}`, 'max');
             }
             return { status: 'paid', user_id: transaction.user_id };
-        } else if (['failed', 'canceled', 'expired'].includes(transaction.payment_status ?? '')) {
+        } else if (['failed', 'canceled', 'expired'].includes(transaction.payment_status)) {
             return { status: 'failed', user_id: transaction.user_id };
         }
 

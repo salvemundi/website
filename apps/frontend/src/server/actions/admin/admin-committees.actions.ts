@@ -2,17 +2,12 @@
 
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { revalidatePath } from "next/cache";
-
 import { isSuperAdmin } from '@/lib/auth';
 import { getSystemDirectus } from '@/lib/directus';
 import { updateItem, readUsers } from '@directus/sdk';
 import { USER_ID_FIELDS } from '@salvemundi/validations/directus/fields';
-import type {
-    CommitteeMember
-} from '@/server/queries/admin-commissies.queries';
-import {
-    getCommitteeMembers as getCommitteeMembersQuery
-} from '@/server/queries/admin-commissies.queries';
+import type { CommitteeMember } from '@/server/queries/admin-commissies.queries';
+import { getCommitteeMembers as getCommitteeMembersQuery } from '@/server/queries/admin-commissies.queries';
 import {
     updateCommitteeDetailsSchema,
     addCommitteeMemberSchema,
@@ -20,19 +15,22 @@ import {
     removeCommitteeMemberSchema
 } from '@salvemundi/validations';
 import { triggerUserSyncAction } from '@/server/actions/infrastructure/azure-sync/sync-tasks.actions';
+import { type EnrichedUser } from '@/types/auth';
+import { safeConsoleError } from '@/server/utils/logger';
+
+interface AzureErrorResponse {
+    details?: string;
+}
 
 const getAzureManagementUrl = () => process.env.AZURE_MANAGEMENT_SERVICE_URL;
 
 const serviceHeaders = (contentType = true) => {
     const token = process.env.INTERNAL_SERVICE_TOKEN;
     if (!token) throw new Error('INTERNAL_SERVICE_TOKEN is missing');
-    const h: Record<string, string> = { Authorization: `Bearer ${token}` };
-    if (contentType) h['Content-Type'] = 'application/json';
-    return h;
+    const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+    if (contentType) headers['Content-Type'] = 'application/json';
+    return headers;
 };
-
-import { type EnrichedUser } from '@/types/auth';
-import { safeConsoleError } from '@/server/utils/logger';
 
 async function checkAccess() {
     const session = await getEnrichedSession();
@@ -40,7 +38,7 @@ async function checkAccess() {
 
     const user = session.user as unknown as EnrichedUser;
     if (!isSuperAdmin(user.committees)) {
-        throw new Error('Geen toegang: SuperAdmin rechten vereist.');
+        throw new Error('Geen toegang: Beheerrechten vereist.');
     }
 
     return session;
@@ -66,8 +64,8 @@ export async function updateCommitteeDetails(
         revalidatePath(`/beheer/commissies/${committeeId}`);
         revalidatePath('/beheer/commissies');
         return { success: true };
-    } catch (error) {
-        safeConsoleError(`[AdminCommittees] Failed to update committee details for ${committeeId}:`, error);
+    } catch (error: unknown) {
+        safeConsoleError(`[admin-committees.actions.ts][updateCommitteeDetails] Failed to update committee details for ${committeeId}:`, error);
         return { success: false, error: 'Opslaan mislukt' };
     }
 }
@@ -88,19 +86,20 @@ export async function addCommitteeMember(
         fields: [...USER_ID_FIELDS],
         limit: 1
     }));
-    const user = users?.[0];
-    if (!user?.entra_id) {
+
+    const user = users[0] as { entra_id?: string | null } | undefined;
+    if (!user || !user.entra_id) {
         return { success: false, error: 'Gebruiker niet gevonden in het systeem (email onbekend of niet gesynchroniseerd)' };
     }
 
-    const azRes = await fetch(`${getAzureManagementUrl()}/api/groups/${encodeURIComponent(azureGroupId)}/members`, {
+    const azureResponse = await fetch(`${getAzureManagementUrl()}/api/groups/${encodeURIComponent(azureGroupId)}/members`, {
         method: 'POST',
         headers: serviceHeaders(),
         body: JSON.stringify({ userId: user.entra_id })
     });
-    if (!azRes.ok) {
-        const error = await azRes.json().catch(() => ({}));
-        safeConsoleError(`[AdminCommittees] Failed to add committee member ${userEmail}:`, error);
+    if (!azureResponse.ok) {
+        const azureError = await azureResponse.json().catch(() => ({})) as AzureErrorResponse;
+        safeConsoleError(`[admin-committees.actions.ts][addCommitteeMember] Failed to add committee member ${userEmail}:`, azureError);
         return { success: false, error: 'Bewerking in Azure mislukt. Probeer het later opnieuw.' };
     }
 
@@ -120,35 +119,32 @@ export async function removeCommitteeMember(
     }
     await checkAccess();
 
-    // 1. Remove from Owners if they were a leader
     if (isLeader) {
         await fetch(`${getAzureManagementUrl()}/api/groups/${encodeURIComponent(azureGroupId)}/owners/${encodeURIComponent(entraId)}`, {
             method: 'DELETE',
             headers: serviceHeaders(false)
-        }).then(async (r) => {
-            if (!r.ok) {
-                const body = await r.json().catch(() => ({}));
-                safeConsoleError(`[Azure] Failed to remove owner ${entraId} from ${azureGroupId}:`, body);
+        }).then(async (response) => {
+            if (!response.ok) {
+                const body = await response.json().catch(() => ({})) as AzureErrorResponse;
                 if (body.details?.includes('at least one owner')) {
-                    safeConsoleError(`[Azure] Could not remove last owner ${entraId} from ${azureGroupId}:`, {});
+                    safeConsoleError(`[admin-committees.actions.ts][removeCommitteeMember] Could not remove last owner ${entraId} from ${azureGroupId}:`, body);
                 } else {
-                    safeConsoleError(`[Azure] Failed to remove owner ${entraId} from ${azureGroupId}:`, body);
+                    safeConsoleError(`[admin-committees.actions.ts][removeCommitteeMember] Failed to remove owner ${entraId} from ${azureGroupId}:`, body);
                 }
             }
         }).catch((error: unknown) => {
-            safeConsoleError(`[Azure] Fetch error removing owner ${entraId}:`, error);
+            safeConsoleError(`[admin-committees.actions.ts][removeCommitteeMember] Fetch error removing owner ${entraId}:`, error);
         });
     }
 
-    // 2. Remove from Members
-    const azRes = await fetch(`${getAzureManagementUrl()}/api/groups/${encodeURIComponent(azureGroupId)}/members/${encodeURIComponent(entraId)}`, {
+    const azureResponse = await fetch(`${getAzureManagementUrl()}/api/groups/${encodeURIComponent(azureGroupId)}/members/${encodeURIComponent(entraId)}`, {
         method: 'DELETE',
         headers: serviceHeaders(false)
     });
 
-    if (!azRes.ok) {
-        const error = await azRes.json().catch(() => ({}));
-        safeConsoleError(`[Azure] Failed to remove member ${entraId} from ${azureGroupId}:`, error);
+    if (!azureResponse.ok) {
+        const memberError = await azureResponse.json().catch(() => ({})) as AzureErrorResponse;
+        safeConsoleError(`[admin-committees.actions.ts][removeCommitteeMember] Failed to remove member ${entraId} from ${azureGroupId}:`, memberError);
         return { success: false, error: 'Verwijderen uit Azure groep mislukt.' };
     }
 
@@ -172,8 +168,8 @@ export async function toggleCommitteeLeader(
     try {
         await getSystemDirectus().request(updateItem('committee_members', membershipId, { is_leader: !currentIsLeader }));
         revalidatePath('/beheer/commissies');
-    } catch (error) {
-        safeConsoleError(`[AdminCommittees] Failed to toggle leader for membership ${membershipId}:`, error);
+    } catch (error: unknown) {
+        safeConsoleError(`[admin-committees.actions.ts][toggleCommitteeLeader] Failed to toggle leader for membership ${membershipId}:`, error);
         return { success: false, error: 'Bijwerken mislukt' };
     }
 
@@ -186,16 +182,16 @@ export async function toggleCommitteeLeader(
             method,
             headers: serviceHeaders(method === 'POST'),
             body: currentIsLeader ? undefined : JSON.stringify({ userId: entraId })
-        }).then(async (r) => {
-            if (!r.ok) {
-                const body = await r.json().catch(() => ({}));
-                safeConsoleError(`[Azure] Failed to toggle leader in Azure for ${entraId}:`, body);
+        }).then(async (response) => {
+            if (!response.ok) {
+                const body = await response.json().catch(() => ({})) as AzureErrorResponse;
+                safeConsoleError(`[admin-committees.actions.ts][toggleCommitteeLeader] Failed to toggle leader in Azure for ${entraId}:`, body);
                 if (body.details?.includes('at least one owner')) {
-                    safeConsoleError(`[Azure] Could not remove last owner ${entraId} from ${azureGroupId}:`, {});
+                    safeConsoleError(`[admin-committees.actions.ts][toggleCommitteeLeader] Could not remove last owner ${entraId} from ${azureGroupId}:`, body);
                 }
             }
         }).catch((error: unknown) => {
-            safeConsoleError(`[Azure] Failed to toggle leader in Azure for ${entraId}:`, error);
+            safeConsoleError(`[admin-committees.actions.ts][toggleCommitteeLeader] Failed to toggle leader in Azure for ${entraId}:`, error);
         });
     }
 
@@ -203,4 +199,3 @@ export async function toggleCommitteeLeader(
 
     return { success: true };
 }
-

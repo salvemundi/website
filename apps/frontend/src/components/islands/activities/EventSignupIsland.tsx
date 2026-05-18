@@ -111,7 +111,7 @@ export default function EventSignupIsland({
                 isPaidStatus={isPaidStatus}
                 eventName={eventName}
                 qrToken={signupStatus.qrToken}
-                onRetry={handleRetry}
+                onRetry={() => { void handleRetry(); }}
                 serverError={serverError}
             />
         );
@@ -123,7 +123,7 @@ export default function EventSignupIsland({
 
     return (
         <SignupFormContent
-            onSubmit={onSubmit}
+            onSubmit={(data) => { void onSubmit(data); }}
             isPending={isPending}
             price={price}
             initialData={{

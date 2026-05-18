@@ -6,13 +6,30 @@ import crypto from 'node:crypto';
 import { DbTripSignup as TripSignup, DbTrip as Trip } from '@salvemundi/validations/directus/schema';
 
 interface TripPaymentRequest {
-    signupId: number;
-    tripId: number;
-    paymentType: 'deposit' | 'final';
+    signupId?: number;
+    tripId?: number;
+    paymentType?: 'deposit' | 'final';
     isConfirmedByUser?: boolean;
 }
 
+interface SignupActivityOption {
+    id?: string;
+    price?: number;
+}
+
+interface SignupActivityWithDetails {
+    id: number | null;
+    trip_activity_id?: {
+        id: number;
+        price?: number | null;
+        name?: string | null;
+        options?: SignupActivityOption[] | null;
+    } | null;
+    selected_options?: Record<string, boolean> | null;
+}
+
 export default async function tripRoutes(fastify: FastifyInstance) {
+    await Promise.resolve();
     /**
      * POST /api/finance/trip-payment-request
      * Handles both admin enrichment mail generation AND user payment creation.
@@ -25,8 +42,12 @@ export default async function tripRoutes(fastify: FastifyInstance) {
         }
 
         try {
-            const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL!;
-            const directusToken = process.env.DIRECTUS_STATIC_TOKEN!;
+            const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL || '';
+            const directusToken = process.env.DIRECTUS_STATIC_TOKEN || '';
+
+            if (!directusUrl || !directusToken) {
+                throw new Error('Directus configuration is missing');
+            }
 
             const directus = createDirectus(directusUrl)
                 .with(staticToken(directusToken))
@@ -39,7 +60,7 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                     filter: { trip_signup_id: { _eq: signupId } },
                     fields: ['id', 'trip_activity_id', 'selected_options', { trip_activity_id: ['id', 'price', 'name', 'options'] }] as never[]
                 }))
-            ]) as [Trip, any[]];
+            ]) as [Trip, SignupActivityWithDetails[]];
 
             // 2. Fetch Signup
             let signup: TripSignup;
@@ -47,14 +68,12 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                 signup = await directus.request(readItem('trip_signups', signupId, {
                     fields: [...TRIP_SIGNUP_FIELDS]
                 })) as TripSignup;
-            } catch (error: unknown) {
+            } catch {
                 // Gebruik 'error' direct voor logging indien nodig, maar hier is een 404 gepast.
                 return reply.status(404).send({ error: 'Signup not found' });
             }
 
-            if (!signup || !trip) {
-                return reply.status(404).send({ error: 'Trip or Signup not found' });
-            }
+
 
             // 3. Status checks
             if (paymentType === 'deposit' && signup.deposit_paid) {
@@ -77,7 +96,7 @@ export default async function tripRoutes(fastify: FastifyInstance) {
             const basePrice = Number(trip.base_price || 0);
             const crewDiscount = (signup.role === 'crew' ? Number(trip.crew_discount || 0) : 0);
 
-            const activitiesPrice = (signupActivities || []).reduce((sum, sa) => {
+            const activitiesPrice = signupActivities.reduce((sum, sa) => {
                 const activity = sa.trip_activity_id;
                 let price = Number(activity?.price || 0);
 
@@ -85,7 +104,7 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                 const availableOpts = activity?.options || [];
 
                 if (Array.isArray(availableOpts)) {
-                    availableOpts.forEach((opt: { id?: string; price?: number }) => {
+                    availableOpts.forEach((opt: SignupActivityOption) => {
                         if (opt.id && selectedOpts[opt.id]) {
                             price += Number(opt.price || 0);
                         }
@@ -193,20 +212,26 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                 }
             });
 
-            await fastify.db.query(
-                `INSERT INTO transactions (
-                    mollie_id, amount, payment_status, product_name, product_type,
-                    user_id, email, first_name, last_name, access_token, trip_signup,
-                    created_at, updated_at
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW())`,
-                [
-                    payment.id, amount, 'open', description, 'Reis',
-                    signup.directus_relations || null, signup.email, signup.first_name || '', signup.last_name || '',
-                    accessToken, signupId
-                ]
-            );
+            await fastify.db
+                .insertInto('transactions')
+                .values({
+                    mollie_id: payment.id,
+                    amount,
+                    payment_status: 'open',
+                    product_name: description,
+                    product_type: 'Reis',
+                    user_id: signup.directus_relations ? String(signup.directus_relations) : null,
+                    email: signup.email,
+                    first_name: signup.first_name || '',
+                    last_name: signup.last_name || '',
+                    access_token: accessToken,
+                    trip_signup: signupId,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                })
+                .execute();
 
-            return { success: true, checkoutUrl: payment._links?.checkout?.href };
+            return { success: true, checkoutUrl: payment._links.checkout?.href };
         } catch (error: unknown) {
             // Identifier 'error' behouden, herdeclaratie 'const error =' verwijderd.
             const message = error instanceof Error ? error.message : String(error);

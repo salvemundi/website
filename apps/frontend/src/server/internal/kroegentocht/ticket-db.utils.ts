@@ -1,3 +1,4 @@
+import 'server-only';
 import { query } from '@/lib/database';
 import { type QueryParam } from './types';
 
@@ -12,24 +13,23 @@ export async function createPubCrawlTicketsDb(signupId: number, tickets: { name:
             return `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, NOW())`;
         }).join(', ');
 
-        await query(
+        await query<never>(
             `INSERT INTO pub_crawl_tickets (signup_id, name, initial, qr_token, created_at)
              VALUES ${placeHolders}`,
             values
         );
-    } catch (error) {
+    } catch (error: unknown) {
         throw error;
     }
 }
 
 export async function deletePubCrawlTicketsBySignupIdDb(signupId: number): Promise<void> {
-    await query(`DELETE FROM pub_crawl_tickets WHERE signup_id = $1`, [signupId]);
+    await query<never>(`DELETE FROM pub_crawl_tickets WHERE signup_id = $1`, [signupId]);
 }
 
 export async function updatePubCrawlTicketDb(id: number, data: { name: string, initial: string }): Promise<void> {
-    await query(
+    await query<never>(
         `UPDATE pub_crawl_tickets SET name = $1, initial = $2 WHERE id = $3`,
         [data.name, data.initial, id]
     );
 }
-
