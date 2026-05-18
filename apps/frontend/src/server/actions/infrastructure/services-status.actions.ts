@@ -4,6 +4,8 @@ import { checkAdminAccess } from "@/server/actions/admin/admin-utils.actions";
 
 const AZURE_MGMT_URL = process.env.AZURE_MANAGEMENT_SERVICE_URL;
 const AZURE_SYNC_URL = process.env.AZURE_SYNC_SERVICE_URL;
+const FINANCE_URL = process.env.FINANCE_SERVICE_URL;
+const MAIL_URL = process.env.MAIL_SERVICE_URL;
 const NOTIFICATION_API_URL = process.env.NEXT_PUBLIC_NOTIFICATION_API_URL;
 const INTERNAL_TOKEN = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
 
@@ -95,6 +97,8 @@ export async function getServicesStatusAction(): Promise<ServiceStatus[]> {
         checkDirectus(),
         checkService('Azure Management', AZURE_MGMT_URL, true, '/health'),
         checkService('Azure Sync Service', AZURE_SYNC_URL, true, '/health'),
+        checkService('Finance Service', FINANCE_URL, true, '/health'),
+        checkService('Mail Service', MAIL_URL, true, '/health'),
         checkService('Notification API', NOTIFICATION_API_URL, false, '/health')
     ]);
 
