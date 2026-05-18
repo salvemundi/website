@@ -9,9 +9,8 @@ import {
 } from '@salvemundi/validations/schema/intro.zod';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { getSystemDirectus } from '@/lib/directus';
-import { readItems, createItem, updateItem } from '@directus/sdk';
+import { readItems, createItem } from '@directus/sdk';
 import { query } from '@/lib/database';
-import { insertSystemLogInternal } from '@/server/queries/audit.queries';
 import { revalidatePath } from 'next/cache';
 import { normalizeDate } from '@/lib/utils/date-utils';
 import { safeConsoleError } from '@/server/utils/logger';
@@ -84,30 +83,10 @@ async function checkParentSignupInternal(): Promise<{ exists: boolean; record?: 
             return { exists: true, record: signups[0] };
         }
 
-        const emailSignups = await getSystemDirectus().request(
-            readItems('intro_parent_signups', {
-                filter: { email: { _eq: session.user.email } },
-                fields: ['id', 'user_id', 'email'],
-                limit: 1
-            })
-        ) as unknown as ParentSignupRecord[];
-
-        if (emailSignups.length > 0 && emailSignups[0]) {
-            await insertSystemLogInternal({
-                type: 'system_intro_id_mismatch',
-                status: 'WARNING',
-                payload: {
-                    context: 'Parent Signup existence check detected email-only match (ID mismatch)',
-                    session_id_exists: true
-                }
-            });
-            return { exists: true, record: emailSignups[0] };
-        }
-
         return { exists: false };
     } catch (error: unknown) {
         safeConsoleError('[intro.actions.ts][checkParentSignupInternal] Directus check failed:', error);
-        return { exists: false };
+        throw error;
     }
 }
 
@@ -206,24 +185,6 @@ export async function submitIntroParentSignup(data: IntroParentSignupForm): Prom
 
     const check = await checkParentSignupInternal();
     if (check.exists && check.record) {
-        if (check.record.user_id !== session.user.id) {
-            try {
-                await insertSystemLogInternal({
-                    type: 'system_intro_id_mismatch',
-                    status: 'SUCCESS',
-                    payload: {
-                        context: 'Automatically linked email-only signup to current session ID',
-                        target_table: 'intro_parent_signups'
-                    }
-                });
-                await getSystemDirectus().request(updateItem('intro_parent_signups', check.record.id, {
-                    user_id: session.user.id
-                }));
-            } catch (error: unknown) {
-                safeConsoleError(`[intro.actions.ts][submitIntroParentSignup] Failed to fix User ID link:`, error);
-                return { success: false, error: 'Er is een fout opgetreden bij het verwerken van uw aanmelding' };
-            }
-        }
         return { success: true };
     }
 

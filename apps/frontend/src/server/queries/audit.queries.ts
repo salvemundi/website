@@ -171,6 +171,8 @@ export async function getIdNameLookupInternal(): Promise<Record<string, string>>
             SELECT 'event_' || id::text AS key, name FROM events
             UNION ALL
             SELECT 'trip_' || id::text AS key, name FROM trips
+            UNION ALL
+            SELECT 'user_' || id::text AS key, COALESCE(NULLIF(TRIM(COALESCE(first_name, '') || ' ' || COALESCE(last_name, '')), ''), email)::text AS name FROM directus_users
         `;
         const { rows } = await query(sql);
         const lookup: Record<string, string> = {};
