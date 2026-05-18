@@ -84,6 +84,8 @@ export default function LogsTab({
             lookupKey = `event_${valStr}`;
         } else if (key === 'trip_id' || (key === 'id' && context === 'reis')) {
             lookupKey = `trip_${valStr}`;
+        } else if (key === 'admin_id' || key === 'target_id' || key === 'user_id') {
+            lookupKey = `user_${valStr}`;
         }
 
         const mappedName = lookupMap.get(lookupKey);
@@ -166,21 +168,61 @@ export default function LogsTab({
                                             </div>
                                         </td>
                                         <td className="p-4">
-                                            {(log.payload && typeof log.payload === 'object' && 'context' in log.payload) ? (
-                                                <div className="flex flex-col">
-                                                    <span className="font-semibold text-[var(--beheer-text)] tracking-tight text-xs capitalize">
-                                                        {String(log.payload.context)}
-                                                    </span>
-                                                    {log.payload.context_name && (
-                                                        <span className="text-[10px] text-[var(--beheer-text-muted)] truncate max-w-[120px]" title={String(log.payload.context_name)}>
-                                                            {String(log.payload.context_name)}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            ) : <span className="text-[var(--beheer-text-muted)]">-</span>}
+                                            {(() => {
+                                                let context = '';
+                                                let contextName = '';
+
+                                                if (log.payload && typeof log.payload === 'object') {
+                                                    if ('context' in log.payload && log.payload.context) {
+                                                        context = String(log.payload.context);
+                                                    }
+                                                    if ('context_name' in log.payload && log.payload.context_name) {
+                                                        contextName = String(log.payload.context_name);
+                                                    }
+                                                }
+
+                                                // Fallback context mapping for impersonation logs
+                                                if (!context && (log.type === 'impersonation_active' || log.type === 'admin_impersonation_started' || log.type === 'admin_impersonation_ended')) {
+                                                    context = 'impersonatie';
+                                                    if (log.payload && typeof log.payload === 'object' && 'target_id' in log.payload) {
+                                                        const resolved = lookupMap.get(`user_${String(log.payload.target_id)}`);
+                                                        if (resolved) {
+                                                            contextName = resolved;
+                                                        }
+                                                    }
+                                                }
+
+                                                if (context) {
+                                                    return (
+                                                        <div className="flex flex-col">
+                                                            <span className="font-semibold text-[var(--beheer-text)] tracking-tight text-xs capitalize">
+                                                                {context}
+                                                            </span>
+                                                            {contextName && (
+                                                                <span className="text-[10px] text-[var(--beheer-text-muted)] truncate max-w-[120px]" title={contextName}>
+                                                                    {contextName}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                }
+
+                                                return <span className="text-[var(--beheer-text-muted)]">-</span>;
+                                            })()}
                                         </td>
                                         <td className="p-4 text-xs font-semibold text-[var(--beheer-text-muted)]">
-                                            {(log.payload && typeof log.payload === 'object' && 'admin_name' in log.payload) ? String(log.payload.admin_name) : 'Systeem'}
+                                            {(() => {
+                                                if (log.payload && typeof log.payload === 'object') {
+                                                    if ('admin_name' in log.payload && log.payload.admin_name) {
+                                                        return String(log.payload.admin_name);
+                                                    }
+                                                    if ('admin_id' in log.payload && log.payload.admin_id) {
+                                                        const resolved = lookupMap.get(`user_${String(log.payload.admin_id)}`);
+                                                        if (resolved) return resolved;
+                                                    }
+                                                }
+                                                return 'Systeem';
+                                            })()}
                                         </td>
                                         <td className="p-4">
                                             <div className="text-xs font-medium text-[var(--beheer-text-muted)] tracking-tight max-w-[280px] break-all">
