@@ -10,7 +10,7 @@ import {
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { unstable_cache as cacheTag } from 'next/cache';
 import { logAdminAction } from '@/server/actions/infrastructure/audit.actions'; 
-import { safeConsoleError, logInfo } from '@/server/utils/logger';
+import { safeConsoleError } from '@/server/utils/logger';
 
 import { getSystemDirectus } from '@/lib/directus';
 import { createItem, updateItem, deleteItem } from '@directus/sdk';
