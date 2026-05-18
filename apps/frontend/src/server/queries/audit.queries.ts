@@ -76,9 +76,28 @@ export async function getPendingSignupsInternal(): Promise<PendingSignup[]> {
 
 export async function getSystemLogsInternal(limit: number = 50, source: 'admin' | 'system' = 'admin'): Promise<{ logs: SystemLog[]; totalCount: number }> {
     try {
+        // Legacy and current admin-action types that may not have 'admin_' prefix but are executed by administrators.
+        const legacyAdminTypes = [
+            'impersonation_active',
+            'impersonation_started',
+            'impersonation_ended',
+            'signup_approved',
+            'signup_rejected',
+            'activity_created',
+            'activity_updated',
+            'activity_deleted',
+            'event_signup_manual_created',
+            'membership_renewed',
+            'member_profile_updated',
+            'settings_change',
+            'sticker_deleted'
+        ];
+
+        const legacyFilterList = legacyAdminTypes.map(t => `'${t}'`).join(', ');
+
         const filter = source === 'admin'
-            ? "WHERE type LIKE 'admin_%'"
-            : "WHERE type NOT LIKE 'admin_%'";
+            ? `WHERE type LIKE 'admin_%' OR type IN (${legacyFilterList})`
+            : `WHERE type NOT LIKE 'admin_%' AND type NOT IN (${legacyFilterList})`;
 
         const [logsResult, countResult] = await Promise.all([
             query(`SELECT * FROM system_logs ${filter} ORDER BY created_at DESC LIMIT $1`, [limit]),

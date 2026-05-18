@@ -17,10 +17,20 @@ interface LogsTabProps {
     title?: string;
     actions?: ReactNode;
     idNameLookup?: Record<string, string>;
+    defaultStatusFilter?: 'ALL' | 'SUCCESS' | 'ERROR' | 'WARNING' | 'INFO';
 }
 
-export default function LogsTab({ logs, totalCount, onRefresh, onLoadMore, title = "Activiteitslogboek", actions, idNameLookup = {} }: LogsTabProps) {
-    const [statusFilter, setStatusFilter] = useState<'ALL' | 'SUCCESS' | 'ERROR' | 'WARNING' | 'INFO'>('ERROR');
+export default function LogsTab({
+    logs,
+    totalCount,
+    onRefresh,
+    onLoadMore,
+    title = "Activiteitslogboek",
+    actions,
+    idNameLookup = {},
+    defaultStatusFilter = 'ALL'
+}: LogsTabProps) {
+    const [statusFilter, setStatusFilter] = useState<'ALL' | 'SUCCESS' | 'ERROR' | 'WARNING' | 'INFO'>(defaultStatusFilter);
     const [acknowledging, setAcknowledging] = useState<string | null>(null);
     const [expandedLogs, setExpandedLogs] = useState<Set<string>>(new Set());
     const { showToast } = useAdminToast();
