@@ -48,7 +48,7 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME}-finance
     image: ghcr.io/salvemundi/v7-finance:${IMAGE_TAG:-latest}
     ports:
-      - "${VPN_IP:-127.0.0.1}:3001:3001"
+      - "${VPN_IP:-127.0.0.1}:${FINANCE_PORT:-3001}:3001"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - MOLLIE_API_KEY=${MOLLIE_API_KEY}
@@ -82,7 +82,7 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME}-sync
     image: ghcr.io/salvemundi/v7-sync:${IMAGE_TAG:-latest}
     ports:
-      - "${VPN_IP:-127.0.0.1}:3002:3002"
+      - "${VPN_IP:-127.0.0.1}:${SYNC_PORT:-3002}:3002"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - AZURE_TENANT_ID=${AZURE_WEBSITEV7_TENANT_ID}
@@ -98,6 +98,8 @@ services:
       - DB_NAME=${DB_NAME}
       - DB_HOST=v7-core-db
       - DB_PORT=5432
+      - AZURE_ACTIVE_LID_GROUP_ID=${AZURE_ACTIVE_LID_GROUP_ID:-2e17c12a-28d6-49ae-981a-8b5b8d88db8a}
+      - AZURE_EXPIRED_LID_GROUP_ID=${AZURE_EXPIRED_LID_GROUP_ID:-98c1d807-613a-4a23-9618-3f8821d35fe9}
       - TZ=Europe/Amsterdam
     restart: always
     healthcheck:
@@ -118,7 +120,7 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME}-mail
     image: ghcr.io/salvemundi/v7-mail:${IMAGE_TAG:-latest}
     ports:
-      - "${VPN_IP:-127.0.0.1}:3003:3003"
+      - "${VPN_IP:-127.0.0.1}:${MAIL_PORT:-3003}:3003"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - AZURE_MAIL_CLIENT_ID=${AZURE_WEBSITEV7_MAIL_CLIENT_ID}
@@ -153,7 +155,7 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME}-management
     image: ghcr.io/salvemundi/v7-management:${IMAGE_TAG:-latest}
     ports:
-      - "${VPN_IP:-127.0.0.1}:3004:3004"
+      - "${VPN_IP:-127.0.0.1}:${MANAGEMENT_PORT:-3004}:3004"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - AZURE_WEBSITEV7_TENANT_ID=${AZURE_WEBSITEV7_TENANT_ID}
@@ -164,6 +166,8 @@ services:
       - AZURE_SYNC_SERVICE_URL=${AZURE_SYNC_SERVICE_URL}
       - MAIL_SERVICE_URL=${MAIL_SERVICE_URL}
       - REDIS_URL=${REDIS_URL}
+      - AZURE_ACTIVE_LID_GROUP_ID=${AZURE_ACTIVE_LID_GROUP_ID:-2e17c12a-28d6-49ae-981a-8b5b8d88db8a}
+      - AZURE_EXPIRED_LID_GROUP_ID=${AZURE_EXPIRED_LID_GROUP_ID:-98c1d807-613a-4a23-9618-3f8821d35fe9}
       - TZ=Europe/Amsterdam
     restart: always
     healthcheck:
