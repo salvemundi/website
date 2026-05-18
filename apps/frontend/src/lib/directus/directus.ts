@@ -4,11 +4,15 @@ import { type DirectusSchema } from '@salvemundi/validations/directus/schema';
 import { insertSystemLogInternal } from '@/server/queries/audit.queries';
 import { safeConsoleError } from '@/server/utils/logger';
 
-if (!process.env.DIRECTUS_SERVICE_URL || !process.env.DIRECTUS_STATIC_TOKEN) {
+const directusUrlEnv = process.env.DIRECTUS_SERVICE_URL || process.env.INTERNAL_DIRECTUS_URL;
+const directusTokenEnv = process.env.DIRECTUS_STATIC_TOKEN;
+
+if (!directusUrlEnv || !directusTokenEnv) {
     throw new Error('Missing DIRECTUS_SERVICE_URL or DIRECTUS_STATIC_TOKEN in environment variables');
 }
-const directusUrl = process.env.DIRECTUS_SERVICE_URL;
-const directusToken = process.env.DIRECTUS_STATIC_TOKEN;
+
+const directusUrl: string = directusUrlEnv;
+const directusToken: string = directusTokenEnv;
 
 export class DirectusError extends Error {
     constructor(
