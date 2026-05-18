@@ -10,7 +10,7 @@
     "check-lint": "eslint src",
     "type-check": "tsc --noEmit",
     "knip": "knip",
-    "validate": "pnpm type-check && pnpm lint && pnpm knip",
+    "validate": "pnpm type-check && pnpm lint && pnpm knip && pnpm build",
     "audit:security": "pnpm audit",
     "audit:duplication": "jscpd src",
     "audit:unused": "knip",
