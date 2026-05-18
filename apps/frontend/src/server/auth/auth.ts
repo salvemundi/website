@@ -13,8 +13,8 @@ export const auth = betterAuth({
         : [process.env.BETTER_AUTH_URL ?? ""],
     socialProviders: {
         microsoft: {
-            clientId: process.env.AZURE_WEBSITEV7_AUTH_CLIENT_ID ?? "",
-            clientSecret: process.env.AZURE_WEBSITEV7_AUTH_CLIENT_SECRET ?? "",
+            clientId: process.env.AZURE_WEBSITEV7_AUTH_CLIENT_ID || "placeholder-during-build",
+            clientSecret: process.env.AZURE_WEBSITEV7_AUTH_CLIENT_SECRET || "placeholder-during-build",
             tenantId: process.env.AZURE_WEBSITEV7_TENANT_ID ?? "",
             prompt: "select_account" } },
     user: {
