@@ -3,6 +3,7 @@ import { ImageResponse } from 'next/og';
 import { getActivityBySlug } from '@/server/actions/events/public-activiteit.actions';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
