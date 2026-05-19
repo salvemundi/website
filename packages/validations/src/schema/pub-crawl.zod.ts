@@ -76,3 +76,23 @@ export type PubCrawlParticipant = z.infer<typeof pubCrawlParticipantSchema>;
 export type PubCrawlSignup = z.infer<typeof pubCrawlSignupSchema>;
 export type PubCrawlSignupForm = z.infer<typeof pubCrawlSignupFormSchema>;
 export type PubCrawlTicket = z.infer<typeof pubCrawlTicketSchema>;
+
+/**
+ * Schema voor een verrijkte Kroegentocht Inschrijving (database-joined)
+ */
+export const enrichedPubCrawlSignupSchema = pubCrawlSignupSchema.extend({
+    pub_crawl_event_id: z.object({
+        id: z.union([z.string(), z.number()]),
+        name: z.string(),
+        date: z.string().optional().nullable(),
+        description: z.string().optional().nullable(),
+        image: z.string().optional().nullable(),
+    }),
+    tickets: z.array(pubCrawlTicketSchema).optional().nullable(),
+    amount_tickets: z.number(),
+    created_at: z.union([z.string(), z.date()]).optional().nullable(),
+    qr_token: z.string().optional().nullable(),
+});
+
+export type EnrichedPubCrawlSignup = z.infer<typeof enrichedPubCrawlSignupSchema>;
+

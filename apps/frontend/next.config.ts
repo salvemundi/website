@@ -17,6 +17,7 @@ const nextConfig: NextConfigWithServerActions = {
     serverActions: {
         bodySizeLimit: '50mb'
     },
+    turbopack: {},
     staticPageGenerationTimeout: 60,
     logging: false,
     images: {

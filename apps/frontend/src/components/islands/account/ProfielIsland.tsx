@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import { authClient } from '@/lib/auth';
 import { type EventSignup } from '@salvemundi/validations/schema/profiel.zod';
-import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
+import { type EnrichedPubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 
@@ -25,7 +25,7 @@ import ProfielSignups from './profile/ProfielSignups';
 
 interface ProfielIslandProps {
     initialSignups?: EventSignup[];
-    pubCrawlSignups?: PubCrawlSignup[];
+    pubCrawlSignups?: EnrichedPubCrawlSignup[];
     user?: SessionUser;
 }
 
