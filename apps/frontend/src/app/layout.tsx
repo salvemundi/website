@@ -97,7 +97,12 @@ export default async function RootLayout({
             <body className={`${poppins.variable} font-sans antialiased flex flex-col min-h-screen`}>
                 <ImpersonationWrapper impersonation={impersonation} />
                 <HeaderWrapper initialSession={session} isAuthorized={isAuthorized} />
-                <main className="flex-grow min-h-[100dvh] pt-[var(--header-total-height,var(--header-height,80px))]">
+                <main 
+                    className="flex-grow min-h-[100dvh]"
+                    style={{
+                        paddingTop: 'calc(var(--header-total-height, 80px) + env(safe-area-inset-top, 0px))'
+                    }}
+                >
                     <LazyMotion features={domMax} strict>{children}</LazyMotion>
                 </main>
                 <FooterWrapper initialSession={session} />
