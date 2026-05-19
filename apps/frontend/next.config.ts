@@ -12,6 +12,9 @@ const nextConfig: NextConfig = {
         serverSourceMaps: true,
         optimizePackageImports: ['lucide-react', 'date-fns', 'framer-motion', 'maplibre-gl']
     },
+    serverActions: {
+        bodySizeLimit: '10mb'
+    },
     staticPageGenerationTimeout: 60,
     logging: false,
     images: {
