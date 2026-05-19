@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import PaymentStatusIsland from '@/components/islands/activities/PaymentStatusIsland';
 import BackButton from '@/components/ui/navigation/BackButton';
 import { getPaymentStatusAction } from '@/server/actions/events/reis-payment.actions';
+import { KroegentochtWhatsAppPopup } from '@/components/islands/kroegentocht/KroegentochtWhatsAppPopup';
 
 
 interface PageProps {
@@ -64,6 +65,7 @@ export default async function KroegentochtConfirmationPage({ searchParams }: Pag
                     />
                 )}
             </div>
+            <KroegentochtWhatsAppPopup signupId={id ? Number(id) : undefined} token={token} />
         </div>
     );
 }

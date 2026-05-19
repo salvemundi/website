@@ -4,6 +4,7 @@ import { MailWorkerService } from './mail-worker.js';
 import { PaymentSuccessEventSchema, ActivitySignupEventSchema } from '@salvemundi/validations';
 import QRCode from 'qrcode';
 import { db } from './db.js';
+import { z } from 'zod';
 
 interface LocalPaymentSuccessEvent {
     userId?: string | null;
@@ -30,6 +31,10 @@ interface LocalActivitySignupEvent {
     qrToken?: string;
     accessToken?: string;
 }
+
+const pubCrawlWhatsAppUrlSchema = z.object({
+    whatsapp_community_url: z.string().url().nullable().optional()
+});
 
 /**
  * EventHandlers: Beheert de business logica voor verschillende soorten events 
@@ -156,6 +161,8 @@ export class EventHandlers {
             const signup = json.data;
             const tickets = await this.fetchPubCrawlTicketsDb(data.registrationId, signup?.amount_tickets || 1);
 
+            const whatsappCommunityUrl = await this.getPubCrawlWhatsAppLink(Number(data.registrationId));
+
             return {
                 name: signup?.name || 'Deelnemer',
                 firstName: (signup?.name || 'Deelnemer').split(' ')[0],
@@ -163,6 +170,7 @@ export class EventHandlers {
                 paymentId: data.paymentId,
                 signupId: data.registrationId,
                 eventName: signup?.pub_crawl_event_id?.name || 'Kroegentocht',
+                whatsappCommunityUrl,
                 tickets: await Promise.all(tickets.map(async (t) => ({
                     ...t,
                     qrDataUrl: t.qr_token ? await this.generateQrDataUrl(String(t.qr_token)) : ''
@@ -171,6 +179,27 @@ export class EventHandlers {
                 hasAccount: await this.checkUserHasAccount(url, token, data.email)
             };
         } catch (_error) { return null; }
+    }
+
+    public static async getPubCrawlWhatsAppLink(signupId: number): Promise<string | null> {
+        try {
+            const data = await db
+                .selectFrom('pub_crawl_signups as s')
+                .innerJoin('pub_crawl_events as e', 's.pub_crawl_event_id', 'e.id')
+                .select('e.whatsapp_community_url')
+                .where('s.id', '=', signupId)
+                .executeTakeFirst();
+
+            if (!data) {
+                return null;
+            }
+
+            const validated = pubCrawlWhatsAppUrlSchema.parse(data);
+            return validated.whatsapp_community_url ?? null;
+        } catch (error: unknown) {
+            safeConsoleError('[event-handlers.ts][getPubCrawlWhatsAppLink] Failed to fetch pub crawl event WhatsApp community link via Kysely', error);
+            throw error;
+        }
     }
 
     private static async enrichGenericEvent(mailData: Record<string, unknown>, data: LocalPaymentSuccessEvent, url: string, token: string) {

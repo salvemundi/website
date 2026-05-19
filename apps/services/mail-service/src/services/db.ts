@@ -5,6 +5,8 @@ import { type DirectusSchema } from '@salvemundi/validations';
 
 export interface Database {
     pub_crawl_tickets: DirectusSchema['pub_crawl_tickets'][number];
+    pub_crawl_signups: DirectusSchema['pub_crawl_signups'][number];
+    pub_crawl_events: DirectusSchema['pub_crawl_events'][number];
 }
 
 const pool = new Pool({

@@ -20,6 +20,28 @@
     </div>
     {{/each}}
 
+    {{#if whatsappCommunityUrl}}
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary" style="margin-top: 20px; margin-bottom: 20px; width: 100%;">
+      <tbody>
+        <tr>
+          <td align="center">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+              <tbody>
+                <tr>
+                  <td>
+                    <a href="{{whatsappCommunityUrl}}" target="_blank" style="background-color: #10b981; border: solid 1px #10b981; border-radius: 12px; color: #ffffff; display: inline-block; font-size: 14px; font-weight: 600; margin: 0; padding: 12px 24px; text-decoration: none;">
+                      Direct deelnemen aan WhatsApp Community
+                    </a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    {{/if}}
+
     {{#if hasAccount}}
     <p style="text-align: center;">
         <a href="https://salvemundi.nl/profiel/tickets" class="button">Bekijk Mijn Tickets Online</a>
