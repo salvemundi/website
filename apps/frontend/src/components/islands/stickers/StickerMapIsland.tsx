@@ -205,74 +205,73 @@ export default function StickerMapIsland({
             window.innerWidth < 768
         );
 
-        if (isMobile) {
-            cameraInputRef.current?.click();
-        } else {
-            setIsLocating(true);
+        // On mobile we no longer immediately open the camera. Instead open the
+        // add-sticker form and try to fill location automatically — adding a photo
+        // becomes optional via the form.
+        setIsLocating(true);
 
-            if (!(navigator as Partial<Navigator>).geolocation) {
-                showToast("Je browser ondersteunt geen geolocatie. We openen de handmatige kaartomgeving.", 'error');
-                setSelectedLocation(null);
-                setShowAddModal(true);
-                setIsLocating(false);
-                return;
-            }
+        if (!(navigator as Partial<Navigator>).geolocation) {
+            showToast("Je browser ondersteunt geen geolocatie. We openen de handmatige kaartomgeving.", 'error');
+            setSelectedLocation(null);
+            setShowAddModal(true);
+            setIsLocating(false);
+            return;
+        }
 
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    void (async () => {
-                        const { latitude, longitude } = position.coords;
-                        setSelectedLocation({ lat: latitude, lng: longitude });
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                void (async () => {
+                    const { latitude, longitude } = position.coords;
+                    setSelectedLocation({ lat: latitude, lng: longitude });
 
-                        let city = '';
-                        let country = '';
+                    let city = '';
+                    let country = '';
 
-                        try {
-                            const response = await fetch(
-                                `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=nl`,
-                                { headers: { 'User-Agent': 'SalveMundi-Website' } }
-                            );
-                            if (response.ok) {
-                                const geoData = (await response.json()) as NominatimResponse;
-                                const addr = geoData.address || {};
-                                city = addr.city || addr.town || addr.village || addr.suburb || '';
-                                country = addr.country || '';
-                            }
-                        } catch (_geoErr) {
+                    try {
+                        const response = await fetch(
+                            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=nl`,
+                            { headers: { 'User-Agent': 'SalveMundi-Website' } }
+                        );
+                        if (response.ok) {
+                            const geoData = (await response.json()) as NominatimResponse;
+                            const addr = geoData.address || {};
+                            city = addr.city || addr.town || addr.village || addr.suburb || '';
+                            country = addr.country || '';
                         }
-
-                        setFormData({
-                            location_name: city,
-                            description: '',
-                            city,
-                            country,
-                            image: null
-                        });
-                        setImagePreview(null);
-                        setShowAddModal(true);
-                        setIsLocating(false);
-                    })();
-                },
-                (error) => {
-                    let msg = "Kon je locatie niet bepalen. We openen de handmatige kaartomgeving.";
-                    if (error.code === 1) msg = "Locatie toegang geweigerd. We openen de handmatige kaartomgeving.";
-                    showToast(msg, 'error');
+                    } catch (_geoErr) {
+                    }
 
                     setFormData({
-                        location_name: '',
+                        location_name: city,
                         description: '',
-                        city: '',
-                        country: '',
+                        city,
+                        country,
                         image: null
                     });
                     setImagePreview(null);
-                    setSelectedLocation(null);
                     setShowAddModal(true);
                     setIsLocating(false);
-                },
-                { enableHighAccuracy: true, timeout: 10000 }
-            );
-        }
+                })();
+            },
+            (error) => {
+                let msg = "Kon je locatie niet bepalen. We openen de handmatige kaartomgeving.";
+                if (error.code === 1) msg = "Locatie toegang geweigerd. We openen de handmatige kaartomgeving.";
+                showToast(msg, 'error');
+
+                setFormData({
+                    location_name: '',
+                    description: '',
+                    city: '',
+                    country: '',
+                    image: null
+                });
+                setImagePreview(null);
+                setSelectedLocation(null);
+                setShowAddModal(true);
+                setIsLocating(false);
+            },
+            { enableHighAccuracy: true, timeout: 10000 }
+        );
     };
 
     const handleAutomatedFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
