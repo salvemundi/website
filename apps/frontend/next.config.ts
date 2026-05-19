@@ -15,7 +15,7 @@ const nextConfig: NextConfigWithServerActions = {
         optimizePackageImports: ['lucide-react', 'date-fns', 'framer-motion', 'maplibre-gl']
     },
     serverActions: {
-        bodySizeLimit: '10mb'
+        bodySizeLimit: '50mb'
     },
     staticPageGenerationTimeout: 60,
     logging: false,
