@@ -2,7 +2,9 @@ import type { NextConfig } from 'next';
 import withSerwistInit from '@serwist/next';
 import withBundleAnalyzer from '@next/bundle-analyzer';
 
-const nextConfig: NextConfig = {
+type NextConfigWithServerActions = NextConfig & { serverActions?: { bodySizeLimit?: string } };
+
+const nextConfig: NextConfigWithServerActions = {
     output: 'standalone',
     poweredByHeader: false,
     cacheComponents: false,
