@@ -2,9 +2,7 @@ import type { NextConfig } from 'next';
 import withSerwistInit from '@serwist/next';
 import withBundleAnalyzer from '@next/bundle-analyzer';
 
-type NextConfigWithServerActions = NextConfig & { serverActions?: { bodySizeLimit?: string } };
-
-const nextConfig: NextConfigWithServerActions = {
+const nextConfig: NextConfig = {
     output: 'standalone',
     poweredByHeader: false,
     cacheComponents: false,
@@ -12,10 +10,10 @@ const nextConfig: NextConfigWithServerActions = {
     serverExternalPackages: ['isomorphic-dompurify', 'jsdom'],
     experimental: {
         serverSourceMaps: true,
-        optimizePackageImports: ['lucide-react', 'date-fns', 'framer-motion', 'maplibre-gl']
-    },
-    serverActions: {
-        bodySizeLimit: '50mb'
+        optimizePackageImports: ['lucide-react', 'date-fns', 'framer-motion', 'maplibre-gl'],
+        serverActions: {
+            bodySizeLimit: '50mb'
+        }
     },
     turbopack: {},
     staticPageGenerationTimeout: 60,

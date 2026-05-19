@@ -1,26 +1,27 @@
 import { safeConsoleError, logInfo } from './utils/logger.js';
 import Fastify from 'fastify';
 import dotenv from 'dotenv';
+import redisPlugin from './plugins/redis.js';
+import syncRoutes from './routes/sync.js';
 
 dotenv.config();
 
 const fastify = Fastify({
-    logger: true
+    logger: true,
+    trustProxy: ['127.0.0.1', '10.0.0.0/8', '100.64.0.0/10']
 });
 
-// Import Plugins & Routes
-import redisPlugin from './plugins/redis.js';
-import syncRoutes from './routes/sync.js';
-
-// Register Plugins
 fastify.register(redisPlugin);
-
-// Register Routes
 fastify.register(syncRoutes, { prefix: '/api/sync' });
 
 fastify.get('/health', async () => {
     await Promise.resolve();
     return { status: 'ok', service: 'azure-sync-service' };
+});
+
+fastify.addHook('onClose', async () => {
+    const { db } = await import('./plugins/db.js');
+    await db.destroy();
 });
 
 const start = async () => {
@@ -29,28 +30,43 @@ const start = async () => {
         await fastify.listen({ port, host: '0.0.0.0' });
         logInfo(`Azure Sync Service listening on port ${port}`);
 
-        // Start the Provisioning Worker
+        fastify.redis.on('error', (err: unknown) => {
+            safeConsoleError('[server.ts][redisError]', err);
+        });
+
         const { ProvisionWorkerService } = await import('./services/provision-worker.js');
-        void ProvisionWorkerService.start(fastify.redis);
-
-        // Start the Event Listener
         const { EventListenerService } = await import('./services/event-listener.js');
-        void EventListenerService.start(fastify.redis);
-
-        // Start the Expiry Check Job
         const { ExpiryCheckJob } = await import('./services/expiry-check.job.js');
-        void ExpiryCheckJob.start(fastify.redis);
-
-        // Start the Event Reminder Job
         const { EventReminderJob } = await import('./services/event-reminder.job.js');
-        void EventReminderJob.start(fastify.redis);
-
-        // Start the Nightly Full Sync Job
         const { FullSyncJob } = await import('./services/full-sync.job.js');
-        void FullSyncJob.start(fastify.redis);
+
+        ProvisionWorkerService.start(fastify.redis).catch((error: unknown) => {
+            safeConsoleError('[server.ts][provisionWorker]', error);
+            process.exit(1);
+        });
+
+        EventListenerService.start(fastify.redis).catch((error: unknown) => {
+            safeConsoleError('[server.ts][eventListener]', error);
+            process.exit(1);
+        });
+
+        ExpiryCheckJob.start(fastify.redis).catch((error: unknown) => {
+            safeConsoleError('[server.ts][expiryCheckJob]', error);
+            process.exit(1);
+        });
+
+        EventReminderJob.start(fastify.redis).catch((error: unknown) => {
+            safeConsoleError('[server.ts][eventReminderJob]', error);
+            process.exit(1);
+        });
+
+        FullSyncJob.start(fastify.redis).catch((error: unknown) => {
+            safeConsoleError('[server.ts][fullSyncJob]', error);
+            process.exit(1);
+        });
+
     } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : String(error);
-        safeConsoleError('Azure Sync Service crashed:', message);
+        safeConsoleError('[server.ts][start]', error);
         process.exit(1);
     }
 };

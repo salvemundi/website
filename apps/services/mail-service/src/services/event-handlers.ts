@@ -82,8 +82,9 @@ export class EventHandlers {
             templateId = 'pub_crawl_ticket';
             const pubCrawlData = await this.preparePubCrawlTickets(data, directusUrl, directusToken);
             if (!pubCrawlData) {
-                templateId = 'welcome_payment';
+                templateId = 'payment_confirmed';
                 mailData.eventName = 'Kroegentocht';
+                mailData.registrationType = 'pub_crawl_signup';
             } else {
                 mailData = { ...mailData, ...pubCrawlData };
             }
@@ -178,7 +179,10 @@ export class EventHandlers {
                 totalTickets: tickets.length,
                 hasAccount: await this.checkUserHasAccount(url, token, data.email)
             };
-        } catch (_error) { return null; }
+        } catch (error) {
+            safeConsoleError('[event-handlers.ts][preparePubCrawlTickets] Error preparing pub crawl tickets:', error);
+            return null;
+        }
     }
 
     public static async getPubCrawlWhatsAppLink(signupId: number): Promise<string | null> {
