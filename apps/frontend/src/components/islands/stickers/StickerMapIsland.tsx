@@ -199,12 +199,6 @@ export default function StickerMapIsland({
             return;
         }
 
-        const isMobile = typeof window !== 'undefined' && (
-            /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
-            window.matchMedia("(pointer: coarse)").matches ||
-            window.innerWidth < 768
-        );
-
         // On mobile we no longer immediately open the camera. Instead open the
         // add-sticker form and try to fill location automatically — adding a photo
         // becomes optional via the form.
