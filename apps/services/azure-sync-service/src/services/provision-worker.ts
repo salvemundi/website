@@ -91,8 +91,18 @@ export class ProvisionWorkerService {
                     }
                 }
             } catch (error: unknown) {
-                const message = error instanceof Error ? error.message : String(error);
-                safeConsoleError('[ProvisionWorker] Loop Error:', message);
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                const isConnectionFailure = 
+                    errorMessage.includes('Connection is closed') || 
+                    errorMessage.includes('ECONNREFUSED') || 
+                    errorMessage.includes('ENOTFOUND');
+
+                if (isConnectionFailure) {
+                    safeConsoleError('[provision-worker.ts][start]', error);
+                    throw error;
+                }
+
+                safeConsoleError('[provision-worker.ts][start]', error);
                 await new Promise(resolve => setTimeout(resolve, 5000));
             }
         }

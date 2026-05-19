@@ -1,4 +1,4 @@
-import { safeConsoleError, safeConsoleLog } from '../utils/logger.js';
+import { safeConsoleError } from '../utils/logger.js';
 import { Redis } from 'ioredis';
 import { MailerService } from './mailer.js';
 import { AuditService } from './audit.js';
@@ -18,9 +18,6 @@ export class MailWorkerService {
     private static readonly QUEUE_KEY = 'mail_queue';
     private static shouldStop: boolean = false;
 
-    /**
-     * Queues an email for dispatch.
-     */
     static async queueMail(redis: Redis, to: string, templateId: string, data: Record<string, unknown>) {
         const task: MailTask = {
             to,
@@ -33,38 +30,32 @@ export class MailWorkerService {
         await redis.zadd(this.QUEUE_KEY, Date.now(), JSON.stringify(task));
     }
 
-    /**
-     * Starts the background worker loop.
-     */
-    static async startWorker(redis: Redis) {
-        safeConsoleLog('[MailWorker] Started background worker loop.');
-
+    static async startWorker(redis: Redis): Promise<void> {
         while (!this.shouldStop) {
             try {
-                // 1. Fetch tasks that are due (score <= now)
                 const now = Date.now();
                 const tasks = await redis.zrangebyscore(this.QUEUE_KEY, 0, now, 'LIMIT', 0, 5);
 
                 if (tasks.length === 0) {
-                    await new Promise(resolve => setTimeout(resolve, 5000)); // Sleep 5s if empty
+                    await new Promise(resolve => setTimeout(resolve, 5000));
                     continue;
                 }
 
                 for (const taskJson of tasks) {
-                    if (MailWorkerService['shouldStop']) break;
+                    if (this.shouldStop) break;
 
                     let parsedResult: unknown;
                     try {
                         parsedResult = JSON.parse(taskJson) as unknown;
                     } catch (err) {
-                        safeConsoleError('[MailWorker] Failed to parse raw JSON task. Removing corrupt entry.', err);
+                        safeConsoleError('[mail-worker.ts][startWorker]', err);
                         await redis.zrem(this.QUEUE_KEY, taskJson);
                         continue;
                     }
 
                     const validated = MailTaskSchema.safeParse(parsedResult);
                     if (!validated.success) {
-                        safeConsoleError('[MailWorker] Task validation failed. Removing corrupt entry.', validated.error.format());
+                        safeConsoleError('[mail-worker.ts][startWorker]', validated.error);
                         await redis.zrem(this.QUEUE_KEY, taskJson);
                         continue;
                     }
@@ -72,9 +63,6 @@ export class MailWorkerService {
                     const task = validated.data;
 
                     try {
-                        safeConsoleLog(`[MailWorker] Processing mail to ${task.to}...`);
-
-                        // 2. Attempt dispatch
                         const success = await MailerService.send(redis, task.to, task.templateId, task.data);
 
                         if (success) {
@@ -84,32 +72,34 @@ export class MailWorkerService {
                             throw new Error('MailerService returned false');
                         }
                     } catch (error: unknown) {
-                        const err = error instanceof Error ? error : new Error(String(error));
-                        safeConsoleError(`[MailWorker] Failed dispatch to ${task.to}:`, err.message);
+                        safeConsoleError('[mail-worker.ts][startWorker]', error);
 
-                        // 3. Handle Retry (Exponential Backoff with 60s base)
                         task.retries += 1;
                         if (task.retries >= task.maxRetries) {
-                            safeConsoleError(`[MailWorker] MAX RETRIES reached for ${task.to}. Removing task.`);
                             await redis.zrem(this.QUEUE_KEY, taskJson);
-                            await AuditService.logMail(task.to, task.templateId, 'FAILED', `Max retries reached: ${err.message}`);
+                            await AuditService.logMail(task.to, task.templateId, 'FAILED', `Max retries reached`);
                         } else {
-                            // Backoff: 1m, 4m, 9m, 16m... up to 50 retries which covers > 24 hours
-                            // Formula: 60s * retries^2. 
-                            // At retry 38, delay is ~24 hours.
                             const delay = 60000 * Math.pow(task.retries, 2);
                             const newScore = Date.now() + delay;
 
-                            // Remove old and add updated
                             await redis.zrem(this.QUEUE_KEY, taskJson);
                             await redis.zadd(this.QUEUE_KEY, newScore, JSON.stringify(task));
-
-                            safeConsoleLog(`[MailWorker] Retrying in ${delay / 1000}s (Attempt ${task.retries}).`);
                         }
                     }
                 }
-            } catch (error) {
-                safeConsoleError('[MailWorker] Loop Error:', error);
+            } catch (error: unknown) {
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                const isConnectionFailure = 
+                    errorMessage.includes('Connection is closed') || 
+                    errorMessage.includes('ECONNREFUSED') || 
+                    errorMessage.includes('ENOTFOUND');
+
+                if (isConnectionFailure) {
+                    safeConsoleError('[mail-worker.ts][startWorker]', error);
+                    throw error;
+                }
+
+                safeConsoleError('[mail-worker.ts][startWorker]', error);
                 await new Promise(resolve => setTimeout(resolve, 5000));
             }
         }
@@ -117,6 +107,5 @@ export class MailWorkerService {
 
     static stopWorker() {
         this.shouldStop = true;
-        safeConsoleLog('[MailWorker] Stop signal received.');
     }
 }

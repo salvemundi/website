@@ -1,25 +1,18 @@
 import { safeConsoleError } from './utils/logger.js';
 import Fastify from 'fastify';
-
-/**
- * Mail Service - Salve Mundi V7
- * Handles email rendering and dispatching via templates.
- */
+import mailRoutes from './routes/mail.routes.js';
+import redisPlugin from './plugins/redis.js';
+import rateLimit from '@fastify/rate-limit';
 
 const fastify = Fastify({
-    logger: true
+    logger: true,
+    trustProxy: ['127.0.0.1', '10.0.0.0/8', '100.64.0.0/10']
 });
 
 fastify.get('/health', async () => {
     await Promise.resolve();
     return { status: 'ok', service: 'mail-service' };
 });
-
-import mailRoutes from './routes/mail.routes.js';
-
-// Register Plugins
-import redisPlugin from './plugins/redis.js';
-import rateLimit from '@fastify/rate-limit';
 
 fastify.register(redisPlugin);
 
@@ -32,7 +25,7 @@ fastify.register(async (instance) => {
         keyGenerator: (request) => {
             return request.ip || 'global-mail-limit';
         },
-        errorResponseBuilder: (request, context) => {
+        errorResponseBuilder: (_request, context) => {
             return {
                 statusCode: 429,
                 error: 'Too Many Requests',
@@ -41,7 +34,6 @@ fastify.register(async (instance) => {
         }
     });
 
-    // Register Routes
     instance.register(mailRoutes, { prefix: '/api/mail' });
 });
 
@@ -53,17 +45,25 @@ fastify.addHook('onClose', async () => {
 const start = async () => {
     try {
         await fastify.listen({ port: 3003, host: '0.0.0.0' });
-        console.log('Mail Service listening on port 3003');
+        
+        fastify.redis.on('error', (err: unknown) => {
+            safeConsoleError('[server.ts][redisError]', err);
+        });
 
-        // Start the Mail Worker (background loop)
         const { MailWorkerService } = await import('./services/mail-worker.js');
-        void MailWorkerService.startWorker(fastify.redis);
+        MailWorkerService.startWorker(fastify.redis).catch((error: unknown) => {
+            safeConsoleError('[server.ts][startWorker]', error);
+            process.exit(1);
+        });
 
-        // Start the Event Listener
         const { EventListenerService } = await import('./services/event-listener.js');
-        void EventListenerService.start(fastify.redis);
+        EventListenerService.start(fastify.redis).catch((error: unknown) => {
+            safeConsoleError('[server.ts][startEventListener]', error);
+            process.exit(1);
+        });
+
     } catch (error) {
-        safeConsoleError('Mail Service crashed:', error);
+        safeConsoleError('[server.ts][start]', error);
         process.exit(1);
     }
 };

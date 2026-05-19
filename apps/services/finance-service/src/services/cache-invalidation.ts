@@ -99,9 +99,15 @@ export class CacheInvalidationService {
                 // Small pause to breathe between batches
                 await new Promise(resolve => setTimeout(resolve, 500));
             } catch (error: unknown) {
-                const err = error instanceof Error ? error : new Error(String(error));
-                safeConsoleError(`[CacheInvalidation] CRITICAL: Worker loop error: ${err.message}`);
-                // Wait longer if Redis or something fundamental is down
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                const isFatal = errorMessage.includes('ECONNREFUSED') || errorMessage.includes('Connection is closed') || errorMessage.includes('ENOTFOUND');
+
+                if (isFatal) {
+                    safeConsoleError('[cache-invalidation.ts][startWorker]', error);
+                    throw error;
+                }
+
+                safeConsoleError('[cache-invalidation.ts][startWorker]', error);
                 await new Promise(resolve => setTimeout(resolve, 5000));
             }
         }
