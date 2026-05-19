@@ -48,6 +48,87 @@ interface NominatimResponse {
     address?: NominatimAddress;
 }
 
+const MAX_STICKER_IMAGE_DIMENSION = 1600;
+const STICKER_IMAGE_QUALITY = 0.8;
+const STICKER_IMAGE_SIZE_THRESHOLD = 900 * 1024;
+
+async function readFileAsDataUrl(file: File): Promise<string> {
+    return await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = () => reject(new Error('Kon afbeeldingsvoorbeeld niet laden.'));
+        reader.readAsDataURL(file);
+    });
+}
+
+async function loadImageForCompression(file: File): Promise<{ width: number; height: number; cleanup: () => void; drawSource: CanvasImageSource }> {
+    if ('createImageBitmap' in window) {
+        const bitmap = await window.createImageBitmap(file);
+        return {
+            width: bitmap.width,
+            height: bitmap.height,
+            drawSource: bitmap,
+            cleanup: () => bitmap.close()
+        };
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    const image = new Image();
+    image.decoding = 'async';
+
+    await new Promise<void>((resolve, reject) => {
+        image.onload = () => resolve();
+        image.onerror = () => reject(new Error('Kon afbeelding niet laden voor compressie.'));
+        image.src = objectUrl;
+    });
+
+    return {
+        width: image.naturalWidth,
+        height: image.naturalHeight,
+        drawSource: image,
+        cleanup: () => URL.revokeObjectURL(objectUrl)
+    };
+}
+
+async function compressStickerImage(file: File): Promise<File> {
+    if (!file.type.startsWith('image/')) return file;
+    if (file.size <= STICKER_IMAGE_SIZE_THRESHOLD) return file;
+
+    try {
+        const image = await loadImageForCompression(file);
+        const scale = Math.min(1, MAX_STICKER_IMAGE_DIMENSION / Math.max(image.width, image.height));
+        const targetWidth = Math.max(1, Math.round(image.width * scale));
+        const targetHeight = Math.max(1, Math.round(image.height * scale));
+
+        const canvas = document.createElement('canvas');
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+
+        const context = canvas.getContext('2d');
+        if (!context) {
+            image.cleanup();
+            return file;
+        }
+
+        context.drawImage(image.drawSource, 0, 0, targetWidth, targetHeight);
+        image.cleanup();
+
+        const blob = await new Promise<Blob | null>((resolve) => {
+            canvas.toBlob(resolve, 'image/jpeg', STICKER_IMAGE_QUALITY);
+        });
+
+        if (!blob) return file;
+
+        const baseName = file.name.replace(/\.[^.]+$/, '') || 'sticker-photo';
+        return new File([blob], `${baseName}.jpg`, {
+            type: 'image/jpeg',
+            lastModified: Date.now()
+        });
+    } catch {
+        return file;
+    }
+}
+
 export default function StickerMapIsland({
     initialStickers,
     user,
@@ -78,6 +159,19 @@ export default function StickerMapIsland({
         image: null as File | null
     });
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+    const setStickerImage = async (file: File, overrides: Partial<typeof formData> = {}) => {
+        const compressedFile = await compressStickerImage(file);
+        const preview = await readFileAsDataUrl(compressedFile);
+
+        setFormData(prev => ({
+            ...prev,
+            ...overrides,
+            image: compressedFile
+        }));
+        setImagePreview(preview);
+        return compressedFile;
+    };
 
     useEffect(() => {
         document.body.style.overflow = (showMobileFilters || showMobileStats) ? 'hidden' : '';
@@ -185,15 +279,14 @@ export default function StickerMapIsland({
         const file = e.target.files?.[0];
         if (!file) return;
 
+        const compressedFile = await compressStickerImage(file);
+
         setIsLocating(true);
         showToast('Foto ontvangen! Locatie bepalen...', 'success');
 
         if (!(navigator as Partial<Navigator>).geolocation) {
             showToast("Je browser ondersteunt geen geolocatie. We openen de handmatige kaartomgeving.", 'error');
-            setFormData(prev => ({ ...prev, image: file }));
-            const reader = new FileReader();
-            reader.onloadend = () => setImagePreview(reader.result as string);
-            reader.readAsDataURL(file);
+            void setStickerImage(compressedFile);
             setSelectedLocation(null);
             setShowAddModal(true);
             setIsLocating(false);
@@ -227,7 +320,7 @@ export default function StickerMapIsland({
                         try {
                             showToast('Foto uploaden...', 'success');
                             const fileData = new FormData();
-                            fileData.append('file', file);
+                            fileData.append('file', compressedFile);
                             const uploadResult = await uploadFileAction(fileData);
                             
                             if (!uploadResult.success) {
@@ -282,16 +375,12 @@ export default function StickerMapIsland({
                                 showToast(errMsg, 'error');
                             }
                             
-                            setFormData({
+                            void setStickerImage(compressedFile, {
                                 location_name: city !== 'Onbekende Stad' ? city : '',
                                 description: '',
                                 city: city !== 'Onbekende Stad' ? city : '',
-                                country: country !== 'Onbekend Land' ? country : '',
-                                image: file
+                                country: country !== 'Onbekend Land' ? country : ''
                             });
-                            const reader = new FileReader();
-                            reader.onloadend = () => setImagePreview(reader.result as string);
-                            reader.readAsDataURL(file);
                             setSelectedLocation({ lat: latitude, lng: longitude });
                             setShowAddModal(true);
                         } finally {
@@ -305,15 +394,10 @@ export default function StickerMapIsland({
                 if (error.code === 1) msg = "Locatie toegang geweigerd. We openen de handmatige kaartomgeving.";
                 showToast(msg, 'error');
 
-                setFormData(prev => ({
-                    ...prev,
-                    image: file,
+                void setStickerImage(compressedFile, {
                     city: '',
                     country: ''
-                }));
-                const reader = new FileReader();
-                reader.onloadend = () => setImagePreview(reader.result as string);
-                reader.readAsDataURL(file);
+                });
                 setSelectedLocation(null);
                 setShowAddModal(true);
                 setIsLocating(false);
@@ -327,10 +411,7 @@ export default function StickerMapIsland({
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            setFormData(prev => ({ ...prev, image: file }));
-            const reader = new FileReader();
-            reader.onloadend = () => setImagePreview(reader.result as string);
-            reader.readAsDataURL(file);
+            void setStickerImage(file);
         }
     };
 
