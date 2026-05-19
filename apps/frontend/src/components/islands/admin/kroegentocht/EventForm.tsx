@@ -11,7 +11,8 @@ import {
     FileText,
     Mail,
     ImagePlus,
-    X
+    X,
+    MessageCircle
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -37,7 +38,8 @@ export default function EventForm({ event }: EventFormProps) {
         description: event?.description || '',
         date: toLocalISOString(event?.date) || '',
         email: event?.email || 'feest@salvemundi.nl',
-        image: event?.image || null
+        image: event?.image || null,
+        whatsapp_community_url: event?.whatsapp_community_url || ''
     });
     const [uploading, setUploading] = useState(false);
 
@@ -134,6 +136,19 @@ export default function EventForm({ event }: EventFormProps) {
                                             placeholder="Bijv. feest@salvemundi.nl"
                                         />
                                     </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-semibold text-[var(--text-muted)] ml-1 flex items-center gap-2">
+                                        <MessageCircle className="h-3 w-3" /> WhatsApp Community Link
+                                    </label>
+                                    <input
+                                        type="url"
+                                        value={formData.whatsapp_community_url}
+                                        onChange={(e) => setFormData({ ...formData, whatsapp_community_url: e.target.value })}
+                                        className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-semibold text-[var(--text-main)]"
+                                        placeholder="Bijv. https://chat.whatsapp.com/..."
+                                    />
                                 </div>
                             </div>
 

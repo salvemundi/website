@@ -51,9 +51,9 @@ export async function getPubCrawlEvent(id: string | number): Promise<PubCrawlEve
 
 export async function upsertPubCrawlEvent(data: Partial<PubCrawlEvent>) {
     await requireKroegAdmin();
-    const { id, name, description, date, email, image } = data;
+    const { id, name, description, date, email, image, whatsapp_community_url } = data;
 
-    const payload = { name, description, date, email, image };
+    const payload = { name, description, date, email, image, whatsapp_community_url };
 
     try {
         const client = getSystemDirectus();
