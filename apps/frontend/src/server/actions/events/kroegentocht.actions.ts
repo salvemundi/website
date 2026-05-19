@@ -314,8 +314,12 @@ export async function getKroegentochtWhatsAppLink(
                 `SELECT s.payment_status, e.whatsapp_community_url 
                  FROM pub_crawl_signups s
                  JOIN pub_crawl_events e ON s.pub_crawl_event_id = e.id
-                 JOIN transactions t ON t.pub_crawl_signup = s.id
-                 WHERE s.id = $1 AND t.access_token = $2 AND s.payment_status = 'paid'
+                 LEFT JOIN transactions t ON t.pub_crawl_signup = s.id
+                 LEFT JOIN pub_crawl_signups_transactions pst ON pst.pub_crawl_signups_id = s.id
+                 LEFT JOIN transactions t2 ON pst.transactions_id = t2.id
+                 WHERE s.id = $1 
+                   AND (t.access_token = $2 OR t.mollie_id = $2 OR t2.access_token = $2 OR t2.mollie_id = $2) 
+                   AND s.payment_status = 'paid'
                  LIMIT 1`,
                 [signupId, token]
             );
