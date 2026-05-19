@@ -347,6 +347,7 @@ export interface DbPubCrawlEvent {
     // Ephemeral fields hardcoded in frontend per user request
     price?: number;
     max_tickets_per_person?: number;
+    whatsapp_community_url?: string | null;
 }
 
 export interface DbPubCrawlSignup {

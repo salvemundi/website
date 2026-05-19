@@ -14,6 +14,7 @@ export const pubCrawlEventSchema = z.object({
     disabled_message: z.string().nullable().optional(),
     price: z.number().optional().default(1),
     max_tickets_per_person: z.number().optional().default(10),
+    whatsapp_community_url: z.string().url().nullable().optional(),
 });
 
 /**
@@ -87,6 +88,7 @@ export const enrichedPubCrawlSignupSchema = pubCrawlSignupSchema.extend({
         date: z.string().optional().nullable(),
         description: z.string().optional().nullable(),
         image: z.string().optional().nullable(),
+        whatsapp_community_url: z.string().url().nullable().optional(),
     }),
     tickets: z.array(pubCrawlTicketSchema).optional().nullable(),
     amount_tickets: z.number(),

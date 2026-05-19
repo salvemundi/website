@@ -6,6 +6,7 @@ import {
     pubCrawlTicketSchema,
     pubCrawlSignupSchema
 } from '@salvemundi/validations/schema/pub-crawl.zod';
+import { z } from 'zod';
 
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { unstable_cache as cacheTag } from 'next/cache';
@@ -266,5 +267,73 @@ export async function initiateKroegentochtPayment(formData: unknown) {
     } catch (error: unknown) {
         safeConsoleError('[Kroegentocht-Action][initiateKroegentochtPayment] Failed to initiate payment:', error);
         return { success: false, error: 'An internal error occurred.' };
+    }
+}
+
+export async function getKroegentochtWhatsAppLink(
+    signupId?: number,
+    token?: string
+): Promise<{ success: boolean; url: string | null; error?: string }> {
+    try {
+        const whatsAppUrlResponseSchema = z.object({
+            whatsapp_community_url: z.string().url().nullable().optional()
+        });
+
+        const session = await getEnrichedSession();
+        if (session?.user.id) {
+            const activeEvent = await query<{ id: number }>(
+                `SELECT id FROM pub_crawl_events ORDER BY date DESC LIMIT 1`
+            );
+
+            if (activeEvent.rows.length > 0) {
+                const eventId = activeEvent.rows[0].id;
+
+                const registration = await query<{ payment_status: string; whatsapp_community_url: string | null }>(
+                    `SELECT s.payment_status, e.whatsapp_community_url 
+                     FROM pub_crawl_signups s
+                     JOIN pub_crawl_events e ON s.pub_crawl_event_id = e.id
+                     WHERE s.directus_relations = $1 AND s.pub_crawl_event_id = $2 AND s.payment_status = 'paid'
+                     LIMIT 1`,
+                    [session.user.id, eventId]
+                );
+
+                if (registration.rows.length > 0) {
+                    const validatedData = whatsAppUrlResponseSchema.parse({
+                        whatsapp_community_url: registration.rows[0].whatsapp_community_url
+                    });
+                    return {
+                        success: true,
+                        url: validatedData.whatsapp_community_url ?? null
+                    };
+                }
+            }
+        }
+
+        if (signupId && token) {
+            const guestCheck = await query<{ payment_status: string; whatsapp_community_url: string | null }>(
+                `SELECT s.payment_status, e.whatsapp_community_url 
+                 FROM pub_crawl_signups s
+                 JOIN pub_crawl_events e ON s.pub_crawl_event_id = e.id
+                 JOIN transactions t ON t.pub_crawl_signup = s.id
+                 WHERE s.id = $1 AND t.access_token = $2 AND s.payment_status = 'paid'
+                 LIMIT 1`,
+                [signupId, token]
+            );
+
+            if (guestCheck.rows.length > 0) {
+                const validatedData = whatsAppUrlResponseSchema.parse({
+                    whatsapp_community_url: guestCheck.rows[0].whatsapp_community_url
+                });
+                return {
+                    success: true,
+                    url: validatedData.whatsapp_community_url ?? null
+                };
+            }
+        }
+
+        return { success: false, url: null, error: 'NO_PAID_REGISTRATION' };
+    } catch (error: unknown) {
+        safeConsoleError('[kroegentocht.actions.ts][getKroegentochtWhatsAppLink] Failed to securely check registration or fetch community link', error);
+        return { success: false, url: null, error: 'INTERNAL_SERVER_ERROR' };
     }
 }
