@@ -118,7 +118,8 @@ export async function fetchUserPubCrawlSignupsDb(email: string): Promise<Enriche
                 image: row.event_image ?? undefined
             }
         })) as unknown as EnrichedPubCrawlSignup[];
-    } catch (_error: unknown) {
+    } catch (error: unknown) {
+        safeConsoleError('[signup-db.utils.ts][fetchUserPubCrawlSignupsDb] Failed to fetch user pub crawl signups:', error);
         return [];
     }
 }

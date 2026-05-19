@@ -8,7 +8,10 @@ import {
     transactionSchema,
     whatsappGroupSchema
 } from '@salvemundi/validations/schema/profiel.zod';
-import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
+import {
+    enrichedPubCrawlSignupSchema,
+    type EnrichedPubCrawlSignup
+} from '@salvemundi/validations/schema/pub-crawl.zod';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { query } from '@/lib/database';
 import { fetchUserEventSignupsDb } from '@/server/internal/event-db.utils';
@@ -35,7 +38,7 @@ interface DbWhatsAppGroupRow {
     is_active: boolean;
 }
 
-function safeParseArray<T>(schema: z.ZodType<T>, data: unknown[], context: string): T[] {
+function safeParseArray<T>(schema: z.ZodType<T, z.ZodTypeDef, unknown>, data: unknown[], context: string): T[] {
     const parsed = schema.array().safeParse(data);
     if (parsed.success) return parsed.data;
 
@@ -65,14 +68,15 @@ export async function getUserEventSignups(): Promise<EventSignup[]> {
     return safeParseArray(eventSignupSchema, validRegistrations, 'ProfielActions:EventSignups');
 }
 
-export async function getUserPubCrawlSignups(): Promise<PubCrawlSignup[]> {
+export async function getUserPubCrawlSignups(): Promise<EnrichedPubCrawlSignup[]> {
     const session = await getEnrichedSession();
     const user = session?.user;
 
     const email = user?.email;
     if (!email) return [];
 
-    return await fetchUserPubCrawlSignupsDb(email);
+    const signups = await fetchUserPubCrawlSignupsDb(email);
+    return safeParseArray<EnrichedPubCrawlSignup>(enrichedPubCrawlSignupSchema, signups, 'ProfielActions:PubCrawlSignups');
 }
 
 export async function getUserTransactions(): Promise<Transaction[]> {

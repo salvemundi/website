@@ -9,9 +9,9 @@ import { Tile } from './ProfielUI';
 import { slugify } from '@/shared/lib/utils/slug';
 
 import { type EventSignup } from '@salvemundi/validations/schema/profiel.zod';
-import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
+import { type EnrichedPubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 
-type EnrichedSignup = (EventSignup & { _type: 'event' }) | (PubCrawlSignup & { _type: 'pub_crawl' });
+type EnrichedSignup = (EventSignup & { _type: 'event' }) | (EnrichedPubCrawlSignup & { _type: 'pub_crawl' });
 
 interface ProfielSignupsProps {
     filteredSignups?: EnrichedSignup[];
@@ -68,8 +68,6 @@ export default function ProfielSignups({
                         const eventDateStr = isEvent ? eventData.event_date : eventData.date;
                         const detailHref = isEvent ? `/activiteiten/${slugify(eventData.name)}` : `/kroegentocht`;
                         const icon = isEvent ? <Calendar className="h-7 w-7" /> : <CreditCard className="h-7 w-7" />;
-
-                        if (!eventData) return null;
 
                         const isPast = (() => {
                             try {

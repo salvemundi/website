@@ -1,21 +1,8 @@
 import {
-    type PubCrawlSignup,
-    type PubCrawlTicket
+    type EnrichedPubCrawlSignup
 } from '@salvemundi/validations/schema/pub-crawl.zod';
 
-export type EnrichedPubCrawlSignup = PubCrawlSignup & {
-    pub_crawl_event_id: {
-        id: string | number;
-        name: string;
-        date?: string;
-        description?: string;
-        image?: string;
-    };
-    tickets?: PubCrawlTicket[];
-    amount_tickets: number;
-    created_at?: string | Date;
-    qr_token?: string | null;
-};
+export { type EnrichedPubCrawlSignup };
 
 // --- Database Row Interfaces to enforce 'No ANY' ---
 export interface DbPubCrawlEventRow {

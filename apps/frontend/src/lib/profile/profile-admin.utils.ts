@@ -1,6 +1,6 @@
 import { startOfDay, isBefore } from 'date-fns';
 import { type EventSignup } from '@salvemundi/validations/schema/profiel.zod';
-import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
+import { type EnrichedPubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 
 interface LocalEventSignup {
     event_id?: { event_date?: string | null } | null;
@@ -38,9 +38,6 @@ export type SessionUser = {
     entra_id?: string | null;
 };
 
-/**
- * Merges client session user with enriched server data.
- */
 export function mergeUserData(sUser: SessionUser | null | undefined, initialUser: SessionUser): SessionUser {
     // NUCLEAR SSR: Start with server-provided enriched user if no session
     if (!sUser) return initialUser;
@@ -69,9 +66,6 @@ export function mergeUserData(sUser: SessionUser | null | undefined, initialUser
     return mergedUser;
 }
 
-/**
- * Calculates membership status text and style tokens.
- */
 export function calculateMembershipStatus(user: SessionUser) {
     const isCommitteeMember = Array.isArray(user.committees) && user.committees.length > 0;
     const isLeader = !!user.isLeader;
@@ -112,40 +106,54 @@ export function calculateMembershipStatus(user: SessionUser) {
     return { text: `${role} • ${statusText}`, color, textColor };
 }
 
-/**
- * Filters and merges event and pub crawl signups.
- */
 export function filterProfileSignups(
     eventSignups: EventSignup[], 
-    pubCrawlSignups: PubCrawlSignup[], 
+    pubCrawlSignups: EnrichedPubCrawlSignup[], 
     showPastEvents: boolean
 ) {
     const todayStart = startOfDay(new Date());
     
-    const allSignups = [
+    let allSignups = [
         ...eventSignups.map(s => ({ ...s, _type: 'event' as const })),
         ...pubCrawlSignups.map(s => ({ ...s, _type: 'pub_crawl' as const }))
     ];
 
-    if (showPastEvents) return allSignups;
-
-    return allSignups.filter((s) => {
-        try {
-            let eventDate: Date;
-            if (s._type === 'event') {
-                const es = s as unknown as LocalEventSignup;
-                const eventId = es.event_id;
-                if (!eventId?.event_date) return true;
-                eventDate = startOfDay(new Date(eventId.event_date));
-            } else {
-                const ps = s as unknown as LocalPubCrawlSignup;
-                const eventData = ps.pub_crawl_event_id;
-                if (!eventData?.date) return true;
-                eventDate = startOfDay(new Date(eventData.date));
+    if (!showPastEvents) {
+        allSignups = allSignups.filter((s) => {
+            try {
+                let eventDate: Date;
+                if (s._type === 'event') {
+                    const es = s as unknown as LocalEventSignup;
+                    const eventId = es.event_id;
+                    if (!eventId?.event_date) return true;
+                    eventDate = startOfDay(new Date(eventId.event_date));
+                } else {
+                    const ps = s as unknown as LocalPubCrawlSignup;
+                    const eventData = ps.pub_crawl_event_id;
+                    if (!eventData?.date) return true;
+                    eventDate = startOfDay(new Date(eventData.date));
+                }
+                return !isBefore(eventDate, todayStart);
+            } catch {
+                return true;
             }
-            return !isBefore(eventDate, todayStart);
-        } catch {
-            return true;
+        });
+    }
+
+    const getEventDate = (s: typeof allSignups[number]) => {
+        if (s._type === 'event') {
+            return (s as unknown as LocalEventSignup).event_id?.event_date;
+        } else {
+            return (s as unknown as LocalPubCrawlSignup).pub_crawl_event_id?.date;
         }
+    };
+
+    return allSignups.sort((a, b) => {
+        const dateA = getEventDate(a);
+        const dateB = getEventDate(b);
+        if (!dateA && !dateB) return 0;
+        if (!dateA) return 1;
+        if (!dateB) return -1;
+        return new Date(dateB).getTime() - new Date(dateA).getTime();
     });
 }
