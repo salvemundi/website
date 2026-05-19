@@ -276,7 +276,11 @@ export default function StickerMapIsland({
                             showToast('Sticker succesvol geplaatst! 🎨📍', 'success');
                         } catch (err: unknown) {
                             const errMsg = err instanceof Error ? err.message : 'Fout bij automatisch plaatsen.';
-                            showToast(errMsg, 'error');
+                            if (typeof errMsg === 'string' && errMsg.includes('Failed to find Server Action')) {
+                                showToast('Serveractie niet gevonden — herlaad de pagina en probeer opnieuw (mogelijke verouderde deployment).', 'error');
+                            } else {
+                                showToast(errMsg, 'error');
+                            }
                             
                             setFormData({
                                 location_name: city !== 'Onbekende Stad' ? city : '',
@@ -394,7 +398,11 @@ export default function StickerMapIsland({
                 showToast('Sticker succesvol toegevoegd! 🎨', 'success');
             } catch (error: unknown) {
                 const errMsg = error instanceof Error ? error.message : String(error);
-                showToast('Fout bij toevoegen: ' + errMsg, 'error');
+                if (typeof errMsg === 'string' && errMsg.includes('Failed to find Server Action')) {
+                    showToast('Serveractie niet gevonden — herlaad de pagina en probeer opnieuw (mogelijke verouderde deployment).', 'error');
+                } else {
+                    showToast('Fout bij toevoegen: ' + errMsg, 'error');
+                }
             }
         });
     };
