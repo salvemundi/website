@@ -23,7 +23,7 @@ export const EVENT_ADMIN_FIELDS = [
 export const EVENT_ID_FIELDS = ['id'] as const;
 
 export const PUB_CRAWL_EVENT_FIELDS = [
-    'id', 'name', 'date', 'description', 'image', 'email'
+    'id', 'name', 'date', 'description', 'image', 'email', 'whatsapp_community_url'
 ] as const;
 
 export const PUB_CRAWL_SIGNUP_FIELDS = [
