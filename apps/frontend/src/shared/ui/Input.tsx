@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useFormField } from './FormField';
+import { useFormFieldOptional } from './FormField';
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     error?: boolean;
@@ -15,7 +15,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(({
     id,
     ...props
 }, ref) => {
-    const { inputId: contextId } = useFormField();
+    const contextId = useFormFieldOptional()?.inputId;
     const inputId = id ?? contextId;
 
     return (
