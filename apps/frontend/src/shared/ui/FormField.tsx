@@ -16,6 +16,10 @@ export const useFormField = (): FormFieldContextValue => {
     return ctx;
 };
 
+export const useFormFieldOptional = (): FormFieldContextValue | undefined => {
+    return useContext(FormFieldContext);
+};
+
 interface ChildProps {
     id?: string;
     children?: React.ReactNode;
