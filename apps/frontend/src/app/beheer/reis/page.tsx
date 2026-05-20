@@ -4,13 +4,11 @@ import { Mail, Settings2, Plane, LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-// V7 Imports
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import AdminTripSwitcher from '@/components/ui/admin/AdminTripSwitcher';
 import AdminReisTableIsland from '@/components/islands/admin/AdminReisTableIsland';
 import ReisVisibilityToggle from '@/components/islands/admin/reis/ReisVisibilityToggle';
 
-// Server Actions & Queries
 import { getReisSiteSettings } from '@/server/actions/events/reis.actions';
 import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
 import { getAdminTrips, getAdminTripById } from '@/server/actions/admin/reis-core.actions';
@@ -18,11 +16,10 @@ import { getTripSignups, getTripSignupActivitiesAction } from '@/server/actions/
 import { getTripActivities } from '@/server/queries/admin-reis.queries';
 import { groupActivitiesBySignup } from '@/server/utils/reis-mapping';
 
-// Validations
-import { 
-    tripSchema, 
-    tripSignupSchema, 
-    tripSignupActivitySchema, 
+import {
+    tripSchema,
+    tripSignupSchema,
+    tripSignupActivitySchema,
     tripActivitySchema
 } from '@salvemundi/validations';
 
@@ -50,7 +47,6 @@ export async function generateMetadata({ searchParams }: AdminReisPageProps): Pr
 }
 
 export default async function AdminReisPage({ searchParams }: AdminReisPageProps) {
-    // 1. Authorization check
     try {
         await checkAdminAccess();
     } catch (e: unknown) {
@@ -61,7 +57,6 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
     const resolvedSearchParams = await searchParams;
     const tripIdParam = typeof resolvedSearchParams.tripId === 'string' ? resolvedSearchParams.tripId : undefined;
 
-    // 2. Fetch baseline data (Trips & Settings) - Static/Immediate via Server Components
     const [tripsRes, settingsRes] = await Promise.all([
         getAdminTrips(),
         getReisSiteSettings()
@@ -113,11 +108,9 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
     return (
         <AdminPageShell
             title={activeTrip.name}
-            subtitle="Beheer alle deelnemers en logistiek voor deze trip"
             backHref="/beheer"
             actions={
                 <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
-                    {/* Stats Bar - V7 Standard: No uppercase, font-semibold, natural case */}
                     <div className="hidden xl:flex items-center gap-4 bg-[var(--beheer-card-bg)] px-5 py-2.5 rounded-2xl border border-[var(--beheer-border)] shadow-sm">
                         <StatItem label="Aanmeldingen" value={stats.total} color="text-[var(--beheer-text)]" />
                         <Divider />
@@ -131,9 +124,9 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <AdminTripSwitcher 
-                            trips={trips} 
-                            activeTripId={activeTripId as number} 
+                        <AdminTripSwitcher
+                            trips={trips}
+                            activeTripId={activeTripId as number}
                         />
 
                         <div className="flex items-center gap-1.5">
@@ -152,7 +145,7 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
                                 <span className="hidden sm:inline">Instellingen</span>
                             </Link>
                         </div>
-                        
+
                         <ReisVisibilityToggle initialVisible={_reisSettings.show} />
                     </div>
                 </div>

@@ -16,6 +16,7 @@ export default function ImpersonationBanner({ targetName, adminName, committees 
     const handleStop = () => {
         startTransition(async () => {
             await clearImpersonateToken();
+            window.location.reload();
         });
     };
 
