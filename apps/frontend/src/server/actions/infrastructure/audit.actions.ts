@@ -60,6 +60,10 @@ export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' |
 
         const safePayload = sanitizePayload(payload as { [key: string]: unknown });
         const user = session.user as unknown as EnrichedUser;
+        const impersonatedBy = (session as { impersonatedBy?: { id: string; name: string } }).impersonatedBy;
+
+        const adminId = impersonatedBy?.id || user.id;
+        const adminName = impersonatedBy?.name || `${user.first_name || ''} ${user.last_name || ''}`.trim();
 
         const payloadStr = JSON.stringify(safePayload);
         if (payloadStr.length > 15000) {
@@ -72,8 +76,8 @@ export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' |
             status,
             payload: {
                 ...(safePayload as { [key: string]: unknown }),
-                admin_id: user.id,
-                admin_name: `${user.first_name || ''} ${user.last_name || ''}`.trim(),
+                admin_id: adminId,
+                admin_name: adminName,
                 timestamp: new Date().toISOString()
             }
         });
