@@ -34,7 +34,7 @@ export function ObfuscatedEmail({ email, showIcon = true, className = "" }: Obfu
 
     return (
         <a
-            href={isMounted ? `mailto:${user}@${domain}` : `#`}
+            href={isMounted ? `mailto:${user}@${domain}` : undefined}
             onClick={handleMailClick}
             className={`inline-flex items-center gap-2 hover:text-[var(--color-purple-500)] transition-colors cursor-pointer ${className}`}
             title="Klik om te e-mailen"
@@ -46,9 +46,9 @@ export function ObfuscatedEmail({ email, showIcon = true, className = "" }: Obfu
             */}
             <span className="font-semibold inline-flex items-center">
                 <span>{user}</span>
-                <span className="hidden"> [anti-spam] </span>
+                <span className="hidden" aria-hidden="true"> [anti-spam] </span>
                 <span>@</span>
-                <span className="hidden"> [verwijder-dit] </span>
+                <span className="hidden" aria-hidden="true"> [verwijder-dit] </span>
                 <span>{domain}</span>
             </span>
         </a>

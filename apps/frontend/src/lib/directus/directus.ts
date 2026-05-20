@@ -167,7 +167,7 @@ export function getSystemDirectus() {
 
                     if (error.name === 'TimeoutError' || error.name === 'AbortError' || error.message.includes('timeout')) {
                         const timeoutError = new DirectusError(
-                            `Service timeout (15s) for ${urlStr}. The service might be under heavy load or unreachable via VPN.`,
+                            `Service timeout (8s) for ${urlStr}. The service might be under heavy load or unreachable via VPN.`,
                             504,
                             'TIMEOUT',
                             urlStr

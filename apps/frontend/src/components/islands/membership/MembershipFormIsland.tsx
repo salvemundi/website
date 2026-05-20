@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useTransition } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FormField } from '@/shared/ui/FormField';
@@ -41,6 +41,10 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
     });
 
     const couponValue = watch('coupon');
+
+    useEffect(() => {
+        setCouponStatus(null);
+    }, [couponValue]);
 
     const handleCouponCheck = async () => {
         if (!couponValue) return;
