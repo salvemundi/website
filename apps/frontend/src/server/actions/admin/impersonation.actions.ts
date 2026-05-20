@@ -85,8 +85,8 @@ export async function clearImpersonateToken() {
         return { success: false, error: "Geen actieve testsessie gevonden." };
     }
 
-    const { impersonation, user } = await checkAdminAccess();
-    if (!impersonation || !isSuperAdmin(user.committees)) {
+    const { impersonation } = await checkAdminAccess();
+    if (!impersonation || !impersonation.isNormallyAdmin) {
         return { success: false, error: "Je bent niet in test modus of hebt onvoldoende rechten." };
     }
 
@@ -105,7 +105,7 @@ export async function clearImpersonateToken() {
     }
 
     await logAdminAction('admin_impersonation_ended', 'INFO', {
-        ended_by: `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Onbekend'
+        ended_by: impersonation.name || 'Onbekend'
     });
 
     revalidatePath('/beheer/impersonate');
