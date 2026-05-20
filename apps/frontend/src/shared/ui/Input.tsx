@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useFormField } from './FormField';
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     error?: boolean;
@@ -11,11 +12,16 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(({
     error,
     autoComplete = 'off',
     suppressHydrationWarning = true,
+    id,
     ...props
 }, ref) => {
+    const { inputId: contextId } = useFormField();
+    const inputId = id ?? contextId;
+
     return (
         <input
             ref={ref}
+            id={inputId}
             className={`form-input ${error ? 'border-theme-error ring-1 ring-theme-error' : ''} ${className}`}
             {...props}
             autoComplete={autoComplete}

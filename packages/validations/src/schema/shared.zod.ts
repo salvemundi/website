@@ -1,17 +1,5 @@
 import { z } from 'zod';
 
-/**
- * SALVE MUNDI - Shared Validation Schemas
- * 
- * Standardized validators for common fields like Date of Birth and Phone Numbers.
- */
-
-/**
- * Validates a date of birth in YYYY-MM-DD format.
- * - Must be a valid date.
- * - Must not be in the future.
- * - Must not be older than 100 years.
- */
 export const dateOfBirthSchema = z.string()
     .min(1, 'Geboortedatum is verplicht')
     .regex(/^\d{4}-\d{2}-\d{2}$/, 'Ongeldige datum')
@@ -31,9 +19,16 @@ export const dateOfBirthSchema = z.string()
         return date >= hundredYearsAgo;
     }, 'Geboortedatum kan niet meer dan 100 jaar geleden zijn.');
 
-/**
- * Validates a phone number.
- * Relaxed requirement: Just minimum 10 characters (updated per user feedback to be more flexible).
- */
 export const phoneNumberSchema = z.string()
     .min(10, 'Ongeldig telefoonnummer');
+
+const MAX_UPLOAD_SIZE = 5 * 1024 * 1024;
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+
+export const imageUploadSchema = z
+    .custom<File | Blob>((val) => val instanceof File || val instanceof Blob, 'Geen geldig bestand geüpload')
+    .refine((file) => file.size <= MAX_UPLOAD_SIZE, 'Bestand is te groot. Maximaal 5MB toegestaan.')
+    .refine(
+        (file) => ACCEPTED_IMAGE_TYPES.includes(file.type),
+        'Alleen .jpg, .jpeg, .png en .webp bestanden worden geaccepteerd.'
+    );

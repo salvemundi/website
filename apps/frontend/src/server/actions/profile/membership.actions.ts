@@ -12,7 +12,7 @@ import { revalidateTag } from 'next/cache';
 import { rateLimit } from '@/server/utils/ratelimit';
 import { query } from '@/lib/database';
 import { getExpandedEnv } from '@/server/utils/env';
-import { getValidCoupon } from '@/server/utils/coupon.utils';
+import { getValidCoupon, claimCoupon, releaseCoupon } from '@/server/utils/coupon.utils';
 import { normalizeDate } from '@/lib/utils/date-utils';
 import { safeConsoleError } from '@/server/utils/logger';
 
@@ -82,16 +82,20 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
 
     const baseAmount = (isCommitteeMember && isExpired) ? 10.00 : 20.00;
     let finalAmount = baseAmount;
+    let couponClaimed = false;
 
     if (parsed.data.coupon) {
-        const result = await getValidCoupon(parsed.data.coupon);
+        const result = await claimCoupon(parsed.data.coupon);
         if (result.valid && result.coupon) {
+            couponClaimed = true;
             const { coupon } = result;
             const discountValue = coupon.discount_type === 'percentage'
                 ? (baseAmount * coupon.discount_value / 100)
                 : coupon.discount_value;
 
             finalAmount = Math.max(0.01, Math.min(baseAmount, baseAmount - discountValue));
+        } else {
+            return { success: false, error: result.error || 'Coupon is ongeldig of niet meer beschikbaar' };
         }
     }
 
@@ -124,8 +128,14 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
             return { success: true, checkoutUrl: data.checkoutUrl };
         }
 
+        if (couponClaimed && parsed.data.coupon) {
+            await releaseCoupon(parsed.data.coupon);
+        }
         return { success: false, error: 'Er is een fout opgetreden bij het aanmaken van de betaling.' };
     } catch (error) {
+        if (couponClaimed && parsed.data.coupon) {
+            await releaseCoupon(parsed.data.coupon);
+        }
         safeConsoleError('[MembershipActions] Payment initiation failed:', error);
         return { success: false, error: 'Kan geen verbinding maken met betaalservice' };
     }

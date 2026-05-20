@@ -1,18 +1,24 @@
 import React from 'react';
 import { IMaskInput } from 'react-imask';
 import { type InputProps } from './Input';
+import { useFormField } from './FormField';
 
 export const PhoneInput = React.forwardRef<HTMLInputElement, InputProps>(({
     error,
     className = '',
+    id,
     ...props
 }, ref) => {
     const { value, ...rest } = props;
     const stringValue = (typeof value === 'number' ? String(value) : (Array.isArray(value) ? value.join('') : value)) as string | undefined;
 
+    const { inputId: contextId } = useFormField();
+    const inputId = id ?? contextId;
+
     return (
         <IMaskInput
             {...rest}
+            id={inputId}
             value={stringValue}
             inputRef={(el: HTMLInputElement | null) => {
                 if (typeof ref === 'function') ref(el);
@@ -34,8 +40,8 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, InputProps>(({
                     input.value = '0' + val.substring(2).replace(/\D/g, '');
                 }
             }}
-            onAccept={(value: string) => {
-                props.onChange?.({ target: { value, name: props.name || '' } } as unknown as React.ChangeEvent<HTMLInputElement>);
+            onAccept={(acceptedValue: string) => {
+                props.onChange?.({ target: { value: acceptedValue, name: props.name ?? '' } } as unknown as React.ChangeEvent<HTMLInputElement>);
             }}
             suppressHydrationWarning={true}
         />

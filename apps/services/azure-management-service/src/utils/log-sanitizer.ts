@@ -8,15 +8,22 @@ export function redactString(str: string): string {
         .replace(IBAN_REGEX, '[MASKED_IBAN]');
 }
 
-export function sanitizePayload(payload: unknown): unknown {
+export function sanitizePayload(payload: unknown, seen = new WeakSet<object>()): unknown {
     if (typeof payload === 'string') {
         return redactString(payload);
     }
 
     if (!payload || typeof payload !== 'object') return payload;
 
+    if (seen.has(payload)) {
+        return '[CIRCULAR]';
+    }
+    seen.add(payload);
+
     if (Array.isArray(payload)) {
-        return payload.map(sanitizePayload);
+        const sanitizedArray = payload.map(item => sanitizePayload(item, seen));
+        seen.delete(payload);
+        return sanitizedArray;
     }
 
     const isError = payload instanceof Error;
@@ -34,7 +41,7 @@ export function sanitizePayload(payload: unknown): unknown {
         } else if (lowerKey === 'email') {
             finalValue = '[MASKED_EMAIL]';
         } else if (value !== null && typeof value === 'object') {
-            finalValue = sanitizePayload(value);
+            finalValue = sanitizePayload(value, seen);
         } else if (typeof value === 'string') {
             finalValue = redactString(value);
         } else {
@@ -44,5 +51,6 @@ export function sanitizePayload(payload: unknown): unknown {
         Reflect.set(sanitized, key, finalValue);
     }
 
+    seen.delete(payload);
     return sanitized;
 }

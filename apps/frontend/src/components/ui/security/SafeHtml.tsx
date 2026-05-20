@@ -1,6 +1,13 @@
 import React from 'react';
 import DOMPurify from 'isomorphic-dompurify';
 
+// Prevent reverse tabnabbing by enforcing rel="noopener noreferrer" on target="_blank" links
+DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+    if (node.tagName === 'A' && node.getAttribute('target') === '_blank') {
+        node.setAttribute('rel', 'noopener noreferrer');
+    }
+});
+
 interface SafeHtmlProps {
     html: string;
     className?: string;
@@ -9,18 +16,16 @@ interface SafeHtmlProps {
 
 /**
  * Renders sanitized HTML content.
- * Prevents XSS attacks by stripping dangerous scripts and attributes.
  */
-export const SafeHtml: React.FC<SafeHtmlProps> = ({ 
-    html, 
-    className, 
-    as: Component = 'div' 
+export const SafeHtml: React.FC<SafeHtmlProps> = ({
+    html,
+    className,
+    as: Component = 'div'
 }) => {
-    // Sanitize HTML on the fly (works on both Server and Client)
     const cleanHtml = DOMPurify.sanitize(html, {
         USE_PROFILES: { html: true },
-        // Allow common formatting and links
-        ADD_ATTR: ['target', 'rel'] });
+        ADD_ATTR: ['target', 'rel']
+    });
 
     return (
         <Component
@@ -29,5 +34,3 @@ export const SafeHtml: React.FC<SafeHtmlProps> = ({
         />
     );
 };
-
-

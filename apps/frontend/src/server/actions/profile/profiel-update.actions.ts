@@ -10,6 +10,7 @@ import { clearSessionCache } from '@/server/auth/session-utils';
 import { getAuthorizedUser } from '@/server/actions/events/activiteiten/auth-check';
 import sharp from 'sharp';
 import { safeConsoleError } from '@/server/utils/logger';
+import { imageUploadSchema } from '@salvemundi/validations/schema/shared.zod';
 
 interface AzureErrorResponse {
     details?: string;
@@ -92,36 +93,28 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
 
 export async function uploadUserAvatar(formData: FormData) {
     const user = await getAuthorizedUser();
-
-    if (!user?.id) {
-        return { success: false, error: 'Not authenticated' };
-    }
+    if (!user?.id) return { success: false, error: 'Not authenticated' };
 
     const { rateLimit } = await import('@/server/utils/ratelimit');
     const { success } = await rateLimit(`avatar-upload:${user.id}`, 5, 600);
-    if (!success) {
-        return { success: false, error: 'Te veel uploads. Probeer het over 10 minuten opnieuw.' };
-    }
+    if (!success) return { success: false, error: 'Te veel uploads. Probeer het over 10 minuten opnieuw.' };
 
     const file = formData.get('file');
-    if (!file || !(file instanceof File)) {
-        return { success: false, error: 'Geen geldig bestand geselecteerd.' };
-    }
 
-    if (!file.type.startsWith('image/')) {
-        return { success: false, error: 'Alleen afbeeldingen zijn toegestaan.' };
+    const parsedFile = imageUploadSchema.safeParse(file);
+    if (!parsedFile.success) {
+        return { success: false, error: parsedFile.error.errors[0].message };
     }
+    const safeFile = parsedFile.data;
 
     const AZURE_MGMT_URL = process.env.AZURE_MANAGEMENT_SERVICE_URL;
     const INTERNAL_TOKEN = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
     const entraId = user.entra_id;
 
-    if (!entraId) {
-        return { success: false, error: 'Je account is nog niet gekoppeld aan Microsoft Entra ID.' };
-    }
+    if (!entraId) return { success: false, error: 'Je account is nog niet gekoppeld aan Microsoft Entra ID.' };
 
     try {
-        const arrayBuffer = await file.arrayBuffer();
+        const arrayBuffer = await safeFile.arrayBuffer();
         const inputBuffer = Buffer.from(arrayBuffer);
 
         const compressedBuffer = await sharp(inputBuffer)

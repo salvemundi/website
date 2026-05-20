@@ -74,3 +74,64 @@ export async function getValidCoupon(code: string): Promise<CouponValidationResu
         return { valid: false, error: 'Fout bij raadplegen van de database' };
     }
 }
+
+export async function claimCoupon(code: string): Promise<CouponValidationResult> {
+    if (!code || typeof code !== 'string') {
+        return { valid: false, error: 'Ongeldige coupon code' };
+    }
+
+    try {
+        const sql = `
+            UPDATE coupons 
+            SET usage_count = usage_count + 1 
+            WHERE UPPER(coupon_code) = UPPER($1)
+              AND is_active = true
+              AND (valid_from IS NULL OR valid_from <= NOW())
+              AND (valid_until IS NULL OR valid_until >= NOW())
+              AND (usage_limit IS NULL OR usage_count < usage_limit)
+            RETURNING 
+                id,
+                discount_type, 
+                discount_value, 
+                usage_count, 
+                usage_limit, 
+                valid_from, 
+                valid_until, 
+                is_active
+        `;
+
+        const result = await query<CouponData>(sql, [code.trim()]);
+        const coupon = result.rows[0] as CouponData | undefined;
+
+        if (!coupon) {
+            // Since it returned no rows, let's run getValidCoupon to find the exact reason
+            const checkResult = await getValidCoupon(code);
+            return {
+                valid: false,
+                error: checkResult.error || 'Coupon kon niet worden geclaimd'
+            };
+        }
+
+        return {
+            valid: true,
+            coupon
+        };
+    } catch (error: unknown) {
+        safeConsoleError('[CouponUtils] Database error during coupon claiming:', error);
+        return { valid: false, error: 'Fout bij verwerken van coupon' };
+    }
+}
+
+export async function releaseCoupon(code: string): Promise<void> {
+    if (!code || typeof code !== 'string') return;
+    try {
+        const sql = `
+            UPDATE coupons 
+            SET usage_count = GREATEST(0, usage_count - 1)
+            WHERE UPPER(coupon_code) = UPPER($1)
+        `;
+        await query(sql, [code.trim()]);
+    } catch (error: unknown) {
+        safeConsoleError('[CouponUtils] Database error during coupon releasing:', error);
+    }
+}

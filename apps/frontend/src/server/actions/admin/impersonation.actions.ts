@@ -4,30 +4,18 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { createDirectus, staticToken, rest, readMe } from "@directus/sdk";
 import { type DbDirectusUser as DirectusUser } from "@salvemundi/validations/directus/schema";
-import { Pool } from "pg";
 import { getRedis } from "@/server/auth/redis-client";
 import { isSuperAdmin } from "@/lib/auth/auth-utils";
 import { checkAdminAccess } from "@/server/actions/admin/admin-utils.actions";
 import { logAdminAction } from "@/server/actions/infrastructure/audit.actions";
 import { safeConsoleError } from '@/server/utils/logger';
 
-const pool = new Pool({
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    host: process.env.DB_HOST || process.env.INTERNAL_DB_HOST || 'v7-core-db',
-    port: 5432,
-    database: process.env.DB_NAME
-});
-
 const TEST_TOKEN_COOKIE = 'directus_test_token';
 
-/**
- * Start een impersonatie-sessie op basis van een Directus token.
- */
 export async function setImpersonateToken(token: string) {
     const { isAuthorized, user } = await checkAdminAccess();
     if (!isAuthorized || !user || !isSuperAdmin(user.committees)) {
-        throw new Error("Geen toegang: Alleen voor ICT en Bestuur.");
+        throw new Error("Geen toegang: Alleen voor ICT.");
     }
 
     try {
@@ -55,18 +43,6 @@ export async function setImpersonateToken(token: string) {
             secure: process.env.NODE_ENV === 'production',
             httpOnly: true
         });
-
-        try {
-            await pool.query(
-                `SELECT c.id, c.name, c.azure_group_id
-                 FROM committee_members m 
-                 JOIN committees c ON m.committee_id = c.id 
-                 WHERE m.user_id = $1`,
-                [targetUser.id]
-            );
-        } catch (error) {
-            safeConsoleError('[Impersonation] Failed to fetch target user committees:', error);
-        }
 
         const fullName = `${targetUser.first_name || ''} ${targetUser.last_name || ''}`.trim();
         const sessionToken = cookieStore.get('better-auth.session-token')?.value ||

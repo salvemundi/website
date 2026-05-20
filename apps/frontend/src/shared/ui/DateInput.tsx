@@ -3,26 +3,24 @@
 import React from 'react';
 import { IMaskInput } from 'react-imask';
 import { type InputProps } from './Input';
+import { useFormField } from './FormField';
 
 export interface DateInputProps extends Omit<InputProps, 'onChange' | 'value'> {
-    value?: string; // Expected in yyyy-mm-dd (DB format)
+    value?: string;
     onChange?: (value: string) => void;
 }
 
-/**
- * A specialized Input component that forces dd-mm-yyyy format in the UI
- * while maintaining yyyy-mm-dd internally for database compatibility.
- * Optimized with react-imask for better autofill and event handling.
- */
 export const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(({
     value = '',
     onChange,
     placeholder = 'dd-mm-jjjj',
     error,
+    id,
     ...props
 }, ref) => {
+    const { inputId: contextId } = useFormField();
+    const inputId = id ?? contextId;
 
-    // Sync internal value (yyyy-mm-dd) to display value (dd-mm-yyyy)
     const formatDisplayValue = (val: string) => {
         if (!val) return '';
         const parts = val.split('-');
@@ -38,12 +36,15 @@ export const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(({
             onChange?.(`${y}-${m}-${d}`);
         } else if (maskedValue.length === 0) {
             onChange?.('');
+        } else {
+            onChange?.(maskedValue);
         }
     };
 
     return (
         <IMaskInput
             {...props}
+            id={inputId}
             inputRef={(el: HTMLInputElement | null) => {
                 if (typeof ref === 'function') ref(el);
                 else if (ref) (ref as React.MutableRefObject<HTMLInputElement | null>).current = el;
@@ -53,7 +54,7 @@ export const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(({
             placeholder={placeholder}
             value={formatDisplayValue(value)}
             onAccept={handleAccept}
-            className={`form-input ${error ? 'border-theme-error ring-1 ring-theme-error' : ''} ${props.className || ''}`}
+            className={`form-input ${error ? 'border-theme-error ring-1 ring-theme-error' : ''} ${props.className ?? ''}`}
             type="text"
             inputMode="numeric"
             autoComplete="off"

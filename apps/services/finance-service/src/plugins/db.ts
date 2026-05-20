@@ -12,6 +12,7 @@ export interface Database {
     trip_signup_activities: DirectusSchema['trip_signup_activities'][number];
     trip_activities: DirectusSchema['trip_activities'][number];
     pub_crawl_signups_transactions: DirectusSchema['pub_crawl_signups_transactions'][number];
+    coupons: DirectusSchema['coupons'][number];
 }
 
 declare module 'fastify' {

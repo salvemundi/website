@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useState, useTransition, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import type { Trip, TripSignup, TripSignupActivity, TripActivity } from '@salvemundi/validations/schema/admin-reis.zod';
-import { updateTripSignup, updateSignupActivities } from '@/server/actions/admin/reis-signups.actions';
 
 import ReisFilters from '@/components/admin/reis/ReisFilters';
 import ReisTable from '@/components/admin/reis/ReisTable';
@@ -30,37 +29,36 @@ export default function AdminReisTableIsland({
     allTripActivities = [],
     trip
 }: AdminReisTableIslandProps) {
-    const [isPending, _startTransition] = useTransition();
     const { toast, showToast, hideToast } = useAdminToast();
 
     const {
         signups,
-        setSignups,
         sendingEmailTo,
         actionStates,
+        isPending,
         handleStatusChange,
         handleDelete,
-        handleResendPaymentEmail
+        handleResendPaymentEmail,
+        handleSave: handleSaveAction
     } = useReisActions(initialSignups, trip, showToast);
 
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [roleFilter, setRoleFilter] = useState<string>('all');
     const [mounted, setMounted] = useState(false);
-    const [selectedSignup, setSelectedSignup] = useState<TripSignup | null>(null);
+    const [selectedSignupId, setSelectedSignupId] = useState<number | null>(null);
     const [isEditing, setIsEditing] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
     const [selectedActivities, setSelectedActivities] = useState<number[]>([]);
     const formRef = React.useRef<HTMLFormElement>(null);
 
+    const selectedSignup = selectedSignupId !== null
+        ? signups.find(s => s.id === selectedSignupId) || null
+        : null;
+
     useEffect(() => { setMounted(true); }, []);
 
-    useEffect(() => {
-        setSignups(initialSignups);
-    }, [initialSignups, setSignups]);
-
     const openSignup = (signup: TripSignup, edit: boolean = false) => {
-        setSelectedSignup(signup);
+        setSelectedSignupId(signup.id);
         setIsEditing(edit);
         const signupActivities = initialSignupActivities as Record<number, TripSignupActivity[] | undefined>;
         const activities = signupActivities[signup.id] || [];
@@ -78,65 +76,38 @@ export default function AdminReisTableIsland({
         );
     };
 
-    const handleSave = async (formData: FormData) => {
+    const handleSave = (formData: FormData) => {
         if (!selectedSignup) return;
-        setIsSaving(true);
-        try {
-            const res = await updateTripSignup(null, formData);
-            if (!res.success) {
-                showToast(res.error || 'Fout bij het opslaan', 'error');
-                return;
+        handleSaveAction(
+            selectedSignup.id,
+            formData,
+            selectedActivities,
+            () => {
+                setIsEditing(false);
             }
-
-            const actRes = await updateSignupActivities(selectedSignup.id, selectedActivities);
-            if (!actRes.success) {
-                showToast(actRes.error || 'Fout bij bijwerken activiteiten', 'error');
-            }
-
-            showToast('Wijzigingen opgeslagen', 'success');
-
-            const updatedData = Object.fromEntries(formData.entries());
-            const id = Number(updatedData.id);
-
-            const updateFunction = (s: TripSignup) => s.id === id ? {
-                ...s,
-                ...updatedData,
-                willing_to_drive: updatedData.willing_to_drive === 'on' || updatedData.willing_to_drive === 'true',
-                deposit_paid: updatedData.deposit_paid === 'on' || updatedData.deposit_paid === 'true',
-                full_payment_paid: updatedData.full_payment_paid === 'on' || updatedData.full_payment_paid === 'true',
-                id: id
-            } as TripSignup : s;
-
-            setSignups(prev => prev.map(updateFunction));
-            setSelectedSignup(prev => prev ? updateFunction(prev) : null);
-            setIsEditing(false);
-        } catch {
-            showToast('Er is een fout opgetreden', 'error');
-        } finally {
-            setIsSaving(false);
-        }
+        );
     };
 
     const handleSaveSync = (formData: FormData) => {
-        void handleSave(formData);
+        handleSave(formData);
     };
 
     const handleStatusChangeSync = (id: number, status: string) => {
-        void handleStatusChange(id, status, (u) => setSelectedSignup(u));
+        handleStatusChange(id, status);
     };
 
     const handleDeleteSync = (id: number) => {
-        void handleDelete(id, () => setSelectedSignup(null));
+        handleDelete(id, () => setSelectedSignupId(null));
     };
 
     const handleDeleteSelectedSync = () => {
         if (selectedSignup) {
-            void handleDelete(selectedSignup.id, () => setSelectedSignup(null));
+            handleDelete(selectedSignup.id, () => setSelectedSignupId(null));
         }
     };
 
     const handleResendPaymentEmailSync = (id: number, type: 'deposit' | 'final') => {
-        void handleResendPaymentEmail(id, type, (u) => setSelectedSignup(u));
+        handleResendPaymentEmail(id, type);
     };
 
     const filteredSignups = signups.filter(signup => {
@@ -195,14 +166,14 @@ export default function AdminReisTableIsland({
                 <AdminReisSignupModalIsland
                     isOpen={!!selectedSignup}
                     isEditing={isEditing}
-                    isPending={isPending || isSaving}
+                    isPending={isPending}
                     selectedSignup={selectedSignup}
                     trip={trip}
                     allTripActivities={allTripActivities}
                     selectedActivities={selectedActivities}
                     sendingEmailTo={sendingEmailTo}
                     formRef={formRef}
-                    onClose={() => isEditing ? setIsEditing(false) : setSelectedSignup(null)}
+                    onClose={() => isEditing ? setIsEditing(false) : setSelectedSignupId(null)}
                     onToggleEdit={() => setIsEditing(!isEditing)}
                     onDelete={handleDeleteSelectedSync}
                     onSave={handleSaveSync}

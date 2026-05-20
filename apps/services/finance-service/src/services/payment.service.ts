@@ -31,7 +31,7 @@ export class PaymentService {
         // 1. Fetch current status to ensure idempotency and prevent duplicate events
         const transaction = await fastify.db
             .selectFrom('transactions')
-            .select(['payment_status', 'approval_status', 'user_id', 'email', 'first_name', 'last_name', 'product_type'])
+            .select(['payment_status', 'approval_status', 'user_id', 'email', 'first_name', 'last_name', 'product_type', 'coupon_code'])
             .where('mollie_id', '=', paymentId)
             .executeTakeFirst();
 
@@ -53,6 +53,20 @@ export class PaymentService {
                 .where('mollie_id', '=', paymentId)
                 .execute();
             fastify.log.info(`[FINANCE] Updated payment status for ${paymentId}: ${oldStatus} -> ${newStatus}`);
+
+            // Release coupon if payment failed/canceled/expired and was not already finalized
+            if (['failed', 'canceled', 'expired'].includes(newStatus) && 
+                oldStatus !== 'paid' && 
+                !['failed', 'canceled', 'expired'].includes(oldStatus || '') && 
+                transaction.coupon_code) {
+                try {
+                    const { sql } = await import('kysely');
+                    await sql`UPDATE coupons SET usage_count = GREATEST(0, usage_count - 1) WHERE UPPER(coupon_code) = UPPER(${transaction.coupon_code})`.execute(fastify.db);
+                    fastify.log.info(`[FINANCE] Released coupon ${transaction.coupon_code} for failed/canceled/expired payment ${paymentId}`);
+                } catch (couponErr) {
+                    fastify.log.error({ err: couponErr }, `[FINANCE] Failed to release coupon ${transaction.coupon_code} for payment ${paymentId}`);
+                }
+            }
         }
 
         // 3. Only proceed with success logic if transitioning to 'paid' for the first time
