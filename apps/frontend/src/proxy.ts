@@ -31,11 +31,11 @@ async function proxy(request: NextRequest) {
         const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL || '';
         const cspHeader = `
             default-src 'self';
-            script-src 'self' 'unsafe-inline' ${origin.includes('localhost') ? "'unsafe-eval'" : ""};
+            script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com ${origin.includes('localhost') ? "'unsafe-eval'" : ""};
             style-src 'self' 'unsafe-inline';
             img-src 'self' blob: data: ${directusUrl} https://*.tile.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com;
             font-src 'self' data:;
-            connect-src 'self' ${directusUrl} https://login.microsoftonline.com https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://nominatim.openstreetmap.org;
+            connect-src 'self' ${directusUrl} https://login.microsoftonline.com https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://nominatim.openstreetmap.org https://cloudflareinsights.com;
             frame-src 'self' https://login.microsoftonline.com;
             worker-src 'self' blob:;
             object-src 'none';
