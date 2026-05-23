@@ -62,7 +62,7 @@ export default function MobileMenu({
 
             {/* Slide-out paneel */}
             <nav
-                className={`fixed right-0 z-[200] flex w-full max-w-xs flex-col gap-6 bg-[var(--bg-main)] px-6 py-8 pt-safe pb-safe shadow-2xl transition-transform duration-300 overflow-y-auto ${isOpen ? 'translate-x-0' : 'translate-x-full'
+                className={`fixed right-0 z-[200] flex w-full max-w-xs flex-col gap-6 bg-[var(--bg-main)] px-6 pt-[calc(2rem+env(safe-area-inset-top,0px))] pb-[calc(2rem+env(safe-area-inset-bottom,0px))] shadow-2xl transition-transform duration-300 overflow-y-auto ${isOpen ? 'translate-x-0' : 'translate-x-full'
                     }`}
                 style={{ top: 0, height: '100dvh' }}
                 aria-label="Mobiele navigatie"
