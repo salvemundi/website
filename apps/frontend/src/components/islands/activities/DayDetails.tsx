@@ -45,7 +45,7 @@ export default function DayDetails({ selectedDay, activities, onClose, onEventCl
                             onClick={() => onEventClick(event)}
                             className="group cursor-pointer rounded-xl bg-[var(--bg-soft)] p-3 transition hover:ring-2 hover:ring-inset hover:ring-[var(--theme-purple)]/30"
                         >
-                            <h4 className="font-semibold text-[var(--theme-purple)] dark:text-[var(--text-main)] group-hover:text-[var(--color-oranje)]">
+                            <h4 className="font-semibold text-[var(--theme-purple)] dark:text-[var(--text-main)] group-hover:text-[var(--theme-purple-light)]">
                                 {event.titel}
                             </h4>
                             <div className="mt-2 flex items-center gap-3 text-xs text-[var(--text-muted)]">

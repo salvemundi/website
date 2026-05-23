@@ -14,5 +14,3 @@ export function isPathActive(pathname: string, href: string, exact = false): boo
     // Active when pathname equals href or starts with href + '/'
     return np === nh || np.startsWith(nh + '/');
 }
-
-export default isPathActive;
