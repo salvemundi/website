@@ -4,6 +4,7 @@ const config = {
   next: {
     entry: ['src/app/**/*.{ts,tsx}', 'src/pages/**/*.{ts,tsx}', 'next.config.ts']
   },
+  exclude: ['exports', 'types'],
   ignoreDependencies: [
     'eslint-config-next',
     '@serwist/sw',

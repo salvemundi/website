@@ -1,19 +1,19 @@
 import 'server-only';
 import { ImageResponse } from 'next/og';
 
-export const OG_IMAGE_SIZE = {
+const OG_IMAGE_SIZE = {
     width: 1200,
     height: 630 };
 
-export const BRAND_COLORS = {
-    oranje: '#ff6542',
-    paars: '#6366f1',
+const BRAND_COLORS = {
+    blauw: '#00a3e0',
+    paars: '#663265',
     background: '#0a0a0a',
     white: '#ffffff' };
 
-export const GRADIENTS = {
-    main: `linear-gradient(135deg, ${BRAND_COLORS.oranje} 0%, ${BRAND_COLORS.paars} 100%)`,
-    subtle: `linear-gradient(135deg, ${BRAND_COLORS.oranje}20 0%, ${BRAND_COLORS.paars}20 100%)` };
+const GRADIENTS = {
+    main: `linear-gradient(135deg, ${BRAND_COLORS.blauw} 0%, ${BRAND_COLORS.paars} 100%)`,
+    subtle: `linear-gradient(135deg, ${BRAND_COLORS.blauw}20 0%, ${BRAND_COLORS.paars}20 100%)` };
 
 interface OGImageProps {
     title: string;
