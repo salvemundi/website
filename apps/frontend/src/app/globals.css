@@ -22,15 +22,18 @@
    ─────────────────────────────────────────────────────────────────────────── */
 @theme {
    --color-text-main: var(--text-main);
+   --color-text-muted: var(--text-muted);
+   --color-bg-soft: var(--bg-soft);
+   --color-bg-card: var(--bg-card);
 
    /* Brand Colors */
    --color-paars: #5e2b52;
    --color-oranje: #ff6542;
 
    /* Semantic Aliases */
-   --theme-purple: var(--color-purple-theme);
-   --theme-text: var(--text-main);
-   --theme-bg: var(--bg-main);
+   --color-theme-purple: #c48fbe;
+   --color-theme-text: var(--text-main);
+   --color-theme-bg: var(--bg-main);
 
    /* Layout & Containers */
    --max-w-app: 80rem;
@@ -65,8 +68,6 @@
 
    /* Brand */
    --color-brand-primary: #003056;
-   --color-brand-secondary: #00a3e0;
-
    --color-brand-secondary: #00a3e0;
 
    /* Semantic Background — Light Mode defaults
@@ -140,16 +141,10 @@
    margin-right: auto;
    width: 100%;
    max-width: var(--max-w-app);
-   padding-left: var(--spacing-4);
+   padding-inline: var(--spacing-4);
 
-   @media (min-width: 1024px) {
-      padding-left: var(--spacing-6);
-   }
-
-   padding-right: var(--spacing-4);
-
-   @media (min-width: 1024px) {
-      padding-right: var(--spacing-6);
+   @variant lg {
+      padding-inline: var(--spacing-6);
    }
 }
 

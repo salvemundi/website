@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
     Calendar,
     Phone,
@@ -14,11 +14,10 @@ import {
     User as UserIcon,
     Layers
 } from 'lucide-react';
-import { format } from 'date-fns';
-import { nl } from 'date-fns/locale';
 import { InfoRow, CommitteeCard, GroupCard, EmptyState, cleanName } from './LedenSharedComponents';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
+import { safeConsoleError } from '@/server/utils/logger';
 
 interface Member {
     id: string;
@@ -83,8 +82,15 @@ export default function MemberProfileTab({
     const formatDate = (dateString: string | null | undefined) => {
         if (!dateString) return 'Onbekend';
         try {
-            return format(new Date(dateString), 'd MMMM yyyy', { locale: nl });
-        } catch (_error) {
+            const d = new Date(dateString);
+            if (isNaN(d.getTime())) throw new Error('Invalid date');
+            return new Intl.DateTimeFormat('nl-NL', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            }).format(d);
+        } catch (error) {
+            safeConsoleError('[MemberProfileTab][formatDate]', error);
             return 'Onbekend';
         }
     };
@@ -98,7 +104,6 @@ export default function MemberProfileTab({
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column: Info Card */}
             <div className="lg:col-span-1 space-y-6">
                 <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] p-8 shadow-sm">
                     <div className="flex items-center justify-between mb-8">
@@ -144,7 +149,6 @@ export default function MemberProfileTab({
                 </div>
             </div>
 
-            {/* Right Column: Committees/Groups */}
             <div className="lg:col-span-2 space-y-6">
                 <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] p-8 shadow-sm">
                     <div className="flex items-center gap-4 mb-8">

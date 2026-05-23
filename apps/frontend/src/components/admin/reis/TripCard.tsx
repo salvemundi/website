@@ -1,7 +1,5 @@
 'use client';
 
-import { format } from 'date-fns';
-import { nl } from 'date-fns/locale';
 import { Edit2, Trash2, Calendar, Users, Euro, ImageIcon, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { getImageUrl } from '@/lib/utils/image-utils';
@@ -17,28 +15,21 @@ interface TripCardProps {
 export default function TripCard({ trip, onEdit, onDelete, isDeleting }: TripCardProps) {
     const sd = trip.start_date;
     const ed = trip.end_date;
-    
-    let dateRange = 'Onbekend';
-    if (sd) {
-        const start = new Date(sd);
-        if (ed) {
-            const end = new Date(ed);
-            dateRange = `${format(start, 'd MMM', { locale: nl })} - ${format(end, 'd MMM yyyy', { locale: nl })}`;
-        } else {
-            dateRange = format(start, 'd MMMM yyyy', { locale: nl });
-        }
-    }
+
+    const dateRange = sd
+        ? ed
+            ? `${new Date(sd).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })} - ${new Date(ed).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })}`
+            : new Date(sd).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })
+        : 'Onbekend';
 
     return (
         <div className="group bg-[var(--bg-card)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)] overflow-hidden flex flex-col transition-all hover:translate-y-[-4px] hover:shadow-2xl">
-            {/* Trip Status Overlays */}
             <div className="relative h-48 bg-[var(--beheer-border)]/5 flex items-center justify-center overflow-hidden">
                 {(() => {
                     const isOpen = trip.registration_open || (trip.registration_start_date && new Date(trip.registration_start_date) <= new Date());
                     return (
-                        <div className={`absolute top-4 left-4 z-10 px-3 py-1.5 rounded-xl backdrop-blur-md font-black italic text-[10px] uppercase tracking-widest shadow-lg ${
-                            isOpen ? 'bg-[var(--beheer-active)] text-white shadow-[var(--beheer-active)]/20' : 'bg-[var(--beheer-inactive)] text-white shadow-[var(--beheer-inactive)]/20'
-                        }`}>
+                        <div className={`absolute top-4 left-4 z-10 px-3 py-1.5 rounded-xl backdrop-blur-md font-black italic text-[10px] uppercase tracking-widest shadow-lg ${isOpen ? 'bg-[var(--beheer-active)] text-white shadow-[var(--beheer-active)]/20' : 'bg-[var(--beheer-inactive)] text-white shadow-[var(--beheer-inactive)]/20'
+                            }`}>
                             {isOpen ? 'Open' : 'Gesloten'}
                         </div>
                     );
@@ -48,10 +39,10 @@ export default function TripCard({ trip, onEdit, onDelete, isDeleting }: TripCar
                         Busreis
                     </div>
                 )}
-                
+
                 {trip.image ? (
-                    <Image 
-                        src={getImageUrl(trip.image, { width: 600, height: 400, fit: 'cover' }) || '/img/newlogo.png'} 
+                    <Image
+                        src={getImageUrl(trip.image, { width: 600, height: 400, fit: 'cover' }) || '/img/newlogo.png'}
                         alt={trip.name}
                         fill
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -66,7 +57,7 @@ export default function TripCard({ trip, onEdit, onDelete, isDeleting }: TripCar
 
             <div className="p-6 flex-1 flex flex-col">
                 <h3 className="text-xl font-black text-[var(--beheer-text)] tracking-tight mb-2 line-clamp-1 group-hover:text-[var(--beheer-accent)] transition-colors">{trip.name}</h3>
-                
+
                 <div className="space-y-3 mb-6 flex-1">
                     <div className="flex items-center gap-3 text-[var(--text-muted)]">
                         <Calendar className="h-4 w-4" />

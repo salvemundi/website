@@ -106,7 +106,7 @@
     .dark .form-input {
         background-color: rgba(255, 255, 255, 0.05);
         border-color: rgba(255, 255, 255, 0.1);
-        color: var(--text-main);
+        color: var(--color-white);
     }
 
     /* Autofill management moved to dedicated autofill.css for global stability */

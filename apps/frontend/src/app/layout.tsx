@@ -1,22 +1,23 @@
-import type { Metadata, Viewport } from 'next';
-import { Poppins } from 'next/font/google';
-import './globals.css';
-import NavigationHeader from '@/components/islands/layout/NavigationHeader';
-import dynamic from 'next/dynamic';
 import type { ReactNode } from 'react';
-
-const FooterIsland = dynamic(() => import('@/components/islands/layout/FooterIsland'));
-
-import ImpersonationBanner from '@/components/ui/admin/ImpersonationBanner';
-import { getDocumenten, getDisabledRoutes } from '@/server/actions/public/website.actions';
-import { getCommittees } from '@/server/actions/public/committees.actions';
-import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
+import type { Metadata, Viewport } from 'next';
+import dynamic from 'next/dynamic';
 import { headers } from 'next/headers';
 import { connection } from 'next/server';
+import { Poppins } from 'next/font/google';
+
+import './globals.css';
+
+import type { ExtendedSession, ImpersonationInfo } from '@/types/auth';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { type ExtendedSession, type ImpersonationInfo } from '@/types/auth';
-import { domMax, LazyMotion } from 'framer-motion';
+import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
+import { getDocumenten, getDisabledRoutes } from '@/server/actions/public/website.actions';
+import { getCommittees } from '@/server/actions/public/committees.actions';
 import { safeConsoleError } from '@/server/utils/logger';
+
+import NavigationHeader from '@/components/islands/layout/NavigationHeader';
+import ImpersonationBanner from '@/components/ui/admin/ImpersonationBanner';
+
+const FooterIsland = dynamic(() => import('@/components/islands/layout/FooterIsland'));
 
 export const viewport: Viewport = {
     themeColor: [
@@ -54,14 +55,6 @@ export const metadata: Metadata = {
         card: 'summary_large_image',
         title: 'SV Salve Mundi | Studievereniging Fontys ICT',
         description: 'De officiële studievereniging van Fontys ICT Eindhoven.',
-    },
-    icons: {
-        icon: [
-            { url: '/img/newlogo.svg', type: 'image/svg+xml' },
-        ],
-        apple: [
-            { url: '/img/newlogo.svg', type: 'image/svg+xml' },
-        ]
     }
 };
 
@@ -71,8 +64,7 @@ const poppins = Poppins({
     variable: '--font-poppins'
 });
 
-export default async function RootLayout({
-    children }: Readonly<{ children: ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
     const h = await headers();
     const nonce = h.get('x-nonce') || '';
     const session = await getEnrichedSession();
@@ -97,13 +89,8 @@ export default async function RootLayout({
             <body className={`${poppins.variable} font-sans antialiased flex flex-col min-h-screen`}>
                 <ImpersonationWrapper impersonation={impersonation} />
                 <HeaderWrapper initialSession={session} isAuthorized={isAuthorized} />
-                <main 
-                    className="flex-grow min-h-[100dvh]"
-                    style={{
-                        paddingTop: 'calc(var(--header-total-height, 80px) + env(safe-area-inset-top, 0px))'
-                    }}
-                >
-                    <LazyMotion features={domMax} strict>{children}</LazyMotion>
+                <main className="flex-grow min-h-[100dvh] pt-[calc(var(--header-total-height,80px)+env(safe-area-inset-top,0px))]">
+                    {children}
                 </main>
                 <FooterWrapper initialSession={session} />
             </body>
@@ -124,7 +111,6 @@ async function HeaderWrapper({ initialSession, isAuthorized }: { initialSession:
             />
         );
     } catch (error) {
-        // 🚀 FIX: Context prefixing gecorrigeerd naar exact [bestandsnaam][functienaam] conform PROJECT_STATUS.md
         safeConsoleError('[layout][HeaderWrapper]', error);
         return (
             <NavigationHeader

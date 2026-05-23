@@ -1,17 +1,10 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
-    Users, 
-    Heart, 
-    FileText, 
-    Calendar } from 'lucide-react';
-import { format } from 'date-fns';
+import { Users, Heart, FileText, Calendar } from 'lucide-react';
 import type { IntroBlog, IntroPlanningItem } from '@salvemundi/validations/schema/intro.zod';
 import {
-    getIntroSignups,
-    getIntroParentSignups,
     deleteIntroSignup,
     deleteIntroParentSignup,
     updateIntroSignup,
@@ -21,13 +14,12 @@ import {
     deleteIntroBlog,
     getIntroPlanning,
     upsertIntroPlanning,
-    deleteIntroPlanning } from '@/server/actions/admin/admin-intro.actions';
+    deleteIntroPlanning
+} from '@/server/actions/admin/admin-intro.actions';
 import { type DbIntroSignup as IntroSignupRow, type DbIntroParentSignup as IntroParentRow } from '@salvemundi/validations/directus/schema';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
-
-// Modular Sub-components
 import IntroSignupsTab from './intro/IntroSignupsTab';
 import IntroParentsTab from './intro/IntroParentsTab';
 import IntroBlogsTab from './intro/IntroBlogsTab';
@@ -48,29 +40,24 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
     const { toast, showToast, hideToast } = useAdminToast();
     const [activeTab, setActiveTab] = useState<TabType>('signups');
 
-    // Data
     const [signups, setSignups] = useState(initialSignups);
     const [parents, setParents] = useState(initialParents);
     const [blogs, setBlogs] = useState(initialBlogs);
     const [planning, setPlanning] = useState(initialPlanning);
 
-    // Global UI state
     const [savingBlog, setSavingBlog] = useState(false);
     const [savingPlanning, setSavingPlanning] = useState(false);
 
-    // Global loading IDs
     const [deletingSignupId, setDeletingSignupId] = useState<number | null>(null);
     const [deletingParentId, setDeletingParentId] = useState<number | null>(null);
     const [deletingBlogId, setDeletingBlogId] = useState<number | null>(null);
     const [deletingPlanningId, setDeletingPlanningId] = useState<number | null>(null);
 
-    // Reload helpers
-    const _reloadSignups = useCallback(async () => setSignups(await getIntroSignups()), []);
-    const _reloadParents = useCallback(async () => setParents(await getIntroParentSignups()), []);
     const reloadBlogs = useCallback(async () => setBlogs(await getIntroBlogs()), []);
     const reloadPlanning = useCallback(async () => setPlanning(await getIntroPlanning()), []);
 
-    // Handlers
+    const getTodayISO = () => new Date().toISOString().split('T')[0];
+
     const handleDeleteSignup = async (id: number) => {
         if (!confirm('Weet je zeker dat je deze aanmelding wilt verwijderen?')) return;
         setDeletingSignupId(id);
@@ -167,8 +154,6 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
         setDeletingPlanningId(null);
     };
 
-
-
     const exportSignupsToCSV = () => {
         const rows = [
             ['Voornaam', 'Achternaam', 'Email', 'Telefoon', 'Geboortedatum', 'Favoriete GIF'],
@@ -182,7 +167,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `intro-aanmeldingen-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+        a.download = `intro-aanmeldingen-${getTodayISO()}.csv`;
         a.click();
     };
 
@@ -199,7 +184,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `intro-ouders-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+        a.download = `intro-ouders-${getTodayISO()}.csv`;
         a.click();
     };
 
@@ -214,69 +199,66 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
         <>
             <AdminStatsBar stats={adminStats} />
 
-            {/* Tabs - Tokenized */}
             <div className="flex flex-wrap gap-2 mb-10 bg-[var(--beheer-card-bg)]/50 backdrop-blur-md p-1.5 rounded-[2rem] border border-[var(--beheer-border)]/50 w-fit">
-                    {[
-                        { id: 'signups', label: 'Aanmeldingen', count: signups.length, icon: Users },
-                        { id: 'parents', label: 'Ouders', count: parents.length, icon: Heart },
-                        { id: 'blogs', label: 'Blogs', count: blogs.length, icon: FileText },
-                        { id: 'planning', label: 'Planning', count: planning.length, icon: Calendar }
-                    ].map(tab => (
-                        <button 
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id as TabType)} 
-                            className={`flex items-center gap-3 px-6 py-3.5 font-semibold text-sm transition-all rounded-[1.5rem] ${
-                                activeTab === tab.id 
-                                    ? 'bg-[var(--beheer-accent)] text-white shadow-[var(--shadow-glow)]' 
-                                    : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] hover:bg-[var(--beheer-card-soft)]/50'
+                {[
+                    { id: 'signups', label: 'Aanmeldingen', count: signups.length, icon: Users },
+                    { id: 'parents', label: 'Ouders', count: parents.length, icon: Heart },
+                    { id: 'blogs', label: 'Blogs', count: blogs.length, icon: FileText },
+                    { id: 'planning', label: 'Planning', count: planning.length, icon: Calendar }
+                ].map(tab => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id as TabType)}
+                        className={`flex items-center gap-3 px-6 py-3.5 font-semibold text-sm transition-all rounded-[1.5rem] ${activeTab === tab.id
+                            ? 'bg-[var(--beheer-accent)] text-white shadow-[var(--shadow-glow)]'
+                            : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] hover:bg-[var(--beheer-card-soft)]/50'
                             }`}
-                        >
-                            <tab.icon className={`h-4 w-4 ${activeTab === tab.id ? 'opacity-100' : 'opacity-40'}`} /> 
-                            {tab.label} 
-                            <span className={`ml-1 px-2 py-0.5 rounded-full text-[9px] ${activeTab === tab.id ? 'bg-white/20 text-white' : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)]'}`}>
-                                {tab.count}
-                            </span>
-                        </button>
-                    ))}
-                </div>
+                    >
+                        <tab.icon className={`h-4 w-4 ${activeTab === tab.id ? 'opacity-100' : 'opacity-40'}`} />
+                        {tab.label}
+                        <span className={`ml-1 px-2 py-0.5 rounded-full text-[9px] ${activeTab === tab.id ? 'bg-white/20 text-white' : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)]'}`}>
+                            {tab.count}
+                        </span>
+                    </button>
+                ))}
+            </div>
 
-                {/* Tab Content */}
-                {activeTab === 'signups' && (
-                    <IntroSignupsTab 
-                        signups={signups} 
-                        onDelete={handleDeleteSignup} 
-                        onUpdate={handleUpdateSignup}
-                        onExport={exportSignupsToCSV}
-                        deletingId={deletingSignupId}
-                    />
-                )}
-                {activeTab === 'parents' && (
-                    <IntroParentsTab 
-                        parents={parents} 
-                        onDelete={handleDeleteParent} 
-                        onUpdate={handleUpdateParentSignup}
-                        onExport={exportParentsToCSV}
-                        deletingId={deletingParentId}
-                    />
-                )}
-                {activeTab === 'blogs' && (
-                    <IntroBlogsTab 
-                        blogs={blogs} 
-                        onSave={handleSaveBlog} 
-                        onDelete={handleDeleteBlog}
-                        saving={savingBlog}
-                        deletingId={deletingBlogId}
-                    />
-                )}
-                {activeTab === 'planning' && (
-                    <IntroPlanningTab 
-                        planning={planning} 
-                        onSave={handleSavePlanning} 
-                        onDelete={handleDeletePlanning}
-                        saving={savingPlanning}
-                        deletingId={deletingPlanningId}
-                    />
-                )}
+            {activeTab === 'signups' && (
+                <IntroSignupsTab
+                    signups={signups}
+                    onDelete={handleDeleteSignup}
+                    onUpdate={handleUpdateSignup}
+                    onExport={exportSignupsToCSV}
+                    deletingId={deletingSignupId}
+                />
+            )}
+            {activeTab === 'parents' && (
+                <IntroParentsTab
+                    parents={parents}
+                    onDelete={handleDeleteParent}
+                    onUpdate={handleUpdateParentSignup}
+                    onExport={exportParentsToCSV}
+                    deletingId={deletingParentId}
+                />
+            )}
+            {activeTab === 'blogs' && (
+                <IntroBlogsTab
+                    blogs={blogs}
+                    onSave={handleSaveBlog}
+                    onDelete={handleDeleteBlog}
+                    saving={savingBlog}
+                    deletingId={deletingBlogId}
+                />
+            )}
+            {activeTab === 'planning' && (
+                <IntroPlanningTab
+                    planning={planning}
+                    onSave={handleSavePlanning}
+                    onDelete={handleDeletePlanning}
+                    saving={savingPlanning}
+                    deletingId={deletingPlanningId}
+                />
+            )}
 
             <AdminToast toast={toast} onClose={hideToast} />
         </>

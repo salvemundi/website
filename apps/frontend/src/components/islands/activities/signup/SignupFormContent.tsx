@@ -65,7 +65,7 @@ export default function SignupFormContent({
                             {...register('name')}
                             id="field-name"
                             placeholder="Naam Achternaam"
-                            className="bg-[var(--bg-soft)] border-none rounded-2xl h-14 px-6 focus:ring-2 focus:ring-[var(--theme-purple)]/20 transition-all font-bold text-[var(--text-main)]"
+                            className="bg-bg-soft border-none rounded-2xl h-14 px-6 focus:ring-2 focus:ring-theme-purple/20 transition-all font-bold text-text-main"
                         />
                     </FormField>
 
@@ -80,7 +80,7 @@ export default function SignupFormContent({
                             id="field-email"
                             type="email"
                             placeholder="voorbeeld@mail.com"
-                            className="bg-[var(--bg-soft)] border-none rounded-2xl h-14 px-6 focus:ring-2 focus:ring-[var(--theme-purple)]/20 transition-all font-bold text-[var(--text-main)]"
+                            className="bg-bg-soft border-none rounded-2xl h-14 px-6 focus:ring-2 focus:ring-theme-purple/20 transition-all font-bold text-text-main"
                         />
                     </FormField>
 
@@ -97,7 +97,7 @@ export default function SignupFormContent({
                                 <PhoneInput
                                     {...field}
                                     id="field-phoneNumber"
-                                    className="bg-[var(--bg-soft)] border-none rounded-2xl h-14 px-6 focus:ring-2 focus:ring-[var(--theme-purple)]/20 transition-all font-bold text-[var(--text-main)]"
+                                    className="bg-bg-soft border-none rounded-2xl h-14 px-6 focus:ring-2 focus:ring-theme-purple/20 transition-all font-bold text-text-main"
                                 />
                             )}
                         />
@@ -115,18 +115,18 @@ export default function SignupFormContent({
                     <button
                         type="submit"
                         disabled={isPending}
-                        className="w-full relative group h-16 bg-gradient-to-br from-[var(--theme-purple)] via-[var(--color-purple-600)] to-[var(--theme-purple)] bg-[length:200%_auto] hover:bg-[position:right_center] text-white font-black rounded-2xl shadow-xl shadow-[var(--theme-purple)]/20 hover:shadow-2xl hover:shadow-[var(--theme-purple)]/40 hover:-translate-y-1 active:scale-95 transition-all duration-500 disabled:opacity-70"
+                        className="w-full relative group py-4 bg-gradient-to-br from-theme-purple via-purple-600 to-theme-purple bg-[length:200%_auto] enabled:hover:bg-[position:right_center] text-white font-black rounded-2xl shadow-xl shadow-theme-purple/20 enabled:hover:shadow-2xl enabled:hover:shadow-theme-purple/40 enabled:hover:-translate-y-1 enabled:active:scale-95 transition-all duration-500 disabled:opacity-70"
                     >
                         <div className="flex items-center justify-center gap-3">
                             {isPending ? (
                                 <><Loader2 className="h-6 w-6 animate-spin" /><span className="tracking-widest">VERWERKEN...</span></>
                             ) : (
                                 <>{isPaid ? <CreditCard className="h-6 w-6" /> : <Send className="h-6 w-6" />}
-                                    <span className="tracking-widest">AANMELDEN (€{price.toFixed(2).replace('.', ',')})</span></>
+                                    <span className="tracking-widest">AANMELDEN</span></>
                             )}
                         </div>
                     </button>
-                    <div className="flex items-center justify-center gap-2 text-[10px] font-black text-[var(--text-muted)] opacity-50 uppercase tracking-tighter">
+                    <div className="flex items-center justify-center gap-2 text-[10px] font-black text-text-muted opacity-50 uppercase tracking-tighter">
                         <Info className="h-3 w-3" /> <span>Beveiligde verwerking & Directe bevestiging</span>
                     </div>
                 </div>

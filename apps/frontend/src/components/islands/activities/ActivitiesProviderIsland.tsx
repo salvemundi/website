@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { addMonths, subMonths } from 'date-fns';
 
 import { Eye, EyeOff, LayoutGrid, List, Calendar as CalendarIcon } from "lucide-react";
 
@@ -33,7 +32,6 @@ export default function ActivitiesProviderIsland({
 
     const setViewMode = useCallback((mode: 'list' | 'grid' | 'calendar') => {
         setViewModeState(mode);
-        // Persist in cookie (hidden preference)
         document.cookie = `activities_view_mode=${mode}; path=/; max-age=31536000; SameSite=Lax`;
     }, []);
     const [showPastActivities, setShowPastActivities] = useState(false);
@@ -69,7 +67,6 @@ export default function ActivitiesProviderIsland({
                 now
             );
 
-            // Upcoming first
             if (isAPast !== isBPast) return isAPast ? 1 : -1;
 
             const getEventTime = (event: Activiteit) => {
@@ -83,10 +80,8 @@ export default function ActivitiesProviderIsland({
             const bTime = getEventTime(b);
 
             if (!isAPast) {
-                // Both upcoming: Soonest first
                 return aTime - bTime;
             } else {
-                // Both past: Most recent first
                 return bTime - aTime;
             }
         });
@@ -207,8 +202,16 @@ export default function ActivitiesProviderIsland({
                                     selectedDay={selectedDay}
                                     onSelectDay={setSelectedDay}
                                     onEventClick={handleShowDetails}
-                                    onPrevMonth={() => setCurrentDate(subMonths(currentDate, 1))}
-                                    onNextMonth={() => setCurrentDate(addMonths(currentDate, 1))}
+                                    onPrevMonth={() => {
+                                        const d = new Date(currentDate);
+                                        d.setMonth(d.getMonth() - 1);
+                                        setCurrentDate(d);
+                                    }}
+                                    onNextMonth={() => {
+                                        const d = new Date(currentDate);
+                                        d.setMonth(d.getMonth() + 1);
+                                        setCurrentDate(d);
+                                    }}
                                     onGoToDate={(d: Date) => setCurrentDate(d)}
                                 />
                             </div>

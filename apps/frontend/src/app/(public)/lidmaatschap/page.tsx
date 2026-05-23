@@ -1,4 +1,3 @@
-import React from 'react';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import MembershipFormIsland from '@/components/islands/membership/MembershipFormIsland';
 import MembershipStatusIsland, { type MembershipUserData } from '@/components/islands/account/MembershipStatusIsland';
@@ -17,7 +16,6 @@ export const metadata = {
 export default async function MembershipPage() {
     await connection();
 
-    // NUCLEAR SSR: Fetch all data server-side to prevent layout shifts and flickering.
     const session = await getEnrichedSession();
 
     const user = session?.user as MembershipUserData | undefined;
@@ -38,13 +36,13 @@ export default async function MembershipPage() {
 
     return (
         <PublicPageShell
-            title={isGuest ? "WORD LID!" : "MIJN LIDMAATSCHAP"}
+            title={isGuest ? "Word Lid!" : "Mijn Lidmaatschap"}
             backgroundImage="" // Default gradient
         >
             <div className="max-w-app mx-auto">
-                <div className="flex flex-col sm:flex-row gap-6 px-6 py-8 sm:py-10 md:py-12">
+                <div className={isGuest ? "flex flex-col sm:flex-row gap-6 px-6 py-8 sm:py-10 md:py-12 pb-safe" : "px-6 py-8 sm:py-10 md:py-12 pb-safe"}>
                     <StandardFormCard
-                        title={isGuest ? 'INSCHRIJVEN' : (user.membership_status === 'active' ? 'STATUS' : 'VERLENGEN')}
+                        title={isGuest ? 'Inschrijven' : (user.membership_status === 'active' ? 'STATUS' : 'VERLENGEN')}
                         subtitle="Lidmaatschap"
                         className={isGuest ? 'w-full sm:w-1/2' : 'w-full max-w-2xl mx-auto'}
                     >
@@ -59,7 +57,7 @@ export default async function MembershipPage() {
                         <aside className="w-full sm:w-1/2 flex flex-col gap-6">
                             <div className="w-full text-center bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-[2rem] p-8 shadow-lg">
                                 <h2 className="text-3xl font-semibold text-theme-purple dark:text-purple-400 mb-4 tracking-tight">
-                                    WAAROM WORDEN LID?
+                                    Waarom Worden Lid?
                                 </h2>
                                 <p className="text-lg opacity-80 leading-relaxed font-medium">
                                     Als lid van Salve Mundi krijg je toegang tot exclusieve activiteiten en workshops.

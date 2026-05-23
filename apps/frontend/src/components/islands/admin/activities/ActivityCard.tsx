@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import {
     Calendar,
     Users,
@@ -10,9 +9,14 @@ import {
     Euro
 } from 'lucide-react';
 import { AdminActivity } from '@salvemundi/validations';
-import { format } from 'date-fns';
-import { nl } from 'date-fns/locale';
 import MediaAsset from '@/components/ui/media/MediaAsset';
+
+const formatDate = (dateString: string) =>
+    new Intl.DateTimeFormat('nl-NL', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    }).format(new Date(dateString));
 
 interface Props {
     event?: AdminActivity;
@@ -33,15 +37,10 @@ export default function ActivityCard({
     const isDraft = event.status === 'draft';
     const isScheduled = event.status === 'published' && event.publish_date && new Date(event.publish_date) > new Date();
 
-    const formatDate = (date: string) => {
-        return format(new Date(date), 'dd MMMM yyyy', { locale: nl });
-    };
-
     return (
         <div
             className={`flex flex-col md:flex-row bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-lg transition-all border border-[var(--beheer-border)] hover:shadow-2xl group/card relative overflow-hidden ${isPast ? 'opacity-60 grayscale-[0.5]' : ''}`}
         >
-            {/* Left: Image Banner */}
             <div className="hidden md:block relative w-full md:w-48 lg:w-56 min-h-[160px] md:min-h-full bg-[var(--beheer-card-soft)]/50 flex-shrink-0 border-r border-[var(--beheer-border)]">
                 <div className="absolute inset-0 p-4">
                     <div className="relative w-full h-full">
@@ -56,7 +55,6 @@ export default function ActivityCard({
                 </div>
             </div>
 
-            {/* Middle: Main Info */}
             <div className="flex-1 px-6 py-4 sm:px-8 sm:py-5 min-w-0 flex flex-col justify-center">
                 <div className="flex flex-wrap items-center gap-3 mb-2">
                     <h3 className="text-2xl font-semibold text-[var(--beheer-text)] leading-tight">
@@ -120,7 +118,6 @@ export default function ActivityCard({
                 </div>
             </div>
 
-            {/* Right: Original Actions Area */}
             <div className="flex flex-row md:flex-col gap-2 md:gap-3 justify-center items-stretch md:w-64 p-4 md:p-6 border-t md:border-t-0 md:border-l border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/20">
                 <button
                     onClick={() => onViewSignups(event.id)}

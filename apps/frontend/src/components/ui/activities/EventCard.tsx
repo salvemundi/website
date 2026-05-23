@@ -40,7 +40,7 @@ export const EventCard: React.FC<EventCardProps> = ({
             href={href}
             className={cn(
                 "flex flex-col gap-4 squircle-lg bg-white/95 dark:bg-black/40 backdrop-blur-md p-6 shadow-sm border border-[var(--border-color)]/20 transition group h-full ",
-                "hover:-translate-y-1.5 hover:shadow-xl hover:border-[var(--color-purple-500)]/30"
+                "hover:-translate-y-1.5 hover:shadow-xl hover:border-purple-500/30"
             )}
         >
             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-[var(--color-purple-500)] dark:text-[var(--color-purple-300)]">
@@ -60,7 +60,7 @@ export const EventCard: React.FC<EventCardProps> = ({
                     <span>{displayDate}</span>
                 </div>
 
-                <div className="h-7 w-7 rounded-full bg-[var(--color-purple-500)]/5 flex items-center justify-center text-[var(--color-purple-500)] group-hover:bg-[var(--color-purple-500)] group-hover:text-white transition-all">
+                <div className="h-7 w-7 rounded-full bg-purple-500/5 flex items-center justify-center text-[var(--color-purple-500)] group-hover:bg-purple-500 group-hover:text-white transition-all">
                     <ChevronRight className="h-4 w-4" />
                 </div>
             </div>

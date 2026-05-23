@@ -10,7 +10,7 @@ interface BoardYearCardProps {
 export const BoardYearCard = ({ board }: BoardYearCardProps) => {
     return (
         <div className="group relative overflow-hidden squircle-xl bg-[var(--bg-card)] p-8 shadow-2xl transition-all duration-500 hover:shadow-purple-500/10 dark:border dark:border-white/10 dark:hover:border-purple-500/30">
-            <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[var(--color-purple-500)]/5 blur-3xl transition-opacity duration-700 group-hover:opacity-100 opacity-0" />
+            <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-purple-500/5 blur-3xl transition-opacity duration-700 group-hover:opacity-100 opacity-0" />
 
             <div className="flex flex-col lg:flex-row gap-10">
                 <div className="relative w-full lg:w-[400px] aspect-[4/3] squircle-xl overflow-hidden shadow-lg ring-1 ring-black/5 dark:ring-white/5">
@@ -28,7 +28,7 @@ export const BoardYearCard = ({ board }: BoardYearCardProps) => {
 
                 <div className="flex-1 space-y-6">
                     <div>
-                        <div className="inline-block px-4 py-1.5 rounded-full bg-[var(--color-purple-500)]/10 text-[var(--color-purple-600)] dark:text-purple-400 text-xs font-black tracking-widest uppercase mb-3 ring-1 ring-[var(--color-purple-500)]/20">
+                        <div className="inline-block px-4 py-1.5 rounded-full bg-purple-500/10 text-[var(--color-purple-600)] dark:text-purple-400 text-xs font-black tracking-widest uppercase mb-3 ring-1 ring-purple-500/20">
                             {board.year}
                         </div>
                         <h3 className="text-3xl font-black text-[var(--text-main)] tracking-tight">

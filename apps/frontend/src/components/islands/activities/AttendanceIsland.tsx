@@ -32,7 +32,6 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
         setLoading(true);
         try {
             const data = await getActivitySignups(eventId);
-
             const mapped = data.map(s => ({
                 id: s.id || 0,
                 participant_name: s.participant_name || 'Onbekend',
@@ -41,7 +40,6 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                 qr_token: s.qr_token || undefined,
                 checked_in_at: s.checked_in_at || null
             }));
-
             setSignups(mapped);
         } catch (error) {
             safeConsoleError('[AttendanceIsland][fetchData]', error);
@@ -104,7 +102,8 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                                 safeConsoleError('[AttendanceIsland][startScannerRender]', error);
                             }
                         })();
-                    }, (_errorMessage) => {
+                    }, (errorMessage) => {
+                        safeConsoleError('[AttendanceIsland][scannerError]', errorMessage);
                     });
                 }, 100);
             } catch (error) {
@@ -152,9 +151,7 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                     />
                 </div>
                 <button
-                    onClick={() => {
-                        startScanner();
-                    }}
+                    onClick={startScanner}
                     className="w-full sm:w-auto h-10 sm:h-12 px-4 sm:px-6 rounded-xl bg-[var(--theme-purple)] text-white font-bold flex items-center justify-center sm:justify-start gap-2 hover:scale-105 transition-all shadow-lg shadow-[var(--theme-purple)]/20 text-sm sm:text-base"
                 >
                     <QrCode className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -172,47 +169,14 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                         Annuleren
                     </button>
                     <style jsx global>{`
-                        .scanner-reader {
-                            color: var(--text-main);
-                        }
-
-                        .scanner-reader :is(p, span, label, small, h1, h2, h3, h4, h5, h6) {
-                            color: var(--text-main) !important;
-                        }
-
-                        .scanner-reader :is(button, select, input) {
-                            color: var(--text-main) !important;
-                            background: var(--bg-soft) !important;
-                            border-color: var(--border-color) !important;
-                        }
-
-                        .scanner-reader button:hover,
-                        .scanner-reader button:focus-visible {
-                            background: var(--bg-card) !important;
-                        }
-
-                        .scanner-reader #reader__dashboard,
-                        .scanner-reader #reader__dashboard_section {
-                            color: var(--text-main) !important;
-                        }
-
-                        .scanner-reader #reader__dashboard_section_csr,
-                        .scanner-reader #reader__dashboard_section_swaplink,
-                        .scanner-reader #reader__status_span {
-                            color: var(--text-main) !important;
-                        }
-
-                        .scanner-reader #reader__dashboard_section_csr select,
-                        .scanner-reader #reader__dashboard_section_csr button,
-                        .scanner-reader #reader__dashboard_section_swaplink {
-                            background: var(--bg-soft) !important;
-                            color: var(--text-main) !important;
-                            border: 1px solid var(--border-color) !important;
-                        }
-
-                        .scanner-reader #reader__scan_region {
-                            border-color: var(--border-color) !important;
-                        }
+                        .scanner-reader { color: var(--text-main); }
+                        .scanner-reader :is(p, span, label, small, h1, h2, h3, h4, h5, h6) { color: var(--text-main) !important; }
+                        .scanner-reader :is(button, select, input) { color: var(--text-main) !important; background: var(--bg-soft) !important; border-color: var(--border-color) !important; }
+                        .scanner-reader button:hover, .scanner-reader button:focus-visible { background: var(--bg-card) !important; }
+                        .scanner-reader #reader__dashboard, .scanner-reader #reader__dashboard_section { color: var(--text-main) !important; }
+                        .scanner-reader #reader__dashboard_section_csr, .scanner-reader #reader__dashboard_section_swaplink, .scanner-reader #reader__status_span { color: var(--text-main) !important; }
+                        .scanner-reader #reader__dashboard_section_csr select, .scanner-reader #reader__dashboard_section_csr button, .scanner-reader #reader__dashboard_section_swaplink { background: var(--bg-soft) !important; color: var(--text-main) !important; border: 1px solid var(--border-color) !important; }
+                        .scanner-reader #reader__scan_region { border-color: var(--border-color) !important; }
                     `}</style>
                 </div>
             )}
@@ -271,9 +235,7 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                                     </td>
                                     <td className="px-4 sm:px-6 py-4 text-right">
                                         <button
-                                            onClick={() => {
-                                                void handleToggleCheckIn(s.id, s.checked_in);
-                                            }}
+                                            onClick={() => void handleToggleCheckIn(s.id, s.checked_in)}
                                             className={`px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${s.checked_in ? 'text-red-600 hover:bg-red-50' : 'text-green-600 hover:bg-green-50'}`}
                                         >
                                             {s.checked_in ? 'Afmelden' : 'Inchecken'}
@@ -288,9 +250,7 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
 
             <div className="flex justify-center">
                 <button
-                    onClick={() => {
-                        void fetchData();
-                    }}
+                    onClick={() => void fetchData()}
                     disabled={loading}
                     className="flex items-center gap-2 text-base font-bold text-[var(--theme-purple)]/60 hover:text-[var(--theme-purple)] disabled:opacity-50 transition-all"
                 >

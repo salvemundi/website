@@ -36,14 +36,7 @@ const pubCrawlWhatsAppUrlSchema = z.object({
     whatsapp_community_url: z.string().url().nullable().optional()
 });
 
-/**
- * EventHandlers: Beheert de business logica voor verschillende soorten events 
- * en bereidt de gegevens voor de mail-service voor.
- */
 export class EventHandlers {
-    /**
-     * Verwerkt een succesvolle betaling en bepaalt welk mail-sjabloon verzonden moet worden.
-     */
     static async handlePaymentSuccess(redis: Redis, rawPayload: unknown) {
         const data = PaymentSuccessEventSchema.parse(rawPayload) as unknown as LocalPaymentSuccessEvent;
         const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL || '';
@@ -61,10 +54,8 @@ export class EventHandlers {
             accessToken: data.accessToken
         };
 
-        // Check account
         mailData.hasAccount = data.userId ? true : (data.email ? await this.checkUserHasAccount(directusUrl, directusToken, data.email) : false);
 
-        // Confirmation URL
         const baseUrl = process.env.PUBLIC_URL || 'https://salvemundi.nl';
         if (data.registrationId && data.accessToken) {
             const path = data.registrationType === 'membership' || data.isContribution ? '/lidmaatschap/bevestiging' :
@@ -73,9 +64,8 @@ export class EventHandlers {
             mailData.confirmationUrl = `${baseUrl}${path}?id=${data.registrationId}&t=${data.accessToken}`;
         }
 
-        // Specific Flows
         if (data.isContribution || data.registrationType === 'membership') {
-            if (data.isNewMember || !data.userId) return; // Handled elsewhere
+            if (data.isNewMember || !data.userId) return;
             templateId = 'membership_renewal';
             await this.enrichMembershipRenewal(mailData, data, directusUrl, directusToken, baseUrl);
         } else if (data.registrationType === 'pub_crawl_signup' && data.registrationId) {
@@ -95,9 +85,6 @@ export class EventHandlers {
         await MailWorkerService.queueMail(redis, data.email, templateId, mailData);
     }
 
-    /**
-     * Verwerkt een succesvolle activiteit-inschrijving.
-     */
     static async handleActivitySignup(redis: Redis, rawPayload: unknown) {
         const data = ActivitySignupEventSchema.parse(rawPayload) as unknown as LocalActivitySignupEvent;
         const hasAccount = await this.checkUserHasAccount(
@@ -123,8 +110,6 @@ export class EventHandlers {
         });
     }
 
-    // --- Helpers ---
-
     private static async checkUserHasAccount(url: string, token: string, email: string): Promise<boolean> {
         try {
             const res = await fetch(`${url}/users?filter[email][_eq]=${encodeURIComponent(email)}&fields=id&limit=1`, {
@@ -132,7 +117,10 @@ export class EventHandlers {
             });
             const json = await res.json() as { data?: unknown[] };
             return (json.data?.length ?? 0) > 0;
-        } catch (_error) { return false; }
+        } catch (error) {
+            safeConsoleError('[EventHandlers][checkUserHasAccount]', error);
+            return false;
+        }
     }
 
     private static async enrichMembershipRenewal(mailData: Record<string, unknown>, data: LocalPaymentSuccessEvent, url: string, token: string, baseUrl: string) {
@@ -148,7 +136,7 @@ export class EventHandlers {
                 mailData.confirmationUrl = `${baseUrl}/lidmaatschap/bevestiging?transaction_id=${data.paymentId}&t=${data.accessToken || ''}`;
             }
         } catch (error) {
-            safeConsoleError(`[MailService][EventHandlers][enrichMembershipRenewal] Error while enriching membership renewal:`, error);
+            safeConsoleError('[EventHandlers][enrichMembershipRenewal]', error);
         }
     }
 
@@ -180,7 +168,7 @@ export class EventHandlers {
                 hasAccount: await this.checkUserHasAccount(url, token, data.email)
             };
         } catch (error) {
-            safeConsoleError('[event-handlers.ts][preparePubCrawlTickets] Error preparing pub crawl tickets:', error);
+            safeConsoleError('[EventHandlers][preparePubCrawlTickets]', error);
             return null;
         }
     }
@@ -194,14 +182,12 @@ export class EventHandlers {
                 .where('s.id', '=', signupId)
                 .executeTakeFirst();
 
-            if (!data) {
-                return null;
-            }
+            if (!data) return null;
 
             const validated = pubCrawlWhatsAppUrlSchema.parse(data);
             return validated.whatsapp_community_url ?? null;
-        } catch (error: unknown) {
-            safeConsoleError('[event-handlers.ts][getPubCrawlWhatsAppLink] Failed to fetch pub crawl event WhatsApp community link via Kysely', error);
+        } catch (error) {
+            safeConsoleError('[EventHandlers][getPubCrawlWhatsAppLink]', error);
             throw error;
         }
     }
@@ -229,7 +215,7 @@ export class EventHandlers {
                 mailData.eventName = eventJson.data?.name || mailData.eventName;
             }
         } catch (error) {
-            safeConsoleError(`[MailService][EventHandlers][enrichGenericEvent] Error while enriching generic event:`, error);
+            safeConsoleError('[EventHandlers][enrichGenericEvent]', error);
         }
     }
 
@@ -252,6 +238,9 @@ export class EventHandlers {
                 errorCorrectionLevel: 'M', width: 300, margin: 2,
                 color: { dark: '#5e2b52', light: '#ffffff' }
             });
-        } catch (_error) { return ''; }
+        } catch (error) {
+            safeConsoleError('[EventHandlers][generateQrDataUrl]', error);
+            return '';
+        }
     }
 }

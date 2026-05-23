@@ -187,7 +187,7 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
                         type="button"
                         onClick={() => { void handleCouponCheck(); }}
                         disabled={!couponValue || isPending}
-                        className="form-button !bg-theme-purple !text-white w-auto py-2 px-6 shadow-md shrink-0 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="form-button !bg-theme-purple !text-white w-auto py-2 px-6 shadow-md shrink-0 enabled:active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isPending ? '...' : 'Check'}
                     </button>

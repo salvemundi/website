@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import type { ReisTrip, ReisTripSignup } from '@salvemundi/validations/schema/reis.zod';
 import { authClient } from '@/lib/auth';
 import { ReisSignupStatus } from './ReisSignupStatus';
@@ -9,8 +9,8 @@ import { RefreshCcw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { revalidateReisAction } from '@/server/actions/events/reis.actions';
 import { StandardFormCard } from '@/components/ui/forms/StandardFormCard';
-
 import { type EnrichedUser } from '@/types/auth';
+import { safeConsoleError } from '@/server/utils/logger';
 
 interface ReisFormIslandProps {
     isSignedUp?: boolean;
@@ -40,18 +40,12 @@ export function ReisFormIsland({
     const handleRefresh = async () => {
         setRefreshing(true);
         try {
-            // Force a server-side revalidation of the path
             await revalidateReisAction();
-
-            // Re-fetch the session client-side to ensure no stale auth state
             await authClient.getSession();
-
-            // Trigger the server component to re-render with fresh data
             router.refresh();
-        } catch (_error) {
-            // Silently fail on background refresh
+        } catch (error) {
+            safeConsoleError('[ReisFormIsland][handleRefresh]', error);
         } finally {
-            // Keep the spinner going for a moment to indicate activity
             setTimeout(() => setRefreshing(false), 800);
         }
     };
@@ -65,7 +59,7 @@ export function ReisFormIsland({
                 <button
                     onClick={() => { void handleRefresh(); }}
                     disabled={refreshing}
-                    className="p-3 bg-theme-purple/5 hover:bg-theme-purple/10 rounded-2xl text-[var(--text-muted)] hover:text-theme-purple transition-all disabled:opacity-50 active:scale-90"
+                    className="p-3 bg-purple-500/5 hover:bg-purple-500/10 rounded-2xl text-[var(--text-muted)] hover:text-purple-500 transition-all disabled:opacity-50 active:scale-90"
                     title="Gegevens vernieuwen"
                 >
                     <RefreshCcw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />

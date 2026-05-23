@@ -3,6 +3,7 @@ import { query } from '@/lib/database';
 import { DashboardStatsSchema, type DashboardStats, type RecentActivity, RecentActivitySchema } from '@salvemundi/validations/schema/admin-dashboard.zod';
 import { z } from 'zod';
 import { EXCLUDED_EMAILS } from '@/shared/lib/constants/admin.constants';
+import { safeConsoleError } from '@/server/utils/logger';
 
 interface DbDashboardRow {
     members?: unknown;
@@ -92,7 +93,8 @@ export async function getDashboardStatsInternal(): Promise<DashboardStats> {
         };
 
         return DashboardStatsSchema.parse(stats);
-    } catch (_error) {
+    } catch (error) {
+        safeConsoleError('[AdminDashboard][getDashboardStatsInternal]', error);
         return {
             totalMembers: 0,
             upcomingEventsCount: 0,
@@ -129,7 +131,8 @@ export async function getRecentActivitiesInternal(): Promise<RecentActivity[]> {
         }));
 
         return z.array(RecentActivitySchema).parse(mapped);
-    } catch (_error) {
+    } catch (error) {
+        safeConsoleError('[AdminDashboard][getRecentActivitiesInternal]', error);
         return [];
     }
 }

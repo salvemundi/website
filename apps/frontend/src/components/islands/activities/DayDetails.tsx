@@ -1,9 +1,12 @@
 'use client';
 
 import { X, Clock, MapPin } from 'lucide-react';
-import { format, isSameDay, parseISO } from 'date-fns';
-import { nl } from 'date-fns/locale';
 import type { Activity } from '@salvemundi/validations/schema/activity.zod';
+
+const isSameDay = (d1: Date, d2: Date) =>
+    d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate();
 
 interface DayDetailsProps {
     selectedDay: Date;
@@ -13,13 +16,13 @@ interface DayDetailsProps {
 }
 
 export default function DayDetails({ selectedDay, activities, onClose, onEventClick }: DayDetailsProps) {
-    const dayEvents = activities.filter(event => isSameDay(parseISO(event.datum_start), selectedDay));
+    const dayEvents = activities.filter(event => isSameDay(new Date(event.datum_start), selectedDay));
 
     return (
         <div className="rounded-3xl bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-6 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-300">
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-bold text-[var(--theme-purple)] dark:text-[var(--text-main)]">
-                    {format(selectedDay, 'd MMMM', { locale: nl })}
+                    {new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'long' }).format(selectedDay)}
                 </h3>
                 <button
                     onClick={onClose}
@@ -48,7 +51,9 @@ export default function DayDetails({ selectedDay, activities, onClose, onEventCl
                             <div className="mt-2 flex items-center gap-3 text-xs text-[var(--text-muted)]">
                                 <div className="flex items-center gap-1">
                                     <Clock className="h-3 w-3" />
-                                    <span>{format(parseISO(event.datum_start), 'HH:mm')}</span>
+                                    <span>
+                                        {new Intl.DateTimeFormat('nl-NL', { hour: '2-digit', minute: '2-digit' }).format(new Date(event.datum_start))}
+                                    </span>
                                 </div>
                                 {event.locatie && (
                                     <div className="flex items-center gap-1">

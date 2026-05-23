@@ -8,6 +8,7 @@ import {
 } from '@/server/queries/admin-event.queries';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import AttendanceIsland from '@/components/islands/activities/AttendanceIsland';
+import { safeConsoleError } from '@/server/utils/logger';
 
 export const metadata: Metadata = {
     title: 'Scanner | SV Salve Mundi'
@@ -50,7 +51,7 @@ export default async function ScannerPage({ params }: { params: Promise<{ id: st
         return (
             <AdminPageShell
                 title="Scanner"
-                subtitle={`Scanner voor: \"${eventData.titel}\"`}
+                subtitle={`Scanner voor: "${eventData.titel}"`}
                 backHref={`/beheer/activiteiten/${id}/aanmeldingen`}
             >
                 <div className="pb-20">
@@ -58,7 +59,8 @@ export default async function ScannerPage({ params }: { params: Promise<{ id: st
                 </div>
             </AdminPageShell>
         );
-    } catch (_error) {
+    } catch (error) {
+        safeConsoleError('[ScannerPage][page]', error);
         return notFound();
     }
 }

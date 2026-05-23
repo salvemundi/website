@@ -58,7 +58,14 @@ export async function beforeHandler(ctx: AuthContext) {
         const redis = await getRedis();
         const cached = await redis.get(`session:${token}`);
         if (cached) {
-            const parsed = JSON.parse(cached) as unknown;
+            let parsed: unknown;
+            try {
+                parsed = JSON.parse(cached);
+            } catch (error) {
+                safeConsoleError('[redis-session/handlers][beforeHandler] JSON Parse Error', error);
+                return;
+            }
+
             const finalSession = (parsed && typeof parsed === 'object' && 'response' in parsed)
                 ? (parsed as { response: ExtendedSession }).response
                 : parsed as Partial<ExtendedSession> | null | undefined;
@@ -68,7 +75,7 @@ export async function beforeHandler(ctx: AuthContext) {
             return { response: finalSession as ExtendedSession };
         }
     } catch (error) {
-        safeConsoleError(`[redis-session/handlers.ts][beforeHandler] Error in beforeHandler:`, error);
+        safeConsoleError('[redis-session/handlers/beforeHandler] Critical Error:', error);
         return;
     }
 }
@@ -83,7 +90,9 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
         if (hasClone(returned)) {
             try {
                 sessionData = await returned.clone().json();
-            } catch (_error) {
+            } catch (error) {
+                // Log de fout, zo is 'error' nuttig gebruikt
+                safeConsoleError('[redis-session/handlers][afterHandler] Clone/JSON error', error);
                 return {
                     response: context.response || returned,
                     headers: context.headers || null
@@ -185,13 +194,13 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
                     const redis = await getRedis();
                     await redis.set(`session:${token}`, JSON.stringify(sessionWithUser), 'EX', 300);
                 } catch (error) {
-                    safeConsoleError(`[afterHandler] Redis Cache Error:`, error);
+                    safeConsoleError('[redis-session/handlers][afterHandler] Redis Cache Error:', error);
                 }
             }
         }
 
-        const isResponse = returned && typeof returned === 'object' && 
-                          (isResponseLike(returned) || hasClone(returned));
+        const isResponse = returned && typeof returned === 'object' &&
+            (isResponseLike(returned) || hasClone(returned));
 
         if (isResponse) {
             const newResponse = new Response(JSON.stringify(sessionWithUser), {
@@ -205,8 +214,8 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
             };
         }
 
-        const originalHeaders = (returned && typeof returned === 'object' && 'headers' in returned) 
-            ? (returned as { headers?: HeadersInit }).headers 
+        const originalHeaders = (returned && typeof returned === 'object' && 'headers' in returned)
+            ? (returned as { headers?: HeadersInit }).headers
             : null;
 
         return {
@@ -215,7 +224,7 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
         };
 
     } catch (error) {
-        safeConsoleError(`[redis-session/handlers.ts][afterHandler] Critical Error:`, error);
+        safeConsoleError('[redis-session/handlers][afterHandler] Critical Error:', error);
         return {
             response: context.response || returned || null,
             headers: context.headers || null

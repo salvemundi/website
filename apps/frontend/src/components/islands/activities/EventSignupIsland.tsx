@@ -5,6 +5,7 @@ import { signupForActivity } from '@/server/actions/events/public-activiteit.act
 import { type EventSignupForm } from '@salvemundi/validations/schema/activity.zod';
 import { formatPhoneNumber } from '@/lib/utils/phone-utils';
 import { type EnrichedUser } from '@/types/auth';
+import { safeConsoleError } from '@/server/utils/logger';
 
 import StatusSignedUp from './signup/StatusSignedUp';
 import StatusPast from './signup/StatusPast';
@@ -66,7 +67,6 @@ export default function EventSignupIsland({
                 if (result.checkoutUrl) {
                     window.location.href = result.checkoutUrl;
                 } else if ('signupId' in result && result.signupId && 'qrToken' in result && result.qrToken) {
-                    // Voor gratis events: ga naar de bevestigingspagina zodat men de QR-code ziet
                     window.location.href = `/activiteiten/bevestiging?id=${result.signupId}&transactionId=${result.qrToken}`;
                 } else {
                     setSignupStatus({
@@ -101,7 +101,8 @@ export default function EventSignupIsland({
                 } else {
                     setServerError(result.error || "Herbetaling mislukt.");
                 }
-            } catch (_error) {
+            } catch (error) {
+                safeConsoleError('[EventSignupIsland][handleRetry]', error);
                 setServerError("Er is een fout opgetreden bij het herstarten van de betaling.");
             }
         };
@@ -136,4 +137,3 @@ export default function EventSignupIsland({
         />
     );
 }
-

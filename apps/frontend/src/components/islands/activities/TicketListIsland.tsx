@@ -2,15 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { 
-    Ticket, 
-    Calendar, 
-    MapPin, 
-    QrCode, 
+import {
+    Ticket,
+    Calendar,
+    MapPin,
+    QrCode,
     Search,
     X
 } from 'lucide-react';
-import { m, AnimatePresence } from 'framer-motion';
 import QRDisplay from '@/shared/ui/QRDisplay';
 import { formatDate } from '@/shared/lib/utils/date';
 
@@ -39,7 +38,6 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
         setMounted(true);
     }, []);
 
-    // Scroll Lock when modal is open
     useEffect(() => {
         if (selectedTicket) {
             document.body.style.overflow = 'hidden';
@@ -50,18 +48,17 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
     const handleTicketSelect = (ticket: TicketData) => setSelectedTicket(ticket);
     const handleCloseModal = () => setSelectedTicket(null);
 
-    const filteredTickets = tickets.filter(ticket => 
+    const filteredTickets = tickets.filter(ticket =>
         (ticket.event_id?.name || 'Activiteit').toLowerCase().includes(search.toLowerCase())
     );
 
     return (
         <div className="space-y-12">
-            {/* Search & Stats Section */}
             <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
                 <div className="relative w-full md:w-96 group">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[var(--text-muted)] group-focus-within:text-[var(--theme-purple)] transition-colors" />
-                    <input 
-                        type="text" 
+                    <input
+                        type="text"
                         placeholder="Tickets zoeken..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
@@ -90,7 +87,7 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredTickets.map((ticket) => (
-                        <div 
+                        <div
                             key={ticket.id}
                             onClick={() => handleTicketSelect(ticket)}
                             className="group relative bg-[var(--bg-card)] p-6 rounded-[2.5rem] border border-[var(--border-color)] hover:border-[var(--theme-purple)]/50 transition-all duration-300 cursor-pointer hover:shadow-2xl hover:shadow-[var(--theme-purple)]/5 hover:-translate-y-1"
@@ -124,63 +121,51 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
                 </div>
             )}
 
-            {/* Ticket Modal Integration via Portal */}
             {mounted && createPortal(
-                <AnimatePresence>
-                    {selectedTicket && (
-                        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 isolate">
-                            {/* Backdrop */}
-                            <m.div 
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
+                selectedTicket && (
+                    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 isolate">
+                        <div
+                            onClick={handleCloseModal}
+                            className="absolute inset-0 bg-black/60 backdrop-blur-xl animate-in fade-in duration-300"
+                        />
+
+                        <div
+                            className="bg-[var(--bg-card)] rounded-[3rem] w-full max-w-lg shadow-2xl border border-white/10 overflow-hidden relative z-10 animate-in fade-in zoom-in-[0.98] slide-in-from-bottom-4 duration-300 ease-out"
+                        >
+                            <button
                                 onClick={handleCloseModal}
-                                className="absolute inset-0 bg-black/60 backdrop-blur-xl"
-                            />
-                            
-                            {/* Modal Content */}
-                            <m.div 
-                                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                                className="bg-[var(--bg-card)] rounded-[3rem] w-full max-w-lg shadow-2xl border border-white/10 overflow-hidden relative z-10"
+                                className="absolute top-6 right-6 p-2 h-10 w-10 flex items-center justify-center rounded-full bg-black/5 hover:bg-black/10 transition-colors z-20 group"
                             >
-                                <button 
-                                    onClick={handleCloseModal}
-                                    className="absolute top-6 right-6 p-2 h-10 w-10 flex items-center justify-center rounded-full bg-black/5 hover:bg-black/10 transition-colors z-20 group"
-                                >
-                                    <X className="h-5 w-5 text-[var(--text-muted)] group-hover:text-[var(--text-main)] transition-colors" />
-                                </button>
+                                <X className="h-5 w-5 text-[var(--text-muted)] group-hover:text-[var(--text-main)] transition-colors" />
+                            </button>
 
-                                <div className="p-8 md:p-12 space-y-8 flex flex-col items-center">
-                                    <div className="text-center space-y-2">
-                                        <p className="text-[10px] font-black text-[var(--theme-purple)] uppercase tracking-[0.3em]">Jouw Digitale Ticket</p>
-                                        <h2 className="text-3xl font-black text-[var(--text-main)] uppercase tracking-tighter italic">
-                                            {selectedTicket.event_id?.name || 'Activiteit'}
-                                        </h2>
-                                    </div>
+                            <div className="p-8 md:p-12 space-y-8 flex flex-col items-center">
+                                <div className="text-center space-y-2">
+                                    <p className="text-[10px] font-black text-[var(--theme-purple)] uppercase tracking-[0.3em]">Jouw Digitale Ticket</p>
+                                    <h2 className="text-3xl font-black text-[var(--text-main)] uppercase tracking-tighter italic">
+                                        {selectedTicket.event_id?.name || 'Activiteit'}
+                                    </h2>
+                                </div>
 
-                                    <div className="p-6 bg-white rounded-[3rem] shadow-2xl ring-1 ring-black/5">
-                                        <QRDisplay qrToken={selectedTicket.qr_token} size={240} />
-                                    </div>
+                                <div className="p-6 bg-white rounded-[3rem] shadow-2xl ring-1 ring-black/5">
+                                    <QRDisplay qrToken={selectedTicket.qr_token} size={240} />
+                                </div>
 
-                                    <div className="text-center space-y-1">
-                                        <p className="text-lg font-black text-[var(--text-main)] uppercase tracking-tight italic">{selectedTicket.participant_name}</p>
-                                        <p className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest opacity-60 italic">Toon deze code bij de entree</p>
-                                    </div>
+                                <div className="text-center space-y-1">
+                                    <p className="text-lg font-black text-[var(--text-main)] uppercase tracking-tight italic">{selectedTicket.participant_name}</p>
+                                    <p className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest opacity-60 italic">Toon deze code bij de entree</p>
+                                </div>
 
-                                    <div className="w-full border-t border-[var(--border-color)]/50 pt-8">
-                                        <div className="space-y-1">
-                                            <p className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest">Inschrijfdatum</p>
-                                            <p className="text-sm font-bold text-[var(--text-main)] uppercase">{formatDate(selectedTicket.date_created)}</p>
-                                        </div>
+                                <div className="w-full border-t border-[var(--border-color)]/50 pt-8">
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest">Inschrijfdatum</p>
+                                        <p className="text-sm font-bold text-[var(--text-main)] uppercase">{formatDate(selectedTicket.date_created)}</p>
                                     </div>
                                 </div>
-                            </m.div>
+                            </div>
                         </div>
-                    )}
-                </AnimatePresence>,
+                    </div>
+                ),
                 document.body
             )}
         </div>

@@ -1,11 +1,16 @@
 'use client';
 
 import { useMemo } from 'react';
-import { format } from 'date-fns';
-import { nl } from 'date-fns/locale';
 import { CreditCard, Clock, Tag } from 'lucide-react';
 import type { Transaction } from '@salvemundi/validations/schema/profiel.zod';
 import { Tile } from './profile/ProfielUI';
+
+const formatDate = (date: Date) =>
+    new Intl.DateTimeFormat('nl-NL', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+    }).format(date);
 
 interface TransactionsIslandProps {
     transactions?: Transaction[];
@@ -58,7 +63,7 @@ export const TransactionsIsland: React.FC<TransactionsIslandProps> = ({ transact
                                     <td className="px-6 py-6 whitespace-nowrap">
                                         <div className="flex items-center gap-2 text-sm font-bold text-[var(--text-main)]">
                                             <Clock className="h-4 w-4 text-[var(--color-purple-500)] opacity-40" />
-                                            {format(new Date(transaction.created_at || transaction.date_created || new Date()), 'd MMM yyyy', { locale: nl })}
+                                            {formatDate(new Date(transaction.created_at || transaction.date_created || new Date()))}
                                         </div>
                                     </td>
                                     <td className="px-6 py-6 transition-transform group-hover:translate-x-1">

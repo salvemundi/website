@@ -1,17 +1,14 @@
 'use client';
 
-import React from 'react';
 import { FileText, CreditCard } from 'lucide-react';
-import { format } from 'date-fns';
-import { nl } from 'date-fns/locale';
 import type { TripSignup } from '@salvemundi/validations/schema/admin-reis.zod';
 import { parseBoolean } from '@salvemundi/validations';
-import { 
-    HorizontalInput, 
-    HorizontalDate, 
-    HorizontalSelect, 
-    HorizontalTextarea, 
-    HorizontalCheckbox 
+import {
+    HorizontalInput,
+    HorizontalDate,
+    HorizontalSelect,
+    HorizontalTextarea,
+    HorizontalCheckbox
 } from './TripSignupFormFields';
 
 interface CockpitSignupFormProps {
@@ -21,15 +18,23 @@ interface CockpitSignupFormProps {
     section?: 'all' | 'personal' | 'admin' | 'personal_basic' | 'personal_extended';
 }
 
-export default function CockpitSignupForm({ 
-    signup, 
-    initialData, 
-    isBusTrip, 
-    section = 'all' 
+const toISO = (dateStr: string) => new Date(dateStr).toISOString().split('T')[0];
+
+const formatShortDate = (date: Date) =>
+    new Intl.DateTimeFormat('nl-NL', {
+        day: 'numeric',
+        month: 'short',
+        year: '2-digit'
+    }).format(date);
+
+export default function CockpitSignupForm({
+    signup,
+    initialData,
+    isBusTrip,
+    section = 'all'
 }: CockpitSignupFormProps) {
     return (
         <div className="space-y-4">
-            {/* Personal Basic Section */}
             {(section === 'all' || section === 'personal' || section === 'personal_basic') && (
                 <div className="space-y-3">
                     <div className="flex items-center gap-2 mb-2 opacity-50">
@@ -41,12 +46,11 @@ export default function CockpitSignupForm({
                         <HorizontalInput label="Achternaam" name="last_name" defaultValue={initialData?.last_name || signup.last_name} required />
                         <HorizontalInput label="Email" name="email" type="email" defaultValue={initialData?.email || signup.email} required />
                         <HorizontalInput label="Telefoon" name="phone_number" defaultValue={initialData?.phone_number || signup.phone_number || ''} />
-                        <HorizontalDate label="Geb. Datum" name="date_of_birth" defaultValue={initialData?.date_of_birth || (signup.date_of_birth ? format(new Date(signup.date_of_birth), 'yyyy-MM-dd') : '')} />
+                        <HorizontalDate label="Geb. Datum" name="date_of_birth" defaultValue={initialData?.date_of_birth || (signup.date_of_birth ? toISO(signup.date_of_birth) : '')} />
                     </div>
                 </div>
             )}
 
-            {/* Personal Extended Section (Documents, Allergies, etc) */}
             {(section === 'all' || section === 'personal' || section === 'personal_extended') && (
                 <div className="space-y-3">
                     {section === 'personal_extended' && (
@@ -64,7 +68,7 @@ export default function CockpitSignupForm({
                                     <option value="id_card">ID Kaart</option>
                                 </HorizontalSelect>
                                 <HorizontalInput label="ID Nummer" name="document_number" defaultValue={initialData?.document_number || signup.document_number || ''} />
-                                <HorizontalDate label="Vervaldatum" name="document_expiry_date" defaultValue={initialData?.document_expiry_date || (signup.document_expiry_date ? format(new Date(signup.document_expiry_date), 'yyyy-MM-dd') : '')} />
+                                <HorizontalDate label="Vervaldatum" name="document_expiry_date" defaultValue={initialData?.document_expiry_date || (signup.document_expiry_date ? toISO(signup.document_expiry_date) : '')} />
                             </>
                         )}
                         <div className="grid grid-cols-1 gap-2 pt-2">
@@ -79,7 +83,6 @@ export default function CockpitSignupForm({
                 </div>
             )}
 
-            {/* Admin Section */}
             {(section === 'all' || section === 'admin') && (
                 <div className="space-y-3">
                     <div className="flex items-center gap-2 mb-2 opacity-50">
@@ -100,11 +103,11 @@ export default function CockpitSignupForm({
                         <div className="pt-3 flex flex-col gap-2 px-1">
                             <div className="flex items-center justify-between">
                                 <HorizontalCheckbox label="Aanbetaling" name="deposit_paid" defaultChecked={initialData ? parseBoolean(initialData.deposit_paid) : parseBoolean(signup.deposit_paid)} />
-                                {signup.deposit_paid_at && <span className="text-[8px] font-semibold text-[var(--beheer-text-muted)] opacity-50">{format(new Date(signup.deposit_paid_at), 'd MMM yy', { locale: nl })}</span>}
+                                {signup.deposit_paid_at && <span className="text-[8px] font-semibold text-[var(--beheer-text-muted)] opacity-50">{formatShortDate(new Date(signup.deposit_paid_at))}</span>}
                             </div>
                             <div className="flex items-center justify-between">
                                 <HorizontalCheckbox label="Restbetaling" name="full_payment_paid" defaultChecked={initialData ? parseBoolean(initialData.full_payment_paid) : parseBoolean(signup.full_payment_paid)} />
-                                {signup.full_payment_paid_at && <span className="text-[8px] font-semibold text-[var(--beheer-text-muted)] opacity-50">{format(new Date(signup.full_payment_paid_at), 'd MMM yy', { locale: nl })}</span>}
+                                {signup.full_payment_paid_at && <span className="text-[8px] font-semibold text-[var(--beheer-text-muted)] opacity-50">{formatShortDate(new Date(signup.full_payment_paid_at))}</span>}
                             </div>
                         </div>
                     </div>

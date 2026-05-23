@@ -1,15 +1,9 @@
-/**
- * Utility functions for activities.
- */
+import { safeConsoleError } from '@/server/utils/logger';
 
-/**
- * Builds a committee email address based on the committee name.
- */
 export const buildCommitteeEmail = (name?: string | null): string | undefined => {
     if (!name) return undefined;
     const normalized = name.toLowerCase();
 
-    // Explicit mappings for known committees
     if (normalized.includes('feest')) return 'feest@salvemundi.nl';
     if (normalized.includes('activiteit')) return 'activiteiten@salvemundi.nl';
     if (normalized.includes('studie')) return 'studie@salvemundi.nl';
@@ -19,22 +13,18 @@ export const buildCommitteeEmail = (name?: string | null): string | undefined =>
     if (normalized.includes('reis')) return 'reis@salvemundi.nl';
     if (normalized.includes('kas')) return 'kas@salvemundi.nl';
 
-    // Fallback: derive from name
     const slug = name
-        .normalize('NFD') // Split characters from their accents
-        .replace(/[\u0300-\u036f]/g, '') // Remove accents
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
         .toLowerCase()
-        .replace(/commissie|committee/g, '') // Remove these common words
-        .replace(/[^a-z0-9]+/g, '') // Remove non-alphanumeric
+        .replace(/commissie|committee/g, '')
+        .replace(/[^a-z0-9]+/g, '')
         .trim();
 
     if (!slug) return undefined;
     return `${slug}@salvemundi.nl`;
 };
 
-/**
- * Formats an ISO date string to a human-readable Dutch format.
- */
 export const formatDutchDate = (dateStr?: string | null): string | null => {
     if (!dateStr) return null;
     try {
@@ -47,14 +37,12 @@ export const formatDutchDate = (dateStr?: string | null): string | null => {
             month: 'long',
             year: 'numeric'
         }).format(date);
-    } catch (_error) {
+    } catch (error) {
+        safeConsoleError('[ActiviteitUtils][formatDutchDate]', error);
         return dateStr;
     }
 };
 
-/**
- * Formats a time string (HH:MM:SS) to HH:MM.
- */
 export const formatTime = (timeStr?: string | null): string | null => {
     if (!timeStr) return null;
     const parts = timeStr.split(':');
