@@ -1,10 +1,8 @@
 'use client';
 
-import React from 'react';
 import { History } from 'lucide-react';
-import { format } from 'date-fns';
-import { nl } from 'date-fns/locale';
 import { SignupStatus } from './LedenSharedComponents';
+import { safeConsoleError } from '@/server/utils/logger';
 
 interface Signup {
     id: number;
@@ -25,8 +23,13 @@ export default function MemberActivitiesTab({ signups }: Props) {
     const formatDate = (dateString: string | null) => {
         if (!dateString) return 'Onbekend';
         try {
-            return format(new Date(dateString), 'd MMMM yyyy', { locale: nl });
-        } catch (_error) {
+            return new Intl.DateTimeFormat('nl-NL', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            }).format(new Date(dateString));
+        } catch (error) {
+            safeConsoleError('[MemberActivitiesTab][formatDate]', error);
             return 'Onbekend';
         }
     };

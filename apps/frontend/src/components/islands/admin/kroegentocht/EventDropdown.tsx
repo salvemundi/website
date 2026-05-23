@@ -1,17 +1,21 @@
 'use client';
 
 import { Calendar, ChevronDown, Beer } from 'lucide-react';
-import { format } from 'date-fns';
-import { nl } from 'date-fns/locale';
 import { type PubCrawlEvent } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { useState, useRef, useEffect } from 'react';
-import { m, AnimatePresence } from 'framer-motion';
 
 interface EventDropdownProps {
     events: PubCrawlEvent[];
     selectedEventId: string | number | null;
     onSelect: (event: PubCrawlEvent) => void;
 }
+
+const formatDate = (date: Date) =>
+    new Intl.DateTimeFormat('nl-NL', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+    }).format(date);
 
 export default function EventDropdown({
     events,
@@ -21,7 +25,6 @@ export default function EventDropdown({
     const dropdownRef = useRef<HTMLDivElement>(null);
     const selectedEvent = events.find(e => e.id === selectedEventId);
 
-    // Close dropdown on click outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -35,7 +38,6 @@ export default function EventDropdown({
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Sort events: upcoming first, then past
     const sortedEvents = [...events].sort((a, b) => {
         const dateA = a.date ? new Date(a.date).getTime() : 0;
         const dateB = b.date ? new Date(b.date).getTime() : 0;
@@ -60,51 +62,44 @@ export default function EventDropdown({
                 <ChevronDown className={`h-4 w-4 ml-auto text-[var(--beheer-text-muted)] transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
             </button>
 
-            <AnimatePresence>
-                {isOpen && (
-                    <m.div
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="absolute right-0 mt-2 w-72 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] shadow-[var(--shadow-card-elevated)] z-50 overflow-hidden"
-                    >
-                        <div className="p-2 space-y-1 max-h-[300px] overflow-y-auto custom-scrollbar">
-                            {sortedEvents.map((event) => {
-                                const eventDate = event.date ? new Date(event.date) : new Date(0);
-                                const isUpcoming = event.date ? eventDate >= today : false;
-                                const isSelected = selectedEventId === event.id;
+            {isOpen && (
+                <div
+                    className="absolute right-0 mt-2 w-72 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] shadow-[var(--shadow-card-elevated)] z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200 ease-out"
+                >
+                    <div className="p-2 space-y-1 max-h-[300px] overflow-y-auto custom-scrollbar">
+                        {sortedEvents.map((event) => {
+                            const eventDate = event.date ? new Date(event.date) : new Date(0);
+                            const isUpcoming = event.date ? eventDate >= today : false;
+                            const isSelected = selectedEventId === event.id;
 
-                                return (
-                                    <button
-                                        key={event.id}
-                                        onClick={() => {
-                                            onSelect(event);
-                                            setIsOpen(false);
-                                        }}
-                                        className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left group/item ${
-                                            isSelected 
-                                                ? 'bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)]' 
-                                                : 'hover:bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)]'
+                            return (
+                                <button
+                                    key={event.id}
+                                    onClick={() => {
+                                        onSelect(event);
+                                        setIsOpen(false);
+                                    }}
+                                    className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left group/item ${isSelected
+                                        ? 'bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)]'
+                                        : 'hover:bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)]'
                                         }`}
-                                    >
-                                        <div className={`p-2 rounded-lg transition-colors ${isSelected ? 'bg-[var(--beheer-accent)] text-white' : 'bg-[var(--beheer-border)]/50 group-hover/item:bg-[var(--beheer-accent)]/10 group-hover/item:text-[var(--beheer-accent)]'}`}>
-                                            <Calendar className="h-3.5 w-3.5" />
+                                >
+                                    <div className={`p-2 rounded-lg transition-colors ${isSelected ? 'bg-[var(--beheer-accent)] text-white' : 'bg-[var(--beheer-border)]/50 group-hover/item:bg-[var(--beheer-accent)]/10 group-hover/item:text-[var(--beheer-accent)]'}`}>
+                                        <Calendar className="h-3.5 w-3.5" />
+                                    </div>
+                                    <div className="flex flex-col min-w-0">
+                                        <span className="text-sm font-semibold truncate">{event.name}</span>
+                                        <div className="flex items-center gap-2 text-[10px] opacity-60">
+                                            <span>{formatDate(eventDate)}</span>
+                                            {isUpcoming && <span className="text-green-500 font-semibold tracking-tighter">Live</span>}
                                         </div>
-                                        <div className="flex flex-col min-w-0">
-                                            <span className="text-sm font-semibold truncate">{event.name}</span>
-                                            <div className="flex items-center gap-2 text-[10px] opacity-60">
-                                                <span>{format(eventDate, 'd MMM yyyy', { locale: nl })}</span>
-                                                {isUpcoming && <span className="text-green-500 font-semibold tracking-tighter">Live</span>}
-                                            </div>
-                                        </div>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </m.div>
-                )}
-            </AnimatePresence>
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

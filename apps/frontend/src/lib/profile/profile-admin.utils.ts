@@ -1,6 +1,8 @@
-import { startOfDay, isBefore } from 'date-fns';
+'use client';
+
 import { type EventSignup } from '@salvemundi/validations/schema/profiel.zod';
 import { type EnrichedPubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
+import { safeConsoleError } from '@/server/utils/logger';
 
 interface LocalEventSignup {
     event_id?: { event_date?: string | null } | null;
@@ -9,6 +11,8 @@ interface LocalEventSignup {
 interface LocalPubCrawlSignup {
     pub_crawl_event_id?: { date?: string | null } | null;
 }
+
+const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
 export type CommitteeMeta = {
     id: string | number;
@@ -39,10 +43,8 @@ export type SessionUser = {
 };
 
 export function mergeUserData(sUser: SessionUser | null | undefined, initialUser: SessionUser): SessionUser {
-    // NUCLEAR SSR: Start with server-provided enriched user if no session
     if (!sUser) return initialUser;
 
-    // Merge client session with fresh server metadata
     const mergedUser = {
         ...sUser,
         minecraft_username: initialUser.minecraft_username ?? sUser.minecraft_username,
@@ -50,19 +52,17 @@ export function mergeUserData(sUser: SessionUser | null | undefined, initialUser
         membership_status: initialUser.membership_status ?? sUser.membership_status,
         membership_expiry: initialUser.membership_expiry ?? sUser.membership_expiry,
         date_of_birth: initialUser.date_of_birth ?? sUser.date_of_birth,
-        entra_id: initialUser.entra_id ?? sUser.entra_id 
+        entra_id: initialUser.entra_id ?? sUser.entra_id
     };
 
-    // Enrich name if missing on client
     if (!mergedUser.name && (mergedUser.first_name || mergedUser.last_name)) {
         mergedUser.name = `${mergedUser.first_name || ''} ${mergedUser.last_name || ''}`.trim();
     }
-    
-    // Merge committees from initialUser if missing in session
+
     if (!mergedUser.committees && initialUser.committees) {
         mergedUser.committees = initialUser.committees;
     }
-    
+
     return mergedUser;
 }
 
@@ -107,12 +107,12 @@ export function calculateMembershipStatus(user: SessionUser) {
 }
 
 export function filterProfileSignups(
-    eventSignups: EventSignup[], 
-    pubCrawlSignups: EnrichedPubCrawlSignup[], 
+    eventSignups: EventSignup[],
+    pubCrawlSignups: EnrichedPubCrawlSignup[],
     showPastEvents: boolean
 ) {
     const todayStart = startOfDay(new Date());
-    
+
     let allSignups = [
         ...eventSignups.map(s => ({ ...s, _type: 'event' as const })),
         ...pubCrawlSignups.map(s => ({ ...s, _type: 'pub_crawl' as const }))
@@ -133,8 +133,11 @@ export function filterProfileSignups(
                     if (!eventData?.date) return true;
                     eventDate = startOfDay(new Date(eventData.date));
                 }
-                return !isBefore(eventDate, todayStart);
-            } catch {
+
+                // Returns true if event is today or in the future
+                return eventDate.getTime() >= todayStart.getTime();
+            } catch (error) {
+                safeConsoleError('[filterProfileSignups][filter]', error);
                 return true;
             }
         });
@@ -154,6 +157,7 @@ export function filterProfileSignups(
         if (!dateA && !dateB) return 0;
         if (!dateA) return 1;
         if (!dateB) return -1;
+
         return new Date(dateB).getTime() - new Date(dateA).getTime();
     });
 }

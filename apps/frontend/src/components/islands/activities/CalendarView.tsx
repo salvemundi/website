@@ -1,20 +1,6 @@
 'use client';
 
-import {
-    format,
-    startOfMonth,
-    endOfMonth,
-    startOfWeek,
-    endOfWeek,
-    eachDayOfInterval,
-    isSameMonth,
-    isSameDay,
-    isToday,
-    parseISO
-} from 'date-fns';
-import { nl } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-
 import { type Activiteit } from '@salvemundi/validations/schema/activity.zod';
 
 interface CalendarViewProps {
@@ -38,21 +24,39 @@ export default function CalendarView({
     onNextMonth,
     onGoToDate
 }: CalendarViewProps) {
-    const monthStart = startOfMonth(currentDate);
-    const monthEnd = endOfMonth(monthStart);
-    const startDate = startOfWeek(monthStart, { weekStartsOn: 1 });
-    const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 });
+    const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
 
-    const days = eachDayOfInterval({
-        start: startDate,
-        end: endDate });
+    const getStartOfWeek = (d: Date) => {
+        const date = new Date(d);
+        const day = date.getDay();
+        const diff = date.getDate() - (day === 0 ? 6 : day - 1);
+        return new Date(date.setDate(diff));
+    };
+
+    const getEndOfWeek = (d: Date) => {
+        const date = new Date(d);
+        const day = date.getDay();
+        const diff = date.getDate() + (day === 0 ? 0 : 7 - day);
+        return new Date(date.setDate(diff));
+    };
+
+    const startDate = getStartOfWeek(monthStart);
+    const endDate = getEndOfWeek(monthEnd);
+
+    const days: Date[] = [];
+    const day = new Date(startDate);
+    while (day <= endDate) {
+        days.push(new Date(day));
+        day.setDate(day.getDate() + 1);
+    }
 
     const weekDays = ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'];
 
     const getEventsForDay = (day: Date) => {
         return events.filter(event => {
-            const start = parseISO(event.datum_start);
-            const end = event.datum_eind ? parseISO(event.datum_eind) : start;
+            const start = new Date(event.datum_start);
+            const end = event.datum_eind ? new Date(event.datum_eind) : start;
 
             const d = new Date(day.getFullYear(), day.getMonth(), day.getDate()).getTime();
             const s = new Date(start.getFullYear(), start.getMonth(), start.getDate()).getTime();
@@ -66,7 +70,7 @@ export default function CalendarView({
         <div className="bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 rounded-3xl shadow-xl overflow-hidden">
             <div className="p-6 flex items-center justify-between text-[var(--theme-purple)] dark:text-[var(--text-main)]">
                 <h2 className="text-2xl font-bold capitalize">
-                    {format(currentDate, 'MMMM yyyy', { locale: nl })}
+                    {currentDate.toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' })}
                 </h2>
                 <div className="flex items-center gap-2">
                     <button
@@ -107,9 +111,9 @@ export default function CalendarView({
             <div className="grid grid-cols-7 auto-rows-fr bg-[var(--border-color)] gap-px">
                 {days.map((day) => {
                     const dayEvents = getEventsForDay(day);
-                    const isCurrentMonth = isSameMonth(day, monthStart);
-                    const isDayToday = isToday(day);
-                    const isSelected = selectedDay && isSameDay(day, selectedDay);
+                    const isCurrentMonth = day.getMonth() === monthStart.getMonth();
+                    const isDayToday = day.toDateString() === new Date().toDateString();
+                    const isSelected = selectedDay && day.toDateString() === selectedDay.toDateString();
 
                     return (
                         <div
@@ -127,7 +131,7 @@ export default function CalendarView({
                                         ${isDayToday ? 'bg-[var(--theme-purple)] text-[var(--color-white)]' : isSelected ? 'text-[var(--theme-purple)]' : 'text-[var(--text-main)]'}
                                     `}
                                 >
-                                    {format(day, 'd')}
+                                    {day.getDate()}
                                 </span>
                             </div>
 

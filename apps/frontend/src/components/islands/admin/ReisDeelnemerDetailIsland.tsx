@@ -18,8 +18,6 @@ import {
     updateSignupActivities
 } from '@/server/actions/admin/reis-signups.actions';
 import type { Trip, TripSignup, TripActivity } from '@salvemundi/validations/schema/admin-reis.zod';
-import { differenceInYears, format } from 'date-fns';
-import { nl } from 'date-fns/locale';
 import { useRouter } from 'next/navigation';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
@@ -28,6 +26,26 @@ import { useAdminToast } from '@/hooks/use-admin-toast';
 import { safeConsoleError } from '@/server/utils/logger';
 import SignupForm from './reis/SignupForm';
 import SignupActivities from './reis/SignupActivities';
+
+const calculateAge = (dateOfBirth: string) => {
+    const dob = new Date(dateOfBirth);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+        age--;
+    }
+    return age;
+};
+
+const formatDateTime = (date: Date) =>
+    new Intl.DateTimeFormat('nl-NL', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    }).format(date);
 
 interface ReisDeelnemerDetailIslandProps {
     initialSignup: TripSignup;
@@ -97,9 +115,8 @@ export default function ReisDeelnemerDetailIsland({
         });
     };
 
-    const age = initialSignup.date_of_birth
-        ? differenceInYears(new Date(), new Date(initialSignup.date_of_birth))
-        : '?';
+    const age = initialSignup.date_of_birth ? calculateAge(initialSignup.date_of_birth) : '?';
+
     const paymentStatus = initialSignup.full_payment_paid
         ? 'Voldaan'
         : initialSignup.deposit_paid
@@ -177,7 +194,7 @@ export default function ReisDeelnemerDetailIsland({
                                 <span>Aangemeld op</span>
                                 <span className="text-[var(--beheer-text)] font-semibold">
                                     {initialSignup.date_created
-                                        ? format(new Date(initialSignup.date_created), 'd MMM yyyy HH:mm', { locale: nl })
+                                        ? formatDateTime(new Date(initialSignup.date_created))
                                         : '-'}
                                 </span>
                             </div>

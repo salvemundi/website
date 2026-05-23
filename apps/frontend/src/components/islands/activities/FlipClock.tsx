@@ -1,7 +1,19 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { m, AnimatePresence } from 'framer-motion';
+
+const flipStyles = `
+    @keyframes slideDownIn {
+        0% { transform: translateY(-100%); opacity: 0; }
+        100% { transform: translateY(0%); opacity: 1; }
+    }
+    @keyframes slideDownOut {
+        0% { transform: translateY(0%); opacity: 1; }
+        100% { transform: translateY(100%); opacity: 0; }
+    }
+    .digit-in { animation: slideDownIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    .digit-out { animation: slideDownOut 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+`;
 
 interface FlipClockProps {
     targetDate: string;
@@ -10,13 +22,65 @@ interface FlipClockProps {
     serverTime?: string;
 }
 
+const FlipDigit: React.FC<{ digit: number }> = ({ digit }) => {
+    const [current, setCurrent] = useState(digit);
+    const [previous, setPrevious] = useState<number | null>(null);
+
+    useEffect(() => {
+        if (digit !== current) {
+            setPrevious(current);
+            setCurrent(digit);
+        }
+    }, [digit, current]);
+
+    return (
+        <div className="relative w-8 h-16 sm:w-14 sm:h-28 lg:w-16 lg:h-32 overflow-hidden"
+            style={{
+                maskImage: 'linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)',
+                WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)'
+            }}>
+
+            {previous !== null && (
+                <div
+                    key={`prev-${previous}`}
+                    className="absolute inset-0 flex items-center justify-center font-black text-4xl sm:text-5xl md:text-6xl leading-none text-[var(--text-main)] digit-out"
+                    onAnimationEnd={() => setPrevious(null)}
+                >
+                    {previous}
+                </div>
+            )}
+
+            <div
+                key={`curr-${current}`}
+                className="absolute inset-0 flex items-center justify-center font-black text-4xl sm:text-5xl md:text-6xl leading-none text-[var(--text-main)] digit-in"
+            >
+                {current}
+            </div>
+        </div>
+    );
+};
+
+const FlipBlock: React.FC<{ value: number; label: string }> = ({ value, label }) => {
+    return (
+        <div className="flex flex-col items-center gap-2">
+            <div className="flex gap-0">
+                <FlipDigit digit={Math.floor(value / 10)} />
+                <FlipDigit digit={value % 10} />
+            </div>
+            <span className="text-[9px] sm:text-[11px] font-black uppercase tracking-[0.2em] text-[var(--color-purple-600)] dark:text-[var(--color-purple-400)] opacity-60">
+                {label}
+            </span>
+        </div>
+    );
+};
+
 const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href, serverTime }) => {
     const [timeOffset, setTimeOffset] = useState<number | null>(null);
 
     const calculateTimeLeft = useCallback((manualNow?: number) => {
         const now = new Date();
-        const adjustedNow = manualNow !== undefined 
-            ? manualNow 
+        const adjustedNow = manualNow !== undefined
+            ? manualNow
             : (timeOffset !== null ? now.getTime() + timeOffset : now.getTime());
         const difference = +new Date(targetDate) - adjustedNow;
 
@@ -38,7 +102,6 @@ const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href, serverTi
     });
 
     useEffect(() => {
-        // Calculate the offset between server and client time once
         if (serverTime) {
             const serverDate = new Date(serverTime);
             const clientDate = new Date();
@@ -49,7 +112,6 @@ const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href, serverTi
     }, [serverTime]);
 
     useEffect(() => {
-        // Update timeLeft immediately after timeOffset is calculated
         if (timeOffset !== null) {
             setTimeLeft(calculateTimeLeft());
         }
@@ -60,7 +122,6 @@ const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href, serverTi
             setTimeLeft(calculateTimeLeft());
         }, 1000);
 
-        // Sync immediately when the tab becomes visible again
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'visible') {
                 setTimeLeft(calculateTimeLeft());
@@ -79,6 +140,9 @@ const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href, serverTi
 
     return (
         <div className="flex flex-col items-center">
+            {/* Veilige injectie: geen dangerouslySetInnerHTML, dus linter is tevreden */}
+            <style>{flipStyles}</style>
+
             {title && (
                 <div className="text-center mb-8">
                     <h2 className="text-2xl sm:text-4xl md:text-5xl font-black text-[var(--color-purple-800)] dark:text-[var(--color-purple-200)] uppercase tracking-tight mb-2">
@@ -117,52 +181,6 @@ const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href, serverTi
                     </a>
                 </div>
             )}
-        </div>
-    );
-};
-
-interface FlipBlockProps {
-    value: number;
-    label: string;
-}
-
-const FlipBlock: React.FC<FlipBlockProps> = ({ value, label }) => {
-    return (
-        <div className="flex flex-col items-center gap-2">
-            <div className="flex gap-0">
-                <FlipDigit digit={Math.floor(value / 10)} />
-                <FlipDigit digit={value % 10} />
-            </div>
-            <span className="text-[9px] sm:text-[11px] font-black uppercase tracking-[0.2em] text-[var(--color-purple-600)] dark:text-[var(--color-purple-400)] opacity-60">
-                {label}
-            </span>
-        </div>
-    );
-};
-
-const FlipDigit: React.FC<{ digit: number }> = ({ digit }) => {
-    return (
-        <div className="relative w-8 h-16 sm:w-14 sm:h-28 lg:w-16 lg:h-32 overflow-hidden"
-            style={{
-                maskImage: 'linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)',
-                WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)'
-            }}>
-            <AnimatePresence mode="popLayout" initial={false}>
-                <m.div
-                    key={digit}
-                    initial={{ y: '-100%', opacity: 0 }}
-                    animate={{ y: '0%', opacity: 1 }}
-                    exit={{ y: '100%', opacity: 0 }}
-                    transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 30
-                    }}
-                    className="absolute inset-0 flex items-center justify-center font-black text-4xl sm:text-5xl md:text-6xl leading-none text-[var(--text-main)]"
-                >
-                    {digit}
-                </m.div>
-            </AnimatePresence>
         </div>
     );
 };

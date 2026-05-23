@@ -19,7 +19,13 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
         const headerSecret = Array.isArray(headerSecretRaw) ? headerSecretRaw[0] : headerSecretRaw;
         const queryToken = request.query.token;
 
-        const isAuthorized = timingSafeCompare(headerSecret || '', webhookSecret) ||
+        // Also accept internal service token via Authorization header (used by frontend proxy)
+        const authHeader = request.headers.authorization;
+        const internalToken = process.env.INTERNAL_SERVICE_TOKEN;
+        const hasValidBearer = !!(internalToken && authHeader === `Bearer ${internalToken}`);
+
+        const isAuthorized = hasValidBearer ||
+            timingSafeCompare(headerSecret || '', webhookSecret) ||
             timingSafeCompare(queryToken || '', webhookSecret);
 
         if (!isAuthorized) {

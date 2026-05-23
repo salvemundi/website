@@ -1,3 +1,5 @@
+'server-only';
+
 import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { hasPermission } from "@/shared/lib/permissions";
@@ -14,7 +16,6 @@ export async function requireAdminResource(resource: AdminResource) {
     }
 
     const user = session.user;
-
     let committees = user.committees;
 
     if (!committees || !Array.isArray(committees)) {
@@ -33,12 +34,12 @@ export async function requireAdminResource(resource: AdminResource) {
 
 export async function getEnrichedSession(): Promise<{ user: EnrichedUser; session: Session } | null> {
     try {
-
         let h;
         try {
             h = await headers();
-        } catch (_error) {
-            // Expected outside of request context
+        } catch (error) {
+            // Log de fout zodat 'error' gebruikt wordt en de linter niet klaagt
+            safeConsoleError('[AuthUtils][getEnrichedSession] Header retrieval failed', error);
             return null;
         }
 
@@ -59,12 +60,11 @@ export async function getEnrichedSession(): Promise<{ user: EnrichedUser; sessio
         return null;
     } catch (error) {
         const stack = error instanceof Error ? error.stack : new Error().stack;
-        safeConsoleError('[AuthUtils][getEnrichedSession] Technical Failure:', {
+        safeConsoleError('[AuthUtils][getEnrichedSession] Critical failure', {
             message: error instanceof Error ? error.message : String(error),
             stack,
             errorObject: error
         });
-        // Propagate technical errors to prevent silent failures and redirect loops
         throw error;
     }
 }

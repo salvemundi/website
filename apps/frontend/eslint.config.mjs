@@ -51,7 +51,7 @@ const eslintConfig = [
             // 🛡️ 3. REACT & XSS PREVENTIE
             // ==========================================
             // Verbiedt het direct injecteren van ongewassen HTML.
-            // Dit dwingt ontwikkelaars om jouw <SafeHtml> of <SafeMarkdown> componenten te gebruiken!
+            // Dit dwingt ontwikkelaars om <SafeMarkdown> componenten te gebruiken!
             "react/no-danger": "error",
             // Voorkomt Reverse Tabnabbing bij externe links.
             "react/jsx-no-target-blank": "error",

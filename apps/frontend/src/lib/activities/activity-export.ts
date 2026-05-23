@@ -1,26 +1,30 @@
-import { format } from 'date-fns';
-import { nl } from 'date-fns/locale';
 import { downloadCSV } from '@/lib/utils/export';
 import { type Signup } from '@/components/islands/admin/activities/ActiviteitAanmeldingenIsland';
 import { getSignupName, getSignupEmail, getSignupPhone } from './activity-signup.utils';
 
-/**
- * Maps signup data to CSV format and triggers download.
- */
 export function exportSignupsToCSV(signups: Signup[], eventName: string) {
     if (signups.length === 0) return;
 
-    const data = signups.map(signup => ({
-        Naam: getSignupName(signup),
-        Email: getSignupEmail(signup),
-        Telefoon: getSignupPhone(signup),
-        Status: signup.payment_status || 'open',
-        'Checked In': signup.checked_in ? 'Ja' : 'Nee',
-        'Inschrijfdatum': signup.created_at ? format(new Date(signup.created_at), 'dd-MM-yyyy HH:mm', { locale: nl }) : 'Onbekend'
-    }));
+    const data = signups.map(signup => {
+        const createdAt = signup.created_at ? new Date(signup.created_at) : null;
+        const formattedDate = createdAt && !isNaN(createdAt.getTime())
+            ? `${createdAt.getDate().toString().padStart(2, '0')}-${(createdAt.getMonth() + 1).toString().padStart(2, '0')}-${createdAt.getFullYear()} ${createdAt.getHours().toString().padStart(2, '0')}:${createdAt.getMinutes().toString().padStart(2, '0')}`
+            : 'Onbekend';
+
+        return {
+            Naam: getSignupName(signup),
+            Email: getSignupEmail(signup),
+            Telefoon: getSignupPhone(signup),
+            Status: signup.payment_status || 'open',
+            'Checked In': signup.checked_in ? 'Ja' : 'Nee',
+            'Inschrijfdatum': formattedDate
+        };
+    });
 
     const sanitizedEventName = (eventName || 'Activiteit').replace(/[^a-z0-9]/gi, '_');
-    const fileName = `Aanmeldingen_${sanitizedEventName}_${format(new Date(), 'yyyy-MM-dd')}.csv`;
-    
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
+    const fileName = `Aanmeldingen_${sanitizedEventName}_${dateStr}.csv`;
+
     downloadCSV(data, fileName);
 }

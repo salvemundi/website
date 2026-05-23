@@ -26,7 +26,8 @@ export async function fetchPubCrawlSignupsDb(eventId: number): Promise<(PubCrawl
                 try {
                     const parsed = JSON.parse(raw.name_initials) as unknown;
                     participants = Array.isArray(parsed) ? (parsed as { name: string, initial: string }[]) : [(parsed as { name: string, initial: string })];
-                } catch (_error: unknown) {
+                } catch (error) {
+                    safeConsoleError('[PubCrawlUtils][fetchPubCrawlSignupsDb] JSON parse error', error);
                 }
             }
         }
@@ -64,8 +65,8 @@ export async function fetchPubCrawlSignupByIdDb(signupId: number): Promise<Enric
             try {
                 const parsed = JSON.parse(signup.name_initials) as unknown;
                 participants = Array.isArray(parsed) ? (parsed as { name: string, initial: string }[]) : [(parsed as { name: string, initial: string })];
-            } catch (error: unknown) {
-                safeConsoleError(`[signup-db.utils.ts][fetchPubCrawlSignupByIdDb] Error parsing name_initials:`, error);
+            } catch (error) {
+                safeConsoleError('[PubCrawlUtils][fetchPubCrawlSignupByIdDb] Error parsing name_initials:', error);
             }
         }
     }
@@ -118,8 +119,8 @@ export async function fetchUserPubCrawlSignupsDb(email: string): Promise<Enriche
                 image: row.event_image ?? undefined
             }
         })) as unknown as EnrichedPubCrawlSignup[];
-    } catch (error: unknown) {
-        safeConsoleError('[signup-db.utils.ts][fetchUserPubCrawlSignupsDb] Failed to fetch user pub crawl signups:', error);
+    } catch (error) {
+        safeConsoleError('[PubCrawlUtils][fetchUserPubCrawlSignupsDb]', error);
         return [];
     }
 }
@@ -155,7 +156,8 @@ export async function createPubCrawlSignupDb(data: {
         const id = res.rows[0]?.id;
         if (!id) throw new Error('Insert failed');
         return id;
-    } catch (error: unknown) {
+    } catch (error) {
+        safeConsoleError('[PubCrawlUtils][createPubCrawlSignupDb]', error);
         throw error;
     }
 }
@@ -167,12 +169,22 @@ export async function updatePubCrawlSignupDb(id: number, data: Partial<PubCrawlS
     const setClauses = keys.map((k, i) => `${k} = $${i + 2}`).join(', ');
     const values = Object.values(data) as QueryParam[];
 
-    await query<never>(
-        `UPDATE pub_crawl_signups SET ${setClauses} WHERE id = $1`,
-        [id, ...values]
-    );
+    try {
+        await query<never>(
+            `UPDATE pub_crawl_signups SET ${setClauses} WHERE id = $1`,
+            [id, ...values]
+        );
+    } catch (error) {
+        safeConsoleError('[PubCrawlUtils][updatePubCrawlSignupDb]', error);
+        throw error;
+    }
 }
 
 export async function deletePubCrawlSignupDb(id: number): Promise<void> {
-    await query<never>(`DELETE FROM pub_crawl_signups WHERE id = $1`, [id]);
+    try {
+        await query<never>(`DELETE FROM pub_crawl_signups WHERE id = $1`, [id]);
+    } catch (error) {
+        safeConsoleError('[PubCrawlUtils][deletePubCrawlSignupDb]', error);
+        throw error;
+    }
 }

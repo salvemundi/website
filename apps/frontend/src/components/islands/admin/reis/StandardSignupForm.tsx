@@ -1,17 +1,14 @@
 'use client';
 
-import React from 'react';
 import { FileText, CreditCard, Bus, AlertCircle } from 'lucide-react';
-import { format } from 'date-fns';
-import { nl } from 'date-fns/locale';
 import type { TripSignup } from '@salvemundi/validations/schema/admin-reis.zod';
 import { parseBoolean } from '@salvemundi/validations';
-import { 
-    Input, 
-    Select, 
-    Textarea, 
-    Checkbox, 
-    DateAndLabel 
+import {
+    Input,
+    Select,
+    Textarea,
+    Checkbox,
+    DateAndLabel
 } from './TripSignupFormFields';
 
 interface StandardSignupFormProps {
@@ -23,17 +20,25 @@ interface StandardSignupFormProps {
     compact?: boolean;
 }
 
-export default function StandardSignupForm({ 
-    signup, 
-    initialData, 
-    isBusTrip, 
-    minimal = false, 
+const toISO = (dateStr: string) => new Date(dateStr).toISOString().split('T')[0];
+
+const formatShortDate = (d: Date) =>
+    new Intl.DateTimeFormat('nl-NL', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+    }).format(d);
+
+export default function StandardSignupForm({
+    signup,
+    initialData,
+    isBusTrip,
+    minimal = false,
     section = 'all',
     compact = true
 }: StandardSignupFormProps) {
     return (
         <div className={`${minimal ? (compact ? 'space-y-6' : 'space-y-12') : 'bg-[var(--beheer-card-bg)] rounded-3xl shadow-xl border border-[var(--beheer-border)] divide-y divide-[var(--beheer-border)]/20 overflow-hidden'}`}>
-            {/* Personal Details */}
             {(section === 'all' || section === 'personal' || section === 'personal_basic' || section === 'personal_extended') && (
                 <div className={`${minimal ? '' : 'p-8'}`}>
                     <div className={`flex items-center gap-4 ${compact ? 'mb-4' : 'mb-8'}`}>
@@ -53,7 +58,7 @@ export default function StandardSignupForm({
                                 <Input label="Achternaam" name="last_name" defaultValue={initialData?.last_name || signup.last_name} required placeholder="Bijv. de Vries" />
                                 <Input label="Email Adres" name="email" type="email" defaultValue={initialData?.email || signup.email} required className="md:col-span-2" placeholder="jan@voorbeeld.nl" />
                                 <Input label="Telefoonnummer" name="phone_number" defaultValue={initialData?.phone_number || signup.phone_number || ''} placeholder="+31 6 12345678" />
-                                <DateAndLabel label="Geboortedatum" name="date_of_birth" defaultValue={initialData?.date_of_birth || (signup.date_of_birth ? format(new Date(signup.date_of_birth), 'yyyy-MM-dd') : '')} />
+                                <DateAndLabel label="Geboortedatum" name="date_of_birth" defaultValue={initialData?.date_of_birth || (signup.date_of_birth ? toISO(signup.date_of_birth) : '')} />
                             </>
                         )}
                         {(section === 'all' || section === 'personal' || section === 'personal_extended') && !isBusTrip && (
@@ -77,7 +82,7 @@ export default function StandardSignupForm({
 
                             {!isBusTrip && (
                                 <div className={`${compact ? 'mt-4' : 'mt-8'} grid grid-cols-1 md:grid-cols-2 ${compact ? 'gap-4' : 'gap-8'}`}>
-                                    <DateAndLabel label="Vervaldatum Document" name="document_expiry_date" defaultValue={initialData?.document_expiry_date || (signup.document_expiry_date ? format(new Date(signup.document_expiry_date), 'yyyy-MM-dd') : '')} />
+                                    <DateAndLabel label="Vervaldatum Document" name="document_expiry_date" defaultValue={initialData?.document_expiry_date || (signup.document_expiry_date ? toISO(signup.document_expiry_date) : '')} />
                                     <div className="flex items-center pt-4">
                                         <Checkbox label="Extra Koffer" name="extra_luggage" defaultChecked={initialData ? parseBoolean(initialData.extra_luggage) : parseBoolean(signup.extra_luggage)} />
                                     </div>
@@ -99,7 +104,6 @@ export default function StandardSignupForm({
                 </div>
             )}
 
-            {/* Status & Payment */}
             {(section === 'all' || section === 'admin') && (
                 <div className={`${(minimal && section === 'all') ? (compact ? 'pt-6' : 'pt-8') + ' border-t border-[var(--beheer-border)]/20' : minimal ? '' : 'p-8 bg-[var(--beheer-card-soft)]/20'}`}>
                     <div className={`flex items-center gap-4 ${compact ? 'mb-4' : 'mb-8'}`}>
@@ -131,7 +135,7 @@ export default function StandardSignupForm({
                                     <Checkbox label="Aanbetaling OK" name="deposit_paid" defaultChecked={initialData ? parseBoolean(initialData.deposit_paid) : parseBoolean(signup.deposit_paid)} />
                                     {signup.deposit_paid_at && (
                                         <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] opacity-60 shrink-0">
-                                            {format(new Date(signup.deposit_paid_at), 'd MMM yyyy', { locale: nl })}
+                                            {formatShortDate(new Date(signup.deposit_paid_at))}
                                         </span>
                                     )}
                                 </div>
@@ -139,7 +143,7 @@ export default function StandardSignupForm({
                                     <Checkbox label="Restbetaling OK" name="full_payment_paid" defaultChecked={initialData ? parseBoolean(initialData.full_payment_paid) : parseBoolean(signup.full_payment_paid)} />
                                     {signup.full_payment_paid_at && (
                                         <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] opacity-60 shrink-0">
-                                            {format(new Date(signup.full_payment_paid_at), 'd MMM yyyy', { locale: nl })}
+                                            {formatShortDate(new Date(signup.full_payment_paid_at))}
                                         </span>
                                     )}
                                 </div>

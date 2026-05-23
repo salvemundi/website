@@ -1,8 +1,6 @@
 'use client';
 
 import React from 'react';
-import { format } from 'date-fns';
-import { nl } from 'date-fns/locale';
 import type { TripSignup } from '@salvemundi/validations/schema/admin-reis.zod';
 import {
     User,
@@ -18,11 +16,38 @@ import {
     Bus,
     Briefcase
 } from 'lucide-react';
+import { safeConsoleError } from '@/server/utils/logger';
 
 interface SignupViewProps {
     signup: TripSignup;
     isBusTrip?: boolean;
 }
+
+const formatFullDate = (d: Date) => {
+    try {
+        return new Intl.DateTimeFormat('nl-NL', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        }).format(d);
+    } catch (error) {
+        safeConsoleError('[SignupView][formatFullDate]', error);
+        return 'Onbekend';
+    }
+};
+
+const formatShortDate = (d: Date) => {
+    try {
+        return new Intl.DateTimeFormat('nl-NL', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+        }).format(d);
+    } catch (error) {
+        safeConsoleError('[SignupView][formatShortDate]', error);
+        return 'Onbekend';
+    }
+};
 
 export default function SignupView({ signup, isBusTrip }: SignupViewProps) {
     const getStatusInfo = (status: string | null | undefined) => {
@@ -38,7 +63,6 @@ export default function SignupView({ signup, isBusTrip }: SignupViewProps) {
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-2">
-            {/* Left Column: Personal Info */}
             <div className="space-y-6">
                 <section>
                     <div className="flex items-center gap-2 mb-3 opacity-50">
@@ -51,7 +75,7 @@ export default function SignupView({ signup, isBusTrip }: SignupViewProps) {
                         <ViewField label="Telefoon" value={signup.phone_number || 'Niet opgegeven'} icon={Phone} />
                         <ViewField
                             label="Geb. Datum"
-                            value={signup.date_of_birth ? format(new Date(signup.date_of_birth), 'd MMMM yyyy', { locale: nl }) : 'Niet opgegeven'}
+                            value={signup.date_of_birth ? formatFullDate(new Date(signup.date_of_birth)) : 'Niet opgegeven'}
                             icon={Calendar}
                         />
                     </div>
@@ -77,7 +101,7 @@ export default function SignupView({ signup, isBusTrip }: SignupViewProps) {
                                 <ViewField label="ID Nummer" value={signup.document_number || 'Niet opgegeven'} icon={Briefcase} />
                                 <ViewField
                                     label="Vervaldatum"
-                                    value={signup.document_expiry_date ? format(new Date(signup.document_expiry_date), 'd MMM yyyy', { locale: nl }) : 'Niet opgegeven'}
+                                    value={signup.document_expiry_date ? formatShortDate(new Date(signup.document_expiry_date)) : 'Niet opgegeven'}
                                     icon={Calendar}
                                 />
                                 <ViewField label="Extra Koffer" value={signup.extra_luggage ? 'Ja' : 'Nee'} icon={Briefcase} />
@@ -87,7 +111,6 @@ export default function SignupView({ signup, isBusTrip }: SignupViewProps) {
                 </section>
             </div>
 
-            {/* Right Column: Status & Notes */}
             <div className="space-y-6">
                 <section>
                     <div className="flex items-center gap-2 mb-3 opacity-50">
@@ -172,7 +195,7 @@ function PaymentStatus({ label, isPaid, date }: { label: string; isPaid: boolean
                 </span>
                 {isPaid && date && (
                     <span className="text-[8px] font-medium text-[var(--beheer-text-muted)] opacity-40">
-                        {format(new Date(date), 'd MMM yyyy', { locale: nl })}
+                        {formatShortDate(new Date(date))}
                     </span>
                 )}
             </div>

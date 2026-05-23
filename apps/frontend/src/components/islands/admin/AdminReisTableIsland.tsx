@@ -1,16 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { format } from 'date-fns';
 import type { Trip, TripSignup, TripSignupActivity, TripActivity } from '@salvemundi/validations/schema/admin-reis.zod';
-
 import ReisFilters from '@/components/admin/reis/ReisFilters';
 import ReisTable from '@/components/admin/reis/ReisTable';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import { downloadCSV } from '@/lib/utils/export';
 import AdminReisSignupModalIsland from './reis/AdminReisSignupModalIsland';
-
 import { getPaymentStatus, getStatusBadge } from '@/lib/reis/reis-admin.utils';
 import { generateReisCSVData } from '@/lib/reis/reis-export';
 import { useReisActions } from '@/hooks/use-reis-actions';
@@ -125,7 +122,8 @@ export default function AdminReisTableIsland({
         if (filteredSignups.length === 0) return;
         try {
             const csvData = generateReisCSVData(filteredSignups, initialSignupActivities, trip);
-            downloadCSV(csvData, `reis-aanmeldingen-${trip.name || 'export'}-${format(new Date(), 'yyyy-MM-dd')}.csv`);
+            const date = new Date().toISOString().split('T')[0];
+            downloadCSV(csvData, `reis-aanmeldingen-${trip.name || 'export'}-${date}.csv`);
             showToast('CSV bestand succesvol gegenereerd', 'success');
         } catch {
             showToast('Export mislukt.', 'error');

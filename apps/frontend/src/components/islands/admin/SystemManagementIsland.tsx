@@ -21,13 +21,23 @@ import { toggleAutomationSetting, type AutomationSetting } from '@/server/action
 import AdminVisibilityToggle from '@/components/ui/admin/AdminVisibilityToggle';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
-import { formatDate } from '@/shared/lib/utils/date';
 import { cn } from '@/lib/utils/cn';
+import { safeConsoleError } from '@/server/utils/logger';
 
 interface Props {
     initialStatuses?: ServiceStatus[];
     initialAutomationSettings?: AutomationSetting[];
 }
+
+const formatDateTime = (date: Date) => {
+    return new Intl.DateTimeFormat('nl-NL', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    }).format(date);
+};
 
 export default function SystemManagementIsland({
     initialStatuses = [],
@@ -47,8 +57,8 @@ export default function SystemManagementIsland({
             const data = await getServicesStatusAction();
             setStatuses(data);
             setLastUpdated(new Date());
-        } catch (_error) {
-
+        } catch (error) {
+            safeConsoleError('[SystemManagementIsland][fetchStatus]', error);
         } finally {
             setIsRefreshing(false);
         }
@@ -74,7 +84,8 @@ export default function SystemManagementIsland({
             } else {
                 showToast(res.error || 'Bijwerken mislukt', 'error');
             }
-        } catch {
+        } catch (error) {
+            safeConsoleError('[SystemManagementIsland][handleToggleAutomation]', error);
             showToast('Er is een onverwachte fout opgetreden', 'error');
         } finally {
             setTogglingId(null);
@@ -96,7 +107,6 @@ export default function SystemManagementIsland({
     return (
         <div className="w-full">
             <div className="flex flex-col gap-8">
-
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                     <div className="flex bg-[var(--beheer-card-soft)] p-1.5 rounded-2xl border border-[var(--beheer-border)] gap-1 w-full sm:w-auto">
                         <button
@@ -126,9 +136,7 @@ export default function SystemManagementIsland({
                     </div>
 
                     <button
-                        onClick={() => {
-                            void fetchStatus();
-                        }}
+                        onClick={() => { void fetchStatus(); }}
                         disabled={isRefreshing}
                         className="flex items-center justify-center gap-2 px-8 py-3 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-2xl text-[10px] font-semibold hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
                     >
@@ -251,7 +259,7 @@ export default function SystemManagementIsland({
                                     <h4 className="font-semibold text-sm text-[var(--beheer-accent)] mb-3">Systeem Veiligheids Protocol</h4>
                                     <p className="text-[var(--beheer-text-muted)] text-xs leading-relaxed max-w-3xl font-medium opacity-90">
                                         Deze toggles beheren kritieke achtergrondprocessen. Wijzigingen treden onmiddellijk in werking.
-                                        De **Nachtelijke Sync** draait dagelijks om 03:00 en zorgt dat alle Azure-rechten in de cockpit up-to-date zijn.
+                                        De <strong>Nachtelijke Sync</strong> draait dagelijks om 03:00 en zorgt dat alle Azure-rechten in de cockpit up-to-date zijn.
                                         Schakel processen alleen uit bij onderhoud of debugging om data-inconsistentie te voorkomen.
                                     </p>
                                 </div>
@@ -268,7 +276,7 @@ export default function SystemManagementIsland({
                         System Monitoring Active
                     </p>
                     <p className="text-[9px] font-semibold text-[var(--beheer-text-muted)] opacity-30">
-                        {`Last Sync: ${formatDate(lastUpdated, 'dd-MM-yyyy HH:mm')}`}
+                        {`Last Sync: ${formatDateTime(lastUpdated)}`}
                     </p>
                 </div>
             )}

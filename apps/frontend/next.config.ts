@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
     serverExternalPackages: ['isomorphic-dompurify', 'jsdom'],
     experimental: {
         serverSourceMaps: true,
-        optimizePackageImports: ['lucide-react', 'date-fns', 'framer-motion', 'maplibre-gl'],
+        optimizePackageImports: ['lucide-react', 'maplibre-gl'],
         serverActions: {
             bodySizeLimit: '50mb'
         }

@@ -8,7 +8,6 @@ import {
     Edit,
     Mail
 } from 'lucide-react';
-import { format } from 'date-fns';
 import { downloadCSV } from '@/lib/utils/export';
 import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { safeConsoleError } from '@/server/utils/logger';
@@ -30,6 +29,11 @@ interface SignupListProps {
     onDelete: (id: number | string) => void;
     onEdit: (id: number | string) => void;
 }
+
+const getFilenameTimestamp = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}_${String(d.getHours()).padStart(2, '0')}-${String(d.getMinutes()).padStart(2, '0')}-${String(d.getSeconds()).padStart(2, '0')}`;
+};
 
 function getParticipants(signup: ExtendedSignup): Participant[] {
     const raw = signup.participants as unknown;
@@ -102,7 +106,7 @@ export default function SignupList({
             }
         });
 
-        const filename = `kroegentocht-${eventName.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${format(new Date(), 'yyyy-MM-dd_HH-mm-ss')}.csv`;
+        const filename = `kroegentocht-${eventName.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${getFilenameTimestamp()}.csv`;
         downloadCSV(rows, filename);
     };
 
@@ -119,7 +123,6 @@ export default function SignupList({
                             onChange={(e) => setSearchQuery(e.target.value)}
                             autoComplete="off"
                             spellCheck={false}
-                            suppressHydrationWarning={true}
                             className="w-full pl-12 pr-4 py-3 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-medium text-sm text-[var(--text-main)]"
                         />
                     </div>

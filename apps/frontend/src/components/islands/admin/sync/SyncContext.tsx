@@ -5,6 +5,7 @@ import { triggerFullSyncAction, triggerUserSyncAction } from '@/server/actions/i
 import { getSyncStatusAction, stopSyncAction, resetSyncStatusAction } from '@/server/actions/infrastructure/azure-sync/sync-monitoring.actions';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import AdminToast from '@/components/ui/admin/AdminToast';
+import { safeConsoleError } from '@/server/utils/logger';
 
 export interface SyncStatus {
     status?: string;
@@ -54,7 +55,6 @@ const SyncContext = createContext<SyncContextType | undefined>(undefined);
 export function SyncProvider({ children, initialStatus }: { children: ReactNode, initialStatus: SyncStatus | null }) {
     const { toast, showToast, hideToast } = useAdminToast();
 
-    // Nuclear SSR: Initialize status directly. If null, we'll handle the empty state in the UI.
     const [status, setStatus] = useState<SyncStatus | null>(initialStatus);
     const [isStartingSync, setIsStartingSync] = useState(false);
     const [isStopping, setIsStopping] = useState(false);
@@ -85,14 +85,12 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
             if (!('success' in data)) {
                 setLastUpdated(new Date());
             }
-        } catch (_error: unknown) {
-            // Background errors remain silent to avoid interrupting the user, 
-            // but the status object will contain error details if the action fails.
+        } catch (error) {
+            safeConsoleError('[SyncProvider][fetchStatus]', error);
         }
     }, []);
 
     useEffect(() => {
-        // Instant UI: If no initial status from server, fetch it immediately on mount
         if (!initialStatus) {
             void fetchStatus();
         }
@@ -130,7 +128,8 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
                 showToast('Azure synchronisatie gestart', 'success');
                 void fetchStatus();
             }
-        } catch (_error: unknown) {
+        } catch (error) {
+            safeConsoleError('[SyncProvider][handleFullSync]', error);
             showToast('Netwerkfout bij het starten van de sync.', 'error');
         } finally {
             setIsStartingSync(false);
@@ -147,7 +146,8 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
                 showToast('Synchronisatie afgebroken', 'info');
                 void fetchStatus();
             }
-        } catch (_error: unknown) {
+        } catch (error) {
+            safeConsoleError('[SyncProvider][handleStopSync]', error);
             showToast('Netwerkfout bij het stoppen van de sync.', 'error');
         } finally {
             setIsStopping(false);
@@ -164,7 +164,8 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
                 showToast('Synchronisatie status gereset naar Idle', 'success');
                 void fetchStatus();
             }
-        } catch (_error: unknown) {
+        } catch (error) {
+            safeConsoleError('[SyncProvider][handleResetSync]', error);
             showToast('Netwerkfout bij het resetten van de sync.', 'error');
         } finally {
             setIsResetting(false);
@@ -184,7 +185,8 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
                 setUserId('');
                 void fetchStatus();
             }
-        } catch (_error: unknown) {
+        } catch (error) {
+            safeConsoleError('[SyncProvider][handleUserSync]', error);
             showToast('Netwerkfout bij het synchroniseren van de gebruiker.', 'error');
         } finally {
             setIsUserSyncLoading(false);

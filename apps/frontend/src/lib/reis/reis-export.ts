@@ -1,7 +1,7 @@
-import { format } from 'date-fns';
-import type { Trip, TripSignup, TripSignupActivity } from '@salvemundi/validations/schema/admin-reis.zod';
+import { type Trip, type TripSignup, type TripSignupActivity } from '@salvemundi/validations/schema/admin-reis.zod';
 import { mapActivityOptionIdToName, parseActivityOptions, parseSelectedOptions } from '@/lib/reis';
 import { getPaymentStatus, getStatusBadge } from './reis-admin.utils';
+import { safeConsoleError } from '@/server/utils/logger';
 
 interface ExpandedTripSignupActivity {
     activity_name?: string;
@@ -10,12 +10,33 @@ interface ExpandedTripSignupActivity {
     activity_options?: string | unknown[];
 }
 
-/**
- * Genereert de data array voor de CSV export van reisaanmeldingen.
- */
+const formatCSVDate = (dateInput: string | Date | null | undefined, includeTime: boolean = false) => {
+    if (!dateInput) return '';
+    try {
+        const d = new Date(dateInput);
+        if (isNaN(d.getTime())) return '';
+
+        const options: Intl.DateTimeFormatOptions = {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        };
+
+        if (includeTime) {
+            options.hour = '2-digit';
+            options.minute = '2-digit';
+        }
+
+        return new Intl.DateTimeFormat('nl-NL', options).format(d);
+    } catch (error) {
+        safeConsoleError('[generateReisCSVData][formatCSVDate]', error);
+        return '';
+    }
+};
+
 export function generateReisCSVData(
-    signups: TripSignup[], 
-    signupActivitiesMap: Record<number, TripSignupActivity[]>, 
+    signups: TripSignup[],
+    signupActivitiesMap: Record<number, TripSignupActivity[]>,
     _trip: Trip
 ) {
     return signups.map(signup => {
@@ -27,13 +48,13 @@ export function generateReisCSVData(
             const activity = a as unknown as ExpandedTripSignupActivity;
             const tripActIdObj = typeof activity.trip_activity_id === 'object' ? activity.trip_activity_id : null;
             const name = activity.activity_name || tripActIdObj?.name || String(activity.trip_activity_id);
-            
+
             const rawOptions = parseSelectedOptions(typeof activity.selected_options === 'string' ? activity.selected_options : JSON.stringify(activity.selected_options || {}));
             const metaOptions = parseActivityOptions(typeof activity.activity_options === 'string' ? activity.activity_options : (typeof tripActIdObj?.options === 'string' ? tripActIdObj.options : JSON.stringify(tripActIdObj?.options || [])));
-            
+
             const opts = Object.keys(rawOptions);
             const optNames = opts.map(id => mapActivityOptionIdToName(id, metaOptions)).filter(Boolean);
-            
+
             return optNames.length > 0 ? `${name} (${optNames.join(', ')})` : name;
         }).join(' | ');
 
@@ -43,7 +64,7 @@ export function generateReisCSVData(
             'Volledige naam': `${signup.first_name} ${signup.last_name}`.trim(),
             'E-mailadres': signup.email,
             'Telefoonnummer': signup.phone_number,
-            'Geboortedatum': signup.date_of_birth ? format(new Date(signup.date_of_birth), 'dd-MM-yyyy') : '',
+            'Geboortedatum': formatCSVDate(signup.date_of_birth, false),
             'ID Type': idDocLabel,
             'Document nummer': signup.document_number || '',
             'Allergieën': signup.allergies || '',
@@ -53,9 +74,9 @@ export function generateReisCSVData(
             'Rol': signup.role === 'crew' ? 'Crew' : 'Reiziger',
             'Status': getStatusBadge(signup.status || 'registered').label,
             'Betalingstatus': getPaymentStatus(signup).label,
-            'Aanbetaling betaald op': signup.deposit_paid_at ? format(new Date(signup.deposit_paid_at), 'dd-MM-yyyy HH:mm') : '',
-            'Volledige betaling op': signup.full_payment_paid_at ? format(new Date(signup.full_payment_paid_at), 'dd-MM-yyyy HH:mm') : '',
-            'Aangemeld op': signup.date_created ? format(new Date(signup.date_created), 'dd-MM-yyyy HH:mm') : ''
+            'Aanbetaling betaald op': formatCSVDate(signup.deposit_paid_at, true),
+            'Volledige betaling op': formatCSVDate(signup.full_payment_paid_at, true),
+            'Aangemeld op': formatCSVDate(signup.date_created, true)
         };
     });
 }

@@ -1,9 +1,8 @@
 'use client';
 
 import { Mail, Phone, Calendar, Edit2, Save, Loader2, LogOut } from 'lucide-react';
-import { format } from 'date-fns';
-import { nl } from 'date-fns/locale';
 import { Tile, formatForBreak } from './ProfielUI';
+import { formatDate } from '@/shared/lib/utils/date';
 import { formatPhoneNumber } from '@/lib/utils/phone-utils';
 import { authClient } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
@@ -119,11 +118,11 @@ export default function ProfielDetails({
                             <Phone className="h-5 w-5" />
                         </div>
                         {isEditingPhoneNumber ? (
-                            <form 
+                            <form
                                 onSubmit={(e) => {
                                     void handleSubmitPhone(onSavePhone)(e);
-                                }} 
-                                className="flex flex-col w-full gap-2" 
+                                }}
+                                className="flex flex-col w-full gap-2"
                                 autoComplete="off"
                             >
                                 <div className="flex w-full items-center gap-2">
@@ -157,7 +156,7 @@ export default function ProfielDetails({
                             <Calendar className="h-5 w-5" />
                         </div>
                         <p className="font-bold text-[var(--color-purple-700)] dark:text-white text-sm">
-                            {user.date_of_birth ? format(new Date(user.date_of_birth), "d MMMM yyyy", { locale: nl }) : "Niet ingesteld"}
+                            {formatDate(user.date_of_birth, "d MMMM yyyy")}
                         </p>
                     </div>
                 </div>

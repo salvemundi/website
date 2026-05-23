@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { z } from 'zod';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,14 +22,12 @@ import {
     initiateTripPaymentAction
 } from '@/server/actions/events/reis-payment.actions';
 import { calculateTripPricing, type ActivitySelection } from '@/lib/reis/pricing';
-import { format } from 'date-fns';
-import { m, AnimatePresence } from 'framer-motion';
-
 import { NameConfirmModal } from './shared/NameConfirmModal';
 import { EnrichmentForm } from './payment/EnrichmentForm';
 import { PaymentSummary } from './payment/PaymentSummary';
 import { PaymentSuccess } from './payment/PaymentSuccess';
 import { FlowNavigation } from './payment/FlowNavigation';
+import { safeConsoleError } from '@/server/utils/logger';
 
 interface TripPaymentFlowProps {
     signup: TripSignup;
@@ -39,6 +37,11 @@ interface TripPaymentFlowProps {
     paymentType: 'deposit' | 'final';
     token?: string;
 }
+
+const toISO = (dateStr: string) => new Date(dateStr).toISOString().split('T')[0];
+
+const formatDateNL = (date: Date) =>
+    new Intl.DateTimeFormat('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
 
 export default function TripPaymentFlowIsland({
     signup,
@@ -64,7 +67,7 @@ export default function TripPaymentFlowIsland({
                 if (expiry < tripEnd) {
                     ctx.addIssue({
                         code: z.ZodIssueCode.custom,
-                        message: `Document moet geldig zijn tot tenminste het einde van de reis (${format(new Date(trip.end_date), 'dd-MM-yyyy')}).`,
+                        message: `Document moet geldig zijn tot tenminste het einde van de reis (${formatDateNL(new Date(trip.end_date))}).`,
                         path: ['document_expiry_date']
                     });
                 }
@@ -88,12 +91,12 @@ export default function TripPaymentFlowIsland({
             first_name: localSignup.first_name || '',
             last_name: localSignup.last_name || '',
             phone_number: localSignup.phone_number || '',
-            date_of_birth: localSignup.date_of_birth ? format(new Date(localSignup.date_of_birth), 'yyyy-MM-dd') : '',
+            date_of_birth: localSignup.date_of_birth ? toISO(localSignup.date_of_birth) : '',
             id_document: localSignup.id_document || 'none',
             document_number: localSignup.document_number || '',
             document_expiry_date: (() => {
                 const expiry = (localSignup as TripSignup & { document_expiry_date?: string }).document_expiry_date;
-                return expiry ? format(new Date(expiry), 'yyyy-MM-dd') : '';
+                return expiry ? toISO(expiry) : '';
             })(),
             extra_luggage: (localSignup as TripSignup & { extra_luggage?: boolean }).extra_luggage || false,
             allergies: localSignup.allergies || '',
@@ -136,7 +139,6 @@ export default function TripPaymentFlowIsland({
                     setLoading(false);
                     return;
                 }
-
                 setShowNameConfirm(true);
                 setLoading(false);
                 return;
@@ -147,24 +149,19 @@ export default function TripPaymentFlowIsland({
                     setLoading(false);
                     return;
                 }
-
                 if (paymentType === 'final' && !trip.allow_final_payments) {
                     setStep(4);
                     setLoading(false);
                     return;
                 }
             }
-
             setStep(step + 1);
-        } catch (_error) {
-            setError('Er is een onverwachte fout opgetreden. Probeer het later opnieuw.');
+        } catch (error) {
+            safeConsoleError('[TripPaymentFlowIsland][handleNext]', error);
+            setError('Er is een onverwachte fout opgetreden.');
         } finally {
             setLoading(false);
         }
-    };
-
-    const handleNextSync = () => {
-        void handleNext();
     };
 
     const confirmNameAndProceed = async () => {
@@ -178,24 +175,19 @@ export default function TripPaymentFlowIsland({
                 setLoading(false);
                 return;
             }
-
             setLocalSignup({ ...localSignup, ...formData });
             setStep(2);
-        } catch (_error) {
+        } catch (error) {
+            safeConsoleError('[TripPaymentFlowIsland][confirmNameAndProceed]', error);
             setError('Fout bij opslaan gegevens.');
         } finally {
             setLoading(false);
         }
     };
 
-    const confirmNameAndProceedSync = () => {
-        void confirmNameAndProceed();
-    };
-
     const handleStartPayment = async () => {
         setError(null);
         setIsProcessing(true);
-
         try {
             const res = (await initiateTripPaymentAction(signup.id || 0, paymentType, token)) as { success: boolean; checkoutUrl?: string; error?: string };
             if (res.success && res.checkoutUrl) {
@@ -204,14 +196,11 @@ export default function TripPaymentFlowIsland({
                 setError(res.error || 'Betaalsessie starten mislukt.');
                 setIsProcessing(false);
             }
-        } catch (_error) {
+        } catch (error) {
+            safeConsoleError('[TripPaymentFlowIsland][handleStartPayment]', error);
             setError('Fout bij verbinden met betaalservice.');
             setIsProcessing(false);
         }
-    };
-
-    const handleStartPaymentSync = () => {
-        void handleStartPayment();
     };
 
     return (
@@ -219,56 +208,34 @@ export default function TripPaymentFlowIsland({
             <div className="max-w-4xl mx-auto px-6 py-4">
                 <form autoComplete="off" onSubmit={(e) => e.preventDefault()}>
                     <div className="py-4 min-h-[400px]">
-                        <AnimatePresence mode="wait" initial={false}>
-                            <m.div
-                                key={step}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                transition={{ duration: 0.2 }}
-                            >
-                                {step === 1 && (
-                                    <EnrichmentForm
-                                        trip={trip}
-                                    />
-                                )}
-
-                                {step === 2 && (
-                                    <ActivitySelector
-                                        activities={allActivities}
-                                        selectedSelections={activitySelections}
-                                        onChange={setActivitySelections}
-                                    />
-                                )}
-
-                                {step === 3 && (
-                                    <PaymentSummary
-                                        pricing={pricing}
-                                        paymentType={paymentType}
-                                    />
-                                )}
-
-                                {step === 4 && <PaymentSuccess trip={trip} />}
-                            </m.div>
-                        </AnimatePresence>
+                        <div className={`animate-in fade-in duration-300 ${step === 1 ? 'block' : 'hidden'}`}>
+                            <EnrichmentForm trip={trip} />
+                        </div>
+                        <div className={`animate-in fade-in duration-300 ${step === 2 ? 'block' : 'hidden'}`}>
+                            <ActivitySelector
+                                activities={allActivities}
+                                selectedSelections={activitySelections}
+                                onChange={setActivitySelections}
+                            />
+                        </div>
+                        <div className={`animate-in fade-in duration-300 ${step === 3 ? 'block' : 'hidden'}`}>
+                            <PaymentSummary pricing={pricing} paymentType={paymentType} />
+                        </div>
+                        <div className={`animate-in fade-in duration-300 ${step === 4 ? 'block' : 'hidden'}`}>
+                            <PaymentSuccess trip={trip} />
+                        </div>
                     </div>
 
                     <div className="mt-4">
-                        <AnimatePresence>
-                            {error && (
-                                <m.div
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: 10 }}
-                                    className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 flex items-center gap-3"
-                                >
-                                    <AlertCircle className="w-5 h-5 shrink-0" />
-                                    <div className="text-sm">
-                                        <p className="font-bold tracking-tight italic">Er is iets misgegaan</p>
-                                        <p className="opacity-80">{error}</p>
-                                    </div>
-                                </m.div>
-                            )}
-                        </AnimatePresence>
+                        {error && (
+                            <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 flex items-center gap-3 animate-in slide-in-from-top-2 duration-300">
+                                <AlertCircle className="w-5 h-5 shrink-0" />
+                                <div className="text-sm">
+                                    <p className="font-bold tracking-tight italic">Er is iets misgegaan</p>
+                                    <p className="opacity-80">{error}</p>
+                                </div>
+                            </div>
+                        )}
 
                         <FlowNavigation
                             step={step}
@@ -277,8 +244,8 @@ export default function TripPaymentFlowIsland({
                             isValid={isValid}
                             paymentType={paymentType}
                             onPrevious={() => setStep(step - 1)}
-                            onNext={handleNextSync}
-                            onPayment={handleStartPaymentSync}
+                            onNext={() => void handleNext()}
+                            onPayment={() => void handleStartPayment()}
                         />
                     </div>
                 </form>
@@ -287,7 +254,7 @@ export default function TripPaymentFlowIsland({
             <NameConfirmModal
                 isOpen={showNameConfirm}
                 name={firstName}
-                onConfirm={confirmNameAndProceedSync}
+                onConfirm={() => void confirmNameAndProceed()}
                 onCancel={() => setShowNameConfirm(false)}
             />
         </FormProvider>

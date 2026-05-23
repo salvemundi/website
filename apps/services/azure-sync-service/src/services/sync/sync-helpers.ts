@@ -39,7 +39,8 @@ export async function getSyncStatus(redis: Redis): Promise<SyncStatus> {
     if (!data) return getInitialStatus();
     try {
         return JSON.parse(data) as SyncStatus;
-    } catch (_error) {
+    } catch (error) {
+        safeConsoleError('[SyncUtils][getSyncStatus]', error);
         return getInitialStatus();
     }
 }

@@ -1,14 +1,12 @@
-import React from 'react';
 import { getReisSiteSettings, getUpcomingTrips, getUserTripSignup, getTripParticipantsCount, getCurrentUserProfileAction } from '@/server/actions/events/reis.actions';
 import { ReisFormIsland } from '@/components/islands/reis/ReisFormIsland';
 import { ReisInfoIsland } from '@/components/islands/reis/ReisInfoIsland';
-import { format } from 'date-fns';
-import { nl } from 'date-fns/locale';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { connection } from 'next/server';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import type { ReisTripSignup } from '@salvemundi/validations/schema/reis.zod';
 import type { EnrichedUser } from '@/types/auth';
+import { formatDate } from '@/shared/lib/utils/date';
 
 export const metadata = {
     title: 'Reis | Salve Mundi',
@@ -67,14 +65,14 @@ export default async function ReisPage() {
             ? 'De inschrijvingen zijn gesloten omdat de betalingsfase is begonnen.'
             : (!canSignUp
                 ? (registrationStartDate && now < registrationStartDate
-                    ? `Inschrijving opent op ${format(registrationStartDate, 'd MMMM yyyy HH:mm', { locale: nl })}`
+                    ? `Inschrijving opent op ${formatDate(registrationStartDate, 'd MMMM yyyy HH:mm')}`
                     : 'De inschrijvingen voor deze reis zijn momenteel gesloten.')
                 : 'Inschrijving geopend!'));
 
     return (
         <PublicPageShell>
             <h1 className="sr-only">Reis</h1>
-            <div className="mx-auto max-w-app px-4 pt-8 pb-8 sm:py-10 md:py-12">
+            <div className="mx-auto max-w-app px-4 pt-8 pb-8 sm:py-10 md:py-12 pb-safe">
                 <div className="flex flex-col lg:flex-row gap-8 items-start">
                     <ReisFormIsland
                         nextTrip={nextTrip}

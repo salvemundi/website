@@ -9,7 +9,7 @@ const config = {
     '@serwist/sw',
     '@serwist/webpack-plugin'
   ],
-  ignoreExportsUsedInFile: true,
+  ignoreExportsUsedInFile: false,
 };
 
 export default config;

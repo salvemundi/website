@@ -8,7 +8,7 @@ const directusUrlEnv = process.env.DIRECTUS_SERVICE_URL || process.env.INTERNAL_
 const directusTokenEnv = process.env.DIRECTUS_STATIC_TOKEN;
 
 if (!directusUrlEnv || !directusTokenEnv) {
-    throw new Error('Missing DIRECTUS_SERVICE_URL or DIRECTUS_STATIC_TOKEN in environment variables');
+    throw new Error('Missing DIRECTUS_SERVICE_URL or DIRECTUS_STATIC_TOKEN');
 }
 
 const directusUrl: string = directusUrlEnv;
@@ -26,9 +26,6 @@ export class DirectusError extends Error {
     }
 }
 
-/**
- * Log a DirectusError to the system_logs table for monitoring.
- */
 async function logDirectusError(error: DirectusError) {
     try {
         await insertSystemLogInternal({
@@ -47,9 +44,6 @@ async function logDirectusError(error: DirectusError) {
     }
 }
 
-/**
- * Fetch with a simple retry mechanism for transient network errors.
- */
 export async function fetchWithRetry(
     url: string,
     init: RequestInit,
@@ -59,11 +53,9 @@ export async function fetchWithRetry(
     for (let i = 0; i <= retries; i++) {
         try {
             const response = await fetch(url, init);
-
             if (response.ok || response.status < 500) {
                 return response;
             }
-
             throw new Error(`Server responded with ${response.status}`);
         } catch (e: unknown) {
             const error = e instanceof Error ? e : new Error(String(e));
@@ -71,6 +63,7 @@ export async function fetchWithRetry(
             const isTimeout = error.name === 'TimeoutError' || error.name === 'AbortError' || error.message.includes('timeout');
 
             if (isLastRetry || (!isTimeout && !error.message.includes('Server responded with 5'))) {
+                safeConsoleError('[Directus][fetchWithRetry]', error);
                 throw error;
             }
 
@@ -80,20 +73,14 @@ export async function fetchWithRetry(
     throw new Error('Fetch failed after retries');
 }
 
-/**
- * Get a Directus client with system-level permissions.
- * Used for public data or background tasks.
- */
 export function getSystemDirectus() {
     return createDirectus<DirectusSchema>(directusUrl, {
         globals: {
             fetch: async (url: string | URL, options?: RequestInit) => {
                 const urlStr = url.toString();
-
                 const nextOptions = (options as (RequestInit & { next?: { revalidate?: number | false; tags?: string[] } }) | undefined)?.next || {};
                 const tags: string[] = nextOptions.tags || [];
 
-                // ─── TIERED REVALIDATION STRATEGY ────────────────────────────────
                 let revalidate = nextOptions.revalidate;
 
                 if (revalidate === undefined) {
@@ -118,7 +105,6 @@ export function getSystemDirectus() {
 
                 if (urlStr.includes('/items/events')) {
                     if (!tags.includes('events')) tags.push('events');
-
                     const pathMatch = urlStr.match(/\/items\/events\/(\d+|[0-9a-f-]+)/);
                     if (pathMatch && pathMatch[1]) {
                         const id = pathMatch[1];
@@ -167,7 +153,7 @@ export function getSystemDirectus() {
 
                     if (error.name === 'TimeoutError' || error.name === 'AbortError' || error.message.includes('timeout')) {
                         const timeoutError = new DirectusError(
-                            `Service timeout (8s) for ${urlStr}. The service might be under heavy load or unreachable via VPN.`,
+                            `Service timeout (8s) for ${urlStr}.`,
                             504,
                             'TIMEOUT',
                             urlStr
@@ -195,4 +181,3 @@ export function getSystemDirectus() {
         .with(staticToken(directusToken))
         .with(rest());
 }
-

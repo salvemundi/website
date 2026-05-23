@@ -1,15 +1,14 @@
 'use client';
 
-import React from 'react';
 import Link from 'next/link';
 import { Calendar, ChevronRight, CreditCard } from 'lucide-react';
-import { format, isBefore, startOfDay } from 'date-fns';
-import { nl } from 'date-fns/locale';
 import { Tile } from './ProfielUI';
 import { slugify } from '@/shared/lib/utils/slug';
-
 import { type EventSignup } from '@salvemundi/validations/schema/profiel.zod';
 import { type EnrichedPubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
+
+const formatDate = (dateStr: string) =>
+    new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(dateStr));
 
 type EnrichedSignup = (EventSignup & { _type: 'event' }) | (EnrichedPubCrawlSignup & { _type: 'pub_crawl' });
 
@@ -22,7 +21,7 @@ interface ProfielSignupsProps {
 export default function ProfielSignups({
     filteredSignups = [],
     showPastEvents = false,
-    setShowPastEvents = () => {}
+    setShowPastEvents = () => { }
 }: ProfielSignupsProps) {
     return (
         <Tile
@@ -57,8 +56,7 @@ export default function ProfielSignups({
                     {filteredSignups.map((signup: EnrichedSignup) => {
                         const isEvent = signup._type === 'event';
                         const eventData = isEvent ? signup.event_id : signup.pub_crawl_event_id;
-                        
-                        // Type guard to ensure we have an object with a name and date info
+
                         const isExpanded = (data: unknown): data is { name: string; event_date?: string | null; date?: string | null } => {
                             return typeof data === 'object' && data !== null && 'name' in (data as { [key: string]: unknown });
                         };
@@ -72,7 +70,11 @@ export default function ProfielSignups({
                         const isPast = (() => {
                             try {
                                 if (!eventDateStr) return false;
-                                return isBefore(startOfDay(new Date(eventDateStr)), startOfDay(new Date()));
+                                const eventDate = new Date(eventDateStr);
+                                eventDate.setHours(0, 0, 0, 0);
+                                const today = new Date();
+                                today.setHours(0, 0, 0, 0);
+                                return eventDate.getTime() < today.getTime();
                             } catch { return false; }
                         })();
 
@@ -80,15 +82,14 @@ export default function ProfielSignups({
                             <Link
                                 key={`${signup._type}-${signup.id}`}
                                 href={detailHref}
-                                className={`group h-full flex items-center justify-between gap-4 rounded-3xl p-5 text-left transition-all border shadow-sm ${
-                                    isPast 
-                                    ? "bg-slate-50 dark:bg-black/10 opacity-60 grayscale border-slate-200 dark:border-white/5" 
+                                className={`group h-full flex items-center justify-between gap-4 rounded-3xl p-5 text-left transition-all border shadow-sm ${isPast
+                                    ? "bg-slate-50 dark:bg-black/10 opacity-60 grayscale border-slate-200 dark:border-white/5"
                                     : "bg-slate-50 dark:bg-black/20 border-slate-200 dark:border-white/10 hover:shadow-lg hover:-translate-y-0.5"
-                                }`}
+                                    }`}
                             >
                                 <div className="flex items-center gap-4">
                                     <div className="shrink-0 h-16 w-16 flex items-center justify-center rounded-2xl bg-[var(--color-purple-100)] text-[var(--color-purple-500)] shadow-sm">
-                                         {icon}
+                                        {icon}
                                     </div>
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-2">
@@ -98,7 +99,7 @@ export default function ProfielSignups({
                                         </div>
                                         <p className="mt-1 flex items-center gap-2 text-xs font-bold text-[var(--text-muted)]">
                                             <Calendar className="h-3.5 w-3.5" />
-                                            {eventDateStr && format(new Date(eventDateStr), "d MMM yyyy", { locale: nl })}
+                                            {eventDateStr && formatDate(eventDateStr)}
                                         </p>
                                     </div>
                                 </div>

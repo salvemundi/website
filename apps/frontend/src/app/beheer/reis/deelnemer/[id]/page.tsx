@@ -5,6 +5,7 @@ import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 import { Trip, TripActivity } from '@salvemundi/validations/schema/admin-reis.zod';
 import { getTripSignup, getTripSignupActivitiesAction } from '@/server/actions/admin/reis-signups.actions';
+import { safeConsoleError } from '@/server/utils/logger';
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -31,8 +32,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
                 title: `Deelnemer: ${signup[0].first_name} ${signup[0].last_name} | SV Salve Mundi`
             };
         }
-    } catch (_error) {
-        // Silent catch for metadata resilience
+    } catch (error) {
+        safeConsoleError('[DeelnemerDetailPage][generateMetadata]', error);
     }
 
     return { title: 'Deelnemer Details | SV Salve Mundi' };
@@ -50,7 +51,7 @@ export default async function DeelnemerDetailPage({ params }: PageProps) {
     const tripId = (signup.trip_id && typeof signup.trip_id === 'object')
         ? (signup.trip_id as { id: number }).id
         : (signup.trip_id as number);
-    // Fetch related data (trips for dropdown, activities for trip, and selected activities)
+
     const [trips, activities, signupActivities] = await Promise.all([
         getSystemDirectus().request(readItems('trips', {
             fields: ['id', 'name', 'start_date', 'max_participants', 'base_price', 'crew_discount', 'deposit_amount'],
@@ -64,7 +65,6 @@ export default async function DeelnemerDetailPage({ params }: PageProps) {
         getTripSignupActivitiesAction(tripId)
     ]);
 
-    // Filter signupActivities for this specific participant with type safety
     const participantActivities = (signupActivities as unknown as RawSignupActivity[])
         .filter((sa) => {
             const saSignupId = typeof sa.trip_signup_id === 'object' ? sa.trip_signup_id.id : sa.trip_signup_id;
