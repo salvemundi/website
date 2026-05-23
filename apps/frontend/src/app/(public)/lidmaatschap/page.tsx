@@ -40,7 +40,7 @@ export default async function MembershipPage() {
             backgroundImage="" // Default gradient
         >
             <div className="max-w-app mx-auto">
-                <div className={isGuest ? "flex flex-col sm:flex-row gap-6 px-6 py-8 sm:py-10 md:py-12 pb-safe" : "px-6 py-8 sm:py-10 md:py-12 pb-safe"}>
+                <div className={isGuest ? "flex flex-col sm:flex-row gap-6 px-6 pt-8 pb-16 sm:pt-10 sm:pb-24 md:pt-12 md:pb-32" : "px-6 pt-8 pb-16 sm:pt-10 sm:pb-24 md:pt-12 md:pb-32"}>
                     <StandardFormCard
                         title={isGuest ? 'Inschrijven' : (user.membership_status === 'active' ? 'STATUS' : 'VERLENGEN')}
                         subtitle="Lidmaatschap"
