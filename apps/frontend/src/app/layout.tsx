@@ -84,7 +84,6 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                         } catch(e) {}
                     })()
                 `}</script>
-                <link rel="preload" as="image" href="/img/newlogo.svg" />
             </head>
             <body className={`${poppins.variable} font-sans antialiased flex flex-col min-h-screen`}>
                 <ImpersonationWrapper impersonation={impersonation} />
