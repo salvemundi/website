@@ -55,3 +55,4 @@ apps/frontend/public/sw.js.map
 playwright-report/
 scripts/
 .antigravity/
+.vscode/settings.json
