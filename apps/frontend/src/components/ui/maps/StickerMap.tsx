@@ -122,7 +122,7 @@ export default function StickerMap({
 
     return (
         <div
-            className={`rounded-[var(--radius-2xl)] overflow-hidden ring-1 ring-[var(--border-color)]/30 w-full relative ${className ?? 'shadow-[var(--shadow-card)]'}`}
+            className={`rounded-[var(--radius-2xl)] overflow-hidden ring-1 ring-[var(--border-color)]/30 w-full relative z-0 ${className ?? 'shadow-[var(--shadow-card)]'}`}
             style={{ height: stretchToContainer ? '100%' : 'min(75vh, var(--map-height, 600px))' }}
         >
             <style jsx>{`

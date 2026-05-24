@@ -20,8 +20,8 @@ export default function CommitteesList({ initialCommittees = [] }: CommitteesLis
 
     if (sortedCommittees.length === 0) {
         return (
-            <div className="rounded-3xl bg-[var(--bg-card)]/80 dark:border dark:border-white/10 p-12 text-center shadow-lg">
-                <p className="text-lg text-[var(--text-muted)] italic">Geen commissies gevonden.</p>
+            <div className="rounded-3xl bg-bg-card/80 dark:border dark:border-white/10 p-12 text-center shadow-lg">
+                <p className="text-lg text-text-muted italic">Geen commissies gevonden.</p>
             </div>
         );
     }

@@ -1,18 +1,26 @@
 'use client';
 
+import React, { useMemo } from 'react';
+import { Users2 } from 'lucide-react';
+import { Tile } from './ProfielUI';
 import MediaAsset from '@/components/ui/media/MediaAsset';
 import { getImageUrl } from '@/lib/utils/image-utils';
+import { formatDate } from '@/shared/lib/utils/date';
+
+interface Committee {
+    id: string | number;
+    name: string;
+    is_leader: boolean;
+}
 
 interface ProfielHeaderProps {
     user: {
         first_name?: string | null;
         last_name?: string | null;
         avatar?: string | null;
-        committees?: {
-            id: string | number;
-            name: string;
-            is_leader: boolean;
-        }[];
+        image?: string | null;
+        committees?: Committee[];
+        membership_expiry?: string | null;
         onAvatarChange?: (file: File) => void;
     };
     membershipStatus: {
@@ -23,63 +31,117 @@ interface ProfielHeaderProps {
 }
 
 export default function ProfielHeader({ user, membershipStatus }: ProfielHeaderProps) {
+    const displayName = useMemo(() => {
+        const isCommitteeMember = Array.isArray(user.committees) && user.committees.length > 0;
+
+        if (isCommitteeMember) {
+            const random = Math.floor(Math.random() * 500);
+            if (random === 0) {
+                return "Vouw een Bak!";
+            }
+        }
+
+        const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+        return fullName || "Niet ingesteld";
+    }, [user.first_name, user.last_name, user.committees]);
+
     return (
-        <div className="bg-[var(--beheer-card-bg)] rounded-[2.5rem] p-8 border border-[var(--beheer-border)] shadow-sm">
-            <div className="flex items-center gap-6">
-                <div className="relative">
-                    <div className="h-20 w-20 rounded-2xl bg-[var(--beheer-accent)]/10 flex items-center justify-center overflow-hidden border border-[var(--beheer-border)]">
-                        {user.avatar ? (
-                            <MediaAsset
-                                asset={getImageUrl(user.avatar, { width: 150, height: 150, fit: 'cover' }) || ''}
-                                alt="avatar"
-                                width={80}
-                                height={80}
-                                className="h-full w-full object-cover"
-                            />
-                        ) : (
-                            <span className="text-xl font-bold text-[var(--beheer-accent)]">
-                                {user.first_name?.[0]}{user.last_name?.[0]}
-                            </span>
-                        )}
-                    </div>
-                    <label className="absolute -bottom-1 -right-1 p-1.5 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-full cursor-pointer hover:bg-[var(--beheer-card-soft)] transition-colors">
+        <Tile className="h-fit">
+            <div className="flex flex-col gap-6 items-center text-center">
+                <div className="relative group shrink-0">
+                    <label
+                        className="relative block cursor-pointer group"
+                        title="Profielfoto wijzigen"
+                    >
+                        <div className="relative h-28 w-28 sm:h-32 sm:w-32 rounded-full overflow-hidden border-4 border-purple-100 shadow-lg bg-bg-card transition-transform group-hover:scale-105">
+                            {user.avatar ? (
+                                <MediaAsset
+                                    asset={getImageUrl(user.avatar, { width: 250, height: 250, fit: 'cover' }) || ''}
+                                    alt="avatar"
+                                    width={128}
+                                    height={128}
+                                    className="h-full w-full object-cover"
+                                />
+                            ) : (
+                                <div className="h-full w-full bg-purple-50 border border-purple-100 flex items-center justify-center">
+                                    <span className="text-4xl font-bold text-purple-300">
+                                        {user.first_name?.[0] || '?'}
+                                    </span>
+                                </div>
+                            )}
+
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white p-2">
+                                <svg className="h-8 w-8 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span className="text-[10px] font-black uppercase tracking-wider">Wijzigen</span>
+                            </div>
+                        </div>
                         <input
                             type="file"
-                            accept="image/*"
                             className="hidden"
+                            accept="image/*"
                             onChange={(e) => {
-                                if (e.target.files) {
-                                    user.onAvatarChange?.(e.target.files[0]);
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                    user.onAvatarChange?.(file);
                                 }
+                                e.target.value = '';
                             }}
                         />
-                        <span className="sr-only">Avatar wijzigen</span>
-                        <div className="h-3 w-3 bg-[var(--beheer-accent)] rounded-full" />
                     </label>
                 </div>
 
-                <div className="flex flex-col gap-1">
-                    <h2 className="text-xl font-bold text-[var(--beheer-text)]">
-                        {user.first_name} {user.last_name}
+                <div className="min-w-0 w-full">
+                    <h2 className="text-xl sm:text-2xl font-extrabold text-purple-700 dark:text-white break-words">
+                        {displayName}
                     </h2>
-                    <div className={`px-3 py-1 rounded-full text-[10px] font-bold w-fit ${membershipStatus.color} ${membershipStatus.textColor}`}>
-                        {membershipStatus.text}
+
+                    <div className="mt-4 flex flex-wrap justify-center">
+                        <span className={`px-6 py-2 ${membershipStatus.color} ${membershipStatus.textColor} text-[11px] font-black uppercase tracking-wider rounded-full shadow-md transition-all text-center break-words max-w-full`}>
+                            {membershipStatus.text || 'Gebruiker'}
+                        </span>
+                    </div>
+
+                    {Array.isArray(user.committees) && user.committees.length > 0 && (
+                        <div className="mt-6">
+                            <p className="text-[10px] text-purple-400 font-black uppercase tracking-wider mb-3 text-center">
+                                Mijn Commissies
+                            </p>
+                            <div className="flex flex-wrap gap-2 justify-center">
+                                {user.committees.map((committee) => (
+                                    <span
+                                        key={committee.id}
+                                        className="group relative inline-flex items-center gap-2 px-4 py-2 bg-purple-50 dark:bg-white/10 border border-purple-100 dark:border-white/20 rounded-full text-xs font-bold text-purple-700 dark:text-white shadow-sm max-w-full"
+                                    >
+                                        {committee.is_leader && !committee.name.toLowerCase().includes('bestuur') && (
+                                            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 border-2 border-bg-card shadow-md flex items-center justify-center shrink-0">
+                                                <span className="text-[8px]">⭐</span>
+                                            </span>
+                                        )}
+                                        <Users2 className="h-3.5 w-3.5 shrink-0" />
+                                        <span className="truncate">{committee.name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim()}</span>
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="mt-6 flex flex-col gap-3">
+                        <div className="rounded-2xl bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 px-5 py-4 shadow-sm">
+                            <p className="text-[10px] text-purple-400 font-black uppercase tracking-wider mb-1.5">
+                                Lidmaatschap tot
+                            </p>
+                            <p className="text-base font-bold text-purple-700 dark:text-white">
+                                {user.membership_expiry
+                                    ? formatDate(user.membership_expiry, "d MMM yyyy")
+                                    : "Niet van toepassing"}
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            {user.committees && user.committees.length > 0 && (
-                <div className="mt-6 flex flex-wrap gap-2">
-                    {user.committees.map((committee) => (
-                        <span
-                            key={committee.id}
-                            className="px-3 py-1 rounded-lg bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] text-[10px] font-semibold border border-[var(--beheer-border)]"
-                        >
-                            {committee.name} {committee.is_leader && ' (Leider)'}
-                        </span>
-                    ))}
-                </div>
-            )}
-        </div>
+        </Tile>
     );
 }
