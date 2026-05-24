@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { PhoneInput } from '@/shared/ui/PhoneInput';
 
 interface GuestTabProps {
     name: string;
@@ -50,14 +51,11 @@ export default function GuestTab({
                 </div>
                 <div className="group">
                     <label className="block text-[10px] font-semibold text-[var(--beheer-text-muted)]  tracking-widest mb-2.5 ml-1 group-focus-within:text-[var(--beheer-accent)] transition-colors">Telefoonnummer</label>
-                    <input
-                        suppressHydrationWarning
-                        type="tel"
+                    <PhoneInput
                         value={phone}
                         onChange={(e) => onPhoneChange(e.target.value)}
-                        className="beheer-input h-14 text-[10px] font-semibold  tracking-[0.2em]"
+                        className="beheer-input h-14 text-[10px] font-semibold tracking-[0.2em]"
                         placeholder="OPTIONEEL"
-                        autoComplete="off"
                     />
                 </div>
             </div>

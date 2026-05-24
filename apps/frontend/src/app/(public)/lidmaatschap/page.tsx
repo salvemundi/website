@@ -57,7 +57,7 @@ export default async function MembershipPage() {
                         <aside className="w-full sm:w-1/2 flex flex-col gap-6">
                             <div className="w-full text-center bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-[2rem] p-8 shadow-lg">
                                 <h2 className="text-3xl font-semibold text-theme-purple dark:text-purple-400 mb-4 tracking-tight">
-                                    Waarom Worden Lid?
+                                    Waarom Lid Worden?
                                 </h2>
                                 <p className="text-lg opacity-80 leading-relaxed font-medium">
                                     Als lid van Salve Mundi krijg je toegang tot exclusieve activiteiten en workshops.
