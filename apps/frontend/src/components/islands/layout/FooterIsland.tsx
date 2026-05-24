@@ -257,6 +257,22 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                             >
                                 <Linkedin className="h-5 w-5" />
                             </a>
+                            <a
+                                href="https://www.tiktok.com/@salve.mundi"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={
+                                    'inline-flex h-10 w-10 items-center justify-center rounded-full transition ' +
+                                    'bg-[var(--color-purple-500)]/15 dark:bg-[var(--color-white)]/10 ' +
+                                    'text-[var(--color-purple-700)] dark:text-[var(--color-white)] ' +
+                                    'hover:bg-[var(--color-purple-500)]/25 dark:hover:bg-[var(--color-white)]/20'
+                                }
+                                aria-label="TikTok"
+                            >
+                                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-current">
+                                    <path d="M19.52 6.2c-1.2-.88-2.03-2.2-2.27-3.72h-3.1v14.62c0 1.46-1.18 2.64-2.64 2.64a2.64 2.64 0 0 1 0-5.28c.17 0 .34.02.5.05V11.3a6 6 0 1 0 0 11.95 5.97 5.97 0 0 0 5.98-5.98V9.13a8.93 8.93 0 0 0 4.12 1.03V7.02a5.93 5.93 0 0 1-2.59-.83Z" />
+                                </svg>
+                            </a>
                         </div>
                     </div>
                 </div>
