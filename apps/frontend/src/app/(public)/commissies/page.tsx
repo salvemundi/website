@@ -15,14 +15,17 @@ export default async function CommissiesPage() {
     const committees = await getCommittees();
 
     return (
-        <PublicPageShell
-            title="COMMISSIES"
-            backgroundImage="/img/backgrounds/commissies-banner.png"
-            backgroundPosition="center 30%"
-            imageFilter="brightness(0.65)"
-            description="Ontdek onze commissies en word deel van het team"
-        >
+        <PublicPageShell>
             <div className="mx-auto max-w-app px-4 py-8 sm:py-12 lg:py-16">
+                <div className="flex flex-col items-center mb-12 text-center">
+                    <h1 className="text-4xl font-black text-text-main mb-4 tracking-tight uppercase">
+                        Onze Commissies
+                    </h1>
+                    <p className="text-text-muted max-w-2xl text-lg font-medium leading-relaxed">
+                        Ontdek onze commissies en het team dat SV Salve Mundi draaiende houdt.
+                    </p>
+                    <div className="h-1 w-24 bg-gradient-to-r from-transparent via-purple-500 to-transparent rounded-full mt-6" />
+                </div>
                 <CommitteesList initialCommittees={committees} />
             </div>
         </PublicPageShell>

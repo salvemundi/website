@@ -32,7 +32,7 @@ export async function getMyTickets() {
             fetchUserPubCrawlSignupsDb(email),
             query(`
                 SELECT ts.id, ts.status, ts.created_at, ts.first_name, ts.last_name, ts.access_token as qr_token,
-                       t.id as trip_id, t.name as trip_name, t.event_date as trip_event_date
+                       t.id as trip_id, t.name as trip_name, t.start_date as trip_event_date
                 FROM trip_signups ts
                 LEFT JOIN trips t ON ts.trip_id = t.id
                 WHERE LOWER(ts.email) = LOWER($1)

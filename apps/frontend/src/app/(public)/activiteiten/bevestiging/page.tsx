@@ -21,7 +21,7 @@ export default async function ActiviteitenConfirmationPage({ searchParams }: Pag
     const initialStatusRes = await getSignupStatus(id, transaction_id || t);
 
     return (
-        <div className="pt-8 w-full">
+        <div className="pt-8 sm:pt-12 lg:pt-16 pb-16 sm:pb-24 lg:pb-32 w-full">
             <h1 className="sr-only">Bevestiging</h1>
             <div className="container mx-auto px-4 max-w-7xl">
                 <ConfirmationIsland 
