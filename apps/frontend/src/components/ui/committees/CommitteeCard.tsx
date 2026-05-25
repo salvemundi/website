@@ -40,16 +40,31 @@ export const CommitteeCard = ({
             className={`group flex h-full flex-col overflow-hidden squircle-lg bg-bg-card dark:border dark:border-white/10 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl 
                 ${isBestuur ? 'ring-4 ring-purple-500/20 shadow-purple-500/10' : ''}`}
         >
-            <div className="relative h-61 w-full overflow-hidden bg-gradient-to-br from-purple-500/20 to-purple-900/40">
+            <div className={`relative w-full overflow-hidden bg-gradient-to-br from-purple-500/20 to-purple-900/40 ${isBestuur ? 'h-61 sm:h-72 md:h-80' : 'h-61'}`}>
+                {hasImage && isBestuur && (
+                    <Image
+                        src={imageUrl}
+                        alt=""
+                        fill
+                        className="object-cover blur-xl opacity-25 scale-105 select-none pointer-events-none"
+                        unoptimized
+                    />
+                )}
                 <Image
                     src={imageUrl || '/img/newlogo.svg'}
                     alt={committee.name || 'Committee'}
                     fill
-                    className={`transition-all duration-700 ${hasImage ? 'object-cover group-hover:scale-110' : 'object-cover p-12 opacity-40 group-hover:scale-105'}`}
+                    className={`transition-all duration-500 ${
+                        hasImage
+                            ? isBestuur
+                                ? 'object-contain'
+                                : 'object-cover'
+                            : 'object-contain p-12 opacity-40'
+                    }`}
                     unoptimized
                     priority={index < 4}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
 
                 {isBestuur && (
                     <div className="absolute right-4 top-4 rounded-full bg-purple-100 px-3 py-1 text-xs font-bold text-purple-700 shadow-lg uppercase tracking-wider">
