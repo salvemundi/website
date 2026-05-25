@@ -3,7 +3,7 @@
 import React from 'react';
 import { IMaskInput } from 'react-imask';
 import { type InputProps } from './Input';
-import { useFormField } from './FormField';
+import { useFormFieldOptional } from './FormField';
 
 export interface DateInputProps extends Omit<InputProps, 'onChange' | 'value'> {
     value?: string;
@@ -18,7 +18,7 @@ export const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(({
     id,
     ...props
 }, ref) => {
-    const { inputId: contextId } = useFormField();
+    const contextId = useFormFieldOptional()?.inputId;
     const inputId = id ?? contextId;
 
     const formatDisplayValue = (val: string) => {

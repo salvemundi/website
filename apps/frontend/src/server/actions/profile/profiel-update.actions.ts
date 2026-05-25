@@ -59,9 +59,18 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
             if (!azureRes.ok) {
                 const errorData = await azureRes.json().catch(() => ({})) as AzureErrorResponse;
                 safeConsoleError('[profiel-update.actions.ts][updateUserProfile] Azure AD phone number update failed:', errorData);
+
+                const details = errorData.details || '';
+                if (details.includes('Insufficient privileges')) {
+                    return {
+                        success: false,
+                        error: 'Als ICT-beheerder kun je je telefoonnummer niet via de website bewerken vanwege Azure AD beveiligingslimieten. Pas dit handmatig aan in het Microsoft Entra-portal.'
+                    };
+                }
+
                 return {
                     success: false,
-                    error: `Azure AD update mislukt: ${errorData.details || 'Ongeldig telefoonnummer of service onbeschikbaar.'}`
+                    error: `Azure AD update mislukt: ${details || 'Ongeldig telefoonnummer of service onbeschikbaar.'}`
                 };
             }
 
@@ -70,13 +79,18 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
             });
         }
 
-        const directusOnlyData: { [key: string]: unknown } = {};
+        const directusData: { [key: string]: unknown } = {};
         if (parsed.data.minecraft_username !== undefined) {
-            directusOnlyData.minecraft_username = parsed.data.minecraft_username;
+            directusData.minecraft_username = parsed.data.minecraft_username;
         }
 
-        if (Object.keys(directusOnlyData).length > 0) {
-            await getSystemDirectus().request(updateUser(user.id, directusOnlyData));
+        // Always write the phone number to Directus to ensure it's saved locally immediately
+        if (parsed.data.phone_number !== undefined) {
+            directusData.phone_number = parsed.data.phone_number;
+        }
+
+        if (Object.keys(directusData).length > 0) {
+            await getSystemDirectus().request(updateUser(user.id, directusData));
         }
 
         await clearSessionCache();
@@ -143,6 +157,17 @@ export async function uploadUserAvatar(formData: FormData) {
             const safeErrorMessage = errorData.error?.message || errorData.message || 'Onbekende Azure fout';
 
             safeConsoleError(`[profiel-update.actions.ts][uploadUserAvatar] Azure API Error [${safeErrorCode}]:`, safeErrorMessage);
+
+            const isPrivilegeError = safeErrorMessage.includes('Insufficient privileges') || 
+                                     safeErrorMessage.includes('Authorization_RequestDenied') || 
+                                     azureRes.status === 403;
+
+            if (isPrivilegeError) {
+                return {
+                    success: false,
+                    error: 'Als ICT-beheerder kun je je profielfoto niet via de website bewerken vanwege Azure AD beveiligingslimieten. Pas dit handmatig aan in het Microsoft Entra-portal.'
+                };
+            }
 
             return { success: false, error: 'Fout bij opslaan in Microsoft Entra ID.' };
         }

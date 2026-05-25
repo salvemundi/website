@@ -1,7 +1,7 @@
 import React from 'react';
 import { IMaskInput } from 'react-imask';
 import { type InputProps } from './Input';
-import { useFormField } from './FormField';
+import { useFormFieldOptional } from './FormField';
 
 export const PhoneInput = React.forwardRef<HTMLInputElement, InputProps>(({
     error,
@@ -12,7 +12,7 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, InputProps>(({
     const { value, ...rest } = props;
     const stringValue = (typeof value === 'number' ? String(value) : (Array.isArray(value) ? value.join('') : value)) as string | undefined;
 
-    const { inputId: contextId } = useFormField();
+    const contextId = useFormFieldOptional()?.inputId;
     const inputId = id ?? contextId;
 
     return (
