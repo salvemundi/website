@@ -5,10 +5,10 @@ import Link from 'next/link';
 import { ChevronRight, Lock, ExternalLink } from 'lucide-react';
 
 interface TileProps {
-    title?: string; 
-    icon?: React.ReactNode; 
+    title?: string;
+    icon?: React.ReactNode;
     children: React.ReactNode;
-    className?: string; 
+    className?: string;
     actions?: React.ReactNode;
 }
 
@@ -22,7 +22,7 @@ export function Tile({
                     <header className="mb-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex min-w-0 items-center gap-3">
                             {icon && (
-                                <div className="shrink-0 rounded-2xl bg-[var(--color-purple-100)] dark:bg-transparent p-2.5 dark:p-0 text-[var(--color-purple-700)] dark:text-[var(--color-purple-300)]">
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-purple-100)] dark:bg-transparent text-[var(--color-purple-700)] dark:text-[var(--color-purple-300)]">
                                     {icon}
                                 </div>
                             )}
@@ -42,12 +42,12 @@ export function Tile({
 }
 
 interface QuickLinkProps {
-    label: string; 
+    label: string;
     subtitle?: string;
-    icon: React.ReactNode; 
+    icon: React.ReactNode;
     onClick?: () => void;
-    href?: string; 
-    locked?: boolean; 
+    href?: string;
+    locked?: boolean;
     external?: boolean;
 }
 
@@ -55,9 +55,10 @@ export function QuickLink({
     label, subtitle, icon, onClick, href, locked, external
 }: QuickLinkProps) {
     const common = "group flex items-center gap-4 rounded-2xl bg-slate-50 dark:bg-black/20 p-5 transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-purple-300)] border border-slate-200 dark:border-white/10 hover:border-[var(--color-purple-300)] shadow-sm w-full hover:-translate-y-0.5";
+
     const inner = (
         <>
-            <div className="rounded-xl bg-[var(--color-purple-100)] dark:bg-transparent p-2.5 dark:p-0 text-[var(--color-purple-700)] dark:text-[var(--color-purple-300)] transition-transform group-hover:scale-110 shadow-sm dark:shadow-none">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--color-purple-100)] dark:bg-transparent text-[var(--color-purple-700)] dark:text-[var(--color-purple-300)] transition-transform group-hover:scale-110 shadow-sm dark:shadow-none">
                 {icon}
             </div>
             <span className="flex-1 flex items-center justify-between text-sm font-bold text-[var(--color-purple-700)] dark:text-white">
