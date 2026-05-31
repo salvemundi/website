@@ -29,12 +29,13 @@ overrides:
   lodash: "4.18.0"
   flatted: "3.4.2"
   picomatch: "4.0.4"
-  brace-expansion: "5.0.5"
+  brace-expansion: "5.0.6"
   vite: "7.3.2"
   jsdom: "25.0.1"
   kysely: "0.28.17"
   postcss: "8.5.14"
   protocol-buffers-schema: "3.6.1"
+  uuid@<11.1.1: ^11.1.1
 
 peerDependencyRules:
   allowedVersions:
@@ -42,4 +43,8 @@ peerDependencyRules:
     react-dom: "^19.0.0"
 
 patchedDependencies:
-  brace-expansion@5.0.5: patches/brace-expansion@5.0.5.patch
+  brace-expansion@5.0.6: patches/brace-expansion@5.0.6.patch
+
+minimumReleaseAgeExclude:
+  - brace-expansion@5.0.6
+  - uuid@11.1.1
