@@ -22,7 +22,7 @@ export function Tile({
                     <header className="mb-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex min-w-0 items-center gap-3">
                             {icon && (
-                                <div className="shrink-0 rounded-2xl bg-[var(--color-purple-100)] p-2.5 text-[var(--color-purple-700)] dark:text-[var(--color-purple-300)]">
+                                <div className="shrink-0 rounded-2xl bg-[var(--color-purple-100)] dark:bg-transparent p-2.5 dark:p-0 text-[var(--color-purple-700)] dark:text-[var(--color-purple-300)]">
                                     {icon}
                                 </div>
                             )}
@@ -57,7 +57,7 @@ export function QuickLink({
     const common = "group flex items-center gap-4 rounded-2xl bg-slate-50 dark:bg-black/20 p-5 transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-purple-300)] border border-slate-200 dark:border-white/10 hover:border-[var(--color-purple-300)] shadow-sm w-full hover:-translate-y-0.5";
     const inner = (
         <>
-            <div className="rounded-xl bg-[var(--color-purple-100)] p-2.5 text-[var(--color-purple-700)] dark:text-[var(--color-purple-300)] transition-transform group-hover:scale-110 shadow-sm">
+            <div className="rounded-xl bg-[var(--color-purple-100)] dark:bg-transparent p-2.5 dark:p-0 text-[var(--color-purple-700)] dark:text-[var(--color-purple-300)] transition-transform group-hover:scale-110 shadow-sm dark:shadow-none">
                 {icon}
             </div>
             <span className="flex-1 flex items-center justify-between text-sm font-bold text-[var(--color-purple-700)] dark:text-white">

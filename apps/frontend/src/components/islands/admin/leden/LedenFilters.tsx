@@ -1,4 +1,4 @@
-import { Search, Loader2, UserCheck, UserMinus } from 'lucide-react';
+import { Search, Loader2, UserCheck, UserMinus, Download, Bell } from 'lucide-react';
 
 interface LedenFiltersProps {
     searchQuery: string;
@@ -6,6 +6,9 @@ interface LedenFiltersProps {
     activeTab: 'active' | 'inactive';
     onTabChange: (tab: 'active' | 'inactive') => void;
     isPending: boolean;
+    onExport?: () => void;
+    onReminder?: () => void;
+    isSendingReminder?: boolean;
 }
 
 export default function LedenFilters({
@@ -13,45 +16,78 @@ export default function LedenFilters({
     onSearchChange,
     activeTab,
     onTabChange,
-    isPending
+    isPending,
+    onExport,
+    onReminder,
+    isSendingReminder
 }: LedenFiltersProps) {
     return (
-        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm ring-1 ring-[var(--beheer-border)] p-4 mb-8 flex flex-col lg:flex-row gap-4 items-center justify-between">
-            <div className="flex p-1 bg-[var(--beheer-card-soft)] rounded-xl w-full lg:w-auto border border-[var(--beheer-border)]">
+        <div className="flex flex-col lg:flex-row gap-4 mb-8 items-stretch lg:items-center justify-between">
+            {/* Tabs */}
+            <div className="flex p-1 bg-[var(--beheer-card-soft)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] shadow-sm w-full lg:w-auto self-stretch lg:self-auto">
                 <button
                     onClick={() => onTabChange('active')}
-                    className={`flex-1 lg:flex-none px-6 py-2.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2 ${activeTab === 'active'
-                        ? 'bg-[var(--beheer-card-bg)] text-[var(--beheer-accent)] shadow-sm ring-1 ring-[var(--beheer-border)]'
-                        : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)]'
+                    className={`flex-1 lg:flex-none px-6 py-2 rounded-[calc(var(--beheer-radius)-4px)] text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${activeTab === 'active'
+                        ? 'bg-[var(--beheer-accent)] text-white shadow-sm'
+                        : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] hover:bg-white/30 dark:hover:bg-white/5'
                         }`}
                 >
-                    <UserCheck className="h-3.5 w-3.5" />
+                    <UserCheck className="h-4 w-4" />
                     Actief
                 </button>
                 <button
                     onClick={() => onTabChange('inactive')}
-                    className={`flex-1 lg:flex-none px-6 py-2.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2 ${activeTab === 'inactive'
-                        ? 'bg-[var(--beheer-card-bg)] text-[var(--beheer-accent)] shadow-sm ring-1 ring-[var(--beheer-border)]'
-                        : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)]'
+                    className={`flex-1 lg:flex-none px-6 py-2 rounded-[calc(var(--beheer-radius)-4px)] text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${activeTab === 'inactive'
+                        ? 'bg-[var(--beheer-accent)] text-white shadow-sm'
+                        : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] hover:bg-white/30 dark:hover:bg-white/5'
                         }`}
                 >
-                    <UserMinus className="h-3.5 w-3.5" />
+                    <UserMinus className="h-4 w-4" />
                     Verlopen
                 </button>
             </div>
 
-            <div className="relative flex-1 lg:w-96 group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--beheer-text-muted)] group-focus-within:text-[var(--beheer-accent)] transition-colors" />
-                <input
-                    type="text"
-                    placeholder="Zoek op naam of email..."
-                    value={searchQuery}
-                    onChange={(e) => onSearchChange(e.target.value)}
-                    className="w-full pl-11 pr-5 py-3 rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] placeholder:text-[var(--beheer-text-muted)] focus:ring-2 focus:ring-[var(--beheer-accent)]/20 focus:border-[var(--beheer-accent)] outline-none transition-all shadow-sm font-semibold text-xs"
-                    suppressHydrationWarning
-                    autoComplete="off"
-                />
-                {isPending && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-[var(--beheer-accent)]" />}
+            {/* Actions & Search */}
+            <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center w-full lg:w-auto">
+                {/* Search Bar */}
+                <div className="relative group flex-1 sm:w-72 shadow-sm rounded-[var(--beheer-radius)]">
+                    <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none z-20">
+                        <Search className="h-4 w-4 text-[var(--beheer-text-muted)] group-focus-within:text-[var(--beheer-accent)] transition-colors" />
+                    </div>
+                    <input
+                        type="text"
+                        placeholder="Zoek op naam of email..."
+                        value={searchQuery}
+                        onChange={(e) => onSearchChange(e.target.value)}
+                        className="w-full pl-11 pr-10 py-2.5 rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] placeholder:text-[var(--beheer-text-muted)] focus:ring-4 focus:ring-[var(--beheer-accent)]/10 focus:border-[var(--beheer-accent)] outline-none transition-all font-semibold text-xs shadow-sm"
+                        suppressHydrationWarning
+                        autoComplete="off"
+                    />
+                    {isPending && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-[var(--beheer-accent)]" />}
+                </div>
+
+                {/* Export Button */}
+                {onExport && (
+                    <button
+                        onClick={onExport}
+                        className="flex items-center justify-center gap-2 px-5 py-2.5 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-xs font-semibold hover:border-[var(--beheer-accent)]/50 hover:bg-[var(--beheer-card-soft)] transition-all active:scale-95 shadow-sm disabled:opacity-50 cursor-pointer whitespace-nowrap"
+                    >
+                        <Download className="h-4 w-4" />
+                        Export
+                    </button>
+                )}
+
+                {/* Reminder Button */}
+                {onReminder && (
+                    <button
+                        onClick={onReminder}
+                        disabled={isSendingReminder}
+                        className="flex items-center justify-center gap-2 px-5 py-2.5 bg-[var(--beheer-accent)] text-white font-semibold text-xs rounded-[var(--beheer-radius)] shadow-md hover:opacity-95 transition-all active:scale-95 disabled:opacity-50 cursor-pointer whitespace-nowrap"
+                    >
+                        {isSendingReminder ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bell className="h-4 w-4" />}
+                        Herinnering
+                    </button>
+                )}
             </div>
         </div>
     );

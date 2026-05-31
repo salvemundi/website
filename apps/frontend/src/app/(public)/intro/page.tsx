@@ -23,7 +23,7 @@ const IntroInfoStudent = () => (
         </p>
 
         <div className="space-y-4">
-            <h3 className="font-black text-xs uppercase tracking-[0.2em] text-[var(--color-purple-500)]">Waarom je dit niet wilt missen</h3>
+            <h3 className="font-bold text-sm text-[var(--color-purple-500)]">Waarom je dit niet wilt missen</h3>
             <ul className="grid gap-3">
                 <li className="flex gap-3 text-[var(--text-muted)] font-medium">
                     <span className="text-[var(--color-purple-500)] font-black">01</span>
@@ -59,7 +59,7 @@ const IntroInfoParent = () => (
         </p>
 
         <div className="space-y-4">
-            <h3 className="font-black text-xs uppercase tracking-[0.2em] text-[var(--color-purple-500)]">Wat doet een Intro Ouder?</h3>
+            <h3 className="font-bold text-sm text-[var(--color-purple-500)]">Wat doet een Intro Ouder?</h3>
             <ul className="grid gap-3">
                 <li className="flex gap-3 text-[var(--text-muted)] font-medium">
                     <span className="text-[var(--color-purple-500)] font-black">★</span>
@@ -112,7 +112,7 @@ export default async function IntroPage() {
                                     <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mb-6">
                                         <CheckCircle2 className="w-10 h-10 text-white" />
                                     </div>
-                                    <h3 className="text-3xl font-black text-white mb-4 tracking-tight uppercase">Aangemeld!</h3>
+                                    <h3 className="text-3xl font-black text-white mb-4 tracking-tight">Aangemeld!</h3>
                                     <p className="text-white/80 font-medium max-w-sm">
                                         Bedankt! Je inschrijving als Intro Ouder is ontvangen. We nemen snel contact met je op.
                                     </p>

@@ -20,7 +20,7 @@ export default async function BlogsPage() {
                 <div className="mb-12">
                     <Link 
                         href="/intro" 
-                        className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] hover:text-[var(--beheer-accent)] transition-colors group mb-8"
+                        className="inline-flex items-center gap-2 text-xs font-semibold text-[var(--beheer-text-muted)] hover:text-[var(--beheer-accent)] transition-colors group mb-8"
                     >
                         <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
                         Terug naar Introductie
@@ -30,7 +30,7 @@ export default async function BlogsPage() {
                         <div className="p-2 bg-[var(--beheer-accent)]/10 rounded-lg">
                             <Newspaper className="h-6 w-6" />
                         </div>
-                        <span className="text-[12px] font-black uppercase tracking-[0.4em]">Archief</span>
+                        <span className="text-xs font-semibold text-[var(--beheer-text-muted)]">Archief</span>
                     </div>
                     <h1 className="text-4xl lg:text-5xl font-semibold tracking-tight text-theme dark:text-white">
                         Alle berichten

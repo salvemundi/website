@@ -20,10 +20,10 @@ export function EventsSection({ activities = [], count = 4 }: EventsSectionProps
     const hasActivities = displayActivities.length > 0;
 
     return (
-        <section id="kalender" className="py-8 sm:py-10 md:py-12 bg-[var(--bg-main)]">
+        <section id="kalender" className="py-6 sm:py-8 bg-[var(--bg-main)]">
             <div className="mx-auto max-w-app px-4 sm:px-6 lg:px-8">
                 <div 
-                    className="flex flex-col gap-6 rounded-xl bg-gradient-theme px-6 sm:px-10 pt-8 sm:pt-10 md:pt-12 pb-8 sm:pb-10 md:pt-12 shadow-xl"
+                    className="flex flex-col gap-6 rounded-xl bg-gradient-theme px-6 sm:px-10 pt-8 sm:pt-10 md:pt-12 pb-8 sm:pb-10 md:pb-12 shadow-xl"
                 >
                     <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
                         <div className="space-y-2">
@@ -38,7 +38,7 @@ export function EventsSection({ activities = [], count = 4 }: EventsSectionProps
                         {hasActivities && (
                             <Link 
                                 href="/activiteiten"
-                                className="group relative inline-flex items-center gap-4 px-8 py-4 bg-white/10 hover:bg-white/20 dark:bg-black/20 dark:hover:bg-black/40 text-[var(--text-main)] dark:text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-full border border-[var(--border-color)]/20 shadow-lg transition-all hover:scale-105 active:scale-95 backdrop-blur-sm overflow-hidden"
+                                className="group relative inline-flex items-center gap-4 px-8 py-4 bg-white/10 hover:bg-white/20 dark:bg-black/20 dark:hover:bg-black/40 text-[var(--text-main)] dark:text-white text-xs font-bold rounded-full border border-[var(--border-color)]/20 shadow-lg transition-all hover:scale-105 active:scale-95 backdrop-blur-sm overflow-hidden"
                             >
                                 <div className="relative z-10">Alle activiteiten</div>
                                 <div className="relative z-10 h-6 w-6 rounded-full bg-[var(--color-purple-500)] flex items-center justify-center text-white group-hover:bg-[var(--color-purple-600)] transition-colors">
@@ -51,7 +51,7 @@ export function EventsSection({ activities = [], count = 4 }: EventsSectionProps
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         {!hasActivities ? (
                             <div className="col-span-full flex flex-col items-center justify-center min-h-[320px] p-12 text-center bg-white/50 dark:bg-black/20 rounded-[2.5rem] border border-dashed border-[var(--color-purple-500)]/20">
-                                <div className="h-16 w-16 mb-4 rounded-full bg-[var(--color-purple-100)] dark:bg-[var(--color-purple-900)]/30 flex items-center justify-center text-[var(--color-purple-600)] dark:text-[var(--color-purple-300)]">
+                                <div className="h-16 w-16 mb-4 rounded-full bg-[var(--color-purple-100)] dark:bg-transparent flex items-center justify-center text-[var(--color-purple-600)] dark:text-[var(--color-purple-300)]">
                                     <Calendar className="h-8 w-8" />
                                 </div>
                                 <p className="text-lg font-bold text-[var(--text-main)] italic">

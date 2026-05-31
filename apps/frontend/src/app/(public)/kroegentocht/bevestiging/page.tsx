@@ -21,7 +21,7 @@ export default async function KroegentochtConfirmationPage({ searchParams }: Pag
             <PublicPageShell title="Bevestiging" hideHeader={true}>
                 <div className="min-h-[70vh] flex items-center justify-center p-6">
                     <div className="max-w-md w-full p-12 bg-[var(--bg-card)] border border-[var(--beheer-border)] rounded-3xl text-center shadow-xl">
-                        <h1 className="text-2xl font-black text-[var(--text-main)] uppercase italic mb-4">Ongeldige Status</h1>
+                        <h1 className="text-2xl font-black text-[var(--text-main)] mb-4">Ongeldige Status</h1>
                         <p className="text-[var(--text-muted)] mb-8">We kunnen de status van je betaling niet verifiëren zonder een geldige transactie.</p>
                         <BackButton href="/kroegentocht" text="Terug naar Kroegentocht" />
                     </div>
@@ -48,7 +48,7 @@ export default async function KroegentochtConfirmationPage({ searchParams }: Pag
                             <div className="absolute inset-0 bg-green-500/20 blur-3xl rounded-full" />
                             <CheckCircle2 className="w-20 h-20 text-green-500 relative z-10 mx-auto" />
                         </div>
-                        <h2 className="text-4xl font-black text-[var(--text-main)] italic uppercase tracking-tighter mb-4">
+                        <h2 className="text-4xl font-black text-[var(--text-main)] mb-4">
                             Betaling Geslaagd!
                         </h2>
                         <p className="text-[var(--text-muted)] max-w-sm mx-auto leading-relaxed mb-10 text-base font-semibold">

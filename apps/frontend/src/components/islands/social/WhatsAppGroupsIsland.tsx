@@ -46,7 +46,7 @@ export const WhatsAppGroupsIsland: React.FC<WhatsAppGroupsIslandProps> = ({ grou
                     {groups.map((group) => (
                         <div key={group.id} className="relative overflow-hidden rounded-3xl bg-[var(--bg-card)] p-6 shadow-lg hover:shadow-xl transition-all h-full flex flex-col justify-between">
                             <div className="flex items-start gap-4 mb-4">
-                                <div className="w-16 h-16 rounded-full bg-[var(--color-purple-100)] flex items-center justify-center flex-shrink-0 text-[var(--color-purple-500)]">
+                                <div className="w-16 h-16 rounded-full bg-[var(--color-purple-100)] dark:bg-transparent flex items-center justify-center flex-shrink-0 text-[var(--color-purple-500)] dark:text-[var(--color-purple-300)]">
                                     <MessageCircle className="h-8 w-8" />
                                 </div>
                                 <div className="flex-1 mt-1">
@@ -61,9 +61,9 @@ export const WhatsAppGroupsIsland: React.FC<WhatsAppGroupsIslandProps> = ({ grou
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-between mt-auto pt-4 border-t border-[var(--color-purple-100)]">
+                            <div className="flex items-center justify-between mt-auto pt-4 border-t border-[var(--color-purple-100)] dark:border-white/10">
                                 <div className="flex items-center gap-2 text-sm">
-                                    <span className="px-3 py-1 bg-[var(--color-purple-100)] rounded-full text-xs font-semibold text-[var(--color-purple-500)] flex items-center gap-1">
+                                    <span className="px-3 py-1 bg-[var(--color-purple-100)] dark:bg-[var(--color-purple-500)]/10 rounded-full text-xs font-semibold text-[var(--color-purple-500)] dark:text-[var(--color-purple-300)] dark:border dark:border-[var(--color-purple-500)]/20 flex items-center gap-1">
                                         <ShieldAlert className="h-3 w-3" />
                                         Alleen Leden
                                     </span>

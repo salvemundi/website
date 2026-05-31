@@ -44,6 +44,7 @@ next-env.d.ts
 apps/frontend/scripts/
 tmp/
 PROJECT_STATUS.md
+.vscode
 
 # RedisInsight
 infrastructure/databases.json
@@ -55,4 +56,3 @@ apps/frontend/public/sw.js.map
 playwright-report/
 scripts/
 .antigravity/
-.vscode/settings.json

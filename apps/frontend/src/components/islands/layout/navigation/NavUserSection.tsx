@@ -36,7 +36,7 @@ export function NavUserSection({ initialSession, canAccessAdmin }: NavUserSectio
                     className="flex items-center gap-2 rounded-full bg-[var(--color-purple-500)] text-[var(--color-white)] px-3 py-1.5 h-9 text-sm font-medium shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg shrink-0"
                 >
                     <Shield className="h-4 w-4 shrink-0" />
-                    <span className="hidden @[1200px]:inline">Admin</span>
+                    <span className="hidden @[1200px]:inline">Beheer</span>
                 </Link>
             )}
 

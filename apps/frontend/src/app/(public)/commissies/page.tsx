@@ -18,7 +18,7 @@ export default async function CommissiesPage() {
         <PublicPageShell>
             <div className="mx-auto max-w-app px-4 py-8 sm:py-12 lg:py-16">
                 <div className="flex flex-col items-center mb-12 text-center">
-                    <h1 className="text-4xl font-black text-text-main mb-4 tracking-tight uppercase">
+                    <h1 className="text-4xl font-black text-text-main mb-4 tracking-tight">
                         Onze Commissies
                     </h1>
                     <p className="text-text-muted max-w-2xl text-lg font-medium leading-relaxed">

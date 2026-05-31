@@ -1,11 +1,6 @@
 'use client';
 
 import { useState, useCallback, useMemo, useTransition } from 'react';
-import {
-    Bell,
-    Download,
-    Loader2
-} from 'lucide-react';
 import { downloadCSV } from '@/lib/utils/export';
 import { sendMembershipReminderAction } from '@/server/actions/admin/leden.actions';
 import LedenFilters from './LedenFilters';
@@ -79,23 +74,25 @@ export default function LedenOverzichtIsland({
         });
     }, [members, activeTab, searchQuery, isMembershipActive]);
 
-    const handleSendReminder = async () => {
+    const handleSendReminder = () => {
         if (!confirm('Herinnering sturen naar alle leden (binnen 30 dagen verlenging)?')) return;
 
         setIsSendingReminder(true);
-        try {
-            const res = await sendMembershipReminderAction(30);
-            if (res.success) {
-                showToast(res.count === 0 ? 'Geen leden gevonden.' : `Herinnering verstuurd naar ${res.count} leden!`, 'success');
-            } else {
-                showToast(res.error || 'Fout bij versturen', 'error');
+        void (async () => {
+            try {
+                const res = await sendMembershipReminderAction(30);
+                if (res.success) {
+                    showToast(res.count === 0 ? 'Geen leden gevonden.' : `Herinnering verstuurd naar ${res.count} leden!`, 'success');
+                } else {
+                    showToast(res.error || 'Fout bij versturen', 'error');
+                }
+            } catch (error) {
+                safeConsoleError('[LedenOverzicht][handleSendReminder]', error);
+                showToast('Er is een onverwachte fout opgetreden', 'error');
+            } finally {
+                setIsSendingReminder(false);
             }
-        } catch (error) {
-            safeConsoleError('[LedenOverzicht][handleSendReminder]', error);
-            showToast('Er is een onverwachte fout opgetreden', 'error');
-        } finally {
-            setIsSendingReminder(false);
-        }
+        })();
     };
 
     const exportToCSV = () => {
@@ -111,30 +108,15 @@ export default function LedenOverzichtIsland({
 
     return (
         <>
-            <div className="flex justify-end gap-3 mb-8">
-                <button
-                    onClick={exportToCSV}
-                    className="flex items-center gap-2 px-6 py-2 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] text-xs font-semibold hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 shadow-sm disabled:opacity-50"
-                >
-                    <Download className="h-3.5 w-3.5" />
-                    Export
-                </button>
-                <button
-                    onClick={() => { void handleSendReminder(); }}
-                    disabled={isSendingReminder}
-                    className="flex items-center gap-2 px-6 py-2 bg-[var(--beheer-accent)] text-white font-semibold text-xs rounded-[var(--beheer-radius)] shadow-[var(--shadow-glow)] hover:opacity-90 transition-all active:scale-95 disabled:opacity-50"
-                >
-                    {isSendingReminder ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Bell className="h-3.5 w-3.5" />}
-                    Reminder
-                </button>
-            </div>
-
             <LedenFilters
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
                 activeTab={activeTab}
                 onTabChange={setActiveTab}
                 isPending={isPending}
+                onExport={exportToCSV}
+                onReminder={handleSendReminder}
+                isSendingReminder={isSendingReminder}
             />
 
             <div className="w-full">

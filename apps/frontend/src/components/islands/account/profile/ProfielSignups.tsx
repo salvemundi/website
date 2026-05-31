@@ -32,13 +32,13 @@ export default function ProfielSignups({
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => setShowPastEvents((v) => !v)}
-                        className="inline-flex items-center justify-center rounded-xl bg-[var(--color-purple-50)] px-4 py-2 text-[10px] font-black uppercase text-[var(--color-purple-700)] hover:bg-[var(--color-purple-100)] transition border border-[var(--color-purple-100)] disabled:opacity-50"
+                        className="inline-flex items-center justify-center rounded-xl bg-[var(--color-purple-50)] dark:bg-white/5 px-4 py-2 text-[10px] font-black uppercase text-[var(--color-purple-700)] dark:text-white hover:bg-[var(--color-purple-100)] dark:hover:bg-white/10 transition border border-[var(--color-purple-100)] dark:border-white/10 disabled:opacity-50"
                     >
                         {showPastEvents ? "Verberg oude" : "Toon oude"}
                     </button>
                     <Link
                         href="/profiel/tickets"
-                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-purple-50)] px-4 py-2 text-[10px] font-black uppercase text-[var(--color-purple-700)] hover:bg-[var(--color-purple-100)] transition border border-[var(--color-purple-100)]"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-purple-50)] dark:bg-white/5 px-4 py-2 text-[10px] font-black uppercase text-[var(--color-purple-700)] dark:text-white hover:bg-[var(--color-purple-100)] dark:hover:bg-white/10 transition border border-[var(--color-purple-100)] dark:border-white/10"
                     >
                         Tickets <ChevronRight className="h-3 w-3" />
                     </Link>
@@ -88,7 +88,7 @@ export default function ProfielSignups({
                                     }`}
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className="shrink-0 h-16 w-16 flex items-center justify-center rounded-2xl bg-[var(--color-purple-100)] text-[var(--color-purple-500)] shadow-sm">
+                                    <div className="shrink-0 h-16 w-16 flex items-center justify-center rounded-2xl bg-[var(--color-purple-100)] dark:bg-transparent text-[var(--color-purple-500)] dark:text-[var(--color-purple-300)] shadow-sm dark:shadow-none">
                                         {icon}
                                     </div>
                                     <div className="min-w-0">

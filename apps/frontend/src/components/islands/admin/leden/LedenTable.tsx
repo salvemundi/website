@@ -4,8 +4,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { 
     Users, 
-    Mail, 
-    ChevronRight
+    Mail
 } from 'lucide-react';
 
 import { type AdminMember } from '@salvemundi/validations';
@@ -34,15 +33,18 @@ export default function LedenTable({
                             <th className="px-4 md:px-8 py-4">Lid</th>
                             <th className="px-4 md:px-8 py-4">Contactgegevens</th>
                             <th className="px-4 md:px-8 py-4">Validiteit</th>
-                            <th className="px-4 md:px-8 py-4 text-right">Beheer</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
                         {members.map((member) => (
-                            <tr key={member.id} className="group hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition-colors">
+                            <tr 
+                                key={member.id} 
+                                onClick={() => router.push(`/beheer/leden/${encodeURIComponent((member.email || member.id).split('@')[0].replace(/\./g, '-'))}`)}
+                                className="group hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition-colors cursor-pointer"
+                            >
                                 <td className="px-4 md:px-8 py-5">
                                     <div className="flex items-center gap-4">
-                                        <div className="h-10 w-10 shrink-0 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm ring-2 ring-white dark:ring-slate-800 shadow-sm transition-transform group-hover:scale-110">
+                                        <div className="h-10 w-10 shrink-0 rounded-2xl bg-[var(--beheer-accent)]/10 flex items-center justify-center text-[var(--beheer-accent)] font-semibold text-sm ring-2 ring-white dark:ring-slate-800 shadow-sm transition-transform group-hover:scale-110">
                                             {member.first_name?.[0]}{member.last_name?.[0]}
                                         </div>
                                         <div>
@@ -56,7 +58,13 @@ export default function LedenTable({
                                 <td className="px-8 py-5 text-sm font-medium text-slate-500 dark:text-slate-400">
                                     <div className="flex items-center gap-2">
                                         <Mail className="h-4 w-4 text-slate-300 dark:text-slate-600" />
-                                        <a href={`mailto:${member.email}`} className="hover:text-primary transition-colors">{member.email}</a>
+                                        <a 
+                                            href={`mailto:${member.email}`} 
+                                            className="hover:text-[var(--beheer-accent)] transition-colors"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            {member.email}
+                                        </a>
                                     </div>
                                 </td>
                                 <td className="px-4 md:px-8 py-5">
@@ -66,14 +74,6 @@ export default function LedenTable({
                                         }`}>
                                         Tot {formatDate(member.membership_expiry)}
                                     </span>
-                                </td>
-                                <td className="px-4 md:px-8 py-5 text-right">
-                                    <button
-                                        onClick={() => router.push(`/beheer/leden/${encodeURIComponent((member.email || member.id).split('@')[0].replace(/\./g, '-'))}`)}
-                                        className="inline-flex items-center justify-center w-10 h-10 rounded-xl text-slate-300 hover:text-primary hover:bg-primary/5 dark:text-slate-600 transition-all cursor-pointer"
-                                    >
-                                        <ChevronRight className="h-5 w-5" />
-                                    </button>
                                 </td>
                             </tr>
                         ))}

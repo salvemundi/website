@@ -116,7 +116,7 @@ export default function MemberAdminTab({
                     <button
                         onClick={() => { void handleProvision(); }}
                         disabled={provisioningLoading}
-                        className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-amber-500 text-white rounded-xl font-semibold text-xs shadow-lg shadow-amber-500/20 transition-all hover:opacity-90 active:scale-95 disabled:opacity-50"
+                        className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-amber-500 text-white rounded-xl font-semibold text-xs shadow-lg shadow-amber-500/20 transition-all hover:opacity-90 active:scale-95 disabled:opacity-50 cursor-pointer"
                     >
                         {provisioningLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
                         Azure AD Account Aanmaken
@@ -207,7 +207,7 @@ export default function MemberAdminTab({
                     <label className="text-xs font-semibold text-[var(--beheer-text-muted)] opacity-60">Verlengen met:</label>
                     <div className="flex gap-2">
                         {[1, 6, 12].map(m => (
-                            <button key={m} onClick={() => setRenewMonths(m)} className={`px-4 py-3 rounded-xl font-semibold text-xs transition-all ${renewMonths === m ? 'bg-[var(--beheer-accent)] text-white shadow-md' : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] hover:bg-[var(--beheer-border)]/50'}`}>
+                            <button key={m} onClick={() => setRenewMonths(m)} className={`px-4 py-3 rounded-xl font-semibold text-xs transition-all cursor-pointer ${renewMonths === m ? 'bg-[var(--beheer-accent)] text-white shadow-md' : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] hover:bg-[var(--beheer-border)]/50'}`}>
                                 {m} maand{m > 1 ? 'en' : ''}
                             </button>
                         ))}
@@ -215,7 +215,7 @@ export default function MemberAdminTab({
                     <button
                         onClick={() => { void handleRenew(); }}
                         disabled={renewLoading}
-                        className="flex items-center gap-2 px-6 py-3 bg-green-500 text-white rounded-xl font-semibold text-xs hover:opacity-90 transition-all active:scale-95 disabled:opacity-50 shadow-lg shadow-green-500/20"
+                        className="flex items-center gap-2 px-6 py-3 bg-green-500 text-white rounded-xl font-semibold text-xs hover:opacity-90 transition-all active:scale-95 disabled:opacity-50 shadow-lg shadow-green-500/20 cursor-pointer"
                     >
                         {renewLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CalendarPlus className="h-4 w-4" />}
                         Verlengen
@@ -235,7 +235,7 @@ export default function MemberAdminTab({
                         <button
                             onClick={() => { void handleSync(); }}
                             disabled={syncLoading}
-                            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] rounded-xl font-semibold text-xs hover:bg-[var(--beheer-border)]/50 transition-all active:scale-95 border border-[var(--beheer-border)]/50"
+                            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] rounded-xl font-semibold text-xs hover:bg-[var(--beheer-border)]/50 transition-all active:scale-95 border border-[var(--beheer-border)]/50 cursor-pointer"
                         >
                             <RefreshCw className={`h-4 w-4 ${syncLoading ? 'animate-spin' : ''}`} />
                             Synchroniseer

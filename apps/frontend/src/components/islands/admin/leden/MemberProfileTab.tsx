@@ -18,6 +18,7 @@ import { InfoRow, CommitteeCard, GroupCard, EmptyState, cleanName } from './Lede
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import { safeConsoleError } from '@/server/utils/logger';
+import { PhoneInput } from '@/shared/ui/PhoneInput';
 
 interface Member {
     id: string;
@@ -109,7 +110,7 @@ export default function MemberProfileTab({
                     <div className="flex items-center justify-between mb-8">
                         <h3 className="text-xs font-semibold text-[var(--beheer-text-muted)]">Gegevens</h3>
                         {isAdmin && !isEditing && (
-                            <button onClick={() => setIsEditing(true)} className="p-2 text-[var(--beheer-text-muted)] hover:text-[var(--beheer-accent)] hover:bg-[var(--beheer-accent)]/10 rounded-xl transition-all">
+                            <button onClick={() => setIsEditing(true)} className="p-2 text-[var(--beheer-text-muted)] hover:text-[var(--beheer-accent)] hover:bg-[var(--beheer-accent)]/10 rounded-xl transition-all cursor-pointer">
                                 <Edit className="h-4 w-4" />
                             </button>
                         )}
@@ -120,19 +121,27 @@ export default function MemberProfileTab({
                             {editFields.map(field => (
                                 <div key={field.key} className="space-y-2">
                                     <label className="text-xs font-semibold text-[var(--beheer-text-muted)]">{field.label}</label>
-                                    <input
-                                        type={field.type}
-                                        value={(editData[field.key] as string) || ''}
-                                        onChange={e => setEditData(prev => ({ ...prev, [field.key]: e.target.value }))}
-                                        className="w-full px-4 py-3 rounded-xl bg-[var(--beheer-card-soft)] border border-[var(--beheer-border)] text-sm font-semibold focus:ring-2 focus:ring-[var(--beheer-accent)] outline-none transition-all"
-                                    />
+                                    {field.key === 'phone_number' ? (
+                                        <PhoneInput
+                                            value={(editData.phone_number) || ''}
+                                            onChange={e => setEditData(prev => ({ ...prev, phone_number: e.target.value }))}
+                                            className="w-full px-4 py-3 rounded-xl bg-[var(--beheer-card-soft)] border border-[var(--beheer-border)] text-sm font-semibold focus:ring-2 focus:ring-[var(--beheer-accent)] outline-none transition-all"
+                                        />
+                                    ) : (
+                                        <input
+                                            type={field.type}
+                                            value={(editData[field.key] as string) || ''}
+                                            onChange={e => setEditData(prev => ({ ...prev, [field.key]: e.target.value }))}
+                                            className="w-full px-4 py-3 rounded-xl bg-[var(--beheer-card-soft)] border border-[var(--beheer-border)] text-sm font-semibold focus:ring-2 focus:ring-[var(--beheer-accent)] outline-none transition-all"
+                                        />
+                                    )}
                                 </div>
                             ))}
                             <div className="flex gap-3 pt-4">
-                                <button onClick={() => { void handleSave(); }} disabled={saving} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[var(--beheer-accent)] text-white rounded-xl text-xs font-semibold shadow-[var(--shadow-glow)] hover:opacity-90 transition-all disabled:opacity-50">
+                                <button onClick={() => { void handleSave(); }} disabled={saving} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[var(--beheer-accent)] text-white rounded-xl text-xs font-semibold shadow-[var(--shadow-glow)] hover:opacity-90 transition-all disabled:opacity-50 cursor-pointer">
                                     {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Opslaan
                                 </button>
-                                <button onClick={() => setIsEditing(false)} className="flex-1 px-4 py-3 rounded-xl text-xs font-semibold text-[var(--beheer-text-muted)] hover:bg-[var(--beheer-card-soft)] transition-all border border-transparent hover:border-[var(--beheer-border)]">
+                                <button onClick={() => setIsEditing(false)} className="flex-1 px-4 py-3 rounded-xl text-xs font-semibold text-[var(--beheer-text-muted)] hover:bg-[var(--beheer-card-soft)] transition-all border border-transparent hover:border-[var(--beheer-border)] cursor-pointer">
                                     X
                                 </button>
                             </div>

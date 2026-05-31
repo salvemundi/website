@@ -269,7 +269,6 @@
     border-radius: var(--beheer-radius);
     font-size: 10px;
     font-weight: 900;
-    text-transform: uppercase;
     letter-spacing: 0.05em;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -311,7 +310,6 @@
     border-radius: 9999px;
     font-size: 10px;
     font-weight: 900;
-    text-transform: uppercase;
     letter-spacing: 0.05em;
     cursor: pointer;
     border: 0;

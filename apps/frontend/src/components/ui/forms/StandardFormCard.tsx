@@ -34,7 +34,7 @@ export function StandardFormCard({
                 <header className="flex flex-col @md:flex-row justify-between items-start gap-4 mb-8 @md:mb-10">
                     <div className="space-y-1">
                         {subtitle && (
-                            <p className="text-[11px] font-black text-text-muted tracking-wider @md:tracking-[0.4em] uppercase opacity-70 mb-2">
+                            <p className="text-[11px] font-bold text-text-muted opacity-75 mb-2">
                                 {subtitle}
                             </p>
                         )}
@@ -58,7 +58,7 @@ export function StandardFormCard({
                         
                         {price !== undefined && (
                             <div className="text-right">
-                                <span className="block text-xs font-black text-text-muted tracking-[0.2em] uppercase mb-1">Prijs</span>
+                                <span className="block text-xs font-semibold text-text-muted mb-1">Prijs</span>
                                 <span className="text-3xl font-black text-purple-700 dark:text-purple-300">
                                     €{price.toFixed(2).replace('.', ',')}
                                 </span>

@@ -25,7 +25,7 @@ export default function MembershipError({
                 </div>
             </div>
 
-            <h1 className="text-4xl font-black text-[var(--text-main)] mb-3 tracking-tight uppercase">
+            <h1 className="text-4xl font-black text-[var(--text-main)] mb-3 tracking-tight">
                 Er is iets misgegaan
             </h1>
 
@@ -37,7 +37,7 @@ export default function MembershipError({
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
                 <button
                     onClick={() => reset()}
-                    className="flex items-center gap-2 rounded-full bg-[var(--color-purple-500)] text-white px-8 py-3.5 font-bold shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:-translate-y-0.5 transition-all text-sm uppercase tracking-widest"
+                    className="flex items-center gap-2 rounded-full bg-[var(--color-purple-500)] text-white px-8 py-3.5 font-bold shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:-translate-y-0.5 transition-all text-sm"
                 >
                     <RefreshCcw className="h-4 w-4" />
                     Opnieuw Proberen
@@ -52,7 +52,7 @@ export default function MembershipError({
             </div>
 
             {error.digest && (
-                <p className="mt-12 text-[10px] font-mono text-[var(--text-muted)] opacity-50 uppercase tracking-[0.2em]">
+                <p className="mt-12 text-[10px] font-mono text-[var(--text-muted)] opacity-50">
                     Err-ID: {error.digest}
                 </p>
             )}

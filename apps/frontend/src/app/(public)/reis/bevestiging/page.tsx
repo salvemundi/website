@@ -24,7 +24,7 @@ export default async function TripConfirmationPage({ searchParams }: PageProps) 
                 <div className="min-h-[70vh] flex items-center justify-center p-6">
                     <div className="max-w-md w-full p-12 bg-[var(--bg-card)] border border-[var(--beheer-border)] rounded-3xl text-center shadow-xl">
                         <XCircle className="w-16 h-16 text-red-500 mx-auto mb-6" />
-                        <h1 className="text-2xl font-black text-white uppercase italic mb-4 tracking-tighter">Ongeldige Status</h1>
+                        <h1 className="text-2xl font-black text-white mb-4">Ongeldige Status</h1>
                         <p className="text-[var(--text-muted)] mb-8 leading-relaxed">We kunnen de status van je betaling niet verifiëren zonder een geldige transactie- of token-ID.</p>
                         <BackButton href="/reis" text="Terug naar Reizen" />
                     </div>
@@ -47,7 +47,7 @@ export default async function TripConfirmationPage({ searchParams }: PageProps) 
                             <div className="absolute inset-0 bg-green-500/20 blur-3xl rounded-full" />
                             <CheckCircle2 className="w-20 h-20 text-green-500 relative z-10 mx-auto" />
                         </div>
-                        <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter mb-4">
+                        <h2 className="text-4xl font-black text-white mb-4">
                             Betaling Geslaagd!
                         </h2>
                         <p className="text-[var(--text-muted)] max-w-sm mx-auto leading-relaxed mb-10">

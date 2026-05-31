@@ -25,12 +25,12 @@ export async function HeroIsland({ banners = [], activiteiten = [], initialSessi
         ? banners
             .sort((a, b) => a.display_order - b.display_order)
             .map((b) => getImageUrl(b.afbeelding_id, {
-                width: 1920,
-                height: 1080,
+                width: 1200,
+                height: 800,
                 fit: 'cover',
                 quality: 90
             }))
-        : [getImageUrl(null, { width: 1920, height: 1080, quality: 90 })];
+        : [getImageUrl(null, { width: 1200, height: 800, quality: 90 })];
 
     const nextEvent = (() => {
         if (!activiteiten.length) return null;
@@ -52,7 +52,7 @@ export async function HeroIsland({ banners = [], activiteiten = [], initialSessi
     return (
         <section
             id="home"
-            className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full min-h-[480px] sm:h-[520px] md:h-[580px] lg:h-[640px] py-4 sm:py-8 lg:py-12 transition-colors duration-300"
+            className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full pt-8 pb-6 sm:pt-12 sm:pb-8 md:pt-16 md:pb-10 transition-colors duration-300"
         >
             <div className="mx-auto max-w-app px-4 sm:px-6 lg:px-8">
                 <div className="relative w-full px-0">
@@ -81,7 +81,7 @@ export async function HeroIsland({ banners = [], activiteiten = [], initialSessi
                                                     <p className="mt-1 sm:mt-2 text-sm sm:text-base md:text-lg font-bold text-[var(--color-purple-300)] dark:text-white truncate">Sluit je aan bij Salve Mundi</p>
                                                     <p className="mt-0.5 sm:mt-1 text-[0.7rem] sm:text-xs md:text-sm text-[var(--text-muted)] line-clamp-2">Ontdek alle voordelen van een lidmaatschap!</p>
                                                 </div>
-                                                <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-[var(--color-purple-300)]/10 dark:bg-white/10 text-[var(--color-purple-300)] dark:text-white flex items-center justify-center shadow-md group-hover/lid:bg-gradient-theme group-hover/lid:text-[var(--text-main)]">
+                                                <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-[var(--color-purple-300)]/10 dark:bg-transparent text-[var(--color-purple-300)] dark:text-white flex items-center justify-center shadow-md dark:shadow-none group-hover/lid:bg-gradient-theme group-hover/lid:text-[var(--text-main)]">
                                                     <ChevronRight className="h-5 w-5" />
                                                 </div>
                                             </div>
@@ -94,7 +94,7 @@ export async function HeroIsland({ banners = [], activiteiten = [], initialSessi
                                                     <p className="mt-2 text-base sm:text-lg font-bold text-[var(--color-purple-300)] dark:text-white truncate">{nextEvent.titel} • {formatDateRange(nextEvent.datum_start, nextEvent.datum_eind)}</p>
                                                     <p className="mt-1 text-xs sm:text-sm text-[var(--text-muted)] line-clamp-2">{nextEvent.beschrijving ?? 'Kom gezellig langs!'}</p>
                                                 </div>
-                                                <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-[var(--color-purple-300)]/10 dark:bg-white/10 text-[var(--color-purple-300)] dark:text-white flex items-center justify-center shadow-md group-hover/event:bg-gradient-theme group-hover/event:text-[var(--text-main)]">
+                                                <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-[var(--color-purple-300)]/10 dark:bg-transparent text-[var(--color-purple-300)] dark:text-white flex items-center justify-center shadow-md dark:shadow-none group-hover/event:bg-gradient-theme group-hover/event:text-[var(--text-main)]">
                                                     <ChevronRight className="h-5 w-5" />
                                                 </div>
                                             </div>
@@ -112,7 +112,7 @@ export async function HeroIsland({ banners = [], activiteiten = [], initialSessi
 
                         {/* ── Rechts: Swiper afbeeldingsgalerij ───────────────────── */}
                         <div className="flex flex-wrap gap-3 sm:gap-4 min-w-0">
-                            <div className="relative w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)]/80 shadow-2xl backdrop-blur-xl overflow-hidden aspect-video md:aspect-auto md:h-[350px] lg:h-[480px] xl:h-[540px]">
+                            <div className="relative w-full rounded-2xl sm:rounded-3xl bg-[var(--bg-card)]/80 shadow-2xl backdrop-blur-xl overflow-hidden aspect-[3/2]">
                                 <HeroCarousel slideUrls={slideUrls} />
                             </div>
                         </div>
