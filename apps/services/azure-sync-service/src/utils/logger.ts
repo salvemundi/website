@@ -23,7 +23,7 @@ export function safeConsoleError(context: string, error?: unknown) {
         ? error.message 
         : typeof error === 'string' 
             ? error 
-            : (typeof error === 'object' && error !== null ? JSON.stringify(error) : (typeof error === 'object' && error !== null ? JSON.stringify(error) : (typeof error === 'object' && error !== null ? JSON.stringify(error) : String(error as string | number | boolean || 'Onbekende fout'))));
+            : (typeof error === 'object' && error !== null ? JSON.stringify(error) : String(error || 'Onbekende fout'));
 
     const sanitizedMessage = redactString(rawMessage);
     const sanitizedContext = redactString(context);
