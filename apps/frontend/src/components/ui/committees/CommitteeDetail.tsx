@@ -107,7 +107,7 @@ export const CommitteeDetail = ({ committee }: CommitteeDetailProps) => {
                                 <h4 className="text-center font-black text-[var(--text-main)] text-xl mb-2 group-hover:text-[var(--color-purple-500)] transition-colors">
                                     {name}
                                 </h4>
-                                <span className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em] bg-[var(--bg-soft)] px-4 py-2 rounded-full border border-[var(--border-color)]/10 text-center shadow-inner">
+                                <span className="text-[10px] font-bold text-[var(--text-muted)] bg-[var(--bg-soft)] px-4 py-2 rounded-full border border-[var(--border-color)]/10 text-center shadow-inner">
                                     {member.is_leader ? (isBestuur ? member.user_id?.title : 'Commissieleider') : (isBestuur ? (member.user_id?.title || 'Bestuurslid') : 'Commissielid')}
                                 </span>
                             </div>

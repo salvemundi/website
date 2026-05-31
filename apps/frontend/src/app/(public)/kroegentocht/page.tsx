@@ -88,28 +88,28 @@ async function RegistrationSection() {
                         <div className="flex items-start gap-3">
                             <Clock className="w-5 h-5 text-purple-600 shrink-0 mt-1" />
                             <div>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Datum</p>
+                                <p className="text-xs font-semibold text-slate-400">Datum</p>
                                 <p className="font-bold">{formattedDate}</p>
                             </div>
                         </div>
                         <div className="flex items-start gap-3">
                             <MapPin className="w-5 h-5 text-purple-600 shrink-0 mt-1" />
                             <div>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Locatie</p>
+                                <p className="text-xs font-semibold text-slate-400">Locatie</p>
                                 <p className="font-bold">Eindhoven Centrum</p>
                             </div>
                         </div>
                         <div className="flex items-start gap-3">
                             <Users className="w-5 h-5 text-purple-600 shrink-0 mt-1" />
                             <div>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Organisatie</p>
+                                <p className="text-xs font-semibold text-slate-400">Organisatie</p>
                                 <p className="font-bold">SV Salve Mundi</p>
                             </div>
                         </div>
                         <div className="flex items-start gap-3">
                             <Mail className="w-5 h-5 text-purple-600 shrink-0 mt-1" />
                             <div>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Contact</p>
+                                <p className="text-xs font-semibold text-slate-400">Contact</p>
                                 <div className="font-bold text-[var(--color-purple-theme)] break-all">
                                     <ObfuscatedEmail email={event.email || 'ict@salvemundi.nl'} showIcon={false} />
                                 </div>

@@ -15,14 +15,11 @@ export const SponsorsSection: React.FC<SponsorsSectionProps> = ({
     const scrollDuration = Math.max(2, sponsors.length * 0.8);
 
     return (
-        <section className="py-12 overflow-hidden" style={{ '--scroll-duration': `${scrollDuration}s` } as React.CSSProperties}>
+        <section className="py-6 sm:py-8 overflow-hidden" style={{ '--scroll-duration': `${scrollDuration}s` } as React.CSSProperties}>
             <div className="mx-auto max-w-app px-6">
-                <div className="text-center mb-10">
-                    <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[var(--color-purple-700)] dark:text-[var(--color-purple-300)] mb-2">
+                <div className="text-center mb-6 sm:mb-8">
+                    <h2 className="text-2xl font-black text-gradient sm:text-3xl">
                         Onze sponsors
-                    </p>
-                    <h2 className="text-2xl font-black text-[var(--text-main)] sm:text-3xl">
-                        Zij maken het mogelijk
                     </h2>
                 </div>
 

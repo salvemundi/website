@@ -82,7 +82,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
             {/* Decoratieve achtergrond-blob rechts */}
             <div className="absolute -right-10 bottom-10 h-64 w-64 rounded-full bg-[var(--color-purple-100)]/10 blur-3xl" />
 
-            <div className="relative mx-auto max-w-screen-xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16 pb-[calc(3rem+env(safe-area-inset-bottom,0px))]">
+            <div className="relative mx-auto max-w-screen-xl px-4 pt-6 sm:px-6 lg:px-8 lg:pt-8 pb-safe-4">
                 <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-5">
 
                     {/* ── Kolom 1: Informatie ── */}
@@ -278,7 +278,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                 </div>
 
                 {/* Copyright */}
-                <div className="mt-12 pt-8 text-center">
+                <div className="mt-4 text-center">
                     <p className={`text-sm ${MUTED_CLS}`}>
                         Copyright &copy; 2026 Salve Mundi &mdash; alle rechten voorbehouden.{' '}
                         <a

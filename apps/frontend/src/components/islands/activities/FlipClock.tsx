@@ -67,7 +67,7 @@ const FlipBlock: React.FC<{ value: number; label: string }> = ({ value, label })
                 <FlipDigit digit={Math.floor(value / 10)} />
                 <FlipDigit digit={value % 10} />
             </div>
-            <span className="text-[9px] sm:text-[11px] font-black uppercase tracking-[0.2em] text-[var(--color-purple-600)] dark:text-[var(--color-purple-400)] opacity-60">
+            <span className="text-[10px] sm:text-xs font-bold text-[var(--color-purple-600)] dark:text-[var(--color-purple-400)] opacity-70">
                 {label}
             </span>
         </div>
@@ -145,10 +145,10 @@ const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href, serverTi
 
             {title && (
                 <div className="text-center mb-8">
-                    <h2 className="text-2xl sm:text-4xl md:text-5xl font-black text-[var(--color-purple-800)] dark:text-[var(--color-purple-200)] uppercase tracking-tight mb-2">
+                    <h2 className="text-2xl sm:text-4xl md:text-5xl font-black text-[var(--color-purple-800)] dark:text-[var(--color-purple-200)] tracking-tight mb-2">
                         {title}
                     </h2>
-                    <p className="text-sm sm:text-base font-bold text-[var(--color-purple-600)] dark:text-[var(--color-purple-400)] uppercase tracking-widest opacity-80">
+                    <p className="text-sm sm:text-base font-semibold text-[var(--color-purple-600)] dark:text-[var(--color-purple-400)] opacity-80">
                         Begint over
                     </p>
                 </div>
@@ -168,7 +168,7 @@ const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href, serverTi
                 <div className="mt-8">
                     <a
                         href={href}
-                        className="group relative inline-flex items-center gap-2 px-8 py-4 bg-[var(--color-purple-600)] hover:bg-[var(--color-purple-700)] text-white font-black uppercase tracking-widest rounded-2xl transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1 overflow-hidden"
+                        className="group relative inline-flex items-center gap-2 px-8 py-4 bg-[var(--color-purple-600)] hover:bg-[var(--color-purple-700)] text-white font-bold rounded-2xl transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1 overflow-hidden"
                     >
                         <span className="relative z-10 flex items-center gap-2">
                             Bekijk Activiteit

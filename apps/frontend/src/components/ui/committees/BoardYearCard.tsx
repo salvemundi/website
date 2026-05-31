@@ -24,13 +24,13 @@ export const BoardYearCard = ({ board }: BoardYearCardProps) => {
                         unoptimized
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6">
-                        <span className="text-white font-black tracking-widest text-sm uppercase">{board.year}</span>
+                        <span className="text-white font-black text-sm">{board.year}</span>
                     </div>
                 </div>
 
                 <div className="flex-1 space-y-6">
                     <div>
-                        <div className="inline-block px-4 py-1.5 rounded-full bg-purple-500/10 text-[var(--color-purple-600)] dark:text-purple-400 text-xs font-black tracking-widest uppercase mb-3 ring-1 ring-purple-500/20">
+                        <div className="inline-block px-4 py-1.5 rounded-full bg-purple-500/10 text-[var(--color-purple-600)] dark:text-purple-400 text-xs font-bold mb-3 ring-1 ring-purple-500/20">
                             {board.year}
                         </div>
                         <h3 className="text-3xl font-black text-[var(--text-main)] tracking-tight">
@@ -62,7 +62,7 @@ export const BoardYearCard = ({ board }: BoardYearCardProps) => {
                                     </div>
                                     <div className="min-w-0">
                                         <p className="text-sm font-bold text-[var(--text-main)] truncate">{name}</p>
-                                        <p className="text-[10px] font-black uppercase tracking-wider text-[var(--color-purple-600)] dark:text-purple-400 opacity-80">
+                                        <p className="text-[10px] font-bold text-[var(--color-purple-600)] dark:text-purple-400 opacity-80">
                                             {member.functie || 'Bestuurslid'}
                                         </p>
                                     </div>

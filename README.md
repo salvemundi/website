@@ -14,7 +14,7 @@ De repository is ingericht als een monorepo (gestuurd door `pnpm-workspace.yaml`
 
 ## 🛠 Technologie Stack
 
-- **Frontend**: Next.js 16.1.1 (Turbopack, PPR), TailwindCSS 4, Better Auth.
+- **Frontend**: Next.js 16.2.6 (Turbopack, PPR), TailwindCSS 4, Better Auth.
 - **Backend/CMS**: Directus 11.1.1 (Requires `DIRECTUS_STATIC_TOKEN` for build verification).
 - **Database**: PostgreSQL (centrale opslag).
 - **Caching**: Redis.
@@ -35,9 +35,10 @@ De repository is ingericht als een monorepo (gestuurd door `pnpm-workspace.yaml`
     ```
 
 3.  **Configureer de omgeving**:
-    Kopieer `.env.example` naar `.env.local` en vul de benodigde waarden in.
+    Kopieer `.env.example` naar `.env` in de root folder voor de services en Docker. Kopieer daarnaast `apps/frontend/.env.example` naar `apps/frontend/.env.local` voor de Next.js frontend.
     ```bash
-    cp .env.example .env.local
+    cp .env.example .env
+    cp apps/frontend/.env.example apps/frontend/.env.local
     ```
 
 4.  **Start de development server**:

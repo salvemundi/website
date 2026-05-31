@@ -14,6 +14,7 @@ import {
     getRecentActivities,
     getTopStickers
 } from '@/server/actions/public/dashboard.actions';
+import { COMMITTEES } from '@/shared/lib/permissions-config';
 
 export const metadata = {
     title: 'Beheer Dashboard | SV Salve Mundi' };
@@ -62,10 +63,14 @@ export default async function BeheerPage() {
     const visibleCount = allPermissions.filter(Boolean).length;
     const isLimitedAccess = visibleCount <= 2;
 
+    const isIct = permissions.isIct || permissions.isICT || false;
+    const isBestuur = access.user.committees?.some(c => c.azure_group_id === COMMITTEES.BESTUUR) || false;
+    const hideStickers = isIct || isBestuur;
+
     return (
         <AdminPageShell
             title="Beheer Dashboard"
-            subtitle={`Welkom terug, ${access.user.first_name || 'Admin'}. Beheer de vereniging vanaf één plek.`}
+            subtitle={`Welkom terug, ${access.user.first_name || 'Admin'}.`}
             centered={true}
         >
             <div className={`grid grid-cols-1 ${isLimitedAccess ? 'lg:grid-cols-1 max-w-5xl mx-auto' : 'lg:grid-cols-12'} gap-8 md:gap-12 items-start`}>
@@ -73,7 +78,7 @@ export default async function BeheerPage() {
                     <div className={isLimitedAccess ? 'w-full space-y-12' : 'lg:col-span-8 space-y-12'}>
                         <DashboardHub permissions={permissions} stats={stats} />
 
-                        {!isLimitedAccess && (
+                        {!isLimitedAccess && !hideStickers && (
                             <div className="pt-12 border-t border-[var(--beheer-border)] opacity-60 hover:opacity-100 transition-opacity hidden md:block">
                                 <TopStickersList data={stickers} />
                             </div>
@@ -87,7 +92,7 @@ export default async function BeheerPage() {
                         
                         <div className="space-y-6">
                             <BirthdaysList data={birthdays} />
-                            {isLimitedAccess && (
+                            {isLimitedAccess && !hideStickers && (
                                 <div className="md:hidden opacity-60">
                                     <TopStickersList data={stickers} />
                                 </div>

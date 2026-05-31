@@ -26,7 +26,7 @@ export const JoinSectionIsland: React.FC<JoinSectionIslandProps> = ({
         : 'Sluit je aan bij onze community van studenten en maak het meeste van je studententijd. Voor slechts €20 per jaar krijg je toegang tot alle activiteiten met korting!';
 
     return (
-        <section className="px-6 py-8 sm:py-10 md:py-12 bg-[var(--bg-main)]">
+        <section className="px-6 py-6 sm:py-8 bg-[var(--bg-main)]">
             <div className="mx-auto max-w-4xl text-center">
                 <h2 className="text-3xl font-black text-gradient sm:text-4xl md:text-5xl mb-6">
                     {title}

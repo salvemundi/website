@@ -42,7 +42,7 @@ export default async function BlogDetailPage({ params }: Props) {
             <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-10 py-12 lg:py-24">
                 <Link 
                     href="/intro/blogs" 
-                    className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] hover:text-[var(--beheer-accent)] transition-colors group mb-12"
+                    className="inline-flex items-center gap-2 text-xs font-semibold text-[var(--beheer-text-muted)] hover:text-[var(--beheer-accent)] transition-colors group mb-12"
                 >
                     <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
                     Terug naar overzicht
@@ -50,20 +50,20 @@ export default async function BlogDetailPage({ params }: Props) {
 
                 <header className="mb-12">
                     <div className="flex flex-wrap items-center gap-4 mb-6">
-                         <span className={`text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full bg-${config.color}-500/10 text-${config.color}-500 border border-${config.color}-500/20`}>
+                         <span className={`text-[10px] font-bold px-4 py-1.5 rounded-full bg-${config.color}-500/10 text-${config.color}-500 border border-${config.color}-500/20`}>
                             {config.label}
                         </span>
                         {date && (
                             <div className="flex items-center gap-2 text-[var(--beheer-text-muted)]">
                                 <Calendar className="h-4 w-4" />
-                                <span className="text-[10px] font-bold uppercase tracking-widest">
+                                <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)]">
                                     {new Date(date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}
                                 </span>
                             </div>
                         )}
                     </div>
 
-                    <h1 className="text-4xl lg:text-7xl font-black uppercase tracking-tight text-theme dark:text-white leading-[1.1] mb-8">
+                    <h1 className="text-4xl lg:text-7xl font-black tracking-tight text-theme dark:text-white leading-[1.1] mb-8">
                         {blog.title}
                     </h1>
 
@@ -83,12 +83,12 @@ export default async function BlogDetailPage({ params }: Props) {
                 <footer className="mt-20 pt-10 border-t border-[var(--beheer-border)]/10">
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-8 bg-[var(--beheer-accent)]/5 p-8 lg:p-12 squircle-lg border border-[var(--beheer-accent)]/10">
                         <div className="space-y-2 text-center sm:text-left">
-                            <h4 className="text-xl font-black uppercase tracking-tight text-theme dark:text-white">Wil je niets missen?</h4>
+                            <h4 className="text-xl font-black text-theme dark:text-white">Wil je niets missen?</h4>
                             <p className="text-sm text-[var(--beheer-text-muted)]">Houd deze pagina en onze socials in de gaten voor meer updates.</p>
                         </div>
                         <Link 
                             href="/intro" 
-                            className="px-8 py-4 bg-[var(--beheer-accent)] text-white squircle font-black uppercase tracking-widest text-xs hover:scale-105 active:scale-95 transition-all shadow-lg shadow-[var(--beheer-accent)]/20"
+                            className="px-8 py-4 bg-[var(--beheer-accent)] text-white squircle font-bold text-xs hover:scale-105 active:scale-95 transition-all shadow-lg shadow-[var(--beheer-accent)]/20"
                         >
                             Naar de Introductie
                         </Link>

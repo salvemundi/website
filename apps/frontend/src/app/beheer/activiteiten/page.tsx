@@ -48,17 +48,17 @@ export default async function AdminActiviteitenPage() {
                 <div className="flex flex-wrap items-center gap-4">
                     <div className="flex items-center gap-4 bg-[var(--beheer-card-soft)] px-4 py-2 rounded-2xl border border-[var(--beheer-border)]/50 shadow-sm">
                         <div className="flex flex-col items-center px-2">
-                            <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1 uppercase tracking-wider">Aankomend</span>
+                            <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1">Aankomend</span>
                             <span className="text-sm font-bold text-[var(--beheer-text)] leading-none">{upcomingCount}</span>
                         </div>
                         <div className="w-px h-6 bg-[var(--beheer-border)]/20" />
                         <div className="flex flex-col items-center px-2">
-                            <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1 uppercase tracking-wider">Totaal</span>
+                            <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1">Totale activiteiten</span>
                             <span className="text-sm font-bold text-[var(--beheer-text)] leading-none">{events.length}</span>
                         </div>
                         <div className="w-px h-6 bg-[var(--beheer-border)]/20" />
                         <div className="flex flex-col items-center px-2">
-                            <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1 uppercase tracking-wider">Leden</span>
+                            <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1">Aanmeldingen</span>
                             <span className="text-sm font-bold text-[var(--beheer-text)] leading-none">{totalSignups}</span>
                         </div>
                     </div>

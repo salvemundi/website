@@ -31,7 +31,8 @@ const pijlers: Pijler[] = [
             >
                 <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
             </svg>
-        ) },
+        )
+    },
     {
         titel: 'Studie',
         beschrijving:
@@ -53,7 +54,8 @@ const pijlers: Pijler[] = [
                 <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
                 <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
             </svg>
-        ) },
+        )
+    },
     {
         titel: 'Ontwikkeling',
         beschrijving:
@@ -75,20 +77,18 @@ const pijlers: Pijler[] = [
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                 <polyline points="22 4 12 14.01 9 11.01" />
             </svg>
-        ) },
+        )
+    },
 ];
 
 export function WhySalveMundiSection() {
     return (
-        <section className="px-6 py-8 sm:py-10 md:py-12 bg-[var(--bg-main)]">
+        <section className="px-6 py-6 sm:py-8 bg-[var(--bg-main)]">
             <div className="mx-auto max-w-app">
                 {/* Sectie-header */}
-                <div className="text-center mb-8 sm:mb-12">
-                    <p className="text-sm sm:text-base font-bold uppercase tracking-[0.2em] text-[var(--color-purple-300)] mb-3">
-                        Waarom Salve Mundi?
-                    </p>
+                <div className="text-center mb-6 sm:mb-10">
                     <h2 className="text-3xl font-black text-gradient sm:text-4xl md:text-5xl">
-                        Meer dan alleen studeren
+                        Waarom Salve Mundi?
                     </h2>
                 </div>
 
@@ -99,14 +99,16 @@ export function WhySalveMundiSection() {
                             key={pijler.titel}
                             className="group relative rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-8 shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
                         >
-                            {/* Icoon-badge — hover wisselt naar bg-gradient-theme */}
-                            <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--color-purple-300)]/10 text-[var(--color-purple-300)] group-hover:bg-gradient-theme group-hover:text-[var(--text-main)] transition-all duration-300">
-                                {pijler.icon}
+                            {/* Flex container for Icon + Title */}
+                            <div className="flex items-center gap-3.5 mb-4">
+                                <div className="shrink-0 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--color-purple-300)]/10 dark:bg-transparent text-[var(--color-purple-300)] group-hover:bg-gradient-theme group-hover:text-[var(--text-main)] transition-all duration-300">
+                                    {pijler.icon}
+                                </div>
+                                <h3 className="text-xl font-bold text-[var(--text-main)]">
+                                    {pijler.titel}
+                                </h3>
                             </div>
 
-                            <h3 className="mb-4 text-xl font-bold text-[var(--text-main)]">
-                                {pijler.titel}
-                            </h3>
                             <p className="text-[var(--text-muted)] leading-relaxed">
                                 {pijler.beschrijving}
                             </p>

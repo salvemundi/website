@@ -43,7 +43,7 @@ export const EventCard: React.FC<EventCardProps> = ({
                 "hover:-translate-y-1.5 hover:shadow-xl hover:border-purple-500/30"
             )}
         >
-            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] text-[var(--color-purple-500)] dark:text-[var(--color-purple-300)]">
+            <div className="flex items-center gap-2 text-[11px] font-black text-[var(--color-purple-500)] dark:text-[var(--color-purple-300)]">
                 <Tag className="h-4 w-4" />
                 <span>{displayCategory}</span>
             </div>
@@ -55,7 +55,7 @@ export const EventCard: React.FC<EventCardProps> = ({
             </h3>
 
             <div className="mt-auto pt-4 flex items-center justify-between border-t border-[var(--border-color)]/10">
-                <div className="flex items-center gap-2 text-[11px] font-bold text-[var(--text-muted)] dark:text-white/60 uppercase tracking-widest">
+                <div className="flex items-center gap-2 text-[11px] font-semibold text-[var(--text-muted)] dark:text-white/60">
                     <Calendar className="h-4 w-4 text-[var(--color-purple-500)]" />
                     <span>{displayDate}</span>
                 </div>

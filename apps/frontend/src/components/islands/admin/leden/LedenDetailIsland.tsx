@@ -155,17 +155,22 @@ export default function LedenDetailIsland({
     };
 
     const availableCommittees = useMemo(() => {
-        const currentIds = new Set(optimisticMemberships.map(m => m.committee_id.id));
-        return allCommittees.filter(c => !currentIds.has(c.id) && c.azure_group_id);
+        const currentAzureIds = new Set(
+            optimisticMemberships
+                .map(m => m.committee_id.azure_group_id?.toLowerCase())
+                .filter(Boolean)
+        );
+        return allCommittees.filter(c => {
+            if (!c.azure_group_id) return false;
+            return !currentAzureIds.has(c.azure_group_id.toLowerCase());
+        });
     }, [allCommittees, optimisticMemberships]);
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-7xl overflow-x-hidden">
-            <style>{flipStyles}</style>
-
+        <div className="w-full overflow-x-hidden">
             <div className="flex flex-col md:flex-row md:items-center gap-8 mb-12">
                 <div className="relative group">
-                    <div className="h-28 w-28 rounded-[2rem] bg-[var(--beheer-accent)]/10 flex items-center justify-center text-[var(--beheer-accent)] font-semibold text-4xl shadow-2xl border border-[var(--beheer-border)] transition-transform group-hover:scale-105 duration-500">
+                    <div className="h-28 w-28 rounded-[2rem] bg-[var(--beheer-accent)]/10 flex items-center justify-center text-[var(--beheer-accent)] font-semibold text-4xl shadow-2xl border border-[var(--beheer-border)] transition-transform group-hover:scale-105 duration-500 overflow-hidden">
                         {localMember.avatar ? (
                             <MediaAsset
                                 asset={getImageUrl(localMember.avatar, { width: 150, height: 150, fit: 'cover' }) || ''}
@@ -207,7 +212,7 @@ export default function LedenDetailIsland({
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                            className={`flex items-center gap-3 px-8 py-5 font-semibold text-xs transition-all border-b-2 ${activeTab === tab.id
+                            className={`flex items-center gap-3 px-8 py-5 font-semibold text-xs transition-all border-b-2 cursor-pointer ${activeTab === tab.id
                                 ? 'text-[var(--beheer-accent)] border-[var(--beheer-accent)]'
                                 : 'text-[var(--beheer-text-muted)] border-transparent hover:text-[var(--beheer-text)]'
                                 }`}
@@ -251,16 +256,3 @@ export default function LedenDetailIsland({
         </div>
     );
 }
-
-const flipStyles = `
-    @keyframes slideDownIn {
-        0% { transform: translateY(-100%); opacity: 0; }
-        100% { transform: translateY(0%); opacity: 1; }
-    }
-    @keyframes slideDownOut {
-        0% { transform: translateY(0%); opacity: 1; }
-        100% { transform: translateY(100%); opacity: 0; }
-    }
-    .digit-in { animation: slideDownIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-    .digit-out { animation: slideDownOut 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-`;

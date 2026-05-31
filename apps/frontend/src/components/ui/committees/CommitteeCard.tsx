@@ -67,7 +67,7 @@ export const CommitteeCard = ({
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
 
                 {isBestuur && (
-                    <div className="absolute right-4 top-4 rounded-full bg-purple-100 px-3 py-1 text-xs font-bold text-purple-700 shadow-lg uppercase tracking-wider">
+                    <div className="absolute right-4 top-4 rounded-full bg-purple-100 px-3 py-1 text-xs font-bold text-purple-700 shadow-lg">
                         Huidig Bestuur
                     </div>
                 )}
@@ -88,7 +88,7 @@ export const CommitteeCard = ({
                                     </div>
                                 ))}
                             </div>
-                            <span className="text-xs font-bold text-text-muted uppercase tracking-widest flex items-center gap-1.5 ml-1">
+                            <span className="text-xs font-semibold text-text-muted flex items-center gap-1.5 ml-1">
                                 <Users className="h-3 w-3" />
                                 {(committee.members?.length || 0)} Leden
                             </span>
@@ -101,7 +101,7 @@ export const CommitteeCard = ({
                 </p>
 
                 <div className="mt-auto flex items-center justify-between pt-6 border-t border-border-color/20">
-                    <span className="text-sm font-black uppercase tracking-widest text-purple-500 decoration-2 underline-offset-4 group-hover:underline">
+                    <span className="text-sm font-bold text-purple-500 decoration-2 underline-offset-4 group-hover:underline">
                         Meer informatie
                     </span>
 

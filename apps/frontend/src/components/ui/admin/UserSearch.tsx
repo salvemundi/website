@@ -118,7 +118,7 @@ export default function UserSearch({
                     {results.length > 0 ? (
                         <div className="max-h-72 overflow-y-auto custom-scrollbar p-2">
                             <div className="px-3 py-2 mb-1">
-                                <span className="text-[9px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)] opacity-50">Resultaten</span>
+                                <span className="text-[9px] font-bold text-[var(--beheer-text-muted)] opacity-50">Resultaten</span>
                             </div>
                             {results.map((user) => (
                                 <button

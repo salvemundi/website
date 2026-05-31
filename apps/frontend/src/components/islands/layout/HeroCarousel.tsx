@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 
 interface HeroCarouselProps {
@@ -8,54 +8,71 @@ interface HeroCarouselProps {
 }
 
 export function HeroCarousel({ slideUrls }: HeroCarouselProps) {
-    const scrollRef = useRef<HTMLDivElement>(null);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [touchStartX, setTouchStartX] = useState<number | null>(null);
+    const [touchEndX, setTouchEndX] = useState<number | null>(null);
 
     useEffect(() => {
         if (slideUrls.length <= 1) return;
 
         const interval = setInterval(() => {
-            if (scrollRef.current) {
-                const nextIndex = (currentIndex + 1) % slideUrls.length;
-                const scrollWidth = scrollRef.current.clientWidth;
-
-                scrollRef.current.scrollTo({
-                    left: nextIndex * scrollWidth,
-                    behavior: 'smooth'
-                });
-
-                setCurrentIndex(nextIndex);
-            }
+            setCurrentIndex((prevIndex) => (prevIndex + 1) % slideUrls.length);
         }, 5000);
 
         return () => clearInterval(interval);
-    }, [currentIndex, slideUrls.length]);
+    }, [slideUrls.length, currentIndex]);
 
     if (slideUrls.length === 0) return null;
 
+    const handleTouchStart = (e: React.TouchEvent) => {
+        if (slideUrls.length <= 1) return;
+        setTouchStartX(e.targetTouches[0].clientX);
+        setTouchEndX(null);
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        if (slideUrls.length <= 1) return;
+        setTouchEndX(e.targetTouches[0].clientX);
+    };
+
+    const handleTouchEnd = () => {
+        if (slideUrls.length <= 1 || touchStartX === null || touchEndX === null) return;
+
+        const diffX = touchStartX - touchEndX;
+        const minSwipeDistance = 50; // minimum swipe distance in pixels
+
+        if (Math.abs(diffX) > minSwipeDistance) {
+            if (diffX > 0) {
+                // Swiped left -> Next slide
+                setCurrentIndex((prev) => (prev + 1) % slideUrls.length);
+            } else {
+                // Swiped right -> Previous slide
+                setCurrentIndex((prev) => (prev - 1 + slideUrls.length) % slideUrls.length);
+            }
+        }
+
+        setTouchStartX(null);
+        setTouchEndX(null);
+    };
+
     return (
-        <div className="w-full h-full relative group bg-[var(--bg-main)]">
-
-            <div className="block sm:hidden w-full aspect-[4/3] relative">
-                <Image
-                    src={slideUrls[0]}
-                    alt="Salve Mundi"
-                    fill
-                    priority
-                    fetchPriority="high"
-                    sizes="(max-width: 640px) 100vw, (max-width: 768px) 80vw, 50vw"
-                    className="object-cover object-center"
-                />
-            </div>
-
-            <div className="hidden sm:block h-full w-full relative">
-                <div
-                    ref={scrollRef}
-                    className="flex w-full h-full overflow-x-hidden snap-x snap-mandatory"
-                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                >
-                    {slideUrls.map((src, index) => (
-                        <div key={index} className="w-full h-full flex-shrink-0 snap-center relative">
+        <div 
+            className="w-full h-full relative group bg-[var(--bg-main)] overflow-hidden"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+        >
+            {/* Sliding container wrapper */}
+            <div 
+                className="w-full h-full flex transition-transform duration-500 ease-in-out"
+                style={{ transform: `translate3d(-${currentIndex * 100}%, 0, 0)` }}
+            >
+                {slideUrls.map((src, index) => {
+                    return (
+                        <div
+                            key={index}
+                            className="w-full h-full flex-shrink-0 relative"
+                        >
                             <Image
                                 src={src}
                                 alt={`Sfeerimpressie ${index + 1}`}
@@ -66,10 +83,9 @@ export function HeroCarousel({ slideUrls }: HeroCarouselProps) {
                                 className="object-cover object-center"
                             />
                         </div>
-                    ))}
-                </div>
+                    );
+                })}
             </div>
-
         </div>
     );
 }
