@@ -16,13 +16,13 @@ export function Tile({
     title, icon, children, className = "", actions
 }: TileProps) {
     return (
-        <section className={`relative overflow-hidden rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 shadow-lg ${className}`}>
+        <section className={`relative overflow-hidden rounded-3xl bg-[var(--bg-card)] border border-transparent dark:border-white/10 shadow-lg ${className}`}>
             <div className="relative p-6 sm:p-8">
                 {(title || actions) && (
                     <header className="mb-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex min-w-0 items-center gap-3">
                             {icon && (
-                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-purple-100)] dark:bg-transparent text-[var(--color-purple-700)] dark:text-[var(--color-purple-300)]">
+                                <div className="shrink-0 flex items-center justify-center text-[var(--color-purple-700)] dark:text-[var(--color-purple-300)]">
                                     {icon}
                                 </div>
                             )}
@@ -58,7 +58,7 @@ export function QuickLink({
 
     const inner = (
         <>
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--color-purple-100)] dark:bg-transparent text-[var(--color-purple-700)] dark:text-[var(--color-purple-300)] transition-transform group-hover:scale-110 shadow-sm dark:shadow-none">
+            <div className="shrink-0 flex items-center justify-center text-[var(--color-purple-700)] dark:text-[var(--color-purple-300)] transition-transform group-hover:scale-110">
                 {icon}
             </div>
             <span className="flex-1 flex items-center justify-between text-sm font-bold text-[var(--color-purple-700)] dark:text-white">
