@@ -20,7 +20,7 @@ export function EventsSection({ activities = [], count = 4 }: EventsSectionProps
     const hasActivities = displayActivities.length > 0;
 
     return (
-        <section id="kalender" className="py-6 sm:py-8 bg-[var(--bg-main)]">
+        <section id="kalender" className="py-6 sm:py-8">
             <div className="mx-auto max-w-app px-4 sm:px-6 lg:px-8">
                 <div 
                     className="flex flex-col gap-6 rounded-xl bg-gradient-theme px-6 sm:px-10 pt-8 sm:pt-10 md:pt-12 pb-8 sm:pb-10 md:pb-12 shadow-xl"

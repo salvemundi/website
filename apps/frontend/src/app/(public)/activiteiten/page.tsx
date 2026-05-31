@@ -25,7 +25,7 @@ export default async function ActivitiesPage() {
     const serverTime = new Date().toISOString();
 
     return (
-        <div className="min-h-screen bg-[var(--bg-main)]">
+        <div className="min-h-screen">
             <h1 className="sr-only">Activiteiten Salve Mundi</h1>
 
             <div className="w-full px-4 py-8 md:py-16 flex justify-center">

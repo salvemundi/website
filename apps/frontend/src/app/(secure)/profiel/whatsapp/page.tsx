@@ -21,7 +21,7 @@ export default async function WhatsAppGroepenPage() {
     const gedragscodeUrl = '/gedragscode';
 
     return (
-        <div className="bg-[var(--bg-main)]">
+        <div>
             <header className="bg-[var(--bg-soft)] py-12">
                 <div className="mx-auto max-w-app px-4">
                     <div className="mb-6">

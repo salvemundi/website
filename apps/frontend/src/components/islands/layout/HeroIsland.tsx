@@ -52,7 +52,7 @@ export async function HeroIsland({ banners = [], activiteiten = [], initialSessi
     return (
         <section
             id="home"
-            className="relative bg-[var(--bg-main)] justify-self-center overflow-hidden w-full pt-8 pb-6 sm:pt-12 sm:pb-8 md:pt-16 md:pb-10 transition-colors duration-300"
+            className="relative justify-self-center overflow-hidden w-full pt-8 pb-6 sm:pt-12 sm:pb-8 md:pt-16 md:pb-10"
         >
             <div className="mx-auto max-w-app px-4 sm:px-6 lg:px-8">
                 <div className="relative w-full px-0">

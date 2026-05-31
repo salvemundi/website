@@ -25,7 +25,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
     const timeRange = startTime ? (endTime ? `${startTime} - ${endTime}` : startTime) : null;
 
     return (
-        <div className="w-full flex flex-col min-h-screen bg-[var(--bg-main)]">
+        <div className="w-full flex flex-col min-h-screen">
             {activity?.afbeelding_id ? (
                 <div className="relative h-[45vh] min-h-[400px] w-full overflow-hidden bg-[var(--bg-soft)]">
                     <MediaAsset
