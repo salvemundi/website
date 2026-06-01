@@ -78,7 +78,6 @@ export const IntroStudentIsland = ({ className = '' }: IntroStudentIslandProps) 
     return (
         <StandardFormCard
             title="Schrijf je nu in!"
-            subtitle="Introductieweek"
             icon={<Send className="w-8 h-8" />}
             description="Meld je aan voor de gezelligste week van het jaar!"
             className={className}
