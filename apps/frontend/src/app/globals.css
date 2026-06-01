@@ -30,7 +30,7 @@
    --color-paars: #5e2b52;
 
    /* Semantic Aliases */
-   --color-theme-purple: #c48fbe;
+   --color-theme-purple: var(--theme-purple);
    --color-theme-text: var(--text-main);
    --color-theme-bg: var(--bg-main);
 
@@ -85,6 +85,12 @@
 
    /* Border */
    --border-color: #d9c7db;
+   --color-border-color: var(--border-color);
+
+   /* Beheer Admin Tokens */
+   --color-beheer-active: var(--beheer-active);
+   --color-beheer-inactive: var(--beheer-inactive);
+   --color-beheer-accent: var(--beheer-accent);
 
    /* Shadows */
    --shadow-card: 0 1px 3px rgba(16, 24, 40, 0.1),

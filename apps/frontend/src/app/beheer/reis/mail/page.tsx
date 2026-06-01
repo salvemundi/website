@@ -61,22 +61,22 @@ export default async function ReisMailPage({ searchParams }: PageProps) {
             backHref="/beheer/reis"
             actions={
                 <div className="flex items-center gap-4">
-                    <div className="hidden md:flex items-center gap-4 bg-[var(--beheer-card-soft)] px-4 py-2 rounded-2xl border border-[var(--beheer-border)]/50 shadow-sm">
+                    <div className="hidden md:flex items-center gap-4 bg-bg-soft px-4 py-2 rounded-2xl border border-border-color/50 shadow-sm">
                         <div className="flex flex-col items-center px-2">
-                            <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1">Bevestigd</span>
-                            <span className="text-sm font-bold text-[var(--beheer-active)] leading-none">{confirmedCount}</span>
+                            <span className="text-[10px] font-semibold text-text-muted leading-none mb-1">Bevestigd</span>
+                            <span className="text-sm font-bold text-beheer-active leading-none">{confirmedCount}</span>
                         </div>
-                        <div className="w-px h-6 bg-[var(--beheer-border)]/20" />
+                        <div className="w-px h-6 bg-border-color/20" />
                         <div className="flex flex-col items-center px-2">
-                            <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1">Openstaand</span>
-                            <span className="text-sm font-bold text-[var(--beheer-inactive)] leading-none">{unpaidCount}</span>
+                            <span className="text-[10px] font-semibold text-text-muted leading-none mb-1">Openstaand</span>
+                            <span className="text-sm font-bold text-beheer-inactive leading-none">{unpaidCount}</span>
                         </div>
                     </div>
                     <Link
                         href={`/beheer/reis?tripId=${activeTripId}`}
-                        className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-xl text-[11px] font-semibold hover:border-[var(--beheer-accent)]/50 transition-all shadow-sm"
+                        className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-bg-card border border-border-color text-text-main rounded-xl text-[11px] font-semibold hover:border-theme-purple/50 transition-all shadow-sm"
                     >
-                        <Ticket className="h-3.5 w-3.5 text-[var(--beheer-accent)]" />
+                        <Ticket className="h-3.5 w-3.5 text-theme-purple" />
                         Dashboard
                     </Link>
                 </div>

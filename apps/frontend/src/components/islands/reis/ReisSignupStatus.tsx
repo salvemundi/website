@@ -34,20 +34,20 @@ export function ReisSignupStatus({ userSignup, nextTrip, error }: ReisSignupStat
                     <CheckCircle2 className="h-8 w-8 text-theme-purple" />
                 </div>
                 <div>
-                    <h3 className="text-xl font-bold text-theme-purple dark:text-theme-white">Jouw Status</h3>
-                    <p className="text-theme-text-muted text-sm">Je bent al aangemeld voor deze reis</p>
+                    <h3 className="text-xl font-bold text-theme-purple dark:text-white">Jouw Status</h3>
+                    <p className="text-text-muted text-sm">Je bent al aangemeld voor deze reis</p>
                 </div>
             </div>
 
             <div className="bg-white/50 dark:bg-black/5 rounded-2xl p-6 border border-theme-purple/10 mb-6">
-                <p className="text-sm font-semibold text-[var(--text-muted)] tracking-wider mb-2">Huidige status</p>
+                <p className="text-sm font-semibold text-text-muted tracking-wider mb-2">Huidige status</p>
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <div>
-                        <p className="text-2xl sm:text-3xl font-bold text-theme-purple dark:text-theme-white tracking-tight break-words">
+                        <p className="text-2xl sm:text-3xl font-bold text-theme-purple dark:text-white tracking-tight break-words">
                             {getSignupStatusDisplay(userSignup)}
                         </p>
                         {userSignup.status === 'registered' && (
-                            <p className="text-xs text-[var(--text-muted)] mt-1 italic">
+                            <p className="text-xs text-text-muted mt-1 italic">
                                 Je aanmelding wordt momenteel beoordeeld door de commissie.
                             </p>
                         )}

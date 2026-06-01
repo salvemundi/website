@@ -40,7 +40,7 @@ export default function Image() {
                         justifyContent: 'center',
                         borderBottom: '1px solid #f1f3f5',
                     }}>
-                        <div style={{ fontSize: 100 }}>👥</div>
+                        <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="#4a2344" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
                     </div>
 
                     {/* Bottom Half */}
@@ -71,7 +71,8 @@ export default function Image() {
                             borderRadius: 20,
                             border: '1px solid #f1f3f5',
                         }}>
-                            <span style={{ fontSize: 32, fontWeight: 800, color: '#4a2344' }}>👤 {'>'}15 Commissies</span>
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4a2344" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 12 }}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg>
+                            <span style={{ fontSize: 32, fontWeight: 800, color: '#4a2344' }}>{'>'}15 Commissies</span>
                         </div>
                     </div>
 

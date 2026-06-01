@@ -32,7 +32,7 @@ export default function Image() {
                     Maak kennis met de mensen die de vereniging draaiende houden en het beleid bepalen.
                 </p>
                 <p style={{ fontSize: 20, opacity: 0.6, marginTop: 48 }}>
-                    Salve Mundi — Studievereniging ICT
+                    Salve Mundi – Studievereniging ICT
                 </p>
             </div>
         ),

@@ -123,17 +123,17 @@ async function proxy(request: NextRequest) {
             let hasSession = false;
 
             if (sessionToken && !hasTestToken) {
-                const redis = await getRedis();
-                const cached = await redis.get(`session:${sessionToken}`);
-                if (cached) {
-                    try {
+                try {
+                    const redis = await getRedis();
+                    const cached = await redis.get(`session:${sessionToken}`);
+                    if (cached) {
                         const sessionData = JSON.parse(cached) as CachedSession;
                         if (sessionData.user || (sessionData.response && sessionData.response.user)) {
                             hasSession = true;
                         }
-                    } catch (parseErr) {
-                        safeConsoleError('[Proxy] Failed to parse Redis session cache:', parseErr)
                     }
+                } catch (redisError) {
+                    safeConsoleError('[Proxy] Redis session cache check failed (falling back to database):', redisError);
                 }
             }
 

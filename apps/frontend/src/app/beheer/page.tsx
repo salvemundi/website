@@ -72,31 +72,34 @@ export default async function BeheerPage() {
             title="Beheer Dashboard"
             subtitle={`Welkom terug, ${access.user.first_name || 'Admin'}.`}
             centered={true}
+            hideToolbar={true}
         >
-            <div className={`grid grid-cols-1 ${isLimitedAccess ? 'lg:grid-cols-1 max-w-5xl mx-auto' : 'lg:grid-cols-12'} gap-8 md:gap-12 items-start`}>
-                    
-                    <div className={isLimitedAccess ? 'w-full space-y-12' : 'lg:col-span-8 space-y-12'}>
-                        <DashboardHub permissions={permissions} stats={stats} />
-
-                        {!isLimitedAccess && !hideStickers && (
-                            <div className="pt-12 border-t border-[var(--beheer-border)] opacity-60 hover:opacity-100 transition-opacity hidden md:block">
-                                <TopStickersList data={stickers} />
-                            </div>
-                        )}
-                    </div>
-
-                    <div className={isLimitedAccess ? 'w-full grid grid-cols-1 md:grid-cols-2 gap-6 pt-12 border-t border-[var(--beheer-border)]' : 'lg:col-span-4 space-y-8'}>
-                        <div className="space-y-6">
-                            <ActivitySignupsList data={activities} />
-                        </div>
+            <div className="admin-container py-4 md:py-8">
+                <div className={`grid grid-cols-1 ${isLimitedAccess ? 'lg:grid-cols-1 max-w-5xl mx-auto' : 'lg:grid-cols-12'} gap-8 md:gap-12 items-start`}>
                         
-                        <div className="space-y-6">
-                            <BirthdaysList data={birthdays} />
-                            {isLimitedAccess && !hideStickers && (
-                                <div className="md:hidden opacity-60">
+                        <div className={isLimitedAccess ? 'w-full space-y-12' : 'lg:col-span-8 space-y-12'}>
+                            <DashboardHub permissions={permissions} stats={stats} />
+    
+                            {!isLimitedAccess && !hideStickers && (
+                                <div className="pt-12 border-t border-border-color opacity-60 hover:opacity-100 transition-opacity hidden md:block">
                                     <TopStickersList data={stickers} />
                                 </div>
                             )}
+                        </div>
+    
+                        <div className={isLimitedAccess ? 'w-full grid grid-cols-1 md:grid-cols-2 gap-6 pt-12 border-t border-border-color' : 'lg:col-span-4 space-y-8'}>
+                            <div className="space-y-6">
+                                <ActivitySignupsList data={activities} />
+                            </div>
+                            
+                            <div className="space-y-6">
+                                <BirthdaysList data={birthdays} />
+                                {isLimitedAccess && !hideStickers && (
+                                    <div className="md:hidden opacity-60">
+                                        <TopStickersList data={stickers} />
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

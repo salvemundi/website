@@ -16,6 +16,23 @@ export function ThemeToggle() {
 
     const toggle = () => {
         const html = document.documentElement;
+
+        // Inverteer transities tijdens de theme-wissel om 'lag' en niet-synchrone transities te voorkomen
+        const css = document.createElement('style');
+        css.type = 'text/css';
+        css.appendChild(
+            document.createTextNode(
+                `* {
+                    -webkit-transition: none !important;
+                    -moz-transition: none !important;
+                    -o-transition: none !important;
+                    -ms-transition: none !important;
+                    transition: none !important;
+                }`
+            )
+        );
+        document.head.appendChild(css);
+
         if (html.classList.contains('dark')) {
             html.classList.remove('dark');
             localStorage.setItem('theme', 'light');
@@ -25,6 +42,14 @@ export function ThemeToggle() {
             localStorage.setItem('theme', 'dark');
             setIsDark(true);
         }
+
+        // Forceer een reflow, zodat de browser de nieuwe kleuren direct rendert
+        const _ = window.getComputedStyle(css).opacity;
+
+        // Verwijder de style tag na de volgende frame
+        requestAnimationFrame(() => {
+            css.remove();
+        });
     };
 
     // Voorkom hydration mismatch: render een stabiele knoppen-shell

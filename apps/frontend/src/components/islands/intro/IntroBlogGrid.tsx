@@ -36,7 +36,7 @@ export function IntroBlogGrid({ blogs }: Props) {
                     <div key={blog.id} className="@container">
                         <Link 
                             href={`/intro/blogs/${blog.slug || blog.id}`}
-                            className="group relative flex flex-col h-full bg-white dark:bg-white/5 squircle-lg border border-[var(--beheer-border)]/40 hover:border-[var(--beheer-accent)]/50 transition-all duration-500 shadow-sm hover:shadow-2xl hover:-translate-y-2 overflow-hidden"
+                            className="group relative flex flex-col h-full bg-white dark:bg-white/5 squircle-lg border border-border-color/40 hover:border-theme-purple/50 transition-all duration-500 shadow-sm hover:shadow-2xl hover:-translate-y-2 overflow-hidden"
                             style={{ animationDelay: `${idx * 100}ms` }}
                         >
                             <div className="p-8 flex flex-col h-full">
@@ -45,7 +45,7 @@ export function IntroBlogGrid({ blogs }: Props) {
                                         {config.label}
                                     </span>
                                     {date && (
-                                        <div className="flex items-center gap-1.5 text-[var(--beheer-text-muted)] opacity-60">
+                                        <div className="flex items-center gap-1.5 text-text-muted opacity-60">
                                             <Calendar className="h-3 w-3" />
                                             <span className="text-[9px] font-bold uppercase tracking-tighter">
                                                 {new Date(date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}
@@ -54,18 +54,18 @@ export function IntroBlogGrid({ blogs }: Props) {
                                     )}
                                 </div>
 
-                                <h3 className="text-xl font-semibold tracking-tight text-theme dark:text-white mb-4 line-clamp-2 group-hover:text-[var(--beheer-accent)] transition-colors">
+                                <h3 className="text-xl font-bold tracking-tight text-theme-purple mb-4 line-clamp-2 group-hover:text-theme-purple/80 transition-colors">
                                     {blog.title}
                                 </h3>
 
-                                <p className="text-sm text-[var(--beheer-text-muted)] line-clamp-3 mb-8 font-medium leading-relaxed">
+                                <p className="text-sm text-text-muted line-clamp-3 mb-8 font-medium leading-relaxed">
                                     {blog.excerpt || 'Klik om meer te lezen over deze update van de introductie.'}
                                 </p>
 
-                                <div className="mt-auto pt-6 border-t border-[var(--beheer-border)]/10 flex items-center justify-between">
-                                    <span className="text-[10px] font-semibold text-[var(--beheer-accent)]">Lees meer</span>
-                                    <div className="h-8 w-8 rounded-full bg-[var(--beheer-accent)]/5 flex items-center justify-center group-hover:bg-[var(--beheer-accent)] transition-colors">
-                                        <ArrowRight className="h-4 w-4 text-[var(--beheer-accent)] group-hover:text-white transition-colors" />
+                                <div className="mt-auto pt-6 border-t border-border-color/10 flex items-center justify-between">
+                                    <span className="text-[10px] font-semibold text-theme-purple">Lees meer</span>
+                                    <div className="h-8 w-8 rounded-full bg-theme-purple/5 flex items-center justify-center group-hover:bg-theme-purple transition-colors">
+                                        <ArrowRight className="h-4 w-4 text-theme-purple group-hover:text-white transition-colors" />
                                     </div>
                                 </div>
                             </div>

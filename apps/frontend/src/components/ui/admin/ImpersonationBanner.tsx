@@ -38,7 +38,7 @@ export default function ImpersonationBanner({ targetName, adminName, committees 
                                 (Geïmiteerd door {adminName})
                             </span>
                             {committees.length > 0 && (
-                                <span className="opacity-60 hidden md:inline">— ({committees.join(', ')})</span>
+                                <span className="opacity-60 hidden md:inline">– ({committees.join(', ')})</span>
                             )}
                         </div>
                     </div>

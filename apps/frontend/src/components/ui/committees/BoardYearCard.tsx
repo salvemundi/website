@@ -9,7 +9,7 @@ interface BoardYearCardProps {
 
 export const BoardYearCard = ({ board }: BoardYearCardProps) => {
     return (
-        <div className="group relative overflow-hidden squircle-xl bg-[var(--bg-card)] p-8 shadow-2xl transition-all duration-500 hover:shadow-purple-500/10 dark:border dark:border-white/10 dark:hover:border-purple-500/30">
+        <div className="group relative overflow-hidden squircle-xl bg-bg-card p-8 shadow-2xl transition-all duration-500 hover:shadow-purple-500/10 dark:border dark:border-white/10 dark:hover:border-purple-500/30">
             <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-purple-500/5 blur-3xl transition-opacity duration-700 group-hover:opacity-100 opacity-0" />
 
             <div className="flex flex-col lg:flex-row gap-10">
@@ -30,10 +30,10 @@ export const BoardYearCard = ({ board }: BoardYearCardProps) => {
 
                 <div className="flex-1 space-y-6">
                     <div>
-                        <div className="inline-block px-4 py-1.5 rounded-full bg-purple-500/10 text-[var(--color-purple-600)] dark:text-purple-400 text-xs font-bold mb-3 ring-1 ring-purple-500/20">
+                        <div className="inline-block px-4 py-1.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 text-xs font-bold mb-3 ring-1 ring-purple-500/20">
                             {board.year}
                         </div>
-                        <h3 className="text-3xl font-black text-[var(--text-main)] tracking-tight">
+                        <h3 className="text-3xl font-black text-theme-purple tracking-tight">
                             {board.naam}
                         </h3>
                     </div>
@@ -44,7 +44,7 @@ export const BoardYearCard = ({ board }: BoardYearCardProps) => {
                             const isLeader = member.functie?.toLowerCase().includes('voorzitter');
 
                             return (
-                                <div key={idx} className="flex items-center gap-3 p-3 rounded-2xl bg-[var(--bg-main)]/50 border border-[var(--border-color)]/30 group-hover:border-purple-500/20 transition-all">
+                                <div key={idx} className="flex items-center gap-3 p-3 rounded-2xl bg-bg-main/50 border border-border-color/30 group-hover:border-purple-500/20 transition-all">
                                     <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full ring-2 ring-purple-500/10">
                                         {member.user_id?.avatar ? (
                                             <Image
@@ -61,8 +61,8 @@ export const BoardYearCard = ({ board }: BoardYearCardProps) => {
                                         )}
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="text-sm font-bold text-[var(--text-main)] truncate">{name}</p>
-                                        <p className="text-[10px] font-bold text-[var(--color-purple-600)] dark:text-purple-400 opacity-80">
+                                        <p className="text-sm font-bold text-text-main truncate">{name}</p>
+                                        <p className="text-[10px] font-bold text-purple-600 dark:text-purple-400 opacity-80">
                                             {member.functie || 'Bestuurslid'}
                                         </p>
                                     </div>

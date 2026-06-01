@@ -22,10 +22,10 @@ interface TripFormProps {
     onSuccess: (message: string) => void;
 }
 
-export default function TripForm({ 
-    editingTrip, 
-    isAdding, 
-    onCancel, 
+export default function TripForm({
+    editingTrip,
+    isAdding,
+    onCancel,
     onSuccess }: TripFormProps) {
     const [createState, createAction, isCreating] = useActionState<ActionState | null, FormData>(createTrip, null);
     const [updateState, updateAction, isUpdating] = useActionState<ActionState | null, FormData>(updateTrip, null);
@@ -50,7 +50,7 @@ export default function TripForm({
             setAllowFinalPayments(!!editingTrip.allow_final_payments);
             setIsBusTrip(!!editingTrip.is_bus_trip);
         }
-        
+
         if (state?.initialData) {
             const d = state.initialData;
             setRegistrationOpen(d.registration_open === 'on' || d.registration_open === 'true' || d.registration_open === true);
@@ -78,13 +78,13 @@ export default function TripForm({
         if (!d) return '';
         const date = new Date(d);
         if (isNaN(date.getTime())) return '';
-        
+
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         const hours = String(date.getHours()).padStart(2, '0');
         const minutes = String(date.getMinutes()).padStart(2, '0');
-        
+
         return `${year}-${month}-${day}T${hours}:${minutes}`;
     };
 
@@ -97,7 +97,7 @@ export default function TripForm({
                 <input type="hidden" name="allow_final_payments" value={allowFinalPayments ? 'on' : 'off'} />
                 <input type="hidden" name="is_bus_trip" value={isBusTrip ? 'on' : 'off'} />
                 <input type="hidden" name="image" value={imagePreview && editingTrip?.image ? editingTrip.image : ''} />
-                
+
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                     {/* Main Content Area */}
                     <div className="lg:col-span-8 space-y-6">
@@ -124,13 +124,13 @@ export default function TripForm({
 
                                 <div>
                                     <label htmlFor="description" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest mb-2">Beschrijving</label>
-                                    <textarea 
-                                        id="description" 
-                                        name="description" 
-                                        rows={4} 
-                                        className={`beheer-input ${formErrors.description ? 'border-red-500 ring-4 ring-red-500/10' : ''}`} 
-                                        placeholder="Wat gaan we beleven op deze reis?" 
-                                        defaultValue={(state?.initialData?.description as string) || editingTrip?.description || ''} 
+                                    <textarea
+                                        id="description"
+                                        name="description"
+                                        rows={4}
+                                        className={`beheer-input ${formErrors.description ? 'border-red-500 ring-4 ring-red-500/10' : ''}`}
+                                        placeholder="Wat gaan we beleven op deze reis?"
+                                        defaultValue={(state?.initialData?.description as string) || editingTrip?.description || ''}
                                     />
                                     {formErrors.description && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.description[0]}</p>}
                                 </div>
@@ -164,12 +164,12 @@ export default function TripForm({
                                     </div>
                                     <div>
                                         <label htmlFor="registration_start_date" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest mb-2">Auto-open Datum</label>
-                                        <input 
-                                            type="datetime-local" 
-                                            id="registration_start_date" 
-                                            name="registration_start_date" 
-                                            className="beheer-input" 
-                                            defaultValue={(state?.initialData?.registration_start_date as string) || toLocalISO(editingTrip?.registration_start_date)} 
+                                        <input
+                                            type="datetime-local"
+                                            id="registration_start_date"
+                                            name="registration_start_date"
+                                            className="beheer-input"
+                                            defaultValue={(state?.initialData?.registration_start_date as string) || toLocalISO(editingTrip?.registration_start_date)}
                                         />
                                     </div>
                                 </div>
@@ -200,7 +200,7 @@ export default function TripForm({
                     </div>
 
                     {/* Sidebar */}
-                    <TripFormSidebar 
+                    <TripFormSidebar
                         isAdding={isAdding}
                         pending={pending}
                         imagePreview={imagePreview}

@@ -53,7 +53,6 @@ export function ReisFormIsland({
     return (
         <StandardFormCard
             title={nextTrip?.name || 'Inschrijven'}
-            subtitle="Salve Mundi Reis"
             className="w-full lg:w-1/2"
             headerActions={
                 <button

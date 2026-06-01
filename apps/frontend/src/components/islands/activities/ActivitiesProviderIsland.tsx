@@ -112,23 +112,23 @@ export default function ActivitiesProviderIsland({
         <div className="relative w-full flex flex-col">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-10 min-w-0">
                 <div className="space-y-1">
-                    <h2 className="text-3xl md:text-4xl font-black text-[var(--theme-purple)] dark:text-white tracking-tight">
+                    <h2 className="text-3xl md:text-4xl font-black text-theme-purple tracking-tight">
                         {showPastActivities ? 'Alle Activiteiten' : 'Komende Activiteiten'}
                     </h2>
-                    <p className="text-sm font-medium text-[var(--text-muted)] opacity-70">
+                    <p className="text-sm font-medium text-text-muted opacity-70">
                         {filteredEvents.length} {filteredEvents.length === 1 ? 'activiteit' : 'activiteiten'} zichtbaar
                     </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-4">
-                    <div className="flex p-1 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)]/30 shadow-sm">
+                    <div className="flex p-1 rounded-xl bg-bg-card border border-border-color/30 shadow-sm">
                         <button
                             onClick={() => setViewMode('list')}
                             className={cn(
                                 "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all",
                                 viewMode === 'list'
-                                    ? "bg-[var(--theme-purple)] text-white shadow-md shadow-[var(--theme-purple)]/20"
-                                    : "text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/5"
+                                    ? "bg-theme-purple text-white shadow-md shadow-theme-purple/20"
+                                    : "text-theme-purple hover:bg-theme-purple/5"
                             )}
                         >
                             <List className="h-4 w-4" />
@@ -139,8 +139,8 @@ export default function ActivitiesProviderIsland({
                             className={cn(
                                 "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all",
                                 viewMode === 'grid'
-                                    ? "bg-[var(--theme-purple)] text-white shadow-md shadow-[var(--theme-purple)]/20"
-                                    : "text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/5"
+                                    ? "bg-theme-purple text-white shadow-md shadow-theme-purple/20"
+                                    : "text-theme-purple hover:bg-theme-purple/5"
                             )}
                         >
                             <LayoutGrid className="h-4 w-4" />
@@ -151,8 +151,8 @@ export default function ActivitiesProviderIsland({
                             className={cn(
                                 "hidden lg:flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all",
                                 viewMode === 'calendar'
-                                    ? "bg-[var(--theme-purple)] text-white shadow-md shadow-[var(--theme-purple)]/20"
-                                    : "text-[var(--theme-purple)] hover:bg-[var(--theme-purple)]/5"
+                                    ? "bg-theme-purple text-white shadow-md shadow-theme-purple/20"
+                                    : "text-theme-purple hover:bg-theme-purple/5"
                             )}
                         >
                             <CalendarIcon className="h-4 w-4" />
@@ -165,14 +165,28 @@ export default function ActivitiesProviderIsland({
                         className={cn(
                             "group relative inline-flex items-center justify-center gap-3 px-6 py-3 rounded-xl border transition-all active:scale-95 text-[10px] font-black uppercase tracking-widest",
                             showPastActivities
-                                ? "bg-[var(--theme-purple)] text-white border-[var(--theme-purple)] shadow-lg shadow-[var(--theme-purple)]/20"
-                                : "bg-[var(--bg-card)] text-[var(--theme-purple)] border-[var(--border-color)]/30 hover:border-[var(--theme-purple)]/30 hover:bg-[var(--theme-purple)]/5"
+                                ? "bg-theme-purple text-white border-theme-purple shadow-lg shadow-theme-purple/20"
+                                : "bg-bg-card text-theme-purple border-border-color/30 hover:border-theme-purple/30 hover:bg-theme-purple/5"
                         )}
                     >
-                        <span>{showPastActivities ? 'Verberg afgelopen' : 'Toon afgelopen'}</span>
+                        {/* Grid container to prevent layout shifting */}
+                        <span className="grid grid-cols-1 grid-rows-1">
+                            <span className={cn(
+                                "col-start-1 row-start-1 transition-opacity duration-200",
+                                showPastActivities ? "opacity-100" : "opacity-0 pointer-events-none"
+                            )}>
+                                Verberg afgelopen
+                            </span>
+                            <span className={cn(
+                                "col-start-1 row-start-1 transition-opacity duration-200",
+                                !showPastActivities ? "opacity-100" : "opacity-0 pointer-events-none"
+                            )}>
+                                Toon afgelopen
+                            </span>
+                        </span>
                         <div className={cn(
-                            "h-5 w-5 rounded-full flex items-center justify-center transition-colors",
-                            showPastActivities ? "bg-white/20 text-white" : "bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] group-hover:bg-[var(--theme-purple)] group-hover:text-white"
+                            "h-5 w-5 rounded-full flex items-center justify-center transition-colors shrink-0",
+                            showPastActivities ? "bg-white/20 text-white" : "bg-theme-purple/10 text-theme-purple group-hover:bg-theme-purple group-hover:text-white"
                         )}>
                             {showPastActivities ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                         </div>

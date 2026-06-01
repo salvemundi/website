@@ -91,10 +91,21 @@ export async function getIntroPlanningInternal(): Promise<IntroPlanningItem[]> {
         const sql = 'SELECT * FROM intro_planning ORDER BY date ASC, time_start ASC LIMIT 200';
         const { rows } = await query(sql);
 
+        const toStr = (v: unknown): string => {
+            if (typeof v === 'string') return v;
+            if (v instanceof Date) return v.toISOString().split('T')[0];
+            return '';
+        };
+        const toTimeStr = (v: unknown): string => {
+            if (typeof v === 'string') return v;
+            if (v instanceof Date) return v.toTimeString().split(' ')[0]; // "HH:MM:SS"
+            return '';
+        };
+
         const mapped = (rows as DbIntroPlanningRow[]).map(i => ({
             id: Number(i.id),
-            date: typeof i.date === 'string' ? i.date : '',
-            time_start: typeof i.time_start === 'string' ? i.time_start : '',
+            date: toStr(i.date),
+            time_start: toTimeStr(i.time_start),
             title: typeof i.title === 'string' ? i.title : '',
             description: typeof i.description === 'string' ? i.description : ''
         }));

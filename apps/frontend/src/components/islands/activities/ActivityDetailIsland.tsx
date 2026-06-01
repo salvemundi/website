@@ -60,17 +60,15 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
 
             <main className="w-full max-w-7xl mx-auto px-4 py-8 md:py-12">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                    <div className="order-1 lg:order-1 h-full">
+                    <div className="order-1 lg:order-1 flex flex-col gap-6">
                         {children}
-                    </div>
-                    <div className="@container order-2 lg:order-2 h-full">
-                        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(240px,100%),1fr))] gap-4">
-                            <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] p-6 shadow-lg shadow-[var(--theme-purple)]/5 flex items-center gap-4 transition-all hover:border-[var(--theme-purple)]/30 group @[500px]:col-span-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] p-6 shadow-lg shadow-[var(--theme-purple)]/5 flex items-center gap-4 transition-all hover:border-[var(--theme-purple)]/30 group">
                                 <div className="h-14 w-14 rounded-2xl bg-[var(--theme-purple)]/5 flex items-center justify-center text-[var(--theme-purple)] group-hover:scale-110 transition-transform shrink-0">
                                     <CalendarClock className="h-7 w-7" />
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-[10px] uppercase font-black text-[var(--theme-purple)]/40 tracking-[0.2em] mb-1">Datum & Tijd</p>
+                                    <p className="text-[10px] uppercase font-black text-text-muted tracking-[0.2em] mb-1">Datum & Tijd</p>
                                     <p className="text-base font-bold text-[var(--text-main)] truncate">
                                         {activity ? formatDutchDate(activity.datum_start) : ''}
                                     </p>
@@ -83,12 +81,12 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                             </div>
 
                             {activity?.locatie && (
-                                <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] p-6 shadow-lg shadow-[var(--theme-purple)]/5 flex items-center gap-4 transition-all hover:border-[var(--theme-purple)]/30 group @[500px]:col-span-2">
+                                <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] p-6 shadow-lg shadow-[var(--theme-purple)]/5 flex items-center gap-4 transition-all hover:border-[var(--theme-purple)]/30 group">
                                     <div className="h-14 w-14 rounded-2xl bg-[var(--theme-purple)]/5 flex items-center justify-center text-[var(--theme-purple)] group-hover:scale-110 transition-transform shrink-0">
                                         <MapPin className="h-7 w-7" />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-[10px] uppercase font-black text-[var(--theme-purple)]/40 tracking-[0.2em] mb-1">Locatie</p>
+                                        <p className="text-[10px] uppercase font-black text-text-muted tracking-[0.2em] mb-1">Locatie</p>
                                         <p className="text-base font-bold text-[var(--text-main)]">
                                             {activity.locatie}
                                         </p>
@@ -101,7 +99,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                                     <User className="h-7 w-7" />
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-[10px] uppercase font-black text-[var(--theme-purple)]/40 tracking-[0.2em] mb-1">Organisatie</p>
+                                    <p className="text-[10px] uppercase font-black text-text-muted tracking-[0.2em] mb-1">Organisatie</p>
                                     <p className="text-base font-bold text-[var(--text-main)] truncate">
                                         {activity?.committee_name || 'Bestuur'}
                                     </p>
@@ -113,7 +111,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                                     <Mail className="h-7 w-7" />
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-[10px] uppercase font-black text-[var(--theme-purple)]/40 tracking-[0.2em] mb-1">Contact</p>
+                                    <p className="text-[10px] uppercase font-black text-text-muted tracking-[0.2em] mb-1">Contact</p>
                                     {committeeEmail ? (
                                         <div className="text-sm font-bold text-[var(--theme-purple)] truncate block">
                                             <ObfuscatedEmail email={committeeEmail} showIcon={false} />
@@ -128,8 +126,8 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                         </div>
                     </div>
 
-                    <div className="lg:col-span-2 order-3 pt-6">
-                        <div className="rounded-3xl bg-[var(--bg-card)] border border-[var(--border-color)] p-8 shadow-xl shadow-[var(--theme-purple)]/5">
+                    <div className="order-2 lg:order-2 h-full">
+                        <div className="rounded-3xl bg-[var(--bg-card)] border border-[var(--border-color)] p-8 shadow-xl shadow-[var(--theme-purple)]/5 h-full">
                             <div className="flex items-center gap-3 mb-8">
                                 <div className="h-8 w-2 bg-[var(--theme-purple)] rounded-full shadow-[0_0_15px_var(--theme-purple)]" />
                                 <h2 className="text-2xl font-black text-[var(--theme-purple)] uppercase tracking-widest">

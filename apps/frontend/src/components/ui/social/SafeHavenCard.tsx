@@ -15,10 +15,10 @@ export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
 
     return (
         <div
-            className="flex flex-col squircle-lg bg-[var(--bg-main)]/30 border border-[var(--border-color)] p-5 sm:p-6 transition-all duration-300 hover:border-[var(--color-purple-300)] dark:hover:border-white/20 shadow-sm hover:shadow-md h-full"
+            className="flex flex-col squircle-lg bg-bg-main/30 border border-border-color p-5 sm:p-6 transition-all duration-300 hover:border-purple-300 dark:hover:border-white/20 shadow-sm hover:shadow-md h-full"
         >
             <div className="flex items-center gap-4">
-                <div className="relative h-16 w-16 sm:h-20 sm:w-20 overflow-hidden squircle shadow-md shrink-0 bg-[var(--bg-main)]">
+                <div className="relative h-16 w-16 sm:h-20 sm:w-20 overflow-hidden squircle shadow-md shrink-0 bg-bg-main">
                     <Image
                         src={imageUrl}
                         alt={safeHaven?.naam || 'Safe Haven'}
@@ -28,10 +28,10 @@ export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
                     />
                 </div>
                 <div className="min-w-0 flex-1">
-                    <h3 className="text-lg sm:text-xl font-bold text-theme truncate">
+                    <h3 className="text-lg sm:text-xl font-bold text-theme-purple truncate">
                         {safeHaven?.naam || ''}
                     </h3>
-                    <p className="text-sm font-medium text-[var(--color-purple-500)]">
+                    <p className="text-sm font-semibold text-purple-500">
                         Safe Haven
                     </p>
                 </div>
@@ -39,7 +39,7 @@ export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
 
             {safeHaven?.beschrijving && (
                 <div className="mt-4 flex-1">
-                    <p className="text-sm text-theme-muted leading-relaxed line-clamp-4">
+                    <p className="text-sm text-text-muted leading-relaxed line-clamp-4">
                         {safeHaven.beschrijving}
                     </p>
                 </div>
@@ -50,11 +50,11 @@ export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
                     <>
                         <ObfuscatedEmail
                             email={safeHaven.email || ''}
-                            className="flex items-center gap-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] p-3 text-sm font-medium text-theme hover:border-[var(--color-purple-300)] transition-colors w-full shadow-sm"
+                            className="flex items-center gap-3 rounded-xl bg-bg-card border border-border-color p-3 text-sm font-medium text-text-main hover:border-purple-300 transition-colors w-full shadow-sm"
                         />
                         {safeHaven.telefoon && (
-                            <div className="flex items-center gap-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] p-3 text-sm font-medium text-theme shadow-sm">
-                                <Phone className="h-4 w-4 text-[var(--color-purple-400)]" />
+                            <div className="flex items-center gap-3 rounded-xl bg-bg-card border border-border-color p-3 text-sm font-medium text-text-main shadow-sm">
+                                <Phone className="h-4 w-4 text-purple-400" />
                                 <span>{safeHaven.telefoon}</span>
                             </div>
                         )}

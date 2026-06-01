@@ -28,7 +28,7 @@ const eslintConfig = [
         },
         rules: {
             // ==========================================
-            // 🚨 1. HARDCORE SECURITY & LOGIC BUGS (CodeQL)
+            // 1. HARDCORE SECURITY & LOGIC BUGS (CodeQL)
             // ==========================================
             "@typescript-eslint/no-unnecessary-condition": "error",
             "no-constant-condition": "error",
@@ -37,7 +37,7 @@ const eslintConfig = [
             "eqeqeq": ["error", "always"], // Forceert === (Voorkomt Type Coercion bugs)
 
             // ==========================================
-            // ⏱️ 2. ASYNC & RACE CONDITION PREVENTIE
+            // 2. ASYNC & RACE CONDITION PREVENTIE
             // ==========================================
             // Dit is cruciaal voor je finance-service en ticket-verkoop!
             // Blokkeert promises die je vergeet te 'awaiten' (voorkomt ghost-processen en unhandled rejections).
@@ -48,7 +48,7 @@ const eslintConfig = [
             "@typescript-eslint/no-misused-promises": "error",
 
             // ==========================================
-            // 🛡️ 3. REACT & XSS PREVENTIE
+            // 3. REACT & XSS PREVENTIE
             // ==========================================
             // Verbiedt het direct injecteren van ongewassen HTML.
             // Dit dwingt ontwikkelaars om <SafeMarkdown> componenten te gebruiken!
@@ -57,7 +57,7 @@ const eslintConfig = [
             "react/jsx-no-target-blank": "error",
 
             // ==========================================
-            // 🧱 4. STRICTE TYPE VEILIGHEID (Geen 'Any' sluiproutes)
+            // 4. STRICTE TYPE VEILIGHEID (Geen 'Any' sluiproutes)
             // ==========================================
             "@typescript-eslint/no-explicit-any": "error",
             "@typescript-eslint/no-unsafe-assignment": "error",
@@ -69,7 +69,7 @@ const eslintConfig = [
             "@typescript-eslint/no-non-null-assertion": "error", // Verbiedt obj!.property (forceert nette checks)
 
             // ==========================================
-            // 🧹 5. CODE HYGIËNE & CLEANUP
+            // 5. CODE HYGIËNE & CLEANUP
             // ==========================================
             "@typescript-eslint/no-unused-vars": "off", // Uitgezet ten gunste van unused-imports
             "unused-imports/no-unused-imports": "error",
@@ -90,7 +90,7 @@ const eslintConfig = [
             "@next/next/no-html-link-for-pages": "error",
 
             // ==========================================
-            // 🚫 6. CUSTOM RESTRICTIONS (Architectuur)
+            // 6. CUSTOM RESTRICTIONS (Architectuur)
             // ==========================================
             "no-restricted-syntax": [
                 "error",

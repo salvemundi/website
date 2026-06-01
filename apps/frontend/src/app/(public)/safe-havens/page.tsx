@@ -31,7 +31,7 @@ function BentoCard({
         <section
             className={[
                 'rounded-2xl sm:rounded-3xl',
-                'bg-[var(--bg-card)] border border-[var(--border-color)] dark:border-white/10',
+                'bg-bg-card border border-border-color dark:border-white/10',
                 'shadow-lg sm:shadow-xl',
                 'p-6 sm:p-8',
                 'transition-all duration-300 hover:shadow-2xl',
@@ -56,12 +56,12 @@ export default async function SafeHavensPage() {
 async function SafeHavensContent() {
     await connection();
     const topics = [
-        { Icon: AlertTriangle, text: 'Agressie & geweld', color: 'from-[var(--color-purple-600)] to-[var(--color-purple-800)]' },
-        { Icon: Heart, text: 'Seksuele intimidatie', color: 'from-[var(--color-purple-600)] to-[var(--color-purple-800)]' },
-        { Icon: UserX, text: 'Pesten & uitsluiting', color: 'from-[var(--color-purple-600)] to-[var(--color-purple-800)]' },
-        { Icon: Users, text: 'Discriminatie', color: 'from-[var(--color-purple-600)] to-[var(--color-purple-800)]' },
-        { Icon: Shield, text: 'Grensoverschrijdend gedrag', color: 'from-[var(--color-purple-600)] to-[var(--color-purple-800)]' },
-        { Icon: MessageSquare, text: 'Persoonlijke situaties', color: 'from-[var(--color-purple-600)] to-[var(--color-purple-800)]' },
+        { Icon: AlertTriangle, text: 'Agressie & geweld', color: 'from-purple-600 to-purple-800' },
+        { Icon: Heart, text: 'Seksuele intimidatie', color: 'from-purple-600 to-purple-800' },
+        { Icon: UserX, text: 'Pesten & uitsluiting', color: 'from-purple-600 to-purple-800' },
+        { Icon: Users, text: 'Discriminatie', color: 'from-purple-600 to-purple-800' },
+        { Icon: Shield, text: 'Grensoverschrijdend gedrag', color: 'from-purple-600 to-purple-800' },
+        { Icon: MessageSquare, text: 'Persoonlijke situaties', color: 'from-purple-600 to-purple-800' },
     ];
 
     // NUCLEAR SSR: Fetch all data at the page level for zero-drift hydration
@@ -80,15 +80,15 @@ async function SafeHavensContent() {
                         <BentoCard>
                             <div className="flex flex-col gap-6">
                                 <div className="flex items-start gap-4 sm:gap-6">
-                                    <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-[var(--color-purple-600)] flex items-center justify-center shrink-0 shadow-lg">
+                                    <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-purple-600 flex items-center justify-center shrink-0 shadow-lg">
                                         <Shield className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
                                     </div>
 
                                     <div className="min-w-0 flex-1">
-                                        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-theme">
+                                        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-theme-purple">
                                             Wat zijn Safe Havens?
                                         </h2>
-                                        <p className="mt-3 text-base sm:text-lg text-theme-muted leading-relaxed">
+                                        <p className="mt-3 text-base sm:text-lg text-text-muted leading-relaxed">
                                             Binnen Salve Mundi vinden wij een veilige en respectvolle omgeving essentieel.
                                             Safe Havens zijn zorgvuldig geselecteerde personen die voor jou klaarstaan:
                                             ze luisteren zonder te oordelen, denken met je mee, en helpen je een passende vervolgstap te vinden.
@@ -97,14 +97,14 @@ async function SafeHavensContent() {
                                 </div>
 
                                 <div className="grid sm:grid-cols-2 gap-4">
-                                    <div className="rounded-2xl bg-[var(--bg-main)]/50 border border-[var(--border-color)] p-5 transition-colors hover:bg-[var(--bg-main)]">
+                                    <div className="rounded-2xl bg-bg-main/50 border border-border-color p-5 transition-colors hover:bg-bg-main">
                                         <div className="flex items-start gap-3">
-                                            <Lock className="mt-0.5 h-5 w-5 text-[var(--color-purple-500)] shrink-0" />
+                                            <Lock className="mt-0.5 h-5 w-5 text-purple-500 shrink-0" />
                                             <div>
-                                                <p className="text-base font-bold text-theme">
+                                                <p className="text-base font-bold text-text-main">
                                                     Volledige vertrouwelijkheid
                                                 </p>
-                                                <p className="mt-1.5 text-sm text-theme-muted leading-relaxed">
+                                                <p className="mt-1.5 text-sm text-text-muted leading-relaxed">
                                                     Safe Havens hebben geheimhoudingsplicht. Wat je deelt blijft tussen jullie,
                                                     tenzij jij expliciet toestemming geeft om informatie te delen.
                                                 </p>
@@ -112,14 +112,14 @@ async function SafeHavensContent() {
                                         </div>
                                     </div>
 
-                                    <div className="rounded-2xl bg-[var(--bg-main)]/50 border border-[var(--border-color)] p-5 transition-colors hover:bg-[var(--bg-main)]">
+                                    <div className="rounded-2xl bg-bg-main/50 border border-border-color p-5 transition-colors hover:bg-bg-main">
                                         <div className="flex items-start gap-3">
-                                            <Users className="mt-0.5 h-5 w-5 text-[var(--color-purple-500)] shrink-0" />
+                                            <Users className="mt-0.5 h-5 w-5 text-purple-500 shrink-0" />
                                             <div>
-                                                <p className="text-base font-bold text-theme">
+                                                <p className="text-base font-bold text-text-main">
                                                     Diverse achtergronden
                                                 </p>
-                                                <p className="mt-1.5 text-sm text-theme-muted leading-relaxed">
+                                                <p className="mt-1.5 text-sm text-text-muted leading-relaxed">
                                                     We streven naar Safe Havens met verschillende achtergronden,
                                                     zodat er sneller iemand is waarbij jij je comfortabel voelt.
                                                 </p>
@@ -134,10 +134,10 @@ async function SafeHavensContent() {
                         <BentoCard>
                             <div className="flex flex-col gap-6">
                                 <div>
-                                    <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-theme">
+                                    <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-theme-purple">
                                         Onze Safe Havens
                                     </h2>
-                                    <p className="mt-2 text-sm sm:text-base text-theme-muted">
+                                    <p className="mt-2 text-sm sm:text-base text-text-muted">
                                         Kies een persoon waarbij jij je het meest comfortabel voelt.
                                     </p>
                                 </div>
@@ -148,9 +148,9 @@ async function SafeHavensContent() {
                                             <SafeHavenCard key={safeHaven.id} safeHaven={safeHaven} />
                                         ))
                                     ) : (
-                                        <div className="col-span-full rounded-2xl bg-[var(--bg-main)]/50 border border-dashed border-[var(--border-color)] p-10 text-center">
-                                            <Shield className="h-8 w-8 text-[var(--color-purple-500)] mx-auto mb-4" />
-                                            <p className="text-lg font-bold text-theme opacity-60">Wordt binnenkort aangevuld</p>
+                                        <div className="col-span-full rounded-2xl bg-bg-main/50 border border-dashed border-border-color p-10 text-center">
+                                            <Shield className="h-8 w-8 text-purple-500 mx-auto mb-4" />
+                                            <p className="text-lg font-bold text-text-main opacity-60">Wordt binnenkort aangevuld</p>
                                         </div>
                                     )}
                                 </div>
@@ -164,10 +164,10 @@ async function SafeHavensContent() {
                         {/* Topics section */}
                         <BentoCard>
                             <div>
-                                <h2 className="text-xl sm:text-2xl font-bold text-theme">
+                                <h2 className="text-xl sm:text-2xl font-black text-theme-purple">
                                     Onderwerpen
                                 </h2>
-                                <p className="mt-2 text-sm text-theme-muted">
+                                <p className="mt-2 text-sm text-text-muted">
                                     Onder andere bij de volgende thema&apos;s:
                                 </p>
                             </div>
@@ -176,12 +176,12 @@ async function SafeHavensContent() {
                                 {topics.map((topic, index) => (
                                     <li
                                         key={index}
-                                        className="group flex items-center gap-3 rounded-xl bg-[var(--bg-main)]/40 border border-transparent p-3 hover:bg-[var(--bg-main)] hover:border-[var(--border-color)] transition-all duration-200"
+                                        className="group flex items-center gap-3 rounded-xl bg-bg-main/40 border border-transparent p-3 hover:bg-bg-main hover:border-border-color transition-all duration-200"
                                     >
                                         <div className={`h-9 w-9 rounded-lg bg-gradient-to-br ${topic.color} flex items-center justify-center shrink-0 shadow-sm group-hover:shadow-md transition-shadow`}>
                                             <topic.Icon className="h-4 w-4 text-white" />
                                         </div>
-                                        <span className="text-sm font-medium text-theme">
+                                        <span className="text-sm font-medium text-text-main">
                                             {topic.text}
                                         </span>
                                     </li>
@@ -193,15 +193,15 @@ async function SafeHavensContent() {
                         <BentoCard>
                             <div className="flex flex-col gap-6">
                                 <div className="text-center">
-                                    <div className="mx-auto mb-5 h-14 w-14 rounded-2xl bg-[var(--color-purple-600)] flex items-center justify-center shadow-lg">
+                                    <div className="mx-auto mb-5 h-14 w-14 rounded-2xl bg-purple-600 flex items-center justify-center shadow-lg">
                                         <MapPin className="h-7 w-7 text-white" />
                                     </div>
 
-                                    <h2 className="text-xl sm:text-2xl font-bold text-theme">
+                                    <h2 className="text-xl sm:text-2xl font-black text-theme-purple">
                                         Externe hulp
                                     </h2>
 
-                                    <p className="mt-3 text-sm text-theme-muted leading-relaxed">
+                                    <p className="mt-3 text-sm text-text-muted leading-relaxed">
                                         Hulp buiten onze vereniging nodig? Hier vind je belangrijke contactgegevens.
                                     </p>
                                 </div>
@@ -211,7 +211,7 @@ async function SafeHavensContent() {
                                         href="https://www.fontys.nl/fontyshelpt.htm"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="group flex items-center justify-between gap-3 rounded-xl bg-[var(--color-purple-600)] px-5 py-4 text-white shadow-lg transition-all hover:shadow-xl hover:scale-[1.02]"
+                                        className="group flex items-center justify-between gap-3 rounded-xl bg-purple-600 px-5 py-4 text-white shadow-lg transition-all hover:shadow-xl hover:scale-[1.02]"
                                     >
                                         <div className="flex items-center gap-3">
                                             <Shield className="h-5 w-5" />
@@ -222,7 +222,7 @@ async function SafeHavensContent() {
                                         <ExternalLink className="h-4 w-4 opacity-70 group-hover:opacity-100" />
                                     </a>
 
-                                    <div className="group flex items-center justify-center gap-2 rounded-xl bg-[var(--color-purple-800)] px-5 py-4 text-white shadow-lg transition-all hover:shadow-xl">
+                                    <div className="group flex items-center justify-center gap-2 rounded-xl bg-purple-800 px-5 py-4 text-white shadow-lg transition-all hover:shadow-xl">
                                         <ObfuscatedEmail
                                             email="bestuur@salvemundi.nl"
                                             className="text-white hover:text-white"

@@ -62,7 +62,7 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
     return (
         <div className="w-full lg:w-1/2 flex flex-col gap-8">
             {nextTrip && (
-                <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl overflow-hidden shadow-2xl group relative">
+                <div className="bg-bg-card dark:border dark:border-white/10 rounded-3xl overflow-hidden shadow-2xl group relative">
                     {nextTrip.image ? (
                         <div className="relative w-full h-[300px] sm:h-[400px] overflow-hidden">
                             <Image
@@ -104,10 +104,9 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
                                     <Calendar className="h-7 w-7 text-theme-purple" />
                                 </div>
                                 <div>
-                                    <p className="text-[var(--text-muted)] text-[10px] font-bold tracking-widest">Wanneer gaan we?</p>
-                                    <p className="text-xl sm:text-2xl font-bold text-theme-purple dark:text-theme-white mt-1">
+                                    <p className="text-xl sm:text-2xl font-bold text-theme-purple mt-1">
                                         {formattedFromDate && formattedUntilDate ? (
-                                            formattedFromDate === formattedUntilDate ? formattedFromDate : `${formattedFromDate} — ${formattedUntilDate}`
+                                            formattedFromDate === formattedUntilDate ? formattedFromDate : `${formattedFromDate} – ${formattedUntilDate}`
                                         ) : (
                                             'Wordt aangekondigd'
                                         )}
@@ -120,26 +119,26 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
             )}
 
             {nextTrip?.description && (
-                <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">
+                <div className="bg-bg-card dark:border dark:border-white/10 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">
                     <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-theme-purple/5 rounded-full blur-3xl" />
                     <div className="relative z-10">
-                        <h3 className="text-xl sm:text-2xl font-bold text-theme-purple dark:text-theme-white mb-6 flex items-center gap-3">
+                        <h3 className="text-xl sm:text-2xl font-bold text-theme-purple mb-6 flex items-center gap-3">
                             Over de Reis
                         </h3>
                         <SafeMarkdown
-                            className="text-[var(--text-muted)] dark:text-[var(--text-muted)] space-y-4 prose prose-sm sm:prose prose-purple dark:prose-invert max-w-none prose-p:leading-relaxed font-medium"
+                            className="text-text-muted space-y-4 prose prose-sm sm:prose prose-purple dark:prose-invert max-w-none prose-p:leading-relaxed font-medium"
                             content={nextTrip.description}
                         />
                     </div>
                 </div>
             )}
 
-            <div className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">
+            <div className="bg-bg-card dark:border dark:border-white/10 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-8 opacity-5">
                     <ShieldCheck className="h-32 w-32 text-theme-purple" />
                 </div>
                 <div className="relative z-10">
-                    <h3 className="text-xl sm:text-2xl font-bold text-theme-purple dark:text-theme-white mb-8 flex items-center gap-3">
+                    <h3 className="text-xl sm:text-2xl font-bold text-theme-purple mb-8 flex items-center gap-3">
                         Goed om te weten
                     </h3>
 
@@ -155,8 +154,8 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
                                     {item.icon}
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-[10px] font-bold tracking-widest text-[var(--text-muted)]">{item.title}</p>
-                                    <div className="text-sm text-[var(--text-main)] font-medium leading-relaxed">
+                                    <p className="text-[10px] font-bold tracking-widest text-text-muted">{item.title}</p>
+                                    <div className="text-sm text-text-main font-medium leading-relaxed">
                                         {item.content}
                                     </div>
                                 </div>

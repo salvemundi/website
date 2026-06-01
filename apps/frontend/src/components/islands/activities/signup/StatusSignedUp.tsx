@@ -30,7 +30,7 @@ export default function StatusSignedUp({
                     )}
                 </div>
                 <h3 className="text-3xl font-semibold text-[var(--text-main)] leading-tight">
-                    {isPaidStatus ? '🎉 Aanmelding Definitief!' : '💳 Betaling Gestart'}
+                    {isPaidStatus ? 'Aanmelding Definitief!' : 'Betaling Gestart'}
                 </h3>
                 <p className="text-[var(--text-muted)] font-medium">
                     {isPaidStatus

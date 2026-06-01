@@ -44,6 +44,7 @@ next-env.d.ts
 apps/frontend/scripts/
 tmp/
 PROJECT_STATUS.md
+DESIGN_STANDARDS.md
 .vscode
 
 # RedisInsight

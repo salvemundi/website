@@ -5,7 +5,7 @@ import TripPaymentFlowIsland from '@/components/islands/reis/TripPaymentFlowIsla
 import { TripAccessDenied, TripWaitlisted } from '@/components/ui/reis/TripPaymentStates';
 
 export const metadata: Metadata = {
-    title: 'Aanbetaling Reis | SV Salve Mundi'
+    title: 'Aanbetaling Reis | Salve Mundi'
 };
 
 interface PageProps {

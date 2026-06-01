@@ -6,10 +6,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
 import { initiateKroegentochtPayment } from '@/server/actions/events/kroegentocht.actions';
-import { 
-    type PubCrawlEvent, 
-    pubCrawlSignupFormSchema, 
-    type PubCrawlSignupForm 
+import {
+    type PubCrawlEvent,
+    pubCrawlSignupFormSchema,
+    type PubCrawlSignupForm
 } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { Plus, Minus, Mail, Building, Ticket } from 'lucide-react';
 import { useAdminToast } from '@/hooks/use-admin-toast';
@@ -40,9 +40,9 @@ interface KroegentochtFormIslandProps {
     initialUser?: { email?: string; association?: string } | null;
 }
 
-export default function KroegentochtFormIsland({ 
-    event = {} as PubCrawlEvent, 
-    initialUser 
+export default function KroegentochtFormIsland({
+    event = {} as PubCrawlEvent,
+    initialUser
 }: KroegentochtFormIslandProps) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [isPending, startTransition] = useTransition();
@@ -61,12 +61,13 @@ export default function KroegentochtFormIsland({
             association: initialUser?.association || '',
             customAssociation: '',
             amount_tickets: 1,
-            participants: [{ 
-                name: '', 
-                initial: '' 
+            participants: [{
+                name: '',
+                initial: ''
             }],
             website: '',
-            pub_crawl_event_id: event.id }
+            pub_crawl_event_id: event.id
+        }
     });
 
     const { fields, append, remove } = useFieldArray({
@@ -85,13 +86,14 @@ export default function KroegentochtFormIsland({
         startTransition(async () => {
             const finalAssociation = data.association === 'Anders' ? data.customAssociation : data.association;
             const participants = data.participants;
-            
+
             const formData = {
                 ...data,
                 name: `${participants[0].name} ${participants[0].initial}`.trim(),
                 association: finalAssociation || '',
                 name_initials: JSON.stringify(participants),
-                pub_crawl_event_id: Number(event.id) };
+                pub_crawl_event_id: Number(event.id)
+            };
 
             const result = await initiateKroegentochtPayment(formData);
 
@@ -106,10 +108,8 @@ export default function KroegentochtFormIsland({
     return (
         <StandardFormCard
             title="Inschrijven"
-            subtitle="Kroegentocht"
             icon={<Ticket className="w-8 h-8" />}
             description="Vul hieronder je gegevens in en reserveer je plek voor de kroegentocht. Tickets kosten slechts €1,00 per stuk!"
-            className="animate-in fade-in duration-500"
         >
             <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-6" autoComplete="off">
                 <FormField id="field-email" label="E-mailadres" required error={errors.email?.message}>

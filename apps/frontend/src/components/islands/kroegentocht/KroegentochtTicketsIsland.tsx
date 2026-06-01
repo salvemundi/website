@@ -81,10 +81,10 @@ export default function KroegentochtTicketsIsland({ initialTickets = [], userEma
     if (tickets.length === 0) return null;
 
     return (
-        <section className={`bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-6 md:p-8 mb-8 overflow-hidden animate-in fade-in duration-500`} >
+        <section className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-6 md:p-8 mb-8 overflow-hidden" >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div>
-                    <h2 className="text-2xl font-black text-[var(--color-purple-theme)] flex items-center gap-2">
+                    <h2 className="text-2xl font-black text-purple-700 dark:text-purple-300 flex items-center gap-2">
                         <CheckCircle2 className="w-6 h-6 text-green-500" />
                         Jouw Tickets
                     </h2>
@@ -98,7 +98,7 @@ export default function KroegentochtTicketsIsland({ initialTickets = [], userEma
                 {tickets.map((ticket, i) => (
                     <div
                         key={ticket.id}
-                        className="group relative bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/10 p-6 transition-all hover:shadow-md hover:border-[var(--color-purple-theme)]/30"
+                        className="group relative bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/10 p-6 transition-all hover:shadow-md hover:border-purple-500/30 dark:hover:border-purple-400/30"
                     >
                         <div className="flex flex-col items-center">
                             <div className="bg-white p-2 rounded-xl shadow-sm">
@@ -122,7 +122,7 @@ export default function KroegentochtTicketsIsland({ initialTickets = [], userEma
 
                             <button
                                 onClick={() => { void downloadTicketAsImage(ticket, i); }}
-                                className="mt-6 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-black text-[var(--color-purple-theme)] hover:bg-slate-50 dark:hover:bg-white/10 transition-all shadow-sm active:scale-[0.98]"
+                                className="mt-6 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-black text-purple-700 dark:text-purple-300 hover:bg-slate-50 dark:hover:bg-white/10 transition-all shadow-sm active:scale-[0.98]"
                             >
                                 <Download className="w-4 h-4" />
                                 Download Ticket

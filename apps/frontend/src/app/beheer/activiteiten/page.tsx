@@ -46,26 +46,26 @@ export default async function AdminActiviteitenPage() {
             backHref="/beheer"
             actions={
                 <div className="flex flex-wrap items-center gap-4">
-                    <div className="flex items-center gap-4 bg-[var(--beheer-card-soft)] px-4 py-2 rounded-2xl border border-[var(--beheer-border)]/50 shadow-sm">
+                    <div className="flex items-center gap-4 bg-bg-soft px-4 py-2 rounded-2xl border border-border-color/50 shadow-sm">
                         <div className="flex flex-col items-center px-2">
-                            <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1">Aankomend</span>
-                            <span className="text-sm font-bold text-[var(--beheer-text)] leading-none">{upcomingCount}</span>
+                            <span className="text-[10px] font-semibold text-text-muted leading-none mb-1">Aankomend</span>
+                            <span className="text-sm font-bold text-text-main leading-none">{upcomingCount}</span>
                         </div>
-                        <div className="w-px h-6 bg-[var(--beheer-border)]/20" />
+                        <div className="w-px h-6 bg-border-color/20" />
                         <div className="flex flex-col items-center px-2">
-                            <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1">Totale activiteiten</span>
-                            <span className="text-sm font-bold text-[var(--beheer-text)] leading-none">{events.length}</span>
+                            <span className="text-[10px] font-semibold text-text-muted leading-none mb-1">Totale activiteiten</span>
+                            <span className="text-sm font-bold text-text-main leading-none">{events.length}</span>
                         </div>
-                        <div className="w-px h-6 bg-[var(--beheer-border)]/20" />
+                        <div className="w-px h-6 bg-border-color/20" />
                         <div className="flex flex-col items-center px-2">
-                            <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1">Aanmeldingen</span>
-                            <span className="text-sm font-bold text-[var(--beheer-text)] leading-none">{totalSignups}</span>
+                            <span className="text-[10px] font-semibold text-text-muted leading-none mb-1">Aanmeldingen</span>
+                            <span className="text-sm font-bold text-text-main leading-none">{totalSignups}</span>
                         </div>
                     </div>
 
                     <Link
                         href="/beheer/activiteiten/nieuw"
-                        className="flex items-center justify-center gap-1.5 px-4 py-2 bg-[var(--beheer-accent)] text-white rounded-xl squircle text-xs font-semibold shadow-lg hover:opacity-90 transition-all active:scale-95 border border-white/10 whitespace-nowrap"
+                        className="flex items-center justify-center gap-1.5 px-4 py-2 bg-theme-purple text-white rounded-xl squircle text-xs font-semibold shadow-lg hover:opacity-90 transition-all active:scale-95 border border-white/10 whitespace-nowrap"
                     >
                         <Plus className="h-4 w-4" />
                         Nieuwe Activiteit

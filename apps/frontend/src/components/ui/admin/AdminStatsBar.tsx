@@ -16,14 +16,14 @@ export default function AdminStatsBar({ stats = [] }: AdminStatsBarProps) {
         <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 py-2">
             {stats.map((stat, i) => (
                 <div key={i} className="flex items-center gap-2 group whitespace-nowrap">
-                    <span className="text-xs font-semibold text-[var(--beheer-text-muted)] opacity-50 group-hover:opacity-100 transition-opacity">
+                    <span className="text-xs font-semibold text-text-muted opacity-50 group-hover:opacity-100 transition-opacity">
                         {stat.label}
                     </span>
-                    <span className="text-lg font-semibold text-[var(--beheer-text)] tabular-nums">
+                    <span className="text-lg font-semibold text-text-main tabular-nums">
                         {stat.value}
                     </span>
                     {i < stats.length - 1 && (
-                        <div className="hidden lg:block h-1 w-1 rounded-full bg-[var(--beheer-accent)]/20 ml-4" />
+                        <div className="hidden lg:block h-1 w-1 rounded-full bg-theme-purple/20 ml-4" />
                     )}
                 </div>
             ))}
@@ -35,3 +35,4 @@ interface AdminStatsBarProps {
     stats?: StatItem[];
     actions?: React.ReactNode;
 }
+

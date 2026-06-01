@@ -22,12 +22,12 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
     if (!activity) {
         return {
-            title: 'Activiteit niet gevonden | SV Salve Mundi'
+            title: 'Activiteit niet gevonden | Salve Mundi'
         };
     }
 
     return {
-        title: `${activity.titel} | SV Salve Mundi`,
+        title: `${activity.titel} | Salve Mundi`,
         description: activity.beschrijving || 'Schrijf je in voor deze activiteit bij Salve Mundi.'
     };
 }

@@ -30,8 +30,8 @@ export function StandardFormCard({
             {/* Subtle decorative background element */}
             <div className="absolute -top-24 -right-24 w-48 h-48 bg-purple-500/5 rounded-full blur-3xl group-hover:bg-purple-500/10 transition-colors duration-700" />
 
-            <div className="relative z-10">
-                <header className="flex flex-col @md:flex-row justify-between items-start gap-4 mb-8 @md:mb-10">
+            <div className="relative z-10 flex flex-col h-full flex-1">
+                <header className="flex flex-col @md:flex-row justify-between items-start gap-4 mb-8 @md:mb-10 shrink-0">
                     <div className="space-y-1">
                         {subtitle && (
                             <p className="text-[11px] font-bold text-text-muted opacity-75 mb-2">
@@ -49,16 +49,15 @@ export function StandardFormCard({
                         )}
                     </div>
 
-                    <div className="flex flex-col items-end gap-3 self-stretch @md:self-auto">
+                    <div className="flex flex-col items-end gap-3 self-stretch @md:self-auto shrink-0">
                         {headerActions && (
                             <div className="flex items-center gap-2">
                                 {headerActions}
                             </div>
                         )}
-                        
+
                         {price !== undefined && (
                             <div className="text-right">
-                                <span className="block text-xs font-semibold text-text-muted mb-1">Prijs</span>
                                 <span className="text-3xl font-black text-purple-700 dark:text-purple-300">
                                     €{price.toFixed(2).replace('.', ',')}
                                 </span>
@@ -67,7 +66,7 @@ export function StandardFormCard({
                     </div>
                 </header>
 
-                <div className="w-full">
+                <div className="w-full flex-1 flex flex-col">
                     {children}
                 </div>
             </div>

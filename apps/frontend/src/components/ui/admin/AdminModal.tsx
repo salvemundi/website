@@ -53,24 +53,24 @@ export default function AdminModal({
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-500">
             <div 
                 // eslint-disable-next-line security/detect-object-injection
-                className={`bg-[var(--beheer-card-bg)]/90 backdrop-blur-xl w-full ${maxWidthClasses[maxWidth]} squircle-lg shadow-[0_40px_100px_rgba(0,0,0,0.5)] overflow-hidden border border-[var(--beheer-border)]/50 flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-500`}
+                className={`bg-bg-card/90 backdrop-blur-xl w-full ${maxWidthClasses[maxWidth]} squircle-lg shadow-[0_40px_100px_rgba(0,0,0,0.5)] overflow-hidden border border-border-color/50 flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-500`}
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="p-8 border-b border-[var(--beheer-border)] flex items-center justify-between relative z-10">
+                <div className="p-8 border-b border-border-color flex items-center justify-between relative z-10">
                     <div className="space-y-1">
-                        <h2 className="text-xl font-semibold text-[var(--beheer-text)] tracking-tight">
+                        <h2 className="text-xl font-semibold text-theme-purple tracking-tight">
                             {title}
                         </h2>
                         {subtitle && (
-                            <p className="text-xs font-semibold text-[var(--beheer-text-muted)] opacity-60">
+                            <p className="text-xs font-semibold text-text-muted opacity-60">
                                 {subtitle}
                             </p>
                         )}
                     </div>
                     <button 
                         onClick={onClose} 
-                        className="p-4 bg-[var(--beheer-card-soft)] hover:bg-[var(--beheer-card-soft)]/80 text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] transition-all squircle active:scale-90 group"
+                        className="p-4 bg-bg-soft hover:bg-bg-soft/80 text-text-muted hover:text-text-main transition-all squircle active:scale-90 group"
                     >
                         <X className="h-6 w-6" />
                     </button>
@@ -87,3 +87,4 @@ export default function AdminModal({
         </div>
     );
 }
+

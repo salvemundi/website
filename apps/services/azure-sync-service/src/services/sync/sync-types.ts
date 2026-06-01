@@ -15,6 +15,8 @@ export interface SyncStatus {
     createdCount: number;
     movedActiveCount: number;
     movedExpiredCount: number;
+    movedActiveUsers: { email: string; name?: string }[];
+    movedExpiredUsers: { email: string; name?: string }[];
     errors: { email: string; message: string; timestamp: string; stack?: string }[];
     warnings: { email: string; message: string }[];
     missingData: { email: string; reason: string }[];
@@ -78,6 +80,8 @@ export const getInitialStatus = (): SyncStatus => ({
     createdCount: 0,
     movedActiveCount: 0,
     movedExpiredCount: 0,
+    movedActiveUsers: [],
+    movedExpiredUsers: [],
     lastHeartbeat: new Date().toISOString(),
     abortRequested: false
 });

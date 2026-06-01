@@ -53,8 +53,17 @@ export class SyncLifecycle {
                     .where('id', '=', String(dUser.id))
                     .execute();
                 changes.push({ field: 'membership_status', old: currentStatus, new: desiredStatus });
-                if (desiredStatus === 'active') ctx.status.movedActiveCount++;
-                else ctx.status.movedExpiredCount++;
+                const userEntry = {
+                    email: (aUser.mail || aUser.userPrincipalName || 'onbekend').toLowerCase(),
+                    name: aUser.displayName || undefined,
+                };
+                if (desiredStatus === 'active') {
+                    ctx.status.movedActiveCount++;
+                    ctx.status.movedActiveUsers.push(userEntry);
+                } else {
+                    ctx.status.movedExpiredCount++;
+                    ctx.status.movedExpiredUsers.push(userEntry);
+                }
             }
 
             // 2. Sync Azure Groups

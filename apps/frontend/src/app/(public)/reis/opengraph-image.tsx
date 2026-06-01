@@ -15,7 +15,7 @@ export default async function Image() {
     const startDate = nextTrip?.start_date ? new Date(nextTrip.start_date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' }) : null;
     const endDate = nextTrip?.end_date ? new Date(nextTrip.end_date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' }) : null;
 
-    const dateRange = startDate && endDate ? `${startDate} — ${endDate}` : (startDate || 'Binnenkort meer info');
+    const dateRange = startDate && endDate ? `${startDate} – ${endDate}` : (startDate || 'Binnenkort meer info');
 
     return new ImageResponse(
         (
@@ -58,9 +58,8 @@ export default async function Image() {
                         boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
                         border: '1px solid #f1f3f5'
                     }}>
-                        <div style={{ fontSize: 48, marginRight: 24 }}>📅</div>
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4a2344" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 24 }}><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <span style={{ color: '#adb5bd', fontSize: 18, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2 }}>Wanneer gaan we?</span>
                             <span style={{ fontSize: 36, fontWeight: 800, color: '#4a2344' }}>{dateRange}</span>
                         </div>
                     </div>

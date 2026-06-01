@@ -20,9 +20,9 @@ export default async function KroegentochtConfirmationPage({ searchParams }: Pag
         return (
             <PublicPageShell title="Bevestiging" hideHeader={true}>
                 <div className="min-h-[70vh] flex items-center justify-center p-6">
-                    <div className="max-w-md w-full p-12 bg-[var(--bg-card)] border border-[var(--beheer-border)] rounded-3xl text-center shadow-xl">
-                        <h1 className="text-2xl font-black text-[var(--text-main)] mb-4">Ongeldige Status</h1>
-                        <p className="text-[var(--text-muted)] mb-8">We kunnen de status van je betaling niet verifiëren zonder een geldige transactie.</p>
+                    <div className="max-w-md w-full p-12 bg-bg-card border border-border-color rounded-3xl text-center shadow-xl">
+                        <h1 className="text-2xl font-black text-theme-purple mb-4">Ongeldige Status</h1>
+                        <p className="text-text-muted mb-8">We kunnen de status van je betaling niet verifiëren zonder een geldige transactie.</p>
                         <BackButton href="/kroegentocht" text="Terug naar Kroegentocht" />
                     </div>
                 </div>
@@ -43,15 +43,15 @@ export default async function KroegentochtConfirmationPage({ searchParams }: Pag
         >
             <div className="container mx-auto px-4 py-32 max-w-2xl min-h-[80vh] flex items-center justify-center">
                 {isPaid ? (
-                    <div className="flex flex-col items-center justify-center text-center p-12 bg-[var(--bg-card)] border border-[var(--beheer-border)] rounded-3xl backdrop-blur-xl shadow-2xl w-full">
+                    <div className="flex flex-col items-center justify-center text-center p-12 bg-bg-card border border-border-color rounded-3xl backdrop-blur-xl shadow-2xl w-full">
                         <div className="relative mb-8">
                             <div className="absolute inset-0 bg-green-500/20 blur-3xl rounded-full" />
                             <CheckCircle2 className="w-20 h-20 text-green-500 relative z-10 mx-auto" />
                         </div>
-                        <h2 className="text-4xl font-black text-[var(--text-main)] mb-4">
+                        <h2 className="text-4xl font-black text-theme-purple mb-4">
                             Betaling Geslaagd!
                         </h2>
-                        <p className="text-[var(--text-muted)] max-w-sm mx-auto leading-relaxed mb-10 text-base font-semibold">
+                        <p className="text-text-muted max-w-sm mx-auto leading-relaxed mb-10 text-base font-semibold">
                             Je betaling voor de kroegentocht is succesvol verwerkt. Je ontvangt binnen enkele minuten een bevestiging en je tickets in je e-mail.
                         </p>
                         <BackButton 
