@@ -9,6 +9,27 @@ import { acknowledgeSystemLogAction } from '@/server/actions/infrastructure/audi
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import { safeConsoleError } from '@/server/utils/logger';
 
+const formatDuration = (ms: number) => {
+    const totalSecs = Math.floor(ms / 1000);
+    const mins = Math.floor(totalSecs / 60);
+    const secs = totalSecs % 60;
+    if (mins > 0) {
+        return `${mins}m ${secs}s`;
+    }
+    return `${secs}s`;
+};
+
+// NIEUW: Type definitie om de 'any' waarschuwingen te voorkomen
+interface SyncSummaryPayload {
+    processed?: number;
+    duration_ms?: number;
+    moved_active?: number;
+    moved_expired?: number;
+    errors?: number;
+    moved_active_users?: { email: string; name?: string }[];
+    moved_expired_users?: { email: string; name?: string }[];
+}
+
 interface LogsTabProps {
     logs: SystemLog[];
     totalCount: number;
@@ -181,7 +202,6 @@ export default function LogsTab({
                                                     }
                                                 }
 
-                                                // Fallback context mapping for impersonation logs
                                                 if (!context && (log.type === 'impersonation_active' || log.type === 'admin_impersonation_started' || log.type === 'admin_impersonation_ended')) {
                                                     context = 'impersonatie';
                                                     if (log.payload && typeof log.payload === 'object' && 'target_id' in log.payload) {
@@ -227,35 +247,88 @@ export default function LogsTab({
                                         <td className="p-4">
                                             <div className="text-xs font-medium text-[var(--beheer-text-muted)] tracking-tight max-w-[280px] break-all">
                                                 {log.payload && typeof log.payload === 'object' ? (
-                                                    <div className="space-y-1">
-                                                        {Object.entries(log.payload)
-                                                            .filter(([key]) => !['admin_id', 'admin_name', 'timestamp', 'context', 'context_name'].includes(key))
-                                                            .map(([key, val]) => {
-                                                                const isComplex = typeof val === 'object' && val !== null;
+                                                    log.type === 'system_sync_summary' ? (
+                                                        <div className="space-y-1">
+                                                            {(() => {
+                                                                // Gebruik de nieuwe interface in plaats van any
+                                                                const p = log.payload as unknown as SyncSummaryPayload;
                                                                 return (
-                                                                    <div key={key} className="flex flex-col gap-0.5">
-                                                                        <div className="flex flex-wrap items-center gap-1">
-                                                                            <span className="opacity-50 font-semibold">{key}:</span>
-                                                                            {isComplex ? (
-                                                                                <button
-                                                                                    onClick={(e) => {
-                                                                                        e.stopPropagation();
-                                                                                        toggleExpand(log.id);
-                                                                                    }}
-                                                                                    className="px-2 py-0.5 bg-[var(--beheer-accent)]/10 hover:bg-[var(--beheer-accent)]/20 text-[var(--beheer-accent)] rounded text-[10px] font-semibold transition-all active:scale-95 flex items-center gap-1"
-                                                                                >
-                                                                                    {expandedLogs.has(log.id) ? 'Verberg details' : 'Toon details'}
-                                                                                </button>
-                                                                            ) : (
-                                                                                <span className="text-[var(--beheer-text)] break-all">{resolveIdToName(key, val, (log.payload && typeof log.payload === 'object' && 'context' in log.payload) ? String(log.payload.context) : undefined)}</span>
+                                                                    <>
+                                                                        <p className="font-semibold text-[var(--beheer-text)]">
+                                                                            Sync voltooid
+                                                                        </p>
+                                                                        <p className="text-[var(--beheer-text-muted)] opacity-95">
+                                                                            {String(p.processed || 0)} leden verwerkt in {p.duration_ms ? formatDuration(Number(p.duration_ms)) : 'onbekende tijd'}.
+                                                                        </p>
+                                                                        <div className="flex flex-wrap gap-1.5 text-[10px] mt-1">
+                                                                            <span className="px-1.5 py-0.5 bg-green-500/10 text-green-500 rounded font-semibold whitespace-nowrap">
+                                                                                +{p.moved_active || 0} actief
+                                                                            </span>
+                                                                            <span className="px-1.5 py-0.5 bg-amber-500/10 text-amber-500 rounded font-semibold whitespace-nowrap">
+                                                                                -{p.moved_expired || 0} verlopen
+                                                                            </span>
+                                                                            {Number(p.errors || 0) > 0 && (
+                                                                                <span className="px-1.5 py-0.5 bg-red-500/10 text-red-500 rounded font-semibold whitespace-nowrap">
+                                                                                    {p.errors} fouten
+                                                                                </span>
                                                                             )}
                                                                         </div>
-                                                                    </div>
+                                                                        {Array.isArray(p.moved_active_users) && p.moved_active_users.length > 0 && (
+                                                                            <div className="mt-2 space-y-0.5">
+                                                                                <p className="text-[10px] font-bold text-green-500 uppercase tracking-widest">Actief geworden</p>
+                                                                                {p.moved_active_users.map((u, i) => (
+                                                                                    <p key={i} className="text-[10px] text-[var(--beheer-text)] truncate" title={u.email}>
+                                                                                        {u.name ? String(u.name) : u.email}
+                                                                                    </p>
+                                                                                ))}
+                                                                            </div>
+                                                                        )}
+                                                                        {Array.isArray(p.moved_expired_users) && p.moved_expired_users.length > 0 && (
+                                                                            <div className="mt-2 space-y-0.5">
+                                                                                <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">Verlopen geworden</p>
+                                                                                {p.moved_expired_users.map((u, i) => (
+                                                                                    <p key={i} className="text-[10px] text-[var(--beheer-text)] truncate" title={u.email}>
+                                                                                        {u.name ? String(u.name) : u.email}
+                                                                                    </p>
+                                                                                ))}
+                                                                            </div>
+                                                                        )}
+                                                                    </>
                                                                 );
-                                                            })}
-                                                    </div>
+                                                            })()}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="space-y-1">
+                                                            {Object.entries(log.payload)
+                                                                .filter(([key]) => !['admin_id', 'admin_name', 'timestamp', 'context', 'context_name'].includes(key))
+                                                                .map(([key, val]) => {
+                                                                    const isComplex = typeof val === 'object' && val !== null;
+                                                                    return (
+                                                                        <div key={key} className="flex flex-col gap-0.5">
+                                                                            <div className="flex flex-wrap items-center gap-1">
+                                                                                <span className="opacity-50 font-semibold">{key}:</span>
+                                                                                {isComplex ? (
+                                                                                    <button
+                                                                                        onClick={(e) => {
+                                                                                            e.stopPropagation();
+                                                                                            toggleExpand(log.id);
+                                                                                        }}
+                                                                                        className="px-2 py-0.5 bg-[var(--beheer-accent)]/10 hover:bg-[var(--beheer-accent)]/20 text-[var(--beheer-accent)] rounded text-[10px] font-semibold transition-all active:scale-95 flex items-center gap-1"
+                                                                                    >
+                                                                                        {expandedLogs.has(log.id) ? 'Verberg details' : 'Toon details'}
+                                                                                    </button>
+                                                                                ) : (
+                                                                                    <span className="text-[var(--beheer-text)] break-all">{resolveIdToName(key, val, (log.payload && typeof log.payload === 'object' && 'context' in log.payload) ? String(log.payload.context) : undefined)}</span>
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                        </div>
+                                                    )
                                                 ) : (
-                                                    <span className="break-all">-</span>)}
+                                                    <span className="break-all">-</span>
+                                                )}
                                             </div>
                                         </td>
                                         <td className="p-4 text-center">

@@ -20,7 +20,7 @@ export default function AdminUnauthorized({
                 <div className="absolute inset-x-0 top-0 h-40 w-40 mx-auto blur-3xl bg-purple-500/10 rounded-full pointer-events-none" />
 
                 {/* Icon Container */}
-                <div className="relative rounded-3xl bg-[var(--bg-card)] p-6 shadow-2xl border border-[var(--border-color)]/20 text-[var(--color-purple-500)] inline-block">
+                <div className="relative rounded-3xl bg-bg-card p-6 shadow-2xl border border-border-color/20 text-purple-500 inline-block">
                     <ShieldAlert className="h-16 w-16" />
                 </div>
 
@@ -30,18 +30,18 @@ export default function AdminUnauthorized({
                 </div>
             </div>
 
-            <h2 className="text-4xl font-bold text-[var(--text-main)] mb-3 tracking-tight">
+            <h2 className="text-4xl font-bold text-theme-purple mb-3 tracking-tight">
                 {title}
             </h2>
 
-            <p className="text-[var(--text-muted)] max-w-md mx-auto mb-10 font-medium leading-relaxed font-sans">
+            <p className="text-text-muted max-w-md mx-auto mb-10 font-medium leading-relaxed font-sans">
                 {description}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
                 <Link
                     href="/"
-                    className="flex items-center gap-2 rounded-full bg-[var(--color-purple-500)] text-white px-8 py-3.5 font-bold shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:-translate-y-0.5 transition-all text-base tracking-widest"
+                    className="flex items-center gap-2 rounded-full bg-purple-500 text-white px-8 py-3.5 font-bold shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:-translate-y-0.5 transition-all text-base tracking-widest"
                 >
                     <Home className="h-4 w-4" />
                     Terug naar Home
@@ -49,7 +49,7 @@ export default function AdminUnauthorized({
 
                 <button
                     onClick={() => window.history.back()}
-                    className="flex items-center gap-2 rounded-full px-8 py-3.5 font-bold text-[var(--text-main)] bg-[var(--bg-card)] border border-[var(--border-color)]/20 hover:bg-black/5 dark:hover:bg-white/5 transition-all text-base tracking-widest"
+                    className="flex items-center gap-2 rounded-full px-8 py-3.5 font-bold text-text-main bg-bg-card border border-border-color/20 hover:bg-black/5 dark:hover:bg-white/5 transition-all text-base tracking-widest"
                 >
                     <ArrowLeft className="h-4 w-4" />
                     Vorige Pagina

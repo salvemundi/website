@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { Users2 } from 'lucide-react';
+import { Users2, Star } from 'lucide-react';
 import { Tile } from './ProfielUI';
 import MediaAsset from '@/components/ui/media/MediaAsset';
 import { getImageUrl } from '@/lib/utils/image-utils';
@@ -117,7 +117,7 @@ export default function ProfielHeader({ user, membershipStatus }: ProfielHeaderP
                                     >
                                         {committee.is_leader && !committee.name.toLowerCase().includes('bestuur') && (
                                             <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 border-2 border-bg-card shadow-md flex items-center justify-center shrink-0">
-                                                <span className="text-[8px]">⭐</span>
+                                                <Star className="h-2 w-2 text-white fill-current shrink-0" />
                                             </span>
                                         )}
                                         <Users2 className="h-3.5 w-3.5 shrink-0" />

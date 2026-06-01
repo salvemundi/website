@@ -24,15 +24,15 @@ export default function AdminToast({ toast, onClose }: AdminToastProps) {
         >
             <div className={`
                 px-8 py-5 rounded-[2rem] shadow-2xl flex items-center gap-5 backdrop-blur-xl border border-white/10 relative overflow-hidden group
-                ${toast.type === 'success' ? 'bg-[var(--beheer-card-bg)]/90 border-l-[12px] border-l-[var(--theme-success)]' :
-                    toast.type === 'error' ? 'bg-[var(--beheer-card-bg)]/90 border-l-[12px] border-l-[var(--theme-error)]' :
-                        toast.type === 'loading' ? 'bg-[var(--beheer-card-bg)]/90 border-l-[12px] border-l-[var(--theme-warning)]' :
-                            'bg-[var(--beheer-card-bg)]/90 border-l-[12px] border-l-[var(--beheer-accent)]'}
+                ${toast.type === 'success' ? 'bg-bg-card/90 border-l-[12px] border-l-[var(--theme-success)]' :
+                    toast.type === 'error' ? 'bg-bg-card/90 border-l-[12px] border-l-[var(--theme-error)]' :
+                        toast.type === 'loading' ? 'bg-bg-card/90 border-l-[12px] border-l-[var(--theme-warning)]' :
+                            'bg-bg-card/90 border-l-[12px] border-l-theme-purple'}
             `}>
                 <div className={`absolute -right-10 -top-10 h-32 w-32 blur-[60px] opacity-20 rounded-full transition-colors duration-500 pointer-events-none ${toast.type === 'success' ? 'bg-[var(--theme-success)]' :
                     toast.type === 'error' ? 'bg-[var(--theme-error)]' :
                         toast.type === 'loading' ? 'bg-[var(--theme-warning)]' :
-                            'bg-[var(--beheer-accent)]'
+                            'bg-theme-purple'
                     }`} />
 
                 <div className={`
@@ -40,7 +40,7 @@ export default function AdminToast({ toast, onClose }: AdminToastProps) {
                     ${toast.type === 'success' ? 'bg-[var(--theme-success)]/10 text-[var(--theme-success)]' :
                         toast.type === 'error' ? 'bg-[var(--theme-error)]/10 text-[var(--theme-error)]' :
                             toast.type === 'loading' ? 'bg-[var(--theme-warning)]/10 text-[var(--theme-warning)]' :
-                                'bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)]'}
+                                'bg-theme-purple/10 text-theme-purple'}
                 `}>
                     {toast.type === 'success' && <CheckCircle2 className="h-6 w-6" />}
                     {toast.type === 'error' && <XCircle className="h-6 w-6" />}
@@ -49,12 +49,12 @@ export default function AdminToast({ toast, onClose }: AdminToastProps) {
                 </div>
 
                 <div className="flex flex-col min-w-0">
-                    <span className="text-base font-semibold tracking-wider text-[var(--beheer-text-muted)] mb-1 opacity-50">
+                    <span className="text-base font-semibold tracking-wider text-text-muted mb-1 opacity-50">
                         {toast.type === 'success' ? 'Succes' :
                             toast.type === 'error' ? 'Foutmelding' :
                                 toast.type === 'loading' ? 'Bezig...' : 'Informatie'}
                     </span>
-                    <span className="font-extrabold text-[var(--beheer-text)] text-base tracking-widest leading-tight">
+                    <span className="font-extrabold text-text-main text-base tracking-widest leading-tight">
                         {toast.message}
                     </span>
                 </div>
@@ -62,7 +62,7 @@ export default function AdminToast({ toast, onClose }: AdminToastProps) {
                 {onClose && (
                     <button
                         onClick={onClose}
-                        className="ml-4 p-2 rounded-xl text-[var(--beheer-text-muted)] hover:bg-white/5 transition-colors cursor-pointer"
+                        className="ml-4 p-2 rounded-xl text-text-muted hover:bg-white/5 transition-colors cursor-pointer"
                     >
                         <XCircle className="h-4 w-4 opacity-30 hover:opacity-100" />
                     </button>
@@ -70,4 +70,4 @@ export default function AdminToast({ toast, onClose }: AdminToastProps) {
             </div>
         </div>
     );
-}
+}

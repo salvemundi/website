@@ -359,11 +359,11 @@ export default function StickerMapIsland({
                             };
 
                             setStickers((prev: StickerPublic[]) => [stickerToAppend, ...prev]);
-                            showToast('Sticker succesvol geplaatst! 🎨📍', 'success');
+                            showToast('Sticker succesvol geplaatst!', 'success');
                         } catch (err: unknown) {
                             const errMsg = err instanceof Error ? err.message : 'Fout bij automatisch plaatsen.';
                             if (typeof errMsg === 'string' && errMsg.includes('Failed to find Server Action')) {
-                                showToast('Serveractie niet gevonden — herlaad de pagina en probeer opnieuw (mogelijke verouderde deployment).', 'error');
+                                showToast('Serveractie niet gevonden. Herlaad de pagina en probeer opnieuw (mogelijke verouderde deployment).', 'error');
                             } else {
                                 showToast(errMsg, 'error');
                             }
@@ -469,11 +469,11 @@ export default function StickerMapIsland({
                 setSelectedLocation(null);
                 setFormData({ location_name: '', description: '', city: '', country: '', image: null });
                 setImagePreview(null);
-                showToast('Sticker succesvol toegevoegd! 🎨', 'success');
+                showToast('Sticker succesvol toegevoegd!', 'success');
             } catch (error: unknown) {
                 const errMsg = error instanceof Error ? error.message : String(error);
                 if (typeof errMsg === 'string' && errMsg.includes('Failed to find Server Action')) {
-                    showToast('Serveractie niet gevonden — herlaad de pagina en probeer opnieuw (mogelijke verouderde deployment).', 'error');
+                    showToast('Serveractie niet gevonden. Herlaad de pagina en probeer opnieuw (mogelijke verouderde deployment).', 'error');
                 } else {
                     showToast('Fout bij toevoegen: ' + errMsg, 'error');
                 }
@@ -515,17 +515,17 @@ export default function StickerMapIsland({
                         <button
                             type="button"
                             onClick={openMobileFilters}
-                            className="inline-flex flex-1 min-w-0 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-[var(--bg-card)]/95 px-3 py-2.5 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--text-main)] shadow-2xl backdrop-blur-md whitespace-nowrap"
+                            className="inline-flex flex-1 min-w-0 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-bg-card/95 px-3 py-2.5 text-[10px] font-black uppercase tracking-[0.18em] text-text-main shadow-2xl backdrop-blur-md whitespace-nowrap"
                         >
-                            <Filter className="h-4 w-4 text-[var(--theme-purple)] shrink-0" />
+                            <Filter className="h-4 w-4 text-theme-purple shrink-0" />
                             Filters
                         </button>
                         <button
                             type="button"
                             onClick={openMobileStats}
-                            className="inline-flex flex-1 min-w-0 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-[var(--bg-card)]/95 px-3 py-2.5 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--text-main)] shadow-2xl backdrop-blur-md whitespace-nowrap"
+                            className="inline-flex flex-1 min-w-0 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-bg-card/95 px-3 py-2.5 text-[10px] font-black uppercase tracking-[0.18em] text-text-main shadow-2xl backdrop-blur-md whitespace-nowrap"
                         >
-                            <BarChart3 className="h-4 w-4 text-[var(--theme-purple)] shrink-0" />
+                            <BarChart3 className="h-4 w-4 text-theme-purple shrink-0" />
                             Stats
                         </button>
                     </div>
@@ -565,20 +565,20 @@ export default function StickerMapIsland({
                         onClick={closeMobileOverlays}
                         aria-label="Sluit overlay"
                     />
-                    <div className="absolute inset-x-0 bottom-0 max-h-[78dvh] overflow-y-auto rounded-t-[2rem] border-t border-white/10 bg-[var(--bg-main)] shadow-[0_-20px_60px_rgba(0,0,0,0.35)]">
-                        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--border-color)]/10 bg-[var(--bg-main)]/95 px-4 py-4 backdrop-blur-md">
+                    <div className="absolute inset-x-0 bottom-0 max-h-[78dvh] overflow-y-auto rounded-t-[2rem] border-t border-white/10 bg-bg-main shadow-[0_-20px_60px_rgba(0,0,0,0.35)]">
+                        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border-color/10 bg-bg-main/95 px-4 py-4 backdrop-blur-md">
                             <div>
-                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">
+                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted">
                                     Salve Mundi
                                 </p>
-                                <h2 className="text-base font-black uppercase tracking-widest text-[var(--text-main)]">
+                                <h2 className="text-base font-black uppercase tracking-widest text-text-main">
                                     {showMobileFilters ? 'Filters' : 'Statistieken'}
                                 </h2>
                             </div>
                             <button
                                 type="button"
                                 onClick={closeMobileOverlays}
-                                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--bg-card)] text-[var(--text-main)] shadow-sm"
+                                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-bg-card text-text-main shadow-sm"
                                 aria-label="Sluit paneel"
                             >
                                 <X className="h-4 w-4" />

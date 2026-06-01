@@ -12,7 +12,11 @@ import { CheckCircle2, Send } from 'lucide-react';
 import { introSignupFormSchema, type IntroSignupForm } from '@salvemundi/validations/schema/intro.zod';
 import { StandardFormCard } from '@/components/ui/forms/StandardFormCard';
 
-export const IntroStudentIsland = () => {
+interface IntroStudentIslandProps {
+    className?: string;
+}
+
+export const IntroStudentIsland = ({ className = '' }: IntroStudentIslandProps) => {
     const [submitted, setSubmitted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -65,8 +69,8 @@ export const IntroStudentIsland = () => {
         return (
             <div className="bg-gradient-theme squircle-lg p-6 lg:p-8 text-center shadow-lg">
                 <CheckCircle2 className="w-12 h-12 lg:w-16 lg:h-16 text-white mx-auto mb-4" />
-                <h2 className="text-2xl lg:text-3xl font-bold text-theme-purple-lighter mb-4">Bedankt!</h2>
-                <p className="text-theme-white text-base lg:text-lg">We hebben je inschrijving ontvangen.</p>
+                <h2 className="text-2xl lg:text-3xl font-bold text-purple-100 mb-4">Bedankt!</h2>
+                <p className="text-white text-base lg:text-lg">We hebben je inschrijving ontvangen.</p>
             </div>
         );
     }
@@ -77,6 +81,7 @@ export const IntroStudentIsland = () => {
             subtitle="Introductieweek"
             icon={<Send className="w-8 h-8" />}
             description="Meld je aan voor de gezelligste week van het jaar!"
+            className={className}
         >
             <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-4 lg:space-y-6" autoComplete="off">
                 <input {...register('website')} type="text" className="hidden" tabIndex={-1} autoComplete="off" />

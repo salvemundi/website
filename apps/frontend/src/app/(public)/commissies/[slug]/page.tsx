@@ -11,12 +11,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
     if (!committee) {
         return {
-            title: 'Commissie niet gevonden | SV Salve Mundi'
+            title: 'Commissie niet gevonden | Salve Mundi'
         };
     }
 
     return {
-        title: `${committee.name} | SV Salve Mundi`,
+        title: `${committee.name} | Salve Mundi`,
         description: committee.description || 'Ontdek deze commissie en wat zij doen voor de vereniging.'
     };
 }

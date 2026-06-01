@@ -30,14 +30,14 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
     metadataBase: new URL(process.env.PUBLIC_URL || 'https://salvemundi.nl'),
     title: {
-        default: 'SV Salve Mundi | Studievereniging Fontys ICT',
-        template: '%s | SV Salve Mundi'
+        default: 'Salve Mundi | Studievereniging Fontys ICT',
+        template: '%s | Salve Mundi'
     },
-    description: 'SV Salve Mundi is de studievereniging voor Fontys ICT in Eindhoven. Ontdek onze activiteiten, commissies en word lid!',
+    description: 'Salve Mundi is de studievereniging voor Fontys ICT in Eindhoven. Ontdek onze activiteiten, commissies en word lid!',
     keywords: ['Fontys ICT', 'Studievereniging', 'Eindhoven', 'Salve Mundi', 'Studenten'],
     authors: [{ name: 'Salve Mundi ICT Commissie' }],
     creator: 'Salve Mundi',
-    publisher: 'SV Salve Mundi',
+    publisher: 'Salve Mundi',
     appleWebApp: {
         capable: true,
         statusBarStyle: 'black-translucent',
@@ -47,13 +47,13 @@ export const metadata: Metadata = {
         type: 'website',
         locale: 'nl_NL',
         url: 'https://salvemundi.nl',
-        siteName: 'SV Salve Mundi',
-        title: 'SV Salve Mundi | Studievereniging Fontys ICT',
-        description: 'SV Salve Mundi is de studievereniging voor Fontys ICT in Eindhoven. Ontdek onze activiteiten, commissies en word lid!',
+        siteName: 'Salve Mundi',
+        title: 'Salve Mundi | Studievereniging Fontys ICT',
+        description: 'Salve Mundi is de studievereniging voor Fontys ICT in Eindhoven. Ontdek onze activiteiten, commissies en word lid!',
     },
     twitter: {
         card: 'summary_large_image',
-        title: 'SV Salve Mundi | Studievereniging Fontys ICT',
+        title: 'Salve Mundi | Studievereniging Fontys ICT',
         description: 'De officiële studievereniging van Fontys ICT Eindhoven.',
     }
 };

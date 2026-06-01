@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Users, Heart, FileText, Calendar } from 'lucide-react';
 import type { IntroBlog, IntroPlanningItem } from '@salvemundi/validations/schema/intro.zod';
 import {
     deleteIntroSignup,
@@ -17,15 +16,14 @@ import {
     deleteIntroPlanning
 } from '@/server/actions/admin/admin-intro.actions';
 import { type DbIntroSignup as IntroSignupRow, type DbIntroParentSignup as IntroParentRow } from '@salvemundi/validations/directus/schema';
-import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
+import { downloadCSV } from '@/lib/utils/export';
 import IntroSignupsTab from './intro/IntroSignupsTab';
 import IntroParentsTab from './intro/IntroParentsTab';
 import IntroBlogsTab from './intro/IntroBlogsTab';
 import IntroPlanningTab from './intro/IntroPlanningTab';
-
-type TabType = 'signups' | 'parents' | 'blogs' | 'planning';
+import IntroFilters, { type TabType } from './intro/IntroFilters';
 
 interface Props {
     initialSignups: IntroSignupRow[];
@@ -38,7 +36,9 @@ interface Props {
 export default function IntroManagementIsland({ initialSignups, initialParents, initialBlogs, initialPlanning, initialIntroVisible: _initialIntroVisible }: Props) {
     const _router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
+
     const [activeTab, setActiveTab] = useState<TabType>('signups');
+    const [searchQuery, setSearchQuery] = useState('');
 
     const [signups, setSignups] = useState(initialSignups);
     const [parents, setParents] = useState(initialParents);
@@ -56,7 +56,27 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
     const reloadBlogs = useCallback(async () => setBlogs(await getIntroBlogs()), []);
     const reloadPlanning = useCallback(async () => setPlanning(await getIntroPlanning()), []);
 
-    const getTodayISO = () => new Date().toISOString().split('T')[0];
+    const filteredSignups = useMemo(() => {
+        if (!searchQuery) return signups;
+        const q = searchQuery.toLowerCase();
+        return signups.filter(s => `${s.first_name} ${s.last_name}`.toLowerCase().includes(q) || s.email.toLowerCase().includes(q));
+    }, [signups, searchQuery]);
+
+    const filteredParents = useMemo(() => {
+        if (!searchQuery) return parents;
+        const q = searchQuery.toLowerCase();
+        return parents.filter(p => `${p.first_name} ${p.last_name}`.toLowerCase().includes(q) || p.email.toLowerCase().includes(q));
+    }, [parents, searchQuery]);
+
+    const filteredBlogs = useMemo(() => {
+        if (!searchQuery) return blogs;
+        return blogs.filter(b => b.title.toLowerCase().includes(searchQuery.toLowerCase()));
+    }, [blogs, searchQuery]);
+
+    const filteredPlanning = useMemo(() => {
+        if (!searchQuery) return planning;
+        return planning.filter(p => p.title.toLowerCase().includes(searchQuery.toLowerCase()));
+    }, [planning, searchQuery]);
 
     const handleDeleteSignup = async (id: number) => {
         if (!confirm('Weet je zeker dat je deze aanmelding wilt verwijderen?')) return;
@@ -64,7 +84,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
         const res = await deleteIntroSignup(id);
         if (res.success) {
             setSignups(prev => prev.filter(s => s.id !== id));
-            showToast('Aanmelding succesvol verwijderd', 'success');
+            showToast('Aanmelding verwijderd', 'success');
         } else {
             showToast(res.error || 'Verwijderen mislukt', 'error');
         }
@@ -77,7 +97,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
         const res = await deleteIntroParentSignup(id);
         if (res.success) {
             setParents(prev => prev.filter(p => p.id !== id));
-            showToast('Ouder aanmelding succesvol verwijderd', 'success');
+            showToast('Ouder aanmelding verwijderd', 'success');
         } else {
             showToast(res.error || 'Verwijderen mislukt', 'error');
         }
@@ -109,7 +129,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
         const res = await upsertIntroBlog(blog);
         if (res.success) {
             await reloadBlogs();
-            showToast('Blog succesvol opgeslagen', 'success');
+            showToast('Blog opgeslagen', 'success');
         } else {
             showToast(res.error || 'Opslaan mislukt', 'error');
         }
@@ -122,7 +142,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
         const res = await deleteIntroBlog(id);
         if (res.success) {
             setBlogs(prev => prev.filter(b => b.id !== id));
-            showToast('Blog succesvol verwijderd', 'success');
+            showToast('Blog verwijderd', 'success');
         } else {
             showToast(res.error || 'Verwijderen mislukt', 'error');
         }
@@ -134,7 +154,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
         const res = await upsertIntroPlanning(item);
         if (res.success) {
             await reloadPlanning();
-            showToast('Planning item succesvol opgeslagen', 'success');
+            showToast('Planning item opgeslagen', 'success');
         } else {
             showToast(res.error || 'Opslaan mislukt', 'error');
         }
@@ -147,120 +167,94 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
         const res = await deleteIntroPlanning(id);
         if (res.success) {
             setPlanning(prev => prev.filter(p => p.id !== id));
-            showToast('Planning item succesvol verwijderd', 'success');
+            showToast('Planning item verwijderd', 'success');
         } else {
             showToast(res.error || 'Verwijderen mislukt', 'error');
         }
         setDeletingPlanningId(null);
     };
 
-    const exportSignupsToCSV = () => {
-        const rows = [
-            ['Voornaam', 'Achternaam', 'Email', 'Telefoon', 'Geboortedatum', 'Favoriete GIF'],
-            ...signups.map(s => [
-                s.first_name, s.last_name, s.email, s.phone_number,
-                s.date_of_birth || '', s.favorite_gif || '',
-            ])
-        ];
-        const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `intro-aanmeldingen-${getTodayISO()}.csv`;
-        a.click();
-    };
+    const handleExport = () => {
+        const dateStr = new Date().toISOString().split('T')[0];
 
-    const exportParentsToCSV = () => {
-        const rows = [
-            ['Voornaam', 'Achternaam', 'Email', 'Telefoon', 'Motivatie'],
-            ...parents.map(p => [
-                p.first_name || '', p.last_name || '', p.email || '', p.phone_number || '',
-                p.motivation || '',
-            ])
-        ];
-        const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `intro-ouders-${getTodayISO()}.csv`;
-        a.click();
+        if (activeTab === 'signups') {
+            const data = filteredSignups.map(s => ({
+                Voornaam: s.first_name,
+                Achternaam: s.last_name,
+                Email: s.email,
+                Telefoon: s.phone_number,
+                Geboortedatum: s.date_of_birth || '',
+                'Favoriete GIF': s.favorite_gif || ''
+            }));
+            downloadCSV(data, `intro-aanmeldingen-${dateStr}.csv`);
+        } else if (activeTab === 'parents') {
+            const data = filteredParents.map(p => ({
+                Voornaam: p.first_name || '',
+                Achternaam: p.last_name || '',
+                Email: p.email || '',
+                Telefoon: p.phone_number || '',
+                Motivatie: p.motivation || ''
+            }));
+            downloadCSV(data, `intro-ouders-${dateStr}.csv`);
+        }
     };
-
-    const adminStats = [
-        { label: 'Deelnemers', value: signups.length, icon: Users, theme: 'blue' },
-        { label: 'Ouders', value: parents.length, icon: Heart, theme: 'pink' },
-        { label: 'Blogs', value: blogs.length, icon: FileText, theme: 'emerald' },
-        { label: 'Planning', value: planning.length, icon: Calendar, theme: 'amber' },
-    ];
 
     return (
-        <>
-            <AdminStatsBar stats={adminStats} />
+        <div className="w-full">
+            <IntroFilters
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                onExport={handleExport}
+                counts={{
+                    signups: filteredSignups.length,
+                    parents: filteredParents.length,
+                    blogs: filteredBlogs.length,
+                    planning: filteredPlanning.length
+                }}
+            />
 
-            <div className="flex flex-wrap gap-2 mb-10 bg-[var(--beheer-card-bg)]/50 backdrop-blur-md p-1.5 rounded-[2rem] border border-[var(--beheer-border)]/50 w-fit">
-                {[
-                    { id: 'signups', label: 'Aanmeldingen', count: signups.length, icon: Users },
-                    { id: 'parents', label: 'Ouders', count: parents.length, icon: Heart },
-                    { id: 'blogs', label: 'Blogs', count: blogs.length, icon: FileText },
-                    { id: 'planning', label: 'Planning', count: planning.length, icon: Calendar }
-                ].map(tab => (
-                    <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id as TabType)}
-                        className={`flex items-center gap-3 px-6 py-3.5 font-semibold text-sm transition-all rounded-[1.5rem] ${activeTab === tab.id
-                            ? 'bg-[var(--beheer-accent)] text-white shadow-[var(--shadow-glow)]'
-                            : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] hover:bg-[var(--beheer-card-soft)]/50'
-                            }`}
-                    >
-                        <tab.icon className={`h-4 w-4 ${activeTab === tab.id ? 'opacity-100' : 'opacity-40'}`} />
-                        {tab.label}
-                        <span className={`ml-1 px-2 py-0.5 rounded-full text-[9px] ${activeTab === tab.id ? 'bg-white/20 text-white' : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)]'}`}>
-                            {tab.count}
-                        </span>
-                    </button>
-                ))}
+            <div className="w-full mt-2">
+                {activeTab === 'signups' && (
+                    <IntroSignupsTab
+                        signups={filteredSignups}
+                        onDelete={handleDeleteSignup}
+                        onUpdate={handleUpdateSignup}
+                        onExport={handleExport}
+                        deletingId={deletingSignupId}
+                    />
+                )}
+                {activeTab === 'parents' && (
+                    <IntroParentsTab
+                        parents={filteredParents}
+                        onDelete={handleDeleteParent}
+                        onUpdate={handleUpdateParentSignup}
+                        onExport={handleExport}
+                        deletingId={deletingParentId}
+                    />
+                )}
+                {activeTab === 'blogs' && (
+                    <IntroBlogsTab
+                        blogs={filteredBlogs}
+                        onSave={handleSaveBlog}
+                        onDelete={handleDeleteBlog}
+                        saving={savingBlog}
+                        deletingId={deletingBlogId}
+                    />
+                )}
+                {activeTab === 'planning' && (
+                    <IntroPlanningTab
+                        planning={filteredPlanning}
+                        onSave={handleSavePlanning}
+                        onDelete={handleDeletePlanning}
+                        saving={savingPlanning}
+                        deletingId={deletingPlanningId}
+                    />
+                )}
             </div>
 
-            {activeTab === 'signups' && (
-                <IntroSignupsTab
-                    signups={signups}
-                    onDelete={handleDeleteSignup}
-                    onUpdate={handleUpdateSignup}
-                    onExport={exportSignupsToCSV}
-                    deletingId={deletingSignupId}
-                />
-            )}
-            {activeTab === 'parents' && (
-                <IntroParentsTab
-                    parents={parents}
-                    onDelete={handleDeleteParent}
-                    onUpdate={handleUpdateParentSignup}
-                    onExport={exportParentsToCSV}
-                    deletingId={deletingParentId}
-                />
-            )}
-            {activeTab === 'blogs' && (
-                <IntroBlogsTab
-                    blogs={blogs}
-                    onSave={handleSaveBlog}
-                    onDelete={handleDeleteBlog}
-                    saving={savingBlog}
-                    deletingId={deletingBlogId}
-                />
-            )}
-            {activeTab === 'planning' && (
-                <IntroPlanningTab
-                    planning={planning}
-                    onSave={handleSavePlanning}
-                    onDelete={handleDeletePlanning}
-                    saving={savingPlanning}
-                    deletingId={deletingPlanningId}
-                />
-            )}
-
             <AdminToast toast={toast} onClose={hideToast} />
-        </>
+        </div>
     );
 }

@@ -95,48 +95,27 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField id="field-voornaam" label="Voornaam" required error={errors.voornaam?.message}>
-                    <Controller
-                        name="voornaam"
-                        control={control}
-                        render={({ field }) => (
-                            <Input
-                                {...field}
-                                id="field-voornaam"
-                                autoComplete="given-name"
-                                suppressHydrationWarning
-                            />
-                        )}
+                    <Input
+                        {...register('voornaam')}
+                        id="field-voornaam"
+                        autoComplete="given-name"
                     />
                 </FormField>
                 <FormField id="field-achternaam" label="Achternaam (incl. tussenvoegsel)" required error={errors.achternaam?.message}>
-                    <Controller
-                        name="achternaam"
-                        control={control}
-                        render={({ field }) => (
-                            <Input
-                                {...field}
-                                id="field-achternaam"
-                                autoComplete="family-name"
-                                suppressHydrationWarning
-                            />
-                        )}
+                    <Input
+                        {...register('achternaam')}
+                        id="field-achternaam"
+                        autoComplete="family-name"
                     />
                 </FormField>
             </div>
 
             <FormField id="field-email" label="E-mailadres" required error={errors.email?.message}>
-                <Controller
-                    name="email"
-                    control={control}
-                    render={({ field }) => (
-                        <Input
-                            {...field}
-                            type="email"
-                            id="field-email"
-                            autoComplete="email"
-                            suppressHydrationWarning
-                        />
-                    )}
+                <Input
+                    {...register('email')}
+                    type="email"
+                    id="field-email"
+                    autoComplete="email"
                 />
             </FormField>
 

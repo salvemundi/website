@@ -32,7 +32,7 @@ export default function Image() {
                     Een overzicht van alle voorgaande besturen die hun steentje hebben bijgedragen aan Salve Mundi.
                 </p>
                 <p style={{ fontSize: 20, opacity: 0.6, marginTop: 48 }}>
-                    Salve Mundi — Studievereniging ICT
+                    Salve Mundi – Studievereniging ICT
                 </p>
             </div>
         ),

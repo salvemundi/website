@@ -23,7 +23,7 @@ export default function AdminToolbar({
 }: AdminToolbarProps) {
     return (
         <header 
-            className="bg-[var(--beheer-card-bg)] border-b border-[var(--beheer-border)] sticky top-[var(--header-total-height)] z-30 w-full transition-all"
+            className="bg-bg-card border-b border-border-color sticky top-[var(--header-total-height)] z-30 w-full transition-all"
         >
             <div className="admin-container py-4">
                 <div className={`flex flex-col ${centered ? 'items-center text-center mx-auto' : 'md:flex-row justify-between items-start md:items-center'} gap-4`}>
@@ -32,17 +32,17 @@ export default function AdminToolbar({
                             <Link 
                                 href={backHref} 
                                 title="Terug"
-                                className="p-2 rounded-xl bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text-muted)] hover:text-[var(--beheer-accent)] transition-all active:scale-95 shadow-sm"
+                                className="p-2 rounded-xl bg-bg-card border border-border-color text-text-muted hover:text-theme-purple transition-all active:scale-95 shadow-sm"
                             >
                                 <ChevronLeft className="h-4 w-4" />
                             </Link>
                         )}
                         <div className={`flex flex-col ${centered ? 'items-center' : ''}`}>
-                            <h1 className="text-xl md:text-2xl font-semibold text-[var(--beheer-text)] tracking-tight leading-tight">
+                            <h1 className="text-xl md:text-2xl font-semibold text-theme-purple tracking-tight leading-tight">
                                 {title}
                             </h1>
                             {subtitle && (
-                                <p className="text-sm text-[var(--beheer-text-muted)] font-medium leading-tight mt-0.5">
+                                <p className="text-sm text-text-muted font-medium leading-tight mt-0.5">
                                     {subtitle}
                                 </p>
                             )}
@@ -59,3 +59,4 @@ export default function AdminToolbar({
         </header>
     );
 }
+

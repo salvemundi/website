@@ -76,7 +76,7 @@ export const CommitteeCard = ({
             <div className="flex flex-1 flex-col p-6 sm:p-8">
                 <div className="flex items-start justify-between gap-4 mb-4">
                     <div className="flex-1 min-w-0">
-                        <h3 className="text-xl md:text-2xl lg:text-xl xl:text-2xl font-black tracking-tight text-text-main group-hover:text-purple-500 transition-colors break-words hyphens-auto">
+                        <h3 className="text-xl md:text-2xl lg:text-xl xl:text-2xl font-black tracking-tight text-theme-purple group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors break-words hyphens-auto">
                             {cleanedName || 'Commissie'}
                         </h3>
 

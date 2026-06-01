@@ -157,19 +157,12 @@ export function ReisRegistrationForm({
 
                 <div className="flex flex-col gap-4">
                     <FormField id="field-first_name" label="Voornaam" required error={errors.first_name?.message}>
-                        <Controller
-                            name="first_name"
-                            control={control}
-                            render={({ field }) => (
-                                <Input
-                                    {...field}
-                                    id="field-first_name"
-                                    placeholder="Voornaam"
-                                    /* We use 'one-time-code' to block Chrome's aggressive autofill. */
-                                    autoComplete="one-time-code"
-                                    suppressHydrationWarning
-                                />
-                            )}
+                        <Input
+                            {...register('first_name')}
+                            id="field-first_name"
+                            placeholder="Voornaam"
+                            /* We use 'one-time-code' to block Chrome's aggressive autofill. */
+                            autoComplete="one-time-code"
                         />
                         <div className="mt-2 p-4 rounded-2xl bg-theme-purple/5 border border-theme-purple/10 flex items-start gap-3">
                             <div className="flex items-center gap-1 mt-0.5">
@@ -182,36 +175,22 @@ export function ReisRegistrationForm({
                     </FormField>
 
                     <FormField id="field-last_name" label="Tussenvoegsel & Achternaam" required error={errors.last_name?.message}>
-                        <Controller
-                            name="last_name"
-                            control={control}
-                            render={({ field }) => (
-                                <Input
-                                    {...field}
-                                    id="field-last_name"
-                                    placeholder="Achternaam (incl. tussenvoegsel)"
-                                    autoComplete="off"
-                                    suppressHydrationWarning
-                                />
-                            )}
+                        <Input
+                            {...register('last_name')}
+                            id="field-last_name"
+                            placeholder="Achternaam (incl. tussenvoegsel)"
+                            autoComplete="off"
                         />
                     </FormField>
 
                     <FormField id="field-email" label="E-mailadres" required error={errors.email?.message}>
-                        <Controller
-                            name="email"
-                            control={control}
-                            render={({ field }) => (
-                                <Input
-                                    {...field}
-                                    id="field-email"
-                                    type="email"
-                                    placeholder="jouw@email.nl"
-                                    autoComplete="off"
-                                    suppressHydrationWarning
-                                    data-lpignore="true"
-                                />
-                            )}
+                        <Input
+                            {...register('email')}
+                            id="field-email"
+                            type="email"
+                            placeholder="jouw@email.nl"
+                            autoComplete="off"
+                            data-lpignore="true"
                         />
                     </FormField>
 

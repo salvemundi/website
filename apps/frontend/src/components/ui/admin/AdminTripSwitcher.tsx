@@ -26,7 +26,7 @@ export default function AdminTripSwitcher({ trips, activeTripId }: AdminTripSwit
             <select
                 value={activeTripId}
                 onChange={handleSwitch}
-                className="beheer-select w-full pr-8 py-1.5 text-xs font-semibold bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-xl focus:ring-2 focus:ring-[var(--beheer-accent)]/20 outline-none transition-all cursor-pointer hover:border-[var(--beheer-accent)]/50"
+                className="beheer-select w-full pr-8 py-1.5 text-xs font-semibold bg-bg-card border border-border-color text-text-main rounded-xl focus:ring-2 focus:ring-theme-purple/20 outline-none transition-all cursor-pointer hover:border-theme-purple/50"
             >
                 {trips.map(t => (
                     <option key={t.id} value={t.id}>
@@ -34,7 +34,7 @@ export default function AdminTripSwitcher({ trips, activeTripId }: AdminTripSwit
                     </option>
                 ))}
             </select>
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--beheer-text-muted)]">
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted">
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="m6 9 6 6 6-6"/>
                 </svg>

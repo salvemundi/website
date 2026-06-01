@@ -2,7 +2,7 @@
 
 Welkom bij de broncode van Salve Mundi V7. Dit project is een moderne monorepo architectuur voor de studievereniging Salve Mundi, gebouwd met Next.js, Directus CMS en een microservices-georiënteerde backend.
 
-## 🚀 Project Structuur
+## Project Structuur
 
 De repository is ingericht als een monorepo (gestuurd door `pnpm-workspace.yaml`):
 
@@ -12,7 +12,7 @@ De repository is ingericht als een monorepo (gestuurd door `pnpm-workspace.yaml`
 - **`/packages`**: Gedeelde bibliotheken en types die door de verschillende apps worden gebruikt.
 - **`/Docs`**: Uitgebreide bron-documentatie over de architectuur en workflows (lokaal genegeerd in git).
 
-## 🛠 Technologie Stack
+## Technologie Stack
 
 - **Frontend**: Next.js 16.2.6 (Turbopack, PPR), TailwindCSS 4, Better Auth.
 - **Backend/CMS**: Directus 11.1.1 (Requires `DIRECTUS_STATIC_TOKEN` for build verification).
@@ -21,7 +21,7 @@ De repository is ingericht als een monorepo (gestuurd door `pnpm-workspace.yaml`
 - **Infrastructuur**: Docker, Nginx Proxy Manager (NPM).
 - **CI/CD**: GitHub Actions.
 
-## ⚙️ Lokale Ontwikkeling
+## Lokale Ontwikkeling
 
 1.  **Clone de repository**:
     ```bash
@@ -46,14 +46,14 @@ De repository is ingericht als een monorepo (gestuurd door `pnpm-workspace.yaml`
     pnpm dev
     ```
 
-## 🚢 Deployment
+## Deployment
 
 Het project maakt gebruik van GitHub Actions voor geautomatiseerde deployment naar de VPS.
 
 - **`v7-core.yml`**: Verantwoordelijk voor de kern-infrastructuur (Database, Redis, Directus).
 - **`v7-stack.yml`**: Verantwoordelijk voor de applicatielaag (Frontend & Microservices).
 
-## 🛡 Beveiliging & Bijdragen
+## Beveiliging & Bijdragen
 
 Gevoelige informatie wordt beheerd via GitHub Secrets. Voor bijdragen aan de code, maak een feature branch aan en dien een Pull Request in.
 

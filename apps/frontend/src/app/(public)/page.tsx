@@ -11,7 +11,7 @@ import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Home | SV Salve Mundi',
+    title: 'Home | Salve Mundi',
     description: 'Dè studievereniging voor HBO-studenten in Eindhoven. Ontmoet nieuwe mensen, bouw aan je netwerk en maak het meeste van je studententijd.'
 };
 

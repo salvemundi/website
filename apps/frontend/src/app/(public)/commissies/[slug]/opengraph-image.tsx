@@ -50,7 +50,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
                         position: 'relative',
                     }}>
                         {/* Dynamic Image or Icon */}
-                        <div style={{ fontSize: 120 }}>👥</div>
+                        <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="#4a2344" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
                         
                         {/* Soft overlay gradient */}
                         <div style={{
@@ -100,7 +100,8 @@ export default async function Image({ params }: { params: Promise<{ slug: string
                                 borderRadius: 16,
                                 border: '1px solid #e9ecef',
                             }}>
-                                <span style={{ fontSize: 24, fontWeight: 800, color: '#4a2344' }}>👤 Actieve Leden</span>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4a2344" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 8 }}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg>
+                                <span style={{ fontSize: 24, fontWeight: 800, color: '#4a2344' }}>Actieve Leden</span>
                             </div>
                         </div>
                     </div>

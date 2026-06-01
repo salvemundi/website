@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, Building, Calendar, Mail, Phone, FileText, ChevronRight, MessageCircle } from 'lucide-react';
+import { MapPin, Building, Mail, Phone, FileText, ChevronRight, MessageCircle } from 'lucide-react';
 import DocumentenLijst from '@/components/ui/social/DocumentenLijst';
 import SafeHavenButton from '@/components/islands/social/SafeHavenButton';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
@@ -54,9 +54,8 @@ export default function ContactInfoCard({ documenten, isLoggedIn }: { documenten
     return (
         <div className="@container w-full">
             <div className="grid grid-cols-1 @[700px]:grid-cols-2 gap-10">
-                {/* Linkerkolom: Algemene Info */}
                 <div className="space-y-6">
-                    <h2 className="text-2xl font-semibold text-[var(--text-main)] px-2">Informatie</h2>
+                    <h2 className="text-2xl font-black text-theme-purple px-2">Informatie</h2>
 
                     <ActionItem
                         icon={<MapPin />}
@@ -69,11 +68,6 @@ export default function ContactInfoCard({ documenten, isLoggedIn }: { documenten
                         title="KvK nummer 70280606"
                     />
 
-                    <ActionItem
-                        icon={<Calendar />}
-                        title="Activiteitenkalender"
-                        href="/activiteiten"
-                    />
 
                     <div className="pt-4 px-2">
                         <h3 className="font-semibold text-[var(--text-main)] text-lg mb-4 flex items-center gap-3">
@@ -86,7 +80,7 @@ export default function ContactInfoCard({ documenten, isLoggedIn }: { documenten
 
                 {/* Rechterkolom: Contactopties */}
                 <div className="space-y-6">
-                    <h2 className="text-2xl font-semibold text-[var(--text-main)] px-2">Contact</h2>
+                    <h2 className="text-2xl font-black text-theme-purple px-2">Contact</h2>
 
                     <ActionItem
                         icon={<Mail />}

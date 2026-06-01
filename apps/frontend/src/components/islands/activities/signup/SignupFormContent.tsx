@@ -7,7 +7,7 @@ import { eventSignupFormSchema, type EventSignupForm } from '@salvemundi/validat
 import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
-import { Loader2, CreditCard, Send, Users, Info, AlertCircle } from 'lucide-react';
+import { Loader2, CreditCard, Send, Users, AlertCircle } from 'lucide-react';
 import { StandardFormCard } from '@/components/ui/forms/StandardFormCard';
 
 interface SignupFormContentProps {
@@ -48,13 +48,12 @@ export default function SignupFormContent({
     return (
         <StandardFormCard
             title="Aanmelden"
-            subtitle="Activiteit"
             icon={<Users className="h-8 w-8" />}
-            price={price}
-            className="h-full"
+            price={price > 0 ? price : undefined}
+            className="h-fit"
         >
-            <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-6 flex-1 flex flex-col" autoComplete="off">
-                <div className="space-y-4 flex-1">
+            <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-6" autoComplete="off">
+                <div className="space-y-4">
                     <FormField
                         id="field-name"
                         label="Naam"
@@ -120,15 +119,13 @@ export default function SignupFormContent({
                         <div className="flex items-center justify-center gap-3">
                             {isPending ? (
                                 <><Loader2 className="h-6 w-6 animate-spin" /><span className="tracking-widest">VERWERKEN...</span></>
+                            ) : isPaid ? (
+                                <><CreditCard className="h-6 w-6" /><span className="tracking-widest">Naar betaling (€{price.toFixed(2).replace('.', ',')})</span></>
                             ) : (
-                                <>{isPaid ? <CreditCard className="h-6 w-6" /> : <Send className="h-6 w-6" />}
-                                    <span className="tracking-widest">AANMELDEN</span></>
+                                <><Send className="h-6 w-6" /><span className="tracking-widest">Aanmelden</span></>
                             )}
                         </div>
                     </button>
-                    <div className="flex items-center justify-center gap-2 text-[10px] font-black text-text-muted opacity-50 uppercase tracking-tighter">
-                        <Info className="h-3 w-3" /> <span>Beveiligde verwerking & Directe bevestiging</span>
-                    </div>
                 </div>
                 {/* Honeypot at bottom to avoid breaking browser autofill sections */}
                 <input {...register('website')} type="text" className="hidden" tabIndex={-1} autoComplete="off" suppressHydrationWarning />

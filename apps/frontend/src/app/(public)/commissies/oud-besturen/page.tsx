@@ -7,7 +7,7 @@ import { History } from 'lucide-react';
 import { connection } from 'next/server';
 
 export const metadata: Metadata = {
-    title: 'Bestuursgeschiedenis | SV Salve Mundi',
+    title: 'Bestuursgeschiedenis | Salve Mundi',
     description: 'Ontdek de mensen die Salve Mundi door de jaren heen hebben gevormd en geleid.'
 };
 
@@ -28,11 +28,11 @@ export default async function BoardHistoryPage() {
                     <div className="p-4 rounded-3xl bg-purple-500/10 text-purple-500 mb-6 shadow-sm ring-1 ring-purple-500/20">
                         <History className="h-10 w-10" />
                     </div>
-                    <h2 className="text-4xl font-black text-text-main mb-4 tracking-tight">
+                    <h2 className="text-4xl font-black text-theme-purple mb-4 tracking-tight">
                         Onze Geschiedenis
                     </h2>
                     <p className="text-text-muted max-w-2xl text-lg font-medium leading-relaxed">
-                        Sinds de oprichting van SV Salve Mundi hebben vele gedreven studenten zich ingezet om de vereniging te laten groeien.
+                        Sinds de oprichting van Salve Mundi hebben vele gedreven studenten zich ingezet om de vereniging te laten groeien.
                         Hieronder vind je het overzicht van alle besturen die de basis hebben gelegd voor wat we vandaag zijn.
                     </p>
                     <div className="h-1 w-24 bg-gradient-to-r from-transparent via-purple-500 to-transparent rounded-full mt-10" />

@@ -43,7 +43,6 @@ export default async function MembershipPage() {
                 <div className={isGuest ? "flex flex-col sm:flex-row gap-6 px-6 pt-8 pb-16 sm:pt-10 sm:pb-24 md:pt-12 md:pb-32" : "px-6 pt-8 pb-16 sm:pt-10 sm:pb-24 md:pt-12 md:pb-32"}>
                     <StandardFormCard
                         title={isGuest ? 'Inschrijven' : (user.membership_status === 'active' ? 'STATUS' : 'VERLENGEN')}
-                        subtitle="Lidmaatschap"
                         className={isGuest ? 'w-full sm:w-1/2' : 'w-full max-w-2xl mx-auto'}
                     >
                         {isGuest ? (
@@ -55,8 +54,8 @@ export default async function MembershipPage() {
 
                     {isGuest && (
                         <aside className="w-full sm:w-1/2 flex flex-col gap-6">
-                            <div className="w-full text-center bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-[2rem] p-8 shadow-lg">
-                                <h2 className="text-3xl font-semibold text-theme-purple dark:text-purple-400 mb-4 tracking-tight">
+                            <div className="w-full text-center bg-bg-card dark:border dark:border-white/10 rounded-[2rem] p-8 shadow-lg">
+                                <h2 className="text-3xl font-black text-theme-purple mb-4 tracking-tight">
                                     Waarom Lid Worden?
                                 </h2>
                                 <p className="text-lg opacity-80 leading-relaxed font-medium">

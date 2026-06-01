@@ -1,11 +1,11 @@
 import React from 'react';
-import { 
-    Calendar, 
-    FileText, 
-    Users, 
-    Ticket, 
-    Shield, 
-    MapPin, 
+import {
+    Calendar,
+    FileText,
+    Users,
+    Ticket,
+    Shield,
+    MapPin,
     UserCheck,
     Cake,
     Award,
@@ -15,11 +15,11 @@ import {
     Settings,
     Layout
 } from 'lucide-react';
-import { 
-    ActionCard 
+import {
+    ActionCard
 } from './AdminCards';
 import { formatDate } from '@/shared/lib/utils/date';
-import { 
+import {
     type DashboardStats,
     type Birthday,
     type RecentActivity,
@@ -31,10 +31,10 @@ import { UserPermissions } from '@/shared/lib/permissions';
  * Universal Dashboard Hub.
  * Modernized: No manual skeleton sections. 100% Data-driven.
  */
-export function DashboardHub({ 
+export function DashboardHub({
     permissions,
     stats
-}: { 
+}: {
     permissions: UserPermissions;
     stats: DashboardStats;
 }) {
@@ -88,16 +88,16 @@ export function DashboardHub({
         return (
             <div className="space-y-5">
                 <div className="flex items-center gap-3 px-1">
-                    <div className="bg-[var(--beheer-accent)]/10 p-2 rounded-xl text-[var(--beheer-accent)]">
+                    <div className="bg-theme-purple/10 p-2 rounded-xl text-theme-purple">
                         {React.isValidElement(icon) && React.cloneElement(icon as React.ReactElement<{ className?: string }>, { className: 'h-4 w-4' })}
                     </div>
-                    <h2 className="text-base font-semibold text-[var(--beheer-text)]">{title}</h2>
-                    <div className="h-px flex-1 bg-gradient-to-r from-[var(--beheer-border)] to-transparent" />
+                    <h2 className="text-base font-semibold text-theme-purple">{title}</h2>
+                    <div className="h-px flex-1 bg-gradient-to-r from-border-color to-transparent" />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {items.map((item, i) => (
-                        <ActionCard 
-                            key={i} 
+                        <ActionCard
+                            key={i}
                             title={item.title}
                             subtitle={item.subtitle}
                             value={item.value !== "Beheer" && item.value !== "Bekijken" && item.value !== "Start" ? item.value : undefined}
@@ -131,21 +131,21 @@ export function BirthdaysList({ data }: { data: Birthday[] }) {
     return (
         <div className="space-y-4">
             <div className="flex items-center gap-3 px-1">
-                <div className="bg-[var(--beheer-accent)]/10 p-2 rounded-xl text-[var(--beheer-accent)]">
+                <div className="bg-theme-purple/10 p-2 rounded-xl text-theme-purple">
                     <Cake className="h-4 w-4" />
                 </div>
-                <h3 className="text-base font-semibold text-[var(--beheer-text)]">Aankomende Jarigen</h3>
-                <div className="h-px flex-1 bg-gradient-to-r from-[var(--beheer-border)] to-transparent" />
+                <h3 className="text-base font-semibold text-theme-purple">Aankomende Jarigen</h3>
+                <div className="h-px flex-1 bg-gradient-to-r from-border-color to-transparent" />
             </div>
             <div className="grid grid-cols-1 gap-3">
                 {data.map((person) => (
-                    <ActionCard 
+                    <ActionCard
                         key={person.id}
-                        title={`${person.first_name} ${person.last_name}${person.isToday ? ' 🎂' : ''}`}
-                        subtitle={person.isToday ? '🎉 Vandaag!' : formatDate(person.birthday, 'd MMMM')}
-                        value={person.isToday ? '🎈' : undefined}
+                        title={`${person.first_name} ${person.last_name}`}
+                        subtitle={person.isToday ? 'Vandaag jarig!' : formatDate(person.birthday, 'd MMMM')}
                         colorClass={person.isToday ? 'amber' : 'purple'}
                         pulse={person.isToday}
+                        icon={<Cake />}
                     />
                 ))}
             </div>
@@ -161,19 +161,20 @@ export function TopStickersList({ data }: { data: TopSticker[] }) {
     return (
         <div className="space-y-4">
             <div className="flex items-center gap-3 px-1">
-                <div className="bg-[var(--beheer-accent)]/10 p-2 rounded-xl text-[var(--beheer-accent)]">
+                <div className="bg-theme-purple/10 p-2 rounded-xl text-theme-purple">
                     <Award className="h-4 w-4" />
                 </div>
-                <h3 className="text-base font-semibold text-[var(--beheer-text)]">Top Sticker Verzamelaars</h3>
-                <div className="h-px flex-1 bg-gradient-to-r from-[var(--beheer-border)] to-transparent" />
+                <h3 className="text-base font-semibold text-theme-purple">Top Sticker Verzamelaars</h3>
+                <div className="h-px flex-1 bg-gradient-to-r from-border-color to-transparent" />
             </div>
             <div className="grid grid-cols-1 gap-3">
                 {data.map((person, i) => (
-                    <ActionCard 
+                    <ActionCard
                         key={person.id}
                         title={`${person.first_name} ${person.last_name}`}
                         value={person.count}
                         colorClass={i === 0 ? 'amber' : 'purple'}
+                        icon={<Award />}
                     />
                 ))}
             </div>
@@ -189,21 +190,22 @@ export function ActivitySignupsList({ data }: { data: RecentActivity[] }) {
     return (
         <div className="space-y-4">
             <div className="flex items-center gap-3 px-1">
-                <div className="bg-[var(--beheer-accent)]/10 p-2 rounded-xl text-[var(--beheer-accent)]">
+                <div className="bg-theme-purple/10 p-2 rounded-xl text-theme-purple">
                     <Activity className="h-4 w-4" />
                 </div>
-                <h3 className="text-base font-semibold text-[var(--beheer-text)]">Activiteiten aanmeldingen</h3>
-                <div className="h-px flex-1 bg-gradient-to-r from-[var(--beheer-border)] to-transparent" />
+                <h3 className="text-base font-semibold text-theme-purple">Activiteiten aanmeldingen</h3>
+                <div className="h-px flex-1 bg-gradient-to-r from-border-color to-transparent" />
             </div>
             <div className="grid grid-cols-1 gap-3">
                 {data.map((ev) => (
-                    <ActionCard 
+                    <ActionCard
                         key={ev.id}
                         title={ev.name}
                         subtitle={ev.event_date ? formatDate(ev.event_date, 'd MMMM yyyy') : undefined}
                         value={ev.signups}
                         href={`/beheer/activiteiten/${ev.id}/aanmeldingen`}
                         colorClass="purple"
+                        icon={<Activity />}
                     />
                 ))}
             </div>

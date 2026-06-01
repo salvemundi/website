@@ -22,8 +22,8 @@ export default function AdminVisibilityToggle({
     disabled = false
 }: AdminVisibilityToggleProps) {
     return (
-        <div className={`flex items-center gap-3 px-4 py-2 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] shadow-sm ${disabled ? 'opacity-50 pointer-events-none' : ''}`}>
-            <span className="text-base font-semibold text-[var(--beheer-text-muted)]">
+        <div className={`flex items-center gap-3 px-4 py-2 bg-bg-card border border-border-color rounded-3xl shadow-sm ${disabled ? 'opacity-50 pointer-events-none' : ''}`}>
+            <span className="text-base font-semibold text-text-muted">
                 {label}
             </span>
             <button
@@ -32,7 +32,7 @@ export default function AdminVisibilityToggle({
                 disabled={isPending || disabled}
                 aria-label={typeof label === 'string' ? label : 'Toggle zichtbaarheid'}
                 className={`w-12 h-6 rounded-full p-1 transition-all relative flex items-center ${
-                    isVisible ? 'bg-[var(--beheer-active)]' : 'bg-[var(--beheer-inactive)]'
+                    isVisible ? 'bg-beheer-active' : 'bg-beheer-inactive'
                 } disabled:opacity-50 hover:opacity-90 active:scale-95`}
             >
                 {isPending ? (

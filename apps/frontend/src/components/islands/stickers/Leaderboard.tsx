@@ -22,7 +22,7 @@ export default function Leaderboard({ stickers, currentUser }: LeaderboardProps)
         const u = s.user_created as StickerCreator | null | undefined;
         const uid = u?.id ? String(u.id) : 'unknown';
         const name = u ? ((u.first_name || '') + ' ' + (u.last_name || '')).trim() || u.email || uid : 'Unknown';
-        
+
         const current = counts.get(uid) || { id: uid, name, avatar: u?.avatar ?? null, count: 0 };
         current.count += 1;
         counts.set(uid, current);
@@ -40,18 +40,17 @@ export default function Leaderboard({ stickers, currentUser }: LeaderboardProps)
     ];
 
     return (
-        <div className="bg-[var(--bg-card)] rounded-2xl md:rounded-3xl shadow-lg p-4 md:p-6 h-full flex flex-col border border-[var(--border-color)]/20">
+        <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-lg p-4 md:p-6 h-full flex flex-col border border-border-color/20">
             <div className="flex items-center justify-between mb-8">
                 <div>
-                    <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-[var(--text-muted)]">Community</p>
-                    <h2 className="text-xl md:text-2xl font-semibold tracking-tight text-[var(--text-main)] mt-0.5">Leaderboard</h2>
+                    <h2 className="text-xl md:text-2xl font-black tracking-tight text-theme-purple mt-0.5">Leaderboard</h2>
                 </div>
                 <Trophy className="h-6 w-6 text-orange-500 animate-pulse" />
             </div>
 
             {leaderboard.length === 0 ? (
-                <div className="flex-1 flex items-center justify-center p-8 text-center border-2 border-dashed border-[var(--border-color)]/25 rounded-2xl">
-                    <p className="text-sm text-[var(--text-muted)] font-medium italic">Geen plakkers gevonden...</p>
+                <div className="flex-1 flex items-center justify-center p-8 text-center border-2 border-dashed border-border-color/25 rounded-2xl">
+                    <p className="text-sm text-text-muted font-medium italic">Geen plakkers gevonden...</p>
                 </div>
             ) : (
                 <>
@@ -59,7 +58,7 @@ export default function Leaderboard({ stickers, currentUser }: LeaderboardProps)
                     <div className="grid grid-cols-3 gap-2 items-end mb-10 px-2">
                         {podiumDisplay.map((user, idx) => {
                             if (!user) return <div key={idx} />;
-                            
+
                             const isGold = idx === 1;
                             const isSilver = idx === 0;
                             const isMe = Boolean(currentUser && String(user.id) === String(currentUser.id));
@@ -73,9 +72,9 @@ export default function Leaderboard({ stickers, currentUser }: LeaderboardProps)
                                         `} />
                                         <div className={`
                                             relative w-12 h-12 md:w-16 md:h-16 rounded-full border-2 flex items-center justify-center text-white font-semibold text-base md:text-lg overflow-hidden
-                                            ${isGold ? 'border-yellow-400 bg-gradient-to-br from-yellow-300 to-yellow-600 scale-110' : 
-                                              isSilver ? 'border-slate-300 bg-gradient-to-br from-slate-200 to-slate-400' : 
-                                              'border-orange-400 bg-gradient-to-br from-orange-300 to-orange-500'}
+                                            ${isGold ? 'border-yellow-400 bg-gradient-to-br from-yellow-300 to-yellow-600 scale-110' :
+                                                isSilver ? 'border-slate-300 bg-gradient-to-br from-slate-200 to-slate-400' :
+                                                    'border-orange-400 bg-gradient-to-br from-orange-300 to-orange-500'}
                                             ${isMe ? 'ring-2 ring-white ring-offset-2' : ''}
                                         `}>
                                             {user.name ? user.name.split(' ').map(x => x[0]).slice(0, 2).join('') : '#'}
@@ -84,9 +83,9 @@ export default function Leaderboard({ stickers, currentUser }: LeaderboardProps)
                                             absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center shadow-lg
                                             ${isGold ? 'bg-yellow-500' : isSilver ? 'bg-slate-400' : 'bg-orange-500'}
                                         `}>
-                                            {isGold ? <Trophy className="h-3 w-3 text-white" /> : 
-                                             isSilver ? <Medal className="h-3 w-3 text-white" /> : 
-                                             <Award className="h-3 w-3 text-white" />}
+                                            {isGold ? <Trophy className="h-3 w-3 text-white" /> :
+                                                isSilver ? <Medal className="h-3 w-3 text-white" /> :
+                                                    <Award className="h-3 w-3 text-white" />}
                                         </div>
                                     </div>
                                     <div className="text-center min-w-0 w-full px-1">
@@ -99,9 +98,9 @@ export default function Leaderboard({ stickers, currentUser }: LeaderboardProps)
                                     </div>
                                     <div className={`
                                         mt-2 w-full rounded-t-lg flex items-center justify-center font-bold text-white text-xs
-                                        ${isGold ? 'h-16 md:h-20 bg-gradient-to-t from-yellow-500 to-yellow-400' : 
-                                          isSilver ? 'h-12 md:h-16 bg-gradient-to-t from-slate-400 to-slate-300' : 
-                                          'h-8 md:h-12 bg-gradient-to-t from-orange-500 to-orange-400'}
+                                        ${isGold ? 'h-16 md:h-20 bg-gradient-to-t from-yellow-500 to-yellow-400' :
+                                            isSilver ? 'h-12 md:h-16 bg-gradient-to-t from-slate-400 to-slate-300' :
+                                                'h-8 md:h-12 bg-gradient-to-t from-orange-500 to-orange-400'}
                                     `}>
                                         {isGold ? '1' : isSilver ? '2' : '3'}
                                     </div>
@@ -116,24 +115,18 @@ export default function Leaderboard({ stickers, currentUser }: LeaderboardProps)
                             {rest.map((c, idx) => {
                                 const isMe = Boolean(currentUser && String(c.id) === String(currentUser.id));
                                 return (
-                                    <div key={c.id} className={`group flex items-center justify-between p-2.5 rounded-xl transition-all duration-200 ${isMe ? 'bg-orange-500/10 border border-orange-500/20' : 'hover:bg-[var(--bg-main)]/50 border border-transparent'}`}>
+                                    <div key={c.id} className={`group flex items-center justify-between p-2.5 rounded-xl transition-all duration-200 ${isMe ? 'bg-orange-500/10 border border-orange-500/20' : 'hover:bg-bg-main/50 border border-transparent'}`}>
                                         <div className="flex items-center gap-3 min-w-0">
-                                            <div className="relative shrink-0">
-                                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--theme-purple)]/15 to-[var(--theme-purple)]/5 border border-[var(--border-color)]/20 flex items-center justify-center text-[var(--text-main)] font-semibold text-xs">
-                                                    {c.name ? c.name.split(' ').map(x => x[0]).slice(0, 2).join('') : '#'}
-                                                </div>
-                                                {isMe && <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-orange-500 rounded-full border-2 border-[var(--bg-card)]" />}
-                                            </div>
                                             <div className="min-w-0">
-                                                <div className="text-xs sm:text-sm font-medium text-[var(--text-main)] truncate group-hover:text-[var(--theme-purple)] transition-colors">
+                                                <div className="text-xs sm:text-sm font-medium text-text-main truncate group-hover:text-theme-purple transition-colors">
                                                     {c.name}
                                                 </div>
-                                                <div className="text-[10px] font-normal text-[var(--text-muted)] mt-0.5">
+                                                <div className="text-[10px] font-normal text-text-muted mt-0.5">
                                                     {c.count} sticker{c.count !== 1 ? 's' : ''}
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="text-xs font-semibold text-[var(--text-muted)]/50 group-hover:text-[var(--text-muted)]/80 transition-colors">
+                                        <div className="text-xs font-semibold text-text-muted/50 group-hover:text-text-muted/80 transition-colors">
                                             #{idx + 4}
                                         </div>
                                     </div>

@@ -38,7 +38,7 @@
    Aliases here exist purely for backwards-compat with old components.        */
 :root {
     color-scheme: light;
-    --theme-purple: var(--color-purple-300);
+    --theme-purple: var(--color-purple-700);
     --theme-purple-light: var(--color-purple-500);
     --theme-purple-dark: var(--color-purple-800);
     --theme-purple-darker: var(--color-purple-900);
@@ -62,6 +62,7 @@
 }
 
 .dark {
+    --theme-purple: var(--color-purple-300);
     --beheer-active: #4ade80;        /* Green-400 */
     --beheer-inactive: #f87171;      /* Red-400 */
     --beheer-card-bg: var(--bg-card);

@@ -12,15 +12,21 @@ import { formatPhoneNumber } from '@/lib/utils/phone-utils';
 import { StandardFormCard } from '@/components/ui/forms/StandardFormCard';
 
 interface IntroParentIslandProps {
-    userName: string;
-    userEmail: string;
     initialPhone: string;
+    className?: string;
 }
 
-export const IntroParentIsland = ({ userName, userEmail, initialPhone }: IntroParentIslandProps) => {
+export const IntroParentIsland = ({ initialPhone, className = '' }: IntroParentIslandProps) => {
     const [submitted, setSubmitted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const hasValidPhone = !!(
+        initialPhone &&
+        /^\+[1-9][0-9\s\-()]+$/.test(formatPhoneNumber(initialPhone)) &&
+        formatPhoneNumber(initialPhone).length >= 8 &&
+        formatPhoneNumber(initialPhone).length <= 16
+    );
 
     const {
         register,
@@ -59,7 +65,7 @@ export const IntroParentIsland = ({ userName, userEmail, initialPhone }: IntroPa
         return (
             <div className="bg-gradient-theme squircle-lg p-6 lg:p-8 shadow-lg text-center">
                 <h3 className="text-xl lg:text-2xl font-bold text-white mb-4">Je hebt je aangemeld als Intro Ouder</h3>
-                <p className="text-theme-text-muted dark:text-theme-text-muted">
+                <p className="text-text-muted">
                     Bedankt! Je inschrijving is ontvangen. Als je iets wilt aanpassen, neem contact op met de intro commissie.
                 </p>
             </div>
@@ -69,60 +75,52 @@ export const IntroParentIsland = ({ userName, userEmail, initialPhone }: IntroPa
     return (
         <StandardFormCard
             title="Word Intro Ouder!"
-            subtitle="Begeleiding"
             icon={<Heart className="w-8 h-8" />}
             description="Begeleid de nieuwe lichting studenten tijdens de introweek."
+            className={className}
         >
-            <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-4 lg:space-y-6" autoComplete="off">
-                <div className="bg-[var(--bg-soft)] rounded-2xl p-4 lg:p-6 mb-6 border border-[var(--border-color)]/20 shadow-inner">
-                    <div className="text-[var(--text-main)] text-sm lg:text-base font-medium space-y-2">
-                        <div className="flex justify-between items-center border-b border-[var(--border-color)]/10 pb-2">
-                            <span className="text-[var(--text-muted)] font-bold uppercase text-[10px] tracking-widest">Naam</span>
-                            <span className="font-bold">{userName}</span>
-                        </div>
-                        <div className="flex justify-between items-center pt-1">
-                            <span className="text-[var(--text-muted)] font-bold uppercase text-[10px] tracking-widest">E-mail</span>
-                            <span className="font-bold">{userEmail}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <FormField id="field-telefoonnummer" label="Telefoonnummer" required error={errors.telefoonnummer?.message}>
-                    <Controller
-                        name="telefoonnummer"
-                        control={control}
-                        render={({ field }) => (
-                            <PhoneInput
-                                {...field}
-                                id="field-telefoonnummer"
-                                required
-                                autoComplete="one-time-code"
+            <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-4 lg:space-y-6 flex-1 flex flex-col justify-between" autoComplete="off">
+                <div className="flex-1 flex flex-col space-y-4 lg:space-y-6">
+                    {!hasValidPhone ? (
+                        <FormField id="field-telefoonnummer" label="Telefoonnummer" required error={errors.telefoonnummer?.message}>
+                            <Controller
+                                name="telefoonnummer"
+                                control={control}
+                                render={({ field }) => (
+                                    <PhoneInput
+                                        {...field}
+                                        id="field-telefoonnummer"
+                                        required
+                                        autoComplete="one-time-code"
+                                    />
+                                )}
                             />
-                        )}
-                    />
-                </FormField>
+                        </FormField>
+                    ) : (
+                        <input type="hidden" {...register('telefoonnummer')} />
+                    )}
 
-                <FormField id="field-motivation" label="Motivatie" required error={errors.motivation?.message}>
-                    <textarea
-                        {...register('motivation')}
-                        id="field-motivation"
-                        required
-                        rows={4}
-                        className="form-input w-full"
-                        placeholder="Vertel ons waarom jij een goede intro ouder zou zijn..."
-                        autoComplete="off"
-                        suppressHydrationWarning
-                    />
-                </FormField>
+                    <FormField id="field-motivation" label="Motivatie" required error={errors.motivation?.message} className="flex-1 flex flex-col">
+                        <textarea
+                            {...register('motivation')}
+                            id="field-motivation"
+                            required
+                            className="form-input w-full flex-1 resize-none"
+                            placeholder="Vertel ons waarom jij een goede Intro Ouder zou zijn..."
+                            autoComplete="off"
+                            suppressHydrationWarning
+                        />
+                    </FormField>
+                </div>
 
                 {error && <p className="text-red-500 dark:text-red-400 text-xs lg:text-sm">{error}</p>}
 
                 <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="form-button w-full mt-4"
+                    className="form-button w-full mt-4 shrink-0"
                 >
-                    {isSubmitting ? 'Bezig...' : 'Meld je aan als Introouder'}
+                    {isSubmitting ? 'Bezig...' : 'Meld je aan als Intro Ouder'}
                 </button>
             </form>
         </StandardFormCard>

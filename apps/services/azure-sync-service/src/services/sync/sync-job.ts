@@ -209,15 +209,26 @@ export class SyncJob {
     }
 
     private static async logSummary(jobId: string, status: SyncStatus) {
+        const movedActive = status.movedActiveCount ?? 0;
+        const movedExpired = status.movedExpiredCount ?? 0;
+        const errors = status.errorCount ?? 0;
+
+        // Skip logging a successful summary if nothing actually changed and there were no errors
+        if (movedActive === 0 && movedExpired === 0 && errors === 0) {
+            return;
+        }
+
         await db
             .insertInto('system_logs')
             .values({
                 type: 'system_sync_summary',
-                status: 'SUCCESS',
+                status: errors > 0 ? 'ERROR' : 'SUCCESS',
                 payload: JSON.stringify({
-                    job_id: jobId, processed: status.processed, moved_active: status.movedActiveCount,
-                    moved_expired: status.movedExpiredCount, errors: status.errorCount,
-                    duration_ms: status.startTime ? (Date.now() - new Date(status.startTime).getTime()) : null
+                    job_id: jobId, processed: status.processed, moved_active: movedActive,
+                    moved_expired: movedExpired, errors: errors,
+                    duration_ms: status.startTime ? (Date.now() - new Date(status.startTime).getTime()) : null,
+                    moved_active_users: status.movedActiveUsers ?? [],
+                    moved_expired_users: status.movedExpiredUsers ?? [],
                 })
             })
             .execute();

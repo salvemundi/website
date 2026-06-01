@@ -8,7 +8,7 @@ import Leaderboard from '@/components/islands/stickers/Leaderboard';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-    title: 'Stickerkaart | SV Salve Mundi',
+    title: 'Stickerkaart | Salve Mundi',
     description: 'Bekijk waar onze stickers over de hele wereld zijn geplakt!'
 };
 
