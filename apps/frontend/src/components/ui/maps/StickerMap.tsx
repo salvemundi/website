@@ -162,6 +162,7 @@ export default function StickerMap({
 
                     {filteredStickers.map((sticker) => {
                         const isMine = Boolean(user && sticker.user_created?.id && String(user.id) === String(sticker.user_created.id));
+                        const hasAvatar = !!sticker.user_created?.avatar;
                         return (
                             <Marker
                                 key={sticker.id}
@@ -174,11 +175,11 @@ export default function StickerMap({
                             >
                                 <div className={`samu-marker ${isMine ? 'samu-marker--mine' : ''} cursor-pointer`}>
                                     <MediaAsset
-                                        asset={sticker.user_created?.avatar}
+                                        asset={sticker.user_created?.avatar || '/img/newlogo.svg'}
                                         alt="User"
                                         width={128}
                                         height={128}
-                                        className="samu-marker__img"
+                                        className={`samu-marker__img ${!hasAvatar ? 'samu-marker__img--logo' : ''}`}
                                     />
                                     <span className={`samu-marker__dot ${isMine ? 'samu-marker__dot--mine' : ''}`}></span>
                                 </div>
@@ -214,11 +215,15 @@ export default function StickerMap({
 
                                 <div className="flex gap-3 items-center pr-6">
                                     <MediaAsset
-                                        asset={popupInfo.user_created?.avatar}
+                                        asset={popupInfo.user_created?.avatar || '/img/newlogo.svg'}
                                         alt="avatar"
                                         width={128}
                                         height={128}
-                                        className="w-11 h-11 rounded-full object-cover ring-2 ring-[var(--theme-purple)]/20 shrink-0"
+                                        className={`w-11 h-11 rounded-full ring-2 ring-[var(--theme-purple)]/20 shrink-0 ${
+                                            popupInfo.user_created?.avatar 
+                                                ? 'object-cover' 
+                                                : 'bg-[var(--bg-card)] p-1.5 object-contain'
+                                        }`}
                                     />
                                     <div className="min-w-0">
                                         <h3 className="font-semibold text-[var(--text-main)] text-sm sm:text-base leading-tight truncate">
