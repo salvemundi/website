@@ -19,6 +19,7 @@ export default async function StickersPage() {
     ]);
 
     const currentUser = session?.user ? (session.user as unknown as EnrichedUser) : null;
+    const isLoggedIn = !!currentUser;
 
     return (
         <PublicPageShell
@@ -27,7 +28,7 @@ export default async function StickersPage() {
         >
             <div className="w-full px-4 md:px-8 py-4 md:py-8 h-[calc(100vh-var(--header-total-height))] min-h-[600px]">
                 <div className="flex flex-col lg:flex-row gap-8 items-stretch h-full">
-                    <div className="flex-1 min-w-0 order-1 h-[50vh] lg:h-full">
+                    <div className={`flex-1 min-w-0 order-1 lg:h-full ${isLoggedIn ? 'h-[50vh]' : 'h-[80vh]'}`}>
                         <div className="h-full overflow-hidden rounded-3xl">
                             <StickerMapBridge
                                 initialStickers={stickers}
@@ -37,12 +38,14 @@ export default async function StickersPage() {
                         </div>
                     </div>
 
-                    <div className="w-full lg:w-[400px] shrink-0 order-2 h-[40vh] lg:h-full">
-                        <Leaderboard
-                            stickers={stickers}
-                            currentUser={currentUser}
-                        />
-                    </div>
+                    {isLoggedIn && (
+                        <div className="w-full lg:w-[400px] shrink-0 order-2 h-[40vh] lg:h-full">
+                            <Leaderboard
+                                stickers={stickers}
+                                currentUser={currentUser}
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
         </PublicPageShell>

@@ -40,6 +40,9 @@ interface RawStickerDbRow {
 }
 
 export async function getPublicStickers() {
+    const session = await getEnrichedSession();
+    const isLoggedIn = !!session?.user;
+
     const sql = `
         SELECT 
             s.*,
@@ -64,7 +67,7 @@ export async function getPublicStickers() {
         country: row.country || '',
         image: row.image || null,
         date_created: row.date_created instanceof Date ? row.date_created.toISOString() : (row.date_created || ''),
-        user_created: row.user_id ? {
+        user_created: (isLoggedIn && row.user_id) ? {
             id: row.user_id,
             first_name: row.first_name,
             last_name: row.last_name,
