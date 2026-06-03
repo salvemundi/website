@@ -28,7 +28,7 @@ export const PUB_CRAWL_EVENT_FIELDS = [
 
 export const PUB_CRAWL_SIGNUP_FIELDS = [
     'id', 'name', 'email', 'association', 'amount_tickets', 
-    'name_initials', 'payment_status', 'pub_crawl_event_id', 'created_at', 'directus_relations'
+    'name_initials', 'payment_status', 'pub_crawl_event_id', 'created_at', 'directus_relations', 'group_name'
 ] as const;
 
 export const PUB_CRAWL_TICKET_FIELDS = [

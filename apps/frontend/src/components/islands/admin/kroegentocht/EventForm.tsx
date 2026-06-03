@@ -12,7 +12,9 @@ import {
     Mail,
     ImagePlus,
     X,
-    MessageCircle
+    MessageCircle,
+    Users,
+    Plus
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -29,17 +31,46 @@ interface EventFormProps {
     event?: PubCrawlEvent;
 }
 
+interface GroupLeader {
+    name: string;
+    signupId?: number | null;
+}
+
+interface GroupConfig {
+    name: string;
+    leaders?: GroupLeader[];
+}
+
 export default function EventForm({ event }: EventFormProps) {
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
     const [isPending, startTransition] = useTransition();
+    const normalizedEventGroups = (event?.groups || []).map((g: unknown): GroupConfig => {
+        if (typeof g === 'string') return { name: g, leaders: [] };
+        const obj = g && typeof g === 'object' ? (g as { name?: unknown; leaders?: unknown }) : {};
+        return {
+            name: typeof obj.name === 'string' ? obj.name : '',
+            leaders: Array.isArray(obj.leaders) ? (obj.leaders as GroupLeader[]) : []
+        };
+    });
+
     const [formData, setFormData] = useState({
         name: event?.name || '',
         description: event?.description || '',
         date: toLocalISOString(event?.date) || '',
         email: event?.email || 'feest@salvemundi.nl',
         image: event?.image || null,
-        whatsapp_community_url: event?.whatsapp_community_url || ''
+        whatsapp_community_url: event?.whatsapp_community_url || '',
+        groups: (normalizedEventGroups.length > 0 ? normalizedEventGroups : [
+            { name: 'Pils Panters', leaders: [] },
+            { name: 'Tipsy Tijgers', leaders: [] },
+            { name: 'Flamingos', leaders: [] },
+            { name: 'Krokobillen', leaders: [] },
+            { name: 'Jaeger Meisters', leaders: [] },
+            { name: 'Lamme Leeuwen', leaders: [] },
+            { name: 'Aapjes', leaders: [] },
+            { name: 'Zuipende Zebra\'s', leaders: [] }
+        ]) as GroupConfig[]
     });
     const [uploading, setUploading] = useState(false);
 
@@ -210,6 +241,94 @@ export default function EventForm({ event }: EventFormProps) {
                                 className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-semibold text-[var(--text-main)] min-h-[160px]"
                                 placeholder="Korte omschrijving voor de deelnemers..."
                             />
+                        </div>
+
+                        <div className="border-t border-[var(--border-color)]/20 pt-8 space-y-4">
+                            <h3 className="text-sm font-semibold text-[var(--text-main)] flex items-center gap-2">
+                                <Users className="h-4 w-4 text-[var(--theme-purple)]" />
+                                Groepen Indeling ({formData.groups.length})
+                            </h3>
+                            <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                                Definieer de groepen voor deze kroegentocht. Deelnemers kunnen vervolgens over deze groepen verdeeld worden.
+                            </p>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                {formData.groups.map((group, index) => (
+                                    <div key={index} className="flex flex-col gap-2 bg-[var(--bg-main)]/50 p-3 border border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus-within:border-[var(--theme-purple)]/50 transition-all">
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="text"
+                                                value={group.name}
+                                                onChange={(e) => {
+                                                    setFormData({
+                                                        ...formData,
+                                                        groups: formData.groups.map((g, i) =>
+                                                            i === index ? { ...g, name: e.target.value } : g
+                                                        )
+                                                    });
+                                                }}
+                                                className="flex-1 bg-transparent border-0 focus:ring-0 text-xs font-semibold text-[var(--text-main)] px-2 py-1 focus:outline-none"
+                                                placeholder={`Groep ${index + 1}`}
+                                                required
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const updated = formData.groups.filter((_, i) => i !== index);
+                                                    setFormData({ ...formData, groups: updated });
+                                                }}
+                                                className="p-1 text-[var(--text-muted)] hover:text-red-500 transition-colors cursor-pointer"
+                                                title="Verwijder groep"
+                                            >
+                                                <X className="h-3.5 w-3.5" />
+                                            </button>
+                                        </div>
+
+                                        {group.leaders && group.leaders.length > 0 && (
+                                            <div className="px-2 pb-1 space-y-1">
+                                                <p className="text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-wider">Leiders:</p>
+                                                <div className="flex flex-wrap gap-1">
+                                                    {group.leaders.map((leader, lIdx) => (
+                                                        <span key={lIdx} className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-[var(--bg-card)] border border-[var(--border-color)]/50 rounded text-[9px] font-semibold text-[var(--text-muted)]">
+                                                            {leader.name}
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setFormData({
+                                                                        ...formData,
+                                                                        groups: formData.groups.map((g, i) => {
+                                                                            if (i !== index) return g;
+                                                                            return { ...g, leaders: (g.leaders ?? []).filter((_, li) => li !== lIdx) };
+                                                                        })
+                                                                    });
+                                                                }}
+                                                                className="text-red-500 hover:text-red-700 font-bold ml-1 cursor-pointer"
+                                                                title="Verwijder leider"
+                                                            >
+                                                                &times;
+                                                            </button>
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setFormData({
+                                            ...formData,
+                                            groups: [...formData.groups, { name: `Groep ${formData.groups.length + 1}`, leaders: [] }]
+                                        });
+                                    }}
+                                    className="flex items-center justify-center gap-2 p-3 bg-[var(--bg-main)]/30 border-2 border-dashed border-[var(--border-color)]/50 rounded-[var(--radius-xl)] hover:border-[var(--theme-purple)]/50 hover:bg-[var(--theme-purple)]/5 transition-all text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--theme-purple)] cursor-pointer h-fit self-center"
+                                >
+                                    <Plus className="h-4 w-4" />
+                                    Groep toevoegen
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

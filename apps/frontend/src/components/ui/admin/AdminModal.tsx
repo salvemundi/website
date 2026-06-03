@@ -37,23 +37,23 @@ export default function AdminModal({
 
     if (!isOpen) return null;
 
-    const maxWidthClasses = {
-        'sm': 'max-w-sm',
-        'md': 'max-w-md',
-        'lg': 'max-w-lg',
-        'xl': 'max-w-xl',
-        '2xl': 'max-w-2xl',
-        '3xl': 'max-w-3xl',
-        '4xl': 'max-w-4xl',
-        '5xl': 'max-w-5xl',
-        '6xl': 'max-w-6xl',
-        '7xl': 'max-w-7xl' };
+    const maxWidthClasses = new Map([
+        ['sm', 'max-w-sm'],
+        ['md', 'max-w-md'],
+        ['lg', 'max-w-lg'],
+        ['xl', 'max-w-xl'],
+        ['2xl', 'max-w-2xl'],
+        ['3xl', 'max-w-3xl'],
+        ['4xl', 'max-w-4xl'],
+        ['5xl', 'max-w-5xl'],
+        ['6xl', 'max-w-6xl'],
+        ['7xl', 'max-w-7xl'],
+    ]);
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-500">
             <div 
-                // eslint-disable-next-line security/detect-object-injection
-                className={`bg-bg-card/90 backdrop-blur-xl w-full ${maxWidthClasses[maxWidth]} squircle-lg shadow-[0_40px_100px_rgba(0,0,0,0.5)] overflow-hidden border border-border-color/50 flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-500`}
+                className={`bg-bg-card/90 backdrop-blur-xl w-full ${maxWidthClasses.get(maxWidth)} squircle-lg shadow-[0_40px_100px_rgba(0,0,0,0.5)] overflow-hidden border border-border-color/50 flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-500`}
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}

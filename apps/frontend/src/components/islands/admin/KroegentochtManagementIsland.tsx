@@ -4,15 +4,11 @@ import { useState, useTransition, useEffect, useCallback } from 'react';
 import {
     Plus,
     Settings,
-    Beer,
     AlertCircle,
-    Users,
-    Building2,
     RefreshCw
 } from 'lucide-react';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminVisibilityToggle from '@/components/ui/admin/AdminVisibilityToggle';
-import AdminStatsBar from '@/components/ui/admin/AdminStatsBar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import Link from 'next/link';
@@ -20,7 +16,8 @@ import { useRouter } from 'next/navigation';
 import {
     deletePubCrawlSignup,
     toggleKroegentochtVisibility,
-    getPubCrawlSignups
+    getPubCrawlSignups,
+    updatePubCrawlSignup
 } from '@/server/actions/admin/admin-kroegentocht.actions';
 import EventDropdown from '@/components/islands/admin/kroegentocht/EventDropdown';
 import SignupList from '@/components/islands/admin/kroegentocht/SignupList';
@@ -44,11 +41,20 @@ export default function KroegentochtManagementIsland({
 }: KroegentochtManagementIslandProps) {
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
-    const [events] = useState(initialEvents);
+    const events = initialEvents;
     const [selectedEvent, setSelectedEvent] = useState<PubCrawlEvent | null>(
         initialEvents.find(e => e.date && new Date(e.date) >= new Date()) || initialEvents[0] || null
     );
     const [signups, setSignups] = useState<ExtendedSignup[]>(initialSignups);
+
+    useEffect(() => {
+        if (selectedEvent) {
+            const updated = initialEvents.find(e => Number(e.id) === Number(selectedEvent.id));
+            if (updated && updated !== selectedEvent) {
+                setSelectedEvent(updated);
+            }
+        }
+    }, [initialEvents, selectedEvent]);
     const [settings, setSettings] = useState(initialSettings);
     const [error, setError] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
@@ -81,6 +87,10 @@ export default function KroegentochtManagementIsland({
             loadSignups(selectedEvent.id);
         }
     }, [selectedEvent, signups.length, initialSignups.length, loadSignups]);
+
+    useEffect(() => {
+        setSignups(initialSignups);
+    }, [initialSignups]);
 
     const handleEventSelect = (event: PubCrawlEvent) => {
         setSelectedEvent(event);
@@ -119,12 +129,17 @@ export default function KroegentochtManagementIsland({
         }
     };
 
-    const paidSignups = signups.filter(s => s.payment_status === 'paid');
-    const adminStats = [
-        { label: 'Tickets', value: paidSignups.reduce((sum, s) => sum + (s.amount_tickets || 0), 0), icon: Beer, trend: 'Totaal verkocht' },
-        { label: 'Aanmeldingen', value: paidSignups.length, icon: Users, trend: 'Totaal groepen' },
-        { label: 'Verenigingen', value: [...new Set(paidSignups.map(s => s.association).filter(Boolean))].length, icon: Building2, trend: 'Deelnemend' },
-    ];
+    const handleUpdateGroup = async (signupId: number, newGroupName: string | null) => {
+        try {
+            await updatePubCrawlSignup(signupId, Number(selectedEvent?.id), { group_name: newGroupName });
+            setSignups(prev => prev.map(s => s.id === signupId ? { ...s, group_name: newGroupName } : s));
+            showToast('Groep succesvol bijgewerkt', 'success');
+        } catch (error) {
+            showToast('Fout bij bijwerken groep: ' + String(error), 'error');
+        }
+    };
+
+
 
     return (
         <>
@@ -139,6 +154,17 @@ export default function KroegentochtManagementIsland({
                             selectedEventId={selectedEvent?.id || null}
                             onSelect={handleEventSelect}
                         />
+
+                        {selectedEvent && (
+                            <Link
+                                href={`/beheer/kroegentocht/bewerk/${selectedEvent.id}`}
+                                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] text-[var(--beheer-text-muted)] hover:text-[var(--beheer-accent)] hover:border-[var(--beheer-accent)]/30 transition-all active:scale-90 text-sm font-semibold shadow-sm"
+                                title="Event Details"
+                            >
+                                <Settings className="h-4 w-4" />
+                                <span className="hidden sm:inline">Details</span>
+                            </Link>
+                        )}
 
                         <button
                             onClick={handleRefresh}
@@ -184,24 +210,6 @@ export default function KroegentochtManagementIsland({
 
                     {selectedEvent ? (
                         <div className="space-y-8">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <Beer className="h-6 w-6 text-[var(--theme-purple)]" />
-                                    <h2 className="text-2xl font-semibold text-[var(--text-main)] tracking-tight">
-                                        {selectedEvent.name}
-                                    </h2>
-                                </div>
-                                <Link
-                                    href={`/beheer/kroegentocht/bewerk/${selectedEvent.id}`}
-                                    className="flex items-center gap-2 px-4 py-2 bg-[var(--bg-main)]/50 border border-[var(--border-color)] rounded-[var(--radius-xl)] text-base font-semibold text-[var(--text-subtle)] hover:border-[var(--theme-purple)]/50 transition-all"
-                                >
-                                    <Settings className="h-4 w-4" />
-                                    Event Details
-                                </Link>
-                            </div>
-
-                            <AdminStatsBar stats={adminStats} />
-
                             <div className={`transition-opacity duration-300 ${isPending ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
                                 <SignupList
                                     signups={signups}
@@ -211,6 +219,9 @@ export default function KroegentochtManagementIsland({
                                         void handleDeleteSignup(id);
                                     }}
                                     onEdit={(id) => router.push(`/beheer/kroegentocht/deelnemer/${id}`)}
+                                    eventGroups={selectedEvent.groups || []}
+                                    onUpdateGroup={handleUpdateGroup}
+                                    onRefresh={handleRefresh}
                                 />
                             </div>
                         </div>

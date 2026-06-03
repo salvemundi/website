@@ -56,3 +56,15 @@ export async function updatePubCrawlTickets(signupId: number, eventId: number, t
 export async function deletePubCrawlTicket(ticketId: number, signupId: number, eventId: number) {
     return signups.deletePubCrawlTicket(ticketId, signupId, eventId);
 }
+
+export async function distributePubCrawlSignups(eventId: number) {
+    return signups.distributePubCrawlSignups(eventId);
+}
+
+export async function savePubCrawlGroupsAssignment(eventId: number, assignments: { signupId: number, groupName: string | null }[]) {
+    return signups.savePubCrawlGroupsAssignment(eventId, assignments);
+}
+
+export async function updatePubCrawlEventGroups(eventId: number, groups: unknown[]) {
+    return events.updatePubCrawlEventGroups(eventId, groups);
+}

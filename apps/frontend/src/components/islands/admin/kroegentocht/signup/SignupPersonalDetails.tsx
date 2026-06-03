@@ -1,6 +1,7 @@
 'use client';
 
-import { User, Mail, Building2, Tag, ArrowLeft } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { User, Mail, Building2, Tag, ChevronDown, Users } from 'lucide-react';
 
 interface SignupPersonalDetailsProps {
     formData: {
@@ -9,6 +10,7 @@ interface SignupPersonalDetailsProps {
         association: string;
         payment_status: "paid" | "open" | "failed" | "canceled" | "expired";
         amount_tickets: number;
+        group_name: string | null;
     };
     setFormData: React.Dispatch<React.SetStateAction<{
         name: string;
@@ -16,12 +18,43 @@ interface SignupPersonalDetailsProps {
         association: string;
         payment_status: "paid" | "open" | "failed" | "canceled" | "expired";
         amount_tickets: number;
+        group_name: string | null;
     }>>;
+    eventGroups?: string[];
 }
 
-export default function SignupPersonalDetails({ formData, setFormData }: SignupPersonalDetailsProps) {
+const PAYMENT_STATUS_OPTIONS = [
+    { value: 'paid', label: 'Betaald', color: 'bg-green-500', textClass: 'text-green-500' },
+    { value: 'open', label: 'Open', color: 'bg-amber-500', textClass: 'text-amber-500' },
+    { value: 'canceled', label: 'Geannuleerd', color: 'bg-gray-400', textClass: 'text-gray-400' },
+    { value: 'failed', label: 'Mislukt', color: 'bg-red-500', textClass: 'text-red-500' },
+    { value: 'expired', label: 'Verlopen', color: 'bg-orange-500', textClass: 'text-orange-500' }
+] as const;
+
+export default function SignupPersonalDetails({ formData, setFormData, eventGroups = [] }: SignupPersonalDetailsProps) {
+    const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+    const [isGroupOpen, setIsGroupOpen] = useState(false);
+    
+    const paymentRef = useRef<HTMLDivElement>(null);
+    const groupRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (paymentRef.current && !paymentRef.current.contains(event.target as Node)) {
+                setIsPaymentOpen(false);
+            }
+            if (groupRef.current && !groupRef.current.contains(event.target as Node)) {
+                setIsGroupOpen(false);
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const selectedPayment = PAYMENT_STATUS_OPTIONS.find(opt => opt.value === formData.payment_status) || PAYMENT_STATUS_OPTIONS[1];
+
     return (
-        <div className="p-8 space-y-6">
+        <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                     <label className="text-[10px] font-semibold text-[var(--text-muted)] ml-1 flex items-center gap-2">
@@ -66,26 +99,107 @@ export default function SignupPersonalDetails({ formData, setFormData }: SignupP
                     />
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2" ref={paymentRef}>
                     <label className="text-[10px] font-semibold text-[var(--text-muted)] ml-1 flex items-center gap-2">
                         <Tag className="h-3 w-3" /> Betaalstatus
                     </label>
-                    <div className="relative group">
-                        <select
-                            value={formData.payment_status}
-                            onChange={(e) => setFormData({ ...formData, payment_status: e.target.value as "paid" | "open" | "failed" | "canceled" | "expired" })}
-                            className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-semibold text-[var(--text-main)] appearance-none cursor-pointer hover:border-[var(--theme-purple)]/30"
-                            autoComplete="off"
+                    <div className="relative">
+                        <button
+                            type="button"
+                            onClick={() => setIsPaymentOpen(!isPaymentOpen)}
+                            className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-semibold text-[var(--text-main)] flex items-center justify-between hover:border-[var(--theme-purple)]/30 text-left"
                         >
-                            <option value="paid" className="bg-[var(--bg-card)] text-[var(--text-main)]">Paid</option>
-                            <option value="open" className="bg-[var(--bg-card)] text-[var(--text-main)]">Open</option>
-                            <option value="canceled" className="bg-[var(--bg-card)] text-[var(--text-main)]">Canceled</option>
-                            <option value="failed" className="bg-[var(--bg-card)] text-[var(--text-main)]">Failed</option>
-                            <option value="expired" className="bg-[var(--bg-card)] text-[var(--text-main)]">Expired</option>
-                        </select>
-                        <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text-muted)] group-hover:text-[var(--theme-purple)] transition-colors">
-                            <ArrowLeft className="h-4 w-4 -rotate-90" />
-                        </div>
+                            <span className="flex items-center gap-2">
+                                <span className={`h-2.5 w-2.5 rounded-full ${selectedPayment.color}`} />
+                                {selectedPayment.label}
+                            </span>
+                            <ChevronDown className={`h-4 w-4 text-[var(--text-muted)] transition-transform duration-200 ${isPaymentOpen ? 'rotate-180 text-[var(--theme-purple)]' : ''}`} />
+                        </button>
+                        
+                        {isPaymentOpen && (
+                            <div className="absolute left-0 right-0 z-50 mt-2 rounded-[var(--radius-xl)] border border-[var(--border-color)]/30 bg-[var(--bg-card)] p-1.5 shadow-xl ring-1 ring-black/5 animate-in fade-in slide-in-from-top-1 duration-100">
+                                <div className="space-y-0.5">
+                                    {PAYMENT_STATUS_OPTIONS.map((opt) => (
+                                        <button
+                                            key={opt.value}
+                                            type="button"
+                                            onClick={() => {
+                                                setFormData({ ...formData, payment_status: opt.value });
+                                                setIsPaymentOpen(false);
+                                            }}
+                                            className={`w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2.5 ${
+                                                formData.payment_status === opt.value
+                                                    ? 'bg-[var(--theme-purple)] text-white'
+                                                    : 'text-[var(--text-main)] hover:bg-[var(--bg-main)]'
+                                            }`}
+                                        >
+                                            <span className={`h-2 w-2 rounded-full ${formData.payment_status === opt.value ? 'bg-white' : opt.color}`} />
+                                            <span className={formData.payment_status === opt.value ? 'text-white' : ''}>
+                                                {opt.label}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2" ref={groupRef}>
+                    <label className="text-[10px] font-semibold text-[var(--text-muted)] ml-1 flex items-center gap-2">
+                        <Users className="h-3 w-3" /> Groepsindeling
+                    </label>
+                    <div className="relative">
+                        <button
+                            type="button"
+                            onClick={() => setIsGroupOpen(!isGroupOpen)}
+                            className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-semibold text-[var(--text-main)] flex items-center justify-between hover:border-[var(--theme-purple)]/30 text-left"
+                        >
+                            <span className="truncate">
+                                {formData.group_name || 'Geen groep (nog niet ingedeeld)'}
+                            </span>
+                            <ChevronDown className={`h-4 w-4 text-[var(--text-muted)] transition-transform duration-200 ${isGroupOpen ? 'rotate-180 text-[var(--theme-purple)]' : ''}`} />
+                        </button>
+                        
+                        {isGroupOpen && (
+                            <div className="absolute left-0 right-0 z-50 mt-2 rounded-[var(--radius-xl)] border border-[var(--border-color)]/30 bg-[var(--bg-card)] p-1.5 shadow-xl ring-1 ring-black/5 animate-in fade-in slide-in-from-top-1 duration-100">
+                                <div className="max-h-60 overflow-y-auto space-y-0.5">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setFormData({ ...formData, group_name: null });
+                                            setIsGroupOpen(false);
+                                        }}
+                                        className={`w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${
+                                            !formData.group_name
+                                                ? 'bg-[var(--theme-purple)] text-white'
+                                                : 'text-[var(--text-muted)] hover:bg-[var(--bg-main)] hover:text-[var(--text-main)]'
+                                        }`}
+                                    >
+                                        Geen groep (nog niet ingedeeld)
+                                    </button>
+                                    {eventGroups.map((g) => (
+                                        <button
+                                            key={g}
+                                            type="button"
+                                            onClick={() => {
+                                                setFormData({ ...formData, group_name: g });
+                                                setIsGroupOpen(false);
+                                            }}
+                                            className={`w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${
+                                                formData.group_name === g
+                                                    ? 'bg-[var(--theme-purple)] text-white'
+                                                    : 'text-[var(--text-main)] hover:bg-[var(--bg-main)]'
+                                            }`}
+                                        >
+                                            {g}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

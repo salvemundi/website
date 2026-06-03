@@ -6,12 +6,8 @@ import {
     pubCrawlEventSchema,
     type PubCrawlEvent
 } from '@salvemundi/validations/schema/pub-crawl.zod';
-import {
-    PUB_CRAWL_EVENT_FIELDS
-} from '@salvemundi/validations/directus/fields';
 import { getSystemDirectus } from "@/lib/directus";
 import {
-    readItem,
     updateItem,
     createItem,
     uploadFiles
@@ -38,10 +34,9 @@ export async function getPubCrawlEvents(): Promise<PubCrawlEvent[]> {
 export async function getPubCrawlEvent(id: string | number): Promise<PubCrawlEvent> {
     await requireKroegAdmin();
     try {
-        const item = await getSystemDirectus().request(readItem('pub_crawl_events', id, {
-            fields: [...PUB_CRAWL_EVENT_FIELDS]
-        }));
-        const event = item as unknown as PubCrawlEvent;
+        const { fetchPubCrawlEventByIdDb } = await import('@/server/internal/kroegentocht-db.utils');
+        const event = await fetchPubCrawlEventByIdDb(Number(id));
+        if (!event) throw new Error('Event niet gevonden');
         return pubCrawlEventSchema.parse(event);
     } catch (error) {
         safeConsoleError(`[Kroegentocht-Action][getPubCrawlEvent] Failed to fetch event ${id}:`, error);
@@ -57,10 +52,95 @@ export async function upsertPubCrawlEvent(data: Partial<PubCrawlEvent>) {
 
     try {
         const client = getSystemDirectus();
+        let eventId = id;
         if (id) {
             await client.request(updateItem('pub_crawl_events', id, payload));
         } else {
-            await client.request(createItem('pub_crawl_events', payload));
+            const created = await client.request(createItem('pub_crawl_events', payload)) as unknown as { id: number };
+            eventId = created.id;
+        }
+
+        // Save groups directly in PostgreSQL and update signup group names on rename/delete
+        if (eventId && data.groups !== undefined) {
+            const { query } = await import('@/lib/database');
+            
+            // 1. Fetch old groups if updating
+            let oldGroups: { name: string; leaders?: unknown[] }[] = [];
+            if (id) {
+                const res = await query<{ groups: unknown }>(
+                    'SELECT groups FROM pub_crawl_events WHERE id = $1',
+                    [Number(id)]
+                );
+                if (res.rows.length > 0 && res.rows[0].groups) {
+                    const rawGroups = res.rows[0].groups;
+                    if (Array.isArray(rawGroups)) {
+                        oldGroups = rawGroups.map(g => {
+                            const obj = g && typeof g === 'object' ? (g as { name?: unknown; leaders?: unknown }) : {};
+                            return {
+                                name: typeof obj.name === 'string' ? obj.name : '',
+                                leaders: Array.isArray(obj.leaders) ? obj.leaders : []
+                            };
+                        });
+                    }
+                }
+            }
+
+            // 2. Perform groups list update
+            await query(
+                'UPDATE pub_crawl_events SET groups = $1 WHERE id = $2',
+                [JSON.stringify(data.groups), Number(eventId)]
+            );
+
+            // 3. Handle cascade updates for signups if there are old groups
+            if (id && oldGroups.length > 0 && Array.isArray(data.groups)) {
+                const newGroups = data.groups as { name: string }[];
+                const oldNames = oldGroups.map(g => g.name);
+                const newNames = newGroups.map(g => g.name);
+
+                const removedNames = oldNames.filter(name => !newNames.includes(name));
+                const addedNames = newNames.filter(name => !oldNames.includes(name));
+
+                const renames = new Map<string, string>(); // oldName -> newName
+
+                if (removedNames.length > 0 && addedNames.length > 0) {
+                    // For each new group, check if its index matches an old group
+                    // and if the old name was removed and the new name was added
+                    for (let i = 0; i < Math.min(oldGroups.length, newGroups.length); i++) {
+                        const oldName = oldGroups[i]?.name;
+                        const newName = newGroups[i]?.name;
+                        if (
+                            oldName && 
+                            newName && 
+                            oldName !== newName && 
+                            removedNames.includes(oldName) && 
+                            addedNames.includes(newName)
+                        ) {
+                            renames.set(oldName, newName);
+                        }
+                    }
+                }
+
+                // Update signups for renamed groups
+                for (const [oldName, newName] of renames.entries()) {
+                    await query(
+                        `UPDATE pub_crawl_signups 
+                         SET group_name = $1 
+                         WHERE pub_crawl_event_id = $2 AND group_name = $3`,
+                        [newName, Number(eventId), oldName]
+                    );
+                }
+
+                // Clear group_name for completely deleted groups
+                const completelyRemoved = removedNames.filter(name => !renames.has(name));
+                if (completelyRemoved.length > 0) {
+                    await query(
+                        `UPDATE pub_crawl_signups 
+                         SET group_name = NULL 
+                         WHERE pub_crawl_event_id = $1 AND group_name = ANY($2)`,
+                        [Number(eventId), completelyRemoved]
+                    );
+                }
+            }
         }
 
         revalidateTag('kroegentocht-events', 'max');
@@ -84,5 +164,23 @@ export async function uploadPubCrawlImage(formData: FormData) {
     } catch (error) {
         safeConsoleError(`[Kroegentocht-Action][uploadPubCrawlImage] Failed to upload image:`, error);
         throw new Error('Afbeelding uploaden mislukt');
+    }
+}
+
+export async function updatePubCrawlEventGroups(eventId: number, groups: unknown[]) {
+    await requireKroegAdmin();
+    try {
+        const { query } = await import('@/lib/database');
+        await query(
+            'UPDATE pub_crawl_events SET groups = $1 WHERE id = $2',
+            [JSON.stringify(groups), eventId]
+        );
+        revalidateTag('kroegentocht-events', 'max');
+        revalidateTag('kroegentocht-event', 'max');
+        revalidatePath('/beheer/kroegentocht');
+        return { success: true };
+    } catch (error) {
+        safeConsoleError('[Kroegentocht-Action][updatePubCrawlEventGroups] Error:', error);
+        throw new Error('Bijwerken groepsindeling mislukt');
     }
 }

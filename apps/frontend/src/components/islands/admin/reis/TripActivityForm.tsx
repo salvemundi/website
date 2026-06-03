@@ -46,10 +46,9 @@ export default function TripActivityForm({ activity, onSave, onCancel, pending }
     const addOption = () => setOptions([...options, { id: `opt-${options.length}`, name: '', price: 0 }]);
     const removeOption = (idx: number) => setOptions(options.filter((_, i) => i !== idx));
     const updateOption = (idx: number, field: keyof ActivityOption, value: string) => {
-        const newOpts = [...options];
-        // eslint-disable-next-line security/detect-object-injection
-        newOpts[idx] = { ...newOpts[idx], [field]: field === 'price' ? parseFloat(value) || 0 : value };
-        setOptions(newOpts);
+        setOptions(options.map((opt, i) =>
+            i === idx ? { ...opt, [field]: field === 'price' ? parseFloat(value) || 0 : value } : opt
+        ));
     };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {

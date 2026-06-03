@@ -14,22 +14,21 @@ interface FilterTabProps {
 }
 
 function FilterTab({ active, label, count, onClick, color = 'indigo' }: FilterTabProps) {
-    const colorVariants: Record<string, string> = {
-        indigo: 'bg-[var(--beheer-accent)] text-white shadow-[var(--shadow-glow)]',
-        green: 'bg-[var(--beheer-active)] text-white shadow-lg shadow-[var(--beheer-active)]/20',
-        amber: 'bg-[var(--theme-warning)] text-white shadow-lg shadow-[var(--theme-warning)]/20',
-        blue: 'bg-[var(--theme-info)] text-white shadow-lg shadow-[var(--theme-info)]/20',
-        red: 'bg-[var(--beheer-inactive)] text-white shadow-lg shadow-[var(--beheer-inactive)]/20',
-        slate: 'bg-[var(--beheer-text-muted)] text-white shadow-lg shadow-[var(--beheer-text-muted)]/20',
-        purple: 'bg-[var(--beheer-accent)] text-white shadow-[var(--shadow-glow)]'
-    };
+    const colorVariants = new Map([
+        ['indigo', 'bg-[var(--beheer-accent)] text-white shadow-[var(--shadow-glow)]'],
+        ['green', 'bg-[var(--beheer-active)] text-white shadow-lg shadow-[var(--beheer-active)]/20'],
+        ['amber', 'bg-[var(--theme-warning)] text-white shadow-lg shadow-[var(--theme-warning)]/20'],
+        ['blue', 'bg-[var(--theme-info)] text-white shadow-lg shadow-[var(--theme-info)]/20'],
+        ['red', 'bg-[var(--beheer-inactive)] text-white shadow-lg shadow-[var(--beheer-inactive)]/20'],
+        ['slate', 'bg-[var(--beheer-text-muted)] text-white shadow-lg shadow-[var(--beheer-text-muted)]/20'],
+        ['purple', 'bg-[var(--beheer-accent)] text-white shadow-[var(--shadow-glow)]'],
+    ]);
 
     return (
         <button
             onClick={onClick}
             className={`w-full px-3 py-2 rounded-xl text-[11px] font-semibold transition-all whitespace-nowrap flex items-center justify-between border ${active
-                // eslint-disable-next-line security/detect-object-injection
-                ? `${colorVariants[color]} border-transparent shadow-sm`
+                ? `${colorVariants.get(color)} border-transparent shadow-sm`
                 : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] border-[var(--beheer-border)]/50 hover:border-[var(--beheer-accent)]/30 hover:text-[var(--beheer-text)]'
                 }`}
         >

@@ -11,7 +11,7 @@ const IMAGES = [
 ];
 
 export const IntroLightboxIsland = () => {
-    const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
+    const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
@@ -30,8 +30,7 @@ export const IntroLightboxIsland = () => {
     }, [lightboxOpen]);
 
     const openLightbox = (src: string) => {
-        // eslint-disable-next-line security/detect-object-injection
-        setLightboxSrc(failedImages[src] ? fallbackImage : src);
+        setLightboxSrc(failedImages.has(src) ? fallbackImage : src);
         setLightboxOpen(true);
     };
 
@@ -46,14 +45,14 @@ export const IntroLightboxIsland = () => {
                 {IMAGES.map((img, idx) => (
                     <div key={idx} className="relative h-32 w-full bg-purple-50 dark:bg-white/5 rounded-lg overflow-hidden border border-purple-100 dark:border-white/10 flex items-center justify-center">
                         <Image
-                            src={failedImages[img.src] ? fallbackImage : img.src}
+                            src={failedImages.has(img.src) ? fallbackImage : img.src}
                             alt={img.alt}
                             fill
                             sizes="(max-width: 640px) 50vw, 33vw"
-                            className={`object-cover transition-opacity cursor-pointer hover:opacity-80 ${failedImages[img.src] ? 'p-6 object-contain' : ''}`}
+                            className={`object-cover transition-opacity cursor-pointer hover:opacity-80 ${failedImages.has(img.src) ? 'p-6 object-contain' : ''}`}
                             onClick={() => openLightbox(img.src)}
-                            onError={() => setFailedImages(prev => ({ ...prev, [img.src]: true }))}
-                            unoptimized={failedImages[img.src]}
+                            onError={() => setFailedImages(prev => new Set([...prev, img.src]))}
+                            unoptimized={failedImages.has(img.src)}
                         />
                     </div>
                 ))}

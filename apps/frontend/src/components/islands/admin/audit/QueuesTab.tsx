@@ -19,8 +19,9 @@ export default function QueuesTab({ queueData }: QueuesTabProps) {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {(['new_users', 'sync_existing'] as const).map(qKey => {
-                // eslint-disable-next-line security/detect-object-injection
-                const q = queueData ? queueData[qKey] : undefined;
+                const q = queueData
+                    ? (qKey === 'new_users' ? queueData.new_users : queueData.sync_existing)
+                    : undefined;
                 return (
                     <div key={qKey} className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] shadow-xl overflow-hidden">
                         <div className="p-6 border-b border-[var(--beheer-border)]/50 flex justify-between items-center bg-[var(--beheer-card-soft)]/30">

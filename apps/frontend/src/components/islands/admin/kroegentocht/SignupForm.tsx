@@ -19,9 +19,10 @@ import { type EnrichedPubCrawlSignup } from '@/server/internal/kroegentocht-db.u
 
 interface SignupFormProps {
     signup: EnrichedPubCrawlSignup;
+    eventGroups?: string[];
 }
 
-export default function SignupForm({ signup }: SignupFormProps) {
+export default function SignupForm({ signup, eventGroups = [] }: SignupFormProps) {
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
     const [isPending, startTransition] = useTransition();
@@ -31,7 +32,8 @@ export default function SignupForm({ signup }: SignupFormProps) {
         email: signup.email,
         association: signup.association || '',
         payment_status: signup.payment_status as "paid" | "open" | "failed" | "canceled" | "expired",
-        amount_tickets: signup.amount_tickets
+        amount_tickets: signup.amount_tickets,
+        group_name: signup.group_name || null
     });
     const [ticketsData, setTicketsData] = useState(signup.tickets || []);
     const [editingTicketId, setEditingTicketId] = useState<number | null>(null);
@@ -43,6 +45,9 @@ export default function SignupForm({ signup }: SignupFormProps) {
         setTogglingId(ticketId);
         try {
             await togglePubCrawlTicketCheckIn(ticketId, currentStatus, Number(signup.pub_crawl_event_id.id));
+            setTicketsData(prev => prev.map(t =>
+                t.id === ticketId ? { ...t, checked_in: !currentStatus } : t
+            ));
             showToast('Kaart status bijgewerkt', 'success');
             router.refresh();
         } catch (error) {
@@ -131,7 +136,8 @@ export default function SignupForm({ signup }: SignupFormProps) {
             email: signup.email,
             association: signup.association || '',
             payment_status: signup.payment_status as PaymentStatus,
-            amount_tickets: signup.amount_tickets
+            amount_tickets: signup.amount_tickets,
+            group_name: signup.group_name || null
         });
         setTicketsData(signup.tickets || []);
     };
@@ -139,13 +145,14 @@ export default function SignupForm({ signup }: SignupFormProps) {
     return (
         <>
             <form onSubmit={handleSubmit} className="space-y-8 max-w-3xl mx-auto" autoComplete="off">
-                <div className="bg-[var(--bg-card)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)]/30 overflow-hidden">
+                <div className="bg-[var(--bg-card)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)]/30">
                     <SignupHeader />
 
                     <div className="p-8 space-y-6">
                         <SignupPersonalDetails
                             formData={formData}
                             setFormData={setFormData}
+                            eventGroups={eventGroups}
                         />
 
                         <SignupTicketList

@@ -11,6 +11,7 @@ const compat = new FlatCompat({
 
 import securityPlugin from "eslint-plugin-security";
 import unusedImports from "eslint-plugin-unused-imports";
+import eslintComments from "eslint-plugin-eslint-comments";
 
 const eslintConfig = [
     { ignores: [".next/", "node_modules/", "dist/"] },
@@ -25,11 +26,15 @@ const eslintConfig = [
         },
         plugins: {
             "unused-imports": unusedImports,
+            "eslint-comments": eslintComments,
         },
         rules: {
             // ==========================================
             // 1. HARDCORE SECURITY & LOGIC BUGS (CodeQL)
             // ==========================================
+            // Verbiedt het onderdrukken van security/detect-object-injection via inline comments.
+            // Dit dwingt een echte fix (Map, .map(), etc.) in plaats van een workaround.
+            "eslint-comments/no-restricted-disable": ["error", "security/detect-object-injection"],
             "@typescript-eslint/no-unnecessary-condition": "error",
             "no-constant-condition": "error",
             "no-eval": "error", // Blokkeert eval() (RCE gevaar)
@@ -67,6 +72,7 @@ const eslintConfig = [
             "@typescript-eslint/ban-ts-comment": "error", // @ts-ignore is verboden
             "@typescript-eslint/no-non-null-asserted-optional-chain": "error",
             "@typescript-eslint/no-non-null-assertion": "error", // Verbiedt obj!.property (forceert nette checks)
+            "@typescript-eslint/only-throw-error": "error", // Verbiedt het gooien van ruwe objecten/literals (forceert Error instanties)
 
             // ==========================================
             // 5. CODE HYGIËNE & CLEANUP

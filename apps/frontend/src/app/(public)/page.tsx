@@ -57,6 +57,14 @@ async function HomeContent() {
         );
     } catch (error) {
         safeConsoleError('[HomePage][HomeContent] Critical data fetch error:', error);
-        throw error; // Re-throw to trigger the error boundary
+        
+        let errorMessage = 'Er is een onverwachte fout opgetreden bij het laden van de homepagina. Probeer het later opnieuw.';
+        if (error instanceof Error) {
+            errorMessage = error.message;
+        } else if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
+            errorMessage = error.message;
+        }
+        
+        throw new Error(errorMessage);
     }
 }

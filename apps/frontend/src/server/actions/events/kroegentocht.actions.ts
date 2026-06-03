@@ -171,17 +171,10 @@ export async function initiateKroegentochtPayment(formData: unknown) {
         let participantsData: { name: string, initial: string }[] = [];
 
         try {
-            if (parsed.data.name_initials.startsWith('[')) {
-                participantsData = JSON.parse(parsed.data.name_initials) as { name: string; initial: string }[];
-            } else {
-                participantsData = (parsed.data.name_initials || '').split(',')
-                    .map(n => n.trim())
-                    .filter(Boolean)
-                    .map(name => ({
-                        name: name,
-                        initial: name.substring(0, 1).toUpperCase()
-                    }));
-            }
+            const parsedInitials = JSON.parse(parsed.data.name_initials) as unknown;
+            participantsData = Array.isArray(parsedInitials)
+                ? (parsedInitials as { name: string; initial: string }[])
+                : [(parsedInitials as { name: string; initial: string })];
         } catch (error: unknown) {
             safeConsoleError('[Kroegentocht-Action][initiateKroegentochtPayment] Failed to parse participants data:', error);
             participantsData = [];

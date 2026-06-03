@@ -72,12 +72,12 @@ export default function SignupTicketCard({
                     {ticket.checked_in ? (
                         <span className="flex items-center gap-1.5 px-3 py-1 bg-green-500/10 text-green-500 text-[9px] font-semibold rounded-full ring-1 ring-green-500/20 hover:bg-green-500/20 transition-all">
                             {togglingId === ticket.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle className="h-3 w-3" />}
-                            Checked-in
+                            Ingecheckt
                         </span>
                     ) : (
                         <span className="flex items-center gap-1.5 px-3 py-1 bg-red-500/10 text-red-500 text-[9px] font-semibold rounded-full ring-1 ring-red-500/20 hover:bg-red-500/20 transition-all">
                             {togglingId === ticket.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <XCircle className="h-3 w-3 opacity-50" />}
-                            Inschrijven
+                            Inchecken
                         </span>
                     )}
                 </button>

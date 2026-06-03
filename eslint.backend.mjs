@@ -40,6 +40,7 @@ export function createBackendConfig(serviceDirName) {
                 "@typescript-eslint/no-unsafe-argument": "error",
                 "@typescript-eslint/ban-ts-comment": "error",
                 "@typescript-eslint/no-non-null-assertion": "error",
+                "@typescript-eslint/only-throw-error": "error",
 
                 // 4. CODE HYGIËNE & CLEANUP
                 "@typescript-eslint/no-unused-vars": "off",

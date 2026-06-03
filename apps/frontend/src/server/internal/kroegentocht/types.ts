@@ -11,6 +11,7 @@ export interface DbPubCrawlEventRow {
     date: string | Date | null;
     description: string | null;
     image: string | null;
+    groups?: string[] | unknown;
 }
 
 export interface DbPubCrawlSignupRow {
@@ -25,6 +26,7 @@ export interface DbPubCrawlSignupRow {
     mollie_id?: string | null;
     directus_relations?: string | null;
     created_at?: string | Date;
+    group_name?: string | null;
 }
 
 export interface DbPubCrawlTicketRow {
