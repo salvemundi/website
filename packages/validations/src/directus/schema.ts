@@ -348,6 +348,7 @@ export interface DbPubCrawlEvent {
     price?: number;
     max_tickets_per_person?: number;
     whatsapp_community_url?: string | null;
+    groups?: string[] | null;
 }
 
 export interface DbPubCrawlSignup {
@@ -365,6 +366,7 @@ export interface DbPubCrawlSignup {
     // Relation to associated tickets for this signup
     tickets?: DbPubCrawlTicket[] | null;
     transactions?: unknown;
+    group_name?: string | null;
 }
 
 export interface DbPubCrawlSignupsTransaction {

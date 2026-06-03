@@ -1,16 +1,19 @@
 'use client';
 
-import { useState } from 'react';
-import {
-    Search,
-    Download,
-    Trash2,
-    Edit,
-    Mail
-} from 'lucide-react';
+import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { downloadCSV } from '@/lib/utils/export';
 import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { safeConsoleError } from '@/server/utils/logger';
+import {
+    savePubCrawlGroupsAssignment,
+    updatePubCrawlEventGroups
+} from '@/server/actions/admin/admin-kroegentocht.actions';
+
+import StatsToolbar from './signup-list/StatsToolbar';
+import SignupTableView from './signup-list/SignupTableView';
+import SignupGroupsView from './signup-list/SignupGroupsView';
+import DistributionPreviewModal from './signup-list/DistributionPreviewModal';
 
 interface Participant {
     name: string;
@@ -22,12 +25,25 @@ interface ExtendedSignup extends PubCrawlSignup {
     created_at?: string | Date;
 }
 
+interface GroupLeader {
+    name: string;
+    signupId?: number | null;
+}
+
+interface GroupConfig {
+    name: string;
+    leaders?: GroupLeader[];
+}
+
 interface SignupListProps {
     signups: ExtendedSignup[];
     eventId: number | string;
     eventName: string;
     onDelete: (id: number | string) => void;
     onEdit: (id: number | string) => void;
+    eventGroups?: unknown[];
+    onUpdateGroup?: (signupId: number, newGroupName: string | null) => Promise<void>;
+    onRefresh?: () => void;
 }
 
 const getFilenameTimestamp = () => {
@@ -53,13 +69,177 @@ function getParticipants(signup: ExtendedSignup): Participant[] {
 
 export default function SignupList({
     signups,
-    eventId: _eventId,
+    eventId,
     eventName,
     onDelete,
-    onEdit
+    onEdit,
+    eventGroups = [],
+    onUpdateGroup,
+    onRefresh
 }: SignupListProps) {
+    const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
-    const [showAll] = useState(false);
+    const [viewMode, setViewMode] = useState<'table' | 'groups'>('groups');
+    const [isPending, startTransition] = useTransition();
+
+    const [enabledGroups, setEnabledGroups] = useState<string[]>(() => {
+        const initialGroups = eventGroups.map((g: unknown): string => {
+            if (typeof g === 'string') return g;
+            const obj = g && typeof g === 'object' ? (g as { name?: unknown }) : {};
+            return typeof obj.name === 'string' ? obj.name : '';
+        }).filter(Boolean);
+        return [...initialGroups, 'unassigned'];
+    });
+
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+    const [previewData, setPreviewData] = useState<{
+        assignments: { signupId: number; groupName: string }[];
+        groups: { name: string; signups: { signupId: number; name: string; amountTickets: number; oldGroup: string | null }[]; ticketCount: number }[];
+    } | null>(null);
+
+    const groupConfigs: GroupConfig[] = eventGroups.map((g: unknown): GroupConfig => {
+        if (typeof g === 'string') {
+            return { name: g, leaders: [] };
+        }
+        if (g && typeof g === 'object') {
+            const obj = g as { name?: unknown; leaders?: unknown };
+            const name = typeof obj.name === 'string' ? obj.name : '';
+            const leaders = Array.isArray(obj.leaders)
+                ? (obj.leaders as GroupLeader[])
+                : [];
+            return { name, leaders };
+        }
+        return { name: '', leaders: [] };
+    }).filter(g => g.name !== '');
+
+    const groupNames = groupConfigs.map(g => g.name);
+
+    const paidSignups = signups.filter(s => s.payment_status === 'paid');
+    const totalTicketsCount = paidSignups.reduce((sum, s) => sum + (s.amount_tickets || 0), 0);
+    const totalAssociationsCount = [...new Set(paidSignups.map(s => s.association).filter(Boolean))].length;
+
+    const handleOpenDistributionPreview = () => {
+        if (groupNames.length === 0) {
+            alert('Geen groepen gedefinieerd voor dit event. Voeg eerst groepen toe in de event details.');
+            return;
+        }
+        if (paidSignups.length === 0) {
+            alert('Geen betaalde aanmeldingen gevonden om te verdelen.');
+            return;
+        }
+
+        const sortedSignups = [...paidSignups].sort((a, b) => b.amount_tickets - a.amount_tickets);
+
+        type GroupEntry = { signupId: number; name: string; amountTickets: number; oldGroup: string | null };
+        const ticketCounts = new Map<string, number>(groupNames.map(n => [n, 0]));
+        const groupSignups = new Map<string, GroupEntry[]>(groupNames.map(n => [n, []]));
+
+        const assignmentsList: { signupId: number; groupName: string }[] = [];
+
+        for (const signup of sortedSignups) {
+            if (!signup.id) continue;
+
+            let bestGroup = groupNames[0];
+            let minTickets = Infinity;
+
+            for (const name of groupNames) {
+                const count = ticketCounts.get(name) ?? 0;
+                if (count < minTickets) {
+                    minTickets = count;
+                    bestGroup = name;
+                }
+            }
+
+            groupSignups.get(bestGroup)?.push({
+                signupId: Number(signup.id),
+                name: signup.name,
+                amountTickets: signup.amount_tickets,
+                oldGroup: signup.group_name || null
+            });
+            ticketCounts.set(bestGroup, (ticketCounts.get(bestGroup) ?? 0) + signup.amount_tickets);
+
+            assignmentsList.push({ signupId: Number(signup.id), groupName: bestGroup });
+        }
+
+        setPreviewData({
+            assignments: assignmentsList,
+            groups: groupNames.map(name => ({
+                name,
+                signups: groupSignups.get(name) ?? [],
+                ticketCount: ticketCounts.get(name) ?? 0
+            }))
+        });
+        setIsPreviewOpen(true);
+    };
+
+    const handleSaveAutoDistribution = () => {
+        if (!previewData || previewData.assignments.length === 0) return;
+
+        startTransition(async () => {
+            try {
+                const res = await savePubCrawlGroupsAssignment(Number(eventId), previewData.assignments);
+                if (res.success) {
+                    setIsPreviewOpen(false);
+                    onRefresh?.();
+                    router.refresh();
+                }
+            } catch (error) {
+                alert('Fout bij opslaan indeling: ' + String(error));
+            }
+        });
+    };
+
+    const handleAddLeader = (groupName: string, name: string, signupId: number | null) => {
+        void (async () => {
+            try {
+                const currentGroups = groupConfigs.map(g => ({
+                    name: g.name,
+                    leaders: g.leaders || []
+                }));
+
+                const groupObj = currentGroups.find(g => g.name === groupName);
+                if (groupObj) {
+                    const newLeader = {
+                        name,
+                        signupId
+                    };
+                    groupObj.leaders = [...groupObj.leaders, newLeader];
+                }
+
+                await updatePubCrawlEventGroups(Number(eventId), currentGroups);
+                onRefresh?.();
+                router.refresh();
+            } catch (error) {
+                alert('Fout bij toevoegen leider: ' + String(error));
+            }
+        })();
+    };
+
+    const handleRemoveLeader = (groupName: string, leaderToRemove: GroupLeader) => {
+        if (!confirm(`Weet je zeker dat je ${leaderToRemove.name} wilt verwijderen als groepsleider?`)) return;
+
+        void (async () => {
+            try {
+                const currentGroups = groupConfigs.map(g => ({
+                    name: g.name,
+                    leaders: g.leaders || []
+                }));
+
+                const groupObj = currentGroups.find(g => g.name === groupName);
+                if (groupObj) {
+                    groupObj.leaders = groupObj.leaders.filter((l) =>
+                        !(l.name === leaderToRemove.name && l.signupId === (leaderToRemove.signupId || null))
+                    );
+                }
+
+                await updatePubCrawlEventGroups(Number(eventId), currentGroups);
+                onRefresh?.();
+                router.refresh();
+            } catch (error) {
+                alert('Fout bij verwijderen leider: ' + String(error));
+            }
+        })();
+    };
 
     const filteredSignups = signups.filter(s => {
         const matchesSearch =
@@ -67,15 +247,21 @@ export default function SignupList({
             s.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
             s.association.toLowerCase().includes(searchQuery.toLowerCase());
 
-        const matchesStatus = showAll || s.payment_status === 'paid';
+        const matchesStatus = s.payment_status === 'paid';
 
-        return matchesSearch && matchesStatus;
+        let matchesGroup = false;
+        if (!s.group_name) {
+            matchesGroup = enabledGroups.includes('unassigned');
+        } else {
+            matchesGroup = enabledGroups.includes(s.group_name);
+        }
+
+        return matchesSearch && matchesStatus && matchesGroup;
     });
 
     const exportToCSV = () => {
         const rows: Record<string, string | number>[] = [];
-        filteredSignups.forEach((signup, signupIdx) => {
-            const groupNumber = filteredSignups.length - signupIdx;
+        filteredSignups.forEach((signup) => {
             const registrationDate = signup.created_at ? new Date(signup.created_at).toLocaleString('nl-NL', {
                 day: '2-digit',
                 month: '2-digit',
@@ -85,22 +271,30 @@ export default function SignupList({
             }) : '-';
 
             const participants = getParticipants(signup);
+            const groupName = signup.group_name || 'Niet ingedeeld';
+
             if (participants.length > 0) {
                 participants.forEach((p) => {
                     rows.push({
                         'Naam': `${p.name} ${p.initial}.`.trim(),
                         'Vereniging': signup.association || '-',
                         'Inschrijfdatum': registrationDate,
-                        'Groep': groupNumber
+                        'Groep': groupName
                     });
                 });
             } else {
-                for (let i = 0; i < signup.amount_tickets; i++) {
+                rows.push({
+                    'Naam': signup.name,
+                    'Vereniging': signup.association || '-',
+                    'Inschrijfdatum': registrationDate,
+                    'Groep': groupName
+                });
+                for (let i = 1; i < signup.amount_tickets; i++) {
                     rows.push({
-                        'Naam': i === 0 ? signup.name : '-',
+                        'Naam': `Deelnemer ${i + 1} (${signup.name})`,
                         'Vereniging': signup.association || '-',
                         'Inschrijfdatum': registrationDate,
-                        'Groep': groupNumber
+                        'Groep': groupName
                     });
                 }
             }
@@ -112,124 +306,52 @@ export default function SignupList({
 
     return (
         <div className="space-y-6">
-            <div className="bg-[var(--bg-card)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)]/30 p-6">
-                <div className="flex flex-col lg:flex-row gap-6 justify-between items-stretch">
-                    <div className="relative flex-1 group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[var(--text-muted)] group-focus-within:text-[var(--theme-purple)] transition-colors" />
-                        <input
-                            type="text"
-                            placeholder="Zoek op naam, email of vereniging..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            autoComplete="off"
-                            spellCheck={false}
-                            className="w-full pl-12 pr-4 py-3 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-medium text-sm text-[var(--text-main)]"
-                        />
-                    </div>
+            <StatsToolbar
+                viewMode={viewMode}
+                setViewMode={setViewMode}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                enabledGroups={enabledGroups}
+                setEnabledGroups={setEnabledGroups}
+                totalTicketsCount={totalTicketsCount}
+                totalAssociationsCount={totalAssociationsCount}
+                groupNames={groupNames}
+                isPending={isPending}
+                onAutoDistribute={handleOpenDistributionPreview}
+                onExportCSV={exportToCSV}
+                hasSignups={filteredSignups.length > 0}
+            />
 
-                    <div className="flex flex-wrap gap-3">
-                        <button
-                            onClick={exportToCSV}
-                            disabled={filteredSignups.length === 0}
-                            className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold text-xs rounded-[var(--radius-xl)] shadow-lg shadow-green-600/20 transition-all active:scale-95 disabled:opacity-50"
-                        >
-                            <Download className="h-4 w-4" />
-                            Export CSV
-                        </button>
-                    </div>
-                </div>
-            </div>
+            {viewMode === 'table' ? (
+                <SignupTableView
+                    filteredSignups={filteredSignups}
+                    groupNames={groupNames}
+                    groupConfigs={groupConfigs}
+                    onUpdateGroup={onUpdateGroup}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                    getParticipants={getParticipants}
+                />
+            ) : (
+                <SignupGroupsView
+                    filteredSignups={filteredSignups}
+                    groupConfigs={groupConfigs}
+                    groupNames={groupNames}
+                    enabledGroups={enabledGroups}
+                    onUpdateGroup={onUpdateGroup}
+                    onAddLeader={handleAddLeader}
+                    onRemoveLeader={handleRemoveLeader}
+                    getParticipants={getParticipants}
+                />
+            )}
 
-            <div className="bg-[var(--bg-card)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)]/30 overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead>
-                            <tr className="bg-[var(--bg-main)]/50 border-b border-[var(--border-color)]/30">
-                                <th className="px-6 py-4 text-[10px] font-semibold text-[var(--text-muted)]">Deelnemers</th>
-                                <th className="px-6 py-4 text-center text-[10px] font-semibold text-[var(--text-muted)]">Tickets</th>
-                                <th className="px-6 py-4 text-[10px] font-semibold text-[var(--text-muted)] hidden lg:table-cell">Vereniging</th>
-                                <th className="px-6 py-4 text-right text-[10px] font-semibold text-[var(--text-muted)]">Acties</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-[var(--border-color)]/20">
-                            {filteredSignups.length === 0 ? (
-                                <tr>
-                                    <td colSpan={4} className="px-6 py-16 text-center text-[var(--text-muted)] italic font-medium">
-                                        Geen aanmeldingen gevonden.
-                                    </td>
-                                </tr>
-                            ) : (
-                                filteredSignups.map((signup) => {
-                                    const participants = getParticipants(signup);
-
-                                    return (
-                                        <tr key={signup.id} className="hover:bg-[var(--bg-main)]/30 transition-colors group border-b border-[var(--border-color)]/10 last:border-0">
-                                            <td className="px-6 py-3 min-w-[300px]">
-                                                <div className="flex flex-col gap-0.5">
-                                                    <div className="flex items-center gap-2">
-                                                        <a href={`mailto:${signup.email}`} className="text-sm font-semibold text-[var(--text-main)] hover:text-[var(--theme-purple)] transition-colors flex items-center gap-2" title={signup.email}>
-                                                            <Mail className="h-3.5 w-3.5 text-[var(--text-muted)]" />
-                                                            {signup.email}
-                                                        </a>
-                                                    </div>
-
-                                                    {participants.length > 0 && (
-                                                        <div className="mt-1.5 flex flex-wrap gap-1.5">
-                                                            {participants.map((p, i) => {
-                                                                let rawName = typeof p === 'object' ? (p.name || 'Onbekend') : String(p);
-                                                                let rawInitial = typeof p === 'object' ? (p.initial || '') : '';
-
-                                                                if (rawName.includes('{"name":') || rawName.includes('"name":')) {
-                                                                    const match = rawName.match(/"name":"([^"]+)"/);
-                                                                    if (match) rawName = match[1];
-                                                                    const initMatch = rawName.match(/"initial":"([^"]+)"/);
-                                                                    if (initMatch) rawInitial = initMatch[1];
-                                                                }
-
-                                                                return (
-                                                                    <div key={i} className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-[var(--bg-main)]/80 rounded-md ring-1 ring-[var(--border-color)]/30 text-[10px] font-medium text-[var(--text-light)]">
-                                                                        <span className="text-[var(--text-muted)] truncate max-w-[120px]">
-                                                                            {rawName}{rawInitial ? ` ${rawInitial}` : ''}
-                                                                        </span>
-                                                                    </div>
-                                                                );
-                                                            })}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-3 text-center">
-                                                <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full bg-[var(--theme-purple)]/10 text-[var(--theme-purple)] text-[10px] font-semibold ring-1 ring-[var(--theme-purple)]/30">
-                                                    {signup.amount_tickets}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-3 text-[11px] font-medium text-[var(--text-muted)] hidden lg:table-cell">
-                                                {signup.association || '-'}
-                                            </td>
-                                            <td className="px-6 py-3 text-right">
-                                                <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button
-                                                        onClick={() => signup.id && onEdit(signup.id)}
-                                                        className="p-1.5 rounded-md hover:bg-[var(--theme-purple)]/10 text-[var(--text-muted)] hover:text-[var(--theme-purple)] transition-all"
-                                                    >
-                                                        <Edit className="h-3.5 w-3.5" />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => signup.id && onDelete(signup.id)}
-                                                        className="p-1.5 rounded-md hover:bg-red-500/10 text-[var(--text-muted)] hover:text-red-500 transition-all"
-                                                    >
-                                                        <Trash2 className="h-3.5 w-3.5" />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    );
-                                })
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            <DistributionPreviewModal
+                isOpen={isPreviewOpen}
+                onClose={() => setIsPreviewOpen(false)}
+                previewData={previewData}
+                isPending={isPending}
+                onSave={handleSaveAutoDistribution}
+            />
         </div>
     );
 }

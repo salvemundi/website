@@ -82,8 +82,9 @@ export default function TripActivitySignupsModal({ activityName, options, signup
                                                 {(() => {
                                                     const rawSelected = parseSelectedOptions(s.selected_options);
                                                     const metaOptions = parseActivityOptions(options);
-                                                    // eslint-disable-next-line security/detect-object-injection
-                                                    const selectedIds = Object.keys(rawSelected).filter(id => rawSelected[id]);
+                                                    const selectedIds = Object.entries(rawSelected)
+                                                        .filter(([, v]) => v)
+                                                        .map(([id]) => id);
                                                     if (selectedIds.length === 0) {
                                                         return <span className="text-[var(--beheer-text-muted)] italic text-[10px] opacity-40">Geen opties</span>;
                                                     }

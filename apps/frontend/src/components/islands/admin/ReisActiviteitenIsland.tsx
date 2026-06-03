@@ -41,7 +41,9 @@ export default function ReisActiviteitenIsland({
     const { toast, showToast, hideToast } = useAdminToast();
     const [selectedTripId, setSelectedTripId] = useState<number>(initialSelectedTripId);
     const [activities, setActivities] = useState<TripActivity[]>(initialActivities);
-    const [signupsByActivity] = useState<Record<number, Signup[]>>(initialSignupsByActivity);
+    const [signupsByActivity] = useState<Map<number, Signup[]>>(
+        () => new Map(Object.entries(initialSignupsByActivity).map(([k, v]) => [Number(k), v]))
+    );
 
     const [_isPending, startTransition] = useTransition();
     const [editingActivity, setEditingActivity] = useState<Partial<TripActivity> | null>(null);
@@ -96,7 +98,7 @@ export default function ReisActiviteitenIsland({
         });
     };
 
-    const _totalSignups = Object.values(signupsByActivity).reduce((acc, curr) => acc + curr.length, 0);
+    const _totalSignups = Array.from(signupsByActivity.values()).reduce((acc, curr) => acc + curr.length, 0);
     const _avgPrice = activities.length > 0 ? (activities.reduce((acc, curr) => acc + (curr.price || 0), 0) / activities.length).toFixed(2) : '0.00';
 
 
@@ -170,8 +172,7 @@ export default function ReisActiviteitenIsland({
                     <TripActivitySignupsModal
                         activityName={activities.find(a => a.id === viewingSignupsId)?.name || ''}
                         options={activities.find(a => a.id === viewingSignupsId)?.options}
-                        // eslint-disable-next-line security/detect-object-injection
-                        signups={signupsByActivity[viewingSignupsId]}
+                        signups={signupsByActivity.get(viewingSignupsId) ?? []}
                         loading={false}
                         onClose={() => setViewingSignupsId(null)}
                     />

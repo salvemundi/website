@@ -25,13 +25,13 @@ interface ResultRowProps {
 function ResultRow({ email, message, type, timestamp, stack, changes }: ResultRowProps) {
     const [isExpanded, setIsExpanded] = useState(false);
     const hasDetails = !!(timestamp || stack || (changes && changes.length > 0));
-    const icons = {
-        success: <CheckCircle className="h-5 w-5 text-[var(--beheer-active)]" />,
-        warning: <AlertTriangle className="h-5 w-5 text-[var(--theme-warning)]" />,
-        error: <X className="h-5 w-5 text-[var(--beheer-inactive)]" />,
-        info: <Info className="h-5 w-5 text-[var(--theme-info)]" />,
-        excluded: <Users className="h-5 w-5 text-[var(--beheer-text-muted)]" />
-    };
+    const icons = new Map<string, React.ReactNode>([
+        ['success', <CheckCircle key="success" className="h-5 w-5 text-[var(--beheer-active)]" />],
+        ['warning', <AlertTriangle key="warning" className="h-5 w-5 text-[var(--theme-warning)]" />],
+        ['error', <X key="error" className="h-5 w-5 text-[var(--beheer-inactive)]" />],
+        ['info', <Info key="info" className="h-5 w-5 text-[var(--theme-info)]" />],
+        ['excluded', <Users key="excluded" className="h-5 w-5 text-[var(--beheer-text-muted)]" />],
+    ]);
 
     return (
         <div
@@ -39,8 +39,7 @@ function ResultRow({ email, message, type, timestamp, stack, changes }: ResultRo
             onClick={() => hasDetails && setIsExpanded(!isExpanded)}
         >
             <div className="p-4 flex items-start gap-4 transition-colors">
-                {/* eslint-disable-next-line security/detect-object-injection */}
-                <div className="mt-0.5">{icons[type]}</div>
+                <div className="mt-0.5">{icons.get(type)}</div>
                 <div className="min-w-0 flex-1">
                     <div className="text-base font-semibold text-[var(--beheer-text)] truncate">{email}</div>
                     {message && <div className="text-sm text-[var(--beheer-text-muted)] font-medium mt-1">{message}</div>}

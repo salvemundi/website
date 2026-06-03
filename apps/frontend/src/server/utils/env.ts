@@ -1,8 +1,7 @@
 import 'server-only';
 
 export function getExpandedEnv(key: string, defaultValue?: string): string {
-    // eslint-disable-next-line security/detect-object-injection
-    const value = process.env[key];
+    const value = Reflect.get(process.env, key) as string | undefined;
 
     if (!value) {
         if (defaultValue !== undefined) return defaultValue;

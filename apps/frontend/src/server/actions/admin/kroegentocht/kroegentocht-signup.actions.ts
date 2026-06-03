@@ -90,7 +90,7 @@ export async function deletePubCrawlSignup(id: number, eventId: number) {
 export async function updatePubCrawlSignup(id: number, eventId: number, data: Partial<PubCrawlSignup>) {
     await requireKroegAdmin();
 
-    const allowedFields = ['payment_status', 'association', 'name', 'email'];
+    const allowedFields = ['payment_status', 'association', 'name', 'email', 'group_name'];
     const filteredData = Object.fromEntries(
         Object.entries(data).filter(([key]) => allowedFields.includes(key))
     );
@@ -205,5 +205,84 @@ export async function deletePubCrawlTicket(ticketId: number, signupId: number, e
     } catch (error: unknown) {
         safeConsoleError('[Kroegentocht-Action][deletePubCrawlTicket] Failed to delete ticket:', error);
         throw new Error('Verwijderen ticket mislukt');
+    }
+}
+
+export async function distributePubCrawlSignups(eventId: number) {
+    await requireKroegAdmin();
+    try {
+        const { getPubCrawlEvent } = await import('./kroegentocht-event.actions');
+        const event = await getPubCrawlEvent(eventId);
+        const eventGroups = event.groups || [];
+        const groups: string[] = eventGroups.map((g: unknown): string => {
+            if (typeof g === 'string') return g;
+            if (g && typeof g === 'object' && 'name' in g) {
+                return String((g as { name: unknown }).name || '');
+            }
+            return '';
+        }).filter((name): name is string => name !== '');
+        if (groups.length === 0) {
+            throw new Error('Geen groepen gedefinieerd voor dit event. Voeg eerst groepen toe in de event details.');
+        }
+
+        const { fetchPubCrawlSignupsDb, updatePubCrawlSignupDb } = await import('@/server/internal/kroegentocht-db.utils');
+        const signups = await fetchPubCrawlSignupsDb(eventId);
+        const paidSignups = signups.filter(s => s.payment_status === 'paid');
+
+        if (paidSignups.length === 0) {
+            throw new Error('Geen betaalde aanmeldingen gevonden om te verdelen.');
+        }
+
+        // Initialize total tickets count per group name
+        const groupTicketCounts = new Map<string, number>(groups.map(g => [g, 0]));
+
+        // Greedy LPT partition: sort signups by ticket count descending
+        const sortedSignups = [...paidSignups].sort((a, b) => b.amount_tickets - a.amount_tickets);
+
+        for (const signup of sortedSignups) {
+            if (!signup.id) continue;
+
+            // Find group with minimum tickets assigned
+            let bestGroup = groups[0];
+            let minTickets = Infinity;
+
+            for (const group of groups) {
+                const count = groupTicketCounts.get(group) || 0;
+                if (count < minTickets) {
+                    minTickets = count;
+                    bestGroup = group;
+                }
+            }
+
+            // Assign signup to that group
+            await updatePubCrawlSignupDb(Number(signup.id), { group_name: bestGroup });
+
+            // Update local map count
+            groupTicketCounts.set(bestGroup, minTickets + signup.amount_tickets);
+        }
+
+        revalidateTag(`signups-${eventId}`, 'max');
+        return { success: true };
+    } catch (error: unknown) {
+        safeConsoleError('[Kroegentocht-Action][distributePubCrawlSignups] Error:', error);
+        throw error;
+    }
+}
+
+export async function savePubCrawlGroupsAssignment(eventId: number, assignments: { signupId: number, groupName: string | null }[]) {
+    await requireKroegAdmin();
+    try {
+        const { updatePubCrawlSignupDb } = await import('@/server/internal/kroegentocht-db.utils');
+        for (const item of assignments) {
+            await updatePubCrawlSignupDb(item.signupId, { group_name: item.groupName });
+            getSystemDirectus().request(updateItem('pub_crawl_signups', item.signupId, {
+                group_name: item.groupName
+            })).catch(() => {});
+        }
+        revalidateTag(`signups-${eventId}`, 'max');
+        return { success: true };
+    } catch (error: unknown) {
+        safeConsoleError('[Kroegentocht-Action][savePubCrawlGroupsAssignment] Error:', error);
+        throw error;
     }
 }

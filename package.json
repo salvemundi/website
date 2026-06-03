@@ -15,12 +15,12 @@
     "validate": "pnpm type-check && pnpm lint && pnpm knip && pnpm build",
     "setup": "pnpm install && pnpm validate"
   },
-
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "eslint": "^9.39.4",
     "eslint-plugin-security": "^4.0.0",
     "eslint-plugin-unused-imports": "^4.4.1",
-    "typescript-eslint": "^8.59.3"
+    "typescript-eslint": "^8.59.3",
+    "xlsx": "^0.18.5"
   }
 }

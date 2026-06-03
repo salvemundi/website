@@ -15,6 +15,7 @@ export const pubCrawlEventSchema = z.object({
     price: z.number().optional().default(1),
     max_tickets_per_person: z.number().optional().default(10),
     whatsapp_community_url: z.string().url().nullable().optional(),
+    groups: z.array(z.any()).optional().nullable(),
 });
 
 /**
@@ -39,6 +40,7 @@ export const pubCrawlSignupSchema = z.object({
     payment_status: z.enum(['open', 'paid', 'failed', 'canceled', 'expired']).default('open'),
     directus_relations: z.string().optional().nullable(),
     website: z.string().optional(), // Honeypot
+    group_name: z.string().optional().nullable(),
 });
 
 /**

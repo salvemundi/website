@@ -1,7 +1,7 @@
 import 'server-only';
 
 export * from './kroegentocht/types';
-export { fetchPubCrawlEventsDb } from './kroegentocht/event-db.utils';
+export { fetchPubCrawlEventsDb, fetchPubCrawlEventByIdDb } from './kroegentocht/event-db.utils';
 export {
     fetchPubCrawlSignupsDb,
     fetchPubCrawlSignupByIdDb,
