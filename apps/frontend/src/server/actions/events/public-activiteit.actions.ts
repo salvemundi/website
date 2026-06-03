@@ -135,6 +135,13 @@ export async function signupForActivity(data: EventSignupForm) {
         const activity = await getActivityById(String(parsed.data.event_id));
         if (!activity) return { success: false, error: 'Activiteit niet gevonden' };
 
+        if (activity.registration_deadline) {
+            const deadline = new Date(activity.registration_deadline);
+            if (new Date() > deadline) {
+                return { success: false, error: 'De inschrijfdeadline voor deze activiteit is verstreken.' };
+            }
+        }
+
         if (activity.only_members && !userId) {
             return { success: false, error: 'Deze activiteit is alleen voor leden.' };
         }

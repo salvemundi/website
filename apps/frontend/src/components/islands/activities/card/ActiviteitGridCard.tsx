@@ -3,6 +3,7 @@
 import React from 'react';
 import { Calendar } from 'lucide-react';
 import MediaAsset from '@/components/ui/media/MediaAsset';
+import { SafeMarkdown } from '@/components/ui/security/SafeMarkdown';
 
 interface ActiviteitGridCardProps {
     title: string;
@@ -10,6 +11,7 @@ interface ActiviteitGridCardProps {
     displayDate: string;
     timeRange: string | null;
     description: string;
+    short_description?: string | null;
     safePrice: string;
     committeeLabel: string;
     onlyMembers: boolean;
@@ -26,6 +28,7 @@ export default function ActiviteitGridCard({
     displayDate,
     timeRange,
     description,
+    short_description,
     safePrice,
     committeeLabel,
     onlyMembers,
@@ -83,9 +86,15 @@ export default function ActiviteitGridCard({
                     )}
                 </div>
 
-                <p className="text-[var(--text-muted)] text-sm line-clamp-3 leading-relaxed break-words overflow-hidden">
-                    {description}
-                </p>
+                {short_description ? (
+                    <div className="text-[var(--text-muted)] text-sm line-clamp-5 leading-relaxed break-words overflow-hidden">
+                        <SafeMarkdown content={short_description} className="!text-[var(--text-muted)] prose-sm prose-p:my-1 prose-headings:my-1" />
+                    </div>
+                ) : description ? (
+                    <p className="text-[var(--text-muted)] text-sm line-clamp-3 leading-relaxed break-words overflow-hidden">
+                        {description}
+                    </p>
+                ) : null}
 
                 <div className="flex items-center justify-between pt-4 mt-auto border-t border-[var(--border-color)]">
                     <div className="flex flex-col">

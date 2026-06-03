@@ -28,11 +28,11 @@ export default async function ActivitiesPage() {
         <div className="min-h-screen">
             <h1 className="sr-only">Activiteiten Salve Mundi</h1>
 
-            <div className="w-full px-4 py-8 md:py-16 flex justify-center">
+            <div className="w-full px-4 py-4 md:py-8 flex justify-center">
                 <ActivitiesBannerIsland events={events} serverTime={serverTime} />
             </div>
 
-            <main className="w-full px-4 py-8 sm:py-10 md:py-12 max-w-7xl mx-auto">
+            <main className="w-full px-4 py-4 sm:py-6 md:py-8 max-w-7xl mx-auto">
                 <ActivitiesProviderIsland events={events} serverTime={serverTime} initialViewMode={initialViewMode} />
             </main>
         </div>

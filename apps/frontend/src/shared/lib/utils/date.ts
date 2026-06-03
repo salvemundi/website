@@ -11,6 +11,8 @@ export function formatDate(
     switch (formatStr) {
         case 'dd-MM-yyyy':
             return new Intl.DateTimeFormat('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(d);
+        case 'EEEE d MMMM':
+            return new Intl.DateTimeFormat('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' }).format(d);
         case 'd MMMM yyyy':
             return new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' }).format(d);
         case 'd MMM yyyy':

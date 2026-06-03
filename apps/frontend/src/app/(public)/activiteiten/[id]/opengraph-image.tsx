@@ -12,11 +12,39 @@ export default async function Image({ params }: { params: Promise<{ id: string }
     const activity = await getActivityBySlug(id);
 
     const title = activity?.titel || 'Activiteit';
-    const description = activity?.beschrijving || 'Schrijf je in voor deze activiteit bij Salve Mundi.';
-    const price = activity?.price_non_members !== undefined ? `€${activity.price_non_members}` : 'Gratis';
+    
+    // We only display the short_description (TL;DR) on the OG image preview, avoiding the long announcement text
+    const description = activity?.short_description || '';
+
+    // Format the price nicely
+    const priceVal = activity?.price_non_members;
+    const priceMem = activity?.price_members;
+    let price = 'Gratis';
+    if (priceVal !== null && priceVal !== undefined && Number(priceVal) > 0) {
+        if (priceMem !== null && priceMem !== undefined && Number(priceMem) > 0 && priceMem !== priceVal) {
+            price = `v.a. €${priceMem}`;
+        } else {
+            price = `€${priceVal}`;
+        }
+    } else if (priceMem !== null && priceMem !== undefined && Number(priceMem) > 0) {
+        price = `v.a. €${priceMem}`;
+    }
 
     const dateStr = activity?.datum_start ? new Date(activity.datum_start).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' }) : 'Binnenkort';
     const timeStr = activity?.datum_start ? new Date(activity.datum_start).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }) : '';
+
+    // Handle banner image
+    const imageId = typeof activity?.afbeelding_id === 'string'
+        ? activity.afbeelding_id
+        : activity?.afbeelding_id?.id;
+
+    const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.INTERNAL_DIRECTUS_URL;
+    const token = process.env.DIRECTUS_STATIC_TOKEN;
+    const imageUrl = imageId && directusUrl && token
+        ? `${directusUrl.replace(/\/$/, '')}/assets/${imageId}?access_token=${token}`
+        : null;
+
+    const showRightColumn = !!imageUrl;
 
     return new ImageResponse(
         (
@@ -30,13 +58,13 @@ export default async function Image({ params }: { params: Promise<{ id: string }
                     fontFamily: 'sans-serif',
                 }}
             >
-                {/* Left Column (60%) */}
+                {/* Left Column (60% or 100%) */}
                 <div style={{
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'center',
                     padding: '60px 80px',
-                    width: '60%',
+                    width: showRightColumn ? '60%' : '100%',
                     position: 'relative',
                 }}>
                     <p style={{ fontSize: 22, fontWeight: 700, color: '#4a2344', textTransform: 'uppercase', letterSpacing: 4, marginBottom: 16 }}>
@@ -58,9 +86,11 @@ export default async function Image({ params }: { params: Promise<{ id: string }
                         </div>
                     </div>
 
-                    <p style={{ fontSize: 28, color: '#495057', lineHeight: 1.5, maxWidth: 600 }}>
-                        {description.length > 140 ? description.substring(0, 140) + '...' : description}
-                    </p>
+                    {description ? (
+                        <p style={{ fontSize: 28, color: '#495057', lineHeight: 1.5, maxWidth: 600, whiteSpace: 'pre-wrap', marginBottom: 32 }}>
+                            {description.length > 180 ? description.substring(0, 180) + '...' : description}
+                        </p>
+                    ) : null}
 
                     {/* Logo bottom-left */}
                     <div style={{ position: 'absolute', bottom: 40, left: 80, display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -72,40 +102,39 @@ export default async function Image({ params }: { params: Promise<{ id: string }
                 </div>
 
                 {/* Right Column (40%) */}
-                <div style={{
-                    width: '40%',
-                    height: '100%',
-                    display: 'flex',
-                    padding: '40px 40px 40px 0',
-                }}>
+                {showRightColumn && (
                     <div style={{
-                        width: '100%',
+                        width: '40%',
                         height: '100%',
-                        backgroundColor: '#f1f3f5',
-                        borderRadius: 40,
                         display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border: '1px solid #e9ecef',
-                        boxShadow: '0 30px 60px rgba(0,0,0,0.1)',
-                        position: 'relative',
-                        overflow: 'hidden',
+                        padding: '40px 40px 40px 0',
                     }}>
-                        <svg width="140" height="140" viewBox="0 0 24 24" fill="none" stroke="#4a2344" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
-
-                        {/* Accent blob */}
                         <div style={{
-                            position: 'absolute',
-                            top: -100,
-                            right: -100,
-                            width: 300,
-                            height: 300,
-                            backgroundColor: '#4a2344',
-                            opacity: 0.03,
-                            borderRadius: 1000,
-                        }}></div>
+                            width: '100%',
+                            height: '100%',
+                            backgroundColor: '#f1f3f5',
+                            borderRadius: 40,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: '1px solid #e9ecef',
+                            boxShadow: '0 30px 60px rgba(0,0,0,0.1)',
+                            position: 'relative',
+                            overflow: 'hidden',
+                        }}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src={imageUrl}
+                                alt={title}
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                }}
+                            />
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
         ),
         { ...size }

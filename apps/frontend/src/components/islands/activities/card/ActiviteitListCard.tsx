@@ -3,6 +3,7 @@
 import React from 'react';
 import { Calendar } from 'lucide-react';
 import MediaAsset from '@/components/ui/media/MediaAsset';
+import { SafeMarkdown } from '@/components/ui/security/SafeMarkdown';
 
 interface ActiviteitListCardProps {
     title: string;
@@ -11,6 +12,7 @@ interface ActiviteitListCardProps {
     timeRange: string | null;
     location: string | null;
     description: string;
+    short_description?: string | null;
     safePrice: string;
     committeeLabel: string;
     onlyMembers: boolean;
@@ -30,6 +32,7 @@ export default function ActiviteitListCard({
     timeRange,
     location,
     description,
+    short_description,
     safePrice,
     committeeLabel,
     onlyMembers,
@@ -79,11 +82,15 @@ export default function ActiviteitListCard({
                         <h3 className="text-xl font-bold text-[var(--theme-purple)]/90 leading-tight group-hover:text-[var(--theme-purple)] transition-colors line-clamp-2 break-words" title={title}>
                             {title}
                         </h3>
-                        {description && (
+                        {short_description ? (
+                            <div className="hidden md:block text-[var(--text-muted)] text-sm line-clamp-6 mt-2 leading-relaxed pr-4 break-words overflow-hidden">
+                                <SafeMarkdown content={short_description} className="!text-[var(--text-muted)] prose-sm prose-p:my-1 prose-headings:my-1" />
+                            </div>
+                        ) : description ? (
                             <p className="hidden md:block text-[var(--text-muted)] text-sm line-clamp-2 mt-2 leading-relaxed pr-4 break-words overflow-hidden">
                                 {description}
                             </p>
-                        )}
+                        ) : null}
                         {contact && (
                             <p className="text-xs text-[var(--text-muted)] mt-2 flex items-center gap-1">
                                 <span className="font-bold opacity-70">Contact:</span>
@@ -100,7 +107,7 @@ export default function ActiviteitListCard({
                                     {displayDate}
                                 </p>
                                 <p className="text-xs font-medium text-[var(--text-muted)] whitespace-nowrap overflow-hidden text-ellipsis max-w-[180px]">
-                                    {timeRange || 'Tijd volgt'} • {location || 'Locatie volgt'}
+                                    {timeRange ? `${timeRange} • ` : ''}{location || 'Locatie volgt'}
                                 </p>
                             </div>
                         </div>
