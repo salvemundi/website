@@ -142,6 +142,7 @@ export interface DbEvent {
     name?: string | null;
     event_date?: string | null;
     description?: string | null;
+    short_description?: string | null;
     description_logged_in?: string | null;
     price_members?: number | null;
     price_non_members?: number | null;

@@ -26,9 +26,13 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
         };
     }
 
+    const cleanMetaDescription = activity.short_description
+        ? activity.short_description.replace(/\*\*/g, '').trim()
+        : 'Bekijk deze activiteit en schrijf je in bij Salve Mundi.';
+
     return {
         title: `${activity.titel} | Salve Mundi`,
-        description: activity.beschrijving || 'Schrijf je in voor deze activiteit bij Salve Mundi.'
+        description: cleanMetaDescription
     };
 }
 
@@ -52,7 +56,10 @@ async function ActivityContent({ params, searchParams }: PageProps) {
 
     if (!activity) notFound();
 
-    const isPast = new Date(activity.datum_start) < new Date();
+    const isEventPast = new Date(activity.datum_start) < new Date();
+    const isDeadlinePassed = activity.registration_deadline
+        ? new Date(activity.registration_deadline) < new Date()
+        : false;
 
     const user = session?.user as MembershipUserData | undefined;
     const isMember = user?.membership_status === 'active';
@@ -94,7 +101,8 @@ async function ActivityContent({ params, searchParams }: PageProps) {
                     price={price}
                     eventDate={activity.datum_start}
                     description={activity.beschrijving || ''}
-                    isPast={isPast}
+                    isPast={isEventPast}
+                    isDeadlinePassed={isDeadlinePassed}
                     eventName={activity.titel}
                     initialUser={session?.user || null}
                     verifiedPaymentStatus={verifiedPaymentStatus}

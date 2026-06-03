@@ -65,6 +65,23 @@ export function GeneralInfoSection({
                         {formErrors?.description && <p className="text-red-500 text-sm font-semibold mt-2">{formErrors.description[0]}</p>}
                     </div>
                     <div>
+                        <label htmlFor="short_description" className="flex items-end justify-between mb-2">
+                            <span className="block text-base font-semibold text-[var(--beheer-text-muted)]">Korte beschrijving / TL;DR</span>
+                            <span className="text-xs font-normal text-[var(--beheer-text-muted)] opacity-70">
+                                Optioneel (voor preview kaarten)
+                            </span>
+                        </label>
+                        <textarea
+                            id="short_description"
+                            name="short_description"
+                            rows={4}
+                            defaultValue={toInputSafe(initialData?.short_description)}
+                            className={`beheer-input font-mono text-sm leading-relaxed resize-y ${formErrors?.short_description ? 'border-red-500 ring-4 ring-red-500/10' : ''}`}
+                            placeholder="Bijv. een korte samenvatting of TL;DR voor op de overzichtskaart."
+                        />
+                        {formErrors?.short_description && <p className="text-red-500 text-sm font-semibold mt-2">{formErrors.short_description[0]}</p>}
+                    </div>
+                    <div>
                         <label htmlFor="description_logged_in" className="flex items-end justify-between mb-2">
                             <span className="block text-base font-semibold text-[var(--beheer-text-muted)]">Extra informatie (alleen ingelogd)</span>
                             <span className="text-xs font-normal text-[var(--beheer-text-muted)] opacity-70">

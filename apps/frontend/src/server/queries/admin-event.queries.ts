@@ -25,6 +25,7 @@ interface DbEventRow {
     event_time_end: string | null;
     committee_id: string | number | null;
     committee_name: string | null;
+    short_description: string | null;
     description_logged_in: string | null;
     publish_date: string | Date | null;
     custom_url: string | null;
@@ -55,6 +56,7 @@ const mapRowToActiviteitData = (item: DbEventRow) => {
         event_time_end: item.event_time_end ?? null,
         committee_id: item.committee_id ? Number(item.committee_id) : null,
         committee_name: item.committee_name || null,
+        short_description: item.short_description ?? null,
         description_logged_in: item.description_logged_in || null,
         publish_date: safeISO(item.publish_date),
         custom_url: item.custom_url || null
@@ -83,6 +85,7 @@ const mapRowToAdminActivityData = (item: DbEventRow) => {
         event_time_end: item.event_time_end ?? null,
         committee_id: item.committee_id ? Number(item.committee_id) : null,
         committee_name: item.committee_name || null,
+        short_description: item.short_description ?? null,
         description_logged_in: item.description_logged_in || null,
         publish_date: safeISO(item.publish_date),
         custom_url: item.custom_url || null,

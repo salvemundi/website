@@ -9,11 +9,13 @@ import { safeConsoleError } from '@/server/utils/logger';
 
 import StatusSignedUp from './signup/StatusSignedUp';
 import StatusPast from './signup/StatusPast';
+import StatusDeadlinePassed from './signup/StatusDeadlinePassed';
 import SignupFormContent from './signup/SignupFormContent';
 
 interface EventSignupIslandProps {
     id?: number | string;
     isPast?: boolean;
+    isDeadlinePassed?: boolean;
     eventId?: number;
     price?: number;
     eventDate?: string;
@@ -30,6 +32,7 @@ export default function EventSignupIsland({
     price = 0,
     isPast: serverIsPast = false,
     isPast: clientIsPast = false,
+    isDeadlinePassed = false,
     eventName = 'Activiteit',
     initialUser,
     verifiedPaymentStatus,
@@ -120,6 +123,10 @@ export default function EventSignupIsland({
 
     if (isPast) {
         return <StatusPast />;
+    }
+
+    if (isDeadlinePassed) {
+        return <StatusDeadlinePassed />;
     }
 
     return (

@@ -4,7 +4,7 @@ import React from 'react';
 import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
-import { formatDate as coreFormatDate } from '@/shared/lib/utils/date';
+import { formatActivityDateTime } from '@/shared/lib/activity-utils';
 import { type MembershipUserData } from '@/components/islands/account/MembershipStatusIsland';
 
 import ActiviteitGridCard from './card/ActiviteitGridCard';
@@ -13,6 +13,7 @@ import ActiviteitListCard from './card/ActiviteitListCard';
 interface ActiviteitCardProps {
     id?: number | string;
     description?: string;
+    short_description?: string | null;
     description_logged_in?: string;
     image?: string | { id: string; type?: string | null } | null;
     date?: string;
@@ -37,11 +38,11 @@ interface ActiviteitCardProps {
 
 const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     description = '',
+    short_description = null,
     image,
     title = 'Activiteit',
     date,
-    // FIX: Alias 'endDate' naar de geprefixte versie voor ongebruikte variabelen
-    endDate: _endDate,
+    endDate,
     startTime,
     endTime,
     location,
@@ -102,13 +103,15 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
 
     const committeeLabel = cleanCommitteeName(committeeName);
 
-    const displayDate = variant === 'list'
-        ? coreFormatDate(date, 'EEEE d MMMM')
-        : coreFormatDate(date, 'd MMMM yyyy');
-
-    const start = startTime ? startTime.split(':').slice(0, 2).join(':') : null;
-    const end = endTime ? endTime.split(':').slice(0, 2).join(':') : null;
-    const timeRange = start ? (end ? `${start} - ${end}` : start) : null;
+    const { displayDate, timeRange } = formatActivityDateTime(
+        {
+            datum_start: date || '',
+            datum_eind: endDate,
+            event_time: startTime,
+            event_time_end: endTime
+        },
+        variant
+    );
 
     return (
         <>
@@ -120,6 +123,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                     timeRange={timeRange}
                     location={location ?? null}
                     description={description}
+                    short_description={short_description}
                     safePrice={safePrice}
                     committeeLabel={committeeLabel}
                     onlyMembers={onlyMembers}
@@ -138,6 +142,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                     displayDate={displayDate}
                     timeRange={timeRange}
                     description={description}
+                    short_description={short_description}
                     safePrice={safePrice}
                     committeeLabel={committeeLabel}
                     onlyMembers={onlyMembers}

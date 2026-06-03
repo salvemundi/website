@@ -56,6 +56,7 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
         ...eventData,
         name: eventData.titel,
         description: eventData.beschrijving,
+        short_description: eventData.short_description,
         event_date: eventData.datum_start,
         event_date_end: eventData.datum_eind,
         location: eventData.locatie,

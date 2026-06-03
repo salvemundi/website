@@ -5,7 +5,7 @@ import { MapPin, User, Mail, CalendarClock } from 'lucide-react';
 import { SafeMarkdown } from '@/components/ui/security/SafeMarkdown';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 import { type Activiteit } from '@salvemundi/validations/schema/activity.zod';
-import { buildCommitteeEmail, formatDutchDate, formatTime } from '@/shared/lib/activity-utils';
+import { buildCommitteeEmail, formatActivityDateTime } from '@/shared/lib/activity-utils';
 import MediaAsset from '@/components/ui/media/MediaAsset';
 
 interface ActivityDetailIslandProps {
@@ -20,9 +20,15 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
         ? contact
         : activity ? buildCommitteeEmail(activity.committee_name) : null;
 
-    const startTime = activity ? formatTime(activity.event_time) : null;
-    const endTime = activity ? formatTime(activity.event_time_end) : null;
-    const timeRange = startTime ? (endTime ? `${startTime} - ${endTime}` : startTime) : null;
+    const { displayDate, timeRange } = formatActivityDateTime(
+        {
+            datum_start: activity?.datum_start || '',
+            datum_eind: activity?.datum_eind,
+            event_time: activity?.event_time,
+            event_time_end: activity?.event_time_end
+        },
+        'detail'
+    );
 
     return (
         <div className="w-full flex flex-col min-h-screen">
@@ -69,8 +75,8 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                                 </div>
                                 <div className="min-w-0 flex-1">
                                     <p className="text-[10px] uppercase font-black text-text-muted tracking-[0.2em] mb-1">Datum & Tijd</p>
-                                    <p className="text-base font-bold text-[var(--text-main)] truncate">
-                                        {activity ? formatDutchDate(activity.datum_start) : ''}
+                                    <p className="text-base font-bold text-[var(--text-main)]">
+                                        {displayDate}
                                     </p>
                                     {timeRange && (
                                         <p className="text-sm font-medium text-[var(--text-muted)]">

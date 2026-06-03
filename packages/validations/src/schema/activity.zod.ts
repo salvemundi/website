@@ -9,6 +9,7 @@ export const activitySchema = z.object({
     id: z.union([z.string(), z.number()]),
     titel: z.string(),
     beschrijving: z.string().nullable().optional(),
+    short_description: z.string().nullable().optional(),
     description_logged_in: z.string().nullable().optional(),
     datum_start: z.string(),
     datum_eind: z.string().nullable().optional(),
@@ -66,6 +67,9 @@ export const activityAdminSchema = z.object({
     description: z.string()
         .min(1, 'Beschrijving is verplicht')
         .refine((val) => !phoneRegex.test(val), { message: noPhoneMessage }),
+
+    short_description: z.string().nullable().optional().transform(v => v === '' ? null : v)
+        .refine((val) => !val || !phoneRegex.test(val), { message: noPhoneMessage }),
 
     description_logged_in: z.string().nullable().optional().transform(v => v === '' ? null : v)
         .refine((val) => !val || !phoneRegex.test(val), { message: noPhoneMessage }),
