@@ -114,10 +114,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Connect to NetBird VPN
+        uses: Alemiz112/netbird-connect@v1
+        with:
+          setup-key: ${{ secrets.NETBIRD_SETUP_KEY }}
+
       - name: Upload Docker Compose
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.SSH_HOST }}
+          host: 100.77.182.130
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           source: "docker-compose.yml"
@@ -156,7 +161,7 @@ jobs:
           PUBLIC_URL: ${{ vars.PUBLIC_URL }}
           BETTER_AUTH_URL: ${{ vars.BETTER_AUTH_URL }}
         with:
-          host: ${{ secrets.SSH_HOST }}
+          host: 100.77.182.130
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           envs: MOLLIE_API_KEY,MOLLIE_WEBHOOK_SECRET,DB_USER,DB_PASSWORD,DB_NAME,DIRECTUS_KEY,DIRECTUS_SECRET,INTERNAL_SERVICE_TOKEN,AZURE_WEBSITEV7_TENANT_ID,AZURE_WEBSITEV7_SYNC_CLIENT_ID,AZURE_WEBSITEV7_SYNC_CLIENT_SECRET,AZURE_WEBSITEV7_MAIL_CLIENT_ID,AZURE_WEBSITEV7_MAIL_CLIENT_SECRET,AZURE_MAIL_SENDER,AZURE_WEBSITEV7_AUTH_CLIENT_ID,AZURE_WEBSITEV7_AUTH_CLIENT_SECRET,AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID,AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET,BETTER_AUTH_SECRET,DIRECTUS_STATIC_TOKEN,REDIS_PASSWORD,AZURE_WEBSITEV7_PROVISIONING_CLIENT_ID,AZURE_WEBSITEV7_PROVISIONING_CLIENT_SECRET,VPN_IP,IMAGE_TAG,PUBLIC_URL,BETTER_AUTH_URL
