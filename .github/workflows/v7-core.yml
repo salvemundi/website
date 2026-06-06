@@ -34,71 +34,60 @@ jobs:
         run: |
           sed "s/REDIS_PASSWORD_PLACEHOLDER/${{ secrets.REDIS_PASSWORD }}/g" infrastructure/databases.json.template > infrastructure/databases.json
 
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H 100.77.182.130 >> ~/.ssh/known_hosts
+
       - name: Copy Infrastructure files to VPS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: 100.77.182.130
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          source: "infrastructure/docker-compose.yml,infrastructure/databases.json"
-          target: "/opt/salve-mundi-v7/infra"
-          strip_components: 1
+        run: |
+          scp -i ~/.ssh/deploy_key infrastructure/docker-compose.yml ${{ secrets.SSH_USER }}@100.77.182.130:/opt/salve-mundi-v7/infra/docker-compose.yml
+          scp -i ~/.ssh/deploy_key infrastructure/databases.json ${{ secrets.SSH_USER }}@100.77.182.130:/opt/salve-mundi-v7/infra/databases.json
 
       - name: Deploy Core Stack via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        env:
-          INTERNAL_SERVER_IP: ${{ secrets.INTERNAL_SERVER_IP }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DIRECTUS_KEY: ${{ secrets.DIRECTUS_KEY }}
-          DIRECTUS_SECRET: ${{ secrets.DIRECTUS_SECRET }}
-          AZURE_WEBSITEV7_TENANT_ID: ${{ secrets.AZURE_WEBSITEV7_TENANT_ID }}
-          AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID: ${{ secrets.AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID }}
-          AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET: ${{ secrets.AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET }}
-          DIRECTUS_ALLOWED_REDIRECTS: ${{ secrets.DIRECTUS_ALLOWED_REDIRECTS }}
-          DIRECTUS_STATIC_TOKEN: ${{ secrets.DIRECTUS_STATIC_TOKEN }}
-          DOMAIN_URL: "https://${{ env.DOMAIN }}"
-          INTERNAL_DIRECTUS_URL: "http://v7-core-directus:8055"
-          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
-        with:
-          host: 100.77.182.130
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          envs: INTERNAL_SERVER_IP,DB_USER,DB_PASSWORD,DB_NAME,DIRECTUS_KEY,DIRECTUS_SECRET,AZURE_WEBSITEV7_TENANT_ID,AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID,AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET,DIRECTUS_ALLOWED_REDIRECTS,DOMAIN_URL,DIRECTUS_STATIC_TOKEN,INTERNAL_DIRECTUS_URL,REDIS_PASSWORD
-          script_stop: true
-          script: |
-            cd /opt/salve-mundi-v7/infra
-            
-            # 2. Expliciete .env generatie (hufterproof)
-            echo "# Auto-generated V7 Core Environment" > .env
-            
-            echo "PUBLIC_URL=https://${{ env.DOMAIN }}" >> .env
-            echo "CORS_ORIGIN=https://${{ env.DOMAIN }},https://${{ env.ACC_DOMAIN }}" >> .env
-            echo "INTERNAL_DIRECTUS_URL=${INTERNAL_DIRECTUS_URL}" >> .env
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@100.77.182.130 bash << 'ENDSSH'
+          set -e
+          cd /opt/salve-mundi-v7/infra
 
-            # Combine redirects
-            COMBINED_REDIRECTS="${{ env.DOMAIN }},${{ env.ACC_DOMAIN }}"
-            if [ ! -z "$DIRECTUS_ALLOWED_REDIRECTS" ]; then
-              COMBINED_REDIRECTS="$COMBINED_REDIRECTS,$DIRECTUS_ALLOWED_REDIRECTS"
-            fi
-            echo "AUTH_SAFE_REDIRECT_HOSTS=\"$COMBINED_REDIRECTS\"" >> .env
+          # Expliciete .env generatie
+          echo "# Auto-generated V7 Core Environment" > .env
 
-            VARIABLES="INTERNAL_SERVER_IP DB_USER DB_PASSWORD DB_NAME DIRECTUS_KEY DIRECTUS_SECRET AZURE_WEBSITEV7_TENANT_ID AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET DIRECTUS_STATIC_TOKEN REDIS_PASSWORD"
-            for var in $VARIABLES; do
-              val=$(eval echo \$$var)
-              if [ ! -z "$val" ]; then
-                clean_val=$(echo "$val" | tr -d '\n\r')
-                echo "$var=\"$clean_val\"" >> .env
-              fi
-            done
+          echo "PUBLIC_URL=https://${{ env.DOMAIN }}" >> .env
+          echo "CORS_ORIGIN=https://${{ env.DOMAIN }},https://${{ env.ACC_DOMAIN }}" >> .env
+          echo "INTERNAL_DIRECTUS_URL=http://v7-core-directus:8055" >> .env
 
-            # 3. Start de infra
-            docker network create salve-mundi-v7-shared || true
-            # Force fresh RedisInsight state to ensure new config is loaded
-            # Note: This clears UI history but guarantees the injected connection works
-            docker compose -p v7-core stop v7-core-redisinsight || true
-            docker volume rm v7-core_v7_core_redisinsight_data || true
-            
-            docker compose -p v7-core up -d --remove-orphans
-            echo "--- Core Infrastructure Deployed to ${{ env.DOMAIN }} ---"
+          # Combine redirects
+          COMBINED_REDIRECTS="${{ env.DOMAIN }},${{ env.ACC_DOMAIN }}"
+          DIRECTUS_ALLOWED_REDIRECTS="${{ secrets.DIRECTUS_ALLOWED_REDIRECTS }}"
+          if [ ! -z "$DIRECTUS_ALLOWED_REDIRECTS" ]; then
+            COMBINED_REDIRECTS="$COMBINED_REDIRECTS,$DIRECTUS_ALLOWED_REDIRECTS"
+          fi
+          echo "AUTH_SAFE_REDIRECT_HOSTS=\"$COMBINED_REDIRECTS\"" >> .env
+
+          cat >> .env << 'EOF'
+          INTERNAL_SERVER_IP="${{ secrets.INTERNAL_SERVER_IP }}"
+          DB_USER="${{ secrets.DB_USER }}"
+          DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
+          DB_NAME="${{ secrets.DB_NAME }}"
+          DIRECTUS_KEY="${{ secrets.DIRECTUS_KEY }}"
+          DIRECTUS_SECRET="${{ secrets.DIRECTUS_SECRET }}"
+          AZURE_WEBSITEV7_TENANT_ID="${{ secrets.AZURE_WEBSITEV7_TENANT_ID }}"
+          AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID="${{ secrets.AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID }}"
+          AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET="${{ secrets.AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET }}"
+          DIRECTUS_STATIC_TOKEN="${{ secrets.DIRECTUS_STATIC_TOKEN }}"
+          REDIS_PASSWORD="${{ secrets.REDIS_PASSWORD }}"
+          EOF
+
+          # Start de infra
+          docker network create salve-mundi-v7-shared || true
+          # Force fresh RedisInsight state to ensure new config is loaded
+          # Note: This clears UI history but guarantees the injected connection works
+          docker compose -p v7-core stop v7-core-redisinsight || true
+          docker volume rm v7-core_v7_core_redisinsight_data || true
+
+          docker compose -p v7-core up -d --remove-orphans
+          echo "--- Core Infrastructure Deployed to ${{ env.DOMAIN }} ---"
+          ENDSSH
