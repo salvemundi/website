@@ -15,6 +15,7 @@ import CouponRow from './CouponRow';
 import CouponForm from './CouponForm';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
+import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 
 interface Props {
     initialCoupons?: Coupon[];
@@ -123,8 +124,22 @@ export default function CouponManagementIsland({
 
     return (
         <>
-            <div className={`container mx-auto px-4 py-8 max-w-7xl`}>
+            <AdminToolbar
+                title="Coupons Beheer"
+                subtitle="Beheer kortingscodes en acties voor het lidmaatschap"
+                backHref="/beheer"
+                actions={
+                    <button
+                        onClick={() => setIsAdding(true)}
+                        className="flex items-center justify-center gap-1.5 px-4 py-2 bg-theme-purple text-white rounded-xl squircle text-xs font-semibold shadow-lg hover:opacity-90 transition-all active:scale-95 border border-white/10 whitespace-nowrap cursor-pointer"
+                    >
+                        <Plus className="h-4 w-4" />
+                        <span>Nieuwe Coupon</span>
+                    </button>
+                }
+            />
 
+            <div className="admin-container py-4 md:py-8">
                 <AdminModal
                     isOpen={isAdding}
                     onClose={() => setIsAdding(false)}
@@ -139,28 +154,6 @@ export default function CouponManagementIsland({
                         error={formError}
                     />
                 </AdminModal>
-
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10">
-                    <div className="space-y-1">
-                        <h2 className="text-2xl font-semibold text-[var(--beheer-text)] tracking-tight flex items-center gap-3">
-                            <div className="p-2.5 bg-[var(--beheer-accent)]/10 rounded-xl text-[var(--beheer-accent)]">
-                                <Ticket className="h-6 w-6" />
-                            </div>
-                            Coupon Beheer
-                        </h2>
-                        <p className="text-xs font-semibold text-[var(--beheer-text-muted)] opacity-60 ml-14">
-                            Beheer kortingscodes en acties
-                        </p>
-                    </div>
-
-                    <button
-                        onClick={() => setIsAdding(true)}
-                        className="flex items-center justify-center gap-3 px-8 py-4 bg-[var(--beheer-accent)] text-white font-semibold text-sm rounded-xl shadow-lg hover:opacity-90 transition-all active:scale-95 border border-white/10 group self-start sm:self-center"
-                    >
-                        <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform" />
-                        <span>Nieuwe Coupon</span>
-                    </button>
-                </div>
 
                 <AdminStatsBar stats={adminStats} />
 
