@@ -118,6 +118,7 @@ jobs:
         uses: Alemiz112/netbird-connect@v1
         with:
           setup-key: ${{ secrets.NETBIRD_SETUP_KEY }}
+          management-url: https://vpn.salvemundi.nl
 
       - name: Upload Docker Compose
         uses: appleboy/scp-action@v0.1.7
