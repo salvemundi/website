@@ -173,17 +173,19 @@ export default function CommitteeManagementIsland({ initialCommittees, initialMe
 
     return (
         <div className="w-full">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-8 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-8 items-stretch">
                 <div className="lg:col-span-4">
-                    <CommitteeSidebar
-                        committees={filteredCommittees}
-                        selectedId={selected?.id || null}
-                        onSelect={(c) => { void handleSelectCommittee(c); }}
-                        searchQuery={searchQuery}
-                        onSearchChange={setSearchQuery}
-                        showAll={showAll}
-                        onShowAllChange={setShowAll}
-                    />
+                    <div className="lg:sticky lg:top-[180px]">
+                        <CommitteeSidebar
+                            committees={filteredCommittees}
+                            selectedId={selected?.id || null}
+                            onSelect={(c) => { void handleSelectCommittee(c); }}
+                            searchQuery={searchQuery}
+                            onSearchChange={setSearchQuery}
+                            showAll={showAll}
+                            onShowAllChange={setShowAll}
+                        />
+                    </div>
                 </div>
 
                 <div className="lg:col-span-8">
