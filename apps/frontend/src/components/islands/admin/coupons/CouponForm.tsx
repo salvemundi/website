@@ -1,12 +1,13 @@
 'use client';
 
 import React from 'react';
-import { 
-    Percent, 
-    Euro, 
-    Loader2, 
-    AlertCircle, 
-    Save 
+import {
+    Percent,
+    Euro,
+    Loader2,
+    AlertCircle,
+    Check,
+    Save
 } from 'lucide-react';
 
 interface Props {
@@ -113,22 +114,22 @@ export default function CouponForm({
                 <div className="relative flex items-center justify-center">
                     <input type="checkbox" id="is_active" name="is_active" defaultChecked className="peer sr-only" />
                     <div className="w-6 h-6 border-2 border-[var(--beheer-border)] rounded-lg peer-checked:border-[var(--beheer-accent)] peer-checked:bg-[var(--beheer-accent)] transition-all"></div>
-                    <Save className="absolute h-3.5 w-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
+                    <Check className="absolute h-3.5 w-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
                 </div>
                 <label htmlFor="is_active" className="text-xs font-semibold text-[var(--beheer-text-muted)] cursor-pointer hover:text-[var(--beheer-text)] transition-colors">Direct actief stellen</label>
             </div>
 
             <div className="flex flex-col sm:flex-row justify-end gap-4 pt-8 border-t border-[var(--beheer-border)] relative z-10">
-                <button 
-                    type="button" 
-                    onClick={onCancel} 
+                <button
+                    type="button"
+                    onClick={onCancel}
                     className="px-8 py-4 rounded-xl font-semibold text-sm border border-[var(--beheer-border)] text-[var(--beheer-text)] hover:bg-[var(--beheer-card-soft)] transition-all cursor-pointer"
                 >
                     Annuleren
                 </button>
-                <button 
-                    type="submit" 
-                    disabled={isPending} 
+                <button
+                    type="submit"
+                    disabled={isPending}
                     className="flex items-center justify-center gap-3 px-10 py-4 bg-[var(--beheer-accent)] text-white font-semibold text-sm rounded-xl shadow-lg hover:opacity-90 transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
                 >
                     {isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
