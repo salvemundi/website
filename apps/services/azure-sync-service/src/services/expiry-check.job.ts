@@ -36,31 +36,57 @@ export class ExpiryCheckJob {
     static async runCheck(redis: Redis) {
         logInfo('[ExpiryCheckJob] Running membership expiry scan...');
 
-        const isActive = await DirectusService.isFlagActive('mail_expiry_check');
-        if (!isActive) {
-            logInfo('[ExpiryCheckJob] Automated membership emails are DISABLED via feature flag. Skipping run.');
+        const todayStr = new Date().toISOString().split('T')[0];
+        const lastRunKey = 'v7:expiry-check:last-run';
+        const lockKey = 'lock:expiry-check:run';
+
+        // 1. Check if already run successfully today
+        const lastRun = await redis.get(lastRunKey);
+        if (lastRun === todayStr) {
+            logInfo(`[ExpiryCheckJob] Already successfully ran expiry check today (${todayStr}). Skipping.`);
             return;
         }
 
-        const members = await DirectusService.getAllUsers();
-        const now = new Date();
+        // 2. Acquire lock to prevent concurrent runs
+        const hasLock = await redis.set(lockKey, 'running', 'EX', 1800, 'NX');
+        if (!hasLock) {
+            logInfo('[ExpiryCheckJob] Another instance is currently running the expiry check. Skipping.');
+            return;
+        }
 
-        for (const member of members) {
-            if (!member.membership_expiry || member.status !== 'active') continue;
-
-            const expiryDate = new Date(member.membership_expiry);
-            const diffTime = expiryDate.getTime() - now.getTime();
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-            let milestone: 'reminder_30' | 'reminder_7' | 'expired' | null = null;
-
-            if (diffDays === 30) milestone = 'reminder_30';
-            else if (diffDays === 7) milestone = 'reminder_7';
-            else if (diffDays <= 0) milestone = 'expired';
-
-            if (milestone) {
-                await this.notifyMember(redis, member, milestone);
+        try {
+            const isActive = await DirectusService.isFlagActive('mail_expiry_check');
+            if (!isActive) {
+                logInfo('[ExpiryCheckJob] Automated membership emails are DISABLED via feature flag. Skipping run.');
+                return;
             }
+
+            const members = await DirectusService.getAllUsers();
+            const now = new Date();
+
+            for (const member of members) {
+                if (!member.membership_expiry || member.status !== 'active') continue;
+
+                const expiryDate = new Date(member.membership_expiry);
+                const diffTime = expiryDate.getTime() - now.getTime();
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                let milestone: 'reminder_30' | 'reminder_7' | 'expired' | null = null;
+
+                if (diffDays === 30) milestone = 'reminder_30';
+                else if (diffDays === 7) milestone = 'reminder_7';
+                // Only send the expired notification if they expired within the last 14 days (grace period)
+                else if (diffDays <= 0 && diffDays >= -14) milestone = 'expired';
+
+                if (milestone) {
+                    await this.notifyMember(redis, member, milestone);
+                }
+            }
+
+            // Set last run key so we don't run again today
+            await redis.set(lastRunKey, todayStr, 'EX', 86400 * 2);
+        } finally {
+            await redis.del(lockKey);
         }
     }
 
