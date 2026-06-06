@@ -120,117 +120,100 @@ jobs:
           setup-key: ${{ secrets.NETBIRD_SETUP_KEY }}
           management-url: https://vpn.salvemundi.nl
 
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H 100.77.182.130 >> ~/.ssh/known_hosts
+
       - name: Upload Docker Compose
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: 100.77.182.130
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          source: "docker-compose.yml"
-          target: "/opt/salve-mundi-v7"
+        run: |
+          scp -i ~/.ssh/deploy_key docker-compose.yml ${{ secrets.SSH_USER }}@100.77.182.130:/opt/salve-mundi-v7/docker-compose.yml
 
       - name: Execute Deployment
-        uses: appleboy/ssh-action@v1.0.3
-        env:
-          # Alle secrets mappen naar env
-          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DIRECTUS_KEY: ${{ secrets.DIRECTUS_KEY }}
-          DIRECTUS_SECRET: ${{ secrets.DIRECTUS_SECRET }}
-          INTERNAL_SERVICE_TOKEN: ${{ secrets.INTERNAL_SERVICE_TOKEN }}
-          AZURE_WEBSITEV7_TENANT_ID: ${{ secrets.AZURE_WEBSITEV7_TENANT_ID }}
-          AZURE_WEBSITEV7_SYNC_CLIENT_ID: ${{ secrets.AZURE_WEBSITEV7_SYNC_CLIENT_ID }}
-          AZURE_WEBSITEV7_SYNC_CLIENT_SECRET: ${{ secrets.AZURE_WEBSITEV7_SYNC_CLIENT_SECRET }}
-          AZURE_WEBSITEV7_MAIL_CLIENT_ID: ${{ secrets.AZURE_WEBSITEV7_MAIL_CLIENT_ID }}
-          AZURE_WEBSITEV7_MAIL_CLIENT_SECRET: ${{ secrets.AZURE_WEBSITEV7_MAIL_CLIENT_SECRET }}
-          AZURE_MAIL_SENDER: ${{ secrets.AZURE_MAIL_SENDER }}
-          AZURE_WEBSITEV7_AUTH_CLIENT_ID: ${{ secrets.AZURE_WEBSITEV7_AUTH_CLIENT_ID }}
-          AZURE_WEBSITEV7_AUTH_CLIENT_SECRET: ${{ secrets.AZURE_WEBSITEV7_AUTH_CLIENT_SECRET }}
-          AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID: ${{ secrets.AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID }}
-          AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET: ${{ secrets.AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET }}
-          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
-          DIRECTUS_STATIC_TOKEN: ${{ secrets.DIRECTUS_STATIC_TOKEN }}
-          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
-          MOLLIE_WEBHOOK_SECRET: ${{ secrets.MOLLIE_WEBHOOK_SECRET }}
-          AZURE_WEBSITEV7_PROVISIONING_CLIENT_ID: ${{ secrets.AZURE_WEBSITEV7_PROVISIONING_CLIENT_ID }}
-          AZURE_WEBSITEV7_PROVISIONING_CLIENT_SECRET: ${{ secrets.AZURE_WEBSITEV7_PROVISIONING_CLIENT_SECRET }}
-          # Variabelen
-          VPN_IP: ${{ secrets.VPS_IP }}
-          IMAGE_TAG: ${{ needs.prepare.outputs.tag }}
-          PUBLIC_URL: ${{ vars.PUBLIC_URL }}
-          BETTER_AUTH_URL: ${{ vars.BETTER_AUTH_URL }}
-        with:
-          host: 100.77.182.130
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          envs: MOLLIE_API_KEY,MOLLIE_WEBHOOK_SECRET,DB_USER,DB_PASSWORD,DB_NAME,DIRECTUS_KEY,DIRECTUS_SECRET,INTERNAL_SERVICE_TOKEN,AZURE_WEBSITEV7_TENANT_ID,AZURE_WEBSITEV7_SYNC_CLIENT_ID,AZURE_WEBSITEV7_SYNC_CLIENT_SECRET,AZURE_WEBSITEV7_MAIL_CLIENT_ID,AZURE_WEBSITEV7_MAIL_CLIENT_SECRET,AZURE_MAIL_SENDER,AZURE_WEBSITEV7_AUTH_CLIENT_ID,AZURE_WEBSITEV7_AUTH_CLIENT_SECRET,AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID,AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET,BETTER_AUTH_SECRET,DIRECTUS_STATIC_TOKEN,REDIS_PASSWORD,AZURE_WEBSITEV7_PROVISIONING_CLIENT_ID,AZURE_WEBSITEV7_PROVISIONING_CLIENT_SECRET,VPN_IP,IMAGE_TAG,PUBLIC_URL,BETTER_AUTH_URL
-          script: |
-            set -e
-            cd /opt/salve-mundi-v7
-            
-            # 1. Login to Registry
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@100.77.182.130 bash << 'ENDSSH'
+          set -e
+          cd /opt/salve-mundi-v7
 
-            # 2. Omgevingsdetectie
-            ENV_NAME="acc"
-            FRONTEND_PORT="3000"
-            FINANCE_PORT="13001"
-            SYNC_PORT="13002"
-            MAIL_PORT="13003"
-            MANAGEMENT_PORT="13004"
-            if [ "${{ needs.prepare.outputs.tag }}" = "main" ]; then 
-              ENV_NAME="prod"
-              FRONTEND_PORT="4000"
-              FINANCE_PORT="3001"
-              SYNC_PORT="3002"
-              MAIL_PORT="3003"
-              MANAGEMENT_PORT="3004"
-            fi
+          # 1. Login to Registry
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-            # 3. Maak .env.${ENV_NAME} leeg
-            echo "# Auto-generated V7 App Environment" > .env.${ENV_NAME}
-            
-            # 4. Opschonen van ALLE secrets (hufterproof) naar lokale shell variabelen
-            VARIABLES="MOLLIE_API_KEY MOLLIE_WEBHOOK_SECRET DB_USER DB_PASSWORD DB_NAME DIRECTUS_KEY DIRECTUS_SECRET INTERNAL_SERVICE_TOKEN AZURE_WEBSITEV7_TENANT_ID AZURE_WEBSITEV7_SYNC_CLIENT_ID AZURE_WEBSITEV7_SYNC_CLIENT_SECRET AZURE_WEBSITEV7_MAIL_CLIENT_ID AZURE_WEBSITEV7_MAIL_CLIENT_SECRET AZURE_MAIL_SENDER AZURE_WEBSITEV7_AUTH_CLIENT_ID AZURE_WEBSITEV7_AUTH_CLIENT_SECRET AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET BETTER_AUTH_SECRET DIRECTUS_STATIC_TOKEN REDIS_PASSWORD AZURE_WEBSITEV7_PROVISIONING_CLIENT_ID AZURE_WEBSITEV7_PROVISIONING_CLIENT_SECRET VPN_IP"
-            
-            for var in $VARIABLES; do
-              eval val=\$$var
-              if [ ! -z "$val" ]; then
-                val=$(printf '%s' "$val" | tr -d '\n\r')
-                val="${val#\"}"
-                val="${val%\"}"
-                export "$var=$val"
-                echo "$var=\"$val\"" >> .env.${ENV_NAME}
-              fi
-            done
+          # 2. Omgevingsdetectie
+          ENV_NAME="acc"
+          FRONTEND_PORT="3000"
+          FINANCE_PORT="13001"
+          SYNC_PORT="13002"
+          MAIL_PORT="13003"
+          MANAGEMENT_PORT="13004"
+          if [ "${{ needs.prepare.outputs.tag }}" = "main" ]; then
+            ENV_NAME="prod"
+            FRONTEND_PORT="4000"
+            FINANCE_PORT="3001"
+            SYNC_PORT="3002"
+            MAIL_PORT="3003"
+            MANAGEMENT_PORT="3004"
+          fi
 
-            # 5. Voeg de afgeleide en overige variabelen toe
-            echo "IMAGE_TAG=${IMAGE_TAG}" >> .env.${ENV_NAME}
-            echo "PUBLIC_URL=${PUBLIC_URL}" >> .env.${ENV_NAME}
-            echo "BETTER_AUTH_URL=${BETTER_AUTH_URL}" >> .env.${ENV_NAME}
-            echo "FRONTEND_PORT=${FRONTEND_PORT}" >> .env.${ENV_NAME}
-            echo "FINANCE_PORT=${FINANCE_PORT}" >> .env.${ENV_NAME}
-            echo "SYNC_PORT=${SYNC_PORT}" >> .env.${ENV_NAME}
-            echo "MAIL_PORT=${MAIL_PORT}" >> .env.${ENV_NAME}
-            echo "MANAGEMENT_PORT=${MANAGEMENT_PORT}" >> .env.${ENV_NAME}
-            echo "COMPOSE_PROJECT_NAME=v7-${ENV_NAME}" >> .env.${ENV_NAME}
-            echo "TRUST_PROXY=true" >> .env.${ENV_NAME}
-            echo "INTERNAL_DIRECTUS_URL=http://v7-core-directus:8055" >> .env.${ENV_NAME}
-            echo "AZURE_SYNC_SERVICE_URL=http://v7-${ENV_NAME}-sync:3002" >> .env.${ENV_NAME}
-            echo "AZURE_MANAGEMENT_SERVICE_URL=http://v7-${ENV_NAME}-management:3004" >> .env.${ENV_NAME}
-            echo "MAIL_SERVICE_URL=http://v7-${ENV_NAME}-mail:3003" >> .env.${ENV_NAME}
-            echo "NEXT_APP_INTERNAL_URL=http://v7-${ENV_NAME}-app:3000" >> .env.${ENV_NAME}
-            echo "DB_HOST=v7-core-db" >> .env.${ENV_NAME}
+          # 3. Maak .env.${ENV_NAME} leeg
+          echo "# Auto-generated V7 App Environment" > .env.${ENV_NAME}
 
-            if [ ! -z "$REDIS_PASSWORD" ]; then
-              echo "REDIS_URL=redis://default:${REDIS_PASSWORD}@v7-core-redis:6379" >> .env.${ENV_NAME}
-            else
-              echo "REDIS_URL=redis://v7-core-redis:6379" >> .env.${ENV_NAME}
-            fi
+          # 4. Schrijf alle secrets naar het .env bestand
+          cat >> .env.${ENV_NAME} << 'EOF'
+          MOLLIE_API_KEY="${{ secrets.MOLLIE_API_KEY }}"
+          MOLLIE_WEBHOOK_SECRET="${{ secrets.MOLLIE_WEBHOOK_SECRET }}"
+          DB_USER="${{ secrets.DB_USER }}"
+          DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
+          DB_NAME="${{ secrets.DB_NAME }}"
+          DIRECTUS_KEY="${{ secrets.DIRECTUS_KEY }}"
+          DIRECTUS_SECRET="${{ secrets.DIRECTUS_SECRET }}"
+          INTERNAL_SERVICE_TOKEN="${{ secrets.INTERNAL_SERVICE_TOKEN }}"
+          AZURE_WEBSITEV7_TENANT_ID="${{ secrets.AZURE_WEBSITEV7_TENANT_ID }}"
+          AZURE_WEBSITEV7_SYNC_CLIENT_ID="${{ secrets.AZURE_WEBSITEV7_SYNC_CLIENT_ID }}"
+          AZURE_WEBSITEV7_SYNC_CLIENT_SECRET="${{ secrets.AZURE_WEBSITEV7_SYNC_CLIENT_SECRET }}"
+          AZURE_WEBSITEV7_MAIL_CLIENT_ID="${{ secrets.AZURE_WEBSITEV7_MAIL_CLIENT_ID }}"
+          AZURE_WEBSITEV7_MAIL_CLIENT_SECRET="${{ secrets.AZURE_WEBSITEV7_MAIL_CLIENT_SECRET }}"
+          AZURE_MAIL_SENDER="${{ secrets.AZURE_MAIL_SENDER }}"
+          AZURE_WEBSITEV7_AUTH_CLIENT_ID="${{ secrets.AZURE_WEBSITEV7_AUTH_CLIENT_ID }}"
+          AZURE_WEBSITEV7_AUTH_CLIENT_SECRET="${{ secrets.AZURE_WEBSITEV7_AUTH_CLIENT_SECRET }}"
+          AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID="${{ secrets.AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID }}"
+          AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET="${{ secrets.AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET }}"
+          BETTER_AUTH_SECRET="${{ secrets.BETTER_AUTH_SECRET }}"
+          DIRECTUS_STATIC_TOKEN="${{ secrets.DIRECTUS_STATIC_TOKEN }}"
+          REDIS_PASSWORD="${{ secrets.REDIS_PASSWORD }}"
+          AZURE_WEBSITEV7_PROVISIONING_CLIENT_ID="${{ secrets.AZURE_WEBSITEV7_PROVISIONING_CLIENT_ID }}"
+          AZURE_WEBSITEV7_PROVISIONING_CLIENT_SECRET="${{ secrets.AZURE_WEBSITEV7_PROVISIONING_CLIENT_SECRET }}"
+          VPN_IP="${{ secrets.VPS_IP }}"
+          EOF
 
-            # 6. Pull en restart
-            docker compose --env-file .env.${ENV_NAME} pull
-            docker compose --env-file .env.${ENV_NAME} up -d --remove-orphans
-            docker image prune -af
+          # 5. Voeg de afgeleide en overige variabelen toe
+          echo "IMAGE_TAG=${{ needs.prepare.outputs.tag }}" >> .env.${ENV_NAME}
+          echo "PUBLIC_URL=${{ vars.PUBLIC_URL }}" >> .env.${ENV_NAME}
+          echo "BETTER_AUTH_URL=${{ vars.BETTER_AUTH_URL }}" >> .env.${ENV_NAME}
+          echo "FRONTEND_PORT=${FRONTEND_PORT}" >> .env.${ENV_NAME}
+          echo "FINANCE_PORT=${FINANCE_PORT}" >> .env.${ENV_NAME}
+          echo "SYNC_PORT=${SYNC_PORT}" >> .env.${ENV_NAME}
+          echo "MAIL_PORT=${MAIL_PORT}" >> .env.${ENV_NAME}
+          echo "MANAGEMENT_PORT=${MANAGEMENT_PORT}" >> .env.${ENV_NAME}
+          echo "COMPOSE_PROJECT_NAME=v7-${ENV_NAME}" >> .env.${ENV_NAME}
+          echo "TRUST_PROXY=true" >> .env.${ENV_NAME}
+          echo "INTERNAL_DIRECTUS_URL=http://v7-core-directus:8055" >> .env.${ENV_NAME}
+          echo "AZURE_SYNC_SERVICE_URL=http://v7-${ENV_NAME}-sync:3002" >> .env.${ENV_NAME}
+          echo "AZURE_MANAGEMENT_SERVICE_URL=http://v7-${ENV_NAME}-management:3004" >> .env.${ENV_NAME}
+          echo "MAIL_SERVICE_URL=http://v7-${ENV_NAME}-mail:3003" >> .env.${ENV_NAME}
+          echo "NEXT_APP_INTERNAL_URL=http://v7-${ENV_NAME}-app:3000" >> .env.${ENV_NAME}
+          echo "DB_HOST=v7-core-db" >> .env.${ENV_NAME}
+
+          if [ ! -z "${{ secrets.REDIS_PASSWORD }}" ]; then
+            echo "REDIS_URL=redis://default:${{ secrets.REDIS_PASSWORD }}@v7-core-redis:6379" >> .env.${ENV_NAME}
+          else
+            echo "REDIS_URL=redis://v7-core-redis:6379" >> .env.${ENV_NAME}
+          fi
+
+          # 6. Pull en restart
+          docker compose --env-file .env.${ENV_NAME} pull
+          docker compose --env-file .env.${ENV_NAME} up -d --remove-orphans
+          docker image prune -af
+          ENDSSH
+
