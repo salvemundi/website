@@ -24,7 +24,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-
+      - name: Connect to NetBird VPN
+        uses: Alemiz112/netbird-connect@v1
+        with:
+          setup-key: ${{ secrets.NETBIRD_SETUP_KEY }}
 
       - name: Inject Redis Password into databases.json
         run: |
@@ -33,7 +36,7 @@ jobs:
       - name: Copy Infrastructure files to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.SSH_HOST }}
+          host: 100.77.182.130
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           source: "infrastructure/docker-compose.yml,infrastructure/databases.json"
@@ -58,7 +61,7 @@ jobs:
           INTERNAL_DIRECTUS_URL: "http://v7-core-directus:8055"
           REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
         with:
-          host: ${{ secrets.SSH_HOST }}
+          host: 100.77.182.130
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           envs: INTERNAL_SERVER_IP,DB_USER,DB_PASSWORD,DB_NAME,DIRECTUS_KEY,DIRECTUS_SECRET,AZURE_WEBSITEV7_TENANT_ID,AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID,AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET,DIRECTUS_ALLOWED_REDIRECTS,DOMAIN_URL,DIRECTUS_STATIC_TOKEN,INTERNAL_DIRECTUS_URL,REDIS_PASSWORD
