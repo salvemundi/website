@@ -30,6 +30,20 @@ jobs:
           setup-key: ${{ secrets.NETBIRD_SETUP_KEY }}
           management-url: https://vpn.salvemundi.nl
 
+      - name: Wait for VPN routing to be ready
+        run: |
+          echo "Waiting for SSH port on 100.77.182.130 to be reachable..."
+          for i in {1..30}; do
+            if timeout 1 bash -c 'cat < /dev/null > /dev/tcp/100.77.182.130/22' >/dev/null 2>&1; then
+              echo "VPS SSH port is reachable!"
+              exit 0
+            fi
+            echo "VPS SSH port not reachable yet, waiting 2 seconds... ($i/30)"
+            sleep 2
+          done
+          echo "Error: VPS SSH port remained unreachable after 60 seconds."
+          exit 1
+
       - name: Inject Redis Password into databases.json
         run: |
           sed "s/REDIS_PASSWORD_PLACEHOLDER/${{ secrets.REDIS_PASSWORD }}/g" infrastructure/databases.json.template > infrastructure/databases.json
