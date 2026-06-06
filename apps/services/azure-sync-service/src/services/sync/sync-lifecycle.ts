@@ -32,12 +32,20 @@ export class SyncLifecycle {
 
         try {
             const expiryDate = currentExpiry ? new Date(currentExpiry) : (dUser.membership_expiry ? new Date(dUser.membership_expiry) : null);
+            if (expiryDate) {
+                expiryDate.setHours(0, 0, 0, 0);
+            }
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
             const isActive = expiryDate && expiryDate >= today;
             const currentStatus = dUser.membership_status || 'none';
             const desiredStatus = isActive ? 'active' : 'expired';
+            
+            // Check if user is in the 2-week grace period (14 days) after expiration.
+            // During this period, we keep their Azure mailbox active so they can receive expiry warnings.
+            const daysSinceExpiry = expiryDate ? (today.getTime() - expiryDate.getTime()) / (1000 * 60 * 60 * 24) : Infinity;
+            const shouldBeInActiveGroup = isActive || (expiryDate !== null && daysSinceExpiry < 14);
             
             const userInActiveGroup = ctx.mainMembershipState.get(aUser.id)?.has(GROUP_ACTIVE_LID) || false;
             const userInExpiredGroup = ctx.mainMembershipState.get(aUser.id)?.has(GROUP_EXPIRED_LID) || false;
@@ -67,7 +75,7 @@ export class SyncLifecycle {
             }
 
             // 2. Sync Azure Groups
-            if (isActive) {
+            if (shouldBeInActiveGroup) {
                 if (!userInActiveGroup) {
                     await ManagementService.addGroupMember(GROUP_ACTIVE_LID, aUser.id);
                     changes.push({ field: 'Azure Group', old: 'Nee', new: 'Toevoegen aan Leden_Actief' });
