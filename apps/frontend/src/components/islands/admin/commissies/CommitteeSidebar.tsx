@@ -68,7 +68,7 @@ export default function CommitteeSidebar({
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-3 space-y-1 min-h-[300px] lg:max-h-[600px] custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-3 space-y-1 min-h-[300px] lg:max-h-[calc(100vh-280px)] custom-scrollbar">
                 {committees.length === 0 ? (
                     <div className="py-16 text-center">
                         <Search className="h-10 w-10 text-[var(--beheer-text-muted)] opacity-10 mx-auto mb-3" />

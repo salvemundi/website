@@ -107,7 +107,7 @@ export default function CommitteeDetail({
                         </a>
                         <button
                             onClick={onToggleEditing}
-                            className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-xs transition-all shadow-sm active:scale-95 border ${editingDetail ? 'bg-[var(--beheer-accent)] text-white border-[var(--beheer-accent)]' : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] border-[var(--beheer-border)] hover:bg-white'}`}
+                            className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-xs transition-all shadow-sm active:scale-95 border ${editingDetail ? 'bg-[var(--beheer-accent)] text-white border-[var(--beheer-accent)]' : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] border-[var(--beheer-border)] hover:bg-white dark:hover:bg-white/5'}`}
                         >
                             <Settings className={`h-4 w-4 ${editingDetail ? 'animate-spin' : ''}`} /> {editingDetail ? 'Annuleren' : 'Details'}
                         </button>
@@ -213,12 +213,12 @@ export default function CommitteeDetail({
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-1 translate-x-0 md:translate-x-2 opacity-100 md:opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition-all">
+                                    <div className="flex items-center gap-1">
                                         {member.directusMembershipId && (
                                             <button
                                                 onClick={() => onToggleLeader(member)}
                                                 disabled={!!actionLoading}
-                                                className={`p-3 rounded-xl transition-all shadow-sm ${member.isLeader ? 'bg-amber-100 text-amber-600' : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] hover:text-amber-500 hover:bg-amber-50'}`}
+                                                className={`p-3 rounded-xl transition-all shadow-sm ${member.isLeader ? 'bg-amber-100 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400' : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/20 dark:hover:text-amber-400'}`}
                                                 title="Rechten status omschakelen"
                                             >
                                                 {actionLoading === `leader-${member.entraId}` ? <Loader2 className="h-4 w-4 animate-spin" /> : <Award className="h-4 w-4" />}
@@ -228,7 +228,7 @@ export default function CommitteeDetail({
                                             <button
                                                 onClick={() => onRemoveMember(member)}
                                                 disabled={!!actionLoading}
-                                                className="p-3 bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] hover:text-red-500 hover:bg-red-50 rounded-xl transition-all shadow-sm"
+                                                className="p-3 bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] hover:text-red-500 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-950/20 rounded-xl transition-all shadow-sm"
                                                 title="Verwijderen uit Azure groep"
                                             >
                                                 {actionLoading === `remove-${member.entraId}` ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserMinus className="h-4 w-4" />}
