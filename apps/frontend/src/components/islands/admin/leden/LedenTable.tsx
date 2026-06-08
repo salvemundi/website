@@ -39,7 +39,7 @@ export default function LedenTable({
                         {members.map((member) => (
                             <tr 
                                 key={member.id} 
-                                onClick={() => router.push(`/beheer/leden/${encodeURIComponent((member.email || member.id).split('@')[0].replace(/\./g, '-'))}`)}
+                                onClick={() => router.push(`/beheer/leden/${member.id}`)}
                                 className="group hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition-colors cursor-pointer"
                             >
                                 <td className="px-4 md:px-8 py-5">

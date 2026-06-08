@@ -84,7 +84,13 @@ export function getSystemDirectus() {
                 let revalidate = nextOptions.revalidate;
 
                 if (revalidate === undefined) {
-                    if (urlStr.includes('/items/Stickers') || urlStr.includes('/items/feature_flags')) {
+                    if (
+                        urlStr.includes('/users') ||
+                        urlStr.includes('/items/committee_members') ||
+                        urlStr.includes('/items/event_signups')
+                    ) {
+                        revalidate = 0;
+                    } else if (urlStr.includes('/items/Stickers') || urlStr.includes('/items/feature_flags')) {
                         revalidate = 1;
                     } else if (urlStr.includes('/items/events') || urlStr.includes('/items/news')) {
                         revalidate = 60;

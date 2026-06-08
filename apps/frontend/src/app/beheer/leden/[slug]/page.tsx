@@ -47,29 +47,41 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
     }
 
     try {
-        // NUCLEAR SSR: Sequential fetch because we need the ID from the slug
-        // NUCLEAR SSR: Sequential fetch because we need the ID from the slug
-        const memberResult = await getSystemDirectus().request(
-            readUsers({
-                filter: {
-                    _or: [
-                        { email: { _istarts_with: decodedSlug + '@' } },
-                        { email: { _istarts_with: decodedSlug.replace(/-/g, '.') + '@' } }
-                    ]
-                },
-                fields: ['id', 'first_name', 'last_name', 'email', 'date_of_birth', 'membership_expiry', 'status', 'phone_number', 'avatar', 'entra_id'],
-                limit: 100
-            })
-        ) as DbDirectusUser[];
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(decodedSlug);
+        let memberData: DbDirectusUser | undefined;
 
-        if (memberResult.length === 0) return notFound();
+        if (isUuid) {
+            const result = await getSystemDirectus().request(
+                readUsers({
+                    filter: { id: { _eq: decodedSlug } },
+                    fields: ['id', 'first_name', 'last_name', 'email', 'date_of_birth', 'membership_expiry', 'status', 'phone_number', 'avatar', 'entra_id'],
+                    limit: 1
+                })
+            ) as DbDirectusUser[];
+            memberData = result[0];
+        } else {
+            const memberResult = await getSystemDirectus().request(
+                readUsers({
+                    filter: {
+                        _or: [
+                            { email: { _istarts_with: decodedSlug + '@' } },
+                            { email: { _istarts_with: decodedSlug.replace(/-/g, '.') + '@' } }
+                        ]
+                    },
+                    fields: ['id', 'first_name', 'last_name', 'email', 'date_of_birth', 'membership_expiry', 'status', 'phone_number', 'avatar', 'entra_id'],
+                    limit: 100
+                })
+            ) as DbDirectusUser[];
 
-        // Find exact match by comparing the normalized prefix (dots converted to dashes)
-        const memberData = memberResult.find((u) => {
-            const emailPrefix = (u.email || '').split('@')[0].toLowerCase();
-            const normalizedPrefix = emailPrefix.replace(/\./g, '-');
-            return normalizedPrefix === decodedSlug.toLowerCase();
-        });
+            if (memberResult.length > 0) {
+                // Find exact match by comparing the normalized prefix (dots converted to dashes)
+                memberData = memberResult.find((u) => {
+                    const emailPrefix = (u.email || '').split('@')[0].toLowerCase();
+                    const normalizedPrefix = emailPrefix.replace(/\./g, '-');
+                    return normalizedPrefix === decodedSlug.toLowerCase();
+                });
+            }
+        }
 
         if (!memberData) return notFound();
         if (memberData.status === 'rejected') return notFound();
@@ -84,7 +96,6 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
                     limit: -1
                 })
             ) as Promise<DbCommitteeMember[]>,
-            // Re-fetch signups by email since the lookup uses participant_email
             getSystemDirectus().request(
                 readItems('event_signups', {
                     filter: { participant_email: { _eq: memberData.email } },
@@ -120,7 +131,6 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
             { name: "SaMu || Agenda", id: "cc3b152d-9152-475a-a316-ec5d766d0b78" }
         ];
 
-        // Dynamically fetch and merge Azure Teams
         if (memberData.entra_id && process.env.AZURE_MANAGEMENT_SERVICE_URL && process.env.INTERNAL_SERVICE_TOKEN) {
             try {
                 const mgmtRes = await fetch(`${process.env.AZURE_MANAGEMENT_SERVICE_URL}/api/users/${encodeURIComponent(memberData.entra_id)}/groups`, {
@@ -173,7 +183,6 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
             </AdminPageShell>
         );
     } catch (error: unknown) {
-        // Laat Next.js interne flow-errors (redirect, notFound) netjes door
         if (
             error &&
             typeof error === 'object' &&
@@ -184,7 +193,7 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
             throw error;
         }
         safeConsoleError("[LidDetailPage][LidDetailPage] Error loading member:", error);
-        notFound();
+        throw error;
     }
 }
 
