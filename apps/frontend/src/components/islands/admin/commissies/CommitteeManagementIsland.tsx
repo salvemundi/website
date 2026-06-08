@@ -51,8 +51,8 @@ export default function CommitteeManagementIsland({ initialCommittees, initialMe
     const [addError, setAddError] = useState<string | null>(null);
 
     const [editingDetail, setEditingDetail] = useState(false);
-    const [editShortDesc, setEditShortDesc] = useState('');
-    const [editDesc, setEditDesc] = useState('');
+    const [editShortDesc, setEditShortDesc] = useState(initialCommittees[0]?.short_description || '');
+    const [editDesc, setEditDesc] = useState(initialCommittees[0]?.description || '');
     const [savingDetail, setSavingDetail] = useState(false);
 
     // Filtering logic
@@ -175,7 +175,7 @@ export default function CommitteeManagementIsland({ initialCommittees, initialMe
         <div className="w-full">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-8 items-stretch">
                 <div className="lg:col-span-4">
-                    <div className="lg:sticky lg:top-[180px]">
+                    <div className="lg:sticky lg:top-[180px] lg:self-start w-full">
                         <CommitteeSidebar
                             committees={filteredCommittees}
                             selectedId={selected?.id || null}

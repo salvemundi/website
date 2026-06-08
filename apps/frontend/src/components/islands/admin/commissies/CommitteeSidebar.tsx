@@ -33,7 +33,7 @@ export default function CommitteeSidebar({
     onShowAllChange
 }: Props) {
     return (
-        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm ring-1 ring-[var(--beheer-border)] overflow-hidden h-full flex flex-col">
+        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm ring-1 ring-[var(--beheer-border)] overflow-hidden h-fit flex flex-col">
             <div className="p-6 border-b border-[var(--beheer-border)]/50">
                 <h2 className="text-xs font-semibold text-[var(--beheer-text-muted)] flex items-center gap-3 mb-5">
                     <Users className="h-4 w-4 text-[var(--beheer-accent)]" />
@@ -68,7 +68,7 @@ export default function CommitteeSidebar({
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-3 space-y-1 min-h-[300px] lg:max-h-[calc(100vh-280px)] custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-3 space-y-1 custom-scrollbar">
                 {committees.length === 0 ? (
                     <div className="py-16 text-center">
                         <Search className="h-10 w-10 text-[var(--beheer-text-muted)] opacity-10 mx-auto mb-3" />
