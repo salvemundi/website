@@ -51,7 +51,7 @@ async function updateServiceHistory(
             try {
                 history = JSON.parse(cached) as ServiceHistory;
             } catch (parseErr) {
-                // ignore
+                safeConsoleError(`[services-status.actions.ts][updateServiceHistory] Failed to parse cached history for ${name}:`, parseErr);
             }
         }
 
