@@ -174,18 +174,49 @@ export default function SystemManagementIsland({
                                     <div className="space-y-4">
                                         <div>
                                             <h3 className="text-lg font-semibold text-[var(--beheer-text)]">{service.name}</h3>
-                                            <div className="flex items-center gap-4 mt-3">
+                                            <div className="flex flex-wrap gap-x-4 gap-y-2 mt-3">
                                                 <div className="flex items-center gap-2 text-[10px] font-semibold text-[var(--beheer-text-muted)]">
                                                     <Clock className="h-3.5 w-3.5 text-[var(--beheer-accent)]" />
-                                                    {service.latency ? `${service.latency}ms` : 'N/A'}
+                                                    Latency: {service.latency ? `${service.latency}ms` : 'N/A'}
                                                 </div>
+                                                
+                                                {service.status !== 'online' && service.outageStart && (
+                                                    <div className="flex items-center gap-2 text-[10px] font-semibold text-rose-500">
+                                                        Offline sinds: {formatDateTime(new Date(service.outageStart))}
+                                                    </div>
+                                                )}
+                                                
+                                                {service.status === 'online' && service.lastOffline && (
+                                                    <div className="flex items-center gap-2 text-[10px] font-semibold text-[var(--beheer-text-muted)]">
+                                                        Laatst offline: {formatDateTime(new Date(service.lastOffline))}
+                                                    </div>
+                                                )}
+                                                
+                                                {service.status === 'online' && !service.lastOffline && (
+                                                    <div className="flex items-center gap-2 text-[10px] font-semibold text-emerald-500/85">
+                                                        Geen downtime geregistreerd
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
 
                                         {service.error && (
-                                            <div className="p-4 bg-rose-500/5 border border-rose-500/10 rounded-2xl">
-                                                <p className="text-[10px] font-semibold text-rose-500">Error Detail</p>
-                                                <p className="text-xs font-semibold text-rose-400/80 mt-1">{service.error}</p>
+                                            <div className={cn(
+                                                "p-4 border rounded-2xl",
+                                                service.status === 'online'
+                                                    ? "bg-[var(--beheer-card-soft)] border-[var(--beheer-border)]/40"
+                                                    : "bg-rose-500/5 border-rose-500/10"
+                                            )}>
+                                                <p className={cn(
+                                                    "text-[10px] font-semibold",
+                                                    service.status === 'online' ? "text-[var(--beheer-text-muted)]" : "text-rose-500"
+                                                )}>
+                                                    {service.status === 'online' ? 'Laatste Foutmelding' : 'Foutmelding Detail'}
+                                                </p>
+                                                <p className={cn(
+                                                    "text-xs font-semibold mt-1",
+                                                    service.status === 'online' ? "text-[var(--beheer-text)]/70" : "text-rose-400/80"
+                                                )}>{service.error}</p>
                                             </div>
                                         )}
                                     </div>

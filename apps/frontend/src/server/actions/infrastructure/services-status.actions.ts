@@ -1,6 +1,8 @@
 'use server';
 
 import { checkAdminAccess } from "@/server/actions/admin/admin-utils.actions";
+import { getRedis } from "@/server/auth/redis-client";
+import { safeConsoleError } from "@/server/utils/logger";
 
 const AZURE_MGMT_URL = process.env.AZURE_MANAGEMENT_SERVICE_URL;
 const AZURE_SYNC_URL = process.env.AZURE_SYNC_SERVICE_URL;
@@ -21,6 +23,57 @@ export interface ServiceStatus {
     latency?: number;
     error?: string;
     details?: { [key: string]: unknown };
+    lastOffline?: string;
+    lastOnline?: string;
+    outageStart?: string;
+}
+
+interface ServiceHistory {
+    lastOffline?: string;
+    lastOnline?: string;
+    lastError?: string;
+    outageStart?: string;
+}
+
+async function updateServiceHistory(
+    name: string,
+    currentStatus: 'online' | 'offline' | 'degraded',
+    currentError?: string
+): Promise<ServiceHistory> {
+    const key = `system:service-status:${name.toLowerCase().replace(/\s+/g, '-')}`;
+    const nowIso = new Date().toISOString();
+
+    try {
+        const redis = await getRedis();
+        const cached = await redis.get(key);
+        let history: ServiceHistory = {};
+        if (cached) {
+            try {
+                history = JSON.parse(cached) as ServiceHistory;
+            } catch (parseErr) {
+                // ignore
+            }
+        }
+
+        const wasOnline = !history.outageStart && (history.lastOnline || !history.lastOffline);
+
+        if (currentStatus === 'online') {
+            history.lastOnline = nowIso;
+            history.outageStart = undefined;
+        } else {
+            history.lastOffline = nowIso;
+            history.lastError = currentError || 'Connection failed';
+            if (wasOnline) {
+                history.outageStart = nowIso;
+            }
+        }
+
+        await redis.set(key, JSON.stringify(history));
+        return history;
+    } catch (err) {
+        safeConsoleError(`[services-status.actions.ts][updateServiceHistory] Redis error for ${name}:`, err);
+        return {};
+    }
 }
 
 export async function getServicesStatusAction(): Promise<ServiceStatus[]> {
@@ -37,6 +90,10 @@ export async function getServicesStatusAction(): Promise<ServiceStatus[]> {
     ): Promise<ServiceStatus | null> => {
         if (!url) return null;
         const start = Date.now();
+        let status: 'online' | 'offline' | 'degraded' = 'offline';
+        let error: string | undefined = undefined;
+        let latency: number | undefined = undefined;
+
         try {
             const fetchUrl = url.endsWith('/') ? `${url}${healthPath.slice(1)}` : `${url}${healthPath}`;
             const res = await fetch(fetchUrl, {
@@ -45,28 +102,36 @@ export async function getServicesStatusAction(): Promise<ServiceStatus[]> {
                 signal: AbortSignal.timeout(timeout)
             });
 
-            return {
-                name,
-                status: res.ok ? 'online' : 'degraded',
-                latency: Date.now() - start,
-                error: res.ok ? undefined : `HTTP ${res.status}`
-            };
+            status = res.ok ? 'online' : 'degraded';
+            latency = Date.now() - start;
+            error = res.ok ? undefined : `HTTP ${res.status}`;
         } catch (e: unknown) {
-            const error = e as Error;
-            return {
-                name,
-                status: 'offline',
-                error: error.name === 'AbortError' ? 'Timeout (2s)' : 'Connection failed'
-            };
+            const err = e as Error;
+            status = 'offline';
+            error = err.name === 'AbortError' ? 'Timeout (2s)' : 'Connection failed';
         }
+
+        const history = await updateServiceHistory(name, status, error);
+
+        return {
+            name,
+            status,
+            latency,
+            error: error || history.lastError,
+            lastOffline: history.lastOffline,
+            lastOnline: history.lastOnline,
+            outageStart: history.outageStart
+        };
     };
 
     // 1. Check Directus (Specific SDK call)
     const checkDirectus = async (): Promise<ServiceStatus> => {
         const start = Date.now();
+        let status: 'online' | 'offline' | 'degraded' = 'offline';
+        let error: string | undefined = undefined;
+        let latency: number | undefined = undefined;
+
         try {
-            // SDK doesn't support AbortSignal.timeout directly in this version easily, 
-            // but we can wrap it or use a raw fetch to its health endpoint.
             const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.NEXT_PUBLIC_DIRECTUS_URL || '';
             if (!directusUrl) throw new Error('Directus URL not configured');
 
@@ -78,19 +143,25 @@ export async function getServicesStatusAction(): Promise<ServiceStatus[]> {
 
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-            return {
-                name: 'Directus CMS',
-                status: 'online',
-                latency: Date.now() - start
-            };
+            status = 'online';
+            latency = Date.now() - start;
         } catch (e: unknown) {
-            const error = e as Error;
-            return {
-                name: 'Directus CMS',
-                status: 'offline',
-                error: error.name === 'AbortError' ? 'Timeout (2s)' : error.message
-            };
+            const err = e as Error;
+            status = 'offline';
+            error = err.name === 'AbortError' ? 'Timeout (2s)' : err.message;
         }
+
+        const history = await updateServiceHistory('Directus CMS', status, error);
+
+        return {
+            name: 'Directus CMS',
+            status,
+            latency,
+            error: error || history.lastError,
+            lastOffline: history.lastOffline,
+            lastOnline: history.lastOnline,
+            outageStart: history.outageStart
+        };
     };
 
     const results = await Promise.all([
