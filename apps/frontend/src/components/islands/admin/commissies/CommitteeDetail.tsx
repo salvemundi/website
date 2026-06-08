@@ -154,8 +154,8 @@ export default function CommitteeDetail({
 
             {/* Member Management Section */}
             <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl ring-1 ring-[var(--beheer-border)] overflow-hidden">
-                <div className="p-6 md:p-10 border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/30 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-                    <div>
+                <div className="p-6 md:p-10 border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/30 flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-8">
+                    <div className="flex-1 min-w-0">
                         <h3 className="text-xl font-semibold text-[var(--beheer-text)] flex items-center gap-2">
                             <Shield className="h-5 w-5 text-[var(--beheer-accent)]" />
                             Leden & Azure rechten
@@ -164,7 +164,7 @@ export default function CommitteeDetail({
                     </div>
 
                     {selected.azure_group_id ? (
-                        <div className="flex-1 max-w-lg">
+                        <div className="flex-1 w-full md:max-w-md lg:max-w-lg">
                             <UserSearch
                                 onSelect={onAddMember}
                                 disabled={addingMember}
@@ -177,8 +177,10 @@ export default function CommitteeDetail({
                             )}
                         </div>
                     ) : (
-                        <div className="px-6 py-3 bg-[var(--beheer-card-soft)] text-amber-600 dark:text-amber-400 text-xs font-semibold rounded-xl flex items-center gap-2 border border-amber-500/20 shadow-sm">
-                            <ShieldAlert className="h-4 w-4" /> Geen Azure-koppeling
+                        <div className="flex-1 w-full md:max-w-md lg:max-w-lg">
+                            <div className="px-6 py-3 bg-[var(--beheer-card-soft)] text-amber-600 dark:text-amber-400 text-xs font-semibold rounded-xl flex items-center gap-2 border border-amber-500/20 shadow-sm">
+                                <ShieldAlert className="h-4 w-4" /> Geen Azure-koppeling
+                            </div>
                         </div>
                     )}
                 </div>

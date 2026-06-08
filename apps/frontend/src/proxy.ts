@@ -121,6 +121,7 @@ async function proxy(request: NextRequest) {
             const sessionToken = sessionTokenRaw ? sessionTokenRaw.split('.')[0] : undefined;
 
             let hasSession = false;
+            const hasSessionCookie = !!sessionTokenRaw || !!testTokenRaw;
 
             if (sessionToken && !hasTestToken) {
                 try {
@@ -137,7 +138,7 @@ async function proxy(request: NextRequest) {
                 }
             }
 
-            if (!hasSession) {
+            if (!hasSession && hasSessionCookie) {
                 const host = request.headers.get('host') || 'localhost:3000';
                 const internalBase = process.env.NEXT_APP_INTERNAL_URL || origin;
                 const sessionUrl = new URL('/api/auth/get-session', internalBase);
