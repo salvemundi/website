@@ -5,7 +5,7 @@ services:
     image: ghcr.io/salvemundi/v7-app:${IMAGE_TAG:-latest}
     restart: always
     ports:
-      - "127.0.0.1:${FRONTEND_PORT:-3000}:3000"
+      - "${FRONTEND_PORT:-3000}:3000"
     environment:
       # URLs
       - PUBLIC_URL=${PUBLIC_URL}
