@@ -1,5 +1,4 @@
 services:
-  # 1. De Frontend (Next.js)
   frontend:
     container_name: ${COMPOSE_PROJECT_NAME}-app
     image: ghcr.io/salvemundi/v7-app:${IMAGE_TAG:-latest}
@@ -7,7 +6,6 @@ services:
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     environment:
-      # URLs
       - PUBLIC_URL=${PUBLIC_URL}
       - BETTER_AUTH_URL=${BETTER_AUTH_URL}
       - BETTER_AUTH_TRUSTED_ORIGINS=${BETTER_AUTH_URL}
@@ -16,17 +14,14 @@ services:
       - AZURE_SYNC_SERVICE_URL=http://sync-service:3002
       - AZURE_MANAGEMENT_SERVICE_URL=http://management-service:3004
       - MAIL_SERVICE_URL=http://mail-service:3003
-      # Secrets
       - DIRECTUS_STATIC_TOKEN=${DIRECTUS_STATIC_TOKEN}
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - MOLLIE_WEBHOOK_SECRET=${MOLLIE_WEBHOOK_SECRET}
-      # Azure Auth
       - AZURE_WEBSITEV7_TENANT_ID=${AZURE_WEBSITEV7_TENANT_ID}
       - AZURE_WEBSITEV7_AUTH_CLIENT_ID=${AZURE_WEBSITEV7_AUTH_CLIENT_ID}
       - AZURE_WEBSITEV7_AUTH_CLIENT_SECRET=${AZURE_WEBSITEV7_AUTH_CLIENT_SECRET}
       - AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID=${AZURE_WEBSITEV7_DIRECTUS_CLIENT_ID}
-      # Database & Infra
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
@@ -44,12 +39,11 @@ services:
       - salve-mundi-v7-shared
       - proxy-network
 
-  # 2. Finance Service (Mollie)
   finance-service:
     container_name: ${COMPOSE_PROJECT_NAME}-finance
     image: ghcr.io/salvemundi/v7-finance:${IMAGE_TAG:-latest}
     ports:
-      - "${VPN_IP:-127.0.0.1}:${FINANCE_PORT:-3001}:3001"
+      - "${FINANCE_PORT:-3001}:3001"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - MOLLIE_API_KEY=${MOLLIE_API_KEY}
@@ -71,19 +65,17 @@ services:
       timeout: 10s
       retries: 3
       start_period: 20s
-
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
     networks:
       - salve-mundi-v7-shared
 
-  # 3. Sync Service (Azure AD Sync)
   sync-service:
     container_name: ${COMPOSE_PROJECT_NAME}-sync
     image: ghcr.io/salvemundi/v7-sync:${IMAGE_TAG:-latest}
     ports:
-      - "${VPN_IP:-127.0.0.1}:${SYNC_PORT:-3002}:3002"
+      - "${SYNC_PORT:-3002}:3002"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - AZURE_TENANT_ID=${AZURE_WEBSITEV7_TENANT_ID}
@@ -109,19 +101,17 @@ services:
       timeout: 10s
       retries: 3
       start_period: 20s
-
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
     networks:
       - salve-mundi-v7-shared
 
-  # 4. Mail Service (Microsoft Graph)
   mail-service:
     container_name: ${COMPOSE_PROJECT_NAME}-mail
     image: ghcr.io/salvemundi/v7-mail:${IMAGE_TAG:-latest}
     ports:
-      - "${VPN_IP:-127.0.0.1}:${MAIL_PORT:-3003}:3003"
+      - "${MAIL_PORT:-3003}:3003"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - AZURE_MAIL_CLIENT_ID=${AZURE_WEBSITEV7_MAIL_CLIENT_ID}
@@ -144,19 +134,17 @@ services:
       timeout: 10s
       retries: 3
       start_period: 20s
-
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
     networks:
       - salve-mundi-v7-shared
 
-  # 5. Management Service
   management-service:
     container_name: ${COMPOSE_PROJECT_NAME}-management
     image: ghcr.io/salvemundi/v7-management:${IMAGE_TAG:-latest}
     ports:
-      - "${VPN_IP:-127.0.0.1}:${MANAGEMENT_PORT:-3004}:3004"
+      - "${MANAGEMENT_PORT:-3004}:3004"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - AZURE_WEBSITEV7_TENANT_ID=${AZURE_WEBSITEV7_TENANT_ID}
@@ -177,7 +165,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 20s
-
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
