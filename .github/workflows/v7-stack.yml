@@ -34,6 +34,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
+        with:
+          version: 9 # Of je specifieke pnpm versie indien nodig
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -207,6 +209,9 @@ jobs:
           echo "BETTER_AUTH_URL=${{ vars.BETTER_AUTH_URL }}" >> .env.${ENV_NAME}
           echo "FRONTEND_PORT=${FRONTEND_PORT}" >> .env.${ENV_NAME}
           echo "FINANCE_PORT=${FINANCE_PORT}" >> .env.${ENV_NAME}
+
+          # FIX: Next.js standalone dwingen om extern bereikbaar te zijn binnen de Docker bridge (voor proxy-afhandeling)
+          echo "HOSTNAME=0.0.0.0" >> .env.${ENV_NAME}
 
           # DYNAMISCH INJECTEREN VAN DE TESTBANK (ALLEEN VOOR ACC)
           if [ "$ENV_NAME" = "acc" ]; then
