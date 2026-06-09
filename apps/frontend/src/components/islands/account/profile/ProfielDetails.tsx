@@ -35,7 +35,7 @@ export default function ProfielDetails({
     handleSubmitPhone = (() => () => { }) as unknown as UseFormHandleSubmit<{ phone_number?: string | null }>,
     onSavePhone = () => { },
     resetPhone: _resetPhone = () => { },
-    phoneErrors = {},
+    phoneErrors: _phoneErrors = {},
     isPending = false
 }: ProfielDetailsProps) {
     const router = useRouter();
@@ -73,39 +73,39 @@ export default function ProfielDetails({
             actions={logoutButton}
         >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex items-center gap-4 rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm">
-                    <div className="shrink-0 flex items-center justify-center text-purple-600 dark:text-[var(--color-purple-300)]">
-                        <Mail className="h-5 w-5" />
-                    </div>
-                    <div className="min-w-0 flex-1 overflow-hidden">
-                        <p className="text-[11px] text-purple-400 font-bold uppercase tracking-wide mb-1">
-                            E-mailadres
-                        </p>
-                        <p className="font-bold text-purple-700 dark:text-white break-words text-xs sm:text-sm leading-tight">
+                <div className="flex flex-col gap-1.5">
+                    <p className="text-[11px] text-[var(--color-licht-paars)] dark:text-[var(--color-geel)] font-black uppercase tracking-wider text-left pl-1">
+                        E-mailadres
+                    </p>
+                    <div className="flex items-center gap-4 rounded-2xl bg-[var(--color-licht-paars)]/10 dark:bg-[var(--color-donker-blauw)] p-5 border border-[var(--color-licht-paars)]/20 dark:border-[var(--color-donker-blauw)]/50 shadow-sm min-h-[68px]">
+                        <div className="shrink-0 flex items-center justify-center text-purple-600 dark:text-[var(--color-purple-300)]">
+                            <Mail className="h-5 w-5" />
+                        </div>
+                        <p className="font-bold text-purple-700 dark:text-white break-words text-xs sm:text-sm leading-tight min-w-0 flex-1">
                             {formatForBreak(user.email) || 'Geen email'}
                         </p>
                     </div>
                 </div>
 
                 {user.fontys_email && (
-                    <div className="flex items-center gap-4 rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm">
-                        <div className="shrink-0 flex items-center justify-center text-purple-600 dark:text-[var(--color-purple-300)]">
-                            <Mail className="h-5 w-5" />
-                        </div>
-                        <div className="min-w-0 flex-1 overflow-hidden">
-                            <p className="text-[11px] text-purple-400 font-bold uppercase tracking-wide mb-1">
-                                Fontys e-mail
-                            </p>
-                            <p className="font-bold text-purple-700 dark:text-white break-words text-xs sm:text-sm leading-tight">
+                    <div className="flex flex-col gap-1.5">
+                        <p className="text-[11px] text-[var(--color-licht-paars)] dark:text-[var(--color-geel)] font-black uppercase tracking-wider text-left pl-1">
+                            Fontys e-mail
+                        </p>
+                        <div className="flex items-center gap-4 rounded-2xl bg-[var(--color-licht-paars)]/10 dark:bg-[var(--color-donker-blauw)] p-5 border border-[var(--color-licht-paars)]/20 dark:border-[var(--color-donker-blauw)]/50 shadow-sm min-h-[68px]">
+                            <div className="shrink-0 flex items-center justify-center text-purple-600 dark:text-[var(--color-purple-300)]">
+                                <Mail className="h-5 w-5" />
+                            </div>
+                            <p className="font-bold text-purple-700 dark:text-white break-words text-xs sm:text-sm leading-tight min-w-0 flex-1">
                                 {formatForBreak(user.fontys_email)}
                             </p>
                         </div>
                     </div>
                 )}
 
-                <div className="rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm relative group">
-                    <div className="flex items-center justify-between gap-2 mb-3">
-                        <p className="text-[11px] font-bold uppercase text-purple-400 tracking-wide text-left">
+                <div className="flex flex-col gap-1.5 relative group">
+                    <div className="flex items-center justify-between gap-2 pl-1">
+                        <p className="text-[11px] font-black uppercase text-[var(--color-licht-paars)] dark:text-[var(--color-geel)] tracking-wider text-left">
                             Telefoonnummer
                         </p>
                         {!isEditingPhoneNumber && (
@@ -114,7 +114,7 @@ export default function ProfielDetails({
                             </button>
                         )}
                     </div>
-                    <div className="flex items-center gap-4 min-w-0">
+                    <div className="flex items-center gap-4 rounded-2xl bg-[var(--color-licht-paars)]/10 dark:bg-[var(--color-donker-blauw)] p-5 border border-[var(--color-licht-paars)]/20 dark:border-[var(--color-donker-blauw)]/50 shadow-sm min-h-[68px]">
                         <div className="shrink-0 flex items-center justify-center text-purple-600 dark:text-[var(--color-purple-300)]">
                             <Phone className="h-5 w-5" />
                         </div>
@@ -129,7 +129,7 @@ export default function ProfielDetails({
                                 <div className="flex w-full items-center gap-2">
                                     <PhoneInput
                                         {...registerPhone("phone_number")}
-                                        className={`flex-1 min-w-0 bg-white dark:bg-black/40 border ${phoneErrors.phone_number ? 'border-red-500 ring-1 ring-red-500' : 'border-slate-300 dark:border-white/20'} rounded-lg px-3 py-1.5 text-sm font-medium focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none`}
+                                        className="flex-1 min-w-0 bg-white dark:bg-black/40 border border-slate-300 dark:border-white/20 rounded-lg px-3 py-1.5 text-sm font-medium focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
                                     />
                                     <button type="submit" disabled={isPending} className="shrink-0 p-1.5 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors">
                                         {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
@@ -144,13 +144,11 @@ export default function ProfielDetails({
                     </div>
                 </div>
 
-                <div className="rounded-2xl bg-slate-50 dark:bg-black/20 p-5 border border-slate-200 dark:border-white/10 shadow-sm">
-                    <div className="flex items-center justify-between gap-2 mb-3">
-                        <p className="text-[11px] font-bold uppercase text-purple-400 tracking-wide text-left">
-                            Geboortedatum
-                        </p>
-                    </div>
-                    <div className="flex items-center gap-4">
+                <div className="flex flex-col gap-1.5">
+                    <p className="text-[11px] font-black uppercase text-[var(--color-licht-paars)] dark:text-[var(--color-geel)] tracking-wider text-left pl-1">
+                        Geboortedatum
+                    </p>
+                    <div className="flex items-center gap-4 rounded-2xl bg-[var(--color-licht-paars)]/10 dark:bg-[var(--color-donker-blauw)] p-5 border border-[var(--color-licht-paars)]/20 dark:border-[var(--color-donker-blauw)]/50 shadow-sm min-h-[68px]">
                         <div className="shrink-0 flex items-center justify-center text-purple-600 dark:text-[var(--color-purple-300)]">
                             <Calendar className="h-5 w-5" />
                         </div>

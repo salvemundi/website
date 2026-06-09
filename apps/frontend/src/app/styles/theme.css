@@ -6,30 +6,30 @@
 /* ── Dark Mode ─────────────────────────────────────────────────────────────── */
 .dark {
     color-scheme: dark;
-    --bg-main: #1a141b;
-    --bg-soft: #161116;
-    --bg-card: #241824;
+    --bg-main: #201024; /* Very dark brand purple based on #5A3761 */
+    --bg-soft: #2d1933; /* Dark brand purple */
+    --bg-card: #392040; /* Lighter dark brand purple for cards */
 
-    --text-main: #ffffff;
-    --text-subtle: rgba(255, 255, 255, 0.96);
-    --text-muted: rgba(255, 255, 255, 0.88);
-    --text-light: rgba(255, 255, 255, 0.80);
+    --text-main: #F0F1F9; /* Wit Paars */
+    --text-subtle: #ffffff;
+    --text-muted: #ebdceb;
+    --text-light: #936695; /* Licht Paars */
 
-    --border-color: #4b3a4d;
+    --border-color: #5A3761; /* Donker Paars border */
 
     --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
     --shadow-card-elevated: 0 8px 20px rgba(6, 4, 10, 0.45);
 
-    --gradient-start: #805480;
-    --gradient-end: #905e8e;
+    --gradient-start: #5A3761; /* Donker Paars */
+    --gradient-end: #936695;   /* Licht Paars */
 
-    --bg-gradient-start: #312131; /* Deep Brand Purple */
-    --bg-gradient-end: #1a141b;   /* Soft Ink Black */
+    --bg-gradient-start: #2d1933;
+    --bg-gradient-end: #1a0b1d;
 
     --theme-success: #4ade80;
-    --theme-warning: #fbbf24;
+    --theme-warning: #F8CF45; /* Geel */
     --theme-error: #f87171;
-    --theme-info: #60a5fa;
+    --theme-info: #132A40; /* Donker Blauw */
 }
 
 /* ── Semantic Aliases ──────────────────────────────────────────────────────── */

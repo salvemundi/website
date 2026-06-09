@@ -83,8 +83,8 @@ export default function ProfielSignups({
                                 key={`${signup._type}-${signup.id}`}
                                 href={detailHref}
                                 className={`group h-full flex items-center justify-between gap-4 rounded-3xl p-5 text-left transition-all border shadow-sm ${isPast
-                                    ? "bg-slate-50 dark:bg-black/10 opacity-60 grayscale border-slate-200 dark:border-white/5"
-                                    : "bg-slate-50 dark:bg-black/20 border-slate-200 dark:border-white/10 hover:shadow-lg hover:-translate-y-0.5"
+                                    ? "bg-[var(--color-licht-paars)]/5 dark:bg-[var(--color-donker-blauw)]/50 opacity-60 grayscale border-[var(--color-licht-paars)]/10 dark:border-[var(--color-donker-blauw)]/30"
+                                    : "bg-[var(--color-licht-paars)]/10 dark:bg-[var(--color-donker-blauw)] border-[var(--color-licht-paars)]/20 dark:border-[var(--color-donker-blauw)]/50 hover:shadow-lg hover:-translate-y-0.5"
                                     }`}
                             >
                                 <div className="flex items-center gap-4">
@@ -109,7 +109,7 @@ export default function ProfielSignups({
                     })}
                 </div>
             ) : (
-                <div className="rounded-3xl border-2 border-dashed border-slate-300 dark:border-white/20 bg-slate-50 dark:bg-black/10 p-12 text-center shadow-inner">
+                <div className="rounded-3xl border-2 border-dashed border-[var(--color-licht-paars)]/20 dark:border-[var(--color-donker-blauw)]/50 bg-[var(--color-licht-paars)]/5 dark:bg-[var(--color-donker-blauw)]/40 p-12 text-center shadow-inner">
                     <p className="text-[var(--color-purple-700)] dark:text-white font-bold text-lg mb-2">
                         Je bent nog niet aangemeld voor activiteiten.
                     </p>

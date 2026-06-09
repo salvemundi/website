@@ -14,9 +14,13 @@ const fastify = Fastify({
 fastify.register(redisPlugin);
 fastify.register(syncRoutes, { prefix: '/api/sync' });
 
-fastify.get('/health', async () => {
-    await Promise.resolve();
-    return { status: 'ok', service: 'azure-sync-service' };
+fastify.get('/health', () => {
+    return {
+        status: 'ok',
+        service: 'azure-sync-service',
+        environment: process.env.APP_ENV || process.env.NODE_ENV || 'unknown',
+        publicUrl: process.env.PUBLIC_URL || 'not set'
+    };
 });
 
 fastify.addHook('onClose', async () => {

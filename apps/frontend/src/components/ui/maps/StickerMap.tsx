@@ -7,6 +7,7 @@ import { MapPin, Camera, X } from 'lucide-react';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { formatDate } from '@/shared/lib/utils/date';
 import MediaAsset from '@/components/ui/media/MediaAsset';
+import { FallbackLogo } from '@/components/ui/media/FallbackLogo';
 
 import { type EnrichedUser } from '@/types/auth';
 import { type StickerPublic } from '@salvemundi/validations';
@@ -158,6 +159,7 @@ export default function StickerMap({
                     }}
                 >
                     <NavigationControl position="top-right" />
+                    <NavigationControl position="top-right" />
                     <GeolocateControl position="top-right" trackUserLocation={false} />
 
                     {filteredStickers.map((sticker) => {
@@ -174,13 +176,19 @@ export default function StickerMap({
                                 }}
                             >
                                 <div className={`samu-marker ${isMine ? 'samu-marker--mine' : ''} cursor-pointer`}>
-                                    <MediaAsset
-                                        asset={sticker.user_created?.avatar || '/img/newlogo.svg'}
-                                        alt="User"
-                                        width={128}
-                                        height={128}
-                                        className={`samu-marker__img ${!hasAvatar ? 'samu-marker__img--logo' : ''}`}
-                                    />
+                                    {hasAvatar ? (
+                                        <MediaAsset
+                                            asset={sticker.user_created?.avatar}
+                                            alt="User"
+                                            width={128}
+                                            height={128}
+                                            className="samu-marker__img object-cover"
+                                        />
+                                    ) : (
+                                        <div className="samu-marker__img samu-marker__img--logo relative w-full h-full">
+                                            <FallbackLogo className="object-contain p-1" />
+                                        </div>
+                                    )}
                                     <span className={`samu-marker__dot ${isMine ? 'samu-marker__dot--mine' : ''}`}></span>
                                 </div>
                             </Marker>
@@ -214,17 +222,19 @@ export default function StickerMap({
                                 </button>
 
                                 <div className="flex gap-3 items-center pr-6">
-                                    <MediaAsset
-                                        asset={popupInfo.user_created?.avatar || '/img/newlogo.svg'}
-                                        alt="avatar"
-                                        width={128}
-                                        height={128}
-                                        className={`w-11 h-11 rounded-full ring-2 ring-[var(--theme-purple)]/20 shrink-0 ${
-                                            popupInfo.user_created?.avatar 
-                                                ? 'object-cover' 
-                                                : 'bg-[var(--bg-card)] p-1.5 object-contain'
-                                        }`}
-                                    />
+                                    {popupInfo.user_created?.avatar ? (
+                                        <MediaAsset
+                                            asset={popupInfo.user_created.avatar}
+                                            alt="avatar"
+                                            width={128}
+                                            height={128}
+                                            className="w-11 h-11 rounded-full ring-2 ring-[var(--theme-purple)]/20 shrink-0 object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-11 h-11 rounded-full ring-2 ring-[var(--theme-purple)]/20 shrink-0 bg-[var(--bg-card)] relative overflow-hidden">
+                                            <FallbackLogo className="object-contain p-1.5" />
+                                        </div>
+                                    )}
                                     <div className="min-w-0">
                                         <h3 className="font-semibold text-[var(--text-main)] text-sm sm:text-base leading-tight truncate">
                                             {popupInfo.location_name === 'Imported' ? (popupInfo.city || popupInfo.address || 'Imported') : (popupInfo.location_name || 'Sticker Locatie')}

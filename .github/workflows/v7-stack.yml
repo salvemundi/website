@@ -207,6 +207,13 @@ jobs:
           echo "BETTER_AUTH_URL=${{ vars.BETTER_AUTH_URL }}" >> .env.${ENV_NAME}
           echo "FRONTEND_PORT=${FRONTEND_PORT}" >> .env.${ENV_NAME}
           echo "FINANCE_PORT=${FINANCE_PORT}" >> .env.${ENV_NAME}
+
+          # DYNAMISCH INJECTEREN VAN DE TESTBANK (ALLEEN VOOR ACC)
+          if [ "$ENV_NAME" = "acc" ]; then
+            echo "MOLLIE_TEST_ISSUER=lsvb_test" >> .env.${ENV_NAME}
+            echo "[DEPLOY] Mollie Test Simulator ingeschakeld voor Acceptance"
+          fi
+
           echo "SYNC_PORT=${SYNC_PORT}" >> .env.${ENV_NAME}
           echo "MAIL_PORT=${MAIL_PORT}" >> .env.${ENV_NAME}
           echo "MANAGEMENT_PORT=${MANAGEMENT_PORT}" >> .env.${ENV_NAME}
@@ -230,4 +237,3 @@ jobs:
           docker compose --env-file .env.${ENV_NAME} up -d --remove-orphans
           docker image prune -af
           ENDSSH
-

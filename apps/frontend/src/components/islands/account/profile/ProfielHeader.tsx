@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useMemo } from 'react';
-import { Users2, Star } from 'lucide-react';
+import { useMemo } from 'react';
+import { Star } from 'lucide-react';
 import { Tile } from './ProfielUI';
 import MediaAsset from '@/components/ui/media/MediaAsset';
 import { getImageUrl } from '@/lib/utils/image-utils';
@@ -106,21 +106,20 @@ export default function ProfielHeader({ user, membershipStatus }: ProfielHeaderP
 
                     {Array.isArray(user.committees) && user.committees.length > 0 && (
                         <div className="mt-6">
-                            <p className="text-[10px] text-purple-400 font-black uppercase tracking-wider mb-3 text-center">
+                            <p className="text-[10px] text-[var(--color-licht-paars)] dark:text-[var(--color-geel)] font-black uppercase tracking-wider mb-3 text-center">
                                 Mijn Commissies
                             </p>
                             <div className="flex flex-wrap gap-2 justify-center">
                                 {user.committees.map((committee) => (
                                     <span
                                         key={committee.id}
-                                        className="group relative inline-flex items-center gap-2 px-4 py-2 bg-purple-50 dark:bg-white/10 border border-purple-100 dark:border-white/20 rounded-full text-xs font-bold text-purple-700 dark:text-white shadow-sm max-w-full"
+                                        className="group relative inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-licht-paars)]/10 dark:bg-[var(--color-donker-blauw)] border border-[var(--color-licht-paars)]/20 dark:border-[var(--color-donker-blauw)]/50 rounded-full text-xs font-bold text-purple-700 dark:text-white shadow-sm max-w-full"
                                     >
                                         {committee.is_leader && !committee.name.toLowerCase().includes('bestuur') && (
                                             <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 border-2 border-bg-card shadow-md flex items-center justify-center shrink-0">
                                                 <Star className="h-2 w-2 text-white fill-current shrink-0" />
                                             </span>
                                         )}
-                                        <Users2 className="h-3.5 w-3.5 shrink-0" />
                                         <span className="truncate">{committee.name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim()}</span>
                                     </span>
                                 ))}
@@ -128,11 +127,11 @@ export default function ProfielHeader({ user, membershipStatus }: ProfielHeaderP
                         </div>
                     )}
 
-                    <div className="mt-6 flex flex-col gap-3">
-                        <div className="rounded-2xl bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 px-5 py-4 shadow-sm">
-                            <p className="text-[10px] text-purple-400 font-black uppercase tracking-wider mb-1.5">
-                                Lidmaatschap tot
-                            </p>
+                    <div className="mt-6 flex flex-col gap-1.5">
+                        <p className="text-[10px] text-[var(--color-licht-paars)] dark:text-[var(--color-geel)] font-black uppercase tracking-wider pl-1">
+                            Lidmaatschap tot
+                        </p>
+                        <div className="rounded-2xl bg-[var(--color-licht-paars)]/10 dark:bg-[var(--color-donker-blauw)] border border-[var(--color-licht-paars)]/20 dark:border-[var(--color-donker-blauw)]/50 px-5 py-4 shadow-sm text-center flex justify-center items-center min-h-[56px]">
                             <p className="text-base font-bold text-purple-700 dark:text-white">
                                 {user.membership_expiry
                                     ? formatDate(user.membership_expiry, "d MMM yyyy")

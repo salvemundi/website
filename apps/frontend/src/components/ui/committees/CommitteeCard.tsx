@@ -5,6 +5,8 @@ import { slugify } from '@/shared/lib/utils/slug';
 import type { Committee } from '@salvemundi/validations/schema/committees.zod';
 import Image from 'next/image';
 
+import { BRAND_CONFIG } from '@/lib/config/brand';
+
 interface CommitteeCardProps {
     committee?: Committee;
     index?: number;
@@ -50,20 +52,35 @@ export const CommitteeCard = ({
                         unoptimized
                     />
                 )}
-                <Image
-                    src={imageUrl || '/img/newlogo.svg'}
-                    alt={committee.name || 'Committee'}
-                    fill
-                    className={`transition-all duration-500 ${
-                        hasImage
-                            ? isBestuur
-                                ? 'object-contain'
-                                : 'object-cover'
-                            : 'object-contain p-12 opacity-40'
-                    }`}
-                    unoptimized
-                    priority={index < 4}
-                />
+                {!hasImage ? (
+                    <>
+                        <Image
+                            src={BRAND_CONFIG.logoFallbackLight}
+                            alt={committee.name || 'Committee'}
+                            fill
+                            className="transition-all duration-500 object-contain p-12 opacity-40 dark:hidden"
+                            unoptimized
+                            priority={index < 4}
+                        />
+                        <Image
+                            src={BRAND_CONFIG.logoFallbackDark}
+                            alt={committee.name || 'Committee'}
+                            fill
+                            className="transition-all duration-500 object-contain p-12 opacity-40 hidden dark:block"
+                            unoptimized
+                            priority={index < 4}
+                        />
+                    </>
+                ) : (
+                    <Image
+                        src={imageUrl}
+                        alt={committee.name || 'Committee'}
+                        fill
+                        className={`transition-all duration-500 ${isBestuur ? 'object-contain' : 'object-cover'}`}
+                        unoptimized
+                        priority={index < 4}
+                    />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
 
                 {isBestuur && (
@@ -84,7 +101,14 @@ export const CommitteeCard = ({
                             <div className="flex -space-x-2">
                                 {members.slice(0, 3).map((member, i) => (
                                     <div key={i} className="relative h-6 w-6 rounded-full border-2 border-bg-card overflow-hidden bg-slate-200 dark:bg-slate-800">
-                                        <Image src={member.avatar || '/img/newlogo.svg'} alt="Member" fill className="object-cover" unoptimized />
+                                        {member.avatar ? (
+                                            <Image src={member.avatar} alt="Member" fill className="object-cover" unoptimized />
+                                        ) : (
+                                            <>
+                                                <Image src={BRAND_CONFIG.logoFallbackLight} alt="Member" fill className="object-cover dark:hidden" unoptimized />
+                                                <Image src={BRAND_CONFIG.logoFallbackDark} alt="Member" fill className="object-cover hidden dark:block" unoptimized />
+                                            </>
+                                        )}
                                     </div>
                                 ))}
                             </div>

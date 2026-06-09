@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
-import { Calendar, Info, ShieldCheck, Mail, MapPin, ExternalLink, Camera } from 'lucide-react';
+import { Calendar, Info, ShieldCheck, Mail, ExternalLink } from 'lucide-react';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import type { ReisTrip } from '@salvemundi/validations/schema/reis.zod';
 import { SafeMarkdown } from '@/components/ui/security/SafeMarkdown';
@@ -26,27 +26,7 @@ const formatFullDate = (d: Date) => {
 };
 
 export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
-    const [lightboxOpen, setLightboxOpen] = useState(false);
-    const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
     const [imageError, setImageError] = useState(false);
-
-    const openLightbox = (src: string) => {
-        setLightboxSrc(src);
-        setLightboxOpen(true);
-    };
-
-    const closeLightbox = () => {
-        setLightboxOpen(false);
-        setLightboxSrc(null);
-    };
-
-    useEffect(() => {
-        const onKey = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') closeLightbox();
-        };
-        if (lightboxOpen) window.addEventListener('keydown', onKey);
-        return () => window.removeEventListener('keydown', onKey);
-    }, [lightboxOpen]);
 
     const nextTripStartDate = nextTrip?.start_date ? new Date(nextTrip.start_date) : null;
     const nextTripEndDate = nextTrip?.end_date ? new Date(nextTrip.end_date) : null;
@@ -69,29 +49,10 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
                                 src={imageError ? '/img/placeholder.svg' : getImageUrl(nextTrip.image)}
                                 alt={nextTrip.name}
                                 fill
-                                className="object-cover transition-transform duration-1000 group-hover:scale-110"
+                                className="object-contain"
                                 unoptimized
                                 onError={() => setImageError(true)}
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
-                            <div className="absolute bottom-6 left-6 right-6">
-                                <h2 className="text-2xl sm:text-4xl font-bold text-white tracking-tight drop-shadow-lg">
-                                    {nextTrip.name}
-                                </h2>
-                                <div className="flex items-center gap-2 text-white/80 mt-2 font-medium">
-                                    <MapPin className="h-4 w-4 text-theme-purple" />
-                                    <span>Bestemming volgt</span>
-                                </div>
-                            </div>
-
-                            <button
-                                type="button"
-                                onClick={() => openLightbox(getImageUrl(nextTrip.image))}
-                                className="absolute top-4 right-4 bg-white/10 backdrop-blur-md border border-white/20 p-3 rounded-2xl text-white hover:bg-white/20 transition-all active:scale-90"
-                            >
-                                <Camera className="h-5 w-5" />
-                            </button>
                         </div>
                     ) : (
                         <div />
@@ -164,35 +125,6 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
                     </div>
                 </div>
             </div>
-
-            {lightboxOpen && lightboxSrc && (
-                <div
-                    role="dialog"
-                    aria-modal="true"
-                    className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/90 backdrop-blur-lg animate-in fade-in duration-300"
-                    onClick={closeLightbox}
-                >
-                    <button
-                        onClick={closeLightbox}
-                        aria-label="Sluiten"
-                        className="absolute top-8 right-8 text-white hover:scale-110 transition-transform bg-white/10 p-4 rounded-2xl border border-white/20"
-                    >
-                        <ExternalLink className="h-6 w-6 rotate-45" />
-                    </button>
-                    <div
-                        className="relative w-full max-w-6xl h-[85vh]"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <Image
-                            src={lightboxSrc}
-                            alt={nextTrip?.name || 'Reis afbeelding'}
-                            fill
-                            className="object-contain rounded-3xl shadow-2xl animate-in zoom-in-95 duration-500"
-                            unoptimized
-                        />
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

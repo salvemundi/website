@@ -1,7 +1,5 @@
 'use server';
 
-
-
 import {
     reisPaymentEnrichmentSchema
 } from '@salvemundi/validations/schema/reis.zod';
@@ -35,11 +33,6 @@ interface PaymentStatusResponse {
     payment_status: 'paid' | 'open' | 'expired' | 'failed' | 'canceled';
 }
 
-/**
- * Validates if the current request has access to a signup.
- * Either via a valid session (logged in user owns the signup)
- * or via a secure access_token (guest link from email).
- */
 async function validateAccess(signupId: number, token?: string) {
     try {
         const session = await getEnrichedSession();
@@ -49,12 +42,10 @@ async function validateAccess(signupId: number, token?: string) {
             return { authorized: false, error: 'Aanmelding niet gevonden.' };
         }
 
-        // 1. Guest access via token
         if (token && signup.access_token === token) {
             return { authorized: true, signup };
         }
 
-        // 2. Logged in user access via ownership
         if (session?.user.id && signup.directus_relations === session.user.id) {
             return { authorized: true, signup };
         }
@@ -72,7 +63,6 @@ export async function getTripSignupByToken(signupId: number, token?: string) {
 
         const signup = access.signup;
 
-        // 2. Fetch Trip and Activities via SQL
         const [tripRaw, allActivitiesRaw, selectedActivitiesRaw] = await Promise.all([
             fetchTripByIdDb(signup.trip_id),
             fetchTripActivitiesByTripIdDb(signup.trip_id),
@@ -81,7 +71,6 @@ export async function getTripSignupByToken(signupId: number, token?: string) {
 
         if (!tripRaw) return { success: false, error: 'Reisgegevens niet gevonden.' };
 
-        // 3. Robust Zod parsing
         const tripVal = tripSchema.safeParse(tripRaw);
         if (!tripVal.success) {
 
@@ -132,7 +121,6 @@ export async function updateSignupDetails(signupId: number, data: ReisPaymentEnr
             return { success: false, error: 'Vul alle verplichte velden correct in.', fieldErrors: validated.error.flatten().fieldErrors };
         }
 
-        // Strip is_bus_trip as it's not a column in trip_signups
         const { is_bus_trip: _, ...dbData } = validated.data;
 
         const fields = Object.keys(dbData);
@@ -164,7 +152,6 @@ export async function syncSignupActivities(signupId: number, selections: { activ
         const lockKey = `lock:trip-activity-sync:${signupId}`;
         let lockAcquired = false;
 
-        // 1. Simple 10s spin-lock
         for (let i = 0; i < 20; i++) {
             const res = await redis.set(lockKey, 'locked', 'EX', 10, 'NX');
             if (res === 'OK') {
@@ -179,7 +166,6 @@ export async function syncSignupActivities(signupId: number, selections: { activ
         }
 
         try {
-            // 1. Get current activities for this signup (SQL for consistency)
             const currentRes = await query(
                 'SELECT id, trip_activity_id FROM trip_signup_activities WHERE trip_signup_id = $1',
                 [signupId]
@@ -225,7 +211,8 @@ export async function initiateTripPaymentAction(signupId: number, paymentType: '
         const access = await validateAccess(signupId, token);
         if (!access.authorized || !access.signup) return { success: false, error: access.error };
 
-        const FINANCE_SERVICE_URL = process.env.FINANCE_SERVICE_URL || 'http://finance-service:3001';
+        const FINANCE_SERVICE_URL = process.env.FINANCE_SERVICE_URL;
+        if (!FINANCE_SERVICE_URL) return { success: false, error: 'Betaalservice niet geconfigureerd.' };
 
         const response = await fetch(`${FINANCE_SERVICE_URL}/api/finance/trip-payment-request`, {
             method: 'POST',
@@ -248,14 +235,16 @@ export async function initiateTripPaymentAction(signupId: number, paymentType: '
 
     } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : String(error);
-        safeConsoleError('[REIS_PAYMENT] Exception in initiateTripPaymentAction:', error);
+        safeConsoleError('[reis-payment-action][initiateTripPaymentAction] Exception in initiateTripPaymentAction:', error);
         return { success: false, error: `Interne fout bij starten betaling: ${errorMessage}` };
     }
 }
 
 export async function getPaymentStatusAction(mollieId: string) {
     try {
-        const FINANCE_SERVICE_URL = process.env.FINANCE_SERVICE_URL || 'http://finance-service:3001';
+        const FINANCE_SERVICE_URL = process.env.FINANCE_SERVICE_URL;
+        if (!FINANCE_SERVICE_URL) return { success: false, error: 'Betaalservice niet geconfigureerd.' };
+
         const response = await fetch(`${FINANCE_SERVICE_URL}/api/finance/status/${mollieId}`);
 
         if (!response.ok) {

@@ -3,6 +3,8 @@ import { type Board } from '@salvemundi/validations/schema/board.zod';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { User, Medal } from 'lucide-react';
 
+import { BRAND_CONFIG } from '@/lib/config/brand';
+
 interface BoardYearCardProps {
     board: Board;
 }
@@ -14,15 +16,32 @@ export const BoardYearCard = ({ board }: BoardYearCardProps) => {
 
             <div className="flex flex-col lg:flex-row gap-10">
                 <div className="relative w-full lg:w-[400px] aspect-[4/3] squircle-xl overflow-hidden shadow-lg ring-1 ring-black/5 dark:ring-white/5">
-                    <Image
-                        src={board.image ? getImageUrl(board.image) : '/img/newlogo.svg'}
-                        alt={board.naam || 'Bestuur'}
-                        fill
-                        className={`transition-transform duration-700 group-hover:scale-105 ${
-                            board.image ? 'object-cover' : 'object-contain p-6 opacity-40'
-                        }`}
-                        unoptimized
-                    />
+                    {!board.image ? (
+                        <>
+                            <Image
+                                src={BRAND_CONFIG.logoFallbackLight}
+                                alt={board.naam || 'Bestuur'}
+                                fill
+                                className="transition-transform duration-700 group-hover:scale-105 object-contain p-6 opacity-40 dark:hidden"
+                                unoptimized
+                            />
+                            <Image
+                                src={BRAND_CONFIG.logoFallbackDark}
+                                alt={board.naam || 'Bestuur'}
+                                fill
+                                className="transition-transform duration-700 group-hover:scale-105 object-contain p-6 opacity-40 hidden dark:block"
+                                unoptimized
+                            />
+                        </>
+                    ) : (
+                        <Image
+                            src={getImageUrl(board.image)}
+                            alt={board.naam || 'Bestuur'}
+                            fill
+                            className="transition-transform duration-700 group-hover:scale-105 object-cover"
+                            unoptimized
+                        />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6">
                         <span className="text-white font-black text-sm">{board.year}</span>
                     </div>

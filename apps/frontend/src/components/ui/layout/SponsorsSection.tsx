@@ -4,6 +4,8 @@ import Link from 'next/link';
 import type { Sponsor } from '@salvemundi/validations/schema/home.zod';
 import { getImageUrl } from '@/lib/utils/image-utils';
 
+import { BRAND_CONFIG } from '@/lib/config/brand';
+
 interface SponsorsSectionProps {
     sponsors?: Sponsor[];
 }
@@ -34,10 +36,13 @@ export const SponsorsSection: React.FC<SponsorsSectionProps> = ({
                                 <div key={set} className="sponsors-set" aria-hidden={set > 1}>
                                     {sponsors.map((sponsor, index) => {
                                         const key = `${sponsor.sponsor_id}-${set}-${index}`;
-                                        const src = getImageUrl(sponsor.image, { width: 400, height: 200, fit: 'inside' }) || '/img/newlogo.png';
+                                        const hasSponsorImage = !!sponsor.image;
+                                        const src = hasSponsorImage
+                                            ? getImageUrl(sponsor.image, { width: 400, height: 200, fit: 'inside' })
+                                            : null;
                                         const itemClasses = `sponsor-item ${sponsor.dark_bg ? 'sponsor-light-bg' : ''}`;
 
-                                        const imageContent = (
+                                        const imageContent = src ? (
                                             <Image
                                                 src={src}
                                                 alt="Sponsor Logo"
@@ -47,6 +52,27 @@ export const SponsorsSection: React.FC<SponsorsSectionProps> = ({
                                                 className="sponsor-logo"
                                                 priority={true}
                                             />
+                                        ) : (
+                                            <>
+                                                <Image
+                                                    src={BRAND_CONFIG.logoFallbackLight}
+                                                    alt="Sponsor Logo"
+                                                    height={80}
+                                                    width={160}
+                                                    quality={90}
+                                                    className="sponsor-logo dark:hidden"
+                                                    priority={true}
+                                                />
+                                                <Image
+                                                    src={BRAND_CONFIG.logoFallbackDark}
+                                                    alt="Sponsor Logo"
+                                                    height={80}
+                                                    width={160}
+                                                    quality={90}
+                                                    className="sponsor-logo hidden dark:block"
+                                                    priority={true}
+                                                />
+                                            </>
                                         );
 
                                         if (sponsor.website_url) {

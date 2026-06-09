@@ -38,7 +38,9 @@ export default function TripForm({
             onSuccess(editingTrip ? 'Reis succesvol bijgewerkt' : 'Reis succesvol aangemaakt');
         }
     }, [state, editingTrip, onSuccess]);
+
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [imageError, setImageError] = useState<string | null>(null);
     const [registrationOpen, setRegistrationOpen] = useState(false);
     const [allowFinalPayments, setAllowFinalPayments] = useState(false);
     const [isBusTrip, setIsBusTrip] = useState(false);
@@ -61,7 +63,17 @@ export default function TripForm({
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
+        setImageError(null);
+
         if (file) {
+            // Limiet instellen op 10MB (10 * 1024 * 1024 bytes)
+            const maxSizeBytes = 10 * 1024 * 1024;
+            if (file.size > maxSizeBytes) {
+                setImageError('De geselecteerde afbeelding is te groot (maximaal 10MB).');
+                e.target.value = ''; // Reset het input element
+                return;
+            }
+
             const reader = new FileReader();
             reader.onloadend = () => setImagePreview(reader.result as string);
             reader.readAsDataURL(file);
@@ -70,6 +82,23 @@ export default function TripForm({
 
     const handleRemoveImage = () => {
         setImagePreview(null);
+        setImageError(null);
+    };
+
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        if (imageError) {
+            e.preventDefault();
+            return;
+        }
+
+        // Vangnet: check alle bestanden binnen het formulier
+        const formData = new FormData(e.currentTarget);
+        const file = formData.get('image_file') as File | null;
+
+        if (file && file.size > 10 * 1024 * 1024) {
+            e.preventDefault();
+            setImageError('De afbeelding is te groot om te uploaden (maximaal 10MB).');
+        }
     };
 
     const formErrors = (state?.fieldErrors || {}) as Record<string, string[] | undefined>;
@@ -90,13 +119,20 @@ export default function TripForm({
 
     return (
         <div className="mb-12">
-            <form action={editingTrip ? updateAction : createAction}>
+            <form action={editingTrip ? updateAction : createAction} onSubmit={handleSubmit}>
                 {editingTrip && <input type="hidden" name="id" value={editingTrip.id} />}
                 {/* Hidden fields for controlled state toggles */}
                 <input type="hidden" name="registration_open" value={registrationOpen ? 'on' : 'off'} />
                 <input type="hidden" name="allow_final_payments" value={allowFinalPayments ? 'on' : 'off'} />
                 <input type="hidden" name="is_bus_trip" value={isBusTrip ? 'on' : 'off'} />
-                <input type="hidden" name="image" value={imagePreview && editingTrip?.image ? editingTrip.image : ''} />
+                <input type="hidden" name="existing_image_id" value={editingTrip?.image || ''} />
+
+                {imageError && (
+                    <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-500 text-[10px] font-semibold tracking-widest uppercase">
+                        <Info className="h-4 w-4 shrink-0" />
+                        <span>{imageError}</span>
+                    </div>
+                )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                     {/* Main Content Area */}
