@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { type Committee } from '@salvemundi/validations/schema/committees.zod';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { Mail, Users, History, LayoutGrid } from 'lucide-react';
+import { FallbackLogo } from '@/components/ui/media/FallbackLogo';
 
 interface CommitteeDetailProps {
     committee: Committee;
@@ -63,14 +64,18 @@ export const CommitteeDetail = ({ committee }: CommitteeDetailProps) => {
 
                 <div className="relative w-full max-w-[450px] @[900px]:w-[450px] aspect-square order-1 @[900px]:order-2 flex-shrink-0 mx-auto @[900px]:ml-auto group">
                     <div className="absolute inset-0 bg-purple-500/10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-3xl -z-10" />
-                    <Image
-                        src={committee.image ? getImageUrl(committee.image) : '/img/newlogo.svg'}
-                        alt={cleanedName}
-                        fill
-                        className="object-contain transition-transform duration-700 group-hover:scale-110 drop-shadow-[0_20px_50px_rgba(139,92,246,0.3)]"
-                        unoptimized
-                        priority
-                    />
+                    {committee.image ? (
+                        <Image
+                            src={getImageUrl(committee.image)}
+                            alt={cleanedName}
+                            fill
+                            className="object-contain transition-transform duration-700 group-hover:scale-110 drop-shadow-[0_20px_50px_rgba(139,92,246,0.3)]"
+                            unoptimized
+                            priority
+                        />
+                    ) : (
+                        <FallbackLogo className="object-contain transition-transform duration-700 group-hover:scale-110 drop-shadow-[0_20px_50px_rgba(139,92,246,0.3)] opacity-60" />
+                    )}
                 </div>
             </header>
 
@@ -93,15 +98,17 @@ export const CommitteeDetail = ({ committee }: CommitteeDetailProps) => {
                                 className="group flex flex-col items-center"
                             >
                                 <div className="relative mb-8 h-40 w-40 overflow-hidden squircle shadow-2xl ring-4 ring-bg-soft group-hover:ring-purple-500/40 transition-all duration-500">
-                                    <Image
-                                        src={member.user_id?.avatar ? getImageUrl(member.user_id.avatar) : '/img/newlogo.svg'}
-                                        alt={name}
-                                        fill
-                                        className={`transition-all duration-700 group-hover:scale-110 ${
-                                            member.user_id?.avatar ? 'object-cover' : 'object-contain p-4 opacity-45'
-                                        }`}
-                                        unoptimized
-                                    />
+                                    {member.user_id?.avatar ? (
+                                        <Image
+                                            src={getImageUrl(member.user_id.avatar)}
+                                            alt={name}
+                                            fill
+                                            className="transition-all duration-700 group-hover:scale-110 object-cover"
+                                            unoptimized
+                                        />
+                                    ) : (
+                                        <FallbackLogo className="transition-all duration-700 group-hover:scale-110 object-contain p-4 opacity-45" />
+                                    )}
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </div>
                                 <h4 className="text-center font-black text-text-main text-xl mb-2 group-hover:text-theme-purple transition-colors">

@@ -1,9 +1,10 @@
 'use client';
 
-import { Edit2, Trash2, Calendar, Users, Euro, ImageIcon, Loader2 } from 'lucide-react';
+import { Edit2, Trash2, Calendar, Users, Euro, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import type { Trip } from '@salvemundi/validations/schema/admin-reis.zod';
+import { FallbackLogo } from '@/components/ui/media/FallbackLogo';
 
 interface TripCardProps {
     trip: Trip;
@@ -22,18 +23,22 @@ export default function TripCard({ trip, onEdit, onDelete, isDeleting }: TripCar
             : new Date(sd).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })
         : 'Onbekend';
 
+    const formattedPrice = new Intl.NumberFormat('nl-NL', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(Number(trip.base_price || 0));
+
     return (
         <div className="group bg-[var(--bg-card)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)] overflow-hidden flex flex-col transition-all hover:translate-y-[-4px] hover:shadow-2xl">
-            <div className="relative h-48 bg-[var(--beheer-border)]/5 flex items-center justify-center overflow-hidden">
-                {(() => {
-                    const isOpen = trip.registration_open || (trip.registration_start_date && new Date(trip.registration_start_date) <= new Date());
-                    return (
-                        <div className={`absolute top-4 left-4 z-10 px-3 py-1.5 rounded-xl backdrop-blur-md font-black italic text-[10px] uppercase tracking-widest shadow-lg ${isOpen ? 'bg-[var(--beheer-active)] text-white shadow-[var(--beheer-active)]/20' : 'bg-[var(--beheer-inactive)] text-white shadow-[var(--beheer-inactive)]/20'
-                            }`}>
-                            {isOpen ? 'Open' : 'Gesloten'}
-                        </div>
-                    );
-                })()}
+            <div className="relative h-48 bg-[var(--beheer-border)]/5 dark:bg-black/20 flex items-center justify-center overflow-hidden">                {(() => {
+                const isOpen = trip.registration_open || (trip.registration_start_date && new Date(trip.registration_start_date) <= new Date());
+                return (
+                    <div className={`absolute top-4 left-4 z-10 px-3 py-1.5 rounded-xl backdrop-blur-md font-black italic text-[10px] uppercase tracking-widest shadow-lg ${isOpen ? 'bg-[var(--beheer-active)] text-white shadow-[var(--beheer-active)]/20' : 'bg-[var(--beheer-inactive)] text-white shadow-[var(--beheer-inactive)]/20'
+                        }`}>
+                        {isOpen ? 'Open' : 'Gesloten'}
+                    </div>
+                );
+            })()}
                 {trip.is_bus_trip && (
                     <div className="absolute top-4 right-4 z-10 px-3 py-1.5 rounded-xl bg-blue-500 text-white shadow-lg shadow-blue-500/20 backdrop-blur-md font-black italic text-[10px] uppercase tracking-widest">
                         Busreis
@@ -41,17 +46,24 @@ export default function TripCard({ trip, onEdit, onDelete, isDeleting }: TripCar
                 )}
 
                 {trip.image ? (
-                    <Image
-                        src={getImageUrl(trip.image, { width: 600, height: 400, fit: 'cover' }) || '/img/newlogo.png'}
-                        alt={trip.name}
-                        fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        className="object-cover transition-transform duration-700 group-hover:scale-110"
-                    />
+                    (() => {
+                        const imgUrl = getImageUrl(trip.image, { fit: 'contain' });
+                        if (imgUrl) {
+                            return (
+                                <Image
+                                    src={imgUrl}
+                                    alt={trip.name}
+                                    fill
+                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                    className="object-contain transition-transform duration-700"
+                                />
+                            );
+                        }
+
+                        return <FallbackLogo className="object-contain p-8" />;
+                    })()
                 ) : (
-                    <div className="text-[var(--text-muted)] opacity-30">
-                        <ImageIcon className="h-12 w-12" />
-                    </div>
+                    <FallbackLogo className="object-contain p-8 opacity-40" />
                 )}
             </div>
 
@@ -69,7 +81,7 @@ export default function TripCard({ trip, onEdit, onDelete, isDeleting }: TripCar
                     </div>
                     <div className="flex items-center gap-3 text-[var(--beheer-accent)]">
                         <Euro className="h-4 w-4" />
-                        <span className="text-sm font-black italic">{Number(trip.base_price || 0).toFixed(2)}</span>
+                        <span className="text-sm font-black italic">{formattedPrice}</span>
                     </div>
                 </div>
 

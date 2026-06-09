@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { ROUTES } from '@/lib/config/routes';
 import { getImageUrl } from '@/lib/utils/image-utils';
+import { BRAND_CONFIG } from '@/lib/config/brand';
 import { authClient } from '@/lib/auth';
 import { IconMap, type IconName } from '@/lib/utils/icons';
 
@@ -87,13 +88,20 @@ export default function MobileMenu({
                                     unoptimized
                                 />
                             ) : (
-                                <Image
-                                    src="/img/newlogo.svg"
-                                    alt="Logo"
-                                    width={32}
-                                    height={32}
-                                    className="h-8 w-8 object-contain"
-                                />
+                                <div className="h-8 w-8 relative">
+                                    <Image
+                                        src={BRAND_CONFIG.logoLightMode}
+                                        alt="Logo"
+                                        fill
+                                        className="object-contain dark:hidden"
+                                    />
+                                    <Image
+                                        src={BRAND_CONFIG.logoDarkMode}
+                                        alt="Logo"
+                                        fill
+                                        className="object-contain hidden dark:block"
+                                    />
+                                </div>
                             )}
                         </span>
                         <span className="text-sm font-semibold text-[var(--text-main)]">

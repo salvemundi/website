@@ -27,7 +27,11 @@
    --color-bg-card: var(--bg-card);
 
    /* Brand Colors */
-   --color-paars: #5e2b52;
+   --color-paars: #5A3761;
+   --color-wit-paars: #F0F1F9;
+   --color-licht-paars: #936695;
+   --color-donker-blauw: #132A40;
+   --color-geel: #F8CF45;
 
    /* Semantic Aliases */
    --color-theme-purple: var(--theme-purple);
@@ -39,52 +43,48 @@
    --header-padding: clamp(1rem, 5vw, 2.5rem);
    --beheer-container-px: clamp(1rem, 3vw, 2rem);
 
-   /* Purple Palette */
-   --color-purple-50: #f4e9f3;
-   --color-purple-100: #e4cbe2;
-   --color-purple-200: #d4add0;
-   --color-purple-300: #c48fbe;
-   --color-purple-400: #b471ad;
-   --color-purple-500: #a4539b;
-   /* Base Brand Purple */
-   --color-purple-600: #8c4682;
-   --color-purple-700: #75386a;
-   --color-purple-800: #5e2b52;
-   --color-purple-900: #471e3b;
+   /* Purple Palette based on brandguide colors */
+   --color-purple-50: #f6f3f7;
+   --color-purple-100: #ebdceb;
+   --color-purple-200: #d6b8d6;
+   --color-purple-300: #bd8fbe;
+   --color-purple-400: #a46fa5;
+   --color-purple-500: #936695;
+   --color-purple-600: #805481;
+   --color-purple-700: #6d446e;
+   --color-purple-800: #5A3761;
+   --color-purple-900: #46254c;
 
    /* RGB companions for rgba() usage */
-   --color-purple-500-rgb: 164,
-      83,
-      155;
-   --color-purple-400-rgb: 180,
-      113,
-      173;
+   --color-purple-500-rgb: 147,
+      102,
+      149;
+   --color-purple-400-rgb: 164,
+      111,
+      165;
 
    /* Whites */
    --color-white: #ffffff;
-   --color-white-soft: #faf7fb;
-   --color-white-mute: #f0ebf0;
+   --color-white-soft: #F0F1F9;
+   --color-white-mute: #ebdceb;
 
    /* Brand */
-   --color-brand-primary: #003056;
-   --color-brand-secondary: #00a3e0;
+   --color-brand-primary: #5A3761;
+   --color-brand-secondary: #936695;
 
-   /* Semantic Background — Light Mode defaults
-     Reference the palette tokens above; no duplicate hex values.             */
-   --bg-main: #f8f9fa;
-   --bg-soft: var(--color-white-soft);
-   /* #faf7fb */
+   /* Semantic Background — Light Mode defaults */
+   --bg-main: #F0F1F9;
+   --bg-soft: var(--color-white);
    --bg-card: var(--color-white);
-   /* #ffffff */
 
    /* Semantic Text — Light Mode defaults */
-   --text-main: #5e2b52;
-   --text-subtle: #6a5068;
-   --text-muted: #6f5772;
-   --text-light: #8a7a8c;
+   --text-main: #5A3761;
+   --text-subtle: #6d446e;
+   --text-muted: #805481;
+   --text-light: #936695;
 
    /* Border */
-   --border-color: #d9c7db;
+   --border-color: #d6b8d6;
    --color-border-color: var(--border-color);
 
    /* Beheer Admin Tokens */
@@ -96,20 +96,20 @@
    --shadow-card: 0 1px 3px rgba(16, 24, 40, 0.1),
       0 1px 2px rgba(16, 24, 40, 0.06);
    --shadow-card-elevated: 0 8px 20px rgba(6, 4, 10, 0.45);
-   --shadow-glow: 0 0 15px rgba(102, 50, 101, 0.3);
+   --shadow-glow: 0 0 15px rgba(90, 55, 97, 0.3);
 
    /* Gradients */
-   --gradient-start: #fdfbff;
-   --gradient-end: #f4eef5;
+   --gradient-start: #F0F1F9;
+   --gradient-end: #ebdceb;
 
-   --bg-gradient-start: #fdfbff;
-   --bg-gradient-end: #f4eef5;
+   --bg-gradient-start: #ffffff;
+   --bg-gradient-end: #F0F1F9;
 
    /* Status */
    --theme-success: #16a34a;
-   --theme-warning: #d97706;
+   --theme-warning: #F8CF45;
    --theme-error: #dc2626;
-   --theme-info: #0284c7;
+   --theme-info: #132A40;
 
    /* Radii */
    --radius-xl: 0.75rem;

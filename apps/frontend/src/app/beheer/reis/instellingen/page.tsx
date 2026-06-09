@@ -13,7 +13,6 @@ export default async function ReisInstellingenPage() {
         getReisSiteSettings()
     ]);
 
-    // Error handling is managed at the action/db level or via Error Boundaries
     const trips = tripSchema.array().parse(tripsRes);
 
     return (

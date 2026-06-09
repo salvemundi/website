@@ -4,6 +4,8 @@ import { Phone } from 'lucide-react';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 
+import { BRAND_CONFIG } from '@/lib/config/brand';
+
 interface SafeHavenCardProps {
     safeHaven?: SafeHaven;
 }
@@ -11,7 +13,7 @@ interface SafeHavenCardProps {
 export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
     const imageUrl = safeHaven?.afbeelding_id
         ? getImageUrl(safeHaven.afbeelding_id, { width: 200, height: 200, fit: 'cover' })
-        : '/img/newlogo.png';
+        : null;
 
     return (
         <div
@@ -19,13 +21,32 @@ export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
         >
             <div className="flex items-center gap-4">
                 <div className="relative h-16 w-16 sm:h-20 sm:w-20 overflow-hidden squircle shadow-md shrink-0 bg-bg-main">
-                    <Image
-                        src={imageUrl}
-                        alt={safeHaven?.naam || 'Safe Haven'}
-                        fill
-                        unoptimized
-                        className="object-cover"
-                    />
+                    {imageUrl ? (
+                        <Image
+                            src={imageUrl}
+                            alt={safeHaven?.naam || 'Safe Haven'}
+                            fill
+                            unoptimized
+                            className="object-cover"
+                        />
+                    ) : (
+                        <>
+                            <Image
+                                src={BRAND_CONFIG.logoFallbackLight}
+                                alt={safeHaven?.naam || 'Safe Haven'}
+                                fill
+                                unoptimized
+                                className="object-cover dark:hidden"
+                            />
+                            <Image
+                                src={BRAND_CONFIG.logoFallbackDark}
+                                alt={safeHaven?.naam || 'Safe Haven'}
+                                fill
+                                unoptimized
+                                className="object-cover hidden dark:block"
+                            />
+                        </>
+                    )}
                 </div>
                 <div className="min-w-0 flex-1">
                     <h3 className="text-lg sm:text-xl font-bold text-theme-purple truncate">

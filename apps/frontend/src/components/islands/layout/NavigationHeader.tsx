@@ -14,6 +14,8 @@ import { NavUserSection } from './navigation/NavUserSection';
 import { MobileNav } from './navigation/MobileNav';
 import { type ExtendedSession } from '@/types/auth';
 
+import { BRAND_CONFIG } from '@/lib/config/brand';
+
 interface NavigationHeaderProps {
     disabledRoutes?: string[];
     initialSession?: ExtendedSession | null;
@@ -55,10 +57,17 @@ const NavigationHeader = ({
                     <Link href="/" className="group flex items-center gap-3 transition-transform duration-300 hover:scale-[1.03] active:scale-95">
                         <div className="relative w-12 h-12">
                             <Image
-                                src="/img/newlogo.svg"
+                                src={BRAND_CONFIG.logoLightMode}
                                 alt="Salve Mundi Logo"
                                 fill
-                                className="object-contain"
+                                className="object-contain dark:hidden"
+                                priority
+                            />
+                            <Image
+                                src={BRAND_CONFIG.logoDarkMode}
+                                alt="Salve Mundi Logo"
+                                fill
+                                className="object-contain hidden dark:block"
                                 priority
                             />
                         </div>

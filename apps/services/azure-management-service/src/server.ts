@@ -28,8 +28,13 @@ fastify.register(groupRoutes, { prefix: '/api/groups' });
 fastify.register(userRoutes, { prefix: '/api/users' });
 fastify.register(monitoringRoutes, { prefix: '/api/monitoring' });
 
-fastify.get('/health', async () => {
-    return { status: 'ok', service: 'azure-management-service' };
+fastify.get('/health', () => {
+    return {
+        status: 'ok',
+        service: 'azure-management-service',
+        environment: process.env.APP_ENV || process.env.NODE_ENV || 'unknown',
+        publicUrl: process.env.PUBLIC_URL || 'not set'
+    };
 });
 
 const start = async () => {

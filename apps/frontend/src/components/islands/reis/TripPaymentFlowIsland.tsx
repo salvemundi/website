@@ -29,6 +29,11 @@ import { PaymentSuccess } from './payment/PaymentSuccess';
 import { FlowNavigation } from './payment/FlowNavigation';
 import { safeConsoleError } from '@/server/utils/logger';
 
+interface ExtendedTripSignup extends Omit<TripSignup, 'document_expiry_date' | 'extra_luggage'> {
+    document_expiry_date?: string | null;
+    extra_luggage?: boolean | null;
+}
+
 interface TripPaymentFlowProps {
     signup: TripSignup;
     trip: Trip;
@@ -38,10 +43,21 @@ interface TripPaymentFlowProps {
     token?: string;
 }
 
-const toISO = (dateStr: string) => new Date(dateStr).toISOString().split('T')[0];
+const toISOStringWithoutTimezone = (dateInput: string | Date | null | undefined): string => {
+    if (!dateInput) return '';
+    const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
+    if (isNaN(date.getTime())) return '';
 
-const formatDateNL = (date: Date) =>
-    new Intl.DateTimeFormat('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
+    const userTimezoneOffset = date.getTimezoneOffset() * 60000;
+    const localDate = new Date(date.getTime() - userTimezoneOffset);
+    return localDate.toISOString().split('T')[0];
+};
+
+const formatDateNL = (dateInput: string | Date) => {
+    const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
+    if (isNaN(date.getTime())) return 'Onbekend';
+    return new Intl.DateTimeFormat('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
+};
 
 export default function TripPaymentFlowIsland({
     signup,
@@ -57,6 +73,7 @@ export default function TripPaymentFlowIsland({
     const [isProcessing, setIsProcessing] = useState(false);
     const [showNameConfirm, setShowNameConfirm] = useState(false);
     const [localSignup, setLocalSignup] = useState(signup);
+    const signupExtended = localSignup as ExtendedTripSignup;
 
     const enrichmentSchema = useMemo(() => {
         return reisPaymentEnrichmentSchema.superRefine((data, ctx) => {
@@ -67,7 +84,7 @@ export default function TripPaymentFlowIsland({
                 if (expiry < tripEnd) {
                     ctx.addIssue({
                         code: z.ZodIssueCode.custom,
-                        message: `Document moet geldig zijn tot tenminste het einde van de reis (${formatDateNL(new Date(trip.end_date))}).`,
+                        message: `Document moet geldig zijn tot tenminste het einde van de reis (${formatDateNL(tripEnd)}).`,
                         path: ['document_expiry_date']
                     });
                 }
@@ -88,20 +105,17 @@ export default function TripPaymentFlowIsland({
     const methods = useForm<ReisPaymentEnrichment>({
         resolver: zodResolver(enrichmentSchema),
         defaultValues: {
-            first_name: localSignup.first_name || '',
-            last_name: localSignup.last_name || '',
-            phone_number: localSignup.phone_number || '',
-            date_of_birth: localSignup.date_of_birth ? toISO(localSignup.date_of_birth) : '',
-            id_document: localSignup.id_document || 'none',
-            document_number: localSignup.document_number || '',
-            document_expiry_date: (() => {
-                const expiry = (localSignup as TripSignup & { document_expiry_date?: string }).document_expiry_date;
-                return expiry ? toISO(expiry) : '';
-            })(),
-            extra_luggage: (localSignup as TripSignup & { extra_luggage?: boolean }).extra_luggage || false,
-            allergies: localSignup.allergies || '',
-            special_notes: localSignup.special_notes || '',
-            willing_to_drive: localSignup.willing_to_drive || false,
+            first_name: signupExtended.first_name || '',
+            last_name: signupExtended.last_name || '',
+            phone_number: signupExtended.phone_number || '',
+            date_of_birth: toISOStringWithoutTimezone(signupExtended.date_of_birth),
+            id_document: signupExtended.id_document || 'none',
+            document_number: signupExtended.document_number || '',
+            document_expiry_date: toISOStringWithoutTimezone(signupExtended.document_expiry_date),
+            extra_luggage: !!signupExtended.extra_luggage,
+            allergies: signupExtended.allergies || '',
+            special_notes: signupExtended.special_notes || '',
+            willing_to_drive: signupExtended.willing_to_drive || false,
             is_bus_trip: trip.is_bus_trip
         },
         mode: 'onChange',
@@ -110,19 +124,24 @@ export default function TripPaymentFlowIsland({
 
     const { watch, getValues, trigger, formState: { isValid } } = methods;
     const firstName = watch('first_name');
+    const [activitySelections, setActivitySelections] = useState<ActivitySelection[]>(() =>
+        selectedActivities.map(sa => {
+            const activityId = sa.trip_activity_id && typeof sa.trip_activity_id === 'object'
+                ? (sa.trip_activity_id as { id: number }).id
+                : Number(sa.trip_activity_id);
 
-    const [activitySelections, setActivitySelections] = useState<{ activityId: number, options: Record<string, boolean> }[]>(
-        selectedActivities.map(sa => ({
-            activityId: typeof sa.trip_activity_id === 'object' ? (sa.trip_activity_id as unknown as { id: number }).id : Number(sa.trip_activity_id),
-            options: (sa.selected_options as Record<string, boolean> | undefined) || {}
-        }))
+            return {
+                activityId,
+                options: (sa.selected_options as Record<string, boolean> | undefined) || {}
+            };
+        })
     );
 
     const pricing = useMemo(() => {
         return calculateTripPricing(
             trip,
             signup.role,
-            activitySelections as ActivitySelection[],
+            activitySelections,
             allActivities,
             paymentType
         );

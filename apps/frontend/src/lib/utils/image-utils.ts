@@ -4,11 +4,13 @@
  * Supports Directus image transformation parameters.
  * SAFE FOR CLIENT-SIDE USAGE.
  */
+import { BRAND_CONFIG } from '../config/brand';
+
 export function getImageUrl(
     idOrObject?: string | { id: string } | null, 
     options?: { width?: number; height?: number; fit?: string; quality?: number }
 ): string {
-    const DEFAULT_FALLBACK = '/img/newlogo.svg';
+    const DEFAULT_FALLBACK = BRAND_CONFIG.logoFallbackLight;
 
     if (!idOrObject) return DEFAULT_FALLBACK;
     

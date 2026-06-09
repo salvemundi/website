@@ -9,9 +9,13 @@ const fastify = Fastify({
     trustProxy: ['127.0.0.1', '10.0.0.0/8', '100.64.0.0/10']
 });
 
-fastify.get('/health', async () => {
-    await Promise.resolve();
-    return { status: 'ok', service: 'mail-service' };
+fastify.get('/health', () => {
+    return {
+        status: 'ok',
+        service: 'mail-service',
+        environment: process.env.APP_ENV || process.env.NODE_ENV || 'unknown',
+        publicUrl: process.env.PUBLIC_URL || 'not set'
+    };
 });
 
 fastify.register(redisPlugin);
@@ -45,7 +49,7 @@ fastify.addHook('onClose', async () => {
 const start = async () => {
     try {
         await fastify.listen({ port: 3003, host: '0.0.0.0' });
-        
+
         fastify.redis.on('error', (err: unknown) => {
             safeConsoleError('[server.ts][redisError]', err);
         });

@@ -16,7 +16,7 @@ export function ReisSignupStatus({ userSignup, nextTrip, error }: ReisSignupStat
         if (signup.status === 'waitlist') return 'Wachtrij';
         if (signup.status === 'cancelled') return 'Geannuleerd';
         if (signup.status === 'registered') return 'Geregistreerd';
-        
+
         if (signup.full_payment_paid) return 'Geregistreerd (Betaald)';
         if (!signup.deposit_paid) return 'Aanbetaling verwacht';
         return 'Restbetaling verwacht';
@@ -34,13 +34,11 @@ export function ReisSignupStatus({ userSignup, nextTrip, error }: ReisSignupStat
                     <CheckCircle2 className="h-8 w-8 text-theme-purple" />
                 </div>
                 <div>
-                    <h3 className="text-xl font-bold text-theme-purple dark:text-white">Jouw Status</h3>
-                    <p className="text-text-muted text-sm">Je bent al aangemeld voor deze reis</p>
+                    <h3 className="text-xl font-bold text-theme-purple dark:text-white">Huidige status</h3>
                 </div>
             </div>
 
             <div className="bg-white/50 dark:bg-black/5 rounded-2xl p-6 border border-theme-purple/10 mb-6">
-                <p className="text-sm font-semibold text-text-muted tracking-wider mb-2">Huidige status</p>
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <div>
                         <p className="text-2xl sm:text-3xl font-bold text-theme-purple dark:text-white tracking-tight break-words">
@@ -51,9 +49,6 @@ export function ReisSignupStatus({ userSignup, nextTrip, error }: ReisSignupStat
                                 Je aanmelding wordt momenteel beoordeeld door de commissie.
                             </p>
                         )}
-                    </div>
-                    <div className="px-4 py-1.5 bg-theme-purple/10 rounded-full text-[10px] font-semibold text-theme-purple tracking-widest shrink-0">
-                        {userSignup.status}
                     </div>
                 </div>
             </div>

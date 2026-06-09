@@ -13,7 +13,12 @@ const fastify = Fastify({
 });
 
 fastify.get('/health', () => {
-    return { status: 'ok', service: 'finance-service' };
+    return {
+        status: 'ok',
+        service: 'finance-service',
+        environment: process.env.APP_ENV || process.env.NODE_ENV || 'unknown',
+        publicUrl: process.env.PUBLIC_URL || 'not set'
+    };
 });
 
 fastify.register(dbPlugin);
