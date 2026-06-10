@@ -214,11 +214,12 @@ export async function initiateTripPaymentAction(signupId: number, paymentType: '
         const FINANCE_SERVICE_URL = process.env.FINANCE_SERVICE_URL;
         if (!FINANCE_SERVICE_URL) return { success: false, error: 'Betaalservice niet geconfigureerd.' };
 
+        const internalToken = (process.env.INTERNAL_SERVICE_TOKEN || '').replace(/^"|"$/g, '').trim();
         const response = await fetch(`${FINANCE_SERVICE_URL}/api/finance/trip-payment-request`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${process.env.INTERNAL_SERVICE_TOKEN}`
+                'Authorization': `Bearer ${internalToken}`
             },
             body: JSON.stringify({
                 signupId,
@@ -249,7 +250,12 @@ export async function getPaymentStatusAction(mollieId: string) {
         const FINANCE_SERVICE_URL = process.env.FINANCE_SERVICE_URL;
         if (!FINANCE_SERVICE_URL) return { success: false, error: 'Betaalservice niet geconfigureerd.' };
 
-        const response = await fetch(`${FINANCE_SERVICE_URL}/api/finance/status/${mollieId}`);
+        const internalToken = (process.env.INTERNAL_SERVICE_TOKEN || '').replace(/^"|"$/g, '').trim();
+        const response = await fetch(`${FINANCE_SERVICE_URL}/api/finance/status/${mollieId}`, {
+            headers: {
+                'Authorization': `Bearer ${internalToken}`
+            }
+        });
 
         if (!response.ok) {
 

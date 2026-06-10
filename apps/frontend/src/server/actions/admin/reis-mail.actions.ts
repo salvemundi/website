@@ -6,7 +6,7 @@ import { logAdminAction } from '@/server/actions/infrastructure/audit.actions';
 import { safeConsoleError } from '@/server/utils/logger';
 
 const FINANCE_URL = process.env.FINANCE_SERVICE_URL;
-const INTERNAL_SERVICE_TOKEN = process.env.INTERNAL_SERVICE_TOKEN;
+const INTERNAL_SERVICE_TOKEN = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
 
 export async function sendPaymentEmail(signupId: number, tripId: number, paymentType: 'deposit' | 'final') {
     await requireAdminResource(AdminResource.Reis);

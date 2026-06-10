@@ -25,7 +25,7 @@ interface AzureErrorResponse {
 const getAzureManagementUrl = () => process.env.AZURE_MANAGEMENT_SERVICE_URL;
 
 const serviceHeaders = (contentType = true) => {
-    const token = process.env.INTERNAL_SERVICE_TOKEN;
+    const token = (process.env.INTERNAL_SERVICE_TOKEN || '').replace(/^"|"$/g, '').trim();
     if (!token) throw new Error('INTERNAL_SERVICE_TOKEN is missing');
     const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
     if (contentType) headers['Content-Type'] = 'application/json';

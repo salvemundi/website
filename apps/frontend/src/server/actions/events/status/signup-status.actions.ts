@@ -49,6 +49,7 @@ export async function getSignupStatus(
         if (financeId) {
             const FINANCE_SERVICE_URL = getFinanceServiceUrl() || process.env.INTERNAL_FINANCE_URL || 'http://finance-service:3001';
             const finRes = await fetch(`${FINANCE_SERVICE_URL}/api/finance/status/${financeId}`, {
+                headers: getInternalHeaders(),
                 cache: 'no-store',
                 signal: AbortSignal.timeout(5000)
             });

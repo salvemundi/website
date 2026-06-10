@@ -20,7 +20,7 @@ const getFinanceServiceUrl = () =>
     getExpandedEnv('FINANCE_SERVICE_URL');
 
 const getInternalHeaders = () => {
-    const token = getExpandedEnv('INTERNAL_SERVICE_TOKEN');
+    const token = (getExpandedEnv('INTERNAL_SERVICE_TOKEN') || '').replace(/^"|"$/g, '').trim();
     return {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`

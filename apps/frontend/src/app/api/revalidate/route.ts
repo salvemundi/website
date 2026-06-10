@@ -3,7 +3,7 @@ import { revalidateTag } from 'next/cache';
 import { timingSafeCompare } from '@salvemundi/validations/security';
 
 export async function POST(request: NextRequest) {
-    const token = process.env.INTERNAL_SERVICE_TOKEN;
+    const token = (process.env.INTERNAL_SERVICE_TOKEN || '').replace(/^"|"$/g, '').trim();
     const authHeader = request.headers.get('authorization');
     const { searchParams } = new URL(request.url);
     const querySecret = searchParams.get('secret');

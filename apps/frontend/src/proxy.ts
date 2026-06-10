@@ -87,7 +87,7 @@ async function proxy(request: NextRequest) {
     };
 
     const publicUrl = process.env.PUBLIC_URL || origin;
-    const internalToken = process.env.INTERNAL_SERVICE_TOKEN;
+    const internalToken = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
 
     if (internalToken && request.headers.get('authorization') === `Bearer ${internalToken}`) {
         return nextWithNonce();
