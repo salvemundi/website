@@ -43,9 +43,7 @@ export default async function statusRoutes(fastify: FastifyInstance) {
                 return reply.status(404).send({ error: 'Transaction not found' });
             }
 
-            const transaction = transactions.find(t =>
-                ['paid', 'authorized', 'settled'].includes(String(t.payment_status))
-            ) || transactions[0];
+            const transaction = transactions.find(t => t.payment_status === 'paid') || transactions[0];
 
             const dbStatus = String(transaction.payment_status);
             const mollieId = transaction.mollie_id;
