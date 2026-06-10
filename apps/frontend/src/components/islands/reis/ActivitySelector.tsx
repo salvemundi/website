@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Check, Plus } from 'lucide-react';
+import { Check, Compass } from 'lucide-react';
 import type { TripActivity } from '@salvemundi/validations/schema/admin-reis.zod';
 
 export interface SelectedActivity {
@@ -13,9 +13,10 @@ interface ActivitySelectorProps {
     activities: TripActivity[];
     selectedSelections: SelectedActivity[];
     onChange: (selections: SelectedActivity[]) => void;
+    hideHeader?: boolean;
 }
 
-export default function ActivitySelector({ activities, selectedSelections, onChange }: ActivitySelectorProps) {
+export default function ActivitySelector({ activities, selectedSelections, onChange, hideHeader = false }: ActivitySelectorProps) {
     const handleToggleActivity = (activityId: number) => {
         const isSelected = selectedSelections.some(s => s.activityId === activityId);
         if (isSelected) {
@@ -51,10 +52,15 @@ export default function ActivitySelector({ activities, selectedSelections, onCha
 
     return (
         <div className="space-y-6">
-            <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                <Plus className="w-5 h-5 text-theme-purple" />
-                Optionele Activiteiten
-            </h3>
+            {!hideHeader && (
+                <header className="mb-6 pb-4 border-b border-black/5 dark:border-white/10">
+                    <h2 className="text-2xl sm:text-3xl font-black text-white mb-1 italic tracking-tighter flex items-center gap-3">
+                        <Compass className="w-7 h-7 text-theme-purple" />
+                        Optionele Activiteiten
+                    </h2>
+                    <p className="text-[var(--text-muted)] text-sm">Kies de extra activiteiten die je wilt doen tijdens de reis.</p>
+                </header>
+            )}
             
             <div className="grid gap-4">
                 {activities.map((activity) => {

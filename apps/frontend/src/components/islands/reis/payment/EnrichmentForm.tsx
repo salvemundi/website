@@ -5,7 +5,8 @@ import { useFormContext, Controller } from 'react-hook-form';
 import { 
     Bus,
     AlertCircle,
-    Briefcase
+    Briefcase,
+    User
 } from 'lucide-react';
 import { DateInput } from '@/shared/ui/DateInput';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
@@ -16,22 +17,28 @@ import { type Trip } from '@salvemundi/validations/schema/admin-reis.zod';
 
 interface EnrichmentFormProps {
     trip: Trip;
+    hideHeader?: boolean;
 }
 
-export function EnrichmentForm({ trip }: EnrichmentFormProps) {
+export function EnrichmentForm({ trip, hideHeader = false }: EnrichmentFormProps) {
     const { register, control, formState: { errors } } = useFormContext<ReisPaymentEnrichment>();
 
     return (
         <div className="space-y-6">
-            <header className="mb-4">
-                <h2 className="text-3xl font-bold text-[var(--text-main)] mb-1 italic tracking-tighter">Reisgegevens</h2>
-                <p className="text-[var(--text-muted)] text-sm">Vul je gegevens aan voor <span className="text-theme-purple font-bold">{trip.name}</span>.</p>
-                <input type="hidden" {...register('is_bus_trip')} />
-            </header>
+            <input type="hidden" {...register('is_bus_trip')} />
+            {!hideHeader && (
+                <header className="mb-6 pb-4 border-b border-black/5 dark:border-white/10">
+                    <h2 className="text-2xl sm:text-3xl font-black text-[var(--text-main)] mb-1 italic tracking-tighter flex items-center gap-3">
+                        <User className="w-7 h-7 text-theme-purple" />
+                        Reisgegevens
+                    </h2>
+                    <p className="text-[var(--text-muted)] text-sm">Vul je gegevens aan voor <span className="text-theme-purple font-bold">{trip.name}</span>.</p>
+                </header>
+            )}
 
-            <div className="grid md:grid-cols-2 gap-x-8 gap-y-5">
+            <div className="grid grid-cols-1 @md:grid-cols-2 @3xl:grid-cols-3 gap-x-6 gap-y-5">
                 {/* Identity */}
-                <div className="md:col-span-1">
+                <div className="@md:col-span-1">
                     <FormField id="first_name" label="Voornaam (zoals op ID/Paspoort)" required error={errors.first_name?.message}>
                         <div className="relative group">
                             <Input 
@@ -49,69 +56,81 @@ export function EnrichmentForm({ trip }: EnrichmentFormProps) {
                     </FormField>
                 </div>
 
-                <FormField id="last_name" label="Achternaam" required error={errors.last_name?.message}>
-                    <Input {...register('last_name')} placeholder="Achternaam" />
-                </FormField>
+                <div className="@md:col-span-1">
+                    <FormField id="last_name" label="Achternaam" required error={errors.last_name?.message}>
+                        <Input {...register('last_name')} placeholder="Achternaam" />
+                    </FormField>
+                </div>
 
-                <FormField id="date_of_birth" label="Geboortedatum" required error={errors.date_of_birth?.message}>
-                    <Controller 
-                        name="date_of_birth"
-                        control={control}
-                        render={({ field }) => <DateInput {...field} autoComplete="off" />}
-                    />
-                </FormField>
+                <div className="@md:col-span-1">
+                    <FormField id="date_of_birth" label="Geboortedatum" required error={errors.date_of_birth?.message}>
+                        <Controller 
+                            name="date_of_birth"
+                            control={control}
+                            render={({ field }) => <DateInput {...field} autoComplete="off" />}
+                        />
+                    </FormField>
+                </div>
 
-                <FormField id="phone_number" label="Telefoonnummer" required error={errors.phone_number?.message}>
-                    <Controller 
-                        name="phone_number"
-                        control={control}
-                        render={({ field }) => <PhoneInput {...field} />}
-                    />
-                </FormField>
+                <div className="@md:col-span-1">
+                    <FormField id="phone_number" label="Telefoonnummer" required error={errors.phone_number?.message}>
+                        <Controller 
+                            name="phone_number"
+                            control={control}
+                            render={({ field }) => <PhoneInput {...field} />}
+                        />
+                    </FormField>
+                </div>
 
                 {!trip.is_bus_trip && (
                     <>
-                        <FormField id="id_document" label="ID Document Type" required error={errors.id_document?.message}>
-                            <select {...register('id_document')} className="form-input" autoComplete="off">
-                                <option value="none">Maak een keuze...</option>
-                                <option value="id_card">ID-kaart</option>
-                                <option value="passport">Paspoort</option>
-                            </select>
-                        </FormField>
+                        <div className="@md:col-span-1">
+                            <FormField id="id_document" label="ID Document Type" required error={errors.id_document?.message}>
+                                <select {...register('id_document')} className="form-input" autoComplete="off">
+                                    <option value="none">Maak een keuze...</option>
+                                    <option value="id_card">ID-kaart</option>
+                                    <option value="passport">Paspoort</option>
+                                </select>
+                            </FormField>
+                        </div>
 
-                        <FormField id="document_number" label="Documentnummer" required error={errors.document_number?.message}>
-                            <Input 
-                                {...register('document_number')} 
-                                placeholder="Bijv. ABC123456" 
-                                autoComplete="off"
-                                minLength={6}
-                                maxLength={12}
-                            />
-                        </FormField>
+                        <div className="@md:col-span-1">
+                            <FormField id="document_number" label="Documentnummer" required error={errors.document_number?.message}>
+                                <Input 
+                                    {...register('document_number')} 
+                                    placeholder="Bijv. ABC123456" 
+                                    autoComplete="off"
+                                    minLength={6}
+                                    maxLength={12}
+                                />
+                            </FormField>
+                        </div>
 
-                        <FormField id="document_expiry_date" label="Vervaldatum Document" required error={errors.document_expiry_date?.message}>
-                            <Controller 
-                                name="document_expiry_date"
-                                control={control}
-                                render={({ field }) => <DateInput {...field} value={field.value ?? undefined} autoComplete="off" />}
-                            />
-                        </FormField>
+                        <div className="@md:col-span-1">
+                            <FormField id="document_expiry_date" label="Vervaldatum Document" required error={errors.document_expiry_date?.message}>
+                                <Controller 
+                                    name="document_expiry_date"
+                                    control={control}
+                                    render={({ field }) => <DateInput {...field} value={field.value ?? undefined} autoComplete="off" />}
+                                />
+                            </FormField>
+                        </div>
                     </>
                 )}
 
-                <div className="md:col-span-2">
+                <div className="@md:col-span-1">
                     <FormField id="allergies" label="Allergieën & Medisch" error={errors.allergies?.message}>
                         <textarea {...register('allergies')} placeholder="Bijv. Notenallergie, medicijngebruik..." className="form-input min-h-[80px]" autoComplete="off" />
                     </FormField>
                 </div>
 
-                <div className="md:col-span-2">
+                <div className="@md:col-span-1">
                     <FormField id="special_notes" label="Speciale Opmerkingen" error={errors.special_notes?.message}>
                         <textarea {...register('special_notes')} placeholder="Overige zaken..." className="form-input min-h-[80px]" autoComplete="off" />
                     </FormField>
                 </div>
 
-                <div className="md:col-span-2 grid sm:grid-cols-2 gap-4">
+                <div className="col-span-1 @md:col-span-2 @3xl:col-span-3">
                     {trip.is_bus_trip && (
                         <div className="p-4 rounded-xl bg-theme-purple/5 flex items-center justify-start gap-8">
                             <div className="flex items-center gap-3 min-w-[180px]">

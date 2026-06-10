@@ -216,7 +216,10 @@ export async function initiateTripPaymentAction(signupId: number, paymentType: '
 
         const response = await fetch(`${FINANCE_SERVICE_URL}/api/finance/trip-payment-request`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.INTERNAL_SERVICE_TOKEN}`
+            },
             body: JSON.stringify({
                 signupId,
                 tripId: access.signup.trip_id,
@@ -226,8 +229,9 @@ export async function initiateTripPaymentAction(signupId: number, paymentType: '
         });
 
         if (!response.ok) {
-            const errData = (await response.json()) as TripPaymentErrorResponse;
-            return { success: false, error: errData.message || 'Betaalverzoek mislukt.' };
+            const errData = (await response.json()) as TripPaymentErrorResponse & { error?: string };
+            safeConsoleError(`[Reis-Payment-Action][initiateTripPaymentAction] Finance service returned status ${response.status}:`, errData);
+            return { success: false, error: errData.message || errData.error || 'Betaalverzoek mislukt.' };
         }
 
         const data = (await response.json()) as TripPaymentSuccessResponse;

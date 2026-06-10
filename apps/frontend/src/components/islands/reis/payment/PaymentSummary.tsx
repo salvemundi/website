@@ -6,15 +6,21 @@ import { TripPricingResult } from '@/lib/reis/pricing';
 interface PaymentSummaryProps {
     pricing: TripPricingResult;
     paymentType: 'deposit' | 'final';
+    hideHeader?: boolean;
 }
 
-export function PaymentSummary({ pricing, paymentType }: PaymentSummaryProps) {
+export function PaymentSummary({ pricing, paymentType, hideHeader = false }: PaymentSummaryProps) {
     return (
         <div className="space-y-8">
-            <div className="text-center">
-                <h2 className="text-3xl font-bold text-[var(--text-main)] mb-2 italic tracking-tighter">Betalingssamenvatting</h2>
-                <p className="text-[var(--text-muted)]">Controleer de gegevens voordat we je doorsturen naar Mollie.</p>
-            </div>
+            {!hideHeader && (
+                <header className="mb-6 pb-4 border-b border-black/5 dark:border-white/10">
+                    <h2 className="text-2xl sm:text-3xl font-black text-[var(--text-main)] mb-1 italic tracking-tighter flex items-center gap-3">
+                        <CreditCard className="w-7 h-7 text-theme-purple" />
+                        Betalingssamenvatting
+                    </h2>
+                    <p className="text-[var(--text-muted)] text-sm">Controleer de gegevens voordat we je doorsturen naar Mollie.</p>
+                </header>
+            )}
 
             <div className="space-y-4">
                 <div className="p-6 rounded-2xl bg-white/5 border border-white/5 space-y-3">

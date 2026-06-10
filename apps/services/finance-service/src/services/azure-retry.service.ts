@@ -22,7 +22,7 @@ export class AzureRetryService {
     private static getConfig() {
         const azureMgmtUrl = process.env.AZURE_MANAGEMENT_SERVICE_URL;
         const azureSyncUrl = process.env.AZURE_SYNC_SERVICE_URL;
-        const internalToken = process.env.INTERNAL_SERVICE_TOKEN;
+        const internalToken = (process.env.INTERNAL_SERVICE_TOKEN || '').replace(/^"|"$/g, '').trim();
         const expectedHeader = `Bearer ${internalToken}`;
 
         return { azureMgmtUrl, azureSyncUrl, expectedHeader };
