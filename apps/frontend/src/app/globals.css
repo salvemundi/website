@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @source "../../src";
+@source "../../../node_modules/flowbite-react/dist/esm/**/*.mjs";
 
 @custom-variant dark (&:where(.dark, .dark *));
 

@@ -82,6 +82,8 @@ export const activityAdminSchema = z.object({
     max_sign_ups: z.union([z.string(), z.number()]).nullable().optional().transform(v => {
         if (v === '' || v === undefined) return null;
         return typeof v === 'string' ? parseInt(v) : v;
+    }).refine((val) => val === null || val <= 1000, {
+        message: "Maximum aantal deelnemers mag niet groter zijn dan 1000."
     }),
     price_members: z.union([z.string(), z.number()]).nullable().optional().transform(v => {
         if (v === '' || v === undefined || v === null) return 0;
@@ -101,6 +103,32 @@ export const activityAdminSchema = z.object({
     only_members: z.union([z.boolean(), z.string()]).optional().transform(v => v === true || v === 'on' || v === 'true'),
     status: z.enum(['published', 'draft', 'scheduled']).optional().default('published'),
     publish_date: z.string().nullable().optional().transform(v => v === '' ? null : v),
+}).refine((data) => {
+    if (data.event_date) {
+        const startTimeStr = data.event_time ? `T${data.event_time}` : 'T00:00';
+        const start = new Date(`${data.event_date}${startTimeStr}`);
+
+        if (data.event_date_end) {
+            const endTimeStr = data.event_time_end ? `T${data.event_time_end}` : 'T23:59';
+            const end = new Date(`${data.event_date_end}${endTimeStr}`);
+            return end >= start;
+        }
+    }
+    return true;
+}, {
+    message: "Einddatum en -tijd moeten na de startdatum en -tijd liggen.",
+    path: ["event_date_end"]
+}).refine((data) => {
+    if (data.event_date && data.registration_deadline) {
+        const startTimeStr = data.event_time ? `T${data.event_time}` : 'T00:00';
+        const start = new Date(`${data.event_date}${startTimeStr}`);
+        const deadline = new Date(data.registration_deadline);
+        return deadline <= start;
+    }
+    return true;
+}, {
+    message: "Inschrijfdeadline mag niet na de startdatum en -tijd liggen.",
+    path: ["registration_deadline"]
 });
 
 export type ActivityAdmin = z.infer<typeof activityAdminSchema>;

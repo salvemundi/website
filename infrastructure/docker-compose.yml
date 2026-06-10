@@ -6,7 +6,7 @@ services:
     env_file:
       - ../.env.acc
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -32,7 +32,7 @@ services:
       - ../.env.acc
     command: redis-server --requirepass ${REDIS_PASSWORD}
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -53,7 +53,7 @@ services:
     command: >
       sh -c "node /directus/cli.js bootstrap && node /directus/cli.js start"
     ports:
-      - "8055:8055"
+      - "127.0.0.1:8055:8055"
     depends_on:
       v7-core-db:
         condition: service_healthy

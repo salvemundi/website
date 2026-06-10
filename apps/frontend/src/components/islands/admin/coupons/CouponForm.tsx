@@ -92,7 +92,7 @@ export default function CouponForm({
 
                 {/* Usage Limit */}
                 <div className="space-y-3">
-                    <label className="text-xs font-semibold text-[var(--beheer-text-muted)]">Gebruikslimiet (optioneel)</label>
+                    <label className="text-xs font-semibold text-[var(--beheer-text-muted)]">Gebruikslimiet</label>
                     <input type="number" name="usage_limit" min="1" placeholder="Onbeperkt" className="w-full px-5 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] focus:ring-4 focus:ring-[var(--beheer-accent)]/10 focus:border-[var(--beheer-accent)] outline-none transition-all font-semibold" />
                 </div>
 
