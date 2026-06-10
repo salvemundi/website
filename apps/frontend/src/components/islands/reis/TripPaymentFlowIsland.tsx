@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { z } from 'zod';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, ChevronLeft, ChevronRight, CreditCard, Compass, User } from 'lucide-react';
 import {
     type Trip,
     type TripSignup,
@@ -26,7 +26,6 @@ import { NameConfirmModal } from './shared/NameConfirmModal';
 import { EnrichmentForm } from './payment/EnrichmentForm';
 import { PaymentSummary } from './payment/PaymentSummary';
 import { PaymentSuccess } from './payment/PaymentSuccess';
-import { FlowNavigation } from './payment/FlowNavigation';
 import { safeConsoleError } from '@/server/utils/logger';
 
 interface ExtendedTripSignup extends Omit<TripSignup, 'document_expiry_date' | 'extra_luggage'> {
@@ -70,10 +69,13 @@ export default function TripPaymentFlowIsland({
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [isProcessing, setIsProcessing] = useState(false);
     const [showNameConfirm, setShowNameConfirm] = useState(false);
     const [localSignup, setLocalSignup] = useState(signup);
     const signupExtended = localSignup as ExtendedTripSignup;
+
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [step]);
 
     const enrichmentSchema = useMemo(() => {
         return reisPaymentEnrichmentSchema.superRefine((data, ctx) => {
@@ -122,7 +124,7 @@ export default function TripPaymentFlowIsland({
         shouldUnregister: true
     });
 
-    const { watch, getValues, trigger, formState: { isValid } } = methods;
+    const { watch, getValues, trigger } = methods;
     const firstName = watch('first_name');
     const [activitySelections, setActivitySelections] = useState<ActivitySelection[]>(() =>
         selectedActivities.map(sa => {
@@ -156,6 +158,10 @@ export default function TripPaymentFlowIsland({
                 const isValidForm = await trigger();
                 if (!isValidForm) {
                     setLoading(false);
+                    const firstErrorEl = document.querySelector('[aria-invalid="true"], .text-red-500');
+                    if (firstErrorEl) {
+                        firstErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
                     return;
                 }
                 setShowNameConfirm(true);
@@ -170,6 +176,16 @@ export default function TripPaymentFlowIsland({
                 }
                 if (paymentType === 'final' && !trip.allow_final_payments) {
                     setStep(4);
+                    setLoading(false);
+                    return;
+                }
+            } else if (step === 3) {
+                const res = (await initiateTripPaymentAction(signup.id || 0, paymentType, token)) as { success: boolean; checkoutUrl?: string; error?: string };
+                if (res.success && res.checkoutUrl) {
+                    window.location.href = res.checkoutUrl;
+                    return;
+                } else {
+                    setError(res.error || 'Betaalsessie starten mislukt.');
                     setLoading(false);
                     return;
                 }
@@ -204,69 +220,110 @@ export default function TripPaymentFlowIsland({
         }
     };
 
-    const handleStartPayment = async () => {
-        setError(null);
-        setIsProcessing(true);
-        try {
-            const res = (await initiateTripPaymentAction(signup.id || 0, paymentType, token)) as { success: boolean; checkoutUrl?: string; error?: string };
-            if (res.success && res.checkoutUrl) {
-                window.location.href = res.checkoutUrl;
-            } else {
-                setError(res.error || 'Betaalsessie starten mislukt.');
-                setIsProcessing(false);
-            }
-        } catch (error) {
-            safeConsoleError('[TripPaymentFlowIsland][handleStartPayment]', error);
-            setError('Fout bij verbinden met betaalservice.');
-            setIsProcessing(false);
-        }
-    };
-
     return (
         <FormProvider {...methods}>
-            <div className="max-w-4xl mx-auto px-6 py-4">
-                <form autoComplete="off" onSubmit={(e) => e.preventDefault()}>
-                    <div className="py-4 min-h-[400px]">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+                <form 
+                    autoComplete="off" 
+                    onSubmit={(e) => e.preventDefault()}
+                    className="flex flex-col gap-10 @container"
+                >
+                    {/* Seamless Header */}
+                    <div className="pb-6 border-b border-black/5 dark:border-white/10 flex items-center justify-between">
+                        <div>
+                            <h2 className="text-2xl sm:text-3xl font-black text-white italic tracking-tighter flex items-center gap-3">
+                                {step === 1 && <User className="w-7 h-7 text-theme-purple" />}
+                                {step === 2 && <Compass className="w-7 h-7 text-theme-purple" />}
+                                {step === 3 && <CreditCard className="w-7 h-7 text-theme-purple" />}
+                                {step === 1 && 'Reisgegevens'}
+                                {step === 2 && 'Optionele Activiteiten'}
+                                {step === 3 && 'Betalingssamenvatting'}
+                                {step === 4 && 'Gelukt!'}
+                            </h2>
+                            <p className="text-[var(--text-muted)] text-sm mt-1">
+                                {step === 1 && `Vul je gegevens aan voor ${trip.name}`}
+                                {step === 2 && 'Kies de extra activiteiten die je wilt doen'}
+                                {step === 3 && 'Controleer je reissom en selecties'}
+                                {step === 4 && 'Je keuzes zijn opgeslagen'}
+                            </p>
+                        </div>
+                        {step <= 3 && (
+                            <div className="text-xs font-bold text-theme-purple bg-theme-purple/10 px-3 py-1.5 rounded-full tracking-wider select-none">
+                                Stap {step} van 3
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Step Body */}
+                    <div className="py-2">
                         <div className={`animate-in fade-in duration-300 ${step === 1 ? 'block' : 'hidden'}`}>
-                            <EnrichmentForm trip={trip} />
+                            <EnrichmentForm trip={trip} hideHeader={true} />
                         </div>
                         <div className={`animate-in fade-in duration-300 ${step === 2 ? 'block' : 'hidden'}`}>
                             <ActivitySelector
                                 activities={allActivities}
                                 selectedSelections={activitySelections}
                                 onChange={setActivitySelections}
+                                hideHeader={true}
                             />
                         </div>
                         <div className={`animate-in fade-in duration-300 ${step === 3 ? 'block' : 'hidden'}`}>
-                            <PaymentSummary pricing={pricing} paymentType={paymentType} />
+                            <PaymentSummary pricing={pricing} paymentType={paymentType} hideHeader={true} />
                         </div>
                         <div className={`animate-in fade-in duration-300 ${step === 4 ? 'block' : 'hidden'}`}>
                             <PaymentSuccess trip={trip} />
                         </div>
                     </div>
 
-                    <div className="mt-4">
-                        {error && (
-                            <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 flex items-center gap-3 animate-in slide-in-from-top-2 duration-300">
-                                <AlertCircle className="w-5 h-5 shrink-0" />
-                                <div className="text-sm">
-                                    <p className="font-bold tracking-tight italic">Er is iets misgegaan</p>
-                                    <p className="opacity-80">{error}</p>
-                                </div>
+                    {/* Seamless Footer */}
+                    {step <= 3 && (
+                        <div className="pt-6 border-t border-black/5 dark:border-white/10 flex flex-col sm:flex-row gap-4 justify-between items-center">
+                            <div className="order-2 sm:order-1 w-full sm:w-auto">
+                                <button
+                                    onClick={step === 1 ? () => window.location.href = '/reis' : () => setStep(step - 1)}
+                                    className="w-full sm:w-auto px-8 py-3 rounded-xl font-bold text-sm text-[var(--text-muted)] hover:text-[var(--text-main)] transition-all flex items-center justify-center gap-2"
+                                >
+                                    <ChevronLeft className="w-4 h-4" /> 
+                                    {step === 1 ? 'Annuleren' : 'Vorige'}
+                                </button>
                             </div>
-                        )}
 
-                        <FlowNavigation
-                            step={step}
-                            loading={loading}
-                            isProcessing={isProcessing}
-                            isValid={isValid}
-                            paymentType={paymentType}
-                            onPrevious={() => setStep(step - 1)}
-                            onNext={() => void handleNext()}
-                            onPayment={() => void handleStartPayment()}
-                        />
-                    </div>
+                            <div className="order-1 sm:order-2 w-full sm:w-auto flex flex-col gap-4 items-end">
+                                {error && (
+                                    <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 flex items-center gap-2 animate-in slide-in-from-top-2 duration-300">
+                                        <AlertCircle className="w-4 h-4 shrink-0" />
+                                        <p className="text-xs">{error}</p>
+                                    </div>
+                                )}
+
+                                <button
+                                    onClick={() => void handleNext()}
+                                    disabled={loading}
+                                    className={`form-button w-full sm:w-auto px-10 bg-gradient-to-br from-theme-purple to-theme-purple-dark flex items-center justify-center gap-2 ${
+                                        loading ? 'opacity-50 cursor-not-allowed grayscale' : ''
+                                    }`}
+                                >
+                                    {loading ? (
+                                        'Verwerken...'
+                                    ) : (
+                                        <>
+                                            {step < 3 ? (
+                                                <>
+                                                    Volgende
+                                                    <ChevronRight className="w-4 h-4" />
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <CreditCard className="w-5 h-5" />
+                                                    {paymentType === 'deposit' ? 'Aanbetaling voldoen' : 'Restbetaling voldoen'}
+                                                </>
+                                            )}
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </form>
             </div>
 

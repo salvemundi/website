@@ -133,7 +133,7 @@ export default async function tripRoutes(fastify: FastifyInstance) {
 
             if (!isConfirmedByUser) {
                 const mailServiceUrl = process.env.MAIL_SERVICE_URL;
-                const internalToken = process.env.INTERNAL_SERVICE_TOKEN;
+                const internalToken = (process.env.INTERNAL_SERVICE_TOKEN || '').replace(/^"|"$/g, '').trim();
                 const paymentPath = paymentType === 'final' ? 'restbetaling' : paymentType;
                 const enrichmentUrl = `${process.env.PUBLIC_URL}/reis/betalen/${paymentPath}?id=${signupId}&t=${accessToken}`;
 

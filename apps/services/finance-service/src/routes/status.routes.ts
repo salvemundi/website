@@ -21,7 +21,7 @@ export default async function statusRoutes(fastify: FastifyInstance) {
         }
 
         try {
-            const transaction = await fastify.db
+            const transactions = await fastify.db
                 .selectFrom('transactions')
                 .select([
                     'mollie_id',
@@ -36,11 +36,16 @@ export default async function statusRoutes(fastify: FastifyInstance) {
                     'access_token'
                 ])
                 .where('access_token', '=', id)
-                .executeTakeFirst();
+                .orderBy('created_at', 'desc')
+                .execute();
 
-            if (!transaction) {
+            if (transactions.length === 0) {
                 return reply.status(404).send({ error: 'Transaction not found' });
             }
+
+            const transaction = transactions.find(t =>
+                ['paid', 'authorized', 'settled'].includes(String(t.payment_status))
+            ) || transactions[0];
 
             const dbStatus = String(transaction.payment_status);
             const mollieId = transaction.mollie_id;

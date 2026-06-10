@@ -16,7 +16,7 @@ async function verifyMollieWebhook(request: FastifyRequest<{ Querystring: { toke
     const queryToken = request.query.token;
 
     const authHeader = request.headers.authorization;
-    const internalToken = process.env.INTERNAL_SERVICE_TOKEN;
+    const internalToken = (process.env.INTERNAL_SERVICE_TOKEN || '').replace(/^"|"$/g, '').trim();
     const hasValidBearer = !!(internalToken && authHeader === `Bearer ${internalToken}`);
 
     const isAuthorized = hasValidBearer ||
