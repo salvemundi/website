@@ -25,6 +25,11 @@ if (fs.existsSync(templatesDir)) {
     });
 }
 
+// Helper voor nette ms-formatting
+function ms(start: number): string {
+    return `${(performance.now() - start).toFixed(1)}ms`;
+}
+
 export class MailerService {
     private static readonly SUBJECT_MAP = new Map<string, string>([
         ['payment_confirmed', 'Betaling Bevestigd'],
@@ -84,16 +89,30 @@ export class MailerService {
     }
 
     static async send(redis: Redis, to: string, templateId: string, data: Record<string, unknown>): Promise<boolean> {
-        try {
-            safeConsoleLog(`[MailerService] Preparing ${templateId} for ${to}...`);
+        const totalStart = performance.now();
+        safeConsoleLog(`[MailerService] Preparing ${templateId} for ${to}...`);
 
+        try {
+            // 1. Template renderen
+            const t1 = performance.now();
             const htmlContent = this.renderTemplate(templateId, data);
+            safeConsoleLog(`[MailerService] [timing] renderTemplate: ${ms(t1)} (html size: ${htmlContent.length} chars)`);
+
+            // 2. Azure access token ophalen (cache of fresh)
+            const t2 = performance.now();
             const accessToken = await TokenService.getAccessToken(redis);
+            safeConsoleLog(`[MailerService] [timing] getAccessToken: ${ms(t2)}`);
+
+            // 3. Logo attachment laden (gecached na eerste keer)
+            const t3 = performance.now();
             const logoAttachment = this.getLogoAttachment();
+            safeConsoleLog(`[MailerService] [timing] getLogoAttachment: ${ms(t3)} (cached: ${this.logoInitialized})`);
 
             const senderEmail = process.env.AZURE_MAIL_SENDER || 'info@salvemundi.nl';
             const userFriendlySubject = this.SUBJECT_MAP.get(templateId) || templateId.replace(/[-_]/g, ' ');
 
+            // 4. Graph API call
+            const t4 = performance.now();
             const response = await fetch(`https://graph.microsoft.com/v1.0/users/${senderEmail}/sendMail`, {
                 method: 'POST',
                 headers: {
@@ -118,6 +137,7 @@ export class MailerService {
                     }
                 })
             });
+            safeConsoleLog(`[MailerService] [timing] Graph API sendMail: ${ms(t4)} (status: ${response.status})`);
 
             if (!response.ok) {
                 const errorData = await response.json() as unknown;
@@ -125,10 +145,12 @@ export class MailerService {
             }
 
             safeConsoleLog(`[MailerService] Successfully dispatched to ${to}`);
+            safeConsoleLog(`[MailerService] [timing] TOTAL send(): ${ms(totalStart)}`);
             return true;
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : String(error);
             safeConsoleError(`[MailerService] Failed to send email:`, errorMessage);
+            safeConsoleLog(`[MailerService] [timing] TOTAL send() (failed): ${ms(totalStart)}`);
             throw error;
         }
     }
